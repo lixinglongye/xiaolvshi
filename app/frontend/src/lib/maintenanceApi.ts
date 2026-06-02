@@ -39,6 +39,44 @@ type MaintenanceEvidenceResponse = {
   data: MaintenanceEvidenceProfile;
 };
 
+export type ReleaseValidationState = 'pass' | 'fail' | 'not_run' | 'waived';
+
+export type ReleaseCheck = {
+  id: string;
+  title: string;
+  category: string;
+  required: boolean;
+  owner: string;
+  evidence_paths: string[];
+  validation_command?: string | null;
+  manual_note?: string | null;
+  validation_state: ReleaseValidationState;
+  blocks_release: boolean;
+};
+
+export type ReleaseReadinessResult = {
+  status: string;
+  release_allowed: boolean;
+  required_check_count: number;
+  passed_or_waived_required_count: number;
+  blocking_check_ids: string[];
+  failed_check_ids: string[];
+  not_run_check_ids: string[];
+  checks: ReleaseCheck[];
+  summary: string;
+};
+
+export type ReleaseValidationCommand = {
+  check_id: string;
+  command: string;
+};
+
+type ReleaseReadinessResponse = {
+  success: boolean;
+  data: ReleaseReadinessResult;
+  validation_commands: ReleaseValidationCommand[];
+};
+
 export async function getMaintenanceEvidence(language: MaintenanceLanguage): Promise<MaintenanceEvidenceProfile> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/maintenance/oss-evidence?language=${language}`,
@@ -49,4 +87,12 @@ export async function getMaintenanceEvidence(language: MaintenanceLanguage): Pro
     return payload.data;
   }
   return payload as MaintenanceEvidenceProfile;
+}
+
+export async function getReleaseReadiness(): Promise<ReleaseReadinessResponse> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/release-readiness',
+    method: 'GET',
+  });
+  return (resp?.data ?? resp) as ReleaseReadinessResponse;
 }

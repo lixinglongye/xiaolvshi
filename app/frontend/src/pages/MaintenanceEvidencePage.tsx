@@ -15,8 +15,11 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
   getMaintenanceEvidence,
+  getReleaseReadiness,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
+  type ReleaseReadinessResult,
+  type ReleaseValidationCommand,
 } from '@/lib/maintenanceApi';
 
 const categoryClass: Record<string, string> = {
@@ -43,6 +46,8 @@ export default function MaintenanceEvidencePage() {
 function Inner() {
   const [language, setLanguage] = useState<MaintenanceLanguage>('en');
   const [data, setData] = useState<MaintenanceEvidenceProfile | null>(null);
+  const [releaseReadiness, setReleaseReadiness] = useState<ReleaseReadinessResult | null>(null);
+  const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -51,7 +56,13 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      setData(await getMaintenanceEvidence(nextLanguage));
+      const [evidence, readiness] = await Promise.all([
+        getMaintenanceEvidence(nextLanguage),
+        getReleaseReadiness(),
+      ]);
+      setData(evidence);
+      setReleaseReadiness(readiness.data);
+      setValidationCommands(readiness.validation_commands);
     } catch (err) {
       console.error(err);
       setError('Maintenance evidence failed to load.');
@@ -66,6 +77,7 @@ function Inner() {
   }, [language]);
 
   const controls = data?.release_management.release_readiness_controls ?? [];
+  const blockingCount = releaseReadiness?.blocking_check_ids.length ?? 0;
   const totalEvidencePaths = useMemo(
     () => (data?.signals ?? []).reduce((total, signal) => total + signal.evidence_paths.length, 0),
     [data],
@@ -199,6 +211,87 @@ function Inner() {
                 </div>
               </div>
             </section>
+
+            {releaseReadiness && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Release readiness</h2>
+                    <div className="mt-1 text-sm text-stone-600">{releaseReadiness.summary}</div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      releaseReadiness.release_allowed
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                        : releaseReadiness.failed_check_ids.length
+                          ? 'border-red-200 bg-red-50 text-red-800'
+                          : 'border-amber-200 bg-amber-50 text-amber-900'
+                    }
+                  >
+                    {releaseReadiness.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {releaseReadiness.passed_or_waived_required_count}/{releaseReadiness.required_check_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">required checks passed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{blockingCount}</div>
+                    <div className="mt-1 text-sm text-stone-600">blocking checks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{validationCommands.length}</div>
+                    <div className="mt-1 text-sm text-stone-600">validation commands</div>
+                  </div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Check</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>State</TableHead>
+                        <TableHead>Required</TableHead>
+                        <TableHead>Command</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {releaseReadiness.checks.map((check) => (
+                        <TableRow key={check.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{check.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{check.id}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">{check.owner}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                check.validation_state === 'pass' || check.validation_state === 'waived'
+                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                                  : check.validation_state === 'fail'
+                                    ? 'border-red-200 bg-red-50 text-red-800'
+                                    : 'border-stone-200 bg-stone-50 text-stone-700'
+                              }
+                            >
+                              {check.validation_state.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{check.required ? 'yes' : 'no'}</TableCell>
+                          <TableCell className="max-w-[420px] font-mono text-[11px] text-stone-600">
+                            {check.validation_command || check.manual_note || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </section>
+            )}
 
             <section className="mb-8">
               <h2 className="mb-3 text-xl font-black text-stone-950">Maintenance signals</h2>
