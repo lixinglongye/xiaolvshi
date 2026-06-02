@@ -32,6 +32,7 @@ export default function Layout({ children, hideFooter }: LayoutProps) {
     ['/generate', t('nav_generate')],
     ['/team', t('nav_team')],
     ...(user?.role === 'admin' ? [['/model-ops', 'Model Ops']] : []),
+    ...(user?.role === 'admin' ? [['/maintenance', 'Maintenance']] : []),
     ...(user?.role === 'admin' ? [['/admin', t('nav_admin')]] : []),
   ] as Array<[string, string]>;
 
