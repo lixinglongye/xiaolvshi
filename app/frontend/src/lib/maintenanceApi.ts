@@ -106,6 +106,19 @@ type LegalKnowledgeAuditResponse = {
   data: LegalKnowledgeAudit;
 };
 
+export type LegalRagEvaluationPolicy = {
+  status_thresholds: Record<string, number>;
+  metric_weights: Record<string, number>;
+  required_metrics: string[];
+  blocking_conditions: string[];
+  evaluation_inputs: string[];
+};
+
+type LegalRagEvaluationPolicyResponse = {
+  success: boolean;
+  data: LegalRagEvaluationPolicy;
+};
+
 export async function getMaintenanceEvidence(language: MaintenanceLanguage): Promise<MaintenanceEvidenceProfile> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/maintenance/oss-evidence?language=${language}`,
@@ -136,4 +149,16 @@ export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {
     return payload.data;
   }
   return payload as LegalKnowledgeAudit;
+}
+
+export async function getLegalRagEvaluationPolicy(): Promise<LegalRagEvaluationPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/legal-knowledge/rag-evaluation-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalRagEvaluationPolicyResponse | LegalRagEvaluationPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalRagEvaluationPolicy;
 }

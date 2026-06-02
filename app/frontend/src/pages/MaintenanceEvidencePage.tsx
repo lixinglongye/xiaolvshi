@@ -15,9 +15,11 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
   getLegalKnowledgeAudit,
+  getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
   getReleaseReadiness,
   type LegalKnowledgeAudit,
+  type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type ReleaseReadinessResult,
@@ -51,6 +53,7 @@ function Inner() {
   const [releaseReadiness, setReleaseReadiness] = useState<ReleaseReadinessResult | null>(null);
   const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
+  const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -59,15 +62,17 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness, legalKnowledge] = await Promise.all([
+      const [evidence, readiness, legalKnowledge, ragEvaluation] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getLegalKnowledgeAudit(),
+        getLegalRagEvaluationPolicy(),
       ]);
       setData(evidence);
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
       setLegalAudit(legalKnowledge);
+      setRagPolicy(ragEvaluation);
     } catch (err) {
       console.error(err);
       setError('Maintenance evidence failed to load.');
@@ -365,6 +370,50 @@ function Inner() {
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {ragPolicy && (
+              <section className="mb-8">
+                <div className="mb-3">
+                  <h2 className="text-xl font-black text-stone-950">Legal RAG evaluation</h2>
+                  <div className="mt-1 text-sm text-stone-600">
+                    {ragPolicy.required_metrics.length} metrics · {ragPolicy.blocking_conditions.length} blockers
+                  </div>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Metric weights</h3>
+                    <div className="space-y-2">
+                      {Object.entries(ragPolicy.metric_weights).map(([metric, weight]) => (
+                        <div key={metric} className="flex items-center justify-between gap-3 text-sm">
+                          <span className="font-mono text-xs text-stone-700">{metric.replace(/_/g, ' ')}</span>
+                          <Badge variant="outline" className="bg-white">
+                            {weight}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Blocking conditions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {ragPolicy.blocking_conditions.map((condition) => (
+                        <li key={condition} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{condition}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {Object.entries(ragPolicy.status_thresholds).map(([status, threshold]) => (
+                        <Badge key={status} variant="outline" className="bg-white">
+                          {status}: {threshold}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
