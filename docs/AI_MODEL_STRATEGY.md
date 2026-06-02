@@ -66,6 +66,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 批量任务上线前先调用 `/api/v1/aihub/models` 确认当前路由角色。
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。
+- `/model-ops` 中的 estimated cost 使用 `model_catalog.py` 里的 Gemini paid-tier token 单价估算，仅用于成本趋势判断；实际扣费以 NewAPI/Google Gemini 账单为准。
 
 ## Sources
 

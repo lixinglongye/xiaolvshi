@@ -28,3 +28,11 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "ocr" in catalog["gemini-2.5-flash-lite"]["configured_roles"]
     assert "review" in catalog["gemini-2.5-flash"]["configured_roles"]
     assert "pdf" in catalog["gemini-2.5-pro"]["configured_roles"]
+    assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
+
+
+def test_estimate_token_cost_uses_catalog_pricing():
+    cost = model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", 1_000_000, 500_000)
+
+    assert cost == 0.30
+    assert model_catalog.estimate_token_cost_usd("provider-custom-model", 100, 100) is None

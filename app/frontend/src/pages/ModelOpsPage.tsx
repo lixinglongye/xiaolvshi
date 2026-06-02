@@ -26,6 +26,11 @@ function formatNumber(value?: number) {
   return new Intl.NumberFormat('en-US').format(value ?? 0);
 }
 
+function formatUsd(value?: number | null) {
+  if (value == null) return 'unpriced';
+  return `$${value.toFixed(value < 0.01 ? 6 : 4)}`;
+}
+
 function roleText(model: ModelCatalogItem) {
   return model.configured_roles.length ? model.configured_roles.join(', ') : '-';
 }
@@ -88,7 +93,7 @@ function Inner() {
           </div>
         )}
 
-        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Card className="surface-card">
             <CardContent className="p-5">
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[8px] bg-stone-950 text-white">
@@ -125,6 +130,15 @@ function Inner() {
               <div className="mt-1 text-sm text-stone-600">tokens recorded</div>
             </CardContent>
           </Card>
+          <Card className="surface-card">
+            <CardContent className="p-5">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[8px] bg-stone-950 text-white">
+                <Gauge className="h-5 w-5" />
+              </div>
+              <div className="text-3xl font-black text-stone-950">{formatUsd(totals?.estimated_cost_usd)}</div>
+              <div className="mt-1 text-sm text-stone-600">estimated cost</div>
+            </CardContent>
+          </Card>
         </div>
 
         <section className="mb-8">
@@ -150,6 +164,7 @@ function Inner() {
                   <TableHead>Model</TableHead>
                   <TableHead>Cost</TableHead>
                   <TableHead>Latency</TableHead>
+                  <TableHead>Token price</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Best for</TableHead>
                 </TableRow>
@@ -164,6 +179,10 @@ function Inner() {
                       </Badge>
                     </TableCell>
                     <TableCell>{model.latency_tier}</TableCell>
+                    <TableCell className="text-xs text-stone-600">
+                      in {formatUsd(model.pricing.input_usd_per_million_tokens)} / out{' '}
+                      {formatUsd(model.pricing.output_usd_per_million_tokens)}
+                    </TableCell>
                     <TableCell>{roleText(model)}</TableCell>
                     <TableCell className="max-w-[320px] text-stone-600">{model.best_for.join(', ')}</TableCell>
                   </TableRow>
@@ -184,6 +203,7 @@ function Inner() {
                   <TableHead>Success</TableHead>
                   <TableHead>Failure</TableHead>
                   <TableHead>Total tokens</TableHead>
+                  <TableHead>Est. cost</TableHead>
                   <TableHead>Avg latency</TableHead>
                   <TableHead>Tasks</TableHead>
                 </TableRow>
@@ -191,7 +211,7 @@ function Inner() {
               <TableBody>
                 {usageRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                    <TableCell colSpan={8} className="py-8 text-center text-stone-500">
                       No model calls recorded in this backend process.
                     </TableCell>
                   </TableRow>
@@ -203,6 +223,7 @@ function Inner() {
                       <TableCell>{formatNumber(usage.successes)}</TableCell>
                       <TableCell>{formatNumber(usage.failures)}</TableCell>
                       <TableCell>{formatNumber(usage.total_tokens)}</TableCell>
+                      <TableCell>{formatUsd(usage.estimated_cost_usd)}</TableCell>
                       <TableCell>{usage.avg_latency_ms}ms</TableCell>
                       <TableCell className="max-w-[320px] text-stone-600">
                         {Object.entries(usage.tasks).map(([task, count]) => `${task}:${count}`).join(', ')}

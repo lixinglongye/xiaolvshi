@@ -11,6 +11,12 @@ export type ModelCatalogItem = {
   capabilities: string[];
   best_for: string[];
   notes?: string;
+  pricing: {
+    input_usd_per_million_tokens: number | null;
+    output_usd_per_million_tokens: number | null;
+    output_usd_per_image: number | null;
+    note: string;
+  };
   configured_roles: string[];
 };
 
@@ -24,6 +30,7 @@ export type ModelUsageItem = {
   avg_latency_ms: number;
   last_seen_at: number;
   tasks: Record<string, number>;
+  estimated_cost_usd: number | null;
 };
 
 export type ModelUsageSummary = {
@@ -34,6 +41,9 @@ export type ModelUsageSummary = {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+    estimated_cost_usd: number;
+    priced_model_count: number;
+    unpriced_model_count: number;
   };
   models: Record<string, ModelUsageItem>;
 };

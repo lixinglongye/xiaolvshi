@@ -13,6 +13,8 @@ from threading import Lock
 from time import time
 from typing import Any
 
+from services.model_catalog import estimate_token_cost_usd
+
 
 @dataclass
 class ModelUsageCounter:
@@ -90,6 +92,12 @@ class ModelUsageRegistry:
                 model: counter.snapshot()
                 for model, counter in sorted(self._by_model.items(), key=lambda item: item[0])
             }
+            for model, data in models.items():
+                data["estimated_cost_usd"] = estimate_token_cost_usd(
+                    model,
+                    data["prompt_tokens"],
+                    data["completion_tokens"],
+                )
         totals = {
             "requests": sum(item["requests"] for item in models.values()),
             "successes": sum(item["successes"] for item in models.values()),
@@ -97,6 +105,12 @@ class ModelUsageRegistry:
             "prompt_tokens": sum(item["prompt_tokens"] for item in models.values()),
             "completion_tokens": sum(item["completion_tokens"] for item in models.values()),
             "total_tokens": sum(item["total_tokens"] for item in models.values()),
+            "estimated_cost_usd": round(
+                sum(item["estimated_cost_usd"] or 0 for item in models.values()),
+                8,
+            ),
+            "priced_model_count": sum(1 for item in models.values() if item["estimated_cost_usd"] is not None),
+            "unpriced_model_count": sum(1 for item in models.values() if item["estimated_cost_usd"] is None),
         }
         return {"totals": totals, "models": models}
 

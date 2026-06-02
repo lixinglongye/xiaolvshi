@@ -24,6 +24,10 @@ class ModelProfile:
     capabilities: tuple[str, ...]
     best_for: tuple[str, ...]
     notes: str = ""
+    input_usd_per_million_tokens: float | None = None
+    output_usd_per_million_tokens: float | None = None
+    output_usd_per_image: float | None = None
+    pricing_note: str = "Google Gemini API paid tier, standard mode. Gateway billing may differ."
 
 
 GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
@@ -36,6 +40,8 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         capabilities=("text", "vision", "json", "ocr", "classification"),
         best_for=("routing", "ocr", "triage", "summaries", "cheap-batch-review"),
         notes="Default cost-first model for high-volume pipeline stages.",
+        input_usd_per_million_tokens=0.10,
+        output_usd_per_million_tokens=0.40,
     ),
     ModelProfile(
         id="gemini-2.5-flash",
@@ -46,6 +52,8 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         capabilities=("text", "vision", "json", "ocr", "review"),
         best_for=("legal-review", "document-analysis", "structured-extraction"),
         notes="Balanced default for legal analysis when quality matters.",
+        input_usd_per_million_tokens=0.30,
+        output_usd_per_million_tokens=2.50,
     ),
     ModelProfile(
         id="gemini-2.5-pro",
@@ -56,6 +64,12 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         capabilities=("text", "vision", "json", "long-context", "complex-reasoning"),
         best_for=("final-review", "large-pdf", "hard-legal-reasoning"),
         notes="Use only for complex or failed stages unless explicitly selected.",
+        input_usd_per_million_tokens=1.25,
+        output_usd_per_million_tokens=10.00,
+        pricing_note=(
+            "Google Gemini API paid tier, standard mode, prompts <= 200k tokens. "
+            "Gateway billing and long-context pricing may differ."
+        ),
     ),
     ModelProfile(
         id="gemini-3.1-flash-lite",
@@ -85,6 +99,9 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         latency_tier="medium",
         capabilities=("image", "image-edit"),
         best_for=("image-generation", "visual-evidence-illustration"),
+        input_usd_per_million_tokens=0.30,
+        output_usd_per_image=0.039,
+        pricing_note="Google Gemini API paid tier, standard mode. Output image price is approximate per 1024x1024 image.",
     ),
     ModelProfile(
         id="gemini-3-pro-image",
@@ -161,6 +178,23 @@ def model_profile(model_id: str) -> ModelProfile | None:
     return _catalog_by_id().get(model_id)
 
 
+def estimate_token_cost_usd(model_id: str, prompt_tokens: int, completion_tokens: int) -> float | None:
+    """Estimate token cost for catalog models with known paid-tier pricing."""
+    profile = model_profile(model_id)
+    if not profile:
+        return None
+    if profile.input_usd_per_million_tokens is None and profile.output_usd_per_million_tokens is None:
+        return None
+
+    input_cost = 0.0
+    output_cost = 0.0
+    if profile.input_usd_per_million_tokens is not None:
+        input_cost = max(0, prompt_tokens) * profile.input_usd_per_million_tokens / 1_000_000
+    if profile.output_usd_per_million_tokens is not None:
+        output_cost = max(0, completion_tokens) * profile.output_usd_per_million_tokens / 1_000_000
+    return round(input_cost + output_cost, 8)
+
+
 def catalog_for_api() -> list[dict[str, object]]:
     configured = {
         "cheap": cheap_text_model(),
@@ -181,6 +215,12 @@ def catalog_for_api() -> list[dict[str, object]]:
             "capabilities": list(item.capabilities),
             "best_for": list(item.best_for),
             "notes": item.notes,
+            "pricing": {
+                "input_usd_per_million_tokens": item.input_usd_per_million_tokens,
+                "output_usd_per_million_tokens": item.output_usd_per_million_tokens,
+                "output_usd_per_image": item.output_usd_per_image,
+                "note": item.pricing_note,
+            },
             "configured_roles": [role for role, model_id in configured.items() if model_id == item.id],
         }
         for item in GEMINI_MODEL_CATALOG
