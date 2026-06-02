@@ -132,6 +132,20 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_release_decision.py -q",
             ),
             ReleaseCheck(
+                id="document-preflight",
+                title="Document preflight routing coverage",
+                category="legal_quality",
+                required=True,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/document_preflight.py",
+                    "app/backend/services/document_strategy.py",
+                    "app/backend/tests/test_document_preflight.py",
+                    "docs/DOCUMENT_PREFLIGHT.md",
+                ),
+                validation_command="python -m pytest tests/test_document_preflight.py -q",
+            ),
+            ReleaseCheck(
                 id="feedback-triage",
                 title="Feedback triage coverage",
                 category="maintenance",

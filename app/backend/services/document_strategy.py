@@ -423,6 +423,7 @@ STRATEGIES: tuple[DocumentReviewStrategy, ...] = (
 
 def get_document_strategy(document_type: str = "", document_text: str = "", user_role: str = "") -> DocumentReviewStrategy:
     haystack = _normalize(" ".join([document_type or "", user_role or "", document_text[:20000] or ""]))
+    declared_type = _normalize(document_type or "")
     best_score = -1
     best = GENERAL_CONTRACT
     for strategy in STRATEGIES:
@@ -431,6 +432,10 @@ def get_document_strategy(document_type: str = "", document_text: str = "", user
             normalized_alias = _normalize(alias)
             if normalized_alias and normalized_alias in haystack:
                 score += 8 + min(len(normalized_alias), 8)
+                if declared_type == normalized_alias:
+                    score += 20
+                elif normalized_alias and normalized_alias in declared_type and len(normalized_alias) >= 2:
+                    score += 10
         if _normalize(strategy.display_name) in haystack:
             score += 8
         if score > best_score:

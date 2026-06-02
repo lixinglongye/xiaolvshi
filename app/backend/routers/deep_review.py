@@ -19,6 +19,7 @@ from dependencies.auth import get_current_user
 from models.prompt_versions import Prompt_versions
 from schemas.auth import UserResponse
 from services.deep_review import DeepReviewService
+from services.document_preflight import DocumentReviewPreflightService
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
 from services.documents import DocumentsService
 from services.entitlements import EntitlementService
@@ -40,6 +41,21 @@ class DeepReviewRequest(BaseModel):
     review_goal: str = "签署前审查"
     known_facts: Optional[List[str]] = None
     jurisdiction: str = "中国大陆"
+
+
+class DeepReviewPreflightRequest(BaseModel):
+    document_text: str
+    document_type: str = "合同"
+    user_role: str = "甲方"
+    review_goal: str = "签署前审查"
+    known_facts: Optional[List[str]] = None
+    extraction: Optional[Dict[str, Any]] = None
+
+
+class DeepReviewPreflightResponse(BaseModel):
+    success: bool
+    preflight: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
 
 
 class DeepReviewResponse(BaseModel):
@@ -1382,6 +1398,24 @@ async def analyze_document(
             success=False,
             error=f"审查报告生成失败，请稍后重试。错误: {str(e)}"
         )
+
+
+@router.post("/preflight", response_model=DeepReviewPreflightResponse)
+async def preflight_document(data: DeepReviewPreflightRequest):
+    """Run deterministic document preflight without consuming report quota."""
+    try:
+        preflight = DocumentReviewPreflightService().evaluate(
+            document_text=data.document_text,
+            document_type=data.document_type,
+            user_role=data.user_role,
+            review_goal=data.review_goal,
+            known_facts=data.known_facts or [],
+            extraction=data.extraction or {},
+        )
+        return DeepReviewPreflightResponse(success=True, preflight=preflight)
+    except Exception as exc:
+        logger.error("Document preflight failed: %s", exc, exc_info=True)
+        return DeepReviewPreflightResponse(success=False, error=str(exc))
 
 
 @router.post("/analyze-uploaded", response_model=AnalyzeUploadedDocumentResponse)

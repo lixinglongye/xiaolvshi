@@ -31,6 +31,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Frontend production build.
 - Secret and credential scan.
 - Deep-review release decision coverage.
+- Document preflight routing coverage.
 - Feedback triage coverage.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.

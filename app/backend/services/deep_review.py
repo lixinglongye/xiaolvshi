@@ -13,6 +13,7 @@ from core.config import settings
 from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
 from services.citation_audit import CitationAuditService
+from services.document_preflight import DocumentReviewPreflightService
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
 from services.evidence_audit import EvidenceAuditService
 from services.legal_research import LocalLegalResearchService
@@ -435,6 +436,7 @@ class DeepReviewService:
     ):
         self.aihub = AIHubService()
         self.citation_audit = CitationAuditService()
+        self.document_preflight = DocumentReviewPreflightService()
         self.evidence_audit = EvidenceAuditService()
         self.legal_research = LocalLegalResearchService()
         self.quality_gate = ReportQualityGate()
@@ -2339,12 +2341,36 @@ pending_facts 必须写清该事实如何影响风险等级、法律依据或修
         if not known_facts:
             known_facts = []
 
+        rule_preflight = self.document_preflight.evaluate(
+            document_text=document_text,
+            document_type=document_type,
+            user_role=user_role,
+            review_goal=review_goal,
+            known_facts=known_facts,
+        )
+
         # Step 1: Pre-check if the document is actually a legal document
         await self._emit_progress(
             stage_id="document-preflight",
             stage_name="Document Preflight",
             status="running",
+            extra={
+                "preflight_status": rule_preflight.get("status"),
+                "preflight_strategy_id": (rule_preflight.get("strategy") or {}).get("strategy_id"),
+                "recommended_task": (rule_preflight.get("routing") or {}).get("recommended_task"),
+                "recommended_model": (rule_preflight.get("routing") or {}).get("recommended_model"),
+            },
         )
+        if rule_preflight.get("status") == "blocked":
+            error = "；".join(rule_preflight.get("blocking_reasons") or ["文档预检未通过。"])
+            await self._emit_progress(
+                stage_id="document-preflight",
+                stage_name="Document Preflight",
+                status="error",
+                detail=error,
+            )
+            raise ValueError(error)
+
         non_legal_error = await self._check_document_is_legal(document_text)
         if non_legal_error:
             await self._emit_progress(
@@ -2376,6 +2402,23 @@ pending_facts 必须写清该事实如何影响风险等级、法律依据或修
                 report["report_meta"] = {}
             report["report_meta"]["report_id"] = f"RPT-{uuid.uuid4().hex[:8].upper()}"
             report["report_meta"]["generated_at"] = datetime.utcnow().isoformat()
+            report["report_meta"]["preflight_status"] = rule_preflight.get("status")
+            report["report_meta"]["preflight_recommended_task"] = (rule_preflight.get("routing") or {}).get("recommended_task")
+            report["preflight"] = rule_preflight
+            trace.insert(
+                0,
+                {
+                    "stage_id": "document-preflight-rules",
+                    "stage_name": "Rule Preflight Router",
+                    "status": rule_preflight.get("status"),
+                    "model": "deterministic-rule-router",
+                    "duration_ms": 0,
+                    "strategy_id": (rule_preflight.get("strategy") or {}).get("strategy_id"),
+                    "recommended_task": (rule_preflight.get("routing") or {}).get("recommended_task"),
+                    "recommended_model": (rule_preflight.get("routing") or {}).get("recommended_model"),
+                    "complexity_level": (rule_preflight.get("document_signals") or {}).get("complexity_level"),
+                },
+            )
             report["pipeline_trace"] = trace
             
             logger.info(f"Deep review report generated successfully: {report['report_meta']['report_id']}")
