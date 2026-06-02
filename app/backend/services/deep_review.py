@@ -17,6 +17,7 @@ from services.document_strategy import build_strategy_pending_facts, get_documen
 from services.evidence_audit import EvidenceAuditService
 from services.legal_research import LocalLegalResearchService
 from services.model_catalog import resolve_model
+from services.release_decision import ReleaseDecisionService
 from services.report_quality_gate import ReportQualityGate
 from services.risk_scoring import RiskScoringService
 
@@ -437,6 +438,7 @@ class DeepReviewService:
         self.evidence_audit = EvidenceAuditService()
         self.legal_research = LocalLegalResearchService()
         self.quality_gate = ReportQualityGate()
+        self.release_decision = ReleaseDecisionService()
         self.risk_scoring = RiskScoringService()
         self.review_prompt_extension = (review_prompt_extension or "").strip()
         self.progress_callback = progress_callback
@@ -1445,6 +1447,7 @@ class DeepReviewService:
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
+        report["release_decision"] = self.release_decision.evaluate(report)
         report["delivery_audit"] = self._build_delivery_audit(report, quality_audit)
         report["human_review_workflow"] = self._build_human_review_workflow(report, quality_audit)
         if quality_audit.get("lawyer_review_required"):
@@ -1522,6 +1525,7 @@ class DeepReviewService:
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
+        report["release_decision"] = self.release_decision.evaluate(report)
         report["delivery_audit"] = self._build_delivery_audit(report, report["quality_audit"])
         report["human_review_workflow"] = self._build_human_review_workflow(report, report["quality_audit"])
         if report["quality_audit"].get("lawyer_review_required"):
@@ -1542,6 +1546,7 @@ class DeepReviewService:
         verified_sources = [item for item in legal_sources if item.get("verification_status") == "已校验"]
         citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
         evidence_audit = report.get("evidence_audit") if isinstance(report.get("evidence_audit"), dict) else {}
+        release_decision = report.get("release_decision") if isinstance(report.get("release_decision"), dict) else {}
         quality_score = self._safe_int(quality_audit.get("quality_score"), 0)
         blocking_issues = self._ensure_list(quality_audit.get("warnings"))
         verified_source_ratio = (
@@ -1555,12 +1560,19 @@ class DeepReviewService:
             readiness_level = "可进入律师复核"
         else:
             readiness_level = "仅可作为内部初稿"
+        if release_decision.get("release_level") == "internal_draft_only":
+            readiness_level = "仅可作为内部初稿"
+        elif release_decision.get("release_level") == "lawyer_review_required":
+            readiness_level = "可进入律师复核"
+        elif release_decision.get("release_level") == "ready_for_lawyer_spot_check":
+            readiness_level = "可进入客户交付前律师抽检"
 
         return {
             "positioning": "不是替代 LLM chat，而是把 LLM 组织成可审计、可复核、可下载的法律审查 SaaS 交付系统。",
             "readiness_level": readiness_level,
-            "readiness_score": quality_score,
+            "readiness_score": release_decision.get("readiness_score", quality_score),
             "blocking_issues": blocking_issues,
+            "release_decision_status": release_decision.get("status", "unknown"),
             "verified_source_ratio": verified_source_ratio,
             "reviewable_source_ratio": citation_audit.get("reviewable_ratio", 0),
             "risk_evidence_coverage": evidence_audit.get("risk_evidence_coverage", 0),
@@ -1593,6 +1605,7 @@ class DeepReviewService:
         warnings = [str(item) for item in self._ensure_list(quality_audit.get("warnings")) if str(item).strip()]
         citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
         evidence_audit = report.get("evidence_audit") if isinstance(report.get("evidence_audit"), dict) else {}
+        release_decision = report.get("release_decision") if isinstance(report.get("release_decision"), dict) else {}
         tasks: list[dict] = []
         if high_risks:
             tasks.append(
@@ -1654,6 +1667,16 @@ class DeepReviewService:
                     "status": "pending",
                 }
             )
+        if release_decision.get("status") == "blocked":
+            tasks.append(
+                {
+                    "task_id": "HR-006",
+                    "title": "处理交付阻断项后再进入客户交付",
+                    "target": release_decision.get("blocking_reasons") or "release_decision",
+                    "owner_role": "项目负责人/执业律师",
+                    "status": "pending",
+                }
+            )
         if not tasks:
             tasks.append(
                 {
@@ -1665,10 +1688,10 @@ class DeepReviewService:
                 }
             )
 
-        required = bool(quality_audit.get("lawyer_review_required")) or bool(high_risks)
+        required = bool(quality_audit.get("lawyer_review_required")) or bool(high_risks) or release_decision.get("lawyer_review_required") is True
         return {
             "status": "required" if required else "recommended",
-            "triage_level": "urgent" if any(self._normalize_risk_level(item.get("risk_level")) == "重大" for item in risk_items) else "normal",
+            "triage_level": release_decision.get("triage_level") or ("urgent" if any(self._normalize_risk_level(item.get("risk_level")) == "重大" for item in risk_items) else "normal"),
             "reasons": warnings[:8] or ["交付前建议进行人工抽样复核。"],
             "review_tasks": tasks,
             "handoff_note": "该任务包用于把 AI 初稿流转给律师/法务复核，不应作为正式法律意见直接发送。",

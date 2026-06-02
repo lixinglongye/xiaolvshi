@@ -121,6 +121,7 @@ export interface DeepReviewReportSummary {
   };
   citation_audit?: CitationAuditResult;
   evidence_audit?: EvidenceAuditResult;
+  release_decision?: ReleaseDecisionResult;
   risk_scoring?: RiskScoringResult;
   top_risks: Array<string | { title?: string; severity?: string }>;
   missing_clauses: unknown[];
@@ -271,6 +272,29 @@ export interface EvidenceAuditResult {
   }>;
 }
 
+export interface ReleaseDecisionResult {
+  schema_version?: string;
+  status?: 'blocked' | 'lawyer_review_required' | 'ready_for_spot_check' | string;
+  release_level?: string;
+  readiness_score?: number;
+  client_delivery_allowed?: boolean;
+  lawyer_review_required?: boolean;
+  triage_level?: string;
+  blocking_reasons?: string[];
+  warning_reasons?: string[];
+  required_actions?: string[];
+  summary?: string;
+  decision_factors?: {
+    quality_gate_status?: string;
+    citation_audit_status?: string;
+    evidence_audit_status?: string;
+    risk_score?: number;
+    risk_level?: string;
+    critical_risk_count?: number;
+    high_risk_count?: number;
+  };
+}
+
 export interface DeepReviewReport {
   report_meta: {
     report_id: string;
@@ -361,6 +385,7 @@ export interface DeepReviewReport {
   }>;
   citation_audit?: CitationAuditResult;
   evidence_audit?: EvidenceAuditResult;
+  release_decision?: ReleaseDecisionResult;
   risk_scoring?: RiskScoringResult;
   missing_clauses: Array<{
     name: string;
@@ -459,6 +484,7 @@ export interface DeepReviewReport {
     reviewable_source_ratio?: number;
     risk_evidence_coverage?: number;
     blocking_pending_fact_count?: number;
+    release_decision_status?: string;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;

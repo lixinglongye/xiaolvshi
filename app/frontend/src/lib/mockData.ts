@@ -211,6 +211,29 @@ export interface EvidenceAudit {
   }>;
 }
 
+export interface ReleaseDecision {
+  schema_version?: string;
+  status?: 'blocked' | 'lawyer_review_required' | 'ready_for_spot_check' | string;
+  release_level?: string;
+  readiness_score?: number;
+  client_delivery_allowed?: boolean;
+  lawyer_review_required?: boolean;
+  triage_level?: string;
+  blocking_reasons?: string[];
+  warning_reasons?: string[];
+  required_actions?: string[];
+  summary?: string;
+  decision_factors?: {
+    quality_gate_status?: string;
+    citation_audit_status?: string;
+    evidence_audit_status?: string;
+    risk_score?: number;
+    risk_level?: string;
+    critical_risk_count?: number;
+    high_risk_count?: number;
+  };
+}
+
 interface ExecutiveSummary {
   overall_risk_level: string;
   signing_recommendation: string;
@@ -232,6 +255,7 @@ export interface DeepReviewReport {
   risk_matrix: RiskMatrix;
   citation_audit?: CitationAudit;
   evidence_audit?: EvidenceAudit;
+  release_decision?: ReleaseDecision;
   risk_scoring?: RiskScoring;
   risk_items: RiskItemDetail[];
   missing_clauses: MissingClause[];
@@ -294,6 +318,7 @@ export interface DeepReviewReport {
     reviewable_source_ratio?: number;
     risk_evidence_coverage?: number;
     blocking_pending_fact_count?: number;
+    release_decision_status?: string;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;
@@ -1105,6 +1130,31 @@ export const mockDeepReport: DeepReviewReport = {
         description: 'Resolve pending fact before external delivery: 需核实出租人产权证明',
       },
     ],
+  },
+  release_decision: {
+    schema_version: 'release-decision-v1',
+    status: 'lawyer_review_required',
+    release_level: 'lawyer_review_required',
+    readiness_score: 84,
+    client_delivery_allowed: false,
+    lawyer_review_required: true,
+    triage_level: 'elevated',
+    blocking_reasons: [],
+    warning_reasons: [
+      'Evidence audit requires pending fact or evidence-plan follow-up.',
+      'High risk pressure requires lawyer review before delivery.',
+    ],
+    required_actions: ['Resolve blocking pending facts: PF-001'],
+    summary: 'Lawyer review required before delivery. Readiness 84/100.',
+    decision_factors: {
+      quality_gate_status: 'pass',
+      citation_audit_status: 'warn',
+      evidence_audit_status: 'warn',
+      risk_score: 86,
+      risk_level: 'high',
+      critical_risk_count: 2,
+      high_risk_count: 3,
+    },
   },
   risk_scoring: {
     schema_version: 'risk-scoring-v1',

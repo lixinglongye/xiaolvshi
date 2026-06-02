@@ -724,6 +724,7 @@ function Inner() {
   const qualityGate = report.quality_gate;
   const citationAudit = report.citation_audit;
   const evidenceAudit = report.evidence_audit;
+  const releaseDecision = report.release_decision;
   const riskScoring = report.risk_scoring;
   const delivery = report.delivery_audit;
   const humanWorkflow = report.human_review_workflow;
@@ -782,7 +783,7 @@ function Inner() {
             <Card className="surface-card">
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Hash className="w-5 h-5 text-emerald-800" />执行摘要</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
                   <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
                     <Badge className={`text-sm ${overallRisk?.color || 'bg-orange-500 text-white'}`}>{report.executive_summary.overall_risk_level}</Badge>
                     <div className="text-xs text-slate-500 mt-1">总体风险等级</div>
@@ -790,6 +791,10 @@ function Inner() {
                   <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
                     <div className="text-2xl font-semibold text-slate-900">{typeof riskScoring?.overall_score === 'number' ? riskScoring.overall_score : '-'}</div>
                     <div className="text-xs text-slate-500 mt-1">确定性风险评分</div>
+                  </div>
+                  <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
+                    <div className="text-2xl font-semibold text-slate-900">{typeof releaseDecision?.readiness_score === 'number' ? releaseDecision.readiness_score : '-'}</div>
+                    <div className="text-xs text-slate-500 mt-1">交付就绪分</div>
                   </div>
                   <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
                     <Badge className={`text-sm border ${signRec.color}`}>{signRec.label}</Badge>
@@ -863,6 +868,42 @@ function Inner() {
                   {quality?.warnings && quality.warnings.length > 0 && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
                       <span className="font-medium">质量提示：</span>{quality.warnings[0]}
+                    </div>
+                  )}
+
+                  {releaseDecision && (
+                    <div className={`rounded-lg border p-4 text-sm space-y-3 ${
+                      releaseDecision.status === 'ready_for_spot_check'
+                        ? 'border-emerald-200 bg-emerald-50/80 text-emerald-950'
+                        : releaseDecision.status === 'lawyer_review_required'
+                          ? 'border-amber-200 bg-amber-50/80 text-amber-950'
+                          : 'border-red-200 bg-red-50/80 text-red-950'
+                    }`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="font-semibold text-base">交付决策</div>
+                          <div className="text-slate-700 mt-1">{releaseDecision.summary || '等待审计汇总。'}</div>
+                        </div>
+                        <Badge variant="outline" className="bg-white/80">
+                          {(releaseDecision.status || 'unknown').replace(/_/g, ' ')} / {releaseDecision.readiness_score ?? 0}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700">
+                        <div>交付：{releaseDecision.client_delivery_allowed ? '允许' : '暂缓'}</div>
+                        <div>复核：{releaseDecision.lawyer_review_required ? '必须' : '抽检'}</div>
+                        <div>分级：{releaseDecision.triage_level || 'normal'}</div>
+                        <div>层级：{releaseDecision.release_level || 'unknown'}</div>
+                      </div>
+                      {(releaseDecision.blocking_reasons || []).length > 0 && (
+                        <ul className="text-slate-700 space-y-1 list-disc list-inside">
+                          {(releaseDecision.blocking_reasons || []).slice(0, 3).map((reason) => <li key={reason}>{reason}</li>)}
+                        </ul>
+                      )}
+                      {(releaseDecision.required_actions || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {(releaseDecision.required_actions || []).slice(0, 5).map((action) => <Badge key={action} variant="outline" className="bg-white/80 text-xs">{action}</Badge>)}
+                        </div>
+                      )}
                     </div>
                   )}
 
