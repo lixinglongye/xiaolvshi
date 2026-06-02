@@ -299,6 +299,23 @@ export interface DeepReviewReport {
     lawyer_review_required?: boolean;
     source_policy?: string;
   };
+  quality_gate?: {
+    status?: 'pass' | 'warn' | 'fail' | string;
+    release_level?: string;
+    score?: number;
+    pass_count?: number;
+    warn_count?: number;
+    fail_count?: number;
+    blocking_gate_ids?: string[];
+    warning_gate_ids?: string[];
+    evaluations?: Array<{
+      gate_id?: string;
+      status?: string;
+      severity?: string;
+      description?: string;
+      evidence?: Record<string, unknown>;
+    }>;
+  };
   delivery_audit?: {
     positioning?: string;
     readiness_level?: string;

@@ -715,6 +715,7 @@ function Inner() {
   };
   const coverage = report.coverage_audit;
   const quality = report.quality_audit;
+  const qualityGate = report.quality_gate;
   const delivery = report.delivery_audit;
   const humanWorkflow = report.human_review_workflow;
   const overallRisk = riskLevelConfig[riskLevelKey(report.executive_summary.overall_risk_level)];
@@ -849,6 +850,34 @@ function Inner() {
                   {quality?.warnings && quality.warnings.length > 0 && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
                       <span className="font-medium">质量提示：</span>{quality.warnings[0]}
+                    </div>
+                  )}
+
+                  {qualityGate && (
+                    <div className={`rounded-lg border p-3 text-sm space-y-2 ${
+                      qualityGate.status === 'pass'
+                        ? 'border-emerald-200 bg-emerald-50/70 text-emerald-900'
+                        : qualityGate.status === 'warn'
+                          ? 'border-amber-200 bg-amber-50/70 text-amber-900'
+                          : 'border-red-200 bg-red-50/70 text-red-900'
+                    }`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-semibold">Quality Gate</div>
+                        <Badge variant="outline" className="bg-white/80">
+                          {(qualityGate.status || 'unknown').toUpperCase()} / {qualityGate.score ?? 0}
+                        </Badge>
+                      </div>
+                      <div className="text-slate-700">Release level: {qualityGate.release_level || 'not evaluated'}</div>
+                      {(qualityGate.blocking_gate_ids || []).length > 0 && (
+                        <div className="text-slate-700">
+                          Blocking gates: {(qualityGate.blocking_gate_ids || []).join(', ')}
+                        </div>
+                      )}
+                      {(qualityGate.warning_gate_ids || []).length > 0 && (
+                        <div className="text-slate-700">
+                          Warning gates: {(qualityGate.warning_gate_ids || []).join(', ')}
+                        </div>
+                      )}
                     </div>
                   )}
 

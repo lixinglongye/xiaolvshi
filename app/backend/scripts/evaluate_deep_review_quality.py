@@ -45,6 +45,7 @@ def evaluate_report(service: DeepReviewService, report: dict) -> dict:
     stored_id = report.get("_stored_report_id")
     repaired = service.prepare_report_for_display(dict(report))
     quality = repaired.get("quality_audit") or {}
+    quality_gate = repaired.get("quality_gate") or {}
     delivery = repaired.get("delivery_audit") or {}
     workflow = repaired.get("human_review_workflow") or {}
     checks = {item.get("name"): item.get("value") for item in quality.get("checks", []) if isinstance(item, dict)}
@@ -54,6 +55,10 @@ def evaluate_report(service: DeepReviewService, report: dict) -> dict:
         "strategy_id": checks.get("review_strategy_id"),
         "quality_score": quality.get("quality_score"),
         "quality_level": quality.get("quality_level"),
+        "quality_gate_status": quality_gate.get("status"),
+        "quality_gate_score": quality_gate.get("score"),
+        "quality_gate_blocking": quality_gate.get("blocking_gate_ids", []),
+        "quality_gate_warnings": quality_gate.get("warning_gate_ids", []),
         "readiness_level": delivery.get("readiness_level"),
         "human_review_status": workflow.get("status"),
         "risk_count": checks.get("risk_count"),

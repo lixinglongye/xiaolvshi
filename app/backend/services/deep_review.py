@@ -15,6 +15,7 @@ from schemas.aihub import GenTxtRequest, ChatMessage
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
 from services.legal_research import LocalLegalResearchService
 from services.model_catalog import resolve_model
+from services.report_quality_gate import ReportQualityGate
 
 logger = logging.getLogger(__name__)
 
@@ -430,6 +431,7 @@ class DeepReviewService:
     ):
         self.aihub = AIHubService()
         self.legal_research = LocalLegalResearchService()
+        self.quality_gate = ReportQualityGate()
         self.review_prompt_extension = (review_prompt_extension or "").strip()
         self.progress_callback = progress_callback
 
@@ -1431,6 +1433,7 @@ class DeepReviewService:
         report["report_meta"].pop("risk_score", None)
         quality_audit = self._build_quality_audit(report)
         report["quality_audit"] = quality_audit
+        report["quality_gate"] = self.quality_gate.evaluate(report)
         report["delivery_audit"] = self._build_delivery_audit(report, quality_audit)
         report["human_review_workflow"] = self._build_human_review_workflow(report, quality_audit)
         if quality_audit.get("lawyer_review_required"):
@@ -1502,6 +1505,7 @@ class DeepReviewService:
             "本报告为 AI 辅助生成的风险提示和文书草稿，不构成正式法律意见；复杂事项请咨询执业律师。",
         )
         report["quality_audit"] = self._build_quality_audit(report)
+        report["quality_gate"] = self.quality_gate.evaluate(report)
         report["delivery_audit"] = self._build_delivery_audit(report, report["quality_audit"])
         report["human_review_workflow"] = self._build_human_review_workflow(report, report["quality_audit"])
         if report["quality_audit"].get("lawyer_review_required"):

@@ -180,6 +180,23 @@ export interface DeepReviewReport {
     lawyer_review_required?: boolean;
     source_policy?: string;
   };
+  quality_gate?: {
+    status?: 'pass' | 'warn' | 'fail' | string;
+    release_level?: string;
+    score?: number;
+    pass_count?: number;
+    warn_count?: number;
+    fail_count?: number;
+    blocking_gate_ids?: string[];
+    warning_gate_ids?: string[];
+    evaluations?: Array<{
+      gate_id?: string;
+      status?: string;
+      severity?: string;
+      description?: string;
+      evidence?: Record<string, unknown>;
+    }>;
+  };
   delivery_audit?: {
     positioning?: string;
     readiness_level?: string;
@@ -959,4 +976,3 @@ export const mockDeepReport: DeepReviewReport = {
   legal_source_appendix: mockLegalSources,
   disclaimer: '【免责声明】\n\n本报告由"律审雷达"AI辅助法律审查系统自动生成，仅供参考，不构成法律意见。\n\n1. 本报告基于用户提交的合同文本进行分析，不对合同文本的真实性、完整性负责。\n2. 本报告中引用的法律条文、司法解释、案例等法律依据均标注了来源类型和校验状态，标注为"待核验"或"未检索到"的依据需要用户自行核实。\n3. 本报告不能替代执业律师的专业判断。对于重大交易、高风险条款或复杂法律问题，强烈建议咨询执业律师。\n4. 法律法规可能随时修订，本报告基于分析时点的现行有效法律，不保证未来适用性。\n5. 本报告中的替代条款仅为参考建议，具体条款应根据交易实际情况和双方协商结果确定。\n6. 使用本报告即表示用户理解并接受上述限制。如需正式法律服务，请联系持有执业证书的律师。\n\n报告生成时间：2026年5月14日\n系统版本：律审雷达 v2.0\n审查深度：深度审查（8-Agent Pipeline）',
 };
-

@@ -415,6 +415,7 @@ export function mapAIReportToFrontend(aiReport: AIReport): FrontendReport {
     professional_review_framework: aiReport.professional_review_framework,
     coverage_audit: aiReport.coverage_audit,
     quality_audit: aiReport.quality_audit,
+    quality_gate: aiReport.quality_gate,
     delivery_audit: aiReport.delivery_audit,
     human_review_workflow: aiReport.human_review_workflow,
     disclaimer: aiReport.disclaimer || '本报告为 AI 辅助生成的风险提示，不构成正式法律意见；复杂事项请咨询执业律师。',

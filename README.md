@@ -11,6 +11,7 @@
 - 后端环境变量示例：`app/backend/.env.example`
 - AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
 - 用户研究与维护说明：[docs/USER_RESEARCH_AND_MAINTENANCE.md](docs/USER_RESEARCH_AND_MAINTENANCE.md)
+- 深度审查质量门禁：[docs/DEEP_REVIEW_QUALITY_GATES.md](docs/DEEP_REVIEW_QUALITY_GATES.md)
 
 ## 本地运行
 
