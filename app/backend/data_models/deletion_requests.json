@@ -1,0 +1,31 @@
+{
+    "title": "deletion_requests",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "document_id": {
+            "type": "integer",
+            "description": "Document id"
+        },
+        "reason": {
+            "type": "string",
+            "description": "Reason"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: pending/processed"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "document_id"
+    ]
+}

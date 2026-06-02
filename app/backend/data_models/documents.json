@@ -1,0 +1,60 @@
+{
+    "title": "documents",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "title": {
+            "type": "string",
+            "description": "Document title"
+        },
+        "doc_type": {
+            "type": "string",
+            "description": "Document type: lease/sales/service/loan/labor/lawsuit/defense/lawyer_letter/arbitration/other"
+        },
+        "user_role": {
+            "type": "string",
+            "description": "User role like party_a/party_b/plaintiff/defendant"
+        },
+        "file_key": {
+            "type": "string",
+            "description": "Object storage key"
+        },
+        "file_name": {
+            "type": "string",
+            "description": "Original file name"
+        },
+        "file_size": {
+            "type": "integer",
+            "description": "File size in bytes"
+        },
+        "mime_type": {
+            "type": "string",
+            "description": "MIME type"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: pending/processing/completed/failed/deleted"
+        },
+        "language": {
+            "type": "string",
+            "description": "Language: zh/en"
+        },
+        "extracted_text": {
+            "type": "string",
+            "description": "Extracted text content"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "title",
+        "doc_type"
+    ]
+}

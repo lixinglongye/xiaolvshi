@@ -1,0 +1,106 @@
+@startuml architect
+!theme plain
+title 律审雷达 系统架构图
+
+package "Frontend (React + TypeScript + Shadcn-ui)" {
+    [Landing Page] as landing
+    [Auth Pages] as auth
+    [Dashboard] as dashboard
+    [Upload Page] as upload
+    [Deep Report Page] as deepReport
+    [Case List Page] as caseList
+    [Case Detail Page\n(AI Chat + Workspace)] as caseDetail
+    [Admin / Pipeline Config] as admin
+    [Pricing & Payment] as pricing
+}
+
+package "Backend (FastAPI + SQLAlchemy Async)" {
+    package "AI Routers" {
+        [AI Deep Review Router] as aiDeepRouter
+        [AI Case Chat Router] as aiChatRouter
+        [AI Document Gen Router] as aiDocGenRouter
+    }
+    package "CRUD Routers" {
+        [Auth Router] as authRouter
+        [Document Router] as docRouter
+        [Review Reports Router] as reportRouter
+        [Risk Items Router] as riskRouter
+        [Clauses Router] as clauseRouter
+        [Legal Sources Router] as legalRouter
+        [Source Citations Router] as citationRouter
+        [Cases Router] as casesRouter
+        [Case Materials Router] as matRouter
+        [Case Facts Router] as factRouter
+        [Evidences Router] as eviRouter
+        [Case Parties Router] as partyRouter
+        [Case Tasks Router] as taskRouter
+        [Generated Documents Router] as genDocRouter
+    }
+    package "Services" {
+        [AI Review Service] as aiReviewSvc
+        [Case Document Service] as caseDocSvc
+        [Case Chat Service] as caseChatSvc
+    }
+}
+
+database "PostgreSQL\n(Atoms Cloud)" {
+    [users]
+    [documents]
+    [review_reports]
+    [clauses]
+    [risk_items]
+    [legal_sources]
+    [source_citations]
+    [cases]
+    [case_parties]
+    [case_materials]
+    [case_facts]
+    [evidences]
+    [generated_documents]
+    [case_tasks]
+    [orders]
+    [audit_logs]
+}
+
+cloud "External Services" {
+    [LLM\n(Claude / DeepSeek)] as llm
+    [Object Storage] as oss
+    [Payment Gateway] as pay
+}
+
+' Frontend -> Backend
+deepReport --> aiDeepRouter
+caseDetail --> aiChatRouter
+caseDetail --> aiDocGenRouter
+upload --> docRouter
+caseList --> casesRouter
+pricing --> pay
+
+' AI Routers -> Services -> LLM
+aiDeepRouter --> aiReviewSvc
+aiChatRouter --> caseChatSvc
+aiDocGenRouter --> caseDocSvc
+aiReviewSvc --> llm
+caseChatSvc --> llm
+caseDocSvc --> llm
+
+' Services -> DB
+aiReviewSvc --> [review_reports]
+aiReviewSvc --> [clauses]
+aiReviewSvc --> [risk_items]
+aiReviewSvc --> [legal_sources]
+aiReviewSvc --> [source_citations]
+
+caseDocSvc --> [generated_documents]
+caseDocSvc --> [case_materials]
+caseDocSvc --> [evidences]
+caseDocSvc --> [case_facts]
+
+caseChatSvc --> [cases]
+caseChatSvc --> [case_materials]
+caseChatSvc --> [case_facts]
+
+' Storage
+docRouter --> oss
+
+@enduml

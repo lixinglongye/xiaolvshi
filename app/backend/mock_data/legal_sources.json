@@ -1,0 +1,74 @@
+[
+    {
+        "source_type": "law",
+        "title": "中华人民共和国民法典 第509条",
+        "code_ref": "民法典 第509条",
+        "content_snippet": "当事人应当按照约定全面履行自己的义务。当事人应当遵循诚信原则，根据合同的性质、目的和交易习惯履行通知、协助、保密等义务。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "law",
+        "title": "中华人民共和国民法典 第577条",
+        "code_ref": "民法典 第577条",
+        "content_snippet": "当事人一方不履行合同义务或者履行合同义务不符合约定的，应当承担继续履行、采取补救措施或者赔偿损失等违约责任。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "law",
+        "title": "中华人民共和国民法典 第585条",
+        "code_ref": "民法典 第585条",
+        "content_snippet": "当事人可以约定一方违约时应当根据违约情况向对方支付一定数额的违约金，也可以约定因违约产生的损失赔偿额的计算方法。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "law",
+        "title": "中华人民共和国民法典 第703条 (租赁合同)",
+        "code_ref": "民法典 第703条",
+        "content_snippet": "租赁合同是出租人将租赁物交付承租人使用、收益，承租人支付租金的合同。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "law",
+        "title": "中华人民共和国劳动合同法 第10条",
+        "code_ref": "劳动合同法 第10条",
+        "content_snippet": "建立劳动关系，应当订立书面劳动合同。已建立劳动关系，未同时订立书面劳动合同的，应当自用工之日起一个月内订立书面劳动合同。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "law",
+        "title": "中华人民共和国劳动合同法 第40条",
+        "code_ref": "劳动合同法 第40条",
+        "content_snippet": "有下列情形之一的，用人单位提前三十日以书面形式通知劳动者本人或者额外支付劳动者一个月工资后，可以解除劳动合同。",
+        "url": "https://flk.npc.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "judicial_interpretation",
+        "title": "最高人民法院关于审理民间借贷案件适用法律若干问题的规定",
+        "code_ref": "民间借贷司法解释",
+        "content_snippet": "出借人请求借款人按照合同约定利率支付利息的，人民法院应予支持，但是双方约定的利率超过合同成立时一年期贷款市场报价利率四倍的除外。",
+        "url": "https://www.court.gov.cn/",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "industry_checklist",
+        "title": "商业租赁合同审查要点 (一般规则)",
+        "code_ref": "Lease Review Checklist",
+        "content_snippet": "应明确租赁期限、租金及调整机制、押金返还条件、转租与续租权利、装修改造与恢复原状、提前解除条件、违约责任、不可抗力等条款。",
+        "url": "",
+        "jurisdiction": "CN"
+    },
+    {
+        "source_type": "industry_checklist",
+        "title": "服务合同审查要点",
+        "code_ref": "Service Review Checklist",
+        "content_snippet": "应明确服务范围与交付物、验收标准、付款节奏、知识产权归属、保密义务、违约金、争议管辖等条款。",
+        "url": "",
+        "jurisdiction": "CN"
+    }
+]

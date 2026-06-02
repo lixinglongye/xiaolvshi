@@ -1,0 +1,301 @@
+@startuml class_diagram
+title 律审雷达 数据结构与接口类图
+
+' ==================== 文书审查域 ====================
+
+class ReviewReport {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +document_id: int <<FK>>
+    +report_no: str
+    +contract_type: str
+    +contract_name: str
+    +user_role: str
+    +jurisdiction: str
+    +risk_score: int
+    +risk_level: str
+    +signing_recommendation: str
+    +lawyer_review_required: bool
+    +executive_summary_json: str
+    +contract_basic_info_json: str
+    +contract_summary_json: str
+    +risk_matrix_json: str
+    +missing_clause_checklist_json: str
+    +favorable_clauses_json: str
+    +pending_facts_json: str
+    +legal_source_appendix_json: str
+    +disclaimer: str
+    +status: str
+    +is_paid: bool
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class Clause {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +document_id: int <<FK>>
+    +report_id: int <<FK>>
+    +clause_number: str
+    +title: str
+    +original_text: str
+    +page_number: int
+    +start_offset: int
+    +end_offset: int
+    +clause_type: str
+    +context_before: str
+    +context_after: str
+    +created_at: datetime
+}
+
+class RiskItem {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +review_id: int <<FK>>
+    +clause_id: int <<FK>>
+    +risk_no: str
+    +title: str
+    +risk_level: str
+    +risk_type: str
+    +original_clause_text: str
+    +clause_location: str
+    +issue_location: str
+    +probability: str
+    +severity: str
+    +priority: int
+    +legal_analysis_json: str
+    +revision_plan_json: str
+    +negotiation_strategy: str
+    +evidence_suggestion_json: str
+    +status: str
+    +sort_order: int
+    +confidence: int
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class LegalSource {
+    +id: int <<PK>>
+    +source_type: str
+    +title: str
+    +issuing_body: str
+    +article_number: str
+    +text_excerpt: str
+    +authority_level: str
+    +legal_effect_note: str
+    +effective_status: str
+    +source_url: str
+    +jurisdiction: str
+    +confidence_weight: int
+    +checked_at: datetime
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class SourceCitation {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +report_id: int <<FK>>
+    +risk_item_id: int <<FK>>
+    +legal_source_id: int <<FK>>
+    +citation_text: str
+    +applicability_reason: str
+    +authority_note: str
+    +verification_status: str
+    +confidence: float
+    +created_at: datetime
+}
+
+' ==================== 案件管理域 ====================
+
+class Case {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +org_id: int <<FK>>
+    +title: str
+    +case_no: str
+    +case_type: str
+    +stage: str
+    +jurisdiction: str
+    +court_or_arbitration: str
+    +role: str
+    +amount: float
+    +summary: str
+    +risk_level: str
+    +owner_name: str
+    +client_name: str
+    +key_deadline: str
+    +material_count: int
+    +evidence_completeness: str
+    +dispute_focus_json: str
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class CaseParty {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +name: str
+    +party_type: str
+    +identity_type: str
+    +id_number: str
+    +address: str
+    +contact: str
+    +lawyer: str
+    +created_at: datetime
+}
+
+class CaseMaterial {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +material_no: str
+    +title: str
+    +material_type: str
+    +file_url: str
+    +parsed_text: str
+    +ocr_status: str
+    +source: str
+    +is_evidence: bool
+    +proof_purpose: str
+    +linked_fact_ids: str
+    +is_core_evidence: bool
+    +source_reliability: str
+    +need_reinforcement: bool
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class Evidence {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +material_id: int <<FK>>
+    +evidence_no: str
+    +title: str
+    +evidence_type: str
+    +source: str
+    +proof_purpose: str
+    +proof_object: str
+    +related_fact_ids: str
+    +authenticity: str
+    +relevance: str
+    +legality: str
+    +admissibility_risk: str
+    +risk_note: str
+    +need_reinforcement: bool
+    +need_notarization: bool
+    +status: str
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class CaseFact {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +fact_no: str
+    +event_date: str
+    +fact_text: str
+    +persons: str
+    +amount: str
+    +location: str
+    +source_refs: str
+    +confidence: str
+    +verified_by_user: bool
+    +contradiction_note: str
+    +disputed_status: str
+    +related_legal_issue: str
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class GeneratedDocument {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +doc_type: str
+    +user_role: str
+    +title: str
+    +content: str
+    +draft_label: str
+    +input_data_json: str
+    +cited_material_ids: str
+    +cited_legal_source_ids: str
+    +citation_map_json: str
+    +missing_info_json: str
+    +status: str
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+class CaseTask {
+    +id: int <<PK>>
+    +user_id: str <<FK>>
+    +case_id: int <<FK>>
+    +title: str
+    +description: str
+    +assigned_to: str
+    +due_date: str
+    +status: str
+    +priority: str
+    +related_object_type: str
+    +related_object_id: int
+    +created_at: datetime
+    +updated_at: datetime
+}
+
+' ==================== 服务接口 ====================
+
+interface IDeepReviewService {
+    +run_deep_review(document_id: int, user_role: str): ReviewReport
+    +get_report(report_id: int): ReviewReport
+    +regenerate_clause(risk_item_id: int, version: str): RevisionPlan
+    +update_risk_status(risk_item_id: int, status: str): bool
+    +export_pdf(report_id: int): bytes
+}
+
+interface ICaseDocumentService {
+    +generate_document(case_id: int, doc_type: str, instructions: str): GeneratedDocument
+    +check_completeness(case_id: int, doc_type: str): CompletenessResult
+    +update_document(doc_id: int, content: str, status: str): bool
+}
+
+interface ICaseChatService {
+    +chat(case_id: int, message: str, history: list): ChatResponse
+}
+
+' ==================== 关系 ====================
+
+ReviewReport "1" --> "*" Clause : contains
+ReviewReport "1" --> "*" RiskItem : contains
+ReviewReport "1" --> "*" SourceCitation : contains
+RiskItem "*" --> "0..1" Clause : references
+RiskItem "1" --> "*" SourceCitation : cited_by
+SourceCitation "*" --> "1" LegalSource : references
+
+Case "1" --> "*" CaseParty : has
+Case "1" --> "*" CaseMaterial : has
+Case "1" --> "*" Evidence : has
+Case "1" --> "*" CaseFact : has
+Case "1" --> "*" GeneratedDocument : has
+Case "1" --> "*" CaseTask : has
+CaseMaterial "1" --> "0..1" Evidence : promoted_to
+
+IDeepReviewService ..> ReviewReport
+IDeepReviewService ..> RiskItem
+IDeepReviewService ..> Clause
+IDeepReviewService ..> SourceCitation
+IDeepReviewService ..> LegalSource
+
+ICaseDocumentService ..> GeneratedDocument
+ICaseDocumentService ..> CaseMaterial
+ICaseDocumentService ..> Evidence
+ICaseDocumentService ..> CaseFact
+
+ICaseChatService ..> Case
+ICaseChatService ..> CaseMaterial
+ICaseChatService ..> CaseFact
+
+@enduml

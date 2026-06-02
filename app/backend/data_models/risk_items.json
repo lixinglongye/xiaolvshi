@@ -1,0 +1,64 @@
+{
+    "title": "risk_items",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "review_id": {
+            "type": "integer",
+            "description": "Related review id"
+        },
+        "title": {
+            "type": "string",
+            "description": "Risk title"
+        },
+        "severity": {
+            "type": "string",
+            "description": "Severity: low/medium/high"
+        },
+        "original_clause": {
+            "type": "string",
+            "description": "Original clause text"
+        },
+        "risk_reason": {
+            "type": "string",
+            "description": "Risk reason"
+        },
+        "user_impact": {
+            "type": "string",
+            "description": "User impact"
+        },
+        "suggested_revision": {
+            "type": "string",
+            "description": "Suggested revision"
+        },
+        "negotiation_script": {
+            "type": "string",
+            "description": "Negotiation script"
+        },
+        "legal_basis": {
+            "type": "string",
+            "description": "Legal basis text"
+        },
+        "confidence": {
+            "type": "integer",
+            "description": "Confidence 0-100"
+        },
+        "sort_order": {
+            "type": "integer",
+            "description": "Sort order"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "review_id",
+        "title"
+    ]
+}

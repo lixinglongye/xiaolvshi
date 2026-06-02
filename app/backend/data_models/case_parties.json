@@ -1,0 +1,52 @@
+{
+    "title": "case_parties",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "case_id": {
+            "type": "integer",
+            "description": "Related case id"
+        },
+        "name": {
+            "type": "string",
+            "description": "Party name"
+        },
+        "party_type": {
+            "type": "string",
+            "description": "Party type: plaintiff/defendant/applicant/respondent/third_party"
+        },
+        "identity_type": {
+            "type": "string",
+            "description": "Identity type: natural_person/legal_entity/other"
+        },
+        "id_number": {
+            "type": "string",
+            "description": "ID number or credit code"
+        },
+        "address": {
+            "type": "string",
+            "description": "Address"
+        },
+        "contact": {
+            "type": "string",
+            "description": "Contact info"
+        },
+        "lawyer": {
+            "type": "string",
+            "description": "Lawyer/agent name"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "case_id",
+        "name"
+    ]
+}

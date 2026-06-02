@@ -1,0 +1,56 @@
+{
+    "title": "case_materials",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "case_id": {
+            "type": "integer",
+            "description": "Related case id"
+        },
+        "material_no": {
+            "type": "string",
+            "description": "Material number e.g. M-001"
+        },
+        "title": {
+            "type": "string",
+            "description": "Material title"
+        },
+        "material_type": {
+            "type": "string",
+            "description": "Type: contract/chat/transfer/invoice/photo/video/audio/lawsuit/defense/judgment/other"
+        },
+        "file_url": {
+            "type": "string",
+            "description": "File URL"
+        },
+        "parsed_text": {
+            "type": "string",
+            "description": "Parsed text content"
+        },
+        "ocr_status": {
+            "type": "string",
+            "description": "OCR status: pending/completed/failed/not_needed"
+        },
+        "source": {
+            "type": "string",
+            "description": "Source: user_upload/opponent/court"
+        },
+        "is_evidence": {
+            "type": "boolean",
+            "description": "Whether marked as evidence"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "case_id",
+        "title"
+    ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "user_id": "dev-admin",
+    "case_id": 1,
+    "name": "杭州星河科技有限公司",
+    "party_type": "客户",
+    "identity_type": "企业",
+    "id_number": "",
+    "address": "浙江省杭州市滨江区",
+    "contact": "张经理 13800000000",
+    "lawyer": "本地测试管理员",
+    "created_at": "2026-05-15T09:35:00",
+    "updated_at": "2026-05-15T09:35:00"
+  },
+  {
+    "id": 2,
+    "user_id": "dev-admin",
+    "case_id": 1,
+    "name": "华北供应链管理有限公司",
+    "party_type": "相对方",
+    "identity_type": "企业",
+    "id_number": "",
+    "address": "北京市朝阳区",
+    "contact": "待补充",
+    "lawyer": "",
+    "created_at": "2026-05-15T09:36:00",
+    "updated_at": "2026-05-15T09:36:00"
+  }
+]

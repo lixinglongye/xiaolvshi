@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "user_id": "dev-admin",
+    "case_id": 1,
+    "title": "补充银行流水盖章件",
+    "description": "向客户财务确认是否可以提供银行流水原件或电子回单验真信息。",
+    "assigned_to": "律师助理",
+    "due_date": "2026-05-18",
+    "priority": "高",
+    "status": "进行中",
+    "related_object_type": "material",
+    "related_object_id": 2,
+    "created_at": "2026-05-15T09:30:00",
+    "updated_at": "2026-05-15T09:30:00"
+  },
+  {
+    "id": 2,
+    "user_id": "dev-admin",
+    "case_id": 1,
+    "title": "微信聊天记录证据补强",
+    "description": "确认原始载体、聊天双方身份、完整导出记录，并评估是否办理公证或可信时间戳。",
+    "assigned_to": "主办律师",
+    "due_date": "2026-05-20",
+    "priority": "高",
+    "status": "待处理",
+    "related_object_type": "evidence",
+    "related_object_id": 3,
+    "created_at": "2026-05-15T09:32:00",
+    "updated_at": "2026-05-15T09:32:00"
+  },
+  {
+    "id": 3,
+    "user_id": "dev-admin",
+    "case_id": 1,
+    "title": "生成起诉状初稿并人工复核",
+    "description": "生成文书时仅引用有材料编号支撑的事实，对F-004按待核实处理。",
+    "assigned_to": "本地测试管理员",
+    "due_date": "2026-05-22",
+    "priority": "中",
+    "status": "待处理",
+    "related_object_type": "document",
+    "related_object_id": null,
+    "created_at": "2026-05-15T09:34:00",
+    "updated_at": "2026-05-15T09:34:00"
+  }
+]

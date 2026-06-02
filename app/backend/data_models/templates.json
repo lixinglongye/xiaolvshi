@@ -1,0 +1,35 @@
+{
+    "title": "templates",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "doc_type": {
+            "type": "string",
+            "description": "Document type"
+        },
+        "title": {
+            "type": "string",
+            "description": "Template title"
+        },
+        "content": {
+            "type": "string",
+            "description": "Template content"
+        },
+        "is_active": {
+            "type": "boolean",
+            "description": "Whether active"
+        },
+        "language": {
+            "type": "string",
+            "description": "Language"
+        }
+    },
+    "required": [
+        "id",
+        "doc_type",
+        "title"
+    ]
+}

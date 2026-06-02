@@ -1,0 +1,44 @@
+# Local environment
+.env
+.env.*
+!.env.example
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+app/backend/.venv/
+
+# Backend runtime artifacts
+app/backend/logs/
+app/backend/local_storage/
+app/backend/*.db
+app/backend/*.sqlite
+app/backend/*.sqlite3
+app/backend/dev.db
+
+# Frontend dependencies and build output
+app/frontend/node_modules/
+app/frontend/dist/
+app/frontend/output/
+app/frontend/.playwright-cli/
+app/frontend/.mgx/*.log
+.vite/
+
+# Generated or uploaded local files
+uploads/
+tmp/
+*.tmp
+*.temp
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

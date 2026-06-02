@@ -1,0 +1,48 @@
+{
+    "title": "orders",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "sku": {
+            "type": "string",
+            "description": "SKU: report_unlock/personal_plan/lawyer_plan/enterprise_plan"
+        },
+        "amount": {
+            "type": "integer",
+            "description": "Amount in cents"
+        },
+        "currency": {
+            "type": "string",
+            "description": "Currency code"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: pending/paid/cancelled/failed"
+        },
+        "related_review_id": {
+            "type": "integer",
+            "description": "Related review id"
+        },
+        "plan_type": {
+            "type": "string",
+            "description": "Plan type"
+        },
+        "stripe_session_id": {
+            "type": "string",
+            "description": "Stripe session id"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "sku",
+        "amount"
+    ]
+}

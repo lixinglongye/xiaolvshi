@@ -1,0 +1,76 @@
+{
+    "title": "evidences",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "case_id": {
+            "type": "integer",
+            "description": "Related case id"
+        },
+        "material_id": {
+            "type": "integer",
+            "description": "Related material id"
+        },
+        "evidence_no": {
+            "type": "string",
+            "description": "Evidence number e.g. E-001"
+        },
+        "title": {
+            "type": "string",
+            "description": "Evidence title"
+        },
+        "evidence_type": {
+            "type": "string",
+            "description": "Evidence type"
+        },
+        "source": {
+            "type": "string",
+            "description": "Source"
+        },
+        "proof_purpose": {
+            "type": "string",
+            "description": "Proof purpose"
+        },
+        "related_fact_ids": {
+            "type": "string",
+            "description": "JSON of related fact ids"
+        },
+        "authenticity": {
+            "type": "string",
+            "description": "Authenticity analysis"
+        },
+        "relevance": {
+            "type": "string",
+            "description": "Relevance analysis"
+        },
+        "legality": {
+            "type": "string",
+            "description": "Legality analysis"
+        },
+        "risk_note": {
+            "type": "string",
+            "description": "Admissibility risk note"
+        },
+        "need_reinforcement": {
+            "type": "boolean",
+            "description": "Whether needs reinforcement"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: draft/confirmed"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "case_id",
+        "title"
+    ]
+}

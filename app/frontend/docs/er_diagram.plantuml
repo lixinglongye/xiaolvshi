@@ -1,0 +1,351 @@
+@startuml er_diagram
+title 律审雷达 数据库 ER 图
+
+' ==================== 用户与组织 ====================
+
+entity "users" as users {
+    * id : varchar <<PK>>
+    --
+    email : varchar
+    name : varchar
+    role : varchar
+    org_id : int <<FK>>
+    created_at : timestamp
+}
+
+entity "organizations" as orgs {
+    * id : int <<PK>>
+    --
+    name : varchar
+    plan : varchar
+    created_at : timestamp
+}
+
+' ==================== 文书上传 ====================
+
+entity "documents" as docs {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    title : varchar
+    doc_type : varchar
+    user_role : varchar
+    file_key : varchar
+    file_name : varchar
+    file_size : int
+    mime_type : varchar
+    status : varchar
+    language : varchar
+    extracted_text : text
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ==================== 审查报告 ====================
+
+entity "review_reports" as reports {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * document_id : int <<FK>>
+    report_no : varchar
+    contract_type : varchar
+    contract_name : varchar
+    user_role : varchar
+    jurisdiction : varchar
+    risk_score : int
+    risk_level : varchar
+    signing_recommendation : varchar
+    lawyer_review_required : bool
+    executive_summary_json : text
+    contract_basic_info_json : text
+    contract_summary_json : text
+    risk_matrix_json : text
+    missing_clause_checklist_json : text
+    favorable_clauses_json : text
+    pending_facts_json : text
+    legal_source_appendix_json : text
+    disclaimer : text
+    status : varchar
+    is_paid : bool
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "clauses" as clauses {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * document_id : int <<FK>>
+    report_id : int <<FK>>
+    clause_number : varchar
+    title : varchar
+    original_text : text
+    page_number : int
+    start_offset : int
+    end_offset : int
+    clause_type : varchar
+    context_before : text
+    context_after : text
+    created_at : timestamp
+}
+
+entity "risk_items" as risks {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * review_id : int <<FK>>
+    clause_id : int <<FK>>
+    risk_no : varchar
+    title : varchar
+    risk_level : varchar
+    risk_type : varchar
+    original_clause_text : text
+    clause_location : varchar
+    issue_location : text
+    probability : varchar
+    severity : varchar
+    priority : int
+    legal_analysis_json : text
+    revision_plan_json : text
+    negotiation_strategy : text
+    evidence_suggestion_json : text
+    status : varchar
+    sort_order : int
+    confidence : int
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "legal_sources" as legal {
+    * id : int <<PK>>
+    --
+    source_type : varchar
+    title : varchar
+    issuing_body : varchar
+    article_number : varchar
+    text_excerpt : text
+    authority_level : varchar
+    legal_effect_note : text
+    effective_status : varchar
+    source_url : varchar
+    jurisdiction : varchar
+    confidence_weight : int
+    checked_at : timestamp
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "source_citations" as citations {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    report_id : int <<FK>>
+    risk_item_id : int <<FK>>
+    legal_source_id : int <<FK>>
+    citation_text : text
+    applicability_reason : text
+    authority_note : text
+    verification_status : varchar
+    confidence : float
+    created_at : timestamp
+}
+
+' ==================== 案件管理 ====================
+
+entity "cases" as cases {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    org_id : int <<FK>>
+    title : varchar
+    case_no : varchar
+    case_type : varchar
+    stage : varchar
+    jurisdiction : varchar
+    court_or_arbitration : varchar
+    role : varchar
+    amount : numeric
+    summary : text
+    risk_level : varchar
+    owner_name : varchar
+    client_name : varchar
+    key_deadline : varchar
+    material_count : int
+    evidence_completeness : varchar
+    dispute_focus_json : text
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "case_parties" as parties {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * case_id : int <<FK>>
+    name : varchar
+    party_type : varchar
+    identity_type : varchar
+    id_number : varchar
+    address : text
+    contact : varchar
+    lawyer : varchar
+    created_at : timestamp
+}
+
+entity "case_materials" as materials {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * case_id : int <<FK>>
+    material_no : varchar
+    title : varchar
+    material_type : varchar
+    file_url : varchar
+    parsed_text : text
+    ocr_status : varchar
+    source : varchar
+    is_evidence : bool
+    proof_purpose : text
+    linked_fact_ids : varchar
+    is_core_evidence : bool
+    source_reliability : varchar
+    need_reinforcement : bool
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "evidences" as evidences {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * case_id : int <<FK>>
+    material_id : int <<FK>>
+    evidence_no : varchar
+    title : varchar
+    evidence_type : varchar
+    source : varchar
+    proof_purpose : text
+    proof_object : text
+    related_fact_ids : varchar
+    authenticity : varchar
+    relevance : varchar
+    legality : varchar
+    admissibility_risk : text
+    risk_note : text
+    need_reinforcement : bool
+    need_notarization : bool
+    status : varchar
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "case_facts" as facts {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * case_id : int <<FK>>
+    fact_no : varchar
+    event_date : varchar
+    fact_text : text
+    persons : varchar
+    amount : varchar
+    location : varchar
+    source_refs : varchar
+    confidence : varchar
+    verified_by_user : bool
+    contradiction_note : text
+    disputed_status : varchar
+    related_legal_issue : text
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "generated_documents" as gendocs {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    case_id : int <<FK>>
+    doc_type : varchar
+    user_role : varchar
+    title : varchar
+    content : text
+    draft_label : varchar
+    input_data_json : text
+    cited_material_ids : varchar
+    cited_legal_source_ids : varchar
+    citation_map_json : text
+    missing_info_json : text
+    status : varchar
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "case_tasks" as tasks {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    * case_id : int <<FK>>
+    title : varchar
+    description : text
+    assigned_to : varchar
+    due_date : varchar
+    status : varchar
+    priority : varchar
+    related_object_type : varchar
+    related_object_id : int
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "orders" as orders {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    order_type : varchar
+    amount : numeric
+    status : varchar
+    created_at : timestamp
+}
+
+entity "audit_logs" as audit {
+    * id : int <<PK>>
+    --
+    * user_id : varchar <<FK>>
+    action : varchar
+    target_type : varchar
+    target_id : varchar
+    detail : text
+    created_at : timestamp
+}
+
+' ==================== 关系 ====================
+
+users ||--o{ orgs : "org_id"
+users ||--o{ docs : "user_id"
+users ||--o{ reports : "user_id"
+users ||--o{ cases : "user_id"
+users ||--o{ orders : "user_id"
+users ||--o{ audit : "user_id"
+
+docs ||--o{ reports : "document_id"
+docs ||--o{ clauses : "document_id"
+
+reports ||--o{ clauses : "report_id"
+reports ||--o{ risks : "review_id"
+reports ||--o{ citations : "report_id"
+
+risks }o--|| clauses : "clause_id"
+risks ||--o{ citations : "risk_item_id"
+citations }o--|| legal : "legal_source_id"
+
+cases ||--o{ parties : "case_id"
+cases ||--o{ materials : "case_id"
+cases ||--o{ evidences : "case_id"
+cases ||--o{ facts : "case_id"
+cases ||--o{ gendocs : "case_id"
+cases ||--o{ tasks : "case_id"
+
+materials ||--o| evidences : "material_id"
+
+@enduml

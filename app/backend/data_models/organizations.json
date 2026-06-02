@@ -1,0 +1,31 @@
+{
+    "title": "organizations",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "name": {
+            "type": "string",
+            "description": "Org name"
+        },
+        "plan_type": {
+            "type": "string",
+            "description": "Plan type: lawyer/enterprise"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "name"
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "title": "source_citations",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "risk_item_id": {
+            "type": "integer",
+            "description": "Related risk item id"
+        },
+        "legal_source_id": {
+            "type": "integer",
+            "description": "Related legal source id"
+        },
+        "snippet": {
+            "type": "string",
+            "description": "Cited snippet"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "risk_item_id",
+        "legal_source_id"
+    ]
+}

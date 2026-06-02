@@ -1,0 +1,60 @@
+{
+    "title": "case_facts",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "case_id": {
+            "type": "integer",
+            "description": "Related case id"
+        },
+        "fact_no": {
+            "type": "string",
+            "description": "Fact number e.g. F-001"
+        },
+        "event_date": {
+            "type": "string",
+            "description": "Event date"
+        },
+        "fact_text": {
+            "type": "string",
+            "description": "Fact description"
+        },
+        "persons": {
+            "type": "string",
+            "description": "Involved persons"
+        },
+        "amount": {
+            "type": "string",
+            "description": "Involved amount"
+        },
+        "source_refs": {
+            "type": "string",
+            "description": "JSON of source evidence references"
+        },
+        "confidence": {
+            "type": "string",
+            "description": "Confidence: high/medium/low"
+        },
+        "verified_by_user": {
+            "type": "boolean",
+            "description": "Whether verified by user"
+        },
+        "contradiction_note": {
+            "type": "string",
+            "description": "Contradiction note if any"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "case_id",
+        "fact_text"
+    ]
+}

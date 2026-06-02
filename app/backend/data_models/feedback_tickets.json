@@ -1,0 +1,36 @@
+{
+    "title": "feedback_tickets",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "category": {
+            "type": "string",
+            "description": "Category"
+        },
+        "content": {
+            "type": "string",
+            "description": "Content"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: open/in_progress/resolved"
+        },
+        "contact": {
+            "type": "string",
+            "description": "Contact info"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "category",
+        "content"
+    ]
+}

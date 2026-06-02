@@ -1,0 +1,79 @@
+{
+    "title": "cases",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "org_id": {
+            "type": "integer",
+            "description": "Organization id"
+        },
+        "client_name": {
+            "type": "string",
+            "description": "Client name"
+        },
+        "title": {
+            "type": "string",
+            "description": "Case title"
+        },
+        "case_type": {
+            "type": "string",
+            "description": "Case type e.g. contract_dispute/labor/lease"
+        },
+        "stage": {
+            "type": "string",
+            "description": "Stage: consultation/pre_litigation/first_instance/arbitration/execution"
+        },
+        "jurisdiction": {
+            "type": "string",
+            "description": "Jurisdiction region"
+        },
+        "court_or_arbitration": {
+            "type": "string",
+            "description": "Court or arbitration institution"
+        },
+        "role": {
+            "type": "string",
+            "description": "User role: plaintiff/defendant/applicant/respondent"
+        },
+        "amount": {
+            "type": "number",
+            "description": "Disputed amount"
+        },
+        "summary": {
+            "type": "string",
+            "description": "Case summary"
+        },
+        "risk_level": {
+            "type": "string",
+            "description": "Risk level: low/medium/high"
+        },
+        "owner_name": {
+            "type": "string",
+            "description": "Owner/responsible person name"
+        },
+        "key_deadline": {
+            "type": "string",
+            "description": "Next key deadline date"
+        },
+        "material_count": {
+            "type": "integer",
+            "description": "Number of materials uploaded"
+        },
+        "evidence_completeness": {
+            "type": "string",
+            "description": "Evidence completeness: high/medium/low"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "title"
+    ]
+}

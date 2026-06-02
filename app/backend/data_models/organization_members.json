@@ -1,0 +1,40 @@
+{
+    "title": "organization_members",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "org_id": {
+            "type": "integer",
+            "description": "Org id"
+        },
+        "member_email": {
+            "type": "string",
+            "description": "Member email"
+        },
+        "member_user_id": {
+            "type": "string",
+            "description": "Member user id"
+        },
+        "role": {
+            "type": "string",
+            "description": "Role: admin/lawyer/reviewer/viewer"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: invited/active/removed"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "org_id",
+        "member_email"
+    ]
+}

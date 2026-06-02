@@ -1,0 +1,71 @@
+{
+    "title": "reviews",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "document_id": {
+            "type": "integer",
+            "description": "Related document id"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: pending/running/completed/failed"
+        },
+        "risk_score": {
+            "type": "integer",
+            "description": "Risk score 0-100"
+        },
+        "risk_level": {
+            "type": "string",
+            "description": "Risk level: low/medium/high"
+        },
+        "executive_summary": {
+            "type": "string",
+            "description": "Executive summary"
+        },
+        "top_risks_json": {
+            "type": "string",
+            "description": "JSON of top risks"
+        },
+        "missing_clauses_json": {
+            "type": "string",
+            "description": "JSON of missing clauses"
+        },
+        "favorable_clauses_json": {
+            "type": "string",
+            "description": "JSON of favorable clauses"
+        },
+        "regenerated_clauses_json": {
+            "type": "string",
+            "description": "JSON of regenerated clauses"
+        },
+        "next_steps_json": {
+            "type": "string",
+            "description": "JSON of next steps"
+        },
+        "disclaimer": {
+            "type": "string",
+            "description": "Disclaimer text"
+        },
+        "is_paid": {
+            "type": "boolean",
+            "description": "Whether full report is unlocked"
+        },
+        "confidence": {
+            "type": "integer",
+            "description": "Confidence 0-100"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "document_id"
+    ]
+}

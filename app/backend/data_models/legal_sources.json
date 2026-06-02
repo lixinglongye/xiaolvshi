@@ -1,0 +1,39 @@
+{
+    "title": "legal_sources",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "source_type": {
+            "type": "string",
+            "description": "Type: law/judicial_interpretation/case/template_rule/industry_checklist"
+        },
+        "title": {
+            "type": "string",
+            "description": "Source title"
+        },
+        "code_ref": {
+            "type": "string",
+            "description": "Code reference like Article 509"
+        },
+        "content_snippet": {
+            "type": "string",
+            "description": "Content snippet"
+        },
+        "url": {
+            "type": "string",
+            "description": "Source URL"
+        },
+        "jurisdiction": {
+            "type": "string",
+            "description": "Jurisdiction like CN"
+        }
+    },
+    "required": [
+        "id",
+        "source_type",
+        "title"
+    ]
+}

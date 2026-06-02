@@ -1,0 +1,90 @@
+@startuml sequence_deep_review
+title 深度合同审查流程时序图
+
+actor User
+participant "DeepReportPage" as UI
+participant "FastAPI\n/api/v1/ai/deep-review" as API
+participant "AI Review Service" as Svc
+participant "LLM (Claude)" as LLM
+database "PostgreSQL" as DB
+
+User -> UI: 点击"开始深度审查"
+UI -> API: POST /deep-review/run
+note right
+    Input: {
+        "document_id": 123,
+        "review_depth": "deep",
+        "user_role": "承租方"
+    }
+end note
+
+API -> DB: SELECT documents WHERE id=123
+API -> Svc: run_deep_review(doc, user_role)
+
+== Intake Agent ==
+Svc -> LLM: 识别文书基础信息
+LLM --> Svc: {contract_type, jurisdiction, parties, amount, term}
+
+== Clause Mapping Agent ==
+Svc -> LLM: 切分条款
+LLM --> Svc: clause_list[]
+Svc -> DB: INSERT INTO clauses
+
+== Issue Spotter Agent ==
+Svc -> LLM: 审查清单 + clauses → 识别风险
+LLM --> Svc: risk_items[] + missing_clauses[]
+
+== Legal Research Agent ==
+Svc -> DB: SELECT legal_sources (预置法条库)
+Svc -> LLM: 法条匹配 + 案例检索
+LLM --> Svc: citations[] (含 source_type, authority_level, applicability_reason)
+
+== Citation Validator Agent ==
+Svc -> LLM: 校验引用是否存在/匹配/过度推断
+LLM --> Svc: validation_results[] (pass/fail/correction)
+
+== Senior Lawyer Review Agent ==
+Svc -> LLM: 复核风险等级/法律分析/替代条款
+LLM --> Svc: review_adjustments[]
+
+== Drafting Agent ==
+Svc -> LLM: 生成三版本替代条款
+LLM --> Svc: {conservative, balanced, bottom_line} per risk
+
+== Report Assembly ==
+Svc -> DB: INSERT INTO review_reports
+Svc -> DB: INSERT INTO risk_items[]
+Svc -> DB: INSERT INTO source_citations[]
+Svc --> API: report_id
+
+API --> UI: 返回完整报告
+note right
+    Output: {
+        "report_id": 456,
+        "report_meta": {
+            "risk_score": 72,
+            "risk_level": "高",
+            "signing_recommendation": "修改后签署",
+            "lawyer_review_required": true
+        },
+        "executive_summary": {...},
+        "contract_summary": {...},
+        "risk_matrix": [{risk_id, title, risk_level, probability, severity}],
+        "risk_items": [{
+            "risk_no": "R-001",
+            "title": "押金返还条件不明确",
+            "risk_level": "高",
+            "legal_analysis": {...},
+            "citations": [{source_name, source_type, authority_level, verification_status}],
+            "revision_plan": {conservative, balanced, bottom_line}
+        }],
+        "missing_clauses": [...],
+        "favorable_clauses": [...],
+        "legal_authority_appendix": [...],
+        "disclaimer": "..."
+    }
+end note
+
+UI -> User: 渲染深度报告
+
+@enduml

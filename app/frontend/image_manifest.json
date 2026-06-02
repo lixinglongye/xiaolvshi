@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "results": [
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxad2iaagnq/hero-legal-tech-banner.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxad2iaagnq/hero-legal-tech-banner.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxad2iaagnq/hero-legal-tech-banner.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Modern legal-tech hero banner: deep blue gradient background with subtle digital lines, a stylized contract document with risk highlight markers (red/yellow/green dots) floating, abstract scales of justice silhouette in the background, professional and trustworthy atmosphere, no text",
+      "style": "photorealistic",
+      "filename": "hero-legal-tech-banner.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxafdyaagqq/feature-contract-review.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxafdyaagqq/feature-contract-review.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxafdyaagqq/feature-contract-review.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Close-up of a contract document with AI-style highlighted clauses, magnifying glass icon hovering, deep blue and white color scheme, clean modern composition, professional legal aesthetic",
+      "style": "photorealistic",
+      "filename": "feature-contract-review.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxagcyaagqa/feature-ai-analysis.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxagcyaagqa/feature-ai-analysis.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxagcyaagqa/feature-ai-analysis.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Abstract visualization of AI scanning a legal document, glowing data points and connection lines over a contract page, deep blue tones with white accents, futuristic and trustworthy",
+      "style": "photorealistic",
+      "filename": "feature-ai-analysis.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxaeeyaagpq/feature-team-collaboration.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxaeeyaagpq/feature-team-collaboration.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxaeeyaagpq/feature-team-collaboration.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Team of legal professionals collaborating around a digital interface showing document workflow, modern office setting with deep blue accents, diverse professionals reviewing contracts together, clean and professional",
+      "style": "photorealistic",
+      "filename": "feature-team-collaboration.jpg"
+    }
+  ],
+  "success_count": 4,
+  "failed_count": 0,
+  "message": "Generated 4/4 images"
+}

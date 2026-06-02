@@ -1,0 +1,43 @@
+{
+    "title": "generated_documents",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "doc_type": {
+            "type": "string",
+            "description": "Document type"
+        },
+        "user_role": {
+            "type": "string",
+            "description": "User role"
+        },
+        "title": {
+            "type": "string",
+            "description": "Title"
+        },
+        "content": {
+            "type": "string",
+            "description": "Generated content"
+        },
+        "draft_label": {
+            "type": "string",
+            "description": "Draft label"
+        },
+        "input_data_json": {
+            "type": "string",
+            "description": "JSON of user input"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "doc_type"
+    ]
+}

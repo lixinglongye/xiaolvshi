@@ -1,0 +1,52 @@
+{
+    "title": "case_tasks",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "case_id": {
+            "type": "integer",
+            "description": "Related case id"
+        },
+        "title": {
+            "type": "string",
+            "description": "Task title"
+        },
+        "description": {
+            "type": "string",
+            "description": "Task description"
+        },
+        "assigned_to": {
+            "type": "string",
+            "description": "Assigned person name"
+        },
+        "due_date": {
+            "type": "string",
+            "description": "Due date"
+        },
+        "status": {
+            "type": "string",
+            "description": "Status: todo/in_progress/completed/overdue"
+        },
+        "related_object_type": {
+            "type": "string",
+            "description": "Related object type: material/document/evidence"
+        },
+        "related_object_id": {
+            "type": "integer",
+            "description": "Related object id"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "case_id",
+        "title"
+    ]
+}

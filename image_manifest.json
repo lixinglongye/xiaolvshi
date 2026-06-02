@@ -1,0 +1,24 @@
+{
+  "images": [
+    {
+      "filename": "hero-legal-tech-banner.jpg",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxad2iaagnq/hero-legal-tech-banner.png",
+      "purpose": "Homepage hero section background"
+    },
+    {
+      "filename": "feature-contract-review.jpg",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxafdyaagqq/feature-contract-review.png",
+      "purpose": "Contract review feature card"
+    },
+    {
+      "filename": "feature-ai-analysis.jpg",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxagcyaagqa/feature-ai-analysis.png",
+      "purpose": "AI analysis feature card"
+    },
+    {
+      "filename": "feature-team-collaboration.jpg",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/920887/2026-05-13/opxaeeyaagpq/feature-team-collaboration.png",
+      "purpose": "Team collaboration feature card"
+    }
+  ]
+}

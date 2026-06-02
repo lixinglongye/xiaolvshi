@@ -1,0 +1,35 @@
+{
+    "title": "audit_logs",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "Owner user id"
+        },
+        "action": {
+            "type": "string",
+            "description": "Action like upload/delete/review/pay"
+        },
+        "target_type": {
+            "type": "string",
+            "description": "Target type"
+        },
+        "target_id": {
+            "type": "string",
+            "description": "Target id"
+        },
+        "detail": {
+            "type": "string",
+            "description": "Detail JSON"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "action"
+    ]
+}
