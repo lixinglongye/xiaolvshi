@@ -9,6 +9,7 @@ from schemas.legal_knowledge import (
     LegalKnowledgeSeedResponse,
     LegalKnowledgeStatsResponse,
 )
+from services.legal_knowledge_audit import LegalKnowledgeAuditService
 from services.legal_knowledge import LegalKnowledgeService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,6 +49,21 @@ async def get_legal_knowledge_source(source_id: str, db: AsyncSession = Depends(
 async def get_legal_knowledge_stats(db: AsyncSession = Depends(get_db)):
     service = LegalKnowledgeService(db)
     return await service.stats()
+
+
+@router.get("/audit")
+async def audit_legal_knowledge_seed(
+    seed_path: Optional[str] = Query(None, description="可选 JSON seed 路径；默认读取内置合同审查 seed"),
+):
+    try:
+        return {
+            "success": True,
+            "data": LegalKnowledgeAuditService().audit_seed_file(seed_path=seed_path),
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"Seed file not found: {exc}")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post("/admin/seed", response_model=LegalKnowledgeSeedResponse)
