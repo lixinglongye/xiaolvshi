@@ -67,6 +67,7 @@ function Inner() {
 
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
+  const budgetRows = data?.budget_policy.task_decisions ?? [];
   const totals = data?.usage.totals;
 
   return (
@@ -144,6 +145,11 @@ function Inner() {
         <section className="mb-8">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="text-xl font-black text-stone-950">Routing aliases</h2>
+            {data?.budget_policy && (
+              <Badge variant="outline" className="bg-white">
+                premium review {data.budget_policy.premium_requires_review ? 'on' : 'off'}
+              </Badge>
+            )}
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             {aliases.map(([alias, model]) => (
@@ -152,6 +158,42 @@ function Inner() {
                 <div className="mt-2 break-words text-sm text-stone-600">{model}</div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="mb-3 text-xl font-black text-stone-950">Budget policy</h2>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Mode</TableHead>
+                  <TableHead>Resolved model</TableHead>
+                  <TableHead>Cost</TableHead>
+                  <TableHead>Max</TableHead>
+                  <TableHead>Operator review</TableHead>
+                  <TableHead>Reason</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {budgetRows.map((row) => (
+                  <TableRow key={row.task}>
+                    <TableCell className="font-mono font-semibold text-stone-950">{row.task}</TableCell>
+                    <TableCell>{row.budget_mode}</TableCell>
+                    <TableCell className="font-mono text-xs">{row.resolved_model}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? ''}>
+                        {row.cost_tier || 'unknown'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{row.max_cost_tier}</TableCell>
+                    <TableCell>{row.requires_operator_review ? 'required' : row.is_over_budget ? 'recommended' : '-'}</TableCell>
+                    <TableCell className="max-w-[360px] text-xs text-stone-600">{row.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </section>
 

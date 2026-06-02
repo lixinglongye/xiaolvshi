@@ -48,9 +48,30 @@ export type ModelUsageSummary = {
   models: Record<string, ModelUsageItem>;
 };
 
+export type ModelBudgetDecision = {
+  task: string;
+  requested_model?: string | null;
+  resolved_model: string;
+  budget_mode: string;
+  cost_tier?: string | null;
+  max_cost_tier: string;
+  is_known_model: boolean;
+  is_over_budget: boolean;
+  requires_operator_review: boolean;
+  recommended_model: string;
+  reason: string;
+};
+
+export type ModelBudgetPolicy = {
+  premium_requires_review: boolean;
+  cost_tier_rank: Record<string, number>;
+  task_decisions: ModelBudgetDecision[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
+  budget_policy: ModelBudgetPolicy;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };

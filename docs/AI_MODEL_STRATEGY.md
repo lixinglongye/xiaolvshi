@@ -17,6 +17,7 @@ APP_AI_FAST_MODEL=gemini-2.5-flash-lite
 APP_AI_CLASSIFIER_MODEL=gemini-2.5-flash-lite
 APP_AI_REVIEW_MODEL=gemini-2.5-flash
 APP_AI_PDF_MODEL=gemini-2.5-pro
+APP_AI_PREMIUM_REQUIRES_REVIEW=true
 ```
 
 New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base_url`，并把平台令牌作为 `api_key` 使用。Google Gemini 官方文档也说明 Gemini 模型可用 OpenAI libraries 和 REST API 访问，只需设置 Gemini/OpenAI-compatible base URL、API key 和模型名。
@@ -33,6 +34,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 | `auto-pdf` | `APP_AI_PDF_MODEL` | 大 PDF、复杂推理、最终复核 |
 
 显式模型名会原样透传给网关，因此新 Gemini 模型发布后，可以先通过 `.env` 或请求参数接入，不需要立刻改代码。
+
+`/api/v1/aihub/models` 还会返回 `budget_policy`：它解释每个任务为什么使用 cheap-first、balanced 或 premium-exception 策略，并标出显式 premium 模型是否超过该任务预算。默认 `APP_AI_PREMIUM_REQUIRES_REVIEW=true`，用于提示维护者对非 PDF/非媒体场景的 premium 使用做人工确认。
 
 ## Cost-First Defaults
 
@@ -65,6 +68,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 新增模型时优先改 `.env`，确认稳定后再补充 `model_catalog.py` 的公开目录。
 - 批量任务上线前先调用 `/api/v1/aihub/models` 确认当前路由角色。
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
+- `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。
 - `/model-ops` 中的 estimated cost 使用 `model_catalog.py` 里的 Gemini paid-tier token 单价估算，仅用于成本趋势判断；实际扣费以 NewAPI/Google Gemini 账单为准。
 

@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     app_ai_review_model: str = "gemini-2.5-flash"
     app_ai_pdf_model: str = "gemini-2.5-pro"
     app_ai_request_timeout: int = 360
+    app_ai_premium_requires_review: bool = True
     case_import_ai_classifier_enabled: bool = True
 
     # PDF/OCR extraction tuning
