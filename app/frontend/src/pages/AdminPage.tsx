@@ -57,6 +57,13 @@ const tabs = [
 
 const planOptions = ['free', 'personal', 'lawyer', 'enterprise', 'admin'];
 
+const feedbackPriorityClass: Record<string, string> = {
+  P0: 'border-red-200 bg-red-50 text-red-800',
+  P1: 'border-amber-200 bg-amber-50 text-amber-900',
+  P2: 'border-sky-200 bg-sky-50 text-sky-800',
+  P3: 'border-stone-200 bg-stone-50 text-stone-700',
+};
+
 async function adminApi<T>(path: string, method = 'GET', data?: unknown): Promise<T> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/admin/ops${path}`,
@@ -419,8 +426,21 @@ function Inner() {
               <CardContent>
                 <DataTable
                   rows={data.feedback?.items ?? []}
-                  columns={['id', 'user_id', 'category', 'content', 'contact', 'status', 'actions']}
+                  columns={['id', 'priority', 'category', 'content', 'assignee', 'contact', 'status', 'resolution_note', 'actions']}
                   render={(row, col) => {
+                    if (col === 'priority') {
+                      return (
+                        <Badge variant="outline" className={feedbackPriorityClass[row.priority] ?? feedbackPriorityClass.P3}>
+                          {row.priority || 'P3'}
+                        </Badge>
+                      );
+                    }
+                    if (col === 'assignee') {
+                      return <span className="font-mono text-xs">{row.assignee || '-'}</span>;
+                    }
+                    if (col === 'resolution_note') {
+                      return <span title={row.resolution_note || ''}>{row.resolution_note || '-'}</span>;
+                    }
                     if (col === 'actions') {
                       return (
                         <div className="flex gap-2">
