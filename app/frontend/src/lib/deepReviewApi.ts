@@ -91,6 +91,10 @@ export interface AnalyzeUploadedDocumentStatusResponse {
     percent?: number;
     status?: string;
     updated_at?: string;
+    preflight_status?: string;
+    preflight_strategy_id?: string;
+    recommended_task?: string;
+    recommended_model?: string;
     completed_stages?: Array<{ stage_id?: string; stage_name?: string; completed_at?: string }>;
     [key: string]: unknown;
   };

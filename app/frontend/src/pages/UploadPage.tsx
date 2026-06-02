@@ -226,6 +226,14 @@ function UploadInner() {
   const progressDetail = liveStatus?.progress?.detail || currentPhase.detail;
   const progressStageName = liveStatus?.progress?.stage_name || currentPhase.title;
   const liveProgressValue = liveStatus?.progress?.percent;
+  const preflightProgress = liveStatus?.progress?.preflight_status
+    ? {
+        status: liveStatus.progress.preflight_status,
+        strategy: liveStatus.progress.preflight_strategy_id,
+        task: liveStatus.progress.recommended_task,
+        model: liveStatus.progress.recommended_model,
+      }
+    : null;
 
   useEffect(() => {
     if (!submitting) return undefined;
@@ -779,6 +787,37 @@ function UploadInner() {
                     </div>
 
                     <Progress value={typeof liveProgressValue === 'number' ? liveProgressValue : progress} className="h-2 bg-slate-100" />
+
+                    {preflightProgress && (
+                      <div className="grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-emerald-950 sm:grid-cols-4">
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '规则预检' : 'Preflight'}
+                          </div>
+                          <Badge className="mt-1 bg-white text-emerald-800" variant="outline">
+                            {preflightProgress.status}
+                          </Badge>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '策略' : 'Strategy'}
+                          </div>
+                          <div className="mt-1 break-words font-mono text-[11px]">{preflightProgress.strategy || '-'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '任务路由' : 'Task route'}
+                          </div>
+                          <div className="mt-1 break-words font-mono text-[11px]">{preflightProgress.task || '-'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '推荐模型' : 'Model'}
+                          </div>
+                          <div className="mt-1 break-words font-mono text-[11px]">{preflightProgress.model || '-'}</div>
+                        </div>
+                      </div>
+                    )}
 
                     {liveStatus?.pipeline_preview?.length ? (
                       <div className="grid sm:grid-cols-2 gap-2">
