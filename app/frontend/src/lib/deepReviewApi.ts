@@ -119,6 +119,7 @@ export interface DeepReviewReportSummary {
     priority_actions?: string[];
     missing_facts?: string[];
   };
+  citation_audit?: CitationAuditResult;
   risk_scoring?: RiskScoringResult;
   top_risks: Array<string | { title?: string; severity?: string }>;
   missing_clauses: unknown[];
@@ -189,6 +190,44 @@ export interface RiskScoringResult {
     source_priority?: number;
     priority_rank?: number;
     explanation?: string;
+  }>;
+}
+
+export interface CitationAuditResult {
+  schema_version?: string;
+  status?: 'pass' | 'warn' | 'fail' | string;
+  score?: number;
+  source_count?: number;
+  citation_count?: number;
+  risk_count?: number;
+  cited_risk_count?: number;
+  verified_source_count?: number;
+  reviewable_source_count?: number;
+  verified_ratio?: number;
+  reviewable_ratio?: number;
+  risk_citation_coverage?: number;
+  source_type_counts?: Record<string, number>;
+  authority_counts?: Record<string, number>;
+  weak_source_ids?: string[];
+  verified_source_ids?: string[];
+  reviewable_source_ids?: string[];
+  high_risk_without_reviewable_citation?: string[];
+  high_risk_without_verified_citation?: string[];
+  risks_without_any_citation?: string[];
+  missing_appendix_source_ids?: string[];
+  orphan_appendix_source_ids?: string[];
+  duplicate_source_ids?: string[];
+  recommended_actions?: string[];
+  source_quality?: Array<{
+    source_id?: string;
+    source_name?: string;
+    source_type?: string;
+    authority_level?: string;
+    verification_status?: string;
+    confidence?: number;
+    reviewable?: boolean;
+    verified?: boolean;
+    cited_by_risks?: string[];
   }>;
 }
 
@@ -280,6 +319,7 @@ export interface DeepReviewReport {
     };
     status: string;
   }>;
+  citation_audit?: CitationAuditResult;
   risk_scoring?: RiskScoringResult;
   missing_clauses: Array<{
     name: string;
@@ -375,6 +415,7 @@ export interface DeepReviewReport {
     readiness_score?: number;
     blocking_issues?: string[];
     verified_source_ratio?: number;
+    reviewable_source_ratio?: number;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;

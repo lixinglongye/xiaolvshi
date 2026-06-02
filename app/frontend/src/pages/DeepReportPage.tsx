@@ -722,6 +722,7 @@ function Inner() {
   const coverage = report.coverage_audit;
   const quality = report.quality_audit;
   const qualityGate = report.quality_gate;
+  const citationAudit = report.citation_audit;
   const riskScoring = report.risk_scoring;
   const delivery = report.delivery_audit;
   const humanWorkflow = report.human_review_workflow;
@@ -892,6 +893,39 @@ function Inner() {
                     </div>
                   )}
 
+                  {citationAudit && (
+                    <div className={`rounded-lg border p-3 text-sm space-y-2 ${
+                      citationAudit.status === 'pass'
+                        ? 'border-emerald-200 bg-emerald-50/70 text-emerald-900'
+                        : citationAudit.status === 'warn'
+                          ? 'border-amber-200 bg-amber-50/70 text-amber-900'
+                          : 'border-red-200 bg-red-50/70 text-red-900'
+                    }`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-semibold">引用审计</div>
+                        <Badge variant="outline" className="bg-white/80">
+                          {(citationAudit.status || 'unknown').toUpperCase()} / {citationAudit.score ?? 0}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700">
+                        <div>来源：{citationAudit.source_count ?? 0}</div>
+                        <div>引用：{citationAudit.citation_count ?? 0}</div>
+                        <div>已核验：{Math.round((citationAudit.verified_ratio ?? 0) * 100)}%</div>
+                        <div>可复核：{Math.round((citationAudit.reviewable_ratio ?? 0) * 100)}%</div>
+                      </div>
+                      {(citationAudit.high_risk_without_reviewable_citation || []).length > 0 && (
+                        <div className="text-slate-700">
+                          高风险缺少可复核引用：{(citationAudit.high_risk_without_reviewable_citation || []).join(', ')}
+                        </div>
+                      )}
+                      {(citationAudit.recommended_actions || []).length > 0 && (
+                        <ul className="text-slate-700 space-y-1 list-disc list-inside">
+                          {(citationAudit.recommended_actions || []).slice(0, 3).map((action) => <li key={action}>{action}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
                   {(delivery || humanWorkflow) && (
                     <div className="grid md:grid-cols-2 gap-4">
                       {delivery && (
@@ -899,6 +933,9 @@ function Inner() {
                           <div className="font-semibold text-emerald-900">交付审计</div>
                           <div className="text-slate-700">状态：{delivery.readiness_level || '待评估'}</div>
                           <div className="text-slate-700">{sourceCoverageStatus(delivery.verified_source_ratio)}</div>
+                          {typeof delivery.reviewable_source_ratio === 'number' && (
+                            <div className="text-slate-700">可复核来源：{Math.round(delivery.reviewable_source_ratio * 100)}%</div>
+                          )}
                           <div className="flex flex-wrap gap-1.5">
                             {(delivery.reviewable_artifacts || []).slice(0, 6).map((item) => <Badge key={item} variant="outline" className="text-xs bg-white">{item}</Badge>)}
                           </div>
@@ -1103,6 +1140,26 @@ function Inner() {
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BookOpen className="w-5 h-5 text-blue-600" />法律依据附录</CardTitle></CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-500 mb-4">以下为本报告引用的全部法律依据，按效力层级排列。</p>
+                {citationAudit && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-xs text-slate-500">来源数量</div>
+                      <div className="text-lg font-semibold text-slate-900">{citationAudit.source_count ?? 0}</div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-xs text-slate-500">风险覆盖</div>
+                      <div className="text-lg font-semibold text-slate-900">{Math.round((citationAudit.risk_citation_coverage ?? 0) * 100)}%</div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-xs text-slate-500">已核验</div>
+                      <div className="text-lg font-semibold text-slate-900">{Math.round((citationAudit.verified_ratio ?? 0) * 100)}%</div>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-xs text-slate-500">可复核</div>
+                      <div className="text-lg font-semibold text-slate-900">{Math.round((citationAudit.reviewable_ratio ?? 0) * 100)}%</div>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-3">
                   {report.legal_source_appendix.length > 0 ? (
                     report.legal_source_appendix.map((s) => <LegalSourceCard key={s.source_id} source={s} />)

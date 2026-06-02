@@ -159,6 +159,33 @@ export interface RiskScoring {
   }>;
 }
 
+export interface CitationAudit {
+  schema_version?: string;
+  status?: 'pass' | 'warn' | 'fail' | string;
+  score?: number;
+  source_count?: number;
+  citation_count?: number;
+  risk_count?: number;
+  cited_risk_count?: number;
+  verified_source_count?: number;
+  reviewable_source_count?: number;
+  verified_ratio?: number;
+  reviewable_ratio?: number;
+  risk_citation_coverage?: number;
+  source_type_counts?: Record<string, number>;
+  authority_counts?: Record<string, number>;
+  weak_source_ids?: string[];
+  verified_source_ids?: string[];
+  reviewable_source_ids?: string[];
+  high_risk_without_reviewable_citation?: string[];
+  high_risk_without_verified_citation?: string[];
+  risks_without_any_citation?: string[];
+  missing_appendix_source_ids?: string[];
+  orphan_appendix_source_ids?: string[];
+  duplicate_source_ids?: string[];
+  recommended_actions?: string[];
+}
+
 interface ExecutiveSummary {
   overall_risk_level: string;
   signing_recommendation: string;
@@ -178,6 +205,7 @@ export interface DeepReviewReport {
   executive_summary: ExecutiveSummary;
   contract_structure: ContractStructureSummary;
   risk_matrix: RiskMatrix;
+  citation_audit?: CitationAudit;
   risk_scoring?: RiskScoring;
   risk_items: RiskItemDetail[];
   missing_clauses: MissingClause[];
@@ -237,6 +265,7 @@ export interface DeepReviewReport {
     readiness_score?: number;
     blocking_issues?: string[];
     verified_source_ratio?: number;
+    reviewable_source_ratio?: number;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;
@@ -1002,6 +1031,26 @@ export const mockDeepReport: DeepReviewReport = {
     high: 3,
     medium: 3,
     low: 1,
+  },
+  citation_audit: {
+    schema_version: 'citation-audit-v1',
+    status: 'warn',
+    score: 82,
+    source_count: 6,
+    citation_count: 9,
+    risk_count: 9,
+    cited_risk_count: 8,
+    verified_source_count: 4,
+    reviewable_source_count: 6,
+    verified_ratio: 0.67,
+    reviewable_ratio: 1,
+    risk_citation_coverage: 0.89,
+    source_type_counts: { law: 3, judicial_interpretation: 1, practice_reference: 2 },
+    high_risk_without_verified_citation: ['R-003'],
+    weak_source_ids: [],
+    missing_appendix_source_ids: [],
+    duplicate_source_ids: [],
+    recommended_actions: ['Verify cited authorities for high-risk items: R-003'],
   },
   risk_scoring: {
     schema_version: 'risk-scoring-v1',

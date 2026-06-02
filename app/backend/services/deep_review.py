@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional
 from core.config import settings
 from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
+from services.citation_audit import CitationAuditService
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
 from services.legal_research import LocalLegalResearchService
 from services.model_catalog import resolve_model
@@ -431,6 +432,7 @@ class DeepReviewService:
         progress_callback: Optional[ProgressCallback] = None,
     ):
         self.aihub = AIHubService()
+        self.citation_audit = CitationAuditService()
         self.legal_research = LocalLegalResearchService()
         self.quality_gate = ReportQualityGate()
         self.risk_scoring = RiskScoringService()
@@ -1436,6 +1438,7 @@ class DeepReviewService:
         quality_audit = self._build_quality_audit(report)
         report["quality_audit"] = quality_audit
         report["quality_gate"] = self.quality_gate.evaluate(report)
+        report["citation_audit"] = self.citation_audit.evaluate(report)
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
@@ -1511,6 +1514,7 @@ class DeepReviewService:
         )
         report["quality_audit"] = self._build_quality_audit(report)
         report["quality_gate"] = self.quality_gate.evaluate(report)
+        report["citation_audit"] = self.citation_audit.evaluate(report)
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
@@ -1532,8 +1536,14 @@ class DeepReviewService:
         risk_items = [item for item in self._ensure_list(report.get("risk_items")) if isinstance(item, dict)]
         legal_sources = [item for item in self._ensure_list(report.get("legal_authority_appendix")) if isinstance(item, dict)]
         verified_sources = [item for item in legal_sources if item.get("verification_status") == "已校验"]
+        citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
         quality_score = self._safe_int(quality_audit.get("quality_score"), 0)
         blocking_issues = self._ensure_list(quality_audit.get("warnings"))
+        verified_source_ratio = (
+            citation_audit.get("verified_ratio")
+            if isinstance(citation_audit.get("verified_ratio"), (int, float))
+            else round(len(verified_sources) / len(legal_sources), 2) if legal_sources else 0
+        )
         if quality_score >= 85 and not blocking_issues:
             readiness_level = "可进入客户交付前律师抽检"
         elif quality_score >= 70:
@@ -1546,12 +1556,14 @@ class DeepReviewService:
             "readiness_level": readiness_level,
             "readiness_score": quality_score,
             "blocking_issues": blocking_issues,
-            "verified_source_ratio": round(len(verified_sources) / len(legal_sources), 2) if legal_sources else 0,
+            "verified_source_ratio": verified_source_ratio,
+            "reviewable_source_ratio": citation_audit.get("reviewable_ratio", 0),
             "reviewable_artifacts": [
                 "原文条款定位",
                 "风险矩阵",
                 "逐条律师式分析",
                 "法律依据附录",
+                "引用审计",
                 "缺失条款清单",
                 "有利条款保留建议",
                 "替代条款三版本",
@@ -1572,6 +1584,7 @@ class DeepReviewService:
             if self._normalize_risk_level(item.get("risk_level")) in {"高", "重大"}
         ]
         warnings = [str(item) for item in self._ensure_list(quality_audit.get("warnings")) if str(item).strip()]
+        citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
         tasks: list[dict] = []
         if high_risks:
             tasks.append(
@@ -1589,6 +1602,21 @@ class DeepReviewService:
                     "task_id": "HR-002",
                     "title": "核验法律依据、法域和引用适用性",
                     "target": "legal_authority_appendix",
+                    "owner_role": "执业律师/法务",
+                    "status": "pending",
+                }
+            )
+        if citation_audit.get("status") in {"fail", "warn"}:
+            targets = (
+                citation_audit.get("high_risk_without_reviewable_citation")
+                or citation_audit.get("weak_source_ids")
+                or "citation_audit"
+            )
+            tasks.append(
+                {
+                    "task_id": "HR-004",
+                    "title": "按引用审计结果补齐或核验法律依据",
+                    "target": targets,
                     "owner_role": "执业律师/法务",
                     "status": "pending",
                 }

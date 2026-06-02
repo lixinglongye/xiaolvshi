@@ -444,6 +444,7 @@ export function mapAIReportToFrontend(aiReport: AIReport): FrontendReport {
       attachments: [],
     },
     risk_matrix: buildRiskMatrix(aiReport),
+    citation_audit: aiReport.citation_audit,
     risk_scoring: aiReport.risk_scoring,
     risk_items: riskItems,
     missing_clauses: missingClauses,

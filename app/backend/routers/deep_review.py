@@ -348,6 +348,7 @@ def _report_payload_from_record(stored: Any) -> Dict[str, Any]:
         "executive_summary": _summary_text(summary, risk_level),
         "summary": summary,
         "top_risks": top_risks,
+        "citation_audit": report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {},
         "risk_scoring": report.get("risk_scoring") if isinstance(report.get("risk_scoring"), dict) else {},
         "risk_items": risk_items,
         "missing_clauses": missing_clauses,
