@@ -445,6 +445,7 @@ export function mapAIReportToFrontend(aiReport: AIReport): FrontendReport {
     },
     risk_matrix: buildRiskMatrix(aiReport),
     citation_audit: aiReport.citation_audit,
+    evidence_audit: aiReport.evidence_audit,
     risk_scoring: aiReport.risk_scoring,
     risk_items: riskItems,
     missing_clauses: missingClauses,

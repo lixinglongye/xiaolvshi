@@ -14,6 +14,7 @@ from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
 from services.citation_audit import CitationAuditService
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
+from services.evidence_audit import EvidenceAuditService
 from services.legal_research import LocalLegalResearchService
 from services.model_catalog import resolve_model
 from services.report_quality_gate import ReportQualityGate
@@ -433,6 +434,7 @@ class DeepReviewService:
     ):
         self.aihub = AIHubService()
         self.citation_audit = CitationAuditService()
+        self.evidence_audit = EvidenceAuditService()
         self.legal_research = LocalLegalResearchService()
         self.quality_gate = ReportQualityGate()
         self.risk_scoring = RiskScoringService()
@@ -1439,6 +1441,7 @@ class DeepReviewService:
         report["quality_audit"] = quality_audit
         report["quality_gate"] = self.quality_gate.evaluate(report)
         report["citation_audit"] = self.citation_audit.evaluate(report)
+        report["evidence_audit"] = self.evidence_audit.evaluate(report)
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
@@ -1515,6 +1518,7 @@ class DeepReviewService:
         report["quality_audit"] = self._build_quality_audit(report)
         report["quality_gate"] = self.quality_gate.evaluate(report)
         report["citation_audit"] = self.citation_audit.evaluate(report)
+        report["evidence_audit"] = self.evidence_audit.evaluate(report)
         report["risk_scoring"] = self.risk_scoring.score_report(report)
         self.risk_scoring.apply_to_report(report, report["risk_scoring"])
         report["report_meta"]["risk_score"] = report["risk_scoring"]["overall_score"]
@@ -1537,6 +1541,7 @@ class DeepReviewService:
         legal_sources = [item for item in self._ensure_list(report.get("legal_authority_appendix")) if isinstance(item, dict)]
         verified_sources = [item for item in legal_sources if item.get("verification_status") == "已校验"]
         citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
+        evidence_audit = report.get("evidence_audit") if isinstance(report.get("evidence_audit"), dict) else {}
         quality_score = self._safe_int(quality_audit.get("quality_score"), 0)
         blocking_issues = self._ensure_list(quality_audit.get("warnings"))
         verified_source_ratio = (
@@ -1558,6 +1563,8 @@ class DeepReviewService:
             "blocking_issues": blocking_issues,
             "verified_source_ratio": verified_source_ratio,
             "reviewable_source_ratio": citation_audit.get("reviewable_ratio", 0),
+            "risk_evidence_coverage": evidence_audit.get("risk_evidence_coverage", 0),
+            "blocking_pending_fact_count": evidence_audit.get("blocking_pending_fact_count", 0),
             "reviewable_artifacts": [
                 "原文条款定位",
                 "风险矩阵",
@@ -1585,6 +1592,7 @@ class DeepReviewService:
         ]
         warnings = [str(item) for item in self._ensure_list(quality_audit.get("warnings")) if str(item).strip()]
         citation_audit = report.get("citation_audit") if isinstance(report.get("citation_audit"), dict) else {}
+        evidence_audit = report.get("evidence_audit") if isinstance(report.get("evidence_audit"), dict) else {}
         tasks: list[dict] = []
         if high_risks:
             tasks.append(
@@ -1628,6 +1636,21 @@ class DeepReviewService:
                     "title": "向用户补齐待补事实和关键证据",
                     "target": "pending_facts",
                     "owner_role": "客户经理/法务助理",
+                    "status": "pending",
+                }
+            )
+        if evidence_audit.get("status") in {"fail", "warn"}:
+            targets = (
+                evidence_audit.get("high_risk_without_evidence_plan")
+                or evidence_audit.get("blocking_pending_fact_ids")
+                or "evidence_audit"
+            )
+            tasks.append(
+                {
+                    "task_id": "HR-005",
+                    "title": "按证据审计结果补齐举证计划和待补事实",
+                    "target": targets,
+                    "owner_role": "法务/律师助理",
                     "status": "pending",
                 }
             )

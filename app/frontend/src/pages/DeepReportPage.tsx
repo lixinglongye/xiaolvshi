@@ -723,6 +723,7 @@ function Inner() {
   const quality = report.quality_audit;
   const qualityGate = report.quality_gate;
   const citationAudit = report.citation_audit;
+  const evidenceAudit = report.evidence_audit;
   const riskScoring = report.risk_scoring;
   const delivery = report.delivery_audit;
   const humanWorkflow = report.human_review_workflow;
@@ -926,6 +927,39 @@ function Inner() {
                     </div>
                   )}
 
+                  {evidenceAudit && (
+                    <div className={`rounded-lg border p-3 text-sm space-y-2 ${
+                      evidenceAudit.status === 'pass'
+                        ? 'border-emerald-200 bg-emerald-50/70 text-emerald-900'
+                        : evidenceAudit.status === 'warn'
+                          ? 'border-amber-200 bg-amber-50/70 text-amber-900'
+                          : 'border-red-200 bg-red-50/70 text-red-900'
+                    }`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-semibold">证据审计</div>
+                        <Badge variant="outline" className="bg-white/80">
+                          {(evidenceAudit.status || 'unknown').toUpperCase()} / {evidenceAudit.score ?? 0}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-slate-700">
+                        <div>证据覆盖：{Math.round((evidenceAudit.risk_evidence_coverage ?? 0) * 100)}%</div>
+                        <div>建议数：{evidenceAudit.evidence_suggestion_count ?? 0}</div>
+                        <div>待补事实：{evidenceAudit.pending_fact_count ?? 0}</div>
+                        <div>阻断事实：{evidenceAudit.blocking_pending_fact_count ?? 0}</div>
+                      </div>
+                      {(evidenceAudit.high_risk_without_evidence_plan || []).length > 0 && (
+                        <div className="text-slate-700">
+                          高风险缺少证据计划：{(evidenceAudit.high_risk_without_evidence_plan || []).join(', ')}
+                        </div>
+                      )}
+                      {(evidenceAudit.recommended_actions || []).length > 0 && (
+                        <ul className="text-slate-700 space-y-1 list-disc list-inside">
+                          {(evidenceAudit.recommended_actions || []).slice(0, 3).map((action) => <li key={action}>{action}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
                   {(delivery || humanWorkflow) && (
                     <div className="grid md:grid-cols-2 gap-4">
                       {delivery && (
@@ -935,6 +969,9 @@ function Inner() {
                           <div className="text-slate-700">{sourceCoverageStatus(delivery.verified_source_ratio)}</div>
                           {typeof delivery.reviewable_source_ratio === 'number' && (
                             <div className="text-slate-700">可复核来源：{Math.round(delivery.reviewable_source_ratio * 100)}%</div>
+                          )}
+                          {typeof delivery.risk_evidence_coverage === 'number' && (
+                            <div className="text-slate-700">证据计划覆盖：{Math.round(delivery.risk_evidence_coverage * 100)}%</div>
                           )}
                           <div className="flex flex-wrap gap-1.5">
                             {(delivery.reviewable_artifacts || []).slice(0, 6).map((item) => <Badge key={item} variant="outline" className="text-xs bg-white">{item}</Badge>)}
@@ -1118,6 +1155,26 @@ function Inner() {
             <Card>
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Clock className="w-5 h-5 text-purple-600" />待补事实</CardTitle></CardHeader>
               <CardContent>
+                {evidenceAudit && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
+                    <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3">
+                      <div className="text-xs text-purple-700">证据计划覆盖</div>
+                      <div className="text-lg font-semibold text-purple-950">{Math.round((evidenceAudit.risk_evidence_coverage ?? 0) * 100)}%</div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3">
+                      <div className="text-xs text-purple-700">证据建议</div>
+                      <div className="text-lg font-semibold text-purple-950">{evidenceAudit.evidence_suggestion_count ?? 0}</div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3">
+                      <div className="text-xs text-purple-700">阻断事实</div>
+                      <div className="text-lg font-semibold text-purple-950">{evidenceAudit.blocking_pending_fact_count ?? 0}</div>
+                    </div>
+                    <div className="rounded-lg border border-purple-100 bg-purple-50/60 p-3">
+                      <div className="text-xs text-purple-700">待办任务</div>
+                      <div className="text-lg font-semibold text-purple-950">{(evidenceAudit.evidence_tasks || []).length}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   {report.pending_facts.map((pf) => (
                     <div key={pf.id} className="border border-purple-100 bg-purple-50/50 rounded-lg p-3 flex items-start gap-3">

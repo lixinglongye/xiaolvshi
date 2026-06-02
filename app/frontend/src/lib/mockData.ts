@@ -186,6 +186,31 @@ export interface CitationAudit {
   recommended_actions?: string[];
 }
 
+export interface EvidenceAudit {
+  schema_version?: string;
+  status?: 'pass' | 'warn' | 'fail' | string;
+  score?: number;
+  risk_count?: number;
+  risk_with_evidence_count?: number;
+  risk_evidence_coverage?: number;
+  evidence_suggestion_count?: number;
+  framework_evidence_count?: number;
+  pending_fact_count?: number;
+  blocking_pending_fact_count?: number;
+  risks_without_evidence_plan?: string[];
+  high_risk_without_evidence_plan?: string[];
+  blocking_pending_fact_ids?: string[];
+  duplicate_evidence_suggestions?: string[];
+  recommended_actions?: string[];
+  evidence_tasks?: Array<{
+    task_id?: string;
+    type?: string;
+    target?: unknown;
+    priority?: string;
+    description?: string;
+  }>;
+}
+
 interface ExecutiveSummary {
   overall_risk_level: string;
   signing_recommendation: string;
@@ -206,6 +231,7 @@ export interface DeepReviewReport {
   contract_structure: ContractStructureSummary;
   risk_matrix: RiskMatrix;
   citation_audit?: CitationAudit;
+  evidence_audit?: EvidenceAudit;
   risk_scoring?: RiskScoring;
   risk_items: RiskItemDetail[];
   missing_clauses: MissingClause[];
@@ -266,6 +292,8 @@ export interface DeepReviewReport {
     blocking_issues?: string[];
     verified_source_ratio?: number;
     reviewable_source_ratio?: number;
+    risk_evidence_coverage?: number;
+    blocking_pending_fact_count?: number;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;
@@ -1051,6 +1079,32 @@ export const mockDeepReport: DeepReviewReport = {
     missing_appendix_source_ids: [],
     duplicate_source_ids: [],
     recommended_actions: ['Verify cited authorities for high-risk items: R-003'],
+  },
+  evidence_audit: {
+    schema_version: 'evidence-audit-v1',
+    status: 'warn',
+    score: 84,
+    risk_count: 9,
+    risk_with_evidence_count: 8,
+    risk_evidence_coverage: 0.89,
+    evidence_suggestion_count: 18,
+    framework_evidence_count: 6,
+    pending_fact_count: 4,
+    blocking_pending_fact_count: 1,
+    risks_without_evidence_plan: ['R-009'],
+    high_risk_without_evidence_plan: [],
+    blocking_pending_fact_ids: ['PF-001'],
+    duplicate_evidence_suggestions: [],
+    recommended_actions: ['Resolve blocking pending facts: PF-001'],
+    evidence_tasks: [
+      {
+        task_id: 'EV-001',
+        type: 'pending_fact',
+        target: 'PF-001',
+        priority: 'high',
+        description: 'Resolve pending fact before external delivery: 需核实出租人产权证明',
+      },
+    ],
   },
   risk_scoring: {
     schema_version: 'risk-scoring-v1',

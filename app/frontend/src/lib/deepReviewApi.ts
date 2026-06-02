@@ -120,6 +120,7 @@ export interface DeepReviewReportSummary {
     missing_facts?: string[];
   };
   citation_audit?: CitationAuditResult;
+  evidence_audit?: EvidenceAuditResult;
   risk_scoring?: RiskScoringResult;
   top_risks: Array<string | { title?: string; severity?: string }>;
   missing_clauses: unknown[];
@@ -231,6 +232,45 @@ export interface CitationAuditResult {
   }>;
 }
 
+export interface EvidenceAuditResult {
+  schema_version?: string;
+  status?: 'pass' | 'warn' | 'fail' | string;
+  score?: number;
+  risk_count?: number;
+  risk_with_evidence_count?: number;
+  risk_evidence_coverage?: number;
+  evidence_suggestion_count?: number;
+  framework_evidence_count?: number;
+  pending_fact_count?: number;
+  blocking_pending_fact_count?: number;
+  risks_without_evidence_plan?: string[];
+  high_risk_without_evidence_plan?: string[];
+  blocking_pending_fact_ids?: string[];
+  duplicate_evidence_suggestions?: string[];
+  recommended_actions?: string[];
+  risk_evidence?: Array<{
+    risk_id?: string;
+    risk_level?: string;
+    suggestion_count?: number;
+    has_evidence_plan?: boolean;
+    sample_suggestions?: string[];
+  }>;
+  pending_fact_items?: Array<{
+    fact_id?: string;
+    field?: string;
+    reason?: string;
+    impact?: string;
+    blocking?: boolean;
+  }>;
+  evidence_tasks?: Array<{
+    task_id?: string;
+    type?: string;
+    target?: unknown;
+    priority?: string;
+    description?: string;
+  }>;
+}
+
 export interface DeepReviewReport {
   report_meta: {
     report_id: string;
@@ -320,6 +360,7 @@ export interface DeepReviewReport {
     status: string;
   }>;
   citation_audit?: CitationAuditResult;
+  evidence_audit?: EvidenceAuditResult;
   risk_scoring?: RiskScoringResult;
   missing_clauses: Array<{
     name: string;
@@ -416,6 +457,8 @@ export interface DeepReviewReport {
     blocking_issues?: string[];
     verified_source_ratio?: number;
     reviewable_source_ratio?: number;
+    risk_evidence_coverage?: number;
+    blocking_pending_fact_count?: number;
     reviewable_artifacts?: string[];
     export_formats?: string[];
     risk_count?: number;
