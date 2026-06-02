@@ -9,6 +9,7 @@ import base64
 import io
 import json
 import logging
+import time
 from pathlib import Path
 from typing import AsyncGenerator, Optional
 
@@ -33,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_usage import model_usage_registry
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +121,34 @@ class AIHubService:
             content = [item.model_dump() if hasattr(item, "model_dump") else item for item in content]
         return {"role": msg.role, "content": content}
 
+    @staticmethod
+    def _usage_from_response(response: object) -> dict[str, int] | None:
+        usage_obj = getattr(response, "usage", None)
+        if not usage_obj:
+            return None
+        return {
+            "prompt_tokens": getattr(usage_obj, "prompt_tokens", 0) or 0,
+            "completion_tokens": getattr(usage_obj, "completion_tokens", 0) or 0,
+            "total_tokens": getattr(usage_obj, "total_tokens", 0) or 0,
+        }
+
+    @staticmethod
+    def _record_model_usage(
+        *,
+        model: str,
+        task: str,
+        started_at: float,
+        success: bool,
+        usage: dict[str, int] | None = None,
+    ) -> None:
+        model_usage_registry.record(
+            model=model,
+            task=task,
+            success=success,
+            usage=usage,
+            latency_ms=int((time.time() - started_at) * 1000),
+        )
+
     async def gentxt(self, request: GenTxtRequest) -> GenTxtResponse:
         """
         Generate Text API (non-streaming), supports text and image input.
@@ -129,9 +159,10 @@ class AIHubService:
         Returns:
             Txt2TxtResponse: generated text response.
         """
+        model = resolve_model(request.model, task="fast")
+        started_at = time.time()
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="fast")
             messages = [self._convert_message(msg) for msg in request.messages]
 
             params = {
@@ -147,13 +178,8 @@ class AIHubService:
             response = await client.chat.completions.create(**params)
 
             content = response.choices[0].message.content or ""
-            usage = None
-            if response.usage:
-                usage = {
-                    "prompt_tokens": response.usage.prompt_tokens,
-                    "completion_tokens": response.usage.completion_tokens,
-                    "total_tokens": response.usage.total_tokens,
-                }
+            usage = self._usage_from_response(response)
+            self._record_model_usage(model=model, task="text", started_at=started_at, success=True, usage=usage)
 
             return GenTxtResponse(
                 content=content,
@@ -162,6 +188,7 @@ class AIHubService:
             )
 
         except Exception as e:
+            self._record_model_usage(model=model, task="text", started_at=started_at, success=False)
             logger.error(f"gentxt error: {e}")
             raise
 
@@ -175,9 +202,10 @@ class AIHubService:
         Yields:
             str: Generated text content chunk (plain text, not JSON).
         """
+        model = resolve_model(request.model, task="fast")
+        started_at = time.time()
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="fast")
             messages = [self._convert_message(msg) for msg in request.messages]
 
             params = {
@@ -195,8 +223,10 @@ class AIHubService:
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
+            self._record_model_usage(model=model, task="text_stream", started_at=started_at, success=True)
 
         except Exception as e:
+            self._record_model_usage(model=model, task="text_stream", started_at=started_at, success=False)
             logger.error(f"gentxt_stream error: {e}")
             raise
 
@@ -583,6 +613,7 @@ User instruction:
 
         client = self._require_ai_client()
         model = resolve_model(settings.app_ai_pdf_model, task="pdf")
+        started_at = time.time()
         pdf_bytes, pdf_name = await self._pdf_source_to_bytes(request.pdf)
         pdf_b64, start, end, total_pages = self._prepare_pdf_attachment(
             pdf_bytes=pdf_bytes,
@@ -617,6 +648,13 @@ User instruction:
         result = self._extract_completion_text(response)
         if not result:
             raise RuntimeError("PDF analysis returned an empty result.")
+        self._record_model_usage(
+            model=model,
+            task="pdf",
+            started_at=started_at,
+            success=True,
+            usage=self._usage_from_response(response),
+        )
 
         return AnalyzePdfResponse(
             status="success",
@@ -640,9 +678,10 @@ User instruction:
         Returns:
             GenImgResponse: generated image response, where `images` is a list of image refs (URL preferred; fallback to base64 data URI).
         """
+        model = resolve_model(request.model, task="image")
+        started_at = time.time()
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="image")
             # If an input image is provided, use the image editing endpoint (img2img).
             if request.image:
                 image_files = await self._image_input_to_upload_files(request.image)
@@ -670,6 +709,7 @@ User instruction:
 
             # Prefer URL to avoid huge response bodies; fallback to base64 data URI.
             images = [self._extract_image_ref(item) for item in response.data]
+            self._record_model_usage(model=model, task="image", started_at=started_at, success=True)
 
             return GenImgResponse(
                 images=images,
@@ -678,6 +718,7 @@ User instruction:
             )
 
         except Exception as e:
+            self._record_model_usage(model=model, task="image", started_at=started_at, success=False)
             logger.error(f"genimg error: {e}")
             raise
 
@@ -747,9 +788,10 @@ User instruction:
         Flow: 1) Create task -> 2) Poll until complete -> 3) Return CDN URL.
         Note: Different models have different `seconds` param support.
         """
+        model = resolve_model(request.model, task="video")
+        started_at = time.time()
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="video")
             create_params: dict[str, object] = {
                 "model": model,
                 "prompt": request.prompt,
@@ -791,6 +833,7 @@ User instruction:
             actual_duration = self._safe_int(getattr(video, "seconds", None), default=requested_seconds)
 
             logger.info(f"Video generated: {cdn_url}")
+            self._record_model_usage(model=model, task="video", started_at=started_at, success=True)
 
             return GenVideoResponse(
                 url=cdn_url,
@@ -800,6 +843,7 @@ User instruction:
             )
 
         except Exception as e:
+            self._record_model_usage(model=model, task="video", started_at=started_at, success=False)
             logger.error(f"genvideo error: {e}")
             raise
 
@@ -813,9 +857,10 @@ User instruction:
 
     async def genaudio(self, request: GenAudioRequest) -> GenAudioResponse:
         """Generate Audio (TTS) API using OpenAI-compatible endpoint."""
+        model = resolve_model(request.model, task="audio")
+        started_at = time.time()
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="audio")
             voice = self._get_voice(model, request.gender)
             params: dict[str, object] = {
                 "model": model,
@@ -838,6 +883,7 @@ User instruction:
                 raise RuntimeError("Audio generation completed but missing CDN url")
 
             logger.info(f"Audio generated: {cdn_url}")
+            self._record_model_usage(model=model, task="audio", started_at=started_at, success=True)
 
             return GenAudioResponse(
                 url=cdn_url,
@@ -847,6 +893,7 @@ User instruction:
             )
 
         except Exception as e:
+            self._record_model_usage(model=model, task="audio", started_at=started_at, success=False)
             logger.error(f"genaudio error: {e}")
             raise
 
@@ -854,10 +901,11 @@ User instruction:
         """Transcribe audio to text using OpenAI-compatible speech transcription endpoint."""
         source_name = self._get_source_name(request.audio, fallback="input_audio")
         audio_file = await self._audio_str_to_upload_file(request.audio, name_prefix="input_audio")
+        model = resolve_model(request.model, task="transcription")
+        started_at = time.time()
 
         try:
             client = self._require_ai_client()
-            model = resolve_model(request.model, task="transcription")
             logger.info(f"Audio transcription started: model={model}, source={source_name}")
             resp = await client.audio.transcriptions.create(
                 file=audio_file,
@@ -870,6 +918,7 @@ User instruction:
                 raise RuntimeError("Audio transcription completed but missing text in response")
 
             logger.info(f"Audio transcribed: {source_name}")
+            self._record_model_usage(model=model, task="transcription", started_at=started_at, success=True)
 
             return TranscribeAudioResponse(
                 text=text,
@@ -877,6 +926,7 @@ User instruction:
                 source_name=source_name,
             )
         except Exception as e:
+            self._record_model_usage(model=model, task="transcription", started_at=started_at, success=False)
             logger.error(f"transcribe error: {e}")
             raise
         finally:

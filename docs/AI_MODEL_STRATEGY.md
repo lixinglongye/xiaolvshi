@@ -63,7 +63,9 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 不要把 `APP_AI_KEY` 写入 README、issue、commit message 或截图。
 - 若密钥曾经出现在聊天、日志或远程仓库中，应在网关后台立即轮换。
 - 新增模型时优先改 `.env`，确认稳定后再补充 `model_catalog.py` 的公开目录。
-- 批量任务上线前先调用 `/api/aihub/models` 确认当前路由角色。
+- 批量任务上线前先调用 `/api/v1/aihub/models` 确认当前路由角色。
+- 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
+- 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。
 
 ## Sources
 

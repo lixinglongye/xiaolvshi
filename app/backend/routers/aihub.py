@@ -30,6 +30,7 @@ from services.aihub import (
     InvalidPdfInputError,
 )
 from services.model_catalog import catalog_for_api, task_default_model
+from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
 logger = logging.getLogger(__name__)
@@ -133,6 +134,16 @@ async def list_models():
             "auto-pdf": task_default_model("pdf"),
         },
         "models": catalog_for_api(),
+        "usage": model_usage_registry.snapshot(),
+    }
+
+
+@router.get("/models/usage")
+async def model_usage():
+    """Return in-process aggregate model usage without prompts, files, or secrets."""
+    return {
+        "success": True,
+        "usage": model_usage_registry.snapshot(),
     }
 
 

@@ -27,6 +27,7 @@ import NewCasePage from './pages/NewCasePage';
 import CaseDetailPage from './pages/CaseDetailPage';
 import LawyerImportPage from './pages/LawyerImportPage';
 import PipelineConfigPage from './pages/PipelineConfigPage';
+import ModelOpsPage from './pages/ModelOpsPage';
 import TeamPage from './pages/TeamPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminPage from './pages/AdminPage';
@@ -75,6 +76,7 @@ const AppRoutes = () => (
     <Route path="/lawyer/import" element={<LawyerImportPage />} />
     <Route path="/lawyer/cases/:id" element={<CaseDetailPage />} />
     <Route path="/pipeline" element={<PipelineConfigPage />} />
+    <Route path="/model-ops" element={<ModelOpsPage />} />
     <Route path="/team" element={<TeamPage />} />
     <Route path="/settings" element={<SettingsPage />} />
     <Route path="/admin" element={<AdminPage />} />

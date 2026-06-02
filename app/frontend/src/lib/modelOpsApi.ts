@@ -1,0 +1,54 @@
+import { client } from '@/lib/api';
+
+export type RoutingAliases = Record<string, string>;
+
+export type ModelCatalogItem = {
+  id: string;
+  provider: string;
+  family: string;
+  cost_tier: string;
+  latency_tier: string;
+  capabilities: string[];
+  best_for: string[];
+  notes?: string;
+  configured_roles: string[];
+};
+
+export type ModelUsageItem = {
+  requests: number;
+  successes: number;
+  failures: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  avg_latency_ms: number;
+  last_seen_at: number;
+  tasks: Record<string, number>;
+};
+
+export type ModelUsageSummary = {
+  totals: {
+    requests: number;
+    successes: number;
+    failures: number;
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  models: Record<string, ModelUsageItem>;
+};
+
+export type ModelOpsResponse = {
+  success: boolean;
+  routing_aliases: RoutingAliases;
+  models: ModelCatalogItem[];
+  usage: ModelUsageSummary;
+};
+
+export async function getModelOps(): Promise<ModelOpsResponse> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models',
+    method: 'GET',
+  });
+  return (resp?.data ?? resp) as ModelOpsResponse;
+}
