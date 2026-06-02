@@ -47,6 +47,11 @@ export interface RiskItemDetail {
   risk_no: string;
   title: string;
   risk_level: 'critical' | 'high' | 'medium' | 'low';
+  risk_score?: number;
+  risk_score_rank?: number;
+  risk_score_level?: string;
+  risk_score_explanation?: string;
+  evidence_confidence_score?: number;
   risk_type: string; // 法律风险 | 商业风险 | 证据风险 | 履约风险 | 合规风险 | 诉讼风险
   clause_location: string;
   page_number: number;
@@ -126,6 +131,34 @@ export interface RiskMatrix {
   low: number;
 }
 
+export interface RiskScoring {
+  schema_version?: string;
+  overall_score: number;
+  overall_level: string;
+  risk_count: number;
+  counts?: Partial<RiskMatrix>;
+  top_risk_ids?: string[];
+  score_distribution?: {
+    max?: number;
+    average?: number;
+    top3_average?: number;
+  };
+  risk_scores?: Array<{
+    risk_id: string;
+    title?: string;
+    normalized_level?: string;
+    score: number;
+    score_level?: string;
+    citation_score?: number;
+    grounding_score?: number;
+    revision_score?: number;
+    evidence_confidence_score?: number;
+    penalty?: number;
+    priority_rank?: number;
+    explanation?: string;
+  }>;
+}
+
 interface ExecutiveSummary {
   overall_risk_level: string;
   signing_recommendation: string;
@@ -145,6 +178,7 @@ export interface DeepReviewReport {
   executive_summary: ExecutiveSummary;
   contract_structure: ContractStructureSummary;
   risk_matrix: RiskMatrix;
+  risk_scoring?: RiskScoring;
   risk_items: RiskItemDetail[];
   missing_clauses: MissingClause[];
   favorable_clauses: FavorableClause[];
@@ -968,6 +1002,29 @@ export const mockDeepReport: DeepReviewReport = {
     high: 3,
     medium: 3,
     low: 1,
+  },
+  risk_scoring: {
+    schema_version: 'risk-scoring-v1',
+    overall_score: 86,
+    overall_level: 'high',
+    risk_count: 9,
+    counts: { critical: 2, high: 3, medium: 3, low: 1 },
+    top_risk_ids: ['R-001', 'R-002', 'R-003'],
+    score_distribution: { max: 93, average: 68.4, top3_average: 85.3 },
+    risk_scores: [
+      {
+        risk_id: 'R-001',
+        score: 93,
+        score_level: 'critical',
+        citation_score: 92,
+        grounding_score: 100,
+        revision_score: 100,
+        evidence_confidence_score: 96,
+        penalty: 0,
+        priority_rank: 1,
+        explanation: 'Weighted deterministic score.',
+      },
+    ],
   },
   risk_items: mockRiskItems,
   missing_clauses: mockMissingClauses,

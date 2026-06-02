@@ -119,6 +119,7 @@ export interface DeepReviewReportSummary {
     priority_actions?: string[];
     missing_facts?: string[];
   };
+  risk_scoring?: RiskScoringResult;
   top_risks: Array<string | { title?: string; severity?: string }>;
   missing_clauses: unknown[];
   favorable_clauses: unknown[];
@@ -149,6 +150,48 @@ export interface PipelineTraceResponse {
   trace: PipelineTraceStage[];
 }
 
+export interface RiskScoringResult {
+  schema_version?: string;
+  overall_score: number;
+  overall_level: string;
+  risk_count: number;
+  counts?: {
+    critical?: number;
+    high?: number;
+    medium?: number;
+    low?: number;
+  };
+  top_risk_ids?: string[];
+  score_distribution?: {
+    max?: number;
+    average?: number;
+    top3_average?: number;
+  };
+  calibration?: {
+    method?: string;
+    weights?: Record<string, number>;
+    penalties?: Record<string, number>;
+  };
+  risk_scores?: Array<{
+    risk_id: string;
+    title?: string;
+    normalized_level?: string;
+    score: number;
+    score_level?: string;
+    level_score?: number;
+    severity_score?: number;
+    probability_score?: number;
+    citation_score?: number;
+    grounding_score?: number;
+    revision_score?: number;
+    evidence_confidence_score?: number;
+    penalty?: number;
+    source_priority?: number;
+    priority_rank?: number;
+    explanation?: string;
+  }>;
+}
+
 export interface DeepReviewReport {
   report_meta: {
     report_id: string;
@@ -160,6 +203,7 @@ export interface DeepReviewReport {
     review_strategy_name?: string;
     professional_grade?: string;
     overall_risk_level: string;
+    risk_score?: number;
     recommendation: string;
     lawyer_review_required: boolean;
   };
@@ -184,11 +228,19 @@ export interface DeepReviewReport {
     probability: string;
     severity: string;
     priority: number;
+    risk_score?: number;
+    risk_score_rank?: number;
+    risk_score_level?: string;
   }>;
   risk_items: Array<{
     risk_id: string;
     title: string;
     risk_level: string;
+    risk_score?: number;
+    risk_score_rank?: number;
+    risk_score_level?: string;
+    risk_score_explanation?: string;
+    evidence_confidence_score?: number;
     original_clause: {
       clause_number: string;
       page_number: number;
@@ -228,6 +280,7 @@ export interface DeepReviewReport {
     };
     status: string;
   }>;
+  risk_scoring?: RiskScoringResult;
   missing_clauses: Array<{
     name: string;
     risk: string;

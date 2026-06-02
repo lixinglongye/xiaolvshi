@@ -181,6 +181,11 @@ function mapRiskItem(item: AIReport['risk_items'][0], index: number): RiskItemDe
     risk_no: text(item.risk_id) || `R-${String(index + 1).padStart(3, '0')}`,
     title: text(item.title) || '未命名风险',
     risk_level: mapRiskLevel(text(item.risk_level)),
+    risk_score: typeof item.risk_score === 'number' ? item.risk_score : undefined,
+    risk_score_rank: typeof item.risk_score_rank === 'number' ? item.risk_score_rank : undefined,
+    risk_score_level: text(item.risk_score_level) || undefined,
+    risk_score_explanation: text(item.risk_score_explanation) || undefined,
+    evidence_confidence_score: typeof item.evidence_confidence_score === 'number' ? item.evidence_confidence_score : undefined,
     risk_type: '法律风险', // Default; AI response has risk_type in risk_matrix
     clause_location: text(item.original_clause?.clause_number),
     page_number: item.original_clause?.page_number || 0,
@@ -241,6 +246,37 @@ function enrichRiskItems(riskItems: RiskItemDetail[], aiRiskMatrix: AIReport['ri
   });
 }
 
+function enrichRiskItemScores(
+  riskItems: RiskItemDetail[],
+  riskScores: NonNullable<AIReport['risk_scoring']>['risk_scores'],
+): RiskItemDetail[] {
+  if (!riskScores || !Array.isArray(riskScores)) return riskItems;
+
+  const scoreMap = new Map(riskScores.map(score => [score.risk_id, score]));
+  return riskItems
+    .map(item => {
+      const score = scoreMap.get(item.risk_id);
+      if (!score) return item;
+      return {
+        ...item,
+        risk_score: typeof score.score === 'number' ? score.score : item.risk_score,
+        risk_score_rank: typeof score.priority_rank === 'number' ? score.priority_rank : item.risk_score_rank,
+        priority: typeof score.priority_rank === 'number' ? score.priority_rank : item.priority,
+        risk_score_level: text(score.score_level) || item.risk_score_level,
+        risk_score_explanation: text(score.explanation) || item.risk_score_explanation,
+        evidence_confidence_score:
+          typeof score.evidence_confidence_score === 'number'
+            ? score.evidence_confidence_score
+            : item.evidence_confidence_score,
+      };
+    })
+    .sort((left, right) => {
+      const leftRank = left.risk_score_rank ?? left.priority ?? 9999;
+      const rightRank = right.risk_score_rank ?? right.priority ?? 9999;
+      return leftRank - rightRank;
+    });
+}
+
 /**
  * Main mapping function: converts AI API response to frontend display format
  */
@@ -253,6 +289,7 @@ export function mapAIReportToFrontend(aiReport: AIReport): FrontendReport {
   // Map risk items
   let riskItems: RiskItemDetail[] = (aiReport.risk_items || []).map((item, i) => mapRiskItem(item, i));
   riskItems = enrichRiskItems(riskItems, aiReport.risk_matrix);
+  riskItems = enrichRiskItemScores(riskItems, aiReport.risk_scoring?.risk_scores);
 
   // Map missing clauses
   const missingClauses: MissingClause[] = (aiReport.missing_clauses || [])
@@ -407,6 +444,7 @@ export function mapAIReportToFrontend(aiReport: AIReport): FrontendReport {
       attachments: [],
     },
     risk_matrix: buildRiskMatrix(aiReport),
+    risk_scoring: aiReport.risk_scoring,
     risk_items: riskItems,
     missing_clauses: missingClauses,
     favorable_clauses: favorableClauses,

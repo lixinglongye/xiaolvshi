@@ -120,6 +120,18 @@ def _json_dumps(data: Any) -> str:
     return json.dumps(data, ensure_ascii=False)
 
 
+def _risk_score_from_report(report: Dict[str, Any]) -> Optional[int]:
+    scoring = report.get("risk_scoring") if isinstance(report.get("risk_scoring"), dict) else {}
+    meta = report.get("report_meta") if isinstance(report.get("report_meta"), dict) else {}
+    for value in (scoring.get("overall_score"), meta.get("risk_score")):
+        try:
+            if value is not None and value != "":
+                return int(round(float(value)))
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 _RUNNING_REVIEW_PROGRESS: dict[str, dict[str, Any]] = {}
 
 
@@ -225,11 +237,13 @@ async def _persist_deep_report(
 
     meta = report.get("report_meta") or {}
     summary = report.get("executive_summary") or {}
+    risk_score = _risk_score_from_report(report)
 
     review_report = await report_service.create(
         {
             "document_id": document_id,
             "contract_type": meta.get("document_type"),
+            "risk_score": risk_score,
             "user_role": meta.get("user_role"),
             "risk_level": meta.get("overall_risk_level"),
             "signing_recommendation": meta.get("recommendation"),
@@ -321,18 +335,20 @@ def _report_payload_from_record(stored: Any) -> Dict[str, Any]:
     pipeline_trace = _json_loads_or(stored.pipeline_trace_json, report.get("pipeline_trace") or [])
 
     risk_level = meta.get("overall_risk_level") or stored.risk_level
+    risk_score = stored.risk_score if stored.risk_score is not None else _risk_score_from_report(report)
     return {
         "success": True,
         "report_id": stored.id,
         "review_id": stored.id,
         "document_id": stored.document_id,
         "status": stored.status,
-        "risk_score": stored.risk_score,
+        "risk_score": risk_score,
         "risk_level": risk_level,
         "signing_recommendation": meta.get("recommendation") or stored.signing_recommendation,
         "executive_summary": _summary_text(summary, risk_level),
         "summary": summary,
         "top_risks": top_risks,
+        "risk_scoring": report.get("risk_scoring") if isinstance(report.get("risk_scoring"), dict) else {},
         "risk_items": risk_items,
         "missing_clauses": missing_clauses,
         "favorable_clauses": favorable_clauses,

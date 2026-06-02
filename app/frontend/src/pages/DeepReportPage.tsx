@@ -153,6 +153,12 @@ function RiskItemCard({ item }: { item: RiskItemDetail }) {
                   <Badge variant="outline" className="text-xs">{item.risk_type}</Badge>
                   <span className="text-xs text-slate-500">{item.risk_no}</span>
                   <span className="text-xs text-slate-400">P{item.priority}</span>
+                  {typeof item.risk_score === 'number' && (
+                    <Badge variant="outline" className="text-xs bg-white/70">评分 {item.risk_score}</Badge>
+                  )}
+                  {typeof item.evidence_confidence_score === 'number' && (
+                    <span className="text-xs text-slate-500">证据信心 {item.evidence_confidence_score}</span>
+                  )}
                 </div>
                 <h4 className="font-semibold text-slate-800 text-sm">{item.title}</h4>
                 <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 flex-wrap">
@@ -716,6 +722,7 @@ function Inner() {
   const coverage = report.coverage_audit;
   const quality = report.quality_audit;
   const qualityGate = report.quality_gate;
+  const riskScoring = report.risk_scoring;
   const delivery = report.delivery_audit;
   const humanWorkflow = report.human_review_workflow;
   const overallRisk = riskLevelConfig[riskLevelKey(report.executive_summary.overall_risk_level)];
@@ -773,10 +780,14 @@ function Inner() {
             <Card className="surface-card">
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Hash className="w-5 h-5 text-emerald-800" />执行摘要</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
                     <Badge className={`text-sm ${overallRisk?.color || 'bg-orange-500 text-white'}`}>{report.executive_summary.overall_risk_level}</Badge>
                     <div className="text-xs text-slate-500 mt-1">总体风险等级</div>
+                  </div>
+                  <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
+                    <div className="text-2xl font-semibold text-slate-900">{typeof riskScoring?.overall_score === 'number' ? riskScoring.overall_score : '-'}</div>
+                    <div className="text-xs text-slate-500 mt-1">确定性风险评分</div>
                   </div>
                   <div className="text-center p-3 bg-[#fbfbf8] rounded-lg border border-slate-200/80">
                     <Badge className={`text-sm border ${signRec.color}`}>{signRec.label}</Badge>
@@ -969,6 +980,7 @@ function Inner() {
                       <TableHead className="w-20">位置</TableHead>
                       <TableHead className="w-16">概率</TableHead>
                       <TableHead className="w-16">严重度</TableHead>
+                      <TableHead className="w-16">评分</TableHead>
                       <TableHead className="w-16">优先级</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -984,6 +996,7 @@ function Inner() {
                           <TableCell className="text-xs">{item.clause_location}</TableCell>
                           <TableCell className="text-xs">{item.probability}</TableCell>
                           <TableCell className="text-xs">{item.severity}</TableCell>
+                          <TableCell className="text-xs font-medium">{typeof item.risk_score === 'number' ? item.risk_score : '-'}</TableCell>
                           <TableCell className="text-xs font-medium">P{item.priority}</TableCell>
                         </TableRow>
                       );
