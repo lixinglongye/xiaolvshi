@@ -145,6 +145,32 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_feedback_triage.py -q",
             ),
             ReleaseCheck(
+                id="legal-knowledge-audit",
+                title="Legal knowledge seed audit coverage",
+                category="legal_quality",
+                required=True,
+                owner="legal_knowledge_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_knowledge_audit.py",
+                    "app/backend/tests/test_legal_knowledge_audit.py",
+                    "docs/LEGAL_KNOWLEDGE_AUDIT.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_knowledge_audit.py -q",
+            ),
+            ReleaseCheck(
+                id="legal-rag-evaluation",
+                title="Legal RAG evaluation coverage",
+                category="legal_quality",
+                required=True,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_rag_evaluation.py",
+                    "app/backend/tests/test_legal_rag_evaluation.py",
+                    "docs/LEGAL_RAG_EVALUATION.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_rag_evaluation.py -q",
+            ),
+            ReleaseCheck(
                 id="oss-maintenance-evidence",
                 title="OSS maintenance evidence",
                 category="maintenance",

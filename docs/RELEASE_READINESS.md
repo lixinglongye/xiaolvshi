@@ -32,6 +32,8 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Secret and credential scan.
 - Deep-review release decision coverage.
 - Feedback triage coverage.
+- Legal knowledge seed audit coverage.
+- Legal RAG evaluation coverage.
 
 Optional evidence checks, such as OSS maintenance evidence, are tracked but do not block releases.
 
