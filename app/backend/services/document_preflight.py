@@ -5,6 +5,7 @@ from typing import Any
 
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
 from services.model_budget import model_budget_decision
+from services.privacy_redaction import PrivacyRedactionService
 
 
 LEGAL_MARKERS = (
@@ -58,10 +59,11 @@ class DocumentReviewPreflightService:
         pending_facts = build_strategy_pending_facts(strategy, text)
         legal_signal_count = sum(1 for marker in LEGAL_MARKERS if marker in text[:8000])
         complexity = self._complexity(text, extraction or {})
+        privacy_scan = PrivacyRedactionService().scan(text)
         route_task = self._route_task(text=text, complexity=complexity, extraction=extraction or {})
         budget = model_budget_decision(None, task=route_task).to_api()
         blockers = self._blocking_reasons(text, legal_signal_count)
-        warnings = self._warning_reasons(text, pending_facts, complexity, known_facts, extraction or {})
+        warnings = self._warning_reasons(text, pending_facts, complexity, known_facts, extraction or {}, privacy_scan)
         status = self._status(blockers, warnings)
 
         return {
@@ -75,6 +77,7 @@ class DocumentReviewPreflightService:
                 "complexity_score": complexity["score"],
                 "complexity_level": complexity["level"],
             },
+            "privacy_scan": privacy_scan,
             "routing": {
                 "recommended_task": route_task,
                 "recommended_model": budget["recommended_model"],
@@ -142,6 +145,7 @@ class DocumentReviewPreflightService:
         complexity: dict[str, Any],
         known_facts: list[str],
         extraction: dict[str, Any],
+        privacy_scan: dict[str, Any],
     ) -> list[str]:
         warnings: list[str] = []
         if pending_facts:
@@ -154,6 +158,8 @@ class DocumentReviewPreflightService:
             warnings.append("OCR pages are present; source text should be checked for extraction errors.")
         if len(text) > 80_000:
             warnings.append("Document is long enough to require chunking or premium-context review.")
+        if privacy_scan.get("risk_level") in {"medium", "high"}:
+            warnings.append("Personal data patterns detected; avoid logging raw document text.")
         return warnings
 
     def _status(self, blockers: list[str], warnings: list[str]) -> str:

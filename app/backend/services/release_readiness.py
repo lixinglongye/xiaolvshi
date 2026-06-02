@@ -159,6 +159,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_extraction_quality.py -q",
             ),
             ReleaseCheck(
+                id="privacy-redaction",
+                title="Privacy redaction coverage",
+                category="security",
+                required=True,
+                owner="security_privacy_owner",
+                evidence_paths=(
+                    "app/backend/services/privacy_redaction.py",
+                    "app/backend/tests/test_privacy_redaction.py",
+                    "docs/PRIVACY_REDACTION.md",
+                ),
+                validation_command="python -m pytest tests/test_privacy_redaction.py -q",
+            ),
+            ReleaseCheck(
                 id="feedback-triage",
                 title="Feedback triage coverage",
                 category="maintenance",

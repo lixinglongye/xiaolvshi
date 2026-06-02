@@ -33,6 +33,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Deep-review release decision coverage.
 - Document preflight routing coverage.
 - Extraction quality audit coverage.
+- Privacy redaction coverage.
 - Feedback triage coverage.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
