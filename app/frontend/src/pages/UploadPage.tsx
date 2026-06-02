@@ -235,6 +235,8 @@ function UploadInner() {
           model: liveStatus.progress.recommended_model,
           privacyRisk: liveStatus.progress.privacy_risk_level,
           privacyCount: liveStatus.progress.privacy_finding_count,
+          instructionRisk: liveStatus.progress.instruction_risk_level,
+          instructionCount: liveStatus.progress.instruction_finding_count,
         }
       : null;
 
@@ -792,7 +794,7 @@ function UploadInner() {
                     <Progress value={typeof liveProgressValue === 'number' ? liveProgressValue : progress} className="h-2 bg-slate-100" />
 
                     {preflightProgress && (
-                      <div className="grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-emerald-950 sm:grid-cols-5">
+                      <div className="grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-emerald-950 sm:grid-cols-6">
                         <div>
                           <div className="text-[11px] font-semibold uppercase text-emerald-700">
                             {lang === 'zh' ? '规则预检' : 'Preflight'}
@@ -825,6 +827,14 @@ function UploadInner() {
                           </div>
                           <div className="mt-1 break-words font-mono text-[11px]">
                             {preflightProgress.privacyRisk || 'none'} · {preflightProgress.privacyCount ?? 0}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '指令风险' : 'Instruction'}
+                          </div>
+                          <div className="mt-1 break-words font-mono text-[11px]">
+                            {preflightProgress.instructionRisk || 'none'} · {preflightProgress.instructionCount ?? 0}
                           </div>
                         </div>
                       </div>

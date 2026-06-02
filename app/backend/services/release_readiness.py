@@ -172,6 +172,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_privacy_redaction.py -q",
             ),
             ReleaseCheck(
+                id="instruction-injection-audit",
+                title="Instruction injection audit coverage",
+                category="security",
+                required=True,
+                owner="security_privacy_owner",
+                evidence_paths=(
+                    "app/backend/services/instruction_injection_audit.py",
+                    "app/backend/tests/test_instruction_injection_audit.py",
+                    "docs/INSTRUCTION_INJECTION_AUDIT.md",
+                ),
+                validation_command="python -m pytest tests/test_instruction_injection_audit.py -q",
+            ),
+            ReleaseCheck(
                 id="feedback-triage",
                 title="Feedback triage coverage",
                 category="maintenance",

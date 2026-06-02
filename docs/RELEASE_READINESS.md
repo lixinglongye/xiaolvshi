@@ -18,6 +18,12 @@ POST /api/v1/maintenance/release-readiness
   "frontend-build": "pass",
   "secret-scan": "pass",
   "deep-review-release-decision": "pass",
+  "document-preflight": "pass",
+  "extraction-quality": "pass",
+  "privacy-redaction": "pass",
+  "instruction-injection-audit": "pass",
+  "legal-knowledge-audit": "pass",
+  "legal-rag-evaluation": "pass",
   "feedback-triage": "pass"
 }
 ```
@@ -34,6 +40,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Document preflight routing coverage.
 - Extraction quality audit coverage.
 - Privacy redaction coverage.
+- Instruction injection audit coverage.
 - Feedback triage coverage.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.

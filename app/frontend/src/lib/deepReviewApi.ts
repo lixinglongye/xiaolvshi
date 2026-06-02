@@ -108,6 +108,8 @@ export interface AnalyzeUploadedDocumentStatusResponse {
     recommended_model?: string;
     privacy_risk_level?: string;
     privacy_finding_count?: number;
+    instruction_risk_level?: string;
+    instruction_finding_count?: number;
     completed_stages?: Array<{ stage_id?: string; stage_name?: string; completed_at?: string }>;
     [key: string]: unknown;
   };

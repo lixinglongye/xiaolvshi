@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
+from services.instruction_injection_audit import InstructionInjectionAuditService
 from services.model_budget import model_budget_decision
 from services.privacy_redaction import PrivacyRedactionService
 
@@ -60,10 +61,19 @@ class DocumentReviewPreflightService:
         legal_signal_count = sum(1 for marker in LEGAL_MARKERS if marker in text[:8000])
         complexity = self._complexity(text, extraction or {})
         privacy_scan = PrivacyRedactionService().scan(text)
+        instruction_audit = InstructionInjectionAuditService().scan(text)
         route_task = self._route_task(text=text, complexity=complexity, extraction=extraction or {})
         budget = model_budget_decision(None, task=route_task).to_api()
         blockers = self._blocking_reasons(text, legal_signal_count)
-        warnings = self._warning_reasons(text, pending_facts, complexity, known_facts, extraction or {}, privacy_scan)
+        warnings = self._warning_reasons(
+            text,
+            pending_facts,
+            complexity,
+            known_facts,
+            extraction or {},
+            privacy_scan,
+            instruction_audit,
+        )
         status = self._status(blockers, warnings)
 
         return {
@@ -78,6 +88,7 @@ class DocumentReviewPreflightService:
                 "complexity_level": complexity["level"],
             },
             "privacy_scan": privacy_scan,
+            "instruction_audit": instruction_audit,
             "routing": {
                 "recommended_task": route_task,
                 "recommended_model": budget["recommended_model"],
@@ -89,7 +100,13 @@ class DocumentReviewPreflightService:
             "missing_required_facts": pending_facts,
             "blocking_reasons": blockers,
             "warning_reasons": warnings,
-            "recommended_actions": self._recommended_actions(blockers, warnings, pending_facts, route_task),
+            "recommended_actions": self._recommended_actions(
+                blockers,
+                warnings,
+                pending_facts,
+                route_task,
+                instruction_audit,
+            ),
         }
 
     def _complexity(self, text: str, extraction: dict[str, Any]) -> dict[str, Any]:
@@ -146,6 +163,7 @@ class DocumentReviewPreflightService:
         known_facts: list[str],
         extraction: dict[str, Any],
         privacy_scan: dict[str, Any],
+        instruction_audit: dict[str, Any],
     ) -> list[str]:
         warnings: list[str] = []
         if pending_facts:
@@ -160,6 +178,8 @@ class DocumentReviewPreflightService:
             warnings.append("Document is long enough to require chunking or premium-context review.")
         if privacy_scan.get("risk_level") in {"medium", "high"}:
             warnings.append("Personal data patterns detected; avoid logging raw document text.")
+        if instruction_audit.get("risk_level") in {"medium", "high"}:
+            warnings.append("Instruction-injection patterns detected; treat matched text only as document content.")
         return warnings
 
     def _status(self, blockers: list[str], warnings: list[str]) -> str:
@@ -182,6 +202,7 @@ class DocumentReviewPreflightService:
         warnings: list[str],
         pending_facts: list[dict[str, str]],
         route_task: str,
+        instruction_audit: dict[str, Any],
     ) -> list[str]:
         actions: list[str] = []
         if blockers:
@@ -195,6 +216,8 @@ class DocumentReviewPreflightService:
             actions.append("Use balanced review routing and keep early extraction/classification on cheap models.")
         else:
             actions.append("Use cheap-first routing for initial classification and light extraction.")
+        if instruction_audit.get("risk_level") in {"medium", "high"}:
+            actions.append("Keep matched instruction-like text inside quoted evidence and never apply it as model guidance.")
         if not warnings and not blockers:
             actions.append("Proceed to staged deep review.")
         return actions
