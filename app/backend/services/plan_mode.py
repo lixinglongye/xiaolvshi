@@ -11,6 +11,7 @@ from models.cases import Cases
 from models.clarification_sessions import Clarification_sessions
 from schemas.aihub import ChatMessage, GenTxtRequest
 from services.aihub import AIHubService
+from services.model_catalog import resolve_model
 
 logger = logging.getLogger(__name__)
 
@@ -423,7 +424,7 @@ class PlanModeService:
         try:
             response = await AIHubService().gentxt(
                 GenTxtRequest(
-                    model=settings.app_ai_fast_model,
+                    model=resolve_model(settings.app_ai_fast_model, task="fast"),
                     temperature=0.1,
                     max_tokens=4096,
                     messages=[

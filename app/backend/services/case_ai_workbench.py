@@ -19,6 +19,7 @@ from models.generated_documents import Generated_documents
 from models.legal_sources import Legal_sources
 from schemas.aihub import ChatMessage, GenTxtRequest
 from services.aihub import AIHubService
+from services.model_catalog import resolve_model
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class CaseAIWorkbenchService:
             message=clean_message,
             conversation_history=conversation_history or [],
         )
-        model = settings.app_ai_review_model or settings.app_ai_fast_model
+        model = resolve_model(settings.app_ai_review_model or settings.app_ai_fast_model, task="review")
         response = await AIHubService().gentxt(
             GenTxtRequest(
                 model=model,

@@ -582,8 +582,12 @@ class CaseImportService:
         try:
             from schemas.aihub import ChatMessage, GenTxtRequest
             from services.aihub import AIHubService
+            from services.model_catalog import resolve_model
 
-            model = getattr(settings, "app_ai_classifier_model", None) or getattr(settings, "app_ai_fast_model", "gemini-2.5-flash")
+            model = resolve_model(
+                getattr(settings, "app_ai_classifier_model", None) or getattr(settings, "app_ai_fast_model", None),
+                task="classification",
+            )
             sample = text[:2400] if text.strip() else "无可抽取正文，请主要依据文件名、路径和 MIME 判断。"
             prompt = f"""请用低成本分类模型对律师案件材料做材料分类。
 

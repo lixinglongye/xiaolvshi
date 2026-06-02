@@ -27,9 +27,12 @@ class Settings(BaseSettings):
     # OpenAI-compatible model gateway
     app_ai_base_url: Optional[str] = None
     app_ai_key: Optional[str] = None
-    app_ocr_model: str = "gemini-2.5-flash"
-    app_ai_fast_model: str = "gemini-2.5-flash"
-    app_ai_classifier_model: Optional[str] = None
+    app_ai_cheap_model: str = "gemini-2.5-flash-lite"
+    app_ai_balanced_model: str = "gemini-2.5-flash"
+    app_ai_premium_model: str = "gemini-2.5-pro"
+    app_ocr_model: str = "gemini-2.5-flash-lite"
+    app_ai_fast_model: str = "gemini-2.5-flash-lite"
+    app_ai_classifier_model: Optional[str] = "gemini-2.5-flash-lite"
     app_ai_review_model: str = "gemini-2.5-flash"
     app_ai_pdf_model: str = "gemini-2.5-pro"
     app_ai_request_timeout: int = 360

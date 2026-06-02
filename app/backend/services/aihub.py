@@ -32,10 +32,10 @@ from schemas.aihub import (
     TranscribeAudioRequest,
     TranscribeAudioResponse,
 )
+from services.model_catalog import resolve_model
 
 logger = logging.getLogger(__name__)
 
-PDF_ANALYSIS_MODEL = settings.app_ai_pdf_model
 PDF_SYSTEM_PROMPT = """You are a careful PDF analysis assistant.
 
 Rules:
@@ -131,10 +131,11 @@ class AIHubService:
         """
         try:
             client = self._require_ai_client()
+            model = resolve_model(request.model, task="fast")
             messages = [self._convert_message(msg) for msg in request.messages]
 
             params = {
-                "model": request.model,
+                "model": model,
                 "messages": messages,
                 "temperature": request.temperature,
                 "max_tokens": request.max_tokens,
@@ -156,7 +157,7 @@ class AIHubService:
 
             return GenTxtResponse(
                 content=content,
-                model=request.model,
+                model=model,
                 usage=usage,
             )
 
@@ -176,10 +177,11 @@ class AIHubService:
         """
         try:
             client = self._require_ai_client()
+            model = resolve_model(request.model, task="fast")
             messages = [self._convert_message(msg) for msg in request.messages]
 
             params = {
-                "model": request.model,
+                "model": model,
                 "messages": messages,
                 "temperature": request.temperature,
                 "max_tokens": request.max_tokens,
@@ -580,6 +582,7 @@ User instruction:
             raise InvalidPdfInputError("instruction is required for PDF analysis.")
 
         client = self._require_ai_client()
+        model = resolve_model(settings.app_ai_pdf_model, task="pdf")
         pdf_bytes, pdf_name = await self._pdf_source_to_bytes(request.pdf)
         pdf_b64, start, end, total_pages = self._prepare_pdf_attachment(
             pdf_bytes=pdf_bytes,
@@ -588,7 +591,7 @@ User instruction:
         )
         user_prompt = self._build_pdf_user_prompt(request.instruction, request.mode)
         response = await client.chat.completions.create(
-            model=PDF_ANALYSIS_MODEL,
+            model=model,
             messages=[
                 {"role": "system", "content": PDF_SYSTEM_PROMPT},
                 {
@@ -621,7 +624,7 @@ User instruction:
             message=self._build_pdf_success_message(start, end, total_pages),
             pdf_name=pdf_name,
             mode=request.mode,
-            model=PDF_ANALYSIS_MODEL,
+            model=model,
             page_start=start,
             page_end=end,
             total_pages=total_pages,
@@ -639,12 +642,13 @@ User instruction:
         """
         try:
             client = self._require_ai_client()
+            model = resolve_model(request.model, task="image")
             # If an input image is provided, use the image editing endpoint (img2img).
             if request.image:
                 image_files = await self._image_input_to_upload_files(request.image)
                 image_param = image_files[0] if len(image_files) == 1 else image_files
                 response = await client.images.edit(
-                    model=request.model,
+                    model=model,
                     image=image_param,
                     prompt=request.prompt,
                     size=request.size,
@@ -652,7 +656,7 @@ User instruction:
                 )
             else:
                 response = await client.images.generate(
-                    model=request.model,
+                    model=model,
                     prompt=request.prompt,
                     size=request.size,
                     quality=request.quality,
@@ -669,7 +673,7 @@ User instruction:
 
             return GenImgResponse(
                 images=images,
-                model=request.model,
+                model=model,
                 revised_prompt=revised_prompt,
             )
 
@@ -745,8 +749,9 @@ User instruction:
         """
         try:
             client = self._require_ai_client()
+            model = resolve_model(request.model, task="video")
             create_params: dict[str, object] = {
-                "model": request.model,
+                "model": model,
                 "prompt": request.prompt,
                 "size": request.size,
                 "seconds": request.seconds
@@ -789,7 +794,7 @@ User instruction:
 
             return GenVideoResponse(
                 url=cdn_url,
-                model=request.model,
+                model=model,
                 duration=actual_duration,
                 revised_prompt=getattr(video, "revised_prompt", None),
             )
@@ -810,15 +815,16 @@ User instruction:
         """Generate Audio (TTS) API using OpenAI-compatible endpoint."""
         try:
             client = self._require_ai_client()
-            voice = self._get_voice(request.model, request.gender)
+            model = resolve_model(request.model, task="audio")
+            voice = self._get_voice(model, request.gender)
             params: dict[str, object] = {
-                "model": request.model,
+                "model": model,
                 "input": request.text,
                 "voice": voice,
                 "response_format": "mp3",
             }
 
-            logger.info(f"Audio generation started: model={request.model}, gender={request.gender}, voice={voice}")
+            logger.info(f"Audio generation started: model={model}, gender={request.gender}, voice={voice}")
 
             resp = await client.audio.speech.create(**params)  # type: ignore[arg-type]
 
@@ -835,7 +841,7 @@ User instruction:
 
             return GenAudioResponse(
                 url=cdn_url,
-                model=request.model,
+                model=model,
                 gender=request.gender,
                 voice=voice,
             )
@@ -851,10 +857,11 @@ User instruction:
 
         try:
             client = self._require_ai_client()
-            logger.info(f"Audio transcription started: model={request.model}, source={source_name}")
+            model = resolve_model(request.model, task="transcription")
+            logger.info(f"Audio transcription started: model={model}, source={source_name}")
             resp = await client.audio.transcriptions.create(
                 file=audio_file,
-                model=request.model,
+                model=model,
                 response_format="json",
             )
 
@@ -866,7 +873,7 @@ User instruction:
 
             return TranscribeAudioResponse(
                 text=text,
-                model=request.model,
+                model=model,
                 source_name=source_name,
             )
         except Exception as e:

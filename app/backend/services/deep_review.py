@@ -14,6 +14,7 @@ from services.aihub import AIHubService
 from schemas.aihub import GenTxtRequest, ChatMessage
 from services.document_strategy import build_strategy_pending_facts, get_document_strategy
 from services.legal_research import LocalLegalResearchService
+from services.model_catalog import resolve_model
 
 logger = logging.getLogger(__name__)
 
@@ -432,6 +433,16 @@ class DeepReviewService:
         self.review_prompt_extension = (review_prompt_extension or "").strip()
         self.progress_callback = progress_callback
 
+    @staticmethod
+    def _model_task_for_stage(stage_id: str) -> str:
+        fast_stages = {"document-preflight", "stage-1", "stage-1b", "stage-2", "stage-2b", "stage-5"}
+        review_stages = {"stage-3", "stage-4", "stage-6", "stage-7", "stage-8", "document-generation"}
+        if stage_id in fast_stages:
+            return "fast"
+        if stage_id in review_stages:
+            return "review"
+        return "review"
+
     def _stage_prompt(self, stage_instruction: str) -> str:
         prompt = STAGE_DELIVERY_CONTRACT
         if self.review_prompt_extension:
@@ -517,7 +528,7 @@ class DeepReviewService:
 
         request = GenTxtRequest(
             messages=messages,
-            model=settings.app_ai_fast_model,
+            model=resolve_model(settings.app_ai_fast_model, task="fast"),
             stream=False,
             temperature=0.1,
             max_tokens=256,
@@ -573,7 +584,7 @@ class DeepReviewService:
     ) -> tuple[Any, Dict[str, Any]]:
         """Run one bounded agent step and return parsed JSON plus trace metadata."""
         started = time.time()
-        model = model or settings.app_ai_review_model
+        model = resolve_model(model or settings.app_ai_review_model, task=self._model_task_for_stage(stage_id))
         messages = [
             ChatMessage(role="system", content=system_prompt.strip()),
             ChatMessage(
@@ -2472,7 +2483,7 @@ pending_facts 必须写清该事实如何影响风险等级、法律依据或修
 
         request = GenTxtRequest(
             messages=messages,
-            model=settings.app_ai_review_model,
+            model=resolve_model(settings.app_ai_review_model, task="review"),
             stream=False,
             temperature=0.5,
             max_tokens=4096,

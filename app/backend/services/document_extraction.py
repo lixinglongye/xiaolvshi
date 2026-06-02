@@ -253,10 +253,11 @@ class DocumentExtractionService:
             from core.config import settings
             from schemas.aihub import ChatMessage, ContentPartImage, ContentPartText, GenTxtRequest, ImageUrl
             from services.aihub import AIHubService
+            from services.model_catalog import resolve_model
 
             png_bytes = self._render_pdf_page_png(page)
             image_data_uri = "data:image/png;base64," + base64.b64encode(png_bytes).decode("ascii")
-            model = getattr(settings, "app_ocr_model", "gemini-2.5-flash")
+            model = resolve_model(getattr(settings, "app_ocr_model", None), task="ocr")
             response = await AIHubService().gentxt(
                 GenTxtRequest(
                     messages=[

@@ -29,6 +29,7 @@ from services.aihub import (
     InvalidImageInputError,
     InvalidPdfInputError,
 )
+from services.model_catalog import catalog_for_api, task_default_model
 from sse_starlette.sse import EventSourceResponse
 
 logger = logging.getLogger(__name__)
@@ -114,6 +115,27 @@ def extract_error_message(error: Any) -> str:
 router = APIRouter(prefix="/api/v1/aihub", tags=["aihub"])
 
 
+@router.get("/models")
+async def list_models():
+    """
+    Return the configured model catalog and task routing defaults.
+
+    NewAPI and Gemini OpenAI-compatible gateways may expose additional model
+    names; those can still be sent directly in request payloads.
+    """
+    return {
+        "success": True,
+        "routing_aliases": {
+            "auto-fast": task_default_model("fast"),
+            "auto-cheap": task_default_model("cheap"),
+            "auto-ocr": task_default_model("ocr"),
+            "auto-review": task_default_model("review"),
+            "auto-pdf": task_default_model("pdf"),
+        },
+        "models": catalog_for_api(),
+    }
+
+
 @router.post("/gentxt")
 async def generate_text(
     request: GenTxtRequest,
@@ -170,7 +192,7 @@ async def generate_image(
 
     Available models:
     - gemini-2.5-flash-image: visual creativity and editing, marketing asset generation, partial image editing
-    - gemini-3-pro-image-preview: higher quality image generation/editing
+    - gemini-3-pro-image: higher quality image generation/editing
 
     Parameters:
     - image: optional input image(s). Supports a base64 data URI string or a list of base64 data URIs. If provided, runs image editing (img2img).

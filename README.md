@@ -9,6 +9,8 @@
 - 前端入口：`app/frontend/src/App.tsx`
 - 合同审查知识库：`app/backend/data/legal_knowledge/contract_law_seed.json`
 - 后端环境变量示例：`app/backend/.env.example`
+- AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
+- 用户研究与维护说明：[docs/USER_RESEARCH_AND_MAINTENANCE.md](docs/USER_RESEARCH_AND_MAINTENANCE.md)
 
 ## 本地运行
 
@@ -42,7 +44,15 @@ cd D:\小律师\app\backend
 ```env
 APP_AI_BASE_URL=https://your-ai-gateway.example.com/v1
 APP_AI_KEY=replace-with-your-key
-APP_OCR_MODEL=gemini-2.5-flash
+APP_AI_CHEAP_MODEL=gemini-2.5-flash-lite
+APP_AI_BALANCED_MODEL=gemini-2.5-flash
+APP_AI_PREMIUM_MODEL=gemini-2.5-pro
+APP_OCR_MODEL=gemini-2.5-flash-lite
+APP_AI_FAST_MODEL=gemini-2.5-flash-lite
+APP_AI_CLASSIFIER_MODEL=gemini-2.5-flash-lite
+APP_AI_REVIEW_MODEL=gemini-2.5-flash
+APP_AI_PDF_MODEL=gemini-2.5-pro
 ```
 
 `app/backend/.env.example` 保留模板，不放真实密钥。
+更多模型选择、OpenAI-compatible 网关说明和成本策略见 `docs/AI_MODEL_STRATEGY.md`。
