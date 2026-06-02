@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from services.feedback_tickets import Feedback_ticketsService
+from services.feedback_triage import FeedbackTriageService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 
@@ -26,6 +27,9 @@ class Feedback_ticketsData(BaseModel):
     content: str
     status: str = None
     contact: str = None
+    priority: str = None
+    assignee: str = None
+    resolution_note: str = None
 
 
 class Feedback_ticketsUpdateData(BaseModel):
@@ -34,6 +38,9 @@ class Feedback_ticketsUpdateData(BaseModel):
     content: Optional[str] = None
     status: Optional[str] = None
     contact: Optional[str] = None
+    priority: Optional[str] = None
+    assignee: Optional[str] = None
+    resolution_note: Optional[str] = None
 
 
 class Feedback_ticketsResponse(BaseModel):
@@ -44,6 +51,9 @@ class Feedback_ticketsResponse(BaseModel):
     content: str
     status: Optional[str] = None
     contact: Optional[str] = None
+    priority: Optional[str] = None
+    assignee: Optional[str] = None
+    resolution_note: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -78,6 +88,23 @@ class Feedback_ticketsBatchUpdateRequest(BaseModel):
 class Feedback_ticketsBatchDeleteRequest(BaseModel):
     """Batch delete request"""
     ids: List[int]
+
+
+class FeedbackTriagePreviewRequest(BaseModel):
+    category: str
+    content: str
+
+
+class FeedbackTriagePreviewResponse(BaseModel):
+    status: str
+    priority: str
+    assignee: str
+    sla_hours: int
+    labels: List[str]
+    matched_rule_ids: List[str]
+    reasons: List[str]
+    operator_actions: List[str]
+    summary: str
 
 
 # ---------- Routes ----------
@@ -145,6 +172,16 @@ async def query_feedback_ticketss_all(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@router.post("/triage-preview", response_model=FeedbackTriagePreviewResponse)
+async def preview_feedback_triage(
+    data: FeedbackTriagePreviewRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """Preview deterministic feedback triage without creating a ticket."""
+    _ = current_user
+    return FeedbackTriageService().triage(data.model_dump())
+
+
 @router.get("/{id}", response_model=Feedback_ticketsResponse)
 async def get_feedback_tickets(
     id: int,
@@ -181,7 +218,8 @@ async def create_feedback_tickets(
     
     service = Feedback_ticketsService(db)
     try:
-        result = await service.create(data.model_dump(), user_id=str(current_user.id))
+        payload = FeedbackTriageService().apply_to_payload(data.model_dump())
+        result = await service.create(payload, user_id=str(current_user.id))
         if not result:
             raise HTTPException(status_code=400, detail="Failed to create feedback_tickets")
         
