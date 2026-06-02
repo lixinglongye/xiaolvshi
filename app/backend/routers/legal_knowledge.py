@@ -11,6 +11,7 @@ from schemas.legal_knowledge import (
 )
 from services.legal_knowledge_audit import LegalKnowledgeAuditService
 from services.legal_knowledge import LegalKnowledgeService
+from services.legal_rag_evaluation import LegalRagEvaluationService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,22 @@ async def audit_legal_knowledge_seed(
         raise HTTPException(status_code=404, detail=f"Seed file not found: {exc}")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/rag-evaluation-policy")
+async def get_legal_rag_evaluation_policy():
+    return {
+        "success": True,
+        "data": LegalRagEvaluationService().policy(),
+    }
+
+
+@router.post("/rag-evaluation")
+async def evaluate_legal_rag_run(run: dict):
+    return {
+        "success": True,
+        "data": LegalRagEvaluationService().evaluate(run),
+    }
 
 
 @router.post("/admin/seed", response_model=LegalKnowledgeSeedResponse)
