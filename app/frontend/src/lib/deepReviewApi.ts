@@ -64,6 +64,17 @@ interface AnalyzeUploadedDocumentResponse {
     text_layer_pages?: number[];
     low_text_pages?: number[];
     ocr_pages?: number[];
+    extraction_quality?: {
+      status?: string;
+      score?: number;
+      chars_per_page?: number | null;
+      text_layer_page_count?: number;
+      low_text_page_count?: number;
+      ocr_page_count?: number;
+      blocking_reasons?: string[];
+      warning_reasons?: string[];
+      recommended_actions?: string[];
+    };
   };
   error?: string;
 }

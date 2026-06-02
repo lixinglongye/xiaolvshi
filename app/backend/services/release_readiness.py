@@ -146,6 +146,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_document_preflight.py -q",
             ),
             ReleaseCheck(
+                id="extraction-quality",
+                title="Extraction quality audit coverage",
+                category="tests",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/extraction_quality.py",
+                    "app/backend/tests/test_extraction_quality.py",
+                    "docs/EXTRACTION_QUALITY_AUDIT.md",
+                ),
+                validation_command="python -m pytest tests/test_extraction_quality.py -q",
+            ),
+            ReleaseCheck(
                 id="feedback-triage",
                 title="Feedback triage coverage",
                 category="maintenance",

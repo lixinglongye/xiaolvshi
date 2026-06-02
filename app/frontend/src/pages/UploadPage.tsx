@@ -226,6 +226,7 @@ function UploadInner() {
   const progressDetail = liveStatus?.progress?.detail || currentPhase.detail;
   const progressStageName = liveStatus?.progress?.stage_name || currentPhase.title;
   const liveProgressValue = liveStatus?.progress?.percent;
+  const extractionQuality = liveStatus?.extraction?.extraction_quality;
   const preflightProgress = liveStatus?.progress?.preflight_status
     ? {
         status: liveStatus.progress.preflight_status,
@@ -816,6 +817,38 @@ function UploadInner() {
                           </div>
                           <div className="mt-1 break-words font-mono text-[11px]">{preflightProgress.model || '-'}</div>
                         </div>
+                      </div>
+                    )}
+
+                    {extractionQuality && (
+                      <div className="rounded-lg border border-sky-100 bg-sky-50/70 p-3 text-xs text-sky-950">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold">
+                            {lang === 'zh' ? '解析质量审计' : 'Extraction quality'}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={
+                              extractionQuality.status === 'pass'
+                                ? 'border-emerald-200 bg-white text-emerald-800'
+                                : extractionQuality.status === 'fail'
+                                  ? 'border-red-200 bg-white text-red-800'
+                                  : 'border-amber-200 bg-white text-amber-900'
+                            }
+                          >
+                            {extractionQuality.status || 'unknown'} / {extractionQuality.score ?? 0}
+                          </Badge>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          <div>{lang === 'zh' ? '字符/页' : 'Chars/page'}: {extractionQuality.chars_per_page ?? '-'}</div>
+                          <div>{lang === 'zh' ? '低文本页' : 'Low-text pages'}: {extractionQuality.low_text_page_count ?? 0}</div>
+                          <div>{lang === 'zh' ? 'OCR 页' : 'OCR pages'}: {extractionQuality.ocr_page_count ?? 0}</div>
+                        </div>
+                        {extractionQuality.recommended_actions?.length ? (
+                          <div className="mt-2 leading-5 text-sky-900">
+                            {extractionQuality.recommended_actions[0]}
+                          </div>
+                        ) : null}
                       </div>
                     )}
 

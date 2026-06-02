@@ -23,6 +23,7 @@ from services.document_preflight import DocumentReviewPreflightService
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
 from services.documents import DocumentsService
 from services.entitlements import EntitlementService
+from services.extraction_quality import ExtractionQualityAuditService
 from services.review_reports import Review_reportsService
 from services.storage import StorageService
 from schemas.storage import FileUpDownRequest
@@ -1133,6 +1134,10 @@ async def _run_uploaded_document_review(
                 "char_count": len(document_text),
                 "warnings": [],
             }
+            extraction_quality = ExtractionQualityAuditService().evaluate(extraction_info)
+            extraction_info["extraction_quality"] = extraction_quality
+            if extraction_quality["status"] == "fail":
+                raise DocumentExtractionError("；".join(extraction_quality["blocking_reasons"]))
             _set_review_progress(
                 user_id=user_id,
                 document_id=document.id,
@@ -1142,11 +1147,13 @@ async def _run_uploaded_document_review(
                 detail="检测到文档已有可用正文，跳过重复 OCR，准备进入法律审查。",
                 percent=36,
                 status="completed",
+                extra={"extraction": extraction_info},
             )
             await documents_service.update(
                 document.id,
                 {
                     "status": "analyzing",
+                    "extraction_metadata_json": _json_dumps(extraction_info),
                     "extraction_error": "",
                 },
                 user_id=user_id,
@@ -1192,6 +1199,10 @@ async def _run_uploaded_document_review(
                 "low_text_pages": extraction.low_text_pages,
                 "ocr_pages": extraction.ocr_pages,
             }
+            extraction_quality = ExtractionQualityAuditService().evaluate(extraction_info)
+            extraction_info["extraction_quality"] = extraction_quality
+            if extraction_quality["status"] == "fail":
+                raise DocumentExtractionError("；".join(extraction_quality["blocking_reasons"]))
             _set_review_progress(
                 user_id=user_id,
                 document_id=document.id,
