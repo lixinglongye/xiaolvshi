@@ -11,6 +11,7 @@
 - 后端环境变量示例：`app/backend/.env.example`
 - AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
 - 用户研究与维护说明：[docs/USER_RESEARCH_AND_MAINTENANCE.md](docs/USER_RESEARCH_AND_MAINTENANCE.md)
+- 开源维护证明接口：[docs/OSS_MAINTENANCE_EVIDENCE.md](docs/OSS_MAINTENANCE_EVIDENCE.md)
 - 深度审查质量门禁：[docs/DEEP_REVIEW_QUALITY_GATES.md](docs/DEEP_REVIEW_QUALITY_GATES.md)
 - 深度审查引用审计：[docs/DEEP_REVIEW_CITATION_AUDIT.md](docs/DEEP_REVIEW_CITATION_AUDIT.md)
 - 深度审查证据审计：[docs/DEEP_REVIEW_EVIDENCE_AUDIT.md](docs/DEEP_REVIEW_EVIDENCE_AUDIT.md)
