@@ -77,6 +77,35 @@ type ReleaseReadinessResponse = {
   validation_commands: ReleaseValidationCommand[];
 };
 
+export type LegalKnowledgeAudit = {
+  status: string;
+  score: number;
+  seed_path: string;
+  schema_version?: string;
+  generated_at?: string;
+  age_days?: number | null;
+  max_age_days: number;
+  record_count: number;
+  duplicate_source_ids: string[];
+  missing_required_fields: Array<{
+    index: number;
+    source_id: string;
+    fields: string[];
+  }>;
+  reviewable_ratio: number;
+  verified_count: number;
+  source_type_counts: Record<string, number>;
+  authority_level_counts: Record<string, number>;
+  topic_counts: Record<string, number>;
+  missing_critical_topics: string[];
+  recommended_actions: string[];
+};
+
+type LegalKnowledgeAuditResponse = {
+  success: boolean;
+  data: LegalKnowledgeAudit;
+};
+
 export async function getMaintenanceEvidence(language: MaintenanceLanguage): Promise<MaintenanceEvidenceProfile> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/maintenance/oss-evidence?language=${language}`,
@@ -95,4 +124,16 @@ export async function getReleaseReadiness(): Promise<ReleaseReadinessResponse> {
     method: 'GET',
   });
   return (resp?.data ?? resp) as ReleaseReadinessResponse;
+}
+
+export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/legal-knowledge/audit',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalKnowledgeAuditResponse | LegalKnowledgeAudit;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalKnowledgeAudit;
 }

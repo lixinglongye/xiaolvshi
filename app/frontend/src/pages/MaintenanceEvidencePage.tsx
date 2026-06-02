@@ -14,8 +14,10 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
+  getLegalKnowledgeAudit,
   getMaintenanceEvidence,
   getReleaseReadiness,
+  type LegalKnowledgeAudit,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type ReleaseReadinessResult,
@@ -48,6 +50,7 @@ function Inner() {
   const [data, setData] = useState<MaintenanceEvidenceProfile | null>(null);
   const [releaseReadiness, setReleaseReadiness] = useState<ReleaseReadinessResult | null>(null);
   const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
+  const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -56,13 +59,15 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness] = await Promise.all([
+      const [evidence, readiness, legalKnowledge] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
+        getLegalKnowledgeAudit(),
       ]);
       setData(evidence);
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
+      setLegalAudit(legalKnowledge);
     } catch (err) {
       console.error(err);
       setError('Maintenance evidence failed to load.');
@@ -289,6 +294,78 @@ function Inner() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </section>
+            )}
+
+            {legalAudit && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal knowledge audit</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Generated {legalAudit.generated_at || '-'} · {legalAudit.record_count} records ·{' '}
+                      {Math.round(legalAudit.reviewable_ratio * 100)}% verified
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      legalAudit.status === 'pass'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                        : legalAudit.status === 'fail'
+                          ? 'border-red-200 bg-red-50 text-red-800'
+                          : 'border-amber-200 bg-amber-50 text-amber-900'
+                    }
+                  >
+                    {legalAudit.status.toUpperCase()} / {legalAudit.score}
+                  </Badge>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-xs font-semibold uppercase text-stone-500">Age</div>
+                        <div className="mt-1 font-semibold text-stone-950">
+                          {legalAudit.age_days ?? '-'} / {legalAudit.max_age_days} days
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold uppercase text-stone-500">Verified</div>
+                        <div className="mt-1 font-semibold text-stone-950">
+                          {legalAudit.verified_count}/{legalAudit.record_count}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold uppercase text-stone-500">Duplicates</div>
+                        <div className="mt-1 font-semibold text-stone-950">{legalAudit.duplicate_source_ids.length}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold uppercase text-stone-500">Missing fields</div>
+                        <div className="mt-1 font-semibold text-stone-950">{legalAudit.missing_required_fields.length}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalAudit.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {legalAudit.missing_critical_topics.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {legalAudit.missing_critical_topics.map((topic) => (
+                          <Badge key={topic} variant="outline" className="bg-white">
+                            {topic}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </section>
             )}
