@@ -2359,6 +2359,8 @@ pending_facts 必须写清该事实如何影响风险等级、法律依据或修
                 "preflight_strategy_id": (rule_preflight.get("strategy") or {}).get("strategy_id"),
                 "recommended_task": (rule_preflight.get("routing") or {}).get("recommended_task"),
                 "recommended_model": (rule_preflight.get("routing") or {}).get("recommended_model"),
+                "privacy_risk_level": (rule_preflight.get("privacy_scan") or {}).get("risk_level"),
+                "privacy_finding_count": (rule_preflight.get("privacy_scan") or {}).get("finding_count"),
             },
         )
         if rule_preflight.get("status") == "blocked":

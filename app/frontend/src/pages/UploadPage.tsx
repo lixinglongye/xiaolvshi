@@ -228,13 +228,15 @@ function UploadInner() {
   const liveProgressValue = liveStatus?.progress?.percent;
   const extractionQuality = liveStatus?.extraction?.extraction_quality;
   const preflightProgress = liveStatus?.progress?.preflight_status
-    ? {
-        status: liveStatus.progress.preflight_status,
-        strategy: liveStatus.progress.preflight_strategy_id,
-        task: liveStatus.progress.recommended_task,
-        model: liveStatus.progress.recommended_model,
-      }
-    : null;
+      ? {
+          status: liveStatus.progress.preflight_status,
+          strategy: liveStatus.progress.preflight_strategy_id,
+          task: liveStatus.progress.recommended_task,
+          model: liveStatus.progress.recommended_model,
+          privacyRisk: liveStatus.progress.privacy_risk_level,
+          privacyCount: liveStatus.progress.privacy_finding_count,
+        }
+      : null;
 
   useEffect(() => {
     if (!submitting) return undefined;
@@ -790,7 +792,7 @@ function UploadInner() {
                     <Progress value={typeof liveProgressValue === 'number' ? liveProgressValue : progress} className="h-2 bg-slate-100" />
 
                     {preflightProgress && (
-                      <div className="grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-emerald-950 sm:grid-cols-4">
+                      <div className="grid gap-2 rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 text-xs text-emerald-950 sm:grid-cols-5">
                         <div>
                           <div className="text-[11px] font-semibold uppercase text-emerald-700">
                             {lang === 'zh' ? '规则预检' : 'Preflight'}
@@ -816,6 +818,14 @@ function UploadInner() {
                             {lang === 'zh' ? '推荐模型' : 'Model'}
                           </div>
                           <div className="mt-1 break-words font-mono text-[11px]">{preflightProgress.model || '-'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase text-emerald-700">
+                            {lang === 'zh' ? '隐私风险' : 'Privacy'}
+                          </div>
+                          <div className="mt-1 break-words font-mono text-[11px]">
+                            {preflightProgress.privacyRisk || 'none'} · {preflightProgress.privacyCount ?? 0}
+                          </div>
                         </div>
                       </div>
                     )}
