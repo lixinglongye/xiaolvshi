@@ -77,6 +77,7 @@ function Inner() {
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
+  const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
@@ -843,6 +844,116 @@ function Inner() {
                         </Badge>
                       </TableCell>
                       <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.request_cost_bounds && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Request cost bounds</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  default {formatUsd(data.request_cost_bounds.summary.default_cost_usd)} / ceiling{' '}
+                  {formatUsd(data.request_cost_bounds.summary.ceiling_cost_usd)}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.request_cost_bounds.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.request_cost_bounds.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.request_cost_bounds.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.request_cost_bounds.summary.task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">tracked tasks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.request_cost_bounds.summary.priced_task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">priced tasks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.request_cost_bounds.summary.warning_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.request_cost_bounds.summary.blocking_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking checks</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Tokens</TableHead>
+                    <TableHead>Default cost</TableHead>
+                    <TableHead>Ceiling cost</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {requestCostBoundRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-mono font-semibold text-stone-950">{row.task}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[240px] font-mono text-xs text-stone-700">{row.model}</div>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'mt-1 bg-white'}>
+                          {row.cost_tier ?? 'unknown'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        prompt {formatNumber(row.prompt_tokens_assumption)}
+                        <br />
+                        default {formatNumber(row.default_max_tokens)}
+                        <br />
+                        ceiling {formatNumber(row.ceiling_max_tokens)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{formatUsd(row.default_request_cost_usd)}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">fail {formatUsd(row.fail_default_cost_usd)}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{formatUsd(row.ceiling_request_cost_usd)}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">fail {formatUsd(row.fail_ceiling_cost_usd)}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

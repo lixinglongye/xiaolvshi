@@ -42,6 +42,7 @@ from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_routing_replay import ModelRoutingReplayService
+from services.model_request_cost_bounds import ModelRequestCostBoundsService
 from services.model_runtime_router import runtime_router_policy_for_api
 from services.model_reasoning_policy import reasoning_policy_for_api
 from services.model_request_policy import generation_request_policy_for_api
@@ -158,11 +159,13 @@ async def list_models():
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
+    request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
+        "request_cost_bounds": request_cost_bounds,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
@@ -190,6 +193,7 @@ async def list_models():
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
+        "request_cost_bounds": request_cost_bounds,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,

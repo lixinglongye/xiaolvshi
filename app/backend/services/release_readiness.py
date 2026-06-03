@@ -239,6 +239,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_request_policy.py tests/test_aihub_runtime_routing.py -q",
             ),
             ReleaseCheck(
+                id="model-request-cost-bounds",
+                title="Model request cost bounds coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_request_cost_bounds.py",
+                    "app/backend/tests/test_model_request_cost_bounds.py",
+                    "docs/MODEL_REQUEST_COST_BOUNDS.md",
+                ),
+                validation_command="python -m pytest tests/test_model_request_cost_bounds.py tests/test_model_request_policy.py -q",
+            ),
+            ReleaseCheck(
                 id="model-route-telemetry",
                 title="Model route telemetry coverage",
                 category="model_ops",

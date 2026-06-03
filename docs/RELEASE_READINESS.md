@@ -25,6 +25,7 @@ POST /api/v1/maintenance/release-readiness
   "model-runtime-router": "pass",
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
+  "model-request-cost-bounds": "pass",
   "model-route-telemetry": "pass",
   "model-route-guardrails": "pass",
   "model-task-inference": "pass",
@@ -64,6 +65,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Runtime model router coverage.
 - Gemini reasoning effort policy coverage.
 - Generation request parameter policy coverage.
+- Model request cost bounds coverage.
 - Model route telemetry coverage.
 - Model route guardrail coverage.
 - Model task inference coverage.

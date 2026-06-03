@@ -56,6 +56,7 @@
 - 用 `model_runtime_router.py` 检查真实文本请求是否按任务选择模型，避免所有文本请求都落在同一默认路由。
 - 用 `model_reasoning_policy.py` 检查 Gemini `reasoning_effort` 是否仍按高频任务低 thinking、复杂任务高 thinking 的策略执行。
 - 用 `model_request_policy.py` 检查 `temperature` 和 `max_tokens` 是否仍按任务限制，避免高频分类/OCR 请求消耗过大输出预算。
+- 用 `model_request_cost_bounds.py` 检查每类任务的默认请求成本和上限请求成本是否仍符合 cheap-first 预算边界。
 - 用 `model_route_telemetry.py` 观察真实请求中自动推断、降级和超预算模型请求的趋势。
 - 用 `model_route_guardrails.py` 把路由遥测转换为发布前的 pass/warn/fail 检查，防止超预算、降级和人工复核请求比例悄悄漂移。
 - 用 `model_callsite_audit.py` 阻止新增 service 层 AIHub 文本调用漏写 `task=...`。

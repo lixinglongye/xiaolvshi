@@ -299,6 +299,45 @@ export type ModelRequestPolicy = {
   task_policies: ModelRequestPolicyTask[];
 };
 
+export type ModelRequestCostBound = {
+  id: string;
+  task: string;
+  model: string;
+  is_priced: boolean;
+  cost_tier?: string | null;
+  prompt_tokens_assumption: number;
+  default_max_tokens: number;
+  ceiling_max_tokens: number;
+  default_request_cost_usd?: number | null;
+  ceiling_request_cost_usd?: number | null;
+  warn_default_cost_usd: number;
+  fail_default_cost_usd: number;
+  warn_ceiling_cost_usd: number;
+  fail_ceiling_cost_usd: number;
+  status: string;
+  reason: string;
+};
+
+export type ModelRequestCostBounds = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    priced_task_count: number;
+    default_cost_usd: number;
+    ceiling_cost_usd: number;
+    warning_count: number;
+    blocking_count: number;
+  };
+  task_bounds: ModelRequestCostBound[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelCallsiteAudit = {
   status: string;
   method: {
@@ -658,6 +697,7 @@ export type ModelOpsResponse = {
   gateway_compatibility?: ModelGatewayCompatibility;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
+  request_cost_bounds?: ModelRequestCostBounds;
   route_telemetry?: ModelRouteTelemetry;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;

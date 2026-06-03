@@ -52,6 +52,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `reasoning_policy` 为 Gemini/OpenAI-compatible `reasoning_effort` 设置任务默认值：高频 fast/OCR/classification 尽量关闭或最小化 thinking，法律 review 使用 low，PDF/复杂复核才使用 high。未知网关模型会省略该参数以保持透传兼容。
 
 `request_policy` 为 `temperature` 和 `max_tokens` 设置任务级默认值和上限：高频分类、OCR 和预检请求默认短输出、低温度，法律 review/PDF 保留更大的显式输出预算，JSON 输出会降低温度上限以减少解析失败和重试成本。
+`request_cost_bounds` 将 `request_policy` 的 token 上限换算成按任务的默认请求成本和上限请求成本，帮助维护者发现 fast、classification、OCR 等高频路径是否被误调到高价模型或过大输出预算。
 
 `route_telemetry` 记录运行时路由聚合指标，包括自动推断比例、降级比例、超预算请求、人工复核请求和未知价格模型，帮助维护者确认 cheap-first 策略是否在真实调用中生效。
 
@@ -110,6 +111,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。
 - `/model-ops` 会展示 Reasoning policy，帮助维护者确认 thinking budget 是否仍按任务低价优先。
 - `/model-ops` 会展示 Request policy，帮助维护者确认 temperature 和 max_tokens 是否仍按高频任务低成本策略执行。
+- `/model-ops` 会展示 Request cost bounds，帮助维护者把 max_tokens 策略映射成默认请求成本和上限请求成本。
 - `/model-ops` 会展示 Route telemetry，帮助维护者观察真实请求的自动推断、降级和超预算情况。
 - `/model-ops` 会展示 Route guardrails，帮助维护者把运行时路由遥测转成发布前的阻塞和告警项。
 - `/model-ops` 会展示 Callsite audit，帮助维护者确认 service 层 AIHub 文本调用都带有显式 task。
