@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
+  getContinuousUpdateLedger,
   getLegalFixtureImprovementPlan,
   getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
@@ -34,6 +35,7 @@ import {
   getReleaseReadiness,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
+  type ContinuousUpdateLedger,
   type FeedbackRoadmapCatalog,
   type LegalFixtureEvidenceBundle,
   type LegalFixtureImprovementPlan,
@@ -57,11 +59,16 @@ import {
 } from '@/lib/maintenanceApi';
 
 const categoryClass: Record<string, string> = {
+  benchmark: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  frontend_ui: 'bg-indigo-50 text-indigo-800 border-indigo-200',
   model_ops: 'bg-sky-50 text-sky-800 border-sky-200',
   quality: 'bg-emerald-50 text-emerald-800 border-emerald-200',
   review_ops: 'bg-amber-50 text-amber-900 border-amber-200',
   release_management: 'bg-red-50 text-red-800 border-red-200',
+  release_evidence: 'bg-violet-50 text-violet-800 border-violet-200',
   product: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+  safety: 'bg-red-50 text-red-800 border-red-200',
+  user_research: 'bg-teal-50 text-teal-800 border-teal-200',
   maintenance: 'bg-stone-50 text-stone-800 border-stone-200',
 };
 
@@ -84,6 +91,9 @@ const statusClass: Record<string, string> = {
   needs_escalation: 'border-red-200 bg-red-50 text-red-800',
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
+  in_progress: 'border-sky-200 bg-sky-50 text-sky-800',
+  planned: 'border-stone-200 bg-stone-50 text-stone-700',
+  shipped: 'border-emerald-200 bg-emerald-50 text-emerald-800',
 };
 
 function roleLabel(role?: string) {
@@ -120,6 +130,7 @@ function Inner() {
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
+  const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -149,6 +160,7 @@ function Inner() {
         readiness,
         needsRadar,
         feedbackMap,
+        continuousLedgerData,
         benchmarkData,
         researchBacklogData,
         publicBenchmarkSamplerData,
@@ -167,6 +179,7 @@ function Inner() {
         getReleaseReadiness(),
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
+        getContinuousUpdateLedger(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
         getLegalPublicBenchmarkSampler(),
@@ -186,6 +199,7 @@ function Inner() {
       setValidationCommands(readiness.validation_commands);
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
+      setContinuousLedger(continuousLedgerData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
@@ -218,6 +232,11 @@ function Inner() {
     () => (data?.signals ?? []).reduce((total, signal) => total + signal.evidence_paths.length, 0),
     [data],
   );
+  const ledgerCompletionPercent = useMemo(() => {
+    if (!continuousLedger) return 0;
+    const target = continuousLedger.goal.target_medium_large_update_count || 1;
+    return Math.min(100, Math.round((continuousLedger.summary.completed_medium_large_update_count / target) * 100));
+  }, [continuousLedger]);
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -336,6 +355,118 @@ function Inner() {
             </CardContent>
           </Card>
         </div>
+
+        {continuousLedger && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Continuous update ledger</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Progress evidence for 24h maintenance and 100+ medium/large update tracking.
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass[continuousLedger.status] ?? statusClass.in_progress}>
+                {continuousLedger.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {continuousLedger.summary.completed_medium_large_update_count}/
+                  {continuousLedger.goal.target_medium_large_update_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">medium/large updates</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {continuousLedger.summary.remaining_medium_large_update_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">updates remaining</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{continuousLedger.summary.planned_update_count}</div>
+                <div className="mt-1 text-sm text-stone-600">planned updates</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {continuousLedger.summary.continuous_hours_verified}/
+                  {continuousLedger.goal.target_continuous_hours}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">hours verified</div>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+              <div className="mb-4">
+                <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold uppercase text-stone-500">
+                  <span>100 update progress</span>
+                  <span>{ledgerCompletionPercent}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+                  <div className="h-full bg-stone-950" style={{ width: `${ledgerCompletionPercent}%` }} />
+                </div>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+                <div>
+                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Low-resource test policy</h3>
+                  <div className="space-y-2 text-sm text-stone-700">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Fixture limit</span>
+                      <Badge variant="outline" className="bg-white">
+                        {continuousLedger.low_resource_test_policy.default_fixture_limit}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Max parallel requests</span>
+                      <Badge variant="outline" className="bg-white">
+                        {continuousLedger.low_resource_test_policy.max_parallel_requests}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Network</span>
+                      <Badge variant="outline" className="bg-white">
+                        {continuousLedger.low_resource_test_policy.network_access.replace(/_/g, ' ')}
+                      </Badge>
+                    </div>
+                    <div className="break-all font-mono text-[11px] text-stone-500">
+                      {continuousLedger.low_resource_test_policy.recommended_endpoint}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Next update queue</h3>
+                  <div className="space-y-3">
+                    {continuousLedger.next_update_queue.slice(0, 6).map((entry) => (
+                      <div key={entry.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className={categoryClass[entry.category] ?? categoryClass.maintenance}>
+                            {entry.category.replace(/_/g, ' ')}
+                          </Badge>
+                          <Badge variant="outline" className={statusClass[entry.status] ?? statusClass.planned}>
+                            {entry.size}
+                          </Badge>
+                        </div>
+                        <div className="text-sm font-semibold text-stone-950">{entry.title}</div>
+                        <div className="mt-1 text-xs leading-5 text-stone-600">{entry.impact}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {Object.entries(continuousLedger.summary.category_counts).map(([category, count]) => (
+                  <Badge key={category} variant="outline" className={categoryClass[category] ?? categoryClass.maintenance}>
+                    {category.replace(/_/g, ' ')}: {count}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {data && (
           <>

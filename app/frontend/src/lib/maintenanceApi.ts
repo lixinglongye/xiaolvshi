@@ -221,6 +221,57 @@ type FeedbackRoadmapCatalogResponse = {
   data: FeedbackRoadmapCatalog;
 };
 
+export type ContinuousUpdateLedgerEntry = {
+  id: string;
+  title: string;
+  category: string;
+  size: 'medium' | 'large';
+  status: 'shipped' | 'planned';
+  impact: string;
+  evidence_paths: string[];
+  release_gate_links: string[];
+  user_need_ids: string[];
+  commit_hint?: string | null;
+};
+
+export type ContinuousUpdateLedger = {
+  status: string;
+  goal: {
+    target_continuous_hours: number;
+    target_medium_large_update_count: number;
+    completion_policy: string[];
+  };
+  summary: {
+    completed_medium_large_update_count: number;
+    remaining_medium_large_update_count: number;
+    planned_update_count: number;
+    large_update_count: number;
+    medium_update_count: number;
+    category_counts: Record<string, number>;
+    continuous_hours_verified: number;
+    continuous_hours_remaining: number;
+    completion_ready: boolean;
+  };
+  completed_updates: ContinuousUpdateLedgerEntry[];
+  next_update_queue: ContinuousUpdateLedgerEntry[];
+  twenty_four_hour_evidence_requirements: string[];
+  hundred_update_evidence_requirements: string[];
+  low_resource_test_policy: {
+    default_fixture_limit: number;
+    max_parallel_requests: number;
+    network_access: string;
+    model_call_policy: string;
+    recommended_endpoint: string;
+  };
+  release_guardrails: string[];
+  validation_commands: string[];
+};
+
+type ContinuousUpdateLedgerResponse = {
+  success: boolean;
+  data: ContinuousUpdateLedger;
+};
+
 export type LegalReviewBenchmarkCaseResult = {
   case_id: string;
   title: string;
@@ -987,6 +1038,18 @@ export async function getFeedbackRoadmapCatalog(): Promise<FeedbackRoadmapCatalo
     return payload.data;
   }
   return payload as FeedbackRoadmapCatalog;
+}
+
+export async function getContinuousUpdateLedger(): Promise<ContinuousUpdateLedger> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-update-ledger',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as ContinuousUpdateLedgerResponse | ContinuousUpdateLedger;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ContinuousUpdateLedger;
 }
 
 export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {

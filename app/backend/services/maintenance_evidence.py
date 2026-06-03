@@ -309,6 +309,8 @@ class MaintenanceEvidenceService:
                     "app/backend/services/user_needs_radar.py",
                     "app/backend/tests/test_continuous_update_ledger.py",
                     "app/backend/tests/test_feedback_roadmap_alignment.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "docs/CONTINUOUS_UPDATE_LEDGER.md",
                     "docs/USER_NEEDS_RADAR.md",
                     "docs/FEEDBACK_ROADMAP_ALIGNMENT.md",

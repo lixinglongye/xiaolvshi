@@ -372,7 +372,7 @@ class ContinuousUpdateLedgerService:
                 title="Reviewer-facing continuous update ledger panel",
                 category="frontend_ui",
                 size="medium",
-                status="planned",
+                status="shipped",
                 impact="Expose the ledger on the maintenance dashboard with completed count, remaining count, and low-resource test policy.",
                 evidence_paths=(
                     "app/frontend/src/lib/maintenanceApi.ts",
