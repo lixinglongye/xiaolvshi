@@ -20,6 +20,7 @@ POST /api/v1/maintenance/release-readiness
   "model-capability-matrix": "pass",
   "model-escalation-policy": "pass",
   "model-cost-forecast": "pass",
+  "model-cost-guardrails": "pass",
   "deep-review-release-decision": "pass",
   "document-preflight": "pass",
   "extraction-quality": "pass",
@@ -44,6 +45,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Gemini model capability matrix coverage.
 - Cheap-first model escalation policy coverage.
 - Model cost forecast coverage.
+- Model cost guardrail coverage.
 - Deep-review release decision coverage.
 - Document preflight routing coverage.
 - Extraction quality audit coverage.

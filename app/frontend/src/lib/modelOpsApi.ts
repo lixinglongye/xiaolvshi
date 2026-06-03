@@ -197,6 +197,37 @@ export type ModelCostForecast = {
   profiles: ModelCostForecastProfile[];
 };
 
+export type ModelCostGuardrailCheck = {
+  id: string;
+  status: string;
+  value: number;
+  ratio?: number;
+  limit?: number;
+  warn_threshold?: number;
+  fail_threshold?: number;
+  forecast_reference_usd?: number;
+  reason: string;
+};
+
+export type ModelCostGuardrails = {
+  status: string;
+  thresholds: Record<string, number>;
+  summary: {
+    request_count: number;
+    estimated_cost_usd: number;
+    forecast_cheap_first_monthly_cost_usd: number;
+    forecast_premium_baseline_monthly_cost_usd: number;
+    forecast_savings_ratio: number | null;
+    premium_request_ratio: number;
+    failure_rate: number;
+    unpriced_model_count: number;
+  };
+  checks: ModelCostGuardrailCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -204,6 +235,7 @@ export type ModelOpsResponse = {
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;
   cost_forecast?: ModelCostForecast;
+  cost_guardrails?: ModelCostGuardrails;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };

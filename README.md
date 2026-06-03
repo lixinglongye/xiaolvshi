@@ -13,6 +13,7 @@
 - 模型能力成本矩阵：`app/backend/services/model_capability_matrix.py`
 - 模型升级策略：[docs/MODEL_ESCALATION_POLICY.md](docs/MODEL_ESCALATION_POLICY.md)
 - 模型成本预测：[docs/MODEL_COST_FORECAST.md](docs/MODEL_COST_FORECAST.md)
+- 模型成本守卫：[docs/MODEL_COST_GUARDRAILS.md](docs/MODEL_COST_GUARDRAILS.md)
 - 用户研究与维护说明：[docs/USER_RESEARCH_AND_MAINTENANCE.md](docs/USER_RESEARCH_AND_MAINTENANCE.md)
 - 开源维护证明接口：[docs/OSS_MAINTENANCE_EVIDENCE.md](docs/OSS_MAINTENANCE_EVIDENCE.md)
 - 用户反馈分类处理：[docs/FEEDBACK_TRIAGE.md](docs/FEEDBACK_TRIAGE.md)

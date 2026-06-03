@@ -71,6 +71,7 @@ function Inner() {
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
   const forecastRows = data?.cost_forecast?.profiles ?? [];
+  const guardrailRows = data?.cost_guardrails?.checks ?? [];
   const totals = data?.usage.totals;
 
   return (
@@ -144,6 +145,93 @@ function Inner() {
             </CardContent>
           </Card>
         </div>
+
+        {data?.cost_guardrails && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cost guardrails</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.cost_guardrails.blocking_check_ids.length} blocking ·{' '}
+                  {data.cost_guardrails.warning_check_ids.length} warning checks
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.cost_guardrails.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.cost_guardrails.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.cost_guardrails.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(data.cost_guardrails.summary.estimated_cost_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">actual estimate</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.cost_guardrails.summary.premium_request_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium ratio</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.cost_guardrails.summary.failure_rate * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">failure rate</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cost_guardrails.summary.unpriced_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unpriced models</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {guardrailRows.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell className="font-mono text-xs font-semibold text-stone-950">{check.id}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            check.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : check.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{check.ratio != null ? `${Math.round(check.ratio * 100)}%` : check.value}</TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
 
         <section className="mb-8">
           <div className="mb-3 flex items-center justify-between gap-3">

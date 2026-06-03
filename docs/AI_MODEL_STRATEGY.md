@@ -43,6 +43,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `cost_forecast` 基于当前模型目录、升级策略和默认月度任务画像估算 cheap-first cascade 成本，并与 premium-only baseline 对比，帮助维护者量化低价优先策略的节省幅度。
 
+`cost_guardrails` 将模型用量、成本预测和预算阈值合并成 pass/warn/fail 检查，覆盖预算占用、失败率、premium 请求比例、未知价格模型和 cheap-first 节省幅度。
+
 ## Cost-First Defaults
 
 当前默认策略：
@@ -79,6 +81,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Escalation policy，帮助维护者确认哪些质量信号会触发平衡模型验证或 premium exception。
 - `/model-ops` 会展示 Cost forecast，帮助维护者确认高频任务是否仍然保留足够的 cheap-first 成本优势。
+- `/model-ops` 会展示 Cost guardrails，帮助维护者尽早发现 premium 使用、失败重试或未知价格模型导致的成本漂移。
 - 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。
 - `/model-ops` 中的 estimated cost 使用 `model_catalog.py` 里的 Gemini paid-tier token 单价估算，仅用于成本趋势判断；实际扣费以 NewAPI/Google Gemini 账单为准。
 

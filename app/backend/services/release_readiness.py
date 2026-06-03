@@ -173,6 +173,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_cost_forecast.py -q",
             ),
             ReleaseCheck(
+                id="model-cost-guardrails",
+                title="Model cost guardrail coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_cost_guardrails.py",
+                    "app/backend/tests/test_model_cost_guardrails.py",
+                    "docs/MODEL_COST_GUARDRAILS.md",
+                ),
+                validation_command="python -m pytest tests/test_model_cost_guardrails.py -q",
+            ),
+            ReleaseCheck(
                 id="document-preflight",
                 title="Document preflight routing coverage",
                 category="legal_quality",
