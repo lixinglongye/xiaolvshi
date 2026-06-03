@@ -14,7 +14,9 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
+  getLegalFixtureImprovementPlan,
   getLegalKnowledgeAudit,
+  getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
@@ -22,8 +24,10 @@ import {
   getReleaseReadiness,
   getUserNeedsRadar,
   type FeedbackRoadmapCatalog,
+  type LegalFixtureImprovementPlan,
   type LegalKnowledgeAudit,
   type LegalReviewBenchmark,
+  type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
@@ -45,6 +49,16 @@ const priorityClass: Record<string, string> = {
   high: 'border-red-200 bg-red-50 text-red-800',
   medium: 'border-amber-200 bg-amber-50 text-amber-900',
   low: 'border-stone-200 bg-stone-50 text-stone-700',
+};
+
+const statusClass: Record<string, string> = {
+  pass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  not_run: 'border-stone-200 bg-stone-50 text-stone-700',
+  warn: 'border-amber-200 bg-amber-50 text-amber-900',
+  review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  needs_improvement: 'border-red-200 bg-red-50 text-red-800',
+  fail: 'border-red-200 bg-red-50 text-red-800',
 };
 
 function roleLabel(role?: string) {
@@ -69,6 +83,8 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
+  const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -77,12 +93,24 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness, needsRadar, feedbackMap, benchmarkData, legalKnowledge, ragEvaluation] = await Promise.all([
+      const [
+        evidence,
+        readiness,
+        needsRadar,
+        feedbackMap,
+        benchmarkData,
+        fixtureSmokeData,
+        fixtureImprovementData,
+        legalKnowledge,
+        ragEvaluation,
+      ] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalReviewFixtureSmoke(),
+        getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
         getLegalRagEvaluationPolicy(),
       ]);
@@ -92,6 +120,8 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setFixtureSmoke(fixtureSmokeData);
+      setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
       setRagPolicy(ragEvaluation);
     } catch (err) {
@@ -549,6 +579,158 @@ function Inner() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {(fixtureSmoke || fixtureImprovement) && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture smoke tests</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureSmoke?.fixture_count ?? 0} local fixtures 路 {fixtureImprovement?.summary.action_count ?? 0}{' '}
+                      improvement actions
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {fixtureSmoke && (
+                      <Badge variant="outline" className={statusClass[fixtureSmoke.status] ?? statusClass.not_run}>
+                        smoke {fixtureSmoke.status.replace(/_/g, ' ')} 路 {fixtureSmoke.score}
+                      </Badge>
+                    )}
+                    {fixtureImprovement && (
+                      <Badge
+                        variant="outline"
+                        className={statusClass[fixtureImprovement.status] ?? statusClass.review_recommended}
+                      >
+                        plan {fixtureImprovement.status.replace(/_/g, ' ')}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixtureSmoke?.passed_fixture_count ?? 0}</div>
+                    <div className="mt-1 text-sm text-stone-600">fixture passes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixtureSmoke?.not_run_fixture_count ?? 0}</div>
+                    <div className="mt-1 text-sm text-stone-600">not run</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureImprovement?.summary.high_priority_action_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high-priority actions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureImprovement?.summary.affected_fixture_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">affected fixtures</div>
+                  </div>
+                </div>
+
+                {fixtureSmoke && (
+                  <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Expected route</TableHead>
+                          <TableHead>Expected signals</TableHead>
+                          <TableHead>Expected outputs</TableHead>
+                          <TableHead>Smoke result</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fixtureSmoke.template.fixtures.map((fixture) => {
+                          const result = fixtureSmoke.fixture_results.find((item) => item.fixture_id === fixture.id);
+                          return (
+                            <TableRow key={fixture.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{fixture.title}</div>
+                                <div className="mt-1 max-w-[360px] text-xs leading-5 text-stone-600">
+                                  {fixture.input_excerpt}
+                                </div>
+                                <div className="mt-2 font-mono text-[11px] text-stone-500">{fixture.id}</div>
+                              </TableCell>
+                              <TableCell className="font-mono text-xs text-stone-600">
+                                {fixture.expected_routes.join(', ') || '-'}
+                              </TableCell>
+                              <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                                {fixture.expected_signals.join(', ')}
+                              </TableCell>
+                              <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                                {fixture.expected_tasks.join(', ')}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[result?.status ?? 'not_run'] ?? statusClass.not_run}
+                                >
+                                  {(result?.status ?? 'not_run').replace(/_/g, ' ')} 路 {result?.score ?? 0}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                {fixtureImprovement && (
+                  <div className="grid gap-3 lg:grid-cols-[0.75fr_1.25fr]">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Planner</h3>
+                      <div className="space-y-3 text-sm text-stone-700">
+                        <div>
+                          <div className="text-xs font-semibold uppercase text-stone-500">Formula</div>
+                          <div className="mt-1 leading-6">{fixtureSmoke?.template.method.score_formula ?? '-'}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold uppercase text-stone-500">Resource policy</div>
+                          <div className="mt-1 leading-6">{fixtureSmoke?.template.method.local_resource_policy ?? '-'}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold uppercase text-stone-500">Privacy</div>
+                          <div className="mt-1 leading-6">{fixtureImprovement.privacy_note}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Prompt / schema actions</h3>
+                      {fixtureImprovement.actions.length > 0 ? (
+                        <div className="space-y-3">
+                          {fixtureImprovement.actions.slice(0, 6).map((action) => (
+                            <div key={action.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                              <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <Badge variant="outline" className={priorityClass[action.priority] ?? priorityClass.medium}>
+                                  {action.priority}
+                                </Badge>
+                                <span className="font-mono text-xs text-stone-500">{action.schema_target}</span>
+                              </div>
+                              <div className="text-sm font-semibold text-stone-950">{action.report_section}</div>
+                              <div className="mt-1 text-xs leading-5 text-stone-600">{action.prompt_clause}</div>
+                              <div className="mt-2 text-[11px] leading-5 text-stone-500">{action.validation_hint}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {fixtureImprovement.recommended_actions.map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
                 )}
               </section>

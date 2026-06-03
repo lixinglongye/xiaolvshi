@@ -165,6 +165,101 @@ export type LegalReviewBenchmarkCaseResult = {
   release_gate_links: string[];
 };
 
+export type LegalReviewFixtureTemplateRow = {
+  id: string;
+  title: string;
+  matter_type: string;
+  linked_case_ids: string[];
+  expected_routes: string[];
+  expected_tasks: string[];
+  expected_signals: string[];
+  input_excerpt: string;
+  observation_template: {
+    output_text: string;
+    route: string;
+    structured_outputs: Record<string, unknown>;
+  };
+};
+
+export type LegalReviewFixtureSmokeResult = {
+  fixture_id: string;
+  title: string;
+  status: string;
+  score: number;
+  metric_scores: Record<string, number>;
+  matched_signals: string[];
+  missing_signals: string[];
+  matched_tasks: string[];
+  missing_tasks: string[];
+  expected_routes: string[];
+  observed_route: string;
+};
+
+export type LegalReviewFixtureSmoke = {
+  status: string;
+  score: number;
+  fixture_count: number;
+  passed_fixture_count: number;
+  warning_fixture_count: number;
+  failed_fixture_count: number;
+  not_run_fixture_count: number;
+  blocking_fixture_ids: string[];
+  recommended_actions: string[];
+  fixture_results: LegalReviewFixtureSmokeResult[];
+  template: {
+    status: string;
+    method: {
+      type: string;
+      score_formula: string;
+      pass_thresholds: Record<string, number>;
+      local_resource_policy: string;
+    };
+    fixture_count: number;
+    fixtures: LegalReviewFixtureTemplateRow[];
+    default_observations: Record<
+      string,
+      {
+        output_text: string;
+        route: string;
+        structured_outputs: Record<string, unknown>;
+      }
+    >;
+  };
+};
+
+export type LegalFixtureImprovementAction = {
+  id: string;
+  label: string;
+  label_type: 'signal' | 'task_output' | string;
+  priority: 'high' | 'medium' | string;
+  report_section: string;
+  schema_target: string;
+  prompt_clause: string;
+  validation_hint: string;
+  fixture_id: string;
+  fixture_title: string;
+  current_fixture_score: number;
+};
+
+export type LegalFixtureImprovementPlan = {
+  status: string;
+  smoke_status: string;
+  score: number;
+  summary: {
+    fixture_count: number;
+    affected_fixture_count: number;
+    action_count: number;
+    high_priority_action_count: number;
+    missing_signal_count: number;
+    missing_task_output_count: number;
+  };
+  actions: LegalFixtureImprovementAction[];
+  grouped_actions: Record<string, LegalFixtureImprovementAction[]>;
+  smoke_result: LegalReviewFixtureSmoke;
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -181,6 +276,30 @@ export type LegalReviewBenchmark = {
     case_count: number;
     task_family_counts: Record<string, number>;
     required_metric_counts: Record<string, number>;
+    public_source_count?: number;
+    document_fixture_count?: number;
+    public_sources?: Array<{
+      id: string;
+      title: string;
+      url: string;
+      source_type: string;
+      task_fit: string[];
+      import_policy: string;
+      size_note: string;
+      license_note: string;
+    }>;
+    document_fixtures?: Array<{
+      id: string;
+      title: string;
+      matter_type: string;
+      linked_case_ids: string[];
+      sample_text: string;
+      expected_tasks: string[];
+      expected_signals: string[];
+      source_relation: string;
+      license_note: string;
+    }>;
+    fixture_smoke_template?: LegalReviewFixtureSmoke['template'];
     cases: Array<{
       id: string;
       title: string;
@@ -200,6 +319,16 @@ export type LegalReviewBenchmark = {
 type LegalReviewBenchmarkResponse = {
   success: boolean;
   data: LegalReviewBenchmark;
+};
+
+type LegalReviewFixtureSmokeResponse = {
+  success: boolean;
+  data: LegalReviewFixtureSmoke;
+};
+
+type LegalFixtureImprovementPlanResponse = {
+  success: boolean;
+  data: LegalFixtureImprovementPlan;
 };
 
 export type LegalKnowledgeAudit = {
@@ -298,6 +427,30 @@ export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
     return payload.data;
   }
   return payload as LegalReviewBenchmark;
+}
+
+export async function getLegalReviewFixtureSmoke(): Promise<LegalReviewFixtureSmoke> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-smoke',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalReviewFixtureSmokeResponse | LegalReviewFixtureSmoke;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalReviewFixtureSmoke;
+}
+
+export async function getLegalFixtureImprovementPlan(): Promise<LegalFixtureImprovementPlan> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-improvements',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureImprovementPlanResponse | LegalFixtureImprovementPlan;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureImprovementPlan;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {
