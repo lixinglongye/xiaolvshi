@@ -370,6 +370,83 @@ export type LegalFixtureRunPlan = {
   privacy_note: string;
 };
 
+export type LegalFixtureLocalRunPackageRequestFile = {
+  file_name: string;
+  fixture_id: string;
+  title: string;
+  phase: string;
+  task: string;
+  model: string;
+  model_cost_tier?: string | null;
+  endpoint_url: string;
+  body: Record<string, unknown>;
+  prompt_tokens_estimate: number;
+  completion_tokens_budget: number;
+  estimated_request_cost_usd?: number | null;
+  response_capture: {
+    gateway_json_path: string;
+    normalized_observation_path: string;
+    raw_output_policy: string;
+  };
+};
+
+export type LegalFixtureLocalRunPackageStep = {
+  order: number;
+  step_id: string;
+  fixture_id: string;
+  title: string;
+  run_condition: string;
+  max_parallel_requests: number;
+  request_file_name: string;
+  endpoint_url: string;
+  command_templates: {
+    powershell: string;
+    curl: string;
+  };
+  next_local_action: string;
+};
+
+export type LegalFixtureLocalRunPackage = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    requested_fixture_limit: number;
+    selected_fixture_count: number;
+    request_file_count: number;
+    run_step_count: number;
+    max_parallel_requests: number;
+    estimated_cheap_first_cost_usd: number;
+    unknown_cost_request_count: number;
+    follow_up_endpoint_count: number;
+  };
+  environment: {
+    required_env: string[];
+    base_url_rule: string;
+    secret_policy: string;
+  };
+  request_files: LegalFixtureLocalRunPackageRequestFile[];
+  run_steps: LegalFixtureLocalRunPackageStep[];
+  observation_template: Record<string, unknown>;
+  run_report_payload_template: {
+    observations: Record<string, unknown>;
+    run_metadata: Record<string, unknown>;
+  };
+  follow_up_endpoints: string[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
 export type LegalFixtureRunReportRow = {
   fixture_id: string;
   title: string;
@@ -669,6 +746,11 @@ type LegalFixtureRunPlanResponse = {
   data: LegalFixtureRunPlan;
 };
 
+type LegalFixtureLocalRunPackageResponse = {
+  success: boolean;
+  data: LegalFixtureLocalRunPackage;
+};
+
 type LegalFixtureRunReportResponse = {
   success: boolean;
   data: LegalFixtureRunReport;
@@ -845,6 +927,18 @@ export async function getLegalFixtureRunPlan(): Promise<LegalFixtureRunPlan> {
     return payload.data;
   }
   return payload as LegalFixtureRunPlan;
+}
+
+export async function getLegalFixtureLocalRunPackage(): Promise<LegalFixtureLocalRunPackage> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/local-run-package',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureLocalRunPackageResponse | LegalFixtureLocalRunPackage;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureLocalRunPackage;
 }
 
 export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport> {

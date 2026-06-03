@@ -18,6 +18,7 @@ import {
   getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
   getLegalFixturePromptPack,
+  getLegalFixtureLocalRunPackage,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
@@ -34,6 +35,7 @@ import {
   type LegalFixtureImprovementPlan,
   type LegalFixtureModelMatrix,
   type LegalFixturePromptPack,
+  type LegalFixtureLocalRunPackage,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
@@ -89,6 +91,12 @@ function formatUsd(value?: number | null) {
   return `$${value.toFixed(2)}`;
 }
 
+function formatInline(value: unknown) {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
+}
+
 export default function MaintenanceEvidencePage() {
   return (
     <AuthGuard>
@@ -111,6 +119,7 @@ function Inner() {
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
+  const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
@@ -133,6 +142,7 @@ function Inner() {
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
         fixturePromptPackData,
+        fixtureLocalRunPackageData,
         fixtureRunPlanData,
         fixtureRunReportData,
         fixtureSmokeData,
@@ -149,6 +159,7 @@ function Inner() {
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
         getLegalFixturePromptPack(),
+        getLegalFixtureLocalRunPackage(),
         getLegalFixtureRunPlan(),
         getLegalFixtureRunReport(),
         getLegalReviewFixtureSmoke(),
@@ -166,6 +177,7 @@ function Inner() {
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
       setFixturePromptPack(fixturePromptPackData);
+      setFixtureLocalRunPackage(fixtureLocalRunPackageData);
       setFixtureRunPlan(fixtureRunPlanData);
       setFixtureRunReport(fixtureRunReportData);
       setFixtureSmoke(fixtureSmokeData);
@@ -1209,6 +1221,169 @@ function Inner() {
                       ))}
                     </ul>
                     <div className="mt-4 text-xs leading-5 text-stone-500">{fixtureRunPlan.privacy_note}</div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {fixtureLocalRunPackage && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture local run package</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureLocalRunPackage.summary.request_file_count} request files / max parallel{' '}
+                      {fixtureLocalRunPackage.summary.max_parallel_requests}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[fixtureLocalRunPackage.status] ?? statusClass.warn}>
+                    {fixtureLocalRunPackage.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureLocalRunPackage.summary.selected_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">selected fixtures</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureLocalRunPackage.summary.request_file_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">request files</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixtureLocalRunPackage.summary.estimated_cheap_first_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first estimate</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureLocalRunPackage.summary.follow_up_endpoint_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">follow-up endpoints</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Request file</TableHead>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Budget</TableHead>
+                          <TableHead>Capture</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fixtureLocalRunPackage.request_files.map((request) => (
+                          <TableRow key={request.file_name}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{request.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{request.file_name}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{request.fixture_id}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">{request.model}</div>
+                              <div>
+                                {request.phase.replace(/_/g, ' ')} / {request.model_cost_tier ?? 'gateway'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{request.prompt_tokens_estimate} prompt tokens</div>
+                              <div>{request.completion_tokens_budget} max tokens</div>
+                              <div>body max {formatInline(request.body.max_tokens)}</div>
+                              <div className="font-mono text-stone-950">
+                                {formatUsd(request.estimated_request_cost_usd)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px]">{request.response_capture.gateway_json_path}</div>
+                              <div className="mt-1 break-all font-mono text-[11px]">
+                                {request.response_capture.normalized_observation_path}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Environment</h3>
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {fixtureLocalRunPackage.environment.required_env.map((item) => (
+                        <Badge key={item} variant="outline" className="bg-white font-mono">
+                          {item}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="mb-3 text-xs leading-5 text-stone-600">
+                      {fixtureLocalRunPackage.environment.base_url_rule}
+                    </div>
+                    <div className="text-xs leading-5 text-stone-600">
+                      {fixtureLocalRunPackage.environment.secret_policy}
+                    </div>
+                    <div className="mt-4 border-t border-stone-950/10 pt-3 text-xs leading-5 text-stone-500">
+                      {fixtureLocalRunPackage.privacy_note}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Step</TableHead>
+                        <TableHead>PowerShell</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fixtureLocalRunPackage.run_steps.map((step) => (
+                        <TableRow key={step.step_id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{step.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{step.step_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">parallel {step.max_parallel_requests}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[560px] font-mono text-[11px] leading-5 text-stone-600">
+                            {step.command_templates.powershell}
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {step.next_local_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Follow-up endpoints</h3>
+                    <div className="space-y-2">
+                      {fixtureLocalRunPackage.follow_up_endpoints.map((endpoint) => (
+                        <div key={endpoint} className="break-all font-mono text-xs text-stone-700">
+                          {endpoint}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Package actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixtureLocalRunPackage.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </section>
