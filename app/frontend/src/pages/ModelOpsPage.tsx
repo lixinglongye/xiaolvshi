@@ -71,6 +71,7 @@ function Inner() {
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
+  const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
@@ -233,6 +234,116 @@ function Inner() {
                       </TableCell>
                       <TableCell>{check.category}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.default_optimization && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Default optimization</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.default_optimization.summary.aligned_count} aligned /{' '}
+                  {data.default_optimization.summary.change_count} changes / saves{' '}
+                  {formatUsd(data.default_optimization.summary.estimated_monthly_savings_usd)}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.default_optimization.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.default_optimization.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.default_optimization.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_optimization.summary.task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">task defaults</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_optimization.summary.change_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">env changes</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_optimization.summary.manual_review_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">manual-review defaults</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(data.default_optimization.summary.estimated_monthly_savings_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">estimated monthly savings</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Default</TableHead>
+                    <TableHead>Recommendation</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {defaultOptimizationRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.display_name}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        <span className="font-mono">{row.current_model}</span>
+                        <br />
+                        {row.env_var ?? row.source}
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        <span className="font-mono">{row.recommended_model}</span>
+                        <br />
+                        {row.requires_change ? 'update default' : row.source}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.recommended_cost_tier || ''] ?? 'bg-white'}>
+                          {row.recommended_cost_tier ?? 'unknown'}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          save {formatUsd(row.estimated_monthly_savings_usd)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -40,6 +40,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `model_configuration_audit` 检查当前 `.env` 解析出的 cheap、fast、OCR、classification、review、premium 和 PDF 角色是否符合成本层级和能力预期。`APP_AI_FAST_MODEL`、`APP_OCR_MODEL`、`APP_AI_CLASSIFIER_MODEL` 现在会优先用于对应任务，未配置时回退到 cheap model。
 
 `model_ops_readiness` 汇总配置审计、路由、推理预算、请求参数、调用点审计、遥测、守卫、回放、回退链和成本控制，给出模型运维是否可发布的 pass/warn/fail 结论。
+`default_optimization` 将能力矩阵和成本预测转成默认模型调优计划，指出哪个 env var 应该回到最便宜的可用 Gemini 模型，以及预计月度节省。
 
 `task_inference` 让 `POST /api/v1/aihub/gentxt` 默认使用 `task=auto`，通过确定性规则把分类、OCR、法律审查、预检/摘要等请求映射到合适任务，避免忘传 `task=review` 时把法律审查误放到 fast 路由。
 
@@ -101,6 +102,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 批量任务上线前先调用 `/api/v1/aihub/models` 确认当前路由角色。
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Model ops readiness，把分散的模型运维信号汇总成发布前的阻塞和告警结论。
+- `/model-ops` 会展示 Default optimization，帮助维护者把 fast、classification、OCR、review 和 PDF 默认模型保持在最便宜的合格 Gemini 路径上。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Configuration audit，帮助维护者确认环境变量解析出的模型角色没有误配成高价或能力不足模型。
 - `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。

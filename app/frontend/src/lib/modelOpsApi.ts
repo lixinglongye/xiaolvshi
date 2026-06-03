@@ -123,6 +123,47 @@ export type ModelConfigurationAudit = {
   recommended_actions: string[];
 };
 
+export type ModelDefaultOptimizationRecommendation = {
+  id: string;
+  task: string;
+  display_name: string;
+  status: string;
+  source: string;
+  env_var?: string | null;
+  current_model: string;
+  recommended_model: string;
+  current_cost_tier?: string | null;
+  recommended_cost_tier?: string | null;
+  max_cost_tier: string;
+  required_capabilities: string[];
+  missing_required_capabilities: string[];
+  runtime_default_is_recommended: boolean;
+  requires_change: boolean;
+  requires_operator_review: boolean;
+  estimated_monthly_savings_usd?: number | null;
+  reason: string;
+};
+
+export type ModelDefaultOptimization = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    aligned_count: number;
+    change_count: number;
+    manual_review_count: number;
+    estimated_monthly_savings_usd: number;
+    priced_task_count: number;
+  };
+  recommendations: ModelDefaultOptimizationRecommendation[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelOpsReadinessCheck = {
   id: string;
   label: string;
@@ -565,6 +606,7 @@ export type ModelOpsResponse = {
   model_ops_readiness?: ModelOpsReadiness;
   runtime_router?: ModelRuntimeRouter;
   model_configuration_audit?: ModelConfigurationAudit;
+  default_optimization?: ModelDefaultOptimization;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   route_telemetry?: ModelRouteTelemetry;

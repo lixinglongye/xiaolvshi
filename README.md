@@ -12,6 +12,7 @@
 - AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
 - 模型配置审计：[docs/MODEL_CONFIGURATION_AUDIT.md](docs/MODEL_CONFIGURATION_AUDIT.md)
 - 模型运维就绪汇总：[docs/MODEL_OPS_READINESS.md](docs/MODEL_OPS_READINESS.md)
+- 默认模型优化计划：[docs/MODEL_DEFAULT_OPTIMIZATION.md](docs/MODEL_DEFAULT_OPTIMIZATION.md)
 - 模型能力成本矩阵：`app/backend/services/model_capability_matrix.py`
 - 模型任务推断：[docs/MODEL_TASK_INFERENCE.md](docs/MODEL_TASK_INFERENCE.md)
 - 模型调用点审计：[docs/MODEL_CALLSITE_AUDIT.md](docs/MODEL_CALLSITE_AUDIT.md)

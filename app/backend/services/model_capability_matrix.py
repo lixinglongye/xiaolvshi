@@ -88,6 +88,16 @@ class ModelCapabilityMatrixService:
                 reason="OCR can run across many pages; default to the cheapest vision-capable model.",
             ),
             ModelTaskRequirement(
+                task="classification",
+                display_name="Material classification",
+                required_capabilities=("text", "json", "classification"),
+                preferred_capabilities=("ocr",),
+                max_cost_tier="lowest",
+                preferred_latency_tier="fastest",
+                default_alias="auto-fast",
+                reason="Document and evidence classification is high-volume and should stay on the cheapest structured model.",
+            ),
+            ModelTaskRequirement(
                 task="review",
                 display_name="Balanced legal review",
                 required_capabilities=("text", "json", "review"),

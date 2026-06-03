@@ -7,8 +7,10 @@ def test_capability_matrix_recommends_cheapest_fast_and_ocr_models():
 
     assert rows["fast"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["ocr"]["recommended_model"] == "gemini-2.5-flash-lite"
+    assert rows["classification"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["fast"]["runtime_default_is_recommended"] is True
     assert rows["ocr"]["runtime_default_is_recommended"] is True
+    assert rows["classification"]["runtime_default_is_recommended"] is True
 
 
 def test_capability_matrix_keeps_premium_as_pdf_exception():

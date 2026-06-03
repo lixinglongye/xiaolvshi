@@ -36,6 +36,7 @@ from services.model_catalog import catalog_for_api, task_default_model
 from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
+from services.model_default_optimization import ModelDefaultOptimizationService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_ops_readiness import ModelOpsReadinessService
@@ -154,9 +155,11 @@ async def list_models():
     fallback_chains = ModelFallbackChainService().build_chains()
     routing_replay = ModelRoutingReplayService().run_replay()
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
+    default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
+        "default_optimization": default_optimization,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
@@ -182,6 +185,7 @@ async def list_models():
         "model_ops_readiness": ModelOpsReadinessService().evaluate(model_ops_signals),
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
+        "default_optimization": default_optimization,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
