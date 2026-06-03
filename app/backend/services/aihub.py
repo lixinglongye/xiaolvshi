@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_request_policy import resolve_generation_request_policy
 from services.model_reasoning_policy import resolve_reasoning_effort
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_task_inference import infer_gentxt_task
@@ -179,6 +180,12 @@ class AIHubService:
             task=route.task,
             requested_effort=request.reasoning_effort,
         )
+        request_policy = resolve_generation_request_policy(
+            task=route.task,
+            requested_temperature=request.temperature,
+            requested_max_tokens=request.max_tokens,
+            response_format=request.response_format,
+        )
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -187,8 +194,8 @@ class AIHubService:
             params = {
                 "model": model,
                 "messages": messages,
-                "temperature": request.temperature,
-                "max_tokens": request.max_tokens,
+                "temperature": request_policy.effective_temperature,
+                "max_tokens": request_policy.effective_max_tokens,
                 "stream": False,
             }
             if request.response_format:
@@ -214,6 +221,7 @@ class AIHubService:
                 budget_decision=route.to_api(),
                 task_inference=task_inference.to_api(),
                 reasoning_policy=reasoning_policy.to_api(),
+                request_policy=request_policy.to_api(),
                 usage=usage,
             )
 
@@ -253,6 +261,12 @@ class AIHubService:
             task=route.task,
             requested_effort=request.reasoning_effort,
         )
+        request_policy = resolve_generation_request_policy(
+            task=route.task,
+            requested_temperature=request.temperature,
+            requested_max_tokens=request.max_tokens,
+            response_format=request.response_format,
+        )
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -261,8 +275,8 @@ class AIHubService:
             params = {
                 "model": model,
                 "messages": messages,
-                "temperature": request.temperature,
-                "max_tokens": request.max_tokens,
+                "temperature": request_policy.effective_temperature,
+                "max_tokens": request_policy.effective_max_tokens,
                 "stream": True,
             }
             if request.response_format:

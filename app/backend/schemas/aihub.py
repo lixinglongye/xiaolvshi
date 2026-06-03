@@ -61,8 +61,14 @@ class GenTxtRequest(BaseModel):
         description="Allow explicit over-budget or operator-review models instead of routing to the recommended model.",
     )
     stream: bool = Field(default=False, description="Whether to enable streaming output.")
-    temperature: Optional[float] = Field(default=0.7, description="Sampling temperature (0-2).")
-    max_tokens: Optional[int] = Field(default=4096, description="Maximum number of generated tokens.")
+    temperature: Optional[float] = Field(
+        default=None,
+        description="Optional sampling temperature. If omitted, a task-aware low-cost default is used.",
+    )
+    max_tokens: Optional[int] = Field(
+        default=None,
+        description="Optional maximum generated tokens. If omitted, a task-aware low-cost default is used.",
+    )
     response_format: Optional[dict[str, Any]] = Field(
         default=None,
         description="Optional OpenAI-compatible response_format, e.g. {'type': 'json_object'}.",
@@ -93,6 +99,10 @@ class GenTxtResponse(BaseModel):
     reasoning_policy: Optional[dict[str, Any]] = Field(
         default=None,
         description="Reasoning effort routing decision without prompts, documents, or credentials.",
+    )
+    request_policy: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Task-aware generation parameter decision without prompts, documents, or credentials.",
     )
     usage: Optional[dict] = Field(default=None, description="Token usage statistics.")
 

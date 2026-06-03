@@ -71,6 +71,7 @@ function Inner() {
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
+  const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
@@ -378,6 +379,58 @@ function Inner() {
                       <TableCell className="text-xs text-stone-600">{row.cost_mode}</TableCell>
                       <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
                         {row.supported_efforts.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.request_policy && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Request policy</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {requestPolicyRows.length} task defaults / temperature and token ceilings
+                </div>
+              </div>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                {data.request_policy.status}
+              </Badge>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Temperature</TableHead>
+                    <TableHead>Max tokens</TableHead>
+                    <TableHead>Format</TableHead>
+                    <TableHead>Mode</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {requestPolicyRows.map((row) => (
+                    <TableRow key={`request-policy-${row.task}`}>
+                      <TableCell className="font-mono font-semibold text-stone-950">{row.task}</TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{row.effective_temperature}</div>
+                        {row.temperature_adjusted && <div className="mt-1 text-[11px] font-semibold text-amber-700">clamped</div>}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{formatNumber(row.effective_max_tokens)}</div>
+                        {row.max_tokens_adjusted && <div className="mt-1 text-[11px] font-semibold text-amber-700">clamped</div>}
+                      </TableCell>
+                      <TableCell>{row.response_format_mode}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={row.cost_mode === 'caller-expanded' ? 'border-amber-200 bg-amber-50 text-amber-900' : 'bg-white'}>
+                          {row.cost_mode}
+                        </Badge>
                       </TableCell>
                       <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>

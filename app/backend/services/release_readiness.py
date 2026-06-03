@@ -174,6 +174,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_reasoning_policy.py tests/test_aihub_runtime_routing.py -q",
             ),
             ReleaseCheck(
+                id="model-request-policy",
+                title="Generation request parameter policy coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_request_policy.py",
+                    "app/backend/tests/test_model_request_policy.py",
+                    "docs/MODEL_REQUEST_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_request_policy.py tests/test_aihub_runtime_routing.py -q",
+            ),
+            ReleaseCheck(
                 id="model-route-telemetry",
                 title="Model route telemetry coverage",
                 category="model_ops",

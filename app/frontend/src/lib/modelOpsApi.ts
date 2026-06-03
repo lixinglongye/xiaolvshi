@@ -108,6 +108,36 @@ export type ModelReasoningPolicy = {
   task_defaults: ModelReasoningDecision[];
 };
 
+export type ModelRequestPolicyDecision = {
+  task: string;
+  requested_temperature?: number | null;
+  effective_temperature: number;
+  requested_max_tokens?: number | null;
+  effective_max_tokens: number;
+  temperature_adjusted: boolean;
+  max_tokens_adjusted: boolean;
+  response_format_mode: string;
+  cost_mode: string;
+  reason: string;
+};
+
+export type ModelRequestPolicyTask = {
+  task: string;
+  default_temperature: number;
+  max_temperature: number;
+  default_max_tokens: number;
+  max_max_tokens: number;
+  rationale: string;
+};
+
+export type ModelRequestPolicy = {
+  status: string;
+  request_fields: Record<string, string>;
+  policy_notes: string[];
+  task_defaults: ModelRequestPolicyDecision[];
+  task_policies: ModelRequestPolicyTask[];
+};
+
 export type ModelCallsiteAudit = {
   status: string;
   method: {
@@ -462,6 +492,7 @@ export type ModelOpsResponse = {
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
   reasoning_policy?: ModelReasoningPolicy;
+  request_policy?: ModelRequestPolicy;
   route_telemetry?: ModelRouteTelemetry;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;

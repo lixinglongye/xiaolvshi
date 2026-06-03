@@ -40,6 +40,7 @@ from services.model_fallback_chains import ModelFallbackChainService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_runtime_router import runtime_router_policy_for_api
 from services.model_reasoning_policy import reasoning_policy_for_api
+from services.model_request_policy import generation_request_policy_for_api
 from services.model_route_guardrails import ModelRouteGuardrailService
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
@@ -150,6 +151,7 @@ async def list_models():
         },
         "runtime_router": runtime_router_policy_for_api(),
         "reasoning_policy": reasoning_policy_for_api(),
+        "request_policy": generation_request_policy_for_api(),
         "route_telemetry": route_telemetry,
         "route_guardrails": ModelRouteGuardrailService().evaluate(route_telemetry),
         "callsite_audit": ModelCallsiteAuditService().audit(),
