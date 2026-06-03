@@ -67,6 +67,7 @@ function Inner() {
 
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
+  const readinessRows = data?.model_ops_readiness?.checks ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
@@ -156,6 +157,89 @@ function Inner() {
             </CardContent>
           </Card>
         </div>
+
+        {data?.model_ops_readiness && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Model ops readiness</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.model_ops_readiness.summary.component_count} components /{' '}
+                  {data.model_ops_readiness.summary.blocking_count} blocking /{' '}
+                  {data.model_ops_readiness.summary.warning_count} warning
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.model_ops_readiness.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.model_ops_readiness.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.model_ops_readiness.release_recommendation.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.pass_count}</div>
+                <div className="mt-1 text-sm text-stone-600">passing</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.warn_count}</div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.fail_count}</div>
+                <div className="mt-1 text-sm text-stone-600">failures</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.blocking_check_ids.length}</div>
+                <div className="mt-1 text-sm text-stone-600">blocking ids</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Component</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {readinessRows.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{check.label}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{check.source_key}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            check.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : check.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{check.category}</TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
 
         {data?.cost_guardrails && (
           <section className="mb-8">

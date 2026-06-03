@@ -19,6 +19,7 @@ POST /api/v1/maintenance/release-readiness
   "secret-scan": "pass",
   "model-capability-matrix": "pass",
   "model-configuration-audit": "pass",
+  "model-ops-readiness": "pass",
   "model-runtime-router": "pass",
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
@@ -55,6 +56,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Secret and credential scan.
 - Gemini model capability matrix coverage.
 - Model configuration audit coverage.
+- Model operations readiness coverage.
 - Runtime model router coverage.
 - Gemini reasoning effort policy coverage.
 - Generation request parameter policy coverage.

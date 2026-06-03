@@ -38,6 +38,7 @@ from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
+from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_runtime_router import runtime_router_policy_for_api
 from services.model_reasoning_policy import reasoning_policy_for_api
@@ -141,6 +142,34 @@ async def list_models():
     usage = model_usage_registry.snapshot()
     forecast = ModelCostForecastService().build_forecast()
     route_telemetry = model_route_telemetry_registry.snapshot()
+    runtime_router = runtime_router_policy_for_api()
+    model_configuration_audit = ModelConfigurationAuditService().audit()
+    reasoning_policy = reasoning_policy_for_api()
+    request_policy = generation_request_policy_for_api()
+    route_guardrails = ModelRouteGuardrailService().evaluate(route_telemetry)
+    callsite_audit = ModelCallsiteAuditService().audit()
+    budget_policy = budget_policy_for_api()
+    capability_matrix = ModelCapabilityMatrixService().build_matrix()
+    escalation_policy = ModelEscalationPolicyService().build_policy()
+    fallback_chains = ModelFallbackChainService().build_chains()
+    routing_replay = ModelRoutingReplayService().run_replay()
+    cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
+    model_ops_signals = {
+        "runtime_router": runtime_router,
+        "model_configuration_audit": model_configuration_audit,
+        "reasoning_policy": reasoning_policy,
+        "request_policy": request_policy,
+        "route_telemetry": route_telemetry,
+        "route_guardrails": route_guardrails,
+        "callsite_audit": callsite_audit,
+        "budget_policy": budget_policy,
+        "capability_matrix": capability_matrix,
+        "escalation_policy": escalation_policy,
+        "fallback_chains": fallback_chains,
+        "routing_replay": routing_replay,
+        "cost_forecast": forecast,
+        "cost_guardrails": cost_guardrails,
+    }
     return {
         "success": True,
         "routing_aliases": {
@@ -150,20 +179,21 @@ async def list_models():
             "auto-review": task_default_model("review"),
             "auto-pdf": task_default_model("pdf"),
         },
-        "runtime_router": runtime_router_policy_for_api(),
-        "model_configuration_audit": ModelConfigurationAuditService().audit(),
-        "reasoning_policy": reasoning_policy_for_api(),
-        "request_policy": generation_request_policy_for_api(),
+        "model_ops_readiness": ModelOpsReadinessService().evaluate(model_ops_signals),
+        "runtime_router": runtime_router,
+        "model_configuration_audit": model_configuration_audit,
+        "reasoning_policy": reasoning_policy,
+        "request_policy": request_policy,
         "route_telemetry": route_telemetry,
-        "route_guardrails": ModelRouteGuardrailService().evaluate(route_telemetry),
-        "callsite_audit": ModelCallsiteAuditService().audit(),
-        "budget_policy": budget_policy_for_api(),
-        "capability_matrix": ModelCapabilityMatrixService().build_matrix(),
-        "escalation_policy": ModelEscalationPolicyService().build_policy(),
-        "fallback_chains": ModelFallbackChainService().build_chains(),
-        "routing_replay": ModelRoutingReplayService().run_replay(),
+        "route_guardrails": route_guardrails,
+        "callsite_audit": callsite_audit,
+        "budget_policy": budget_policy,
+        "capability_matrix": capability_matrix,
+        "escalation_policy": escalation_policy,
+        "fallback_chains": fallback_chains,
+        "routing_replay": routing_replay,
         "cost_forecast": forecast,
-        "cost_guardrails": ModelCostGuardrailService().evaluate(usage, forecast),
+        "cost_guardrails": cost_guardrails,
         "models": catalog_for_api(),
         "usage": usage,
     }

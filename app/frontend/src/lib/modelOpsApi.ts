@@ -123,6 +123,39 @@ export type ModelConfigurationAudit = {
   recommended_actions: string[];
 };
 
+export type ModelOpsReadinessCheck = {
+  id: string;
+  label: string;
+  category: string;
+  source_key: string;
+  required: boolean;
+  status: string;
+  reason: string;
+  blocking_ids: string[];
+  warning_ids: string[];
+};
+
+export type ModelOpsReadiness = {
+  status: string;
+  release_recommendation: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    component_count: number;
+    pass_count: number;
+    warn_count: number;
+    fail_count: number;
+    blocking_count: number;
+    warning_count: number;
+  };
+  checks: ModelOpsReadinessCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -529,6 +562,7 @@ export type ModelCostGuardrails = {
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
+  model_ops_readiness?: ModelOpsReadiness;
   runtime_router?: ModelRuntimeRouter;
   model_configuration_audit?: ModelConfigurationAudit;
   reasoning_policy?: ModelReasoningPolicy;

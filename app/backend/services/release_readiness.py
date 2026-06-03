@@ -160,6 +160,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_configuration_audit.py tests/test_model_catalog.py tests/test_model_budget.py -q",
             ),
             ReleaseCheck(
+                id="model-ops-readiness",
+                title="Model operations readiness coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "docs/MODEL_OPS_READINESS.md",
+                ),
+                validation_command="python -m pytest tests/test_model_ops_readiness.py -q",
+            ),
+            ReleaseCheck(
                 id="model-runtime-router",
                 title="Runtime model router coverage",
                 category="model_ops",
