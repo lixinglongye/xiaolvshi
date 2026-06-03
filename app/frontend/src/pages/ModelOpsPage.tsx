@@ -70,6 +70,7 @@ function Inner() {
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
+  const forecastRows = data?.cost_forecast?.profiles ?? [];
   const totals = data?.usage.totals;
 
   return (
@@ -315,6 +316,64 @@ function Inner() {
                       {plan.hard_stop_signals.join(', ') || '-'}
                     </TableCell>
                     <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{plan.rationale}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Cost forecast</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                cheap-first {formatUsd(data?.cost_forecast?.summary.cheap_first_monthly_cost_usd)} / premium baseline{' '}
+                {formatUsd(data?.cost_forecast?.summary.premium_baseline_monthly_cost_usd)}
+              </div>
+            </div>
+            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+              saves {Math.round((data?.cost_forecast?.summary.estimated_savings_ratio ?? 0) * 100)}%
+            </Badge>
+          </div>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Profile</TableHead>
+                  <TableHead>Models</TableHead>
+                  <TableHead>Monthly volume</TableHead>
+                  <TableHead>Cheap-first</TableHead>
+                  <TableHead>Premium baseline</TableHead>
+                  <TableHead>Savings</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {forecastRows.map((row) => (
+                  <TableRow key={row.task}>
+                    <TableCell>
+                      <div className="font-semibold text-stone-950">{row.profile.display_name}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                      start {row.initial_model}
+                      <br />
+                      up {row.escalation_model}
+                    </TableCell>
+                    <TableCell className="text-xs leading-5 text-stone-600">
+                      {formatNumber(row.profile.monthly_units)} units
+                      <br />
+                      {Math.round(row.profile.expected_escalation_rate * 100)}% escalation
+                    </TableCell>
+                    <TableCell>{formatUsd(row.cheap_first_monthly_cost_usd)}</TableCell>
+                    <TableCell>{formatUsd(row.premium_baseline_monthly_cost_usd)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                        {Math.round((row.estimated_savings_ratio ?? 0) * 100)}%
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">{row.recommended_action}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

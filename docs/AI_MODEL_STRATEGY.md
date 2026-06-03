@@ -41,6 +41,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `escalation_policy` 定义 cheap-first cascade：高频任务先用 cheap model，低置信、JSON/schema 失败、引用/证据/质量门禁失败时才进入 verify 或 retry-up；`privacy_high`、`instruction_high`、`extraction_quality_fail` 这类信号会硬停止，避免把不安全或不可审查输入继续送进更贵模型。
 
+`cost_forecast` 基于当前模型目录、升级策略和默认月度任务画像估算 cheap-first cascade 成本，并与 premium-only baseline 对比，帮助维护者量化低价优先策略的节省幅度。
+
 ## Cost-First Defaults
 
 当前默认策略：
@@ -76,6 +78,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Escalation policy，帮助维护者确认哪些质量信号会触发平衡模型验证或 premium exception。
+- `/model-ops` 会展示 Cost forecast，帮助维护者确认高频任务是否仍然保留足够的 cheap-first 成本优势。
 - 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。
 - `/model-ops` 中的 estimated cost 使用 `model_catalog.py` 里的 Gemini paid-tier token 单价估算，仅用于成本趋势判断；实际扣费以 NewAPI/Google Gemini 账单为准。
 

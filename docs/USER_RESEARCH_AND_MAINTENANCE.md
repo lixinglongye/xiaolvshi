@@ -23,6 +23,7 @@
 - API 路由稳定性：`/api/v1/aihub/models` 返回的别名、默认模型和网关可用性。
 - 成本指标：OCR/分类/审查/PDF 分析各阶段 token 用量和模型分布；当前可通过 `/api/v1/aihub/models/usage` 和前端 `/model-ops` 查看本进程内聚合数据。
 - 升级策略：`/api/v1/aihub/models` 的 `escalation_policy` 记录 cheap-first 起点、质量失败升级信号和隐私/提示注入硬停止规则。
+- 成本预测：`/api/v1/aihub/models` 的 `cost_forecast` 会对 cheap-first cascade 与 premium-only baseline 做月度成本对比。
 - 质量指标：JSON 解析失败率、OCR 空结果率、用户人工修正率、报告缺少原文定位的比例。
 - 法律内容维护：本地法律知识库更新频率、引用校验失败项、需要人工复核的依据列表。
 - 产品活跃度：上传文件数量、完成审查数量、案件工作台问答数量、用户中断率。
@@ -39,6 +40,7 @@
 - 为合同类型扩展专项策略：劳动合同、租赁合同、采购合同、服务合同、股权/投资协议。
 - 定期检查 Gemini/NewAPI 网关模型名称变更，移除停用模型，更新 `.env.example` 和模型目录。
 - 根据法律审查基准和真实反馈调整 `model_escalation_policy.py`，但不要把 premium 模型设成高频任务默认值。
+- 用 `model_cost_forecast.py` 复查高频任务的预计成本节省；当网关价格变化时同步更新模型目录和预测画像。
 
 ## Application-Safe Claim
 

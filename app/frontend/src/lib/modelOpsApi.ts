@@ -154,12 +154,56 @@ export type ModelEscalationPolicy = {
   };
 };
 
+export type ModelCostForecastProfile = {
+  task: string;
+  initial_model: string;
+  escalation_model: string;
+  premium_baseline_model: string;
+  initial_unit_cost_usd: number | null;
+  escalation_unit_cost_usd: number | null;
+  premium_baseline_unit_cost_usd: number | null;
+  cheap_first_monthly_cost_usd: number | null;
+  premium_baseline_monthly_cost_usd: number | null;
+  estimated_savings_ratio: number | null;
+  estimated_savings_usd: number | null;
+  recommended_action: string;
+  profile: {
+    task: string;
+    display_name: string;
+    monthly_units: number;
+    prompt_tokens_per_unit: number;
+    completion_tokens_per_unit: number;
+    expected_escalation_rate: number;
+    baseline_model_alias: string;
+    rationale: string;
+  };
+};
+
+export type ModelCostForecast = {
+  status: string;
+  method: {
+    unit: string;
+    source_basis: string[];
+    limitations: string[];
+  };
+  summary: {
+    profile_count: number;
+    priced_profile_count: number;
+    cheap_first_monthly_cost_usd: number;
+    premium_baseline_monthly_cost_usd: number;
+    estimated_savings_ratio: number | null;
+    estimated_savings_usd: number | null;
+  };
+  profiles: ModelCostForecastProfile[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;
+  cost_forecast?: ModelCostForecast;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
