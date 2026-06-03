@@ -272,6 +272,71 @@ export type ModelGatewayHealthPlan = {
   privacy_note: string;
 };
 
+export type ModelGatewayProbeTemplate = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  payload_shape: Record<string, unknown>;
+  validation_command: string;
+};
+
+export type ModelGatewayProbeEvaluation = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    observed_model_count: number;
+    known_model_count: number;
+    unknown_gemini_count: number;
+    chat_probe_count: number;
+    chat_probe_pass_count: number;
+    cheap_candidate_count: number;
+    probed_cheap_candidate_count: number;
+    recommended_change_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+  };
+  model_rows: Array<{
+    model: string;
+    canonical_model?: string | null;
+    is_known_model: boolean;
+    is_gemini_like: boolean;
+    provider: string;
+    cost_tier?: string | null;
+    model_status: string;
+    capabilities: string[];
+    chat_probe_status: string;
+    http_status?: number | null;
+    json_ok?: boolean | null;
+    latency_ms?: number | null;
+    recommended_for_defaults: boolean;
+    reason: string;
+  }>;
+  recommended_env: Array<{
+    env_var: string;
+    task: string;
+    current_value: string;
+    recommended_value: string;
+    requires_change: boolean;
+    reason: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -878,4 +943,21 @@ export async function getModelOps(): Promise<ModelOpsResponse> {
     method: 'GET',
   });
   return (resp?.data ?? resp) as ModelOpsResponse;
+}
+
+export async function getModelGatewayProbeTemplate(): Promise<ModelGatewayProbeTemplate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models/gateway-probe-template',
+    method: 'GET',
+  });
+  return (resp?.data?.data ?? resp?.data ?? resp) as ModelGatewayProbeTemplate;
+}
+
+export async function evaluateModelGatewayProbe(payload: Record<string, unknown>): Promise<ModelGatewayProbeEvaluation> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models/gateway-probe-evaluation',
+    method: 'POST',
+    data: payload,
+  });
+  return (resp?.data?.data ?? resp?.data ?? resp) as ModelGatewayProbeEvaluation;
 }

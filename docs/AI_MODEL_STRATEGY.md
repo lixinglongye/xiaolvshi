@@ -111,7 +111,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `/model-ops` 会展示 Default optimization，帮助维护者把 fast、classification、OCR、review 和 PDF 默认模型保持在最便宜的合格 Gemini 路径上。
 - `/model-ops` 会展示 Gateway compatibility，帮助维护者确认 NewAPI 或其他 OpenAI-compatible 网关返回的 Gemini 前缀模型名仍能匹配本地目录。
 - `/model-ops` 会展示 Gateway health plan，帮助维护者在真实请求前检查 base URL、key 配置状态和低价 probe 请求。
-- `/api/v1/aihub/models/gateway-probe-evaluation` 会评估脱敏后的 `/v1/models` 和 tiny chat probe 结果，辅助选择最便宜的可用默认模型。
+- `/model-ops` 和 `/api/v1/aihub/models/gateway-probe-evaluation` 会评估脱敏后的 `/v1/models` 和 tiny chat probe 结果，辅助选择最便宜的可用默认模型。
 - `/model-ops` 会展示 Lifecycle policy，帮助维护者在发布前拒绝 deprecated、preview、latest 或未知网关默认模型。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Configuration audit，帮助维护者确认环境变量解析出的模型角色没有误配成高价或能力不足模型。

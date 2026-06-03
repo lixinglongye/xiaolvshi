@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -12,8 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AlertTriangle, Gauge, Loader2, RefreshCw, Route, Zap } from 'lucide-react';
-import { getModelOps, type ModelCatalogItem, type ModelOpsResponse } from '@/lib/modelOpsApi';
+import { AlertTriangle, ClipboardList, Gauge, Loader2, PlayCircle, RefreshCw, Route, Zap } from 'lucide-react';
+import {
+  evaluateModelGatewayProbe,
+  getModelGatewayProbeTemplate,
+  getModelOps,
+  type ModelCatalogItem,
+  type ModelGatewayProbeEvaluation,
+  type ModelOpsResponse,
+} from '@/lib/modelOpsApi';
 
 const costClass: Record<string, string> = {
   lowest: 'bg-emerald-50 text-emerald-800 border-emerald-200',
@@ -35,6 +43,16 @@ function roleText(model: ModelCatalogItem) {
   return model.configured_roles.length ? model.configured_roles.join(', ') : '-';
 }
 
+function statusClass(status?: string) {
+  return status === 'pass'
+    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+    : status === 'fail'
+      ? 'border-red-200 bg-red-50 text-red-800'
+      : status === 'not_run'
+        ? 'border-stone-200 bg-white text-stone-700'
+        : 'border-amber-200 bg-amber-50 text-amber-900';
+}
+
 export default function ModelOpsPage() {
   return (
     <AuthGuard>
@@ -47,6 +65,11 @@ function Inner() {
   const [data, setData] = useState<ModelOpsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [probePayloadText, setProbePayloadText] = useState('');
+  const [probeEvaluation, setProbeEvaluation] = useState<ModelGatewayProbeEvaluation | null>(null);
+  const [probeLoading, setProbeLoading] = useState(false);
+  const [probeTemplateLoading, setProbeTemplateLoading] = useState(false);
+  const [probeError, setProbeError] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -65,6 +88,38 @@ function Inner() {
     load();
   }, []);
 
+  const loadProbeTemplate = async () => {
+    setProbeTemplateLoading(true);
+    setProbeError('');
+    try {
+      const template = await getModelGatewayProbeTemplate();
+      setProbePayloadText(JSON.stringify(template.payload_shape, null, 2));
+    } catch (err) {
+      console.error(err);
+      setProbeError('Gateway probe template failed to load.');
+    } finally {
+      setProbeTemplateLoading(false);
+    }
+  };
+
+  const evaluateProbePayload = async () => {
+    setProbeLoading(true);
+    setProbeError('');
+    try {
+      const payload = probePayloadText.trim() ? JSON.parse(probePayloadText) : {};
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setProbeError('Probe payload must be a JSON object.');
+        return;
+      }
+      setProbeEvaluation(await evaluateModelGatewayProbe(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setProbeError(err instanceof SyntaxError ? 'Probe payload is not valid JSON.' : 'Gateway probe evaluation failed.');
+    } finally {
+      setProbeLoading(false);
+    }
+  };
+
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
@@ -76,6 +131,9 @@ function Inner() {
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
+  const probeEnvRows = probeEvaluation?.recommended_env ?? [];
+  const probeCheckRows = probeEvaluation?.checks ?? [];
+  const probeModelRows = probeEvaluation?.model_rows ?? [];
   const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
@@ -609,6 +667,222 @@ function Inner() {
             </div>
           </section>
         )}
+
+        <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Gateway probe evaluation</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                {probeEvaluation
+                  ? `${probeEvaluation.summary.observed_model_count} observed / ${probeEvaluation.summary.probed_cheap_candidate_count} cheap probes passed`
+                  : 'sanitized model list and tiny chat probe review'}
+              </div>
+            </div>
+            <Badge variant="outline" className={statusClass(probeEvaluation?.status)}>
+              {probeEvaluation?.status ?? 'not evaluated'}
+            </Badge>
+          </div>
+
+          {probeError && (
+            <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <AlertTriangle className="h-4 w-4" />
+              {probeError}
+            </div>
+          )}
+
+          <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-stone-950">Probe payload</div>
+                  <div className="mt-1 text-xs text-stone-500">JSON object only; no headers, keys, prompts, or raw output.</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="soft-button"
+                    onClick={loadProbeTemplate}
+                    disabled={probeTemplateLoading}
+                  >
+                    {probeTemplateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardList className="h-4 w-4" />}
+                    Template
+                  </Button>
+                  <Button
+                    type="button"
+                    className="law-button"
+                    onClick={evaluateProbePayload}
+                    disabled={probeLoading}
+                  >
+                    {probeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                    Evaluate
+                  </Button>
+                </div>
+              </div>
+              <Textarea
+                value={probePayloadText}
+                onChange={(event) => setProbePayloadText(event.target.value)}
+                className="min-h-[260px] resize-y rounded-[8px] bg-white font-mono text-xs leading-5"
+                spellCheck={false}
+                placeholder='{"models_response":{"data":[{"id":"gemini-2.5-flash-lite"}]},"chat_probe_results":{"gemini-2.5-flash-lite":{"status":"pass","http_status":200,"json_ok":true,"latency_ms":1200}}}'
+              />
+              <div className="mt-3 text-xs leading-5 text-stone-500">
+                {probeEvaluation?.privacy_note ?? 'The backend evaluates sanitized IDs, HTTP status, latency, and JSON booleans only.'}
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">
+                    {probeEvaluation?.summary.cheap_candidate_count ?? 0}
+                  </div>
+                  <div className="mt-1 text-sm text-stone-600">cheap candidates</div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">
+                    {probeEvaluation?.summary.recommended_change_count ?? 0}
+                  </div>
+                  <div className="mt-1 text-sm text-stone-600">env changes</div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">
+                    {probeEvaluation?.summary.warning_check_count ?? 0}
+                  </div>
+                  <div className="mt-1 text-sm text-stone-600">warnings</div>
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Env</TableHead>
+                      <TableHead>Recommendation</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {probeEnvRows.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={3} className="py-6 text-center text-stone-500">
+                          Evaluate sanitized probe results to generate default model recommendations.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      probeEnvRows.map((row) => (
+                        <TableRow key={row.env_var}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.env_var}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.recommended_value}</div>
+                            <div className="font-mono text-[11px]">current {row.current_value}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <Badge
+                              variant="outline"
+                              className={
+                                row.requires_change
+                                  ? 'border-amber-200 bg-amber-50 text-amber-900'
+                                  : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              }
+                            >
+                              {row.requires_change ? 'review change' : 'aligned'}
+                            </Badge>
+                            <div className="mt-1">{row.reason}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+
+          {probeCheckRows.length > 0 && (
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {probeCheckRows.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell className="font-mono text-xs font-semibold text-stone-950">{check.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[640px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {probeModelRows.length > 0 && (
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Catalog</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Probe</TableHead>
+                    <TableHead>Latency</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {probeModelRows.map((row) => (
+                    <TableRow key={row.model}>
+                      <TableCell className="max-w-[280px]">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.model}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.canonical_model ?? '-'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.is_known_model
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.is_known_model ? row.model_status : 'unknown'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                          {row.cost_tier ?? 'unpriced'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.chat_probe_status)}>
+                          {row.chat_probe_status}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">HTTP {row.http_status ?? '-'}</div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-600">
+                        {row.latency_ms == null ? '-' : `${formatNumber(row.latency_ms)}ms`}
+                      </TableCell>
+                      <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
 
         {data?.lifecycle_policy && (
           <section className="mb-8">

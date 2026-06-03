@@ -48,7 +48,7 @@ The evaluator also accepts `model_ids` as a plain array and chat probe rows as a
 2. Run `GET {{APP_AI_BASE_URL}}/models` manually.
 3. Run a tiny chat probe for the cheapest candidate.
 4. Remove Authorization headers, prompts, documents, and raw model output.
-5. Submit only sanitized model IDs and probe status to `/gateway-probe-evaluation`.
+5. Submit only sanitized model IDs and probe status in `/model-ops` or to `/gateway-probe-evaluation`.
 6. Review `.env` recommendations before changing defaults.
 
 ## Validation
@@ -67,5 +67,7 @@ Do not submit or commit API keys, Authorization headers, user prompts, client do
 - `app/backend/tests/test_model_gateway_probe_evaluation.py`
 - `app/backend/services/model_gateway_health_plan.py`
 - `app/backend/routers/aihub.py`
+- `app/frontend/src/lib/modelOpsApi.ts`
+- `app/frontend/src/pages/ModelOpsPage.tsx`
 - `docs/MODEL_GATEWAY_HEALTH_PLAN.md`
 - `docs/AI_MODEL_STRATEGY.md`
