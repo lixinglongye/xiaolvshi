@@ -147,6 +147,30 @@ def _catalog_by_id() -> dict[str, ModelProfile]:
     return {item.id: item for item in GEMINI_MODEL_CATALOG}
 
 
+def canonical_model_id(model_id: str | None) -> str | None:
+    """Return the local catalog id for common gateway-prefixed model names."""
+    value = (model_id or "").strip().lower()
+    if not value:
+        return None
+    catalog = _catalog_by_id()
+    if value in catalog:
+        return value
+
+    # OpenAI-compatible gateways often expose variants like
+    # google/gemini-2.5-flash-lite or models/gemini-2.5-flash-lite.
+    candidates = [
+        value.rsplit("/", 1)[-1],
+        value.rsplit(":", 1)[-1],
+    ]
+    for candidate in candidates:
+        if candidate in catalog:
+            return candidate
+    for known_id in catalog:
+        if value.endswith(f"/{known_id}") or value.endswith(f":{known_id}"):
+            return known_id
+    return None
+
+
 def _configured_model(name: str | None, fallback: str) -> str:
     if name and name.strip():
         return name.strip()
@@ -209,7 +233,10 @@ def resolve_model(model: str | None, *, task: str = "fast") -> str:
 
 
 def model_profile(model_id: str) -> ModelProfile | None:
-    return _catalog_by_id().get(model_id)
+    canonical = canonical_model_id(model_id)
+    if not canonical:
+        return None
+    return _catalog_by_id().get(canonical)
 
 
 def estimate_token_cost_usd(model_id: str, prompt_tokens: int, completion_tokens: int) -> float | None:
@@ -258,7 +285,11 @@ def catalog_for_api() -> list[dict[str, object]]:
             },
             "status": item.status,
             "context_window_tokens": item.context_window_tokens,
-            "configured_roles": [role for role, model_id in configured.items() if model_id == item.id],
+            "configured_roles": [
+                role
+                for role, model_id in configured.items()
+                if canonical_model_id(model_id) == item.id
+            ],
         }
         for item in GEMINI_MODEL_CATALOG
     ]

@@ -164,6 +164,54 @@ export type ModelDefaultOptimization = {
   recommended_actions: string[];
 };
 
+export type ModelGatewayCompatibilityRole = {
+  id: string;
+  label: string;
+  env_var: string;
+  model: string;
+  canonical_model?: string | null;
+  is_known_model: boolean;
+  is_gemini_like: boolean;
+  is_gateway_prefixed: boolean;
+  cost_tier?: string | null;
+  max_cost_tier: string;
+  status: string;
+  reason: string;
+};
+
+export type ModelGatewayCompatibilityExample = {
+  id: string;
+  model: string;
+  canonical_model?: string | null;
+  is_known_model: boolean;
+  is_gateway_prefixed: boolean;
+  status: string;
+  reason: string;
+};
+
+export type ModelGatewayCompatibility = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    configured_role_count: number;
+    example_count: number;
+    known_configured_count: number;
+    prefixed_configured_count: number;
+    unknown_gemini_count: number;
+    non_gemini_default_count: number;
+    warning_count: number;
+    blocking_count: number;
+  };
+  configured_roles: ModelGatewayCompatibilityRole[];
+  gateway_examples: ModelGatewayCompatibilityExample[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelOpsReadinessCheck = {
   id: string;
   label: string;
@@ -607,6 +655,7 @@ export type ModelOpsResponse = {
   runtime_router?: ModelRuntimeRouter;
   model_configuration_audit?: ModelConfigurationAudit;
   default_optimization?: ModelDefaultOptimization;
+  gateway_compatibility?: ModelGatewayCompatibility;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   route_telemetry?: ModelRouteTelemetry;

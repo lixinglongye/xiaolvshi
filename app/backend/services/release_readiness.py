@@ -173,6 +173,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_default_optimization.py tests/test_model_capability_matrix.py -q",
             ),
             ReleaseCheck(
+                id="model-gateway-compatibility",
+                title="Model gateway compatibility coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_gateway_compatibility.py",
+                    "app/backend/tests/test_model_gateway_compatibility.py",
+                    "docs/MODEL_GATEWAY_COMPATIBILITY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_gateway_compatibility.py tests/test_model_catalog.py -q",
+            ),
+            ReleaseCheck(
                 id="model-ops-readiness",
                 title="Model operations readiness coverage",
                 category="model_ops",

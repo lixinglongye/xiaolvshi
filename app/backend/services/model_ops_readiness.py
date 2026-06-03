@@ -16,6 +16,7 @@ class ReadinessComponent:
 MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("configuration-audit", "Model configuration audit", "configuration", "model_configuration_audit"),
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
+    ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),
     ReadinessComponent("runtime-router", "Runtime router", "routing", "runtime_router"),

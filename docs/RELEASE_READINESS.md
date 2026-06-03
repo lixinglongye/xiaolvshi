@@ -20,6 +20,7 @@ POST /api/v1/maintenance/release-readiness
   "model-capability-matrix": "pass",
   "model-configuration-audit": "pass",
   "model-default-optimization": "pass",
+  "model-gateway-compatibility": "pass",
   "model-ops-readiness": "pass",
   "model-runtime-router": "pass",
   "model-reasoning-policy": "pass",
@@ -58,6 +59,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Gemini model capability matrix coverage.
 - Model configuration audit coverage.
 - Model default optimization coverage.
+- Model gateway compatibility coverage.
 - Model operations readiness coverage.
 - Runtime model router coverage.
 - Gemini reasoning effort policy coverage.

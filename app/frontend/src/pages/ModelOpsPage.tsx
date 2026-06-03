@@ -72,6 +72,8 @@ function Inner() {
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
+  const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
+  const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
@@ -344,6 +346,141 @@ function Inner() {
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.gateway_compatibility && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway compatibility</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.gateway_compatibility.summary.known_configured_count} known /{' '}
+                  {data.gateway_compatibility.summary.prefixed_configured_count} prefixed /{' '}
+                  {data.gateway_compatibility.summary.unknown_gemini_count} unknown Gemini
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.gateway_compatibility.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.gateway_compatibility.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.gateway_compatibility.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_compatibility.summary.configured_role_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configured roles</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_compatibility.summary.example_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">prefix examples</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_compatibility.summary.warning_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_compatibility.summary.blocking_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking checks</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Configured model</TableHead>
+                    <TableHead>Canonical</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayCompatibilityRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.label}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.env_var}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] font-mono text-xs text-stone-700">{row.model}</TableCell>
+                      <TableCell className="max-w-[240px] font-mono text-xs text-stone-700">
+                        {row.canonical_model ?? '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                          {row.cost_tier ?? 'unknown'}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">max {row.max_cost_tier}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Gateway example</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Canonical</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayExampleRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.model}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

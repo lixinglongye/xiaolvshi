@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default optimization, runtime routing, reasoning effort policy, request parameter policy, route telemetry, route guardrails, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, and cost guardrails. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default optimization, gateway compatibility, runtime routing, reasoning effort policy, request parameter policy, route telemetry, route guardrails, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, and cost guardrails. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 
@@ -22,8 +22,8 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 15,
-      "pass_count": 15,
+      "component_count": 16,
+      "pass_count": 16,
       "warn_count": 0,
       "fail_count": 0,
       "blocking_count": 0,
@@ -41,6 +41,7 @@ The readiness service checks:
 
 - model configuration audit,
 - default optimization plan,
+- gateway compatibility,
 - budget policy,
 - capability matrix,
 - runtime router,
@@ -73,8 +74,10 @@ The service only aggregates existing status and summary metadata. It does not st
 
 - `app/backend/services/model_ops_readiness.py`
 - `app/backend/services/model_default_optimization.py`
+- `app/backend/services/model_gateway_compatibility.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_ops_readiness.py`
 - `app/backend/tests/test_model_default_optimization.py`
+- `app/backend/tests/test_model_gateway_compatibility.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
