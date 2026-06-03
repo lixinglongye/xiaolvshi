@@ -15,7 +15,11 @@ The policy is based on four practical observations from recent legal RAG work:
 ```http
 GET /api/v1/legal-knowledge/rag-evaluation-policy
 POST /api/v1/legal-knowledge/rag-evaluation
+GET /api/v1/legal-knowledge/grounding-quick-audit-policy
+POST /api/v1/legal-knowledge/grounding-quick-audit
 ```
+
+`/grounding-quick-audit` combines this RAG score with citation and evidence audits. It can infer conservative RAG metrics from a deep-review report, but inferred metrics remain a warning until an explicit `rag_run` is supplied.
 
 ## Evaluation inputs
 
@@ -37,3 +41,5 @@ POST /api/v1/legal-knowledge/rag-evaluation
 - Privacy safety: critical PII findings block release.
 
 The service does not call an AI model. It scores explicit evaluation artifacts so maintainers can plug it into CI, manual review, or future benchmark runs.
+
+For release checks that need one combined signal across legal sources, risk citations, evidence plans, and RAG metrics, use [LEGAL_GROUNDING_QUICK_AUDIT.md](LEGAL_GROUNDING_QUICK_AUDIT.md).

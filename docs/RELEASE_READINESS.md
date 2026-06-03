@@ -89,7 +89,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - User needs radar coverage.
 - Legal review benchmark coverage, including resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
-- Legal RAG evaluation coverage.
+- Legal RAG evaluation and grounding quick-audit coverage.
 
 Optional evidence checks, such as OSS maintenance evidence, are tracked but do not block releases.
 

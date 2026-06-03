@@ -11,6 +11,7 @@ from schemas.legal_knowledge import (
 )
 from services.legal_knowledge_audit import LegalKnowledgeAuditService
 from services.legal_knowledge import LegalKnowledgeService
+from services.legal_grounding_quick_audit import LegalGroundingQuickAuditService
 from services.legal_rag_evaluation import LegalRagEvaluationService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -80,6 +81,22 @@ async def evaluate_legal_rag_run(run: dict):
     return {
         "success": True,
         "data": LegalRagEvaluationService().evaluate(run),
+    }
+
+
+@router.get("/grounding-quick-audit-policy")
+async def get_legal_grounding_quick_audit_policy():
+    return {
+        "success": True,
+        "data": LegalGroundingQuickAuditService().policy(),
+    }
+
+
+@router.post("/grounding-quick-audit")
+async def evaluate_legal_grounding_quick_audit(payload: dict):
+    return {
+        "success": True,
+        "data": LegalGroundingQuickAuditService().evaluate(payload),
     }
 
 

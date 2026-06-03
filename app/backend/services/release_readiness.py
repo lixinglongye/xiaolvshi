@@ -548,10 +548,13 @@ class ReleaseReadinessService:
                 owner="legal_review_owner",
                 evidence_paths=(
                     "app/backend/services/legal_rag_evaluation.py",
+                    "app/backend/services/legal_grounding_quick_audit.py",
                     "app/backend/tests/test_legal_rag_evaluation.py",
+                    "app/backend/tests/test_legal_grounding_quick_audit.py",
                     "docs/LEGAL_RAG_EVALUATION.md",
+                    "docs/LEGAL_GROUNDING_QUICK_AUDIT.md",
                 ),
-                validation_command="python -m pytest tests/test_legal_rag_evaluation.py -q",
+                validation_command="python -m pytest tests/test_legal_grounding_quick_audit.py tests/test_legal_rag_evaluation.py tests/test_citation_audit.py tests/test_evidence_audit.py -q",
             ),
             ReleaseCheck(
                 id="oss-maintenance-evidence",
