@@ -70,6 +70,7 @@ function Inner() {
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
+  const routingReplayRows = data?.routing_replay?.scenarios ?? [];
   const forecastRows = data?.cost_forecast?.profiles ?? [];
   const guardrailRows = data?.cost_guardrails?.checks ?? [];
   const totals = data?.usage.totals;
@@ -345,6 +346,117 @@ function Inner() {
                     </TableCell>
                     <TableCell className="text-stone-700">{row.candidate_count}</TableCell>
                     <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{row.requirement.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Routing replay</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                {data?.routing_replay?.summary.scenario_count ?? 0} scenarios /{' '}
+                {data?.routing_replay?.summary.failed_count ?? 0} failures
+              </div>
+            </div>
+            <Badge
+              variant="outline"
+              className={
+                data?.routing_replay?.status === 'pass'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : data?.routing_replay?.status === 'fail'
+                    ? 'border-red-200 bg-red-50 text-red-800'
+                    : 'border-amber-200 bg-amber-50 text-amber-900'
+              }
+            >
+              {data?.routing_replay?.status ?? 'not loaded'}
+            </Badge>
+          </div>
+          <div className="mb-3 grid gap-3 md:grid-cols-4">
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.routing_replay?.summary.cheap_start_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">cheap starts</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.routing_replay?.summary.premium_operator_review_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">premium reviews</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.routing_replay?.summary.hard_stop_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">hard stops</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.routing_replay?.summary.passed_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">passed scenarios</div>
+            </div>
+          </div>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Scenario</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Signals</TableHead>
+                  <TableHead>Decision</TableHead>
+                  <TableHead>Model</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {routingReplayRows.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <div className="font-mono text-xs font-semibold text-stone-950">{row.id}</div>
+                      <div className="mt-1 max-w-[320px] text-xs leading-5 text-stone-600">
+                        {row.scenario.rationale}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          row.status === 'pass'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                            : row.status === 'fail'
+                              ? 'border-red-200 bg-red-50 text-red-800'
+                              : 'border-amber-200 bg-amber-50 text-amber-900'
+                        }
+                      >
+                        {row.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-stone-700">{row.scenario.task}</TableCell>
+                    <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                      {row.scenario.signals.join(', ') || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-semibold text-stone-950">{row.actual.decision ?? '-'}</div>
+                      <div className="mt-1 text-xs text-stone-500">expected {row.scenario.expected_decision}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[240px]">
+                      <div className="font-mono text-xs text-stone-700">{row.actual.resolved_model ?? 'no spend'}</div>
+                      <Badge variant="outline" className={`mt-1 ${costClass[row.actual.cost_tier] ?? 'bg-white'}`}>
+                        {row.actual.cost_tier}
+                      </Badge>
+                      {row.actual.requires_operator_review && (
+                        <div className="mt-1 text-[11px] font-semibold text-red-700">operator review</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                      {row.recommended_action}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

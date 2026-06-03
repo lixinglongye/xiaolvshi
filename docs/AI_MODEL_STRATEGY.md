@@ -45,6 +45,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `cost_guardrails` 将模型用量、成本预测和预算阈值合并成 pass/warn/fail 检查，覆盖预算占用、失败率、premium 请求比例、未知价格模型和 cheap-first 节省幅度。
 
+`routing_replay` 使用固定法律工作流场景回放当前升级策略，检查高频任务是否仍从便宜模型开始、警告/失败信号是否按预期验证或升级、premium 例外是否仍需要人工复核、硬停止是否避免继续花费模型预算。
+
 ## Cost-First Defaults
 
 当前默认策略：
@@ -80,6 +82,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Escalation policy，帮助维护者确认哪些质量信号会触发平衡模型验证或 premium exception。
+- `/model-ops` 会展示 Routing replay，帮助维护者在发布前发现 cheap-first 路由漂移。
 - `/model-ops` 会展示 Cost forecast，帮助维护者确认高频任务是否仍然保留足够的 cheap-first 成本优势。
 - `/model-ops` 会展示 Cost guardrails，帮助维护者尽早发现 premium 使用、失败重试或未知价格模型导致的成本漂移。
 - 模型用量统计只保存聚合指标，不保存 prompt、用户文档、文件名、邮箱、API key 或其他敏感内容。

@@ -25,6 +25,7 @@
 - 升级策略：`/api/v1/aihub/models` 的 `escalation_policy` 记录 cheap-first 起点、质量失败升级信号和隐私/提示注入硬停止规则。
 - 成本预测：`/api/v1/aihub/models` 的 `cost_forecast` 会对 cheap-first cascade 与 premium-only baseline 做月度成本对比。
 - 成本守卫：`/api/v1/aihub/models` 的 `cost_guardrails` 会检查预算占用、失败率、premium 请求比例、未知价格模型和 cheap-first 节省目标。
+- 路由回放：`/api/v1/aihub/models` 的 `routing_replay` 会用固定法律工作流场景检查 cheap-first 起点、premium 人工复核和硬停止是否发生漂移。
 - 质量指标：JSON 解析失败率、OCR 空结果率、用户人工修正率、报告缺少原文定位的比例。
 - 法律内容维护：本地法律知识库更新频率、引用校验失败项、需要人工复核的依据列表。
 - 产品活跃度：上传文件数量、完成审查数量、案件工作台问答数量、用户中断率。
@@ -45,6 +46,7 @@
 - 根据法律审查基准和真实反馈调整 `model_escalation_policy.py`，但不要把 premium 模型设成高频任务默认值。
 - 用 `model_cost_forecast.py` 复查高频任务的预计成本节省；当网关价格变化时同步更新模型目录和预测画像。
 - 用 `model_cost_guardrails.py` 监控实际用量漂移，发现 premium 比例或未知价格模型异常时先修路由再增加预算。
+- 用 `model_routing_replay.py` 在发布前回放典型场景，确认便宜模型优先策略没有被配置改动破坏。
 
 ## Application-Safe Claim
 

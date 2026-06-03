@@ -186,6 +186,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_cost_guardrails.py -q",
             ),
             ReleaseCheck(
+                id="model-routing-replay",
+                title="Model routing replay coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_routing_replay.py",
+                    "app/backend/tests/test_model_routing_replay.py",
+                    "docs/MODEL_ROUTING_REPLAY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_routing_replay.py -q",
+            ),
+            ReleaseCheck(
                 id="document-preflight",
                 title="Document preflight routing coverage",
                 category="legal_quality",

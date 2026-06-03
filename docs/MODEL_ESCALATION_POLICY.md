@@ -19,6 +19,7 @@ The response includes:
 - `budget_policy`
 - `capability_matrix`
 - `escalation_policy`
+- `routing_replay`
 - `models`
 - `usage`
 
@@ -64,9 +65,15 @@ Hard stops prevent wasteful or unsafe retries:
 
 The policy object contains only routing metadata. It does not store prompts, documents, credentials, file names, user emails, or raw model output.
 
+## Replay coverage
+
+`routing_replay` replays fixed legal workflow scenarios against this policy. It verifies that routine routes remain cheap-first, premium review routes still require operator review, and hard-stop signals do not select another model.
+
 ## Related files
 
 - `app/backend/services/model_escalation_policy.py`
+- `app/backend/services/model_routing_replay.py`
 - `app/backend/tests/test_model_escalation_policy.py`
+- `app/backend/tests/test_model_routing_replay.py`
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/pages/ModelOpsPage.tsx`

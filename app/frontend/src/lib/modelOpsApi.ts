@@ -154,6 +154,55 @@ export type ModelEscalationPolicy = {
   };
 };
 
+export type ModelRoutingReplayCheck = {
+  id: string;
+  status: string;
+  expected: string | boolean | null;
+  actual: string | boolean | null;
+  reason: string;
+};
+
+export type ModelRoutingReplayScenario = {
+  id: string;
+  status: string;
+  scenario: {
+    id: string;
+    task: string;
+    signals: string[];
+    expected_decision: string;
+    max_cost_tier: string;
+    expected_operator_review: boolean;
+    rationale: string;
+  };
+  actual: {
+    decision?: string | null;
+    resolved_model?: string | null;
+    cost_tier: string;
+    requires_operator_review: boolean;
+    reasons: string[];
+  };
+  checks: ModelRoutingReplayCheck[];
+  recommended_action: string;
+};
+
+export type ModelRoutingReplay = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    scenario_count: number;
+    passed_count: number;
+    warning_count: number;
+    failed_count: number;
+    cheap_start_count: number;
+    premium_operator_review_count: number;
+    hard_stop_count: number;
+  };
+  scenarios: ModelRoutingReplayScenario[];
+};
+
 export type ModelCostForecastProfile = {
   task: string;
   initial_model: string;
@@ -234,6 +283,7 @@ export type ModelOpsResponse = {
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;
+  routing_replay?: ModelRoutingReplay;
   cost_forecast?: ModelCostForecast;
   cost_guardrails?: ModelCostGuardrails;
   models: ModelCatalogItem[];
