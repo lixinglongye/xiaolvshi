@@ -3,6 +3,9 @@ from typing import Any, Literal
 from fastapi import APIRouter, Query
 from services.billing_entitlement_gap import BillingEntitlementGapService
 from services.case_evidence_graph import CaseEvidenceGraphService
+from services.case_intake_completeness import CaseIntakeCompletenessService
+from services.case_team_access_policy import CaseTeamAccessPolicyService
+from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
@@ -92,6 +95,42 @@ async def build_case_evidence_graph(payload: dict[str, Any]):
     return {
         "success": True,
         "data": CaseEvidenceGraphService().build_graph(payload),
+    }
+
+
+@router.get("/case-intake-completeness")
+async def get_case_intake_completeness_template():
+    """Return the case intake completeness checklist template."""
+    return {
+        "success": True,
+        "data": CaseIntakeCompletenessService().build_checklist(),
+    }
+
+
+@router.post("/case-intake-completeness")
+async def evaluate_case_intake_completeness(payload: dict[str, Any]):
+    """Evaluate structured case intake field completeness without reading raw files."""
+    return {
+        "success": True,
+        "data": CaseIntakeCompletenessService().build_checklist(payload),
+    }
+
+
+@router.get("/case-team-access-policy")
+async def get_case_team_access_policy():
+    """Return least-privilege case collaboration and audit policy metadata."""
+    return {
+        "success": True,
+        "data": CaseTeamAccessPolicyService().build_policy(),
+    }
+
+
+@router.get("/client-delivery-risk-checklist")
+async def get_client_delivery_risk_checklist():
+    """Return client-delivery disclosure, lawyer-review, and evidence gates."""
+    return {
+        "success": True,
+        "data": ClientDeliveryRiskChecklistService().build_checklist(),
     }
 
 
