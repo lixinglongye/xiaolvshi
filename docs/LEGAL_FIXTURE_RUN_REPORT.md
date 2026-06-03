@@ -38,6 +38,8 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 
 Submit the same payload to `/fixture-evidence-bundle` after this report so release readiness can archive the run report, validation commands, and support-application-safe claims together.
 
+Use `/local-run-review` when you want the response normalizer, smoke evaluator, this run report, and the evidence bundle in one low-resource request.
+
 ## Safety
 
 - The service scores request payloads only and does not call a model.
@@ -47,13 +49,16 @@ Submit the same payload to `/fixture-evidence-bundle` after this report so relea
 ## Related Files
 
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

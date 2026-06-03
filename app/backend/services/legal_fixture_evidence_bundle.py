@@ -131,6 +131,15 @@ class LegalFixtureEvidenceBundleService:
                 "archive_fields": ["release_decision", "fixture_reports", "recommended_actions"],
             },
             {
+                "id": "fixture-local-run-review",
+                "title": "One-step local run review",
+                "evidence_paths": [
+                    "docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md",
+                    "app/backend/services/legal_fixture_local_run_review.py",
+                ],
+                "archive_fields": ["summary", "run_report", "evidence_bundle", "recommended_actions"],
+            },
+            {
                 "id": "public-benchmark-sampler",
                 "title": "Resource-capped public benchmark sampler",
                 "evidence_paths": ["docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md", "app/backend/services/legal_public_benchmark_sampler.py"],
@@ -152,7 +161,7 @@ class LegalFixtureEvidenceBundleService:
 
     def _validation_commands(self) -> list[str]:
         return [
-            "python -m pytest tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py -q",
+            "python -m pytest tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py -q",
             "python -m pytest tests/test_legal_review_benchmark.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_improvement.py -q",
         ]
 

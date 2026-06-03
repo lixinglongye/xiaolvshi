@@ -6,6 +6,7 @@ from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleSer
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_local_run_package import LegalFixtureLocalRunPackageService
+from services.legal_fixture_local_run_review import LegalFixtureLocalRunReviewService
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
@@ -191,6 +192,24 @@ async def normalize_legal_review_fixture_response(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalFixtureResponseNormalizerService().normalize(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/local-run-review")
+async def get_legal_review_fixture_local_run_review_template():
+    """Return a one-step template for reviewing local fixture gateway responses."""
+    return {
+        "success": True,
+        "data": LegalFixtureLocalRunReviewService().template(),
+    }
+
+
+@router.post("/legal-review-benchmark/local-run-review")
+async def review_legal_review_fixture_local_run(payload: dict[str, Any]):
+    """Normalize and review local fixture gateway responses into release evidence."""
+    return {
+        "success": True,
+        "data": LegalFixtureLocalRunReviewService().review(payload),
     }
 
 

@@ -40,6 +40,8 @@ def test_local_run_package_includes_observation_and_report_templates():
         metadata["phase"] == "cheap_first"
         for metadata in package["run_report_payload_template"]["run_metadata"].values()
     )
+    assert "/api/v1/maintenance/legal-review-benchmark/local-response-normalizer" in package["follow_up_endpoints"]
+    assert "/api/v1/maintenance/legal-review-benchmark/local-run-review" in package["follow_up_endpoints"]
     assert "/api/v1/maintenance/legal-review-benchmark/fixture-smoke" in package["follow_up_endpoints"]
     assert "/api/v1/maintenance/legal-review-benchmark/fixture-run-report" in package["follow_up_endpoints"]
     assert "/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle" in package["follow_up_endpoints"]

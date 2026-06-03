@@ -227,6 +227,8 @@ class LegalFixtureLocalRunPackageService:
 
     def _follow_up_endpoints(self) -> list[str]:
         return [
+            "/api/v1/maintenance/legal-review-benchmark/local-response-normalizer",
+            "/api/v1/maintenance/legal-review-benchmark/local-run-review",
             "/api/v1/maintenance/legal-review-benchmark/fixture-smoke",
             "/api/v1/maintenance/legal-review-benchmark/fixture-run-report",
             "/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle",

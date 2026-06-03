@@ -46,6 +46,7 @@
 - Legal fixture run plans: `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` converts those manifests into serial cheap-first batches for low-resource laptops, with conditional escalation only after smoke coverage fails.
 - Legal fixture local run packages: `/api/v1/maintenance/legal-review-benchmark/local-run-package` bundles a tiny cheap-first subset with request JSON, one-at-a-time PowerShell/curl templates, observation slots, and run-report payload scaffolding.
 - Legal fixture response normalizers: `/api/v1/maintenance/legal-review-benchmark/local-response-normalizer` converts local OpenAI-compatible gateway responses into fixture-smoke observations and run-report payloads with secret-like value redaction.
+- Legal fixture local run reviews: `/api/v1/maintenance/legal-review-benchmark/local-run-review` normalizes one or two local gateway responses, runs fixture smoke scoring, builds the cheap-first run report, and returns an evidence bundle in one low-resource maintenance step.
 - Legal fixture run reports: `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` converts fixture observations into cheap-first release decisions and fixture-scoped escalation actions.
 - Legal fixture evidence bundles: `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` archives component statuses, validation commands, release-safe claims, and cheap-first run evidence for small local benchmark cycles.
 

@@ -2,6 +2,8 @@
 
 The response normalizer converts manual OpenAI-compatible gateway responses from local fixture runs into payloads for fixture-smoke and fixture-run-report.
 
+For low-resource one-step reviews, use `/local-run-review`; it wraps this normalizer with fixture-smoke, fixture-run-report, and fixture-evidence-bundle.
+
 ## Endpoints
 
 ```http
@@ -52,6 +54,8 @@ The service also accepts a list of rows or a single row with `fixture_id` and ei
 4. Post `run_report_payload` to `/fixture-run-report`.
 5. Post the same payload to `/fixture-evidence-bundle`.
 
+If you do not need each intermediate payload, paste the same local gateway response into `/local-run-review` instead.
+
 ## Safety
 
 - The normalizer never calls a gateway or app AI endpoint.
@@ -63,14 +67,18 @@ The service also accepts a list of rows or a single row with `fixture_id` and ei
 
 ```bash
 python -m pytest tests/test_legal_fixture_response_normalizer.py tests/test_legal_fixture_local_run_package.py -q
+python -m pytest tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q
 ```
 
 ## Related Files
 
 - `app/backend/services/legal_fixture_response_normalizer.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_response_normalizer.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_local_run_package.py`
 - `app/backend/routers/maintenance.py`
 - `docs/LEGAL_FIXTURE_LOCAL_RUN_PACKAGE.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

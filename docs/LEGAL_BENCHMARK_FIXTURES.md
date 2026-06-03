@@ -57,6 +57,8 @@ Use `/api/v1/maintenance/legal-review-benchmark/local-run-package` to fetch requ
 
 Use `/api/v1/maintenance/legal-review-benchmark/local-response-normalizer` to convert local OpenAI-compatible gateway responses into fixture-smoke observations and run-report payloads.
 
+Use `/api/v1/maintenance/legal-review-benchmark/local-run-review` to normalize, score, report, and bundle one or two local fixture responses in a single low-resource review call.
+
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` to convert observations and run metadata into a cheap-first release decision.
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` to bundle smoke scores, model routing evidence, run reports, validation commands, and release-safe claims after a small local run.
@@ -78,6 +80,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_local_run_package.py`
 - `app/backend/services/legal_fixture_response_normalizer.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
@@ -90,6 +93,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_local_run_package.py`
 - `app/backend/tests/test_legal_fixture_response_normalizer.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
@@ -101,6 +105,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `docs/LEGAL_FIXTURE_LOCAL_RUN_PACKAGE.md`
 - `docs/LEGAL_FIXTURE_RESPONSE_NORMALIZER.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `app/backend/services/release_readiness.py`

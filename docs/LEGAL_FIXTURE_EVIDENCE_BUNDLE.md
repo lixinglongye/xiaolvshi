@@ -49,7 +49,8 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 4. Submit normalized observations to `/fixture-smoke`.
 5. Submit the same payload to `/fixture-run-report`.
 6. Submit the payload to `/fixture-evidence-bundle`.
-7. Archive the returned component statuses, release claims, validation commands, and evidence paths with release-readiness notes.
+7. Use `/local-run-review` as the one-step version of steps 4-6 when a laptop can only run one or two fixture responses.
+8. Archive the returned component statuses, release claims, validation commands, and evidence paths with release-readiness notes.
 
 ## Safety
 
@@ -66,6 +67,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
@@ -74,4 +76,5 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`

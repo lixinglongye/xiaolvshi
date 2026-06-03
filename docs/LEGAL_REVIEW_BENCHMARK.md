@@ -25,6 +25,8 @@ GET /api/v1/maintenance/legal-review-benchmark/fixture-run-plan
 GET /api/v1/maintenance/legal-review-benchmark/local-run-package
 GET /api/v1/maintenance/legal-review-benchmark/local-response-normalizer
 POST /api/v1/maintenance/legal-review-benchmark/local-response-normalizer
+GET /api/v1/maintenance/legal-review-benchmark/local-run-review
+POST /api/v1/maintenance/legal-review-benchmark/local-run-review
 GET /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 GET /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
@@ -81,6 +83,8 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 `GET /local-run-package` combines the quick suite, safe gateway manifest, and run plan into a one-response package with request JSON bodies, PowerShell/curl command templates, observation slots, and run-report payload templates for low-resource manual runs.
 
 `GET/POST /local-response-normalizer` extracts `choices[0].message.content` from local gateway responses, redacts secret-like values, and returns fixture-smoke observations plus run-report payloads.
+
+`GET/POST /local-run-review` is the one-step low-resource endpoint: it normalizes local gateway responses, runs fixture-smoke, builds `/fixture-run-report`, and returns `/fixture-evidence-bundle` in one deterministic response.
 
 `GET/POST /fixture-run-report` combines fixture smoke coverage, improvement actions, optional run metadata, and the run plan into a cheap-first release decision.
 
@@ -147,6 +151,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_local_run_package.py`
 - `app/backend/services/legal_fixture_response_normalizer.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
@@ -159,6 +164,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_local_run_package.py`
 - `app/backend/tests/test_legal_fixture_response_normalizer.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
@@ -170,6 +176,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `docs/LEGAL_FIXTURE_LOCAL_RUN_PACKAGE.md`
 - `docs/LEGAL_FIXTURE_RESPONSE_NORMALIZER.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`

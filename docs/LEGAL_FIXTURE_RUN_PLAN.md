@@ -20,6 +20,7 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 - `max_parallel_requests`: fixed at `1` for laptop-safe local smoke runs.
 
 Use `/local-run-package` for the smallest executable subset: it wraps selected cheap-first run-plan steps with request JSON bodies, PowerShell/curl templates, observation slots, and run-report payload scaffolding.
+Use `/local-run-review` after those requests when you want normalization, smoke scoring, run reporting, and evidence bundling in one low-resource step.
 
 ## Workflow
 
@@ -27,7 +28,7 @@ Use `/local-run-package` for the smallest executable subset: it wraps selected c
 2. For low-resource machines, fetch `/quick-suite` first and run only the selected fixture subset.
 3. Fetch `/local-run-package?fixture_limit=1` or `/fixture-run-plan`.
 4. Run `cheap_first` batches first, one request at a time.
-5. Submit normalized outputs to `/fixture-smoke`.
+5. Submit normalized outputs to `/local-run-review`, or inspect each intermediate step with `/fixture-smoke`.
 6. Run only the `escalation_if_needed` steps whose cheap-first smoke result fails or leaves high-priority improvement actions.
 7. Submit the same observations to `/fixture-run-report`.
 8. Submit the same observations to `/fixture-evidence-bundle`.
@@ -43,12 +44,14 @@ Use `/local-run-package` for the smallest executable subset: it wraps selected c
 
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_local_run_package.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_local_run_package.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
@@ -56,5 +59,6 @@ Use `/local-run-package` for the smallest executable subset: it wraps selected c
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_LOCAL_RUN_PACKAGE.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

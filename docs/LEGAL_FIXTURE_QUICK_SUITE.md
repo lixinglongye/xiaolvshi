@@ -27,6 +27,7 @@ The fourth optional fixture covers privacy-sensitive and instruction-injection u
 - `validation_commands`: small pytest commands for the quick suite and its dependencies.
 
 Use `/local-run-package` when you want the selected quick-suite fixtures plus request JSON, one-at-a-time command templates, observation slots, and run-report payload scaffolding in one response.
+Use `/local-run-review` after a one- or two-fixture local gateway run to get a combined smoke score, run report, and evidence bundle without separate POST calls.
 
 ## Low-Resource Policy
 
@@ -39,6 +40,7 @@ Use `/local-run-package` when you want the selected quick-suite fixtures plus re
 
 ```bash
 python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_local_run_package.py tests/test_legal_review_benchmark.py -q
+python -m pytest tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q
 python -m pytest tests/test_legal_fixture_run_plan.py tests/test_legal_public_benchmark_sampler.py -q
 ```
 
@@ -46,10 +48,13 @@ python -m pytest tests/test_legal_fixture_run_plan.py tests/test_legal_public_be
 
 - `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/services/legal_fixture_local_run_package.py`
+- `app/backend/services/legal_fixture_local_run_review.py`
 - `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/tests/test_legal_fixture_local_run_package.py`
+- `app/backend/tests/test_legal_fixture_local_run_review.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
