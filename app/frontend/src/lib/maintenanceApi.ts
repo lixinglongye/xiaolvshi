@@ -370,6 +370,64 @@ export type LegalFixtureRunPlan = {
   privacy_note: string;
 };
 
+export type LegalFixtureRunReportRow = {
+  fixture_id: string;
+  title: string;
+  smoke_status: string;
+  score: number;
+  observed_route: string;
+  expected_routes: string[];
+  matched_signal_count: number;
+  missing_signal_count: number;
+  missing_task_count: number;
+  high_priority_action_count: number;
+  cheap_first_step_id?: string | null;
+  cheap_first_model?: string | null;
+  escalation_step_id?: string | null;
+  escalation_model?: string | null;
+  observed_model?: string | null;
+  observed_phase?: string | null;
+  observed_cost_usd?: number | null;
+  recommended_next_step: string;
+  missing_signals: string[];
+  missing_tasks: string[];
+};
+
+export type LegalFixtureRunReport = {
+  status: string;
+  release_decision: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_count: number;
+    observed_fixture_count: number;
+    passed_fixture_count: number;
+    warning_fixture_count: number;
+    failed_fixture_count: number;
+    not_run_fixture_count: number;
+    escalation_required_count: number;
+    high_priority_improvement_count: number;
+    observed_request_count: number;
+    observed_cost_usd?: number | null;
+    cheap_first_estimated_cost_usd: number;
+    worst_case_estimated_cost_usd: number;
+  };
+  fixture_reports: LegalFixtureRunReportRow[];
+  escalation_fixture_ids: string[];
+  improvement_summary: LegalFixtureImprovementPlan['summary'];
+  run_evidence_template: {
+    source_endpoint: string;
+    inputs_to_archive: string[];
+    validation_command: string;
+    expected_cheap_first_cost_usd: number;
+    expected_worst_case_cost_usd: number;
+  };
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -449,6 +507,11 @@ type LegalFixturePromptPackResponse = {
 type LegalFixtureRunPlanResponse = {
   success: boolean;
   data: LegalFixtureRunPlan;
+};
+
+type LegalFixtureRunReportResponse = {
+  success: boolean;
+  data: LegalFixtureRunReport;
 };
 
 export type LegalKnowledgeAudit = {
@@ -595,6 +658,18 @@ export async function getLegalFixtureRunPlan(): Promise<LegalFixtureRunPlan> {
     return payload.data;
   }
   return payload as LegalFixtureRunPlan;
+}
+
+export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-run-report',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureRunReportResponse | LegalFixtureRunReport;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureRunReport;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

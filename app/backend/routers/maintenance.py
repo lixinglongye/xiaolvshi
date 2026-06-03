@@ -6,6 +6,7 @@ from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestS
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
+from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -126,6 +127,24 @@ async def get_legal_review_fixture_run_plan():
     return {
         "success": True,
         "data": LegalFixtureRunPlanService().build_plan(),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-run-report")
+async def get_legal_review_fixture_run_report_template():
+    """Return an empty cheap-first fixture run report template."""
+    return {
+        "success": True,
+        "data": LegalFixtureRunReportService().build_report(),
+    }
+
+
+@router.post("/legal-review-benchmark/fixture-run-report")
+async def build_legal_review_fixture_run_report(payload: dict[str, dict]):
+    """Summarize fixture observations into cheap-first release and escalation decisions."""
+    return {
+        "success": True,
+        "data": LegalFixtureRunReportService().build_report(payload),
     }
 
 

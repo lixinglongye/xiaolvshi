@@ -31,6 +31,7 @@ The endpoint returns prompt rows only. It does not call a model, read API keys, 
 If a caller needs ready-to-fill request bodies instead of raw prompt rows, fetch `/gateway-manifest` for OpenAI-compatible chat payloads and local `/api/v1/aihub/gentxt` payloads with key placeholders.
 
 If a caller needs a low-resource run order, fetch `/fixture-run-plan` to group those request bodies into serial cheap-first batches and conditional escalation steps.
+After smoke observations exist, fetch `/fixture-run-report` to decide whether cheap-first model defaults can be preserved.
 
 ## Safety
 
@@ -43,11 +44,14 @@ If a caller needs a low-resource run order, fetch `/fixture-run-plan` to group t
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
+- `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
+- `app/backend/tests/test_legal_fixture_run_report.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
+- `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`

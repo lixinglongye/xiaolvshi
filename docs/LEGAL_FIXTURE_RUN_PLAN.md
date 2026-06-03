@@ -24,7 +24,8 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 2. Run `cheap_first` batches first, one request at a time.
 3. Submit normalized outputs to `/fixture-smoke`.
 4. Run only the `escalation_if_needed` steps whose cheap-first smoke result fails or leaves high-priority improvement actions.
-5. Attach smoke scores to release-readiness evidence before changing default model routes.
+5. Submit the same observations to `/fixture-run-report`.
+6. Attach smoke scores and the run report to release-readiness evidence before changing default model routes.
 
 ## Safety
 
@@ -35,7 +36,10 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 ## Related Files
 
 - `app/backend/services/legal_fixture_run_plan.py`
+- `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
+- `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
+- `docs/LEGAL_FIXTURE_RUN_REPORT.md`

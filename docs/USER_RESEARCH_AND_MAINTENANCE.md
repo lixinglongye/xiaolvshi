@@ -40,6 +40,7 @@
 
 - Legal fixture gateway manifests: `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` provides safe NewAPI/OpenAI-compatible request manifests after `/prompt-pack`, using placeholders instead of real keys and linking outputs back to `/fixture-smoke` and `/fixture-improvements`.
 - Legal fixture run plans: `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` converts those manifests into serial cheap-first batches for low-resource laptops, with conditional escalation only after smoke coverage fails.
+- Legal fixture run reports: `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` converts fixture observations into cheap-first release decisions and fixture-scoped escalation actions.
 
 ## Near-Term Maintenance Tasks
 

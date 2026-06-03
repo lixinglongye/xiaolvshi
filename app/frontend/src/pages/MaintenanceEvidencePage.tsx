@@ -17,6 +17,7 @@ import {
   getLegalFixtureImprovementPlan,
   getLegalFixturePromptPack,
   getLegalFixtureRunPlan,
+  getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -29,6 +30,7 @@ import {
   type LegalFixtureImprovementPlan,
   type LegalFixturePromptPack,
   type LegalFixtureRunPlan,
+  type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -61,6 +63,7 @@ const statusClass: Record<string, string> = {
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  needs_escalation: 'border-red-200 bg-red-50 text-red-800',
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
 };
@@ -96,6 +99,7 @@ function Inner() {
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
+  const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
   const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,6 +118,7 @@ function Inner() {
         benchmarkData,
         fixturePromptPackData,
         fixtureRunPlanData,
+        fixtureRunReportData,
         fixtureSmokeData,
         fixtureImprovementData,
         legalKnowledge,
@@ -126,6 +131,7 @@ function Inner() {
         getLegalReviewBenchmark(),
         getLegalFixturePromptPack(),
         getLegalFixtureRunPlan(),
+        getLegalFixtureRunReport(),
         getLegalReviewFixtureSmoke(),
         getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
@@ -139,6 +145,7 @@ function Inner() {
       setBenchmark(benchmarkData);
       setFixturePromptPack(fixturePromptPackData);
       setFixtureRunPlan(fixtureRunPlanData);
+      setFixtureRunReport(fixtureRunReportData);
       setFixtureSmoke(fixtureSmokeData);
       setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
@@ -848,6 +855,117 @@ function Inner() {
                       ))}
                     </ul>
                     <div className="mt-4 text-xs leading-5 text-stone-500">{fixtureRunPlan.privacy_note}</div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {fixtureRunReport && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture run report</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureRunReport.summary.observed_fixture_count}/{fixtureRunReport.summary.fixture_count} observed /{' '}
+                      {fixtureRunReport.release_decision.replace(/_/g, ' ')}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[fixtureRunReport.status] ?? statusClass.warn}>
+                    {fixtureRunReport.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureRunReport.summary.passed_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">passed fixtures</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureRunReport.summary.escalation_required_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">escalation required</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixtureRunReport.summary.observed_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">observed cost</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureRunReport.summary.high_priority_improvement_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high-priority actions</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Model decision</TableHead>
+                        <TableHead>Coverage gaps</TableHead>
+                        <TableHead>Next step</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fixtureRunReport.fixture_reports.map((row) => (
+                        <TableRow key={row.fixture_id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.smoke_status] ?? statusClass.not_run}>
+                              {row.smoke_status.replace(/_/g, ' ')} / {row.score}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono font-semibold text-stone-950">
+                              {row.observed_model ?? row.cheap_first_model ?? '-'}
+                            </div>
+                            <div className="mt-1">phase {row.observed_phase ?? '-'}</div>
+                            <div className="mt-1">escalate {row.escalation_model ?? 'none'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div>{row.missing_signal_count} missing signals</div>
+                            <div>{row.missing_task_count} missing tasks</div>
+                            <div>{row.high_priority_action_count} high-priority actions</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            {row.recommended_next_step.replace(/_/g, ' ')}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Evidence template</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div className="break-all font-mono">{fixtureRunReport.run_evidence_template.source_endpoint}</div>
+                      <div className="font-mono">{fixtureRunReport.run_evidence_template.validation_command}</div>
+                      <div>
+                        cheap {formatUsd(fixtureRunReport.run_evidence_template.expected_cheap_first_cost_usd)} / worst{' '}
+                        {formatUsd(fixtureRunReport.run_evidence_template.expected_worst_case_cost_usd)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Report actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixtureRunReport.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 text-xs leading-5 text-stone-500">{fixtureRunReport.privacy_note}</div>
                   </div>
                 </div>
               </section>
