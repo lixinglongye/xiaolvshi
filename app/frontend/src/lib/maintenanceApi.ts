@@ -309,6 +309,67 @@ export type LegalFixturePromptPack = {
   privacy_note: string;
 };
 
+export type LegalFixtureRunStep = {
+  step_id: string;
+  order: number;
+  phase: string;
+  batch_id: string;
+  fixture_id: string;
+  title: string;
+  task: string;
+  model: string;
+  model_cost_tier?: string | null;
+  endpoint_path: string;
+  run_condition: string;
+  prompt_tokens_estimate: number;
+  completion_tokens_budget: number;
+  estimated_request_cost_usd?: number | null;
+  max_parallel_requests: number;
+  smoke_route: string;
+  observation_target: string;
+  improvement_target: string;
+  required_response_fields: string[];
+  command_hint: string;
+};
+
+export type LegalFixtureRunBatch = {
+  batch_id: string;
+  phase: string;
+  task: string;
+  model: string;
+  model_cost_tier?: string | null;
+  step_ids: string[];
+  fixture_ids: string[];
+  max_parallel_requests: number;
+  estimated_batch_cost_usd?: number | null;
+  run_after: string;
+};
+
+export type LegalFixtureRunPlan = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_count: number;
+    batch_count: number;
+    total_step_count: number;
+    cheap_first_step_count: number;
+    escalation_step_count: number;
+    priced_step_count: number;
+    unknown_model_step_count: number;
+    estimated_min_cost_usd: number;
+    estimated_max_cost_usd: number;
+    max_parallel_requests: number;
+  };
+  batches: LegalFixtureRunBatch[];
+  steps: LegalFixtureRunStep[];
+  warning_step_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -383,6 +444,11 @@ type LegalFixtureImprovementPlanResponse = {
 type LegalFixturePromptPackResponse = {
   success: boolean;
   data: LegalFixturePromptPack;
+};
+
+type LegalFixtureRunPlanResponse = {
+  success: boolean;
+  data: LegalFixtureRunPlan;
 };
 
 export type LegalKnowledgeAudit = {
@@ -517,6 +583,18 @@ export async function getLegalFixturePromptPack(): Promise<LegalFixturePromptPac
     return payload.data;
   }
   return payload as LegalFixturePromptPack;
+}
+
+export async function getLegalFixtureRunPlan(): Promise<LegalFixtureRunPlan> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-run-plan',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureRunPlanResponse | LegalFixtureRunPlan;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureRunPlan;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

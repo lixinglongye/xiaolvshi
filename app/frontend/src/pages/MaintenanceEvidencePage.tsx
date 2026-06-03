@@ -16,6 +16,7 @@ import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, 
 import {
   getLegalFixtureImprovementPlan,
   getLegalFixturePromptPack,
+  getLegalFixtureRunPlan,
   getLegalKnowledgeAudit,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -27,6 +28,7 @@ import {
   type FeedbackRoadmapCatalog,
   type LegalFixtureImprovementPlan,
   type LegalFixturePromptPack,
+  type LegalFixtureRunPlan,
   type LegalKnowledgeAudit,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -93,6 +95,7 @@ function Inner() {
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
+  const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
   const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,6 +113,7 @@ function Inner() {
         feedbackMap,
         benchmarkData,
         fixturePromptPackData,
+        fixtureRunPlanData,
         fixtureSmokeData,
         fixtureImprovementData,
         legalKnowledge,
@@ -121,6 +125,7 @@ function Inner() {
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
         getLegalFixturePromptPack(),
+        getLegalFixtureRunPlan(),
         getLegalReviewFixtureSmoke(),
         getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
@@ -133,6 +138,7 @@ function Inner() {
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
       setFixturePromptPack(fixturePromptPackData);
+      setFixtureRunPlan(fixtureRunPlanData);
       setFixtureSmoke(fixtureSmokeData);
       setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
@@ -710,6 +716,138 @@ function Inner() {
                       ))}
                     </ul>
                     <div className="mt-3 text-xs leading-5 text-stone-500">{fixturePromptPack.privacy_note}</div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {fixtureRunPlan && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture run plan</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureRunPlan.summary.batch_count} batches / max parallel{' '}
+                      {fixtureRunPlan.summary.max_parallel_requests}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[fixtureRunPlan.status] ?? statusClass.warn}>
+                    {fixtureRunPlan.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureRunPlan.summary.cheap_first_step_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first steps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureRunPlan.summary.escalation_step_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">conditional escalations</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixtureRunPlan.summary.estimated_min_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap run estimate</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixtureRunPlan.summary.estimated_max_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">worst-case estimate</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Batch</TableHead>
+                        <TableHead>Model</TableHead>
+                        <TableHead>Fixtures</TableHead>
+                        <TableHead>Cost</TableHead>
+                        <TableHead>Run order</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fixtureRunPlan.batches.map((batch) => (
+                        <TableRow key={batch.batch_id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{batch.batch_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{batch.phase.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono font-semibold text-stone-950">{batch.model}</div>
+                            <div className="mt-1">
+                              task {batch.task} / tier {batch.model_cost_tier ?? 'gateway'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            {batch.fixture_ids.join(', ')}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">
+                            {formatUsd(batch.estimated_batch_cost_usd)}
+                          </TableCell>
+                          <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                            {batch.run_after} / parallel {batch.max_parallel_requests}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Step</TableHead>
+                          <TableHead>Request budget</TableHead>
+                          <TableHead>Condition</TableHead>
+                          <TableHead>Targets</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fixtureRunPlan.steps.slice(0, 8).map((step) => (
+                          <TableRow key={step.step_id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{step.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{step.step_id}</div>
+                              <div className="mt-1 text-xs text-stone-600">{step.model}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{step.prompt_tokens_estimate} prompt tokens</div>
+                              <div>{step.completion_tokens_budget} max tokens</div>
+                              <div className="font-mono text-stone-950">
+                                {formatUsd(step.estimated_request_cost_usd)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              {step.run_condition}
+                            </TableCell>
+                            <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                              <div className="break-all font-mono text-[11px]">{step.observation_target}</div>
+                              <div className="break-all font-mono text-[11px]">{step.improvement_target}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Run policy</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixtureRunPlan.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 text-xs leading-5 text-stone-500">{fixtureRunPlan.privacy_note}</div>
                   </div>
                 </div>
               </section>

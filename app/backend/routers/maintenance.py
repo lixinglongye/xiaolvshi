@@ -5,6 +5,7 @@ from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
+from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -116,6 +117,15 @@ async def get_legal_review_fixture_gateway_manifest():
     return {
         "success": True,
         "data": LegalFixtureGatewayManifestService().build_manifest(),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-run-plan")
+async def get_legal_review_fixture_run_plan():
+    """Return a cheap-first local execution plan for legal fixture gateway requests."""
+    return {
+        "success": True,
+        "data": LegalFixtureRunPlanService().build_plan(),
     }
 
 

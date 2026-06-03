@@ -46,6 +46,8 @@ Use `/api/v1/maintenance/legal-review-benchmark/prompt-pack` to fetch cheap-firs
 
 Use `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` to fetch safe OpenAI-compatible request bodies and local AI hub payloads for laptop-sized fixture checks without storing real keys.
 
+Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` to run those requests in serial cheap-first batches before any conditional escalation.
+
 ## Release Use
 
 The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.
@@ -55,11 +57,14 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
+- `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
+- `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
+- `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `app/backend/services/release_readiness.py`

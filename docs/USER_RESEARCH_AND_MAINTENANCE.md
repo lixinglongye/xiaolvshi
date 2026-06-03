@@ -39,6 +39,7 @@
 - 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；通过 `/api/v1/maintenance/legal-review-benchmark/prompt-pack` 获取 cheap-first Gemini/NewAPI 小文书 prompt；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-smoke` 评估模型或流水线输出覆盖率；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` 把缺失项转成 prompt/schema 改进计划。LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
 
 - Legal fixture gateway manifests: `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` provides safe NewAPI/OpenAI-compatible request manifests after `/prompt-pack`, using placeholders instead of real keys and linking outputs back to `/fixture-smoke` and `/fixture-improvements`.
+- Legal fixture run plans: `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` converts those manifests into serial cheap-first batches for low-resource laptops, with conditional escalation only after smoke coverage fails.
 
 ## Near-Term Maintenance Tasks
 
