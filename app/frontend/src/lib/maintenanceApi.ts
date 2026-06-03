@@ -321,6 +321,374 @@ type ContinuousUpdateLedgerResponse = {
   data: ContinuousUpdateLedger;
 };
 
+export type CaseIntakeRequirement = {
+  id: string;
+  title: string;
+  category: string;
+  required_fields: string[];
+  evidence_needed: string[];
+  blocks_next_step: boolean;
+  reviewer_action: string;
+  missing_fields: string[];
+  status: string;
+  blocks: boolean;
+};
+
+export type CaseIntakeCompleteness = {
+  status: string;
+  summary: {
+    requirement_count: number;
+    complete_requirement_count: number;
+    missing_requirement_count: number;
+    blocking_requirement_count: number;
+    ready_for_document_generation: boolean;
+    ready_for_lawyer_review: boolean;
+  };
+  requirements: CaseIntakeRequirement[];
+  blocking_items: Array<{
+    id: string;
+    title: string;
+    missing_fields: string[];
+    reviewer_action: string;
+  }>;
+  next_actions: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type CaseIntakeCompletenessResponse = {
+  success: boolean;
+  data: CaseIntakeCompleteness;
+};
+
+export type CaseTeamRolePolicy = {
+  role: string;
+  purpose: string;
+  default_scope: string;
+  allowed_actions: string[];
+  denied_actions: string[];
+  approval_required_for: string[];
+};
+
+export type CaseTeamSensitiveOperation = {
+  operation: string;
+  allowed_roles: string[];
+  audit_required: boolean;
+  approval_required: boolean;
+  rationale: string;
+};
+
+export type CaseTeamAccessPolicy = {
+  status: string;
+  policy_id: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    role_count: number;
+    sensitive_operation_count: number;
+    default_posture: string;
+    client_scope: string;
+  };
+  role_matrix: CaseTeamRolePolicy[];
+  sensitive_operations: CaseTeamSensitiveOperation[];
+  audit_log_requirements: Array<{
+    event: string;
+    required_fields: string[];
+    retention: string;
+  }>;
+  least_privilege_defaults: string[];
+  privacy_and_firm_compliance: string[];
+  future_api_contract: Record<string, string>;
+  validation_commands: string[];
+};
+
+type CaseTeamAccessPolicyResponse = {
+  success: boolean;
+  data: CaseTeamAccessPolicy;
+};
+
+export type ClientDeliveryChecklistItem = {
+  id: string;
+  title: string;
+  severity: string;
+  owner: string;
+  product_gap: string;
+  required_evidence: string[];
+  acceptance_criteria: string[];
+  client_visible: boolean;
+};
+
+export type ClientDeliveryDisclosure = {
+  id: string;
+  audience: string;
+  i18n_key: string;
+  display_text: string;
+  acceptance_signal: string;
+  required_before_delivery: boolean;
+};
+
+export type ClientDeliveryRiskChecklist = {
+  status: string;
+  purpose: string;
+  delivery_allowed_by_default: boolean;
+  checklist_items: ClientDeliveryChecklistItem[];
+  blocking_items: ClientDeliveryChecklistItem[];
+  client_disclosures: ClientDeliveryDisclosure[];
+  lawyer_review_items: Array<{
+    id: string;
+    title: string;
+    must_confirm: string[];
+  }>;
+  displayable_statements: Record<string, ClientDeliveryDisclosure[]>;
+  perspectives: Record<
+    string,
+    {
+      summary: string;
+      must_see_before_delivery?: string[];
+      must_confirm_before_delivery?: string[];
+    }
+  >;
+  audit_record_requirements: Array<{
+    field: string;
+    reason: string;
+    retention_note: string;
+  }>;
+  low_resource_validation_commands: Array<{
+    id: string;
+    command: string;
+    resource_note: string;
+  }>;
+  privacy_notes: string[];
+  future_api: Record<string, string>;
+};
+
+type ClientDeliveryRiskChecklistResponse = {
+  success: boolean;
+  data: ClientDeliveryRiskChecklist;
+};
+
+export type LegalDocumentReviewGate = {
+  id: string;
+  label: string;
+  critical: boolean;
+  required_before: string[];
+  review_scope: string[];
+  failure_behavior: string;
+};
+
+export type LegalDocumentTemplateRow = {
+  id: string;
+  document_type: string;
+  product_gap_closed: string;
+  required_fields: string[];
+  format_requirements: string[];
+  pre_generation_blockers: string[];
+  review_gate: LegalDocumentReviewGate;
+  export_formats: string[];
+  delivery_checklist: string[];
+  low_resource_validation_command: string;
+  privacy_notes: string[];
+};
+
+export type LegalDocumentTemplateMatrix = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    document_type_count: number;
+    review_gate_required_count: number;
+    blocking_condition_count: number;
+    export_format_count: number;
+    ready_for_delivery_count: number;
+  };
+  lawyer_review_gate: LegalDocumentReviewGate;
+  document_types: LegalDocumentTemplateRow[];
+  low_resource_validation_commands: string[];
+  delivery_policy: string[];
+  privacy_notes: string[];
+};
+
+type LegalDocumentTemplateMatrixResponse = {
+  success: boolean;
+  data: LegalDocumentTemplateMatrix;
+};
+
+export type LegalDocumentExportReadiness = {
+  status: string;
+  summary: {
+    gate_count: number;
+    passed_gate_count: number;
+    blocking_gate_count: number;
+    supported_export_formats: string[];
+    ready_for_final_export: boolean;
+  };
+  format_gate: {
+    id: string;
+    title: string;
+    observed_value: string | null;
+    supported_values: string[];
+    status: string;
+    blocks_export: boolean;
+    reviewer_action: string;
+  };
+  gates: Array<{
+    id: string;
+    title: string;
+    required_field: string;
+    pass_values: unknown[];
+    blocking: boolean;
+    reviewer_action: string;
+    observed_value: unknown;
+    status: string;
+    blocks_export: boolean;
+  }>;
+  blocking_items: Array<{
+    id: string;
+    title: string;
+    observed_value: unknown;
+    reviewer_action: string;
+  }>;
+  audit_record_requirements: Array<{
+    field: string;
+    reason: string;
+  }>;
+  next_actions: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type LegalDocumentExportReadinessResponse = {
+  success: boolean;
+  data: LegalDocumentExportReadiness;
+};
+
+export type OcrImportReadinessPolicy = {
+  status: string;
+  policy_id: string;
+  status_enumeration: Array<{
+    status: string;
+    meaning: string;
+    next_action: string;
+    terminal?: boolean;
+  }>;
+  summary: {
+    ready_for_parse: boolean;
+    ocr_required: boolean;
+    blocked: boolean;
+    manual_review_required: boolean;
+    low_text_page_count: number;
+    scanned_page_count: number;
+    ocr_attempt_count: number;
+  };
+  scanned_or_low_text_detection: {
+    ocr_needed: boolean;
+    page_count: number;
+    low_text_page_count: number;
+    scanned_page_count: number;
+    unreadable_page_count: number;
+    low_text_pages: number[];
+    scanned_pages: number[];
+    unreadable_pages: number[];
+  };
+  retry_policy: {
+    max_attempts: number;
+    retryable_statuses: string[];
+    backoff_seconds: number[];
+    blocked_after_attempts: number;
+    manual_review_after_attempts: number;
+  };
+  retry_state: {
+    attempt_count: number;
+    retry_budget_remaining: number;
+    latest_failure_reason: string | null;
+    retry_allowed: boolean;
+    blocked_by_retry_budget: boolean;
+    manual_review_recommended: boolean;
+  };
+  blocking_conditions: Array<{
+    id: string;
+    title: string;
+    reviewer_action: string;
+  }>;
+  manual_review_conditions: Array<{
+    id: string;
+    title: string;
+    reviewer_action: string;
+  }>;
+  recommended_next_actions: string[];
+  audit_record_requirements: string[];
+  low_resource_validation_commands: Array<{
+    id: string;
+    command: string;
+    resource_note: string;
+  }>;
+  privacy_notes: string[];
+  future_api: Record<string, string>;
+};
+
+type OcrImportReadinessPolicyResponse = {
+  success: boolean;
+  data: OcrImportReadinessPolicy;
+};
+
+export type CaseTimelineDeadlineRisk = {
+  status: string;
+  assessment_id: string;
+  summary: {
+    assessed_event_count: number;
+    risk_flag_count: number;
+    blocking_urgent_count: number;
+    missing_fact_count: number;
+    deterministic: boolean;
+  };
+  event_type_standards: Array<{
+    event_type: string;
+    display_name: string;
+    purpose: string;
+    required_fields: string[];
+    deadline_family: string;
+    default_risk_tags: string[];
+  }>;
+  deadline_rules_metadata: Array<{
+    rule_id: string;
+    applies_to_event_types: string[];
+    trigger: string;
+    severity: string;
+    blocking: boolean;
+    deterministic_input: string;
+    recommended_action: string;
+  }>;
+  normalized_events?: Array<Record<string, unknown>>;
+  event_template?: Record<string, unknown>;
+  risk_flags: Array<{
+    event_id: string;
+    event_type: string;
+    risk_type: string;
+    severity: string;
+    blocking: boolean;
+    reason: string;
+    owner_action: string;
+  }>;
+  blocking_urgent_items: Array<{
+    event_id: string;
+    event_type: string;
+    reason: string;
+    required_owner_action: string;
+  }>;
+  next_actions: string[];
+  validation_commands: string[];
+  privacy_note: string[] | string;
+};
+
+type CaseTimelineDeadlineRiskResponse = {
+  success: boolean;
+  data: CaseTimelineDeadlineRisk;
+};
+
 export type LegalReviewBenchmarkCaseResult = {
   case_id: string;
   title: string;
@@ -1179,6 +1547,90 @@ export async function getContinuousUpdateLedger(): Promise<ContinuousUpdateLedge
     return payload.data;
   }
   return payload as ContinuousUpdateLedger;
+}
+
+export async function getCaseIntakeCompleteness(): Promise<CaseIntakeCompleteness> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case-intake-completeness',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as CaseIntakeCompletenessResponse | CaseIntakeCompleteness;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as CaseIntakeCompleteness;
+}
+
+export async function getCaseTeamAccessPolicy(): Promise<CaseTeamAccessPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case-team-access-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as CaseTeamAccessPolicyResponse | CaseTeamAccessPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as CaseTeamAccessPolicy;
+}
+
+export async function getClientDeliveryRiskChecklist(): Promise<ClientDeliveryRiskChecklist> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/client-delivery-risk-checklist',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as ClientDeliveryRiskChecklistResponse | ClientDeliveryRiskChecklist;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ClientDeliveryRiskChecklist;
+}
+
+export async function getLegalDocumentTemplateMatrix(): Promise<LegalDocumentTemplateMatrix> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-document-template-matrix',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalDocumentTemplateMatrixResponse | LegalDocumentTemplateMatrix;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentTemplateMatrix;
+}
+
+export async function getLegalDocumentExportReadiness(): Promise<LegalDocumentExportReadiness> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-document-export-readiness',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalDocumentExportReadinessResponse | LegalDocumentExportReadiness;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentExportReadiness;
+}
+
+export async function getOcrImportReadinessPolicy(): Promise<OcrImportReadinessPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/ocr-import-readiness-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as OcrImportReadinessPolicyResponse | OcrImportReadinessPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as OcrImportReadinessPolicy;
+}
+
+export async function getCaseTimelineDeadlineRisk(): Promise<CaseTimelineDeadlineRisk> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case-timeline-deadline-risk',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as CaseTimelineDeadlineRiskResponse | CaseTimelineDeadlineRisk;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as CaseTimelineDeadlineRisk;
 }
 
 export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {

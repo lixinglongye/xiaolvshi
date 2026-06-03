@@ -15,10 +15,16 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
+  getCaseIntakeCompleteness,
+  getCaseTimelineDeadlineRisk,
+  getCaseTeamAccessPolicy,
+  getClientDeliveryRiskChecklist,
   getContinuousUpdateLedger,
   getLegalFixtureImprovementPlan,
   getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
+  getLegalDocumentExportReadiness,
+  getLegalDocumentTemplateMatrix,
   getLegalFixturePromptPack,
   getLegalFixtureLocalRunPackage,
   getLegalFixtureResponseNormalizerTemplate,
@@ -32,13 +38,20 @@ import {
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
+  getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
   getProductFeatureGapRadar,
   getReleaseReadiness,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
+  type CaseIntakeCompleteness,
+  type CaseTimelineDeadlineRisk,
+  type CaseTeamAccessPolicy,
+  type ClientDeliveryRiskChecklist,
   type ContinuousUpdateLedger,
   type FeedbackRoadmapCatalog,
+  type LegalDocumentExportReadiness,
+  type LegalDocumentTemplateMatrix,
   type LegalFixtureEvidenceBundle,
   type LegalFixtureImprovementPlan,
   type LegalFixtureModelMatrix,
@@ -56,6 +69,7 @@ import {
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
+  type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
@@ -86,11 +100,21 @@ const priorityClass: Record<string, string> = {
 const statusClass: Record<string, string> = {
   pass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
+  template: 'border-stone-200 bg-stone-50 text-stone-700',
+  uploaded: 'border-stone-200 bg-stone-50 text-stone-700',
+  preflight: 'border-sky-200 bg-sky-50 text-sky-800',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
+  needs_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  manual_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  ocr_needed: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
+  missing: 'border-red-200 bg-red-50 text-red-800',
+  ocr_failed: 'border-red-200 bg-red-50 text-red-800',
   sampling_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   catalog_only: 'border-stone-200 bg-stone-50 text-stone-700',
   needs_escalation: 'border-red-200 bg-red-50 text-red-800',
@@ -138,6 +162,14 @@ function Inner() {
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
+  const [caseIntakeCompleteness, setCaseIntakeCompleteness] = useState<CaseIntakeCompleteness | null>(null);
+  const [caseTeamAccessPolicy, setCaseTeamAccessPolicy] = useState<CaseTeamAccessPolicy | null>(null);
+  const [clientDeliveryRiskChecklist, setClientDeliveryRiskChecklist] = useState<ClientDeliveryRiskChecklist | null>(null);
+  const [legalDocumentTemplateMatrix, setLegalDocumentTemplateMatrix] = useState<LegalDocumentTemplateMatrix | null>(null);
+  const [legalDocumentExportReadiness, setLegalDocumentExportReadiness] =
+    useState<LegalDocumentExportReadiness | null>(null);
+  const [ocrImportReadinessPolicy, setOcrImportReadinessPolicy] = useState<OcrImportReadinessPolicy | null>(null);
+  const [caseTimelineDeadlineRisk, setCaseTimelineDeadlineRisk] = useState<CaseTimelineDeadlineRisk | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -170,6 +202,13 @@ function Inner() {
         productFeatureGapData,
         feedbackMap,
         continuousLedgerData,
+        caseIntakeCompletenessData,
+        caseTeamAccessPolicyData,
+        clientDeliveryRiskChecklistData,
+        legalDocumentTemplateMatrixData,
+        legalDocumentExportReadinessData,
+        ocrImportReadinessPolicyData,
+        caseTimelineDeadlineRiskData,
         benchmarkData,
         researchBacklogData,
         publicBenchmarkSamplerData,
@@ -191,6 +230,13 @@ function Inner() {
         getProductFeatureGapRadar(),
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
+        getCaseIntakeCompleteness(),
+        getCaseTeamAccessPolicy(),
+        getClientDeliveryRiskChecklist(),
+        getLegalDocumentTemplateMatrix(),
+        getLegalDocumentExportReadiness(),
+        getOcrImportReadinessPolicy(),
+        getCaseTimelineDeadlineRisk(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
         getLegalPublicBenchmarkSampler(),
@@ -213,6 +259,13 @@ function Inner() {
       setProductFeatureGaps(productFeatureGapData);
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
+      setCaseIntakeCompleteness(caseIntakeCompletenessData);
+      setCaseTeamAccessPolicy(caseTeamAccessPolicyData);
+      setClientDeliveryRiskChecklist(clientDeliveryRiskChecklistData);
+      setLegalDocumentTemplateMatrix(legalDocumentTemplateMatrixData);
+      setLegalDocumentExportReadiness(legalDocumentExportReadinessData);
+      setOcrImportReadinessPolicy(ocrImportReadinessPolicyData);
+      setCaseTimelineDeadlineRisk(caseTimelineDeadlineRiskData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
@@ -369,6 +422,399 @@ function Inner() {
             </CardContent>
           </Card>
         </div>
+
+        {(caseIntakeCompleteness ||
+          caseTeamAccessPolicy ||
+          clientDeliveryRiskChecklist ||
+          legalDocumentTemplateMatrix ||
+          legalDocumentExportReadiness ||
+          ocrImportReadinessPolicy ||
+          caseTimelineDeadlineRisk) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Case workflow gates</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Intake, team access, delivery, document, OCR, and deadline readiness checks.
+                </div>
+              </div>
+              <Badge variant="outline" className="bg-white">
+                7 maintenance endpoints
+              </Badge>
+            </div>
+
+            <div className="grid gap-3 xl:grid-cols-4 md:grid-cols-2">
+              {caseIntakeCompleteness && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Intake completeness</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">case-intake-completeness</div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[caseIntakeCompleteness.status] ?? statusClass.not_run}
+                    >
+                      {caseIntakeCompleteness.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseIntakeCompleteness.summary.requirement_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">requirements</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseIntakeCompleteness.summary.blocking_requirement_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blocking</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseIntakeCompleteness.summary.complete_requirement_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">complete</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {caseIntakeCompleteness.blocking_items.slice(0, 3).map((item) => (
+                      <div key={item.id} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.title}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                          missing: {item.missing_fields.join(', ') || '-'}
+                        </div>
+                      </div>
+                    ))}
+                    {caseIntakeCompleteness.blocking_items.length === 0 &&
+                      caseIntakeCompleteness.requirements.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="truncate text-stone-700">{item.title}</span>
+                          <Badge variant="outline" className={statusClass[item.status] ?? statusClass.not_run}>
+                            {item.status}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {caseTeamAccessPolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Team access policy</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{caseTeamAccessPolicy.policy_id}</div>
+                    </div>
+                    <Badge variant="outline" className={statusClass[caseTeamAccessPolicy.status] ?? statusClass.ready}>
+                      {caseTeamAccessPolicy.status}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-white">
+                      roles: {caseTeamAccessPolicy.summary.role_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      sensitive ops: {caseTeamAccessPolicy.summary.sensitive_operation_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      {caseTeamAccessPolicy.summary.default_posture.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {caseTeamAccessPolicy.role_matrix.slice(0, 5).map((role) => (
+                      <div key={role.role} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-stone-950">{role.role.replace(/_/g, ' ')}</span>
+                          <span className="font-mono text-[11px] text-stone-500">
+                            {role.default_scope.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                          deny: {role.denied_actions.slice(0, 2).join(', ') || '-'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {clientDeliveryRiskChecklist && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Client delivery risk</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        client-delivery-risk-checklist
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[clientDeliveryRiskChecklist.status] ?? statusClass.ready}
+                    >
+                      {clientDeliveryRiskChecklist.status}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {clientDeliveryRiskChecklist.checklist_items.length}
+                      </div>
+                      <div className="text-[11px] text-stone-500">checks</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {clientDeliveryRiskChecklist.blocking_items.length}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blockers</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {clientDeliveryRiskChecklist.client_disclosures.length}
+                      </div>
+                      <div className="text-[11px] text-stone-500">client notices</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {clientDeliveryRiskChecklist.blocking_items.slice(0, 3).map((item) => (
+                      <div key={item.id} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800">
+                            {item.severity}
+                          </Badge>
+                          <span className="text-xs font-semibold text-stone-950">{item.title}</span>
+                        </div>
+                        <div className="text-[11px] leading-4 text-stone-500">{item.owner.replace(/_/g, ' ')}</div>
+                      </div>
+                    ))}
+                    <div className="text-[11px] leading-4 text-stone-500">
+                      Delivery default: {clientDeliveryRiskChecklist.delivery_allowed_by_default ? 'allowed' : 'blocked'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {legalDocumentTemplateMatrix && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Document templates</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        legal-document-template-matrix
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentTemplateMatrix.status] ?? statusClass.ready}
+                    >
+                      {legalDocumentTemplateMatrix.status}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-white">
+                      types: {legalDocumentTemplateMatrix.summary.document_type_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      blockers: {legalDocumentTemplateMatrix.summary.blocking_condition_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      exports: {legalDocumentTemplateMatrix.summary.export_format_count}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {legalDocumentTemplateMatrix.document_types.slice(0, 4).map((row) => (
+                      <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{row.document_type}</div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <Badge variant="outline" className="bg-white font-mono text-[10px]">
+                            fields {row.required_fields.length}
+                          </Badge>
+                          <Badge variant="outline" className="bg-white font-mono text-[10px]">
+                            blockers {row.pre_generation_blockers.length}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={
+                              row.review_gate.critical
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-stone-200 bg-stone-50 text-stone-700'
+                            }
+                          >
+                            review gate
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {legalDocumentExportReadiness && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Export readiness</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        legal-document-export-readiness
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentExportReadiness.status] ?? statusClass.not_run}
+                    >
+                      {legalDocumentExportReadiness.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {legalDocumentExportReadiness.summary.gate_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">gates</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {legalDocumentExportReadiness.summary.blocking_gate_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blocking</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {legalDocumentExportReadiness.summary.supported_export_formats.length}
+                      </div>
+                      <div className="text-[11px] text-stone-500">formats</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {legalDocumentExportReadiness.blocking_items.slice(0, 3).map((item) => (
+                      <div key={item.id} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.title}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                          observed: {formatInline(item.observed_value)}
+                        </div>
+                      </div>
+                    ))}
+                    {legalDocumentExportReadiness.blocking_items.length === 0 && (
+                      <div className="text-[11px] leading-4 text-stone-500">
+                        Format gate: {legalDocumentExportReadiness.format_gate.status}; supported:{' '}
+                        {legalDocumentExportReadiness.summary.supported_export_formats.join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {ocrImportReadinessPolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">OCR import</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {ocrImportReadinessPolicy.policy_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[ocrImportReadinessPolicy.status] ?? statusClass.not_run}
+                    >
+                      {ocrImportReadinessPolicy.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant="outline" className="bg-white">
+                      states: {ocrImportReadinessPolicy.status_enumeration.length}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      scanned: {ocrImportReadinessPolicy.summary.scanned_page_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      low text: {ocrImportReadinessPolicy.summary.low_text_page_count}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      attempts: {ocrImportReadinessPolicy.summary.ocr_attempt_count}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {[...ocrImportReadinessPolicy.blocking_conditions, ...ocrImportReadinessPolicy.manual_review_conditions]
+                      .slice(0, 3)
+                      .map((item) => (
+                        <div key={item.id} className="rounded-[8px] border border-amber-100 bg-white p-2">
+                          <div className="text-xs font-semibold text-stone-950">{item.title}</div>
+                          <div className="mt-1 text-[11px] leading-4 text-stone-500">{item.reviewer_action}</div>
+                        </div>
+                      ))}
+                    {ocrImportReadinessPolicy.blocking_conditions.length +
+                      ocrImportReadinessPolicy.manual_review_conditions.length ===
+                      0 &&
+                      ocrImportReadinessPolicy.status_enumeration.slice(0, 3).map((item) => (
+                        <div key={item.status} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="truncate text-stone-700">{item.meaning}</span>
+                          <Badge variant="outline" className={statusClass[item.status] ?? statusClass.not_run}>
+                            {item.status.replace(/_/g, ' ')}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {caseTimelineDeadlineRisk && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Deadline risk</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {caseTimelineDeadlineRisk.assessment_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[caseTimelineDeadlineRisk.status] ?? statusClass.not_run}
+                    >
+                      {caseTimelineDeadlineRisk.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTimelineDeadlineRisk.event_type_standards.length}
+                      </div>
+                      <div className="text-[11px] text-stone-500">event types</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTimelineDeadlineRisk.summary.blocking_urgent_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">urgent</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTimelineDeadlineRisk.summary.missing_fact_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">missing facts</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {caseTimelineDeadlineRisk.blocking_urgent_items.slice(0, 3).map((item) => (
+                      <div key={`${item.event_id}-${item.event_type}`} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.event_type.replace(/_/g, ' ')}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">{item.reason}</div>
+                      </div>
+                    ))}
+                    {caseTimelineDeadlineRisk.blocking_urgent_items.length === 0 &&
+                      caseTimelineDeadlineRisk.deadline_rules_metadata.slice(0, 3).map((rule) => (
+                        <div key={rule.rule_id} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                          <div className="text-xs font-semibold text-stone-950">{rule.rule_id.replace(/_/g, ' ')}</div>
+                          <div className="mt-1 text-[11px] leading-4 text-stone-500">{rule.trigger}</div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {continuousLedger && (
           <section className="mb-8">
