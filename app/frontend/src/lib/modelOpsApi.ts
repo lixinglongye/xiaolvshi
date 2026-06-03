@@ -71,6 +71,13 @@ export type ModelBudgetPolicy = {
   task_decisions: ModelBudgetDecision[];
 };
 
+export type ModelRuntimeRouter = {
+  status: string;
+  request_fields: Record<string, string>;
+  enforcement: string[];
+  task_defaults: ModelBudgetDecision[];
+};
+
 export type ModelCapabilityCandidate = {
   model_id: string;
   status: string;
@@ -331,6 +338,7 @@ export type ModelCostGuardrails = {
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
+  runtime_router?: ModelRuntimeRouter;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;

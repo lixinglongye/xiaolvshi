@@ -24,6 +24,7 @@ The response includes `cost_guardrails` next to:
 - `usage`
 - `cost_forecast`
 - `budget_policy`
+- `runtime_router`
 - `capability_matrix`
 - `escalation_policy`
 - `fallback_chains`

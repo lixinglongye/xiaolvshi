@@ -48,7 +48,18 @@ class GenTxtRequest(BaseModel):
     """Generate Text request parameters."""
 
     messages: List[ChatMessage] = Field(..., description="Conversation messages list.")
-    model: str = Field(default="auto-fast", description="Model name or routing alias, e.g. auto-fast/auto-review")
+    model: Optional[str] = Field(
+        default=None,
+        description="Optional model name or routing alias. If omitted, the task default is used.",
+    )
+    task: str = Field(
+        default="fast",
+        description="Routing task, e.g. fast, classification, ocr, review, pdf. Unknown values fall back to review.",
+    )
+    allow_over_budget_model: bool = Field(
+        default=False,
+        description="Allow explicit over-budget or operator-review models instead of routing to the recommended model.",
+    )
     stream: bool = Field(default=False, description="Whether to enable streaming output.")
     temperature: Optional[float] = Field(default=0.7, description="Sampling temperature (0-2).")
     max_tokens: Optional[int] = Field(default=4096, description="Maximum number of generated tokens.")
@@ -63,6 +74,11 @@ class GenTxtResponse(BaseModel):
 
     content: str = Field(..., description="Generated text content.")
     model: str = Field(..., description="Name of the model used.")
+    task: str = Field(default="fast", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without prompts, documents, or credentials.",
+    )
     usage: Optional[dict] = Field(default=None, description="Token usage statistics.")
 
 

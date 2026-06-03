@@ -18,6 +18,7 @@ POST /api/v1/maintenance/release-readiness
   "frontend-build": "pass",
   "secret-scan": "pass",
   "model-capability-matrix": "pass",
+  "model-runtime-router": "pass",
   "model-escalation-policy": "pass",
   "model-cost-forecast": "pass",
   "model-cost-guardrails": "pass",
@@ -46,6 +47,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Frontend production build.
 - Secret and credential scan.
 - Gemini model capability matrix coverage.
+- Runtime model router coverage.
 - Cheap-first model escalation policy coverage.
 - Model cost forecast coverage.
 - Model cost guardrail coverage.

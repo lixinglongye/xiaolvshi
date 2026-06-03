@@ -23,6 +23,7 @@ GET /api/v1/aihub/models
 The response includes `fallback_chains` next to:
 
 - `budget_policy`
+- `runtime_router`
 - `capability_matrix`
 - `escalation_policy`
 - `routing_replay`

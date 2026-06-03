@@ -17,6 +17,7 @@ GET /api/v1/aihub/models
 The response includes:
 
 - `budget_policy`
+- `runtime_router`
 - `capability_matrix`
 - `escalation_policy`
 - `fallback_chains`

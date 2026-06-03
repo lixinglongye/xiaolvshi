@@ -67,6 +67,8 @@ function Inner() {
 
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
+  const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
+  const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
@@ -253,6 +255,58 @@ function Inner() {
             ))}
           </div>
         </section>
+
+        {data?.runtime_router && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Runtime router</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {runtimeDefaults.length} task defaults / {runtimeRouterFields.length} request fields
+                </div>
+              </div>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                {data.runtime_router.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3">
+              {runtimeRouterFields.map(([field, note]) => (
+                <div key={field} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="font-mono text-sm font-semibold text-stone-950">{field}</div>
+                  <div className="mt-2 text-xs leading-5 text-stone-600">{note}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Default model</TableHead>
+                    <TableHead>Budget</TableHead>
+                    <TableHead>Mode</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {runtimeDefaults.map((row) => (
+                    <TableRow key={`runtime-${row.task}`}>
+                      <TableCell className="font-mono font-semibold text-stone-950">{row.task}</TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.resolved_model}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                          max {row.max_cost_tier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{row.budget_mode}</TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
 
         <section className="mb-8">
           <h2 className="mb-3 text-xl font-black text-stone-950">Budget policy</h2>

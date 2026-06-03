@@ -147,6 +147,20 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_capability_matrix.py tests/test_model_catalog.py tests/test_model_budget.py -q",
             ),
             ReleaseCheck(
+                id="model-runtime-router",
+                title="Runtime model router coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/tests/test_model_runtime_router.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "docs/MODEL_RUNTIME_ROUTER.md",
+                ),
+                validation_command="python -m pytest tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py -q",
+            ),
+            ReleaseCheck(
                 id="model-escalation-policy",
                 title="Cheap-first model escalation policy coverage",
                 category="model_ops",

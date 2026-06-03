@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_runtime_router import resolve_runtime_model
 from services.model_usage import model_usage_registry
 
 logger = logging.getLogger(__name__)
@@ -159,7 +160,12 @@ class AIHubService:
         Returns:
             Txt2TxtResponse: generated text response.
         """
-        model = resolve_model(request.model, task="fast")
+        route = resolve_runtime_model(
+            request.model,
+            task=request.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -179,16 +185,18 @@ class AIHubService:
 
             content = response.choices[0].message.content or ""
             usage = self._usage_from_response(response)
-            self._record_model_usage(model=model, task="text", started_at=started_at, success=True, usage=usage)
+            self._record_model_usage(model=model, task=route.task, started_at=started_at, success=True, usage=usage)
 
             return GenTxtResponse(
                 content=content,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
                 usage=usage,
             )
 
         except Exception as e:
-            self._record_model_usage(model=model, task="text", started_at=started_at, success=False)
+            self._record_model_usage(model=model, task=route.task, started_at=started_at, success=False)
             logger.error(f"gentxt error: {e}")
             raise
 
@@ -202,7 +210,12 @@ class AIHubService:
         Yields:
             str: Generated text content chunk (plain text, not JSON).
         """
-        model = resolve_model(request.model, task="fast")
+        route = resolve_runtime_model(
+            request.model,
+            task=request.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -223,10 +236,10 @@ class AIHubService:
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
-            self._record_model_usage(model=model, task="text_stream", started_at=started_at, success=True)
+            self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=True)
 
         except Exception as e:
-            self._record_model_usage(model=model, task="text_stream", started_at=started_at, success=False)
+            self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=False)
             logger.error(f"gentxt_stream error: {e}")
             raise
 
