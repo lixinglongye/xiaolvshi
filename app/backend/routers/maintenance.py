@@ -6,8 +6,10 @@ from services.case_evidence_graph import CaseEvidenceGraphService
 from services.case_intake_completeness import CaseIntakeCompletenessService
 from services.case_timeline_deadline_risk import CaseTimelineDeadlineRiskService
 from services.case_team_access_policy import CaseTeamAccessPolicyService
+from services.case_task_notification_policy import CaseTaskNotificationPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
+from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
@@ -23,6 +25,7 @@ from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_export_readiness import LegalDocumentExportReadinessService
 from services.legal_document_template_matrix import LegalDocumentTemplateMatrixService
+from services.lawyer_review_workflow_policy import LawyerReviewWorkflowPolicyService
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
@@ -139,6 +142,24 @@ async def evaluate_case_timeline_deadline_risk(events: list[dict[str, Any]]):
     }
 
 
+@router.get("/case-task-notification-policy")
+async def get_case_task_notification_policy_template():
+    """Return deterministic case task notification and escalation policy metadata."""
+    return {
+        "success": True,
+        "data": CaseTaskNotificationPolicyService().build_policy(),
+    }
+
+
+@router.post("/case-task-notification-policy")
+async def evaluate_case_task_notification_policy(tasks: list[dict[str, Any]]):
+    """Evaluate task notification triggers from deterministic task metadata."""
+    return {
+        "success": True,
+        "data": CaseTaskNotificationPolicyService().build_policy(tasks),
+    }
+
+
 @router.get("/case-team-access-policy")
 async def get_case_team_access_policy():
     """Return least-privilege case collaboration and audit policy metadata."""
@@ -148,12 +169,48 @@ async def get_case_team_access_policy():
     }
 
 
+@router.get("/lawyer-review-workflow-policy")
+async def get_lawyer_review_workflow_policy_template():
+    """Return lawyer review state machine and role-gate policy metadata."""
+    return {
+        "success": True,
+        "data": LawyerReviewWorkflowPolicyService().build_policy(),
+    }
+
+
+@router.post("/lawyer-review-workflow-policy")
+async def evaluate_lawyer_review_workflow_policy(payload: dict[str, Any]):
+    """Evaluate a proposed lawyer-review workflow transition."""
+    return {
+        "success": True,
+        "data": LawyerReviewWorkflowPolicyService().build_policy(payload),
+    }
+
+
 @router.get("/client-delivery-risk-checklist")
 async def get_client_delivery_risk_checklist():
     """Return client-delivery disclosure, lawyer-review, and evidence gates."""
     return {
         "success": True,
         "data": ClientDeliveryRiskChecklistService().build_checklist(),
+    }
+
+
+@router.get("/evidence-exhibit-package-policy")
+async def get_evidence_exhibit_package_policy_template():
+    """Return evidence exhibit package metadata, review, and export policy."""
+    return {
+        "success": True,
+        "data": EvidenceExhibitPackagePolicyService().build_policy(),
+    }
+
+
+@router.post("/evidence-exhibit-package-policy")
+async def evaluate_evidence_exhibit_package_policy(payload: dict[str, Any]):
+    """Evaluate evidence exhibit package metadata without reading files."""
+    return {
+        "success": True,
+        "data": EvidenceExhibitPackagePolicyService().build_policy(payload),
     }
 
 
