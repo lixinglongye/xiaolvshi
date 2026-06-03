@@ -8,6 +8,12 @@ artifact, not a claim that the product already covers every legal workflow. It
 keeps the unfinished product surface visible while backend, benchmark, and
 maintenance work continues in parallel.
 
+Recent shipped evidence now includes matter intake readiness, deterministic
+deadline validation, client delivery transparency gates, small legal document
+benchmark fixtures, Gemini/NewAPI cheap-first policy metadata, and default model
+recommendation snapshots. These are reviewable product slices, not proof that
+the full case workbench, delivery portal, or live deadline engine is finished.
+
 ## Scope
 
 The radar tracks product modules that are not fully implemented or need

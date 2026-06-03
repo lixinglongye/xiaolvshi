@@ -38,6 +38,7 @@ from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
 from services.model_default_optimization import ModelDefaultOptimizationService
+from services.model_default_recommendation_snapshot import ModelDefaultRecommendationSnapshotService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
@@ -163,6 +164,12 @@ async def list_models():
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
+    observed_gateway_models = [
+        item.get("model")
+        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
+        if item.get("model")
+    ]
+    default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
@@ -171,6 +178,7 @@ async def list_models():
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
+        "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_health_plan": gateway_health_plan,
         "lifecycle_policy": lifecycle_policy,
@@ -202,6 +210,7 @@ async def list_models():
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
+        "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_health_plan": gateway_health_plan,
         "lifecycle_policy": lifecycle_policy,

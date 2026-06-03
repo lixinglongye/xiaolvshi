@@ -689,6 +689,269 @@ type CaseTimelineDeadlineRiskResponse = {
   data: CaseTimelineDeadlineRisk;
 };
 
+export type MatterAuditEventPolicy = {
+  event_type: string;
+  category: string;
+  required_fields: string[];
+  forbidden_fields: string[];
+  retention_bucket: string;
+  reviewer_value: string;
+  blocking_if_missing: string[];
+  missing_fields: string[];
+  forbidden_fields_present: string[];
+  status: string;
+  blocks_release: boolean;
+};
+
+export type MatterAuditRetentionPolicy = {
+  status: string;
+  policy_id: string;
+  summary: {
+    event_type_count: number;
+    checked_event_count: number;
+    blocking_issue_count: number;
+    retention_bucket_count: number;
+    privacy_minimized: boolean;
+  };
+  event_policies: MatterAuditEventPolicy[];
+  blocking_items: Array<{
+    event_type: string;
+    missing_fields: string[];
+    forbidden_fields_present: string[];
+    reviewer_value: string;
+  }>;
+  retention_buckets: Array<{
+    id: string;
+    description: string;
+    default_retention: string;
+  }>;
+  data_minimization_rules: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type MatterAuditRetentionPolicyResponse = {
+  success: boolean;
+  data: MatterAuditRetentionPolicy;
+};
+
+export type LawyerReviewStateDefinition = {
+  status: string;
+  meaning: string;
+  responsible_roles: string[];
+  client_visible: boolean;
+  terminal?: boolean;
+};
+
+export type LawyerReviewTransitionRule = {
+  from_status: string;
+  to_status: string;
+  allowed_roles: string[];
+  required_fields: string[];
+  audit_event: string;
+  reason_required?: boolean;
+};
+
+export type LawyerReviewWorkflowPolicy = {
+  status: string;
+  policy_id: string;
+  summary: {
+    state_count: number;
+    transition_count: number;
+    lawyer_gate_required: boolean;
+    draft_direct_to_client_deliverable_allowed: boolean;
+    blocking_condition_count: number;
+  };
+  state_enumeration: LawyerReviewStateDefinition[];
+  allowed_state_transitions: LawyerReviewTransitionRule[];
+  forbidden_state_transitions: Array<{
+    from_status: string;
+    to_status: string;
+    reason: string;
+  }>;
+  blocking_conditions: Array<{
+    code: string;
+    message: string;
+    allowed_roles?: string[];
+    missing_fields?: string[];
+    required_for?: string[];
+  }>;
+  role_requirements: Array<{
+    gate: string;
+    required_roles: string[];
+    required_fields?: string[];
+    notes: string;
+  }>;
+  audit_log_requirements: Array<{
+    event: string;
+    required_fields: string[];
+  }>;
+  low_resource_validation_commands: string[];
+  privacy_notes: string[];
+};
+
+type LawyerReviewWorkflowPolicyResponse = {
+  success: boolean;
+  data: LawyerReviewWorkflowPolicy;
+};
+
+export type EvidenceExhibitPackagePolicy = {
+  status: string;
+  policy_id: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    exhibit_count: number;
+    blocking_issue_count: number;
+    ready_for_export: boolean;
+    required_core_field_count: number;
+    required_anchor_field_count: number;
+    three_factor_review_count: number;
+    export_manifest_field_count: number;
+  };
+  exhibit_metadata_schema: Array<{
+    name: string;
+    required: boolean;
+    purpose: string;
+    example: string;
+  }>;
+  package_checks: Array<{
+    id: string;
+    label: string;
+    required_before_export: boolean;
+    product_gap_closed: string;
+    status: string;
+    blocking_issue_ids: string[];
+  }>;
+  blocking_issues: Array<{
+    id: string;
+    severity: string;
+    exhibit_ref: string;
+    check_id: string;
+    field: string;
+    message: string;
+    reviewer_action: string;
+  }>;
+  review_actions: Array<{
+    id: string;
+    label: string;
+    required_role: string;
+    action: string;
+  }>;
+  export_manifest_fields: Array<{
+    name: string;
+    required: boolean;
+    purpose: string;
+  }>;
+  delivery_policy: string[];
+  low_resource_validation_commands: Array<{
+    id: string;
+    command: string;
+    resource_note: string;
+  }>;
+  privacy_notes: string[];
+  future_api: Record<string, string>;
+};
+
+type EvidenceExhibitPackagePolicyResponse = {
+  success: boolean;
+  data: EvidenceExhibitPackagePolicy;
+};
+
+export type CaseTaskNotificationPolicy = {
+  status: string;
+  policy_id: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    active_task_count: number;
+    done_task_count: number;
+    notification_count: number;
+    urgent_escalation_count: number;
+    missing_owner_count: number;
+    blocking_urgent_count: number;
+  };
+  notification_channels: Array<{
+    channel: string;
+    purpose: string;
+    default_audience: string[];
+    allowed_payload_fields: string[];
+    cadence: string;
+  }>;
+  trigger_rules: Array<{
+    rule_id: string;
+    trigger: string;
+    severity: string;
+    channel_order: string[];
+    reviewer_action: string;
+  }>;
+  escalation_rules: Array<{
+    rule_id: string;
+    applies_when: string;
+    escalate_to: string[];
+    action: string;
+    audit_required: boolean;
+  }>;
+  owner_assignment_requirements: string[];
+  notification_queue: Array<{
+    case_id: string;
+    task_id: string;
+    status: string;
+    priority: string;
+    days_until_due: number | null;
+    owner_missing: boolean;
+    urgent_escalation: boolean;
+    triggers: string[];
+    recommended_channels: string[];
+    blocking_reasons: string[];
+  }>;
+  blocking_urgent_tasks: Array<{
+    case_id: string;
+    task_id: string;
+    status: string;
+    priority: string;
+    days_until_due: number | null;
+    owner_missing: boolean;
+    urgent_escalation: boolean;
+    triggers: string[];
+    recommended_channels: string[];
+    blocking_reasons: string[];
+  }>;
+  evaluated_tasks: Array<{
+    case_id: string;
+    task_id: string;
+    status: string;
+    priority: string;
+    days_until_due: number | null;
+    owner_missing: boolean;
+    urgent_escalation: boolean;
+    requires_client_materials?: boolean;
+    requires_lawyer_review?: boolean;
+    done?: boolean;
+    triggers: string[];
+    recommended_channels: string[];
+    blocking_reasons: string[];
+  }>;
+  audit_record_requirements: string[];
+  low_resource_validation_commands: Array<{
+    id: string;
+    command: string;
+    resource_note: string;
+  }>;
+  privacy_notes: string[];
+  future_api_contract: Record<string, string>;
+};
+
+type CaseTaskNotificationPolicyResponse = {
+  success: boolean;
+  data: CaseTaskNotificationPolicy;
+};
+
 export type LegalReviewBenchmarkCaseResult = {
   case_id: string;
   title: string;
@@ -1631,6 +1894,54 @@ export async function getCaseTimelineDeadlineRisk(): Promise<CaseTimelineDeadlin
     return payload.data;
   }
   return payload as CaseTimelineDeadlineRisk;
+}
+
+export async function getMatterAuditRetentionPolicy(): Promise<MatterAuditRetentionPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/matter-audit-retention-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as MatterAuditRetentionPolicyResponse | MatterAuditRetentionPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as MatterAuditRetentionPolicy;
+}
+
+export async function getLawyerReviewWorkflowPolicy(): Promise<LawyerReviewWorkflowPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/lawyer-review-workflow-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LawyerReviewWorkflowPolicyResponse | LawyerReviewWorkflowPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LawyerReviewWorkflowPolicy;
+}
+
+export async function getEvidenceExhibitPackagePolicy(): Promise<EvidenceExhibitPackagePolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/evidence-exhibit-package-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as EvidenceExhibitPackagePolicyResponse | EvidenceExhibitPackagePolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as EvidenceExhibitPackagePolicy;
+}
+
+export async function getCaseTaskNotificationPolicy(): Promise<CaseTaskNotificationPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case-task-notification-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as CaseTaskNotificationPolicyResponse | CaseTaskNotificationPolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as CaseTaskNotificationPolicy;
 }
 
 export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {

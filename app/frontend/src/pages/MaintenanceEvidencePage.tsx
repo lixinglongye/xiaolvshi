@@ -16,10 +16,12 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getCaseIntakeCompleteness,
+  getCaseTaskNotificationPolicy,
   getCaseTimelineDeadlineRisk,
   getCaseTeamAccessPolicy,
   getClientDeliveryRiskChecklist,
   getContinuousUpdateLedger,
+  getEvidenceExhibitPackagePolicy,
   getLegalFixtureImprovementPlan,
   getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
@@ -37,7 +39,9 @@ import {
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
+  getLawyerReviewWorkflowPolicy,
   getMaintenanceEvidence,
+  getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
   getProductFeatureGapRadar,
@@ -45,11 +49,14 @@ import {
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
   type CaseIntakeCompleteness,
+  type CaseTaskNotificationPolicy,
   type CaseTimelineDeadlineRisk,
   type CaseTeamAccessPolicy,
   type ClientDeliveryRiskChecklist,
   type ContinuousUpdateLedger,
+  type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
+  type LawyerReviewWorkflowPolicy,
   type LegalDocumentExportReadiness,
   type LegalDocumentTemplateMatrix,
   type LegalFixtureEvidenceBundle,
@@ -69,6 +76,7 @@ import {
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
+  type MatterAuditRetentionPolicy,
   type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
   type ReleaseReadinessResult,
@@ -170,6 +178,13 @@ function Inner() {
     useState<LegalDocumentExportReadiness | null>(null);
   const [ocrImportReadinessPolicy, setOcrImportReadinessPolicy] = useState<OcrImportReadinessPolicy | null>(null);
   const [caseTimelineDeadlineRisk, setCaseTimelineDeadlineRisk] = useState<CaseTimelineDeadlineRisk | null>(null);
+  const [matterAuditRetentionPolicy, setMatterAuditRetentionPolicy] = useState<MatterAuditRetentionPolicy | null>(null);
+  const [lawyerReviewWorkflowPolicy, setLawyerReviewWorkflowPolicy] =
+    useState<LawyerReviewWorkflowPolicy | null>(null);
+  const [evidenceExhibitPackagePolicy, setEvidenceExhibitPackagePolicy] =
+    useState<EvidenceExhibitPackagePolicy | null>(null);
+  const [caseTaskNotificationPolicy, setCaseTaskNotificationPolicy] =
+    useState<CaseTaskNotificationPolicy | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -209,6 +224,10 @@ function Inner() {
         legalDocumentExportReadinessData,
         ocrImportReadinessPolicyData,
         caseTimelineDeadlineRiskData,
+        matterAuditRetentionPolicyData,
+        lawyerReviewWorkflowPolicyData,
+        evidenceExhibitPackagePolicyData,
+        caseTaskNotificationPolicyData,
         benchmarkData,
         researchBacklogData,
         publicBenchmarkSamplerData,
@@ -237,6 +256,10 @@ function Inner() {
         getLegalDocumentExportReadiness(),
         getOcrImportReadinessPolicy(),
         getCaseTimelineDeadlineRisk(),
+        getMatterAuditRetentionPolicy(),
+        getLawyerReviewWorkflowPolicy(),
+        getEvidenceExhibitPackagePolicy(),
+        getCaseTaskNotificationPolicy(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
         getLegalPublicBenchmarkSampler(),
@@ -266,6 +289,10 @@ function Inner() {
       setLegalDocumentExportReadiness(legalDocumentExportReadinessData);
       setOcrImportReadinessPolicy(ocrImportReadinessPolicyData);
       setCaseTimelineDeadlineRisk(caseTimelineDeadlineRiskData);
+      setMatterAuditRetentionPolicy(matterAuditRetentionPolicyData);
+      setLawyerReviewWorkflowPolicy(lawyerReviewWorkflowPolicyData);
+      setEvidenceExhibitPackagePolicy(evidenceExhibitPackagePolicyData);
+      setCaseTaskNotificationPolicy(caseTaskNotificationPolicyData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
@@ -429,17 +456,21 @@ function Inner() {
           legalDocumentTemplateMatrix ||
           legalDocumentExportReadiness ||
           ocrImportReadinessPolicy ||
-          caseTimelineDeadlineRisk) && (
+          caseTimelineDeadlineRisk ||
+          matterAuditRetentionPolicy ||
+          lawyerReviewWorkflowPolicy ||
+          evidenceExhibitPackagePolicy ||
+          caseTaskNotificationPolicy) && (
           <section className="mb-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-stone-950">Case workflow gates</h2>
                 <div className="mt-1 text-sm text-stone-600">
-                  Intake, team access, delivery, document, OCR, and deadline readiness checks.
+                  Intake, team access, delivery, document, OCR, deadline, review, evidence, task, and audit readiness.
                 </div>
               </div>
               <Badge variant="outline" className="bg-white">
-                7 maintenance endpoints
+                11 maintenance endpoints
               </Badge>
             </div>
 
@@ -807,6 +838,247 @@ function Inner() {
                         <div key={rule.rule_id} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
                           <div className="text-xs font-semibold text-stone-950">{rule.rule_id.replace(/_/g, ' ')}</div>
                           <div className="mt-1 text-[11px] leading-4 text-stone-500">{rule.trigger}</div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {matterAuditRetentionPolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Audit retention</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {matterAuditRetentionPolicy.policy_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[matterAuditRetentionPolicy.status] ?? statusClass.not_run}
+                    >
+                      {matterAuditRetentionPolicy.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {matterAuditRetentionPolicy.summary.event_type_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">event types</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {matterAuditRetentionPolicy.summary.blocking_issue_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blockers</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {matterAuditRetentionPolicy.summary.retention_bucket_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">buckets</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {matterAuditRetentionPolicy.blocking_items.slice(0, 3).map((item) => (
+                      <div key={item.event_type} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">
+                          {item.event_type.replace(/_/g, ' ')}
+                        </div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                          missing: {item.missing_fields.join(', ') || '-'}; forbidden:{' '}
+                          {item.forbidden_fields_present.join(', ') || '-'}
+                        </div>
+                      </div>
+                    ))}
+                    {matterAuditRetentionPolicy.blocking_items.length === 0 &&
+                      matterAuditRetentionPolicy.event_policies.slice(0, 3).map((item) => (
+                        <div key={item.event_type} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="truncate text-stone-700">{item.event_type.replace(/_/g, ' ')}</span>
+                          <Badge variant="outline" className={statusClass[item.status] ?? statusClass.not_run}>
+                            {item.retention_bucket.replace(/_/g, ' ')}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {lawyerReviewWorkflowPolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Lawyer review</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {lawyerReviewWorkflowPolicy.policy_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[lawyerReviewWorkflowPolicy.status] ?? statusClass.ready}
+                    >
+                      {lawyerReviewWorkflowPolicy.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {lawyerReviewWorkflowPolicy.summary.state_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">states</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {lawyerReviewWorkflowPolicy.summary.transition_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">flows</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {lawyerReviewWorkflowPolicy.summary.blocking_condition_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blockers</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {lawyerReviewWorkflowPolicy.blocking_conditions.slice(0, 3).map((item) => (
+                      <div key={item.code} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.code.replace(/_/g, ' ')}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">{item.message}</div>
+                      </div>
+                    ))}
+                    {lawyerReviewWorkflowPolicy.blocking_conditions.length === 0 &&
+                      lawyerReviewWorkflowPolicy.allowed_state_transitions.slice(0, 3).map((item) => (
+                        <div
+                          key={`${item.from_status}-${item.to_status}`}
+                          className="rounded-[8px] border border-stone-950/10 bg-white p-2"
+                        >
+                          <div className="text-xs font-semibold text-stone-950">
+                            {item.from_status.replace(/_/g, ' ')} {'->'} {item.to_status.replace(/_/g, ' ')}
+                          </div>
+                          <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                            roles: {item.allowed_roles.map(roleLabel).join(', ')}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {evidenceExhibitPackagePolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Evidence package</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {evidenceExhibitPackagePolicy.policy_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[evidenceExhibitPackagePolicy.status] ?? statusClass.not_run}
+                    >
+                      {evidenceExhibitPackagePolicy.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {evidenceExhibitPackagePolicy.summary.exhibit_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">exhibits</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {evidenceExhibitPackagePolicy.summary.blocking_issue_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">blockers</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {evidenceExhibitPackagePolicy.summary.export_manifest_field_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">manifest</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {evidenceExhibitPackagePolicy.blocking_issues.slice(0, 3).map((item) => (
+                      <div key={item.id} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.exhibit_ref}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">{item.message}</div>
+                      </div>
+                    ))}
+                    {evidenceExhibitPackagePolicy.blocking_issues.length === 0 &&
+                      evidenceExhibitPackagePolicy.package_checks.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-2 text-xs">
+                          <span className="truncate text-stone-700">{item.label}</span>
+                          <Badge variant="outline" className={statusClass[item.status] ?? statusClass.not_run}>
+                            {item.status.replace(/_/g, ' ')}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {caseTaskNotificationPolicy && (
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Task notifications</h3>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        {caseTaskNotificationPolicy.policy_id}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[caseTaskNotificationPolicy.status] ?? statusClass.ready}
+                    >
+                      {caseTaskNotificationPolicy.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTaskNotificationPolicy.summary.active_task_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">active</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTaskNotificationPolicy.summary.blocking_urgent_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">urgent</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                      <div className="text-lg font-black text-stone-950">
+                        {caseTaskNotificationPolicy.summary.notification_count}
+                      </div>
+                      <div className="text-[11px] text-stone-500">queued</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {caseTaskNotificationPolicy.blocking_urgent_tasks.slice(0, 3).map((item) => (
+                      <div key={`${item.case_id}-${item.task_id}`} className="rounded-[8px] border border-red-100 bg-white p-2">
+                        <div className="text-xs font-semibold text-stone-950">{item.task_id}</div>
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500">
+                          {item.priority}; triggers: {item.triggers.join(', ') || '-'}
+                        </div>
+                      </div>
+                    ))}
+                    {caseTaskNotificationPolicy.blocking_urgent_tasks.length === 0 &&
+                      caseTaskNotificationPolicy.trigger_rules.slice(0, 3).map((item) => (
+                        <div key={item.rule_id} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-xs font-semibold text-stone-950">
+                              {item.rule_id.replace(/-/g, ' ')}
+                            </span>
+                            <Badge variant="outline" className={priorityClass[item.severity] ?? priorityClass.medium}>
+                              {item.severity}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-[11px] leading-4 text-stone-500">{item.trigger}</div>
                         </div>
                       ))}
                   </div>

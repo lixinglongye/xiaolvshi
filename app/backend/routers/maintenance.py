@@ -7,10 +7,14 @@ from services.case_intake_completeness import CaseIntakeCompletenessService
 from services.case_timeline_deadline_risk import CaseTimelineDeadlineRiskService
 from services.case_team_access_policy import CaseTeamAccessPolicyService
 from services.case_task_notification_policy import CaseTaskNotificationPolicyService
+from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
+from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
@@ -32,6 +36,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
+from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.product_feature_gap_radar import ProductFeatureGapRadarService
 from services.release_readiness import ReleaseReadinessService
@@ -124,6 +129,24 @@ async def evaluate_case_intake_completeness(payload: dict[str, Any]):
     }
 
 
+@router.get("/matter-intake-readiness-policy")
+async def get_matter_intake_readiness_policy_template():
+    """Return matter-intake completeness, conflict, and lawyer-review readiness metadata."""
+    return {
+        "success": True,
+        "data": MatterIntakeReadinessPolicyService().build_policy(),
+    }
+
+
+@router.post("/matter-intake-readiness-policy")
+async def evaluate_matter_intake_readiness_policy(payload: dict[str, Any]):
+    """Evaluate matter intake readiness from metadata without echoing raw case content."""
+    return {
+        "success": True,
+        "data": MatterIntakeReadinessPolicyService().build_policy(payload),
+    }
+
+
 @router.get("/case-timeline-deadline-risk")
 async def get_case_timeline_deadline_risk_template():
     """Return deterministic case timeline and deadline-risk metadata."""
@@ -139,6 +162,28 @@ async def evaluate_case_timeline_deadline_risk(events: list[dict[str, Any]]):
     return {
         "success": True,
         "data": CaseTimelineDeadlineRiskService().build_assessment(events),
+    }
+
+
+@router.get("/deadline-validation-policy")
+async def get_deadline_validation_policy_template():
+    """Return deterministic legal deadline validation and reminder policy metadata."""
+    return {
+        "success": True,
+        "data": DeadlineValidationPolicyService().build_policy(),
+    }
+
+
+@router.post("/deadline-validation-policy")
+async def evaluate_deadline_validation_policy(payload: dict[str, Any]):
+    """Evaluate deadline metadata using explicit dates and an optional reference date."""
+    deadlines = payload.get("deadlines")
+    return {
+        "success": True,
+        "data": DeadlineValidationPolicyService().build_policy(
+            deadlines if isinstance(deadlines, list) else None,
+            reference_date=payload.get("reference_date"),
+        ),
     }
 
 
@@ -193,6 +238,24 @@ async def get_client_delivery_risk_checklist():
     return {
         "success": True,
         "data": ClientDeliveryRiskChecklistService().build_checklist(),
+    }
+
+
+@router.get("/client-delivery-transparency-policy")
+async def get_client_delivery_transparency_policy_template():
+    """Return client confirmation, version diff, risk notice, and delivery audit gates."""
+    return {
+        "success": True,
+        "data": ClientDeliveryTransparencyPolicyService().build_policy(),
+    }
+
+
+@router.post("/client-delivery-transparency-policy")
+async def evaluate_client_delivery_transparency_policy(payload: dict[str, Any]):
+    """Evaluate client-delivery transparency metadata before external release."""
+    return {
+        "success": True,
+        "data": ClientDeliveryTransparencyPolicyService().build_policy(payload),
     }
 
 
@@ -286,6 +349,27 @@ async def get_continuous_update_ledger():
     }
 
 
+@router.get("/gemini-newapi-cheap-first-policy")
+async def get_gemini_newapi_cheap_first_policy():
+    """Return cheap-first Gemini/NewAPI family and default-selection policy metadata."""
+    return {
+        "success": True,
+        "data": GeminiNewapiCheapFirstPolicyService().build_policy(),
+    }
+
+
+@router.post("/gemini-newapi-cheap-first-policy")
+async def evaluate_gemini_newapi_cheap_first_policy(payload: dict[str, Any]):
+    """Review observed model ids against the cheap-first Gemini/NewAPI policy."""
+    observed_models = payload.get("observed_models")
+    return {
+        "success": True,
+        "data": GeminiNewapiCheapFirstPolicyService().build_policy(
+            observed_models if isinstance(observed_models, list) else None
+        ),
+    }
+
+
 @router.get("/legal-review-benchmark")
 async def get_legal_review_benchmark_suite():
     """Return the deterministic benchmark suite for legal-review pipeline changes."""
@@ -339,6 +423,24 @@ async def build_legal_public_benchmark_sampler(config: dict[str, Any]):
     return {
         "success": True,
         "data": LegalPublicBenchmarkSamplerService().build_plan(config),
+    }
+
+
+@router.get("/legal-review-benchmark/document-fixtures")
+async def get_legal_document_benchmark_fixtures():
+    """Return tiny local Chinese legal-document benchmark fixtures for laptop tests."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkFixturesService().build_suite(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-fixtures")
+async def evaluate_legal_document_benchmark_fixtures(predictions: dict[str, Any]):
+    """Evaluate local structured predictions against deterministic document fixtures."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkFixturesService().evaluate_predictions(predictions),
     }
 
 
