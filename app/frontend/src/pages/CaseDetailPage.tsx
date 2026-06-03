@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import Markdown from 'markdown-to-jsx';
 import Layout from '@/components/Layout';
 import AuthGuard from '@/components/AuthGuard';
+import CaseWorkbenchRuntimePanel from '@/components/cases/CaseWorkbenchRuntimePanel';
+import LegalRagResearchPanel from '@/components/cases/LegalRagResearchPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -737,16 +739,22 @@ function Inner() {
               </TabsList>
 
               <TabsContent value="overview" className={tabPaneClass}>
-                <OverviewTab
-                  caseItem={caseItem}
-                  materials={materials}
-                  facts={facts}
-                  tasks={urgentTasks}
-                  unsupportedFacts={unsupportedFacts}
-                  quickActions={quickActions}
-                  onGenerate={generateDocument}
-                  onResearch={() => { setActiveTab('research'); runResearch(); }}
-                />
+                <div className="space-y-4">
+                  <OverviewTab
+                    caseItem={caseItem}
+                    materials={materials}
+                    facts={facts}
+                    tasks={urgentTasks}
+                    unsupportedFacts={unsupportedFacts}
+                    quickActions={quickActions}
+                    onGenerate={generateDocument}
+                    onResearch={() => { setActiveTab('research'); runResearch(); }}
+                  />
+                  <CaseWorkbenchRuntimePanel
+                    caseId={caseItem.id}
+                    defaultTaskRefHash={urgentTasks[0]?.id ? `task_${urgentTasks[0].id}` : undefined}
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent value="materials" className={tabPaneClass}>
@@ -784,7 +792,10 @@ function Inner() {
               </TabsContent>
 
               <TabsContent value="research" className={tabPaneClass}>
-                <ResearchTab query={researchQuery} setQuery={setResearchQuery} results={researchResults} onRun={runResearch} loading={researchLoading} />
+                <LegalRagResearchPanel
+                  caseId={caseItem.id}
+                  defaultUseCase={caseItem.case_type || 'contract_review'}
+                />
               </TabsContent>
 
               <TabsContent value="documents" className={tabPaneClass}>

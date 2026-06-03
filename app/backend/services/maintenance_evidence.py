@@ -116,6 +116,7 @@ class MaintenanceEvidenceService:
                 "Only claim maintenance work that is visible in this repository.",
                 "Do not claim external ecosystem adoption without public evidence.",
                 "Do not claim third-party PR or issue volume unless GitHub records show it.",
+                "Keep runtime router discovery smoke and future case workbench, legal RAG, and billing UI claims queued until merged test or UI evidence exists.",
                 "Human maintainer must confirm ownership and final form attestations before submission.",
             ],
         }

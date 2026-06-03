@@ -58,6 +58,18 @@ def test_product_feature_gap_radar_has_evidence_paths_and_delivery_phases():
     assert any("tests/test_product_feature_gap_radar.py" in command for command in radar["validation_commands"])
 
 
+def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
+    radar = ProductFeatureGapRadarService().build_radar()
+    gaps = {gap["id"]: gap for gap in radar["feature_gaps"]}
+
+    assert "app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx" in gaps["case-workbench"]["evidence_paths"]
+    assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in gaps["legal-knowledge-rag"]["evidence_paths"]
+    assert "app/frontend/src/components/billing/BillingUsageBadge.tsx" in gaps["billing-entitlements"]["evidence_paths"]
+    assert any("material, fact, and task edits" in action for action in gaps["case-workbench"]["next_actions"])
+    assert any("case AI prompts" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
+    assert any("deep-review consumption" in action for action in gaps["billing-entitlements"]["next_actions"])
+
+
 def test_product_feature_gap_radar_has_no_secret_material():
     radar = ProductFeatureGapRadarService().build_radar()
 

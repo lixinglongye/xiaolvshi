@@ -22,6 +22,7 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["summary"]["completed_medium_large_update_count"] >= 66
     assert ledger["summary"]["completed_medium_large_update_count"] >= 69
     assert ledger["summary"]["completed_medium_large_update_count"] >= 73
+    assert ledger["summary"]["completed_medium_large_update_count"] >= 77
     assert ledger["summary"]["completed_medium_large_update_count"] < TARGET_MEDIUM_LARGE_UPDATE_COUNT
     assert ledger["summary"]["remaining_medium_large_update_count"] > 0
     assert ledger["summary"]["continuous_hours_verified"] == 0
@@ -82,9 +83,14 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-index-route" in completed_ids
     assert "billing-quota-consumption-route" in completed_ids
     assert "frontend-runtime-api-client-bindings" in completed_ids
-    assert "case-workbench-frontend-state-events" in queue_ids
-    assert "legal-rag-case-research-ui" in queue_ids
-    assert "billing-usage-workspace-badge" in queue_ids
+    assert "runtime-router-discovery-smoke" in completed_ids
+    assert "case-workbench-frontend-state-events" in completed_ids
+    assert "legal-rag-case-research-ui" in completed_ids
+    assert "billing-usage-workspace-badge" in completed_ids
+    assert "runtime-router-discovery-smoke" not in queue_ids
+    assert "case-workbench-frontend-state-events" not in queue_ids
+    assert "legal-rag-case-research-ui" not in queue_ids
+    assert "billing-usage-workspace-badge" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

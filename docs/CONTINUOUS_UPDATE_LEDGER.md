@@ -22,8 +22,12 @@ Recent integrated batches moved case workbench persistence planning, legal
 source durable index planning, billing quota migration planning, validated
 repository implementations, service-level runtime/RAG/entitlement bindings,
 authenticated runtime/RAG/billing usage routes, and typed frontend API clients
-from the queue into shipped evidence. The next queue now focuses on page-level
-case editing, case research display, and quota visibility in the workspace.
+from the queue into shipped evidence. The latest frontend batch also ships the
+main-app runtime router discovery smoke, a case overview runtime state/event
+panel, a metadata-only legal RAG research panel, and a global billing quota
+badge. These are reviewable product slices; they do not finish the deeper flows
+for automatic edit-event capture, selected-source citation propagation, payment
+provider states, or deep-review quota consumption.
 
 ## Completion Policy
 
@@ -42,6 +46,12 @@ For small machines, use the existing quick suite first:
 GET /api/v1/maintenance/legal-review-benchmark/quick-suite?fixture_limit=2
 ```
 
+The runtime route discovery smoke can run from `app/backend`:
+
+```powershell
+python -m pytest tests/test_runtime_router_discovery.py -q
+```
+
 This keeps:
 
 - `max_parallel_requests` at `1`.
@@ -53,6 +63,7 @@ This keeps:
 
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/main.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`
 - `app/backend/models/billing_quota_idempotency_keys.py`

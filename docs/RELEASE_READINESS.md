@@ -107,7 +107,14 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+
+The `runtime-router-discovery-smoke` check is intentionally narrow: once its
+test evidence is merged and passing, it should verify that the main FastAPI app
+exposes the case workbench, legal RAG, and billing usage runtime paths in
+OpenAPI. The related optional frontend checks use `npm run typecheck` to verify
+the case workbench state event panel, metadata-only legal RAG research panel,
+and billing usage badge wiring.
 
 ## Status values
 
@@ -118,6 +125,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 ## Related files
 
 - `app/backend/services/release_readiness.py`
+- `app/backend/main.py`
 - `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`
 - `app/backend/models/billing_quota_idempotency_keys.py`
 - `app/backend/models/billing_quota_usage_counters.py`

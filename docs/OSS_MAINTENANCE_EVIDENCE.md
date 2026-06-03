@@ -28,6 +28,11 @@ Support applications often ask for proof of active maintenance, review duties, r
 
 It is safe to say this repository has active development, reviewability controls, tests, documentation, and release-readiness logic. It is not safe to claim external adoption, third-party pull-request volume, issue triage volume, or production releases unless those records exist publicly in GitHub.
 
+Recent UI evidence includes runtime router discovery smoke, the case workbench
+state event panel, the legal RAG research panel, and the billing usage workspace
+badge. Future runtime, RAG, and billing claims should still stay out of support
+applications until matching merged test or UI evidence exists.
+
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
@@ -37,7 +42,7 @@ It is safe to say this repository has active development, reviewability controls
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, typed runtime API clients, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 

@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Scale, Globe, User as UserIcon, LogOut, Settings as SettingsIcon, Upload, PenLine, ShieldCheck, Menu, X } from 'lucide-react';
+import BillingUsageBadge from '@/components/billing/BillingUsageBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/contexts/I18nContext';
 import { client } from '@/lib/api';
@@ -88,6 +89,7 @@ export default function Layout({ children, hideFooter }: LayoutProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <BillingUsageBadge className="hidden xl:inline-flex" />
             <Button asChild size="sm" variant="outline" className="hidden xl:inline-flex soft-button">
               <Link to="/upload">
                 <Upload className="w-4 h-4" />
@@ -159,6 +161,12 @@ export default function Layout({ children, hideFooter }: LayoutProps) {
           <div className="lg:hidden border-t border-stone-950/15 bg-[#f8f5ee]">
             <nav className="law-container py-4 grid grid-cols-2 gap-x-6 gap-y-2">
               {navItems.map(([to, label]) => navLink(to, label))}
+              {user && (
+                <BillingUsageBadge
+                  className="col-span-2 w-full max-w-none justify-start"
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              )}
               <button
                 type="button"
                 onClick={() => {

@@ -3,15 +3,15 @@ from services.maintenance_evidence import MaintenanceEvidenceService, REPOSITORY
 
 def test_maintenance_profile_links_reviewable_evidence():
     profile = MaintenanceEvidenceService().build_profile("en")
+    evidence_paths = [path for signal in profile["signals"] for path in signal["evidence_paths"]]
 
     assert profile["project"]["repository_url"] == REPOSITORY_URL
     assert profile["maintainer_role"] == "primary_project_maintainer"
     assert profile["evidence_score"] >= 80
     assert profile["signals"]
     assert all(signal["evidence_paths"] for signal in profile["signals"])
-    assert "release_decision" in " ".join(
-        path for signal in profile["signals"] for path in signal["evidence_paths"]
-    )
+    assert "release_decision" in " ".join(evidence_paths)
+    assert any("runtime router discovery smoke" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

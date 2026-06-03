@@ -20,13 +20,23 @@ planning, billing quota migration planning, billing quota repository persistence
 billing entitlement quota binding, billing quota consumption route, feedback
 lifecycle policy, legal source ingestion metadata, legal source durable index
 planning, legal source index repository persistence, legal RAG index binding and
-routes, Gemini/NewAPI cheap-first
-policy metadata, default model recommendation snapshots, price refresh
-monitoring, cost regression snapshots, and route telemetry persistence planning.
+routes, Gemini/NewAPI cheap-first policy metadata, default model recommendation
+snapshots, price refresh monitoring, cost regression snapshots, and route
+telemetry persistence planning. The latest UI evidence adds runtime router
+discovery smoke, the case workbench runtime state/event panel, the metadata-only
+legal RAG research panel, and the global billing usage badge.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
-integration, legal RAG case UI integration, raw contract extraction, or
+integration, selected-source citation propagation, raw contract extraction, or
 database-backed team workspace is finished.
+
+The frontend productization queue has moved from route exposure to deeper
+workflow binding:
+
+- Persisted material, fact, and task edits should emit workbench state events.
+- Selected legal RAG source IDs should flow into case AI prompts and report citation checks.
+- Deep-review report creation should consume quota through the entitlement binding.
+- Payment, invoice, and plan-change states still need privacy-safe implementation.
 
 ## Scope
 
@@ -106,6 +116,13 @@ focused local checks:
 python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_cost_regression_snapshots.py tests/test_route_telemetry_persistence_plan.py -q
 python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py tests/test_legal_source_durable_index_plan.py tests/test_legal_source_index_repository.py tests/test_legal_rag_index_binding.py tests/test_legal_rag_router.py tests/test_contract_clause_extraction_schema.py -q
 python -m pytest tests/test_case_workbench_payload.py tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_state_repository.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py tests/test_document_delivery_package_manifest.py tests/test_document_version_diff_checklist.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_billing_quota_persistence_plan.py tests/test_billing_quota_migration_plan.py tests/test_billing_quota_repository.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py tests/test_feedback_lifecycle_policy.py -q
+npm run typecheck
+```
+
+Additional focused checks:
+
+```powershell
+python -m pytest tests/test_runtime_router_discovery.py -q
 npm run typecheck
 ```
 
