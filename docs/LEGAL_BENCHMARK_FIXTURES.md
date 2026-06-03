@@ -53,6 +53,8 @@ Use `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` to fetch safe 
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` to run those requests in serial cheap-first batches before any conditional escalation.
 
+Use `/api/v1/maintenance/legal-review-benchmark/local-run-package` to fetch request JSON files, one-at-a-time PowerShell/curl templates, observation slots, and run-report payload templates in a single laptop-safe response.
+
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` to convert observations and run metadata into a cheap-first release decision.
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` to bundle smoke scores, model routing evidence, run reports, validation commands, and release-safe claims after a small local run.
@@ -72,6 +74,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
+- `app/backend/services/legal_fixture_local_run_package.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
@@ -82,6 +85,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
+- `app/backend/tests/test_legal_fixture_local_run_package.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
@@ -91,6 +95,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
+- `docs/LEGAL_FIXTURE_LOCAL_RUN_PACKAGE.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `app/backend/services/release_readiness.py`

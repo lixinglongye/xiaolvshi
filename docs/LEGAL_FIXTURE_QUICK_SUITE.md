@@ -7,6 +7,7 @@ The quick suite is the smallest legal benchmark run plan for low-resource local 
 ```http
 GET /api/v1/maintenance/legal-review-benchmark/quick-suite
 GET /api/v1/maintenance/legal-review-benchmark/quick-suite?fixture_limit=2
+GET /api/v1/maintenance/legal-review-benchmark/local-run-package?fixture_limit=2
 ```
 
 `fixture_limit` is clamped to 1-4. The default is 3 fixtures:
@@ -25,6 +26,8 @@ The fourth optional fixture covers privacy-sensitive and instruction-injection u
 - `observation_template`: minimal payload to paste normalized outputs into `/fixture-smoke`.
 - `validation_commands`: small pytest commands for the quick suite and its dependencies.
 
+Use `/local-run-package` when you want the selected quick-suite fixtures plus request JSON, one-at-a-time command templates, observation slots, and run-report payload scaffolding in one response.
+
 ## Low-Resource Policy
 
 - Run one fixture request at a time.
@@ -35,14 +38,16 @@ The fourth optional fixture covers privacy-sensitive and instruction-injection u
 ## Validation
 
 ```bash
-python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q
+python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_local_run_package.py tests/test_legal_review_benchmark.py -q
 python -m pytest tests/test_legal_fixture_run_plan.py tests/test_legal_public_benchmark_sampler.py -q
 ```
 
 ## Related Files
 
 - `app/backend/services/legal_fixture_quick_suite.py`
+- `app/backend/services/legal_fixture_local_run_package.py`
 - `app/backend/tests/test_legal_fixture_quick_suite.py`
+- `app/backend/tests/test_legal_fixture_local_run_package.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`

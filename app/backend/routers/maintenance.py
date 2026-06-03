@@ -5,6 +5,7 @@ from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
+from services.legal_fixture_local_run_package import LegalFixtureLocalRunPackageService
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
@@ -160,6 +161,17 @@ async def get_legal_review_fixture_run_plan():
     return {
         "success": True,
         "data": LegalFixtureRunPlanService().build_plan(),
+    }
+
+
+@router.get("/legal-review-benchmark/local-run-package")
+async def get_legal_review_fixture_local_run_package(
+    fixture_limit: int = Query(default=2, ge=1, le=4, description="Number of cheap-first fixture request files to include."),
+):
+    """Return a one-at-a-time local gateway run package for low-resource machines."""
+    return {
+        "success": True,
+        "data": LegalFixtureLocalRunPackageService().build_package(fixture_limit),
     }
 
 
