@@ -10,9 +10,12 @@ maintenance work continues in parallel.
 
 Recent shipped evidence now includes matter intake readiness, deterministic
 deadline validation, client delivery transparency gates, small legal document
-benchmark fixtures, Gemini/NewAPI cheap-first policy metadata, and default model
-recommendation snapshots. These are reviewable product slices, not proof that
-the full case workbench, delivery portal, or live deadline engine is finished.
+benchmark fixtures, small legal corpus expansion, RAG failure fixtures,
+Gemini/NewAPI cheap-first policy metadata, default model recommendation
+snapshots, price refresh monitoring, cost regression snapshots, and route
+telemetry persistence planning. These are reviewable product slices, not proof
+that the full case workbench, delivery portal, live deadline engine, or durable
+model telemetry store is finished.
 
 ## Scope
 
@@ -83,6 +86,14 @@ Run the focused test from `app/backend`:
 
 ```powershell
 python -m pytest tests/test_product_feature_gap_radar.py -q
+```
+
+The model-cost and legal-quality evidence referenced by the radar also has
+focused local checks:
+
+```powershell
+python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_cost_regression_snapshots.py tests/test_route_telemetry_persistence_plan.py -q
+python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py -q
 ```
 
 Run the focused secret check from the repository root:

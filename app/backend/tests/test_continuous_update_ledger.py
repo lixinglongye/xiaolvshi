@@ -46,8 +46,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     completed_ids = {entry["id"] for entry in ledger["completed_updates"]}
 
     assert "cheap-first-result-archive" in completed_ids
-    assert "gemini-price-refresh-monitor" in queue_ids
-    assert "small-legal-document-corpus-expansion" in queue_ids
+    assert "gemini-price-refresh-monitor" in completed_ids
+    assert "small-legal-document-corpus-expansion" in completed_ids
+    assert "legal-rag-failure-fixtures" in completed_ids
+    assert "model-cost-regression-snapshots" in completed_ids
+    assert "twenty-four-hour-heartbeat-evidence" in completed_ids
+    assert "route-telemetry-persistence-plan" in completed_ids
     assert "frontend-local-run-review-form" in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"

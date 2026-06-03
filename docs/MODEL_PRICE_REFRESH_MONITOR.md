@@ -1,0 +1,115 @@
+# Model Price Refresh Monitor
+
+## Purpose
+
+`ModelPriceRefreshMonitorService` is a local-only maintenance monitor for
+Gemini and OpenAI-compatible gateway model pricing drift. It checks whether the
+high-volume defaults still point at the lowest priced capable Gemini model and
+whether observed gateway models need a catalog refresh before becoming defaults.
+
+The monitor does not call Gemini, NewAPI, OpenAI, or any external network. It
+only reads local metadata from:
+
+- `app/backend/services/model_catalog.py`
+- `app/backend/services/model_cost_forecast.py`
+
+## Service
+
+File:
+
+- `app/backend/services/model_price_refresh_monitor.py`
+
+Main entry point:
+
+- `ModelPriceRefreshMonitorService.build_monitor(observed_models=None, cost_forecast=None)`
+
+The returned payload includes:
+
+- `status`
+- `summary`
+- `checks`
+- `drift_signals`
+- `recommended_actions`
+- `privacy_note`
+- `validation_commands`
+
+## Checks
+
+### High-Frequency Defaults
+
+The monitor checks these high-volume tasks:
+
+- `fast`
+- `classification`
+- `ocr`
+
+Each task must remain on a known, stable, token-priced, lowest-tier model. The
+expected default is:
+
+- `gemini-2.5-flash-lite`
+
+If one of these defaults points at an unknown, preview, Pro, premium, unpriced,
+or higher-tier model, the monitor returns `fail`.
+
+### Cost Forecast Pricing
+
+The monitor reviews the local cost forecast rows and checks each referenced
+model:
+
+- `initial_model`
+- `escalation_model`
+- `premium_baseline_model`
+
+Known forecast models must have local price metadata. Missing or unknown pricing
+returns `warn` so maintainers refresh the local catalog before using the row for
+budget decisions.
+
+### Observed Gateway Models
+
+`observed_models` can contain model ids from a gateway model list, request log,
+or local fixture. The monitor accepts strings or dictionaries with `id`,
+`model`, or `name`.
+
+Observed Gemini-like models return `warn` when they are:
+
+- unknown to the local catalog
+- preview
+- Pro or premium
+- missing price metadata
+
+Warned models should stay explicit-only until maintainers confirm tier,
+stability, and gateway price.
+
+### Catalog Watchlist
+
+Preview, premium, or unpriced catalog entries are listed in `drift_signals` with
+info severity. They do not fail the monitor by themselves because they may be
+valid explicit exceptions.
+
+## Privacy Boundary
+
+The monitor must contain only routing and pricing metadata. It must not return:
+
+- gateway credentials
+- prompts
+- legal documents
+- client identifiers
+- raw model outputs
+
+Observed model ids are redacted when they look like credentials or contact data.
+
+## Low-Resource Validation
+
+Run the targeted tests:
+
+```powershell
+cd app/backend
+python -m pytest tests/test_model_price_refresh_monitor.py -q
+```
+
+Optional compile check:
+
+```powershell
+cd app/backend
+python -m compileall services/model_price_refresh_monitor.py tests/test_model_price_refresh_monitor.py
+```

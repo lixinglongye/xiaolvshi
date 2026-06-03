@@ -30,14 +30,14 @@ It is safe to say this repository has active development, reviewability controls
 
 ## Evidence categories
 
-- Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal document template coverage, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
+- Quality control: deep-review quality gates, legal document template coverage, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
 - Review operations: citation, evidence, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, the client delivery risk checklist, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, client-only scopes, sensitive-operation approvals, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
-- Maintenance planning: user research, maintenance notes, billing entitlement gap evidence, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, heartbeat evidence, billing entitlement gap evidence, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -55,9 +55,14 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/services/evidence_exhibit_package_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
+- `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
+- `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
+- `app/backend/services/model_price_refresh_monitor.py`
+- `app/backend/services/model_cost_regression_snapshots.py`
+- `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/ocr_import_readiness_policy.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/services/legal_external_research_digest.py`
@@ -79,9 +84,14 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/tests/test_evidence_exhibit_package_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
+- `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
+- `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
+- `app/backend/tests/test_model_price_refresh_monitor.py`
+- `app/backend/tests/test_model_cost_regression_snapshots.py`
+- `app/backend/tests/test_route_telemetry_persistence_plan.py`
 - `app/backend/tests/test_ocr_import_readiness_policy.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/backend/tests/test_legal_external_research_digest.py`
@@ -100,13 +110,19 @@ It is safe to say this repository has active development, reviewability controls
 - `docs/CLIENT_DELIVERY_RISK_CHECKLIST.md`
 - `docs/EVIDENCE_EXHIBIT_PACKAGE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LAWYER_REVIEW_WORKFLOW_POLICY.md`
+- `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/MATTER_AUDIT_RETENTION_POLICY.md`
 - `docs/MATTER_INTAKE_READINESS_POLICY.md`
+- `docs/MODEL_PRICE_REFRESH_MONITOR.md`
+- `docs/MODEL_COST_REGRESSION_SNAPSHOTS.md`
+- `docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md`
 - `docs/OCR_IMPORT_READINESS_POLICY.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
+- `docs/SMALL_LEGAL_DOCUMENT_CORPUS_EXPANSION.md`
 - `docs/LEGAL_DOCUMENT_EXPORT_READINESS.md`
 - `docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md`
 - `docs/CLIENT_DELIVERY_TRANSPARENCY_POLICY.md`

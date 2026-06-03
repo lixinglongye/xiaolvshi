@@ -15,6 +15,7 @@ from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolic
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
+from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
@@ -35,11 +36,16 @@ from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerS
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
+from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
 from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
 from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
+from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
+from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.product_feature_gap_radar import ProductFeatureGapRadarService
 from services.release_readiness import ReleaseReadinessService
+from services.route_telemetry_persistence_plan import RouteTelemetryPersistencePlanService
+from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 
 
@@ -349,6 +355,24 @@ async def get_continuous_update_ledger():
     }
 
 
+@router.get("/maintenance-heartbeat-evidence")
+async def get_maintenance_heartbeat_evidence_template():
+    """Return a privacy-safe template for 24-hour maintenance heartbeat evidence."""
+    return {
+        "success": True,
+        "data": MaintenanceHeartbeatEvidenceService().build_evidence(),
+    }
+
+
+@router.post("/maintenance-heartbeat-evidence")
+async def build_maintenance_heartbeat_evidence(events: list[dict[str, Any]]):
+    """Build heartbeat evidence from explicit commit, test, push, and review events."""
+    return {
+        "success": True,
+        "data": MaintenanceHeartbeatEvidenceService().build_evidence(events),
+    }
+
+
 @router.get("/gemini-newapi-cheap-first-policy")
 async def get_gemini_newapi_cheap_first_policy():
     """Return cheap-first Gemini/NewAPI family and default-selection policy metadata."""
@@ -367,6 +391,54 @@ async def evaluate_gemini_newapi_cheap_first_policy(payload: dict[str, Any]):
         "data": GeminiNewapiCheapFirstPolicyService().build_policy(
             observed_models if isinstance(observed_models, list) else None
         ),
+    }
+
+
+@router.get("/model-price-refresh-monitor")
+async def get_model_price_refresh_monitor():
+    """Return local Gemini/NewAPI price-refresh drift checks."""
+    return {
+        "success": True,
+        "data": ModelPriceRefreshMonitorService().build_monitor(),
+    }
+
+
+@router.post("/model-price-refresh-monitor")
+async def evaluate_model_price_refresh_monitor(payload: dict[str, Any]):
+    """Review observed gateway model ids against local price-refresh metadata."""
+    observed_models = payload.get("observed_models")
+    return {
+        "success": True,
+        "data": ModelPriceRefreshMonitorService().build_monitor(
+            observed_models if isinstance(observed_models, list) else None
+        ),
+    }
+
+
+@router.get("/model-cost-regression-snapshots")
+async def get_model_cost_regression_snapshots():
+    """Return deterministic cheap-first model cost regression snapshots."""
+    return {
+        "success": True,
+        "data": ModelCostRegressionSnapshotService().build_snapshots(),
+    }
+
+
+@router.get("/route-telemetry-persistence-plan")
+async def get_route_telemetry_persistence_plan_template():
+    """Return privacy-safe route telemetry persistence schema and retention plan."""
+    return {
+        "success": True,
+        "data": RouteTelemetryPersistencePlanService().build_plan(),
+    }
+
+
+@router.post("/route-telemetry-persistence-plan")
+async def evaluate_route_telemetry_persistence_plan(events: list[dict[str, Any]]):
+    """Evaluate sanitized route telemetry samples before durable persistence."""
+    return {
+        "success": True,
+        "data": RouteTelemetryPersistencePlanService().build_plan(events),
     }
 
 
@@ -441,6 +513,33 @@ async def evaluate_legal_document_benchmark_fixtures(predictions: dict[str, Any]
     return {
         "success": True,
         "data": LegalDocumentBenchmarkFixturesService().evaluate_predictions(predictions),
+    }
+
+
+@router.get("/legal-review-benchmark/small-corpus-expansion")
+async def get_small_legal_document_corpus_expansion():
+    """Return expanded small synthetic legal-document corpus metadata."""
+    return {
+        "success": True,
+        "data": SmallLegalDocumentCorpusExpansionService().build_corpus(),
+    }
+
+
+@router.get("/legal-review-benchmark/rag-failure-fixtures")
+async def get_legal_rag_failure_fixtures():
+    """Return tiny legal RAG failure fixtures for local grounding tests."""
+    return {
+        "success": True,
+        "data": LegalRagFailureFixturesService().build_suite(),
+    }
+
+
+@router.post("/legal-review-benchmark/rag-failure-fixtures")
+async def evaluate_legal_rag_failure_fixtures(observations: dict[str, Any]):
+    """Evaluate local RAG failure observations against deterministic fixtures."""
+    return {
+        "success": True,
+        "data": LegalRagFailureFixturesService().evaluate_observations(observations),
     }
 
 

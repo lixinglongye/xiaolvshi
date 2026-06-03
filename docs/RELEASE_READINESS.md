@@ -22,6 +22,7 @@ POST /api/v1/maintenance/release-readiness
   "model-default-optimization": "pass",
   "model-default-recommendation-snapshot": "pass",
   "gemini-newapi-cheap-first-policy": "pass",
+  "model-price-refresh-monitor": "pass",
   "model-gateway-compatibility": "pass",
   "model-gateway-health-plan": "pass",
   "model-gateway-probe-evaluation": "pass",
@@ -38,6 +39,7 @@ POST /api/v1/maintenance/release-readiness
   "model-callsite-audit": "pass",
   "model-escalation-policy": "pass",
   "model-cost-forecast": "pass",
+  "model-cost-regression-snapshots": "pass",
   "model-cost-guardrails": "pass",
   "model-routing-replay": "pass",
   "model-fallback-chains": "pass",
@@ -68,6 +70,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Model default optimization coverage.
 - Gemini/NewAPI default recommendation snapshot coverage.
 - Gemini/NewAPI cheap-first policy coverage.
+- Gemini and gateway price refresh monitor coverage.
 - Model gateway compatibility coverage.
 - Model gateway health plan coverage.
 - Model gateway probe evaluation coverage.
@@ -84,6 +87,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Model callsite task audit coverage.
 - Cheap-first model escalation policy coverage.
 - Model cost forecast coverage.
+- Model cost regression snapshot coverage.
 - Model cost guardrail coverage.
 - Model routing replay coverage.
 - Model fallback chain coverage.
@@ -95,11 +99,11 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including research-backed legal AI backlog planning, legal document benchmark fixtures, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
+- Legal review benchmark coverage, including research-backed legal AI backlog planning, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, case evidence graph contracts, matter intake readiness, deadline validation, client delivery transparency, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, case evidence graph contracts, matter intake readiness, deadline validation, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -117,8 +121,14 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/services/deadline_validation_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
+- `app/backend/services/legal_rag_failure_fixtures.py`
+- `app/backend/services/small_legal_document_corpus_expansion.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
 - `app/backend/services/model_default_recommendation_snapshot.py`
+- `app/backend/services/model_price_refresh_monitor.py`
+- `app/backend/services/model_cost_regression_snapshots.py`
+- `app/backend/services/route_telemetry_persistence_plan.py`
+- `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/services/legal_fixture_result_archive.py`
 - `app/backend/services/legal_research_backlog.py`
@@ -131,8 +141,14 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_deadline_validation_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
+- `app/backend/tests/test_legal_rag_failure_fixtures.py`
+- `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
 - `app/backend/tests/test_model_default_recommendation_snapshot.py`
+- `app/backend/tests/test_model_price_refresh_monitor.py`
+- `app/backend/tests/test_model_cost_regression_snapshots.py`
+- `app/backend/tests/test_route_telemetry_persistence_plan.py`
+- `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/backend/tests/test_legal_fixture_result_archive.py`
 - `app/backend/tests/test_legal_research_backlog.py`
@@ -143,7 +159,13 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `docs/DEADLINE_VALIDATION_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
+- `docs/SMALL_LEGAL_DOCUMENT_CORPUS_EXPANSION.md`
 - `docs/MATTER_INTAKE_READINESS_POLICY.md`
 - `docs/MODEL_DEFAULT_RECOMMENDATION_SNAPSHOT.md`
+- `docs/MODEL_PRICE_REFRESH_MONITOR.md`
+- `docs/MODEL_COST_REGRESSION_SNAPSHOTS.md`
+- `docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md`
+- `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`
