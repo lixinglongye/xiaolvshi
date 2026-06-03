@@ -52,7 +52,17 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-cost-regression-snapshots" in completed_ids
     assert "twenty-four-hour-heartbeat-evidence" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
-    assert "frontend-local-run-review-form" in queue_ids
+    assert "legal-source-freshness-policy" in completed_ids
+    assert "maintenance-dashboard-filtering" in completed_ids
+    assert "frontend-local-run-review-form" in completed_ids
+    assert "case-workbench-payload" in completed_ids
+    assert "document-delivery-package-manifest" in completed_ids
+    assert "case-role-permission-matrix" in completed_ids
+    assert "billing-usage-quota-policy" in completed_ids
+    assert "feedback-lifecycle-policy" in completed_ids
+    assert "case-workbench-ui-binding" in queue_ids
+    assert "legal-source-ingestion-metadata" in queue_ids
+    assert "billing-quota-persistence" in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

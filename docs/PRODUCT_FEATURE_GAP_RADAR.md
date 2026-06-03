@@ -11,11 +11,14 @@ maintenance work continues in parallel.
 Recent shipped evidence now includes matter intake readiness, deterministic
 deadline validation, client delivery transparency gates, small legal document
 benchmark fixtures, small legal corpus expansion, RAG failure fixtures,
-Gemini/NewAPI cheap-first policy metadata, default model recommendation
-snapshots, price refresh monitoring, cost regression snapshots, and route
-telemetry persistence planning. These are reviewable product slices, not proof
-that the full case workbench, delivery portal, live deadline engine, or durable
-model telemetry store is finished.
+legal source freshness policy, case workbench payload contracts, document
+delivery package manifests, role permission matrices, billing usage quotas,
+feedback lifecycle policy, Gemini/NewAPI cheap-first policy metadata, default
+model recommendation snapshots, price refresh monitoring, cost regression
+snapshots, and route telemetry persistence planning. These are reviewable
+product slices, not proof that the full case workbench, delivery portal, live
+deadline engine, durable model telemetry store, payment integration, or
+database-backed team workspace is finished.
 
 ## Scope
 
@@ -93,7 +96,8 @@ focused local checks:
 
 ```powershell
 python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_cost_regression_snapshots.py tests/test_route_telemetry_persistence_plan.py -q
-python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py -q
+python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_source_freshness_policy.py -q
+python -m pytest tests/test_case_workbench_payload.py tests/test_document_delivery_package_manifest.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_feedback_lifecycle_policy.py -q
 ```
 
 Run the focused secret check from the repository root:

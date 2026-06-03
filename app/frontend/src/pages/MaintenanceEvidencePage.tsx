@@ -4,6 +4,8 @@ import Layout from '@/components/Layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
@@ -54,6 +56,7 @@ import {
   type CaseTeamAccessPolicy,
   type ClientDeliveryRiskChecklist,
   type ContinuousUpdateLedger,
+  type ContinuousUpdateLedgerEntry,
   type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
   type LawyerReviewWorkflowPolicy,
@@ -151,6 +154,9 @@ function formatInline(value: unknown) {
   return JSON.stringify(value);
 }
 
+type LedgerBucket = 'completed_updates' | 'next_update_queue';
+type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
+
 export default function MaintenanceEvidencePage() {
   return (
     <AuthGuard>
@@ -197,6 +203,16 @@ function Inner() {
   const [normalizerError, setNormalizerError] = useState('');
   const [normalizerLoading, setNormalizerLoading] = useState(false);
   const [normalizerTemplateLoading, setNormalizerTemplateLoading] = useState(false);
+  const [ledgerCategoryFilter, setLedgerCategoryFilter] = useState('all');
+  const [ledgerStatusFilter, setLedgerStatusFilter] = useState('all');
+  const [ledgerSearch, setLedgerSearch] = useState('');
+  const [fixtureReviewFixtureId, setFixtureReviewFixtureId] = useState('');
+  const [fixtureReviewModel, setFixtureReviewModel] = useState('');
+  const [fixtureReviewRoute, setFixtureReviewRoute] = useState('');
+  const [fixtureReviewHttpStatus, setFixtureReviewHttpStatus] = useState('200');
+  const [fixtureReviewPayloadText, setFixtureReviewPayloadText] = useState('');
+  const [fixtureReviewError, setFixtureReviewError] = useState('');
+  const [fixtureReviewLoading, setFixtureReviewLoading] = useState(false);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
   const [fixtureResultArchive, setFixtureResultArchive] = useState<LegalFixtureResultArchive | null>(null);
@@ -320,6 +336,16 @@ function Inner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
+  useEffect(() => {
+    const firstRequest = fixtureLocalRunPackage?.request_files[0];
+    if (!firstRequest) return;
+    if (fixtureReviewFixtureId && fixtureLocalRunPackage.request_files.some((item) => item.fixture_id === fixtureReviewFixtureId)) {
+      return;
+    }
+    setFixtureReviewFixtureId(firstRequest.fixture_id);
+    setFixtureReviewModel(firstRequest.model);
+  }, [fixtureLocalRunPackage, fixtureReviewFixtureId]);
+
   const controls = data?.release_management.release_readiness_controls ?? [];
   const blockingCount = releaseReadiness?.blocking_check_ids.length ?? 0;
   const totalEvidencePaths = useMemo(
@@ -331,6 +357,45 @@ function Inner() {
     const target = continuousLedger.goal.target_medium_large_update_count || 1;
     return Math.min(100, Math.round((continuousLedger.summary.completed_medium_large_update_count / target) * 100));
   }, [continuousLedger]);
+  const ledgerEntries = useMemo<LedgerEntryWithBucket[]>(() => {
+    if (!continuousLedger) return [];
+    return [
+      ...continuousLedger.completed_updates.map((entry) => ({ ...entry, bucket: 'completed_updates' as const })),
+      ...continuousLedger.next_update_queue.map((entry) => ({ ...entry, bucket: 'next_update_queue' as const })),
+    ];
+  }, [continuousLedger]);
+  const ledgerCategoryOptions = useMemo(
+    () => Array.from(new Set(ledgerEntries.map((entry) => entry.category))).sort(),
+    [ledgerEntries],
+  );
+  const ledgerStatusOptions = useMemo(
+    () => Array.from(new Set(ledgerEntries.map((entry) => entry.status))).sort(),
+    [ledgerEntries],
+  );
+  const filteredLedgerEntries = useMemo(() => {
+    const query = ledgerSearch.trim().toLowerCase();
+    return ledgerEntries.filter((entry) => {
+      const matchesCategory = ledgerCategoryFilter === 'all' || entry.category === ledgerCategoryFilter;
+      const matchesStatus = ledgerStatusFilter === 'all' || entry.status === ledgerStatusFilter;
+      const searchableText = [
+        entry.id,
+        entry.title,
+        entry.category,
+        entry.status,
+        entry.size,
+        entry.impact,
+        entry.commit_hint ?? '',
+        ...entry.evidence_paths,
+        ...entry.release_gate_links,
+        ...entry.user_need_ids,
+      ]
+        .join(' ')
+        .toLowerCase();
+      return matchesCategory && matchesStatus && (!query || searchableText.includes(query));
+    });
+  }, [ledgerCategoryFilter, ledgerEntries, ledgerSearch, ledgerStatusFilter]);
+  const filteredCompletedLedgerCount = filteredLedgerEntries.filter((entry) => entry.bucket === 'completed_updates').length;
+  const filteredQueuedLedgerCount = filteredLedgerEntries.filter((entry) => entry.bucket === 'next_update_queue').length;
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -350,6 +415,66 @@ function Inner() {
       setNormalizerError('Response normalizer template failed to load.');
     } finally {
       setNormalizerTemplateLoading(false);
+    }
+  };
+
+  const selectFixtureReviewFixture = (fixtureId: string) => {
+    setFixtureReviewFixtureId(fixtureId);
+    const request = fixtureLocalRunPackage?.request_files.find((item) => item.fixture_id === fixtureId);
+    if (request) {
+      setFixtureReviewModel(request.model);
+    }
+  };
+
+  const normalizeFixtureReviewPayload = async () => {
+    setFixtureReviewLoading(true);
+    setFixtureReviewError('');
+    setNormalizerError('');
+    try {
+      const fixtureId = fixtureReviewFixtureId.trim();
+      if (!fixtureId) {
+        setFixtureReviewError('Select a fixture before review.');
+        return;
+      }
+      if (!fixtureReviewPayloadText.trim()) {
+        setFixtureReviewError('Paste a local gateway response JSON object first.');
+        return;
+      }
+      const parsed = JSON.parse(fixtureReviewPayloadText) as unknown;
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+        setFixtureReviewError('Local review payload must be a JSON object.');
+        return;
+      }
+      let httpStatus: number | undefined;
+      if (fixtureReviewHttpStatus.trim()) {
+        const statusValue = Number(fixtureReviewHttpStatus);
+        if (!Number.isInteger(statusValue) || statusValue < 100 || statusValue > 599) {
+          setFixtureReviewError('HTTP status must be a number from 100 to 599.');
+          return;
+        }
+        httpStatus = statusValue;
+      }
+      const parsedObject = parsed as Record<string, unknown>;
+      const payload =
+        'responses' in parsedObject
+          ? parsedObject
+          : {
+              responses: {
+                [fixtureId]: {
+                  gateway_response: parsedObject,
+                  ...(fixtureReviewModel.trim() ? { model: fixtureReviewModel.trim() } : {}),
+                  ...(fixtureReviewRoute.trim() ? { route: fixtureReviewRoute.trim() } : {}),
+                  ...(httpStatus ? { http_status: httpStatus } : {}),
+                },
+              },
+            };
+      setNormalizerPayloadText(JSON.stringify(payload, null, 2));
+      setFixtureResponseNormalizer(await normalizeLegalFixtureResponse(payload));
+    } catch (err) {
+      console.error(err);
+      setFixtureReviewError(err instanceof SyntaxError ? 'Local review payload is not valid JSON.' : 'Local fixture review failed.');
+    } finally {
+      setFixtureReviewLoading(false);
     }
   };
 
@@ -1129,7 +1254,7 @@ function Inner() {
               </div>
             </div>
 
-            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
               <div className="mb-4">
                 <div className="mb-2 flex items-center justify-between gap-3 text-xs font-semibold uppercase text-stone-500">
                   <span>100 update progress</span>
@@ -1139,62 +1264,185 @@ function Inner() {
                   <div className="h-full bg-stone-950" style={{ width: `${ledgerCompletionPercent}%` }} />
                 </div>
               </div>
-
-              <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-                <div>
-                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Low-resource test policy</h3>
-                  <div className="space-y-2 text-sm text-stone-700">
-                    <div className="flex items-center justify-between gap-3">
-                      <span>Fixture limit</span>
-                      <Badge variant="outline" className="bg-white">
-                        {continuousLedger.low_resource_test_policy.default_fixture_limit}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span>Max parallel requests</span>
-                      <Badge variant="outline" className="bg-white">
-                        {continuousLedger.low_resource_test_policy.max_parallel_requests}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span>Network</span>
-                      <Badge variant="outline" className="bg-white">
-                        {continuousLedger.low_resource_test_policy.network_access.replace(/_/g, ' ')}
-                      </Badge>
-                    </div>
-                    <div className="break-all font-mono text-[11px] text-stone-500">
-                      {continuousLedger.low_resource_test_policy.recommended_endpoint}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Next update queue</h3>
-                  <div className="space-y-3">
-                    {continuousLedger.next_update_queue.slice(0, 6).map((entry) => (
-                      <div key={entry.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className={categoryClass[entry.category] ?? categoryClass.maintenance}>
-                            {entry.category.replace(/_/g, ' ')}
-                          </Badge>
-                          <Badge variant="outline" className={statusClass[entry.status] ?? statusClass.planned}>
-                            {entry.size}
-                          </Badge>
-                        </div>
-                        <div className="text-sm font-semibold text-stone-950">{entry.title}</div>
-                        <div className="mt-1 text-xs leading-5 text-stone-600">{entry.impact}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {Object.entries(continuousLedger.summary.category_counts).map(([category, count]) => (
                   <Badge key={category} variant="outline" className={categoryClass[category] ?? categoryClass.maintenance}>
                     {category.replace(/_/g, ' ')}: {count}
                   </Badge>
                 ))}
+              </div>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-end gap-2 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+              <label className="min-w-[220px] flex-1">
+                <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Search</div>
+                <Input
+                  value={ledgerSearch}
+                  onChange={(event) => setLedgerSearch(event.target.value)}
+                  className="h-9 rounded-[8px] bg-white text-sm"
+                  placeholder="Title, impact, evidence, gate"
+                />
+              </label>
+              <label className="w-full sm:w-[190px]">
+                <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Category</div>
+                <Select value={ledgerCategoryFilter} onValueChange={setLedgerCategoryFilter}>
+                  <SelectTrigger className="h-9 rounded-[8px] bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {ledgerCategoryOptions.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category.replace(/_/g, ' ')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+              <label className="w-full sm:w-[170px]">
+                <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Status</div>
+                <Select value={ledgerStatusFilter} onValueChange={setLedgerStatusFilter}>
+                  <SelectTrigger className="h-9 rounded-[8px] bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    {ledgerStatusOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status.replace(/_/g, ' ')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="soft-button h-9"
+                disabled={ledgerCategoryFilter === 'all' && ledgerStatusFilter === 'all' && !ledgerSearch}
+                onClick={() => {
+                  setLedgerCategoryFilter('all');
+                  setLedgerStatusFilter('all');
+                  setLedgerSearch('');
+                }}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reset
+              </Button>
+              <div className="ml-auto text-xs leading-5 text-stone-500">
+                {filteredLedgerEntries.length}/{ledgerEntries.length} entries / completed {filteredCompletedLedgerCount} / queue{' '}
+                {filteredQueuedLedgerCount}
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-[0.72fr_1.28fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Low-resource test policy</h3>
+                <div className="space-y-2 text-sm text-stone-700">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Fixture limit</span>
+                    <Badge variant="outline" className="bg-white">
+                      {continuousLedger.low_resource_test_policy.default_fixture_limit}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Max parallel requests</span>
+                    <Badge variant="outline" className="bg-white">
+                      {continuousLedger.low_resource_test_policy.max_parallel_requests}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>Network</span>
+                    <Badge variant="outline" className="bg-white">
+                      {continuousLedger.low_resource_test_policy.network_access.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="break-all font-mono text-[11px] text-stone-500">
+                    {continuousLedger.low_resource_test_policy.recommended_endpoint}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-2">
+                  <h3 className="text-sm font-black uppercase text-stone-500">Update entries</h3>
+                  <div className="text-xs text-stone-500">completed_updates + next_update_queue</div>
+                </div>
+                <div className="max-h-[560px] overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Bucket</TableHead>
+                        <TableHead>Update</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Evidence</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLedgerEntries.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="py-6 text-center text-stone-500">
+                            No updates match the current filters.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredLedgerEntries.map((entry) => (
+                          <TableRow key={`${entry.bucket}-${entry.id}`}>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={entry.bucket === 'completed_updates' ? statusClass.shipped : statusClass.planned}
+                              >
+                                {entry.bucket === 'completed_updates' ? 'completed' : 'queue'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[420px]">
+                              <div className="font-semibold text-stone-950">{entry.title}</div>
+                              <div className="mt-1 text-xs leading-5 text-stone-600">{entry.impact}</div>
+                              {entry.commit_hint && (
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{entry.commit_hint}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={categoryClass[entry.category] ?? categoryClass.maintenance}>
+                                {entry.category.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge variant="outline" className={statusClass[entry.status] ?? statusClass.planned}>
+                                  {entry.status.replace(/_/g, ' ')}
+                                </Badge>
+                                <Badge variant="outline" className="bg-white">
+                                  {entry.size}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {entry.evidence_paths.length === 0 ? (
+                                '-'
+                              ) : (
+                                <div className="space-y-1">
+                                  {entry.evidence_paths.slice(0, 2).map((path) => (
+                                    <div key={path} className="break-all font-mono text-[11px]">
+                                      {path}
+                                    </div>
+                                  ))}
+                                  {entry.evidence_paths.length > 2 && (
+                                    <div className="text-[11px] text-stone-500">
+                                      +{entry.evidence_paths.length - 2} more evidence paths
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           </section>
@@ -2534,6 +2782,97 @@ function Inner() {
                     <div className="mt-4 border-t border-stone-950/10 pt-3 text-xs leading-5 text-stone-500">
                       {fixtureLocalRunPackage.privacy_note}
                     </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Local run review paste</h3>
+                      <div className="mt-1 text-xs leading-5 text-stone-500">
+                        Paste one local gateway response and review it with the existing normalizer.
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      className="law-button h-9"
+                      onClick={normalizeFixtureReviewPayload}
+                      disabled={fixtureReviewLoading}
+                    >
+                      {fixtureReviewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
+                      Review
+                    </Button>
+                  </div>
+                  {fixtureReviewError && (
+                    <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                      <AlertTriangle className="h-4 w-4" />
+                      {fixtureReviewError}
+                    </div>
+                  )}
+                  <div className="mb-3 grid gap-2 md:grid-cols-[1.4fr_1fr_0.8fr_0.8fr]">
+                    <label>
+                      <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Fixture</div>
+                      <Select
+                        value={fixtureReviewFixtureId || 'no_fixture'}
+                        onValueChange={selectFixtureReviewFixture}
+                        disabled={fixtureLocalRunPackage.request_files.length === 0}
+                      >
+                        <SelectTrigger className="h-9 rounded-[8px] bg-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fixtureLocalRunPackage.request_files.length === 0 ? (
+                            <SelectItem value="no_fixture" disabled>
+                              No fixture
+                            </SelectItem>
+                          ) : (
+                            fixtureLocalRunPackage.request_files.map((request) => (
+                              <SelectItem key={request.fixture_id} value={request.fixture_id}>
+                                {request.fixture_id}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label>
+                      <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Model</div>
+                      <Input
+                        value={fixtureReviewModel}
+                        onChange={(event) => setFixtureReviewModel(event.target.value)}
+                        className="h-9 rounded-[8px] bg-white text-sm"
+                        placeholder="model"
+                      />
+                    </label>
+                    <label>
+                      <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">Route</div>
+                      <Input
+                        value={fixtureReviewRoute}
+                        onChange={(event) => setFixtureReviewRoute(event.target.value)}
+                        className="h-9 rounded-[8px] bg-white text-sm"
+                        placeholder="fast"
+                      />
+                    </label>
+                    <label>
+                      <div className="mb-1 text-[11px] font-semibold uppercase text-stone-500">HTTP</div>
+                      <Input
+                        value={fixtureReviewHttpStatus}
+                        onChange={(event) => setFixtureReviewHttpStatus(event.target.value)}
+                        className="h-9 rounded-[8px] bg-white text-sm"
+                        inputMode="numeric"
+                        placeholder="200"
+                      />
+                    </label>
+                  </div>
+                  <Textarea
+                    value={fixtureReviewPayloadText}
+                    onChange={(event) => setFixtureReviewPayloadText(event.target.value)}
+                    className="min-h-[118px] resize-y rounded-[8px] bg-white font-mono text-xs leading-5"
+                    spellCheck={false}
+                    placeholder='{"choices":[{"message":{"content":"{\"fixture_id\":\"fixture-service-agreement-small\",\"route\":\"fast\"}"}}]}'
+                  />
+                  <div className="mt-2 text-xs leading-5 text-stone-500">
+                    Full normalizer payloads with a top-level responses object are accepted as pasted JSON.
                   </div>
                 </div>
 

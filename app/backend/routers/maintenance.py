@@ -2,16 +2,21 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Query
 from services.billing_entitlement_gap import BillingEntitlementGapService
+from services.billing_usage_quota_policy import BillingUsageQuotaPolicyService, UsageRequest, UsageSnapshot
 from services.case_evidence_graph import CaseEvidenceGraphService
 from services.case_intake_completeness import CaseIntakeCompletenessService
+from services.case_role_permission_matrix import CaseRolePermissionMatrixService
 from services.case_timeline_deadline_risk import CaseTimelineDeadlineRiskService
 from services.case_team_access_policy import CaseTeamAccessPolicyService
 from services.case_task_notification_policy import CaseTaskNotificationPolicyService
+from services.case_workbench_payload import CaseWorkbenchPayloadService
 from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
+from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
 from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
+from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
@@ -35,6 +40,7 @@ from services.legal_external_research_digest import LegalExternalResearchDigestS
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
+from services.legal_source_freshness_policy import LegalSourceFreshnessPolicyService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
 from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
@@ -81,6 +87,24 @@ async def get_feedback_roadmap_mapping():
     }
 
 
+@router.get("/feedback-lifecycle-policy")
+async def get_feedback_lifecycle_policy():
+    """Return the feedback lifecycle state machine and closure checks."""
+    return {
+        "success": True,
+        "data": FeedbackLifecyclePolicyService().build_policy(),
+    }
+
+
+@router.post("/feedback-lifecycle-policy")
+async def evaluate_feedback_lifecycle_policy(payload: dict[str, Any]):
+    """Evaluate a feedback ticket lifecycle transition without storing raw feedback."""
+    return {
+        "success": True,
+        "data": FeedbackLifecyclePolicyService().evaluate_ticket(payload),
+    }
+
+
 @router.get("/product-feature-gaps")
 async def get_product_feature_gap_radar():
     """Return product-wide feature gaps that still need implementation."""
@@ -99,6 +123,40 @@ async def get_billing_entitlement_gap_evidence():
     }
 
 
+@router.get("/billing-usage-quota-policy")
+async def get_billing_usage_quota_policy():
+    """Return local billing usage and quota policy evidence."""
+    return {
+        "success": True,
+        "data": BillingUsageQuotaPolicyService().build_policy_evidence(),
+    }
+
+
+@router.post("/billing-usage-quota-policy")
+async def evaluate_billing_usage_quota_policy(payload: dict[str, Any]):
+    """Evaluate a quota request from explicit usage counters without payment calls."""
+    snapshot_source = payload.get("snapshot") if isinstance(payload.get("snapshot"), dict) else {}
+    request_source = payload.get("request") if isinstance(payload.get("request"), dict) else payload
+    snapshot_fields = {
+        key: snapshot_source[key]
+        for key in UsageSnapshot.__dataclass_fields__
+        if key in snapshot_source
+    }
+    request_fields = {
+        key: request_source[key]
+        for key in UsageRequest.__dataclass_fields__
+        if key in request_source
+    }
+    request_fields.setdefault("action", "review")
+    return {
+        "success": True,
+        "data": BillingUsageQuotaPolicyService().evaluate(
+            UsageSnapshot(**snapshot_fields),
+            UsageRequest(**request_fields),
+        ),
+    }
+
+
 @router.get("/case-evidence-graph")
 async def get_case_evidence_graph_template():
     """Return the backend contract for case fact-evidence-citation-risk graphs."""
@@ -114,6 +172,33 @@ async def build_case_evidence_graph(payload: dict[str, Any]):
     return {
         "success": True,
         "data": CaseEvidenceGraphService().build_graph(payload),
+    }
+
+
+@router.get("/case-workbench-payload")
+async def get_case_workbench_payload_template():
+    """Return the frontend case workbench payload template."""
+    return {
+        "success": True,
+        "data": CaseWorkbenchPayloadService().build_payload(),
+    }
+
+
+@router.post("/case-workbench-payload")
+async def build_case_workbench_payload(payload: dict[str, Any]):
+    """Build a case workbench payload from explicit metadata only."""
+    return {
+        "success": True,
+        "data": CaseWorkbenchPayloadService().build_payload(
+            case_id=payload.get("case_id"),
+            matter_id=payload.get("matter_id"),
+            intake=payload.get("intake") if isinstance(payload.get("intake"), dict) else None,
+            deadlines=payload.get("deadlines") if isinstance(payload.get("deadlines"), list) else None,
+            timeline_events=payload.get("timeline_events") if isinstance(payload.get("timeline_events"), list) else None,
+            tasks=payload.get("tasks") if isinstance(payload.get("tasks"), list) else None,
+            evidence_report=payload.get("evidence_report") if isinstance(payload.get("evidence_report"), dict) else None,
+            reference_date=payload.get("reference_date"),
+        ),
     }
 
 
@@ -220,6 +305,27 @@ async def get_case_team_access_policy():
     }
 
 
+@router.get("/case-role-permission-matrix")
+async def get_case_role_permission_matrix():
+    """Return privacy-safe case role and operation permission matrix metadata."""
+    return {
+        "success": True,
+        "data": CaseRolePermissionMatrixService().build_privacy_safe_api_payload(),
+    }
+
+
+@router.post("/case-role-permission-matrix")
+async def evaluate_case_role_permission_matrix(payload: dict[str, Any]):
+    """Evaluate one role-operation permission decision."""
+    return {
+        "success": True,
+        "data": CaseRolePermissionMatrixService().evaluate_permission(
+            str(payload.get("role") or ""),
+            str(payload.get("operation") or ""),
+        ),
+    }
+
+
 @router.get("/lawyer-review-workflow-policy")
 async def get_lawyer_review_workflow_policy_template():
     """Return lawyer review state machine and role-gate policy metadata."""
@@ -262,6 +368,24 @@ async def evaluate_client_delivery_transparency_policy(payload: dict[str, Any]):
     return {
         "success": True,
         "data": ClientDeliveryTransparencyPolicyService().build_policy(payload),
+    }
+
+
+@router.get("/document-delivery-package-manifest")
+async def get_document_delivery_package_manifest_template():
+    """Return legal document delivery package manifest requirements."""
+    return {
+        "success": True,
+        "data": DocumentDeliveryPackageManifestService().build_manifest(),
+    }
+
+
+@router.post("/document-delivery-package-manifest")
+async def evaluate_document_delivery_package_manifest(payload: dict[str, Any]):
+    """Evaluate document delivery package metadata before client release."""
+    return {
+        "success": True,
+        "data": DocumentDeliveryPackageManifestService().build_manifest(payload),
     }
 
 
@@ -540,6 +664,25 @@ async def evaluate_legal_rag_failure_fixtures(observations: dict[str, Any]):
     return {
         "success": True,
         "data": LegalRagFailureFixturesService().evaluate_observations(observations),
+    }
+
+
+@router.get("/legal-review-benchmark/source-freshness-policy")
+async def get_legal_source_freshness_policy_template():
+    """Return legal source freshness, citation, and jurisdiction review metadata."""
+    return {
+        "success": True,
+        "data": LegalSourceFreshnessPolicyService().build_policy(),
+    }
+
+
+@router.post("/legal-review-benchmark/source-freshness-policy")
+async def evaluate_legal_source_freshness_policy(payload: dict[str, Any]):
+    """Evaluate legal source metadata without reading raw legal materials."""
+    sources = payload.get("sources")
+    return {
+        "success": True,
+        "data": LegalSourceFreshnessPolicyService().build_policy(sources if isinstance(sources, list) else None),
     }
 
 
