@@ -26,6 +26,7 @@ POST /api/v1/maintenance/release-readiness
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
   "model-request-cost-bounds": "pass",
+  "model-cache-policy": "pass",
   "model-route-telemetry": "pass",
   "model-route-guardrails": "pass",
   "model-task-inference": "pass",
@@ -66,6 +67,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Gemini reasoning effort policy coverage.
 - Generation request parameter policy coverage.
 - Model request cost bounds coverage.
+- Model cache policy coverage.
 - Model route telemetry coverage.
 - Model route guardrail coverage.
 - Model task inference coverage.
@@ -83,7 +85,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage.
+- Legal review benchmark coverage, including lightweight synthetic document fixtures.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
 

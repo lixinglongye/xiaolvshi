@@ -252,6 +252,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_request_cost_bounds.py tests/test_model_request_policy.py -q",
             ),
             ReleaseCheck(
+                id="model-cache-policy",
+                title="Model cache policy coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_cache_policy.py",
+                    "app/backend/tests/test_model_cache_policy.py",
+                    "docs/MODEL_CACHE_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_cache_policy.py tests/test_model_ops_readiness.py -q",
+            ),
+            ReleaseCheck(
                 id="model-route-telemetry",
                 title="Model route telemetry coverage",
                 category="model_ops",
@@ -470,6 +483,7 @@ class ReleaseReadinessService:
                     "app/backend/services/legal_review_benchmark.py",
                     "app/backend/tests/test_legal_review_benchmark.py",
                     "docs/LEGAL_REVIEW_BENCHMARK.md",
+                    "docs/LEGAL_BENCHMARK_FIXTURES.md",
                 ),
                 validation_command="python -m pytest tests/test_legal_review_benchmark.py -q",
             ),

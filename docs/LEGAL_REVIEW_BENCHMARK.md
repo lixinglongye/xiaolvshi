@@ -14,6 +14,7 @@ POST /api/v1/maintenance/legal-review-benchmark
 ```
 
 `GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
+It also returns a lightweight public benchmark source catalog and small synthetic document fixtures for local smoke tests.
 
 `POST` accepts benchmark results keyed by case ID:
 
@@ -35,6 +36,17 @@ Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores
 - LegalBench: use multiple legal reasoning task families instead of a single generic accuracy score.
 - RAGAS: track faithfulness, answer relevance, and context relevance for RAG-style outputs.
 - CRAG: use comprehensive factual QA and retrieval-style checks for answer reliability.
+
+## Public Sources and Fixtures
+
+The suite catalogs LegalBench, CUAD, LexGLUE, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
+
+Bundled local fixtures are short synthetic snippets for:
+
+- service agreement risk review,
+- lease dispute evidence completeness,
+- low-text PDF extraction,
+- privacy-sensitive and instruction-injection uploads.
 
 ## Benchmark Cases
 
@@ -73,4 +85,5 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `app/backend/services/release_readiness.py`

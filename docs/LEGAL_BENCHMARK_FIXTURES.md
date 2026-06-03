@@ -1,0 +1,36 @@
+# Legal Benchmark Fixtures
+
+This project keeps legal benchmark runs lightweight by separating public benchmark candidates from local synthetic fixtures.
+
+## Local Run Policy
+
+- Do not fetch large public legal datasets during default local tests.
+- Use the bundled synthetic snippets returned by `/api/v1/maintenance/legal-review-benchmark`.
+- Keep each fixture short enough for unit tests and laptop smoke tests.
+- Store no real client facts, credentials, emails, API keys, or copied contract text in fixtures.
+- Treat public datasets as cataloged candidates until their license and attribution requirements are reviewed.
+
+## Public Benchmark Candidates
+
+- LegalBench: legal reasoning task families for issue spotting, evidence reasoning, and legal RAG grounding.
+- CUAD: contract-clause review candidate for service agreement and complex contract tests.
+- LexGLUE: legal NLP benchmark candidate for classification and CaseHOLD-style reasoning tasks.
+- Pile of Law: corpus-scale legal language reference, not suitable for default local regression runs.
+
+## Bundled Synthetic Fixtures
+
+- `fixture-service-agreement-small`: service contract risks, liability cap gaps, missing SLA attachment, and route-cost checks.
+- `fixture-lease-dispute-notice-small`: deposit, repair notice, invoice, handover checklist, and evidence completeness checks.
+- `fixture-low-text-pdf-page-small`: OCR confidence, low-text page handling, version conflict, and extraction routing checks.
+- `fixture-adversarial-upload-small`: privacy redaction, prompt-injection visibility, loan evidence gaps, and safety preflight checks.
+
+## Release Use
+
+The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.
+
+## Related Files
+
+- `app/backend/services/legal_review_benchmark.py`
+- `app/backend/tests/test_legal_review_benchmark.py`
+- `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `app/backend/services/release_readiness.py`

@@ -338,6 +338,43 @@ export type ModelRequestCostBounds = {
   recommended_actions: string[];
 };
 
+export type ModelCachePolicyRule = {
+  id: string;
+  task: string;
+  cache_mode: string;
+  ttl_seconds: number;
+  expected_hit_rate: number;
+  key_material: string[];
+  privacy_boundary: string;
+  rationale: string;
+  enabled_by_default: boolean;
+  status: string;
+  deterministic_request_policy: boolean;
+  request_temperature: number;
+  forecast_monthly_cost_usd?: number | null;
+  estimated_monthly_savings_usd?: number | null;
+  reason: string;
+};
+
+export type ModelCachePolicy = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    rule_count: number;
+    enabled_rule_count: number;
+    estimated_monthly_savings_usd: number;
+    warning_count: number;
+    blocking_count: number;
+  };
+  rules: ModelCachePolicyRule[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelCallsiteAudit = {
   status: string;
   method: {
@@ -698,6 +735,7 @@ export type ModelOpsResponse = {
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   request_cost_bounds?: ModelRequestCostBounds;
+  cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;

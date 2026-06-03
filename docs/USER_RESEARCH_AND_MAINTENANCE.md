@@ -36,7 +36,7 @@
 - 产品活跃度：上传文件数量、完成审查数量、案件工作台问答数量、用户中断率。
 - 用户需求雷达：通过 `/api/v1/maintenance/user-needs` 查看当前需求优先级、外部研究来源、证据路径和发布门禁关联。
 - 反馈路线图映射：通过 `/api/v1/maintenance/feedback-roadmap` 查看反馈类别如何映射到用户需求 ID 和发布门禁。
-- 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景。
+- 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；默认只跑小型合成文书 fixture，LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
 
 ## Near-Term Maintenance Tasks
 
@@ -57,6 +57,7 @@
 - 用 `model_reasoning_policy.py` 检查 Gemini `reasoning_effort` 是否仍按高频任务低 thinking、复杂任务高 thinking 的策略执行。
 - 用 `model_request_policy.py` 检查 `temperature` 和 `max_tokens` 是否仍按任务限制，避免高频分类/OCR 请求消耗过大输出预算。
 - 用 `model_request_cost_bounds.py` 检查每类任务的默认请求成本和上限请求成本是否仍符合 cheap-first 预算边界。
+- 用 `model_cache_policy.py` 检查重复模型请求是否只能使用哈希元数据缓存，避免保存 prompt、文档或模型输出。
 - 用 `model_route_telemetry.py` 观察真实请求中自动推断、降级和超预算模型请求的趋势。
 - 用 `model_route_guardrails.py` 把路由遥测转换为发布前的 pass/warn/fail 检查，防止超预算、降级和人工复核请求比例悄悄漂移。
 - 用 `model_callsite_audit.py` 阻止新增 service 层 AIHub 文本调用漏写 `task=...`。

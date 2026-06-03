@@ -78,6 +78,7 @@ function Inner() {
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
   const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
+  const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
@@ -954,6 +955,113 @@ function Inner() {
                         <div className="mt-1 text-[11px] text-stone-500">fail {formatUsd(row.fail_ceiling_cost_usd)}</div>
                       </TableCell>
                       <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.cache_policy && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cache policy</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.cache_policy.summary.enabled_rule_count} enabled / saves{' '}
+                  {formatUsd(data.cache_policy.summary.estimated_monthly_savings_usd)}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.cache_policy.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.cache_policy.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.cache_policy.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.cache_policy.summary.rule_count}</div>
+                <div className="mt-1 text-sm text-stone-600">rules</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.cache_policy.summary.enabled_rule_count}</div>
+                <div className="mt-1 text-sm text-stone-600">enabled</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.cache_policy.summary.warning_count}</div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.cache_policy.summary.blocking_count}</div>
+                <div className="mt-1 text-sm text-stone-600">blocking checks</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Mode</TableHead>
+                    <TableHead>TTL / hit rate</TableHead>
+                    <TableHead>Key material</TableHead>
+                    <TableHead>Savings</TableHead>
+                    <TableHead>Boundary</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cachePolicyRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.enabled_by_default ? 'enabled' : 'disabled'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[220px] font-mono text-xs text-stone-700">{row.cache_mode}</TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        {row.ttl_seconds ? `${Math.round(row.ttl_seconds / 3600)}h` : 'off'}
+                        <br />
+                        {Math.round(row.expected_hit_rate * 100)}% expected hit
+                        <br />
+                        temp {row.request_temperature}
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.key_material.join(', ')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">
+                          {formatUsd(row.estimated_monthly_savings_usd)}
+                        </div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          base {formatUsd(row.forecast_monthly_cost_usd)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        {row.privacy_boundary}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

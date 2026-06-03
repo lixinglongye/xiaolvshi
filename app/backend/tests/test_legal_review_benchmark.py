@@ -14,6 +14,45 @@ def test_legal_review_benchmark_suite_covers_core_task_families():
     assert "sk-" not in str(suite)
 
 
+def test_legal_review_benchmark_catalogs_public_sources_without_downloading():
+    suite = LegalReviewBenchmarkService().build_suite()
+    source_ids = {source["id"] for source in suite["public_sources"]}
+
+    assert {"legalbench", "cuad", "lexglue", "pile-of-law"}.issubset(source_ids)
+    assert suite["public_source_count"] == len(suite["public_sources"])
+    assert all("download" not in source["import_policy"].lower() for source in suite["public_sources"])
+    assert any("license" in source["license_note"].lower() for source in suite["public_sources"])
+
+
+def test_legal_review_benchmark_includes_small_local_document_fixtures():
+    suite = LegalReviewBenchmarkService().build_suite()
+    fixtures = suite["document_fixtures"]
+    linked_case_ids = {
+        case_id
+        for fixture in fixtures
+        for case_id in fixture["linked_case_ids"]
+    }
+
+    assert suite["document_fixture_count"] >= 4
+    assert {"service-contract-risk", "lease-dispute-evidence", "long-pdf-extraction"}.issubset(linked_case_ids)
+    assert "instruction-injection-upload" in linked_case_ids
+    assert all(fixture["license_note"] == "synthetic-local-fixture" for fixture in fixtures)
+    assert all(len(fixture["sample_text"]) < 900 for fixture in fixtures)
+    assert "sk-" not in str(fixtures)
+    assert "@" not in str(fixtures)
+
+
+def test_legal_review_benchmark_document_fixtures_map_to_known_cases():
+    suite = LegalReviewBenchmarkService().build_suite()
+    known_case_ids = {case["id"] for case in suite["cases"]}
+
+    for fixture in suite["document_fixtures"]:
+        assert fixture["linked_case_ids"]
+        assert set(fixture["linked_case_ids"]).issubset(known_case_ids)
+        assert fixture["expected_tasks"]
+        assert fixture["expected_signals"]
+
+
 def test_legal_review_benchmark_default_evaluation_is_not_run():
     result = LegalReviewBenchmarkService().evaluate()
 

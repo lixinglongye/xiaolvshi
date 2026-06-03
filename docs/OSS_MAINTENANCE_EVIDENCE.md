@@ -28,8 +28,8 @@ It is safe to say this repository has active development, reviewability controls
 
 ## Evidence categories
 
-- Model operations: model catalog, configuration audit, default optimization, gateway compatibility, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates.
+- Model operations: model catalog, configuration audit, default optimization, gateway compatibility, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
+- Quality control: deep-review quality gates, legal-review benchmark cases, and lightweight synthetic legal document fixtures.
 - Review operations: citation and evidence audits.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.

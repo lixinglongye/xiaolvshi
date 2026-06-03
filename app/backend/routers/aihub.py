@@ -32,6 +32,7 @@ from services.aihub import (
 from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
+from services.model_cache_policy import ModelCachePolicyService
 from services.model_catalog import catalog_for_api, task_default_model
 from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
@@ -160,12 +161,14 @@ async def list_models():
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
+    cache_policy = ModelCachePolicyService().build_policy(forecast)
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
         "request_cost_bounds": request_cost_bounds,
+        "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
@@ -194,6 +197,7 @@ async def list_models():
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
         "request_cost_bounds": request_cost_bounds,
+        "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
