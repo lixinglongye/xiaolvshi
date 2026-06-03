@@ -20,10 +20,10 @@ The response includes:
 
 Recent integrated batches moved case workbench persistence planning, legal
 source durable index planning, billing quota migration planning, validated
-repository implementations, and the first service-level runtime/RAG/entitlement
-bindings from the queue into shipped evidence. The next queue now focuses on
-authenticated runtime routes, legal RAG route exposure, billing consumption
-routes, and frontend edit/display integration.
+repository implementations, service-level runtime/RAG/entitlement bindings,
+authenticated runtime/RAG/billing usage routes, and typed frontend API clients
+from the queue into shipped evidence. The next queue now focuses on page-level
+case editing, case research display, and quota visibility in the workspace.
 
 ## Completion Policy
 
@@ -62,6 +62,7 @@ This keeps:
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/billing_entitlement_gap.py`
+- `app/backend/routers/billing_usage.py`
 - `app/backend/services/billing_quota_migration_plan.py`
 - `app/backend/services/billing_quota_persistence_plan.py`
 - `app/backend/services/billing_quota_repository.py`
@@ -71,6 +72,7 @@ This keeps:
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
+- `app/backend/routers/case_workbench_runtime.py`
 - `app/backend/services/case_workbench_persistence_plan.py`
 - `app/backend/services/case_workbench_state_repository.py`
 - `app/backend/services/case_workbench_runtime_binding.py`
@@ -93,6 +95,7 @@ This keeps:
 - `app/backend/services/legal_source_durable_index_plan.py`
 - `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/legal_rag_index_binding.py`
+- `app/backend/routers/legal_rag.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
@@ -108,6 +111,7 @@ This keeps:
 - `app/backend/services/legal_external_research_digest.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
+- `app/backend/tests/test_billing_usage_router.py`
 - `app/backend/tests/test_billing_quota_migration_plan.py`
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
 - `app/backend/tests/test_billing_quota_repository.py`
@@ -117,6 +121,7 @@ This keeps:
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
+- `app/backend/tests/test_case_workbench_runtime_router.py`
 - `app/backend/tests/test_case_workbench_persistence_plan.py`
 - `app/backend/tests/test_case_workbench_state_repository.py`
 - `app/backend/tests/test_case_workbench_runtime_binding.py`
@@ -139,6 +144,7 @@ This keeps:
 - `app/backend/tests/test_legal_source_durable_index_plan.py`
 - `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_legal_rag_index_binding.py`
+- `app/backend/tests/test_legal_rag_router.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
 - `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`
@@ -154,6 +160,9 @@ This keeps:
 - `app/backend/tests/test_legal_external_research_digest.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
+- `app/frontend/src/lib/billingUsageApi.ts`
+- `app/frontend/src/lib/legalRagApi.ts`
+- `app/frontend/src/lib/workbenchRuntimeApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`

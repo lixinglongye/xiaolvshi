@@ -326,7 +326,7 @@ class OcrImportReadinessPolicyService:
                     "reviewer_action": "Review page samples before another automatic retry.",
                 }
             )
-        if detection["page_count"] and detection["low_text_page_count"] == detection["page_count"]:
+        if conditions and detection["page_count"] and detection["low_text_page_count"] == detection["page_count"]:
             conditions.append(
                 {
                     "id": "all-pages-low-text",

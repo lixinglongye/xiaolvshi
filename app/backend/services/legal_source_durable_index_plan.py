@@ -333,6 +333,7 @@ class LegalSourceDurableIndexPlanService:
             "summary": {
                 "entry_count": len(reviews),
                 "ready_count": sum(1 for review in reviews if review["status"] == "pass"),
+                "ready_entry_count": sum(1 for review in reviews if review["status"] == "pass"),
                 "warning_count": len(warnings),
                 "blocked_count": len(failing),
                 "duplicate_index_entry_ids": sorted(duplicate_entry_ids),

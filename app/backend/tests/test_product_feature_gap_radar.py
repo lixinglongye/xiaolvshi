@@ -46,7 +46,7 @@ def test_product_feature_gap_radar_has_evidence_paths_and_delivery_phases():
 
     assert all(gap["evidence_paths"] for gap in radar["feature_gaps"])
     assert all(
-        path.startswith(("app/backend/", "docs/"))
+        path.startswith(("app/backend/", "app/frontend/", "docs/"))
         for gap in radar["feature_gaps"]
         for path in gap["evidence_paths"]
     )
