@@ -15,6 +15,7 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getLegalFixtureImprovementPlan,
+  getLegalFixturePromptPack,
   getLegalKnowledgeAudit,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -25,6 +26,7 @@ import {
   getUserNeedsRadar,
   type FeedbackRoadmapCatalog,
   type LegalFixtureImprovementPlan,
+  type LegalFixturePromptPack,
   type LegalKnowledgeAudit,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -65,6 +67,13 @@ function roleLabel(role?: string) {
   return role ? role.replace(/_/g, ' ') : '-';
 }
 
+function formatUsd(value?: number | null) {
+  if (value === null || value === undefined) return '-';
+  if (value < 0.0001) return `$${value.toFixed(8)}`;
+  if (value < 1) return `$${value.toFixed(4)}`;
+  return `$${value.toFixed(2)}`;
+}
+
 export default function MaintenanceEvidencePage() {
   return (
     <AuthGuard>
@@ -83,6 +92,7 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
   const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +109,7 @@ function Inner() {
         needsRadar,
         feedbackMap,
         benchmarkData,
+        fixturePromptPackData,
         fixtureSmokeData,
         fixtureImprovementData,
         legalKnowledge,
@@ -109,6 +120,7 @@ function Inner() {
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalFixturePromptPack(),
         getLegalReviewFixtureSmoke(),
         getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
@@ -120,6 +132,7 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setFixturePromptPack(fixturePromptPackData);
       setFixtureSmoke(fixtureSmokeData);
       setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
@@ -581,6 +594,124 @@ function Inner() {
                     </ul>
                   </div>
                 )}
+              </section>
+            )}
+
+            {fixturePromptPack && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture prompt pack</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixturePromptPack.summary.fixture_count} prompts / cheap trial{' '}
+                      {fixturePromptPack.summary.cheap_trial_model}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[fixturePromptPack.status] ?? statusClass.review_recommended}
+                  >
+                    {fixturePromptPack.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixturePromptPack.summary.priced_prompt_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">priced prompts</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixturePromptPack.summary.estimated_total_request_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">estimated total</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixturePromptPack.summary.unknown_model_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">unknown models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixturePromptPack.prompts.length}</div>
+                    <div className="mt-1 text-sm text-stone-600">prompt rows</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Model plan</TableHead>
+                        <TableHead>Cost / params</TableHead>
+                        <TableHead>Schema / follow-up</TableHead>
+                        <TableHead>Prompt preview</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fixturePromptPack.prompts.map((prompt) => (
+                        <TableRow key={prompt.fixture_id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{prompt.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{prompt.fixture_id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{prompt.matter_type}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono font-semibold text-stone-950">{prompt.recommended_model}</div>
+                            <div className="mt-1">
+                              task {prompt.recommended_task} / route {prompt.expected_route}
+                            </div>
+                            <div className="mt-1">
+                              tier {prompt.recommended_model_cost_tier ?? 'gateway'} / cheap {prompt.cheap_trial_model}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{formatUsd(prompt.estimated_request_cost_usd)}</div>
+                            <div>{prompt.prompt_tokens_estimate} prompt tokens</div>
+                            <div>{prompt.completion_tokens_budget} max tokens</div>
+                            <div>temp {prompt.request_parameters.temperature}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div>{prompt.output_schema.required.join(', ')}</div>
+                            <div className="mt-2 space-y-1">
+                              {prompt.follow_up_endpoints.map((endpoint) => (
+                                <div key={endpoint} className="break-all font-mono text-[11px] text-stone-500">
+                                  {endpoint}
+                                </div>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            {prompt.user_prompt.slice(0, 260)}
+                            {prompt.user_prompt.length > 260 ? '...' : ''}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Method</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixturePromptPack.method.notes.map((note) => (
+                        <li key={note} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixturePromptPack.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">{fixturePromptPack.privacy_note}</div>
+                  </div>
+                </div>
               </section>
             )}
 

@@ -260,6 +260,55 @@ export type LegalFixtureImprovementPlan = {
   privacy_note: string;
 };
 
+export type LegalFixturePromptPlan = {
+  fixture_id: string;
+  title: string;
+  matter_type: string;
+  expected_route: string;
+  recommended_task: string;
+  recommended_model: string;
+  recommended_model_cost_tier?: string | null;
+  cheap_trial_model: string;
+  cheap_trial_cost_tier?: string | null;
+  prompt_tokens_estimate: number;
+  completion_tokens_budget: number;
+  estimated_request_cost_usd?: number | null;
+  request_parameters: {
+    temperature: number;
+    max_tokens: number;
+    response_format: {
+      type: string;
+    };
+  };
+  system_prompt: string;
+  user_prompt: string;
+  output_schema: {
+    type: string;
+    required: string[];
+    properties: Record<string, unknown>;
+  };
+  follow_up_endpoints: string[];
+};
+
+export type LegalFixturePromptPack = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_count: number;
+    priced_prompt_count: number;
+    estimated_total_request_cost_usd: number;
+    unknown_model_count: number;
+    cheap_trial_model: string;
+  };
+  prompts: LegalFixturePromptPlan[];
+  warning_fixture_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -329,6 +378,11 @@ type LegalReviewFixtureSmokeResponse = {
 type LegalFixtureImprovementPlanResponse = {
   success: boolean;
   data: LegalFixtureImprovementPlan;
+};
+
+type LegalFixturePromptPackResponse = {
+  success: boolean;
+  data: LegalFixturePromptPack;
 };
 
 export type LegalKnowledgeAudit = {
@@ -451,6 +505,18 @@ export async function getLegalFixtureImprovementPlan(): Promise<LegalFixtureImpr
     return payload.data;
   }
   return payload as LegalFixtureImprovementPlan;
+}
+
+export async function getLegalFixturePromptPack(): Promise<LegalFixturePromptPack> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/prompt-pack',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixturePromptPackResponse | LegalFixturePromptPack;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixturePromptPack;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {
