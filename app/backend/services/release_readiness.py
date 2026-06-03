@@ -716,6 +716,20 @@ class ReleaseReadinessService:
                 manual_note="This defines metadata-only source ingestion contracts; durable indexing and source-body storage remain separate.",
             ),
             ReleaseCheck(
+                id="legal-source-durable-index-plan",
+                title="Legal source durable index plan",
+                category="legal_quality",
+                required=False,
+                owner="legal_knowledge_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_source_durable_index_plan.py",
+                    "app/backend/tests/test_legal_source_durable_index_plan.py",
+                    "docs/LEGAL_SOURCE_DURABLE_INDEX_PLAN.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_source_durable_index_plan.py tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py -q",
+                manual_note="This defines metadata-only durable index contracts; the actual index repository and retrieval read path remain separate.",
+            ),
+            ReleaseCheck(
                 id="legal-rag-evaluation",
                 title="Legal RAG evaluation coverage",
                 category="legal_quality",
@@ -803,6 +817,20 @@ class ReleaseReadinessService:
                 ),
                 validation_command="python -m pytest tests/test_case_workbench_payload.py tests/test_matter_intake_readiness_policy.py tests/test_deadline_validation_policy.py tests/test_case_timeline_deadline_risk.py tests/test_case_task_notification_policy.py tests/test_case_evidence_graph.py -q",
                 manual_note="This assembles existing metadata into a dashboard contract; persistent case workspace storage and UI binding remain separate implementation steps.",
+            ),
+            ReleaseCheck(
+                id="case-workbench-persistence-plan",
+                title="Case workbench persistence plan",
+                category="maintenance",
+                required=False,
+                owner="product_maintainer",
+                evidence_paths=(
+                    "app/backend/services/case_workbench_persistence_plan.py",
+                    "app/backend/tests/test_case_workbench_persistence_plan.py",
+                    "docs/CASE_WORKBENCH_PERSISTENCE_PLAN.md",
+                ),
+                validation_command="python -m pytest tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_payload.py -q",
+                manual_note="This defines privacy-safe state persistence contracts only; database repositories and migrations remain separate implementation steps.",
             ),
             ReleaseCheck(
                 id="case-intake-completeness",
@@ -1083,6 +1111,20 @@ class ReleaseReadinessService:
                 ),
                 validation_command="python -m pytest tests/test_billing_quota_persistence_plan.py tests/test_billing_usage_quota_policy.py -q",
                 manual_note="This defines privacy-safe counter persistence metadata only; database migrations and payment integration remain separate.",
+            ),
+            ReleaseCheck(
+                id="billing-quota-migration-plan",
+                title="Billing quota migration plan",
+                category="maintenance",
+                required=False,
+                owner="product_maintainer",
+                evidence_paths=(
+                    "app/backend/services/billing_quota_migration_plan.py",
+                    "app/backend/tests/test_billing_quota_migration_plan.py",
+                    "docs/BILLING_QUOTA_MIGRATION_PLAN.md",
+                ),
+                validation_command="python -m pytest tests/test_billing_quota_migration_plan.py tests/test_billing_quota_persistence_plan.py -q",
+                manual_note="This maps quota counters to migration and rollback contracts only; no database or payment provider mutation is performed.",
             ),
             ReleaseCheck(
                 id="oss-maintenance-evidence",

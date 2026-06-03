@@ -2,6 +2,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Query
 from services.billing_entitlement_gap import BillingEntitlementGapService
+from services.billing_quota_migration_plan import BillingQuotaMigrationPlanService
 from services.billing_quota_persistence_plan import BillingQuotaPersistencePlanService
 from services.billing_usage_quota_policy import BillingUsageQuotaPolicyService, UsageRequest, UsageSnapshot
 from services.case_evidence_graph import CaseEvidenceGraphService
@@ -11,6 +12,7 @@ from services.case_timeline_deadline_risk import CaseTimelineDeadlineRiskService
 from services.case_team_access_policy import CaseTeamAccessPolicyService
 from services.case_task_notification_policy import CaseTaskNotificationPolicyService
 from services.case_workbench_payload import CaseWorkbenchPayloadService
+from services.case_workbench_persistence_plan import CaseWorkbenchPersistencePlanService
 from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
@@ -43,6 +45,7 @@ from services.legal_external_research_digest import LegalExternalResearchDigestS
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
+from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
 from services.legal_source_ingestion_metadata import LegalSourceIngestionMetadataService
 from services.legal_source_freshness_policy import LegalSourceFreshnessPolicyService
 from services.maintenance_evidence import MaintenanceEvidenceService
@@ -179,6 +182,24 @@ async def evaluate_billing_quota_persistence_plan(events: list[dict[str, Any]]):
     }
 
 
+@router.get("/billing-quota-migration-plan")
+async def get_billing_quota_migration_plan():
+    """Return database migration planning metadata for billing quota counters."""
+    return {
+        "success": True,
+        "data": BillingQuotaMigrationPlanService().build_plan(),
+    }
+
+
+@router.post("/billing-quota-migration-plan")
+async def evaluate_billing_quota_migration_plan(sample_checks: list[dict[str, Any]]):
+    """Evaluate sample billing quota migration checks without connecting to a database."""
+    return {
+        "success": True,
+        "data": BillingQuotaMigrationPlanService().build_plan(sample_checks),
+    }
+
+
 @router.get("/case-evidence-graph")
 async def get_case_evidence_graph_template():
     """Return the backend contract for case fact-evidence-citation-risk graphs."""
@@ -221,6 +242,24 @@ async def build_case_workbench_payload(payload: dict[str, Any]):
             evidence_report=payload.get("evidence_report") if isinstance(payload.get("evidence_report"), dict) else None,
             reference_date=payload.get("reference_date"),
         ),
+    }
+
+
+@router.get("/case-workbench-persistence-plan")
+async def get_case_workbench_persistence_plan():
+    """Return the privacy-safe persistence plan for case workbench state."""
+    return {
+        "success": True,
+        "data": CaseWorkbenchPersistencePlanService().build_plan(),
+    }
+
+
+@router.post("/case-workbench-persistence-plan")
+async def evaluate_case_workbench_persistence_plan(events: list[dict[str, Any]]):
+    """Evaluate sample case workbench state events before durable persistence."""
+    return {
+        "success": True,
+        "data": CaseWorkbenchPersistencePlanService().build_plan(events),
     }
 
 
@@ -760,6 +799,31 @@ async def evaluate_legal_source_ingestion_metadata(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalSourceIngestionMetadataService().build_metadata_contract(
+            records if isinstance(records, list) else None
+        ),
+    }
+
+
+@router.get("/legal-source-durable-index-plan")
+@router.get("/legal-review-benchmark/source-durable-index-plan")
+async def get_legal_source_durable_index_plan():
+    """Return legal source durable index planning metadata."""
+    return {
+        "success": True,
+        "data": LegalSourceDurableIndexPlanService().build_plan(),
+    }
+
+
+@router.post("/legal-source-durable-index-plan")
+@router.post("/legal-review-benchmark/source-durable-index-plan")
+async def evaluate_legal_source_durable_index_plan(payload: dict[str, Any]):
+    """Evaluate metadata-only source records for durable index readiness."""
+    records = payload.get("source_records")
+    if not isinstance(records, list):
+        records = payload.get("records")
+    return {
+        "success": True,
+        "data": LegalSourceDurableIndexPlanService().build_plan(
             records if isinstance(records, list) else None
         ),
     }

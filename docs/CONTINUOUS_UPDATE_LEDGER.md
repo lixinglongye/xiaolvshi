@@ -18,6 +18,11 @@ The response includes:
 - `low_resource_test_policy`: fixture limits, serial execution policy, and default benchmark endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
 
+The latest integrated batch moves case workbench persistence planning, legal
+source durable index planning, and billing quota migration planning from the
+queue into shipped repository evidence. The next queue now focuses on the
+actual repository implementations behind those plans.
+
 ## Completion Policy
 
 The ledger must not mark the goal complete until both conditions are true:
@@ -49,12 +54,14 @@ This keeps:
 - `app/backend/routers/maintenance.py`
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/billing_entitlement_gap.py`
+- `app/backend/services/billing_quota_migration_plan.py`
 - `app/backend/services/billing_quota_persistence_plan.py`
 - `app/backend/services/billing_usage_quota_policy.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
+- `app/backend/services/case_workbench_persistence_plan.py`
 - `app/backend/services/case_timeline_deadline_risk.py`
 - `app/backend/services/case_team_access_policy.py`
 - `app/backend/services/case_task_notification_policy.py`
@@ -71,6 +78,7 @@ This keeps:
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
+- `app/backend/services/legal_source_durable_index_plan.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
@@ -86,12 +94,14 @@ This keeps:
 - `app/backend/services/legal_external_research_digest.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
+- `app/backend/tests/test_billing_quota_migration_plan.py`
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
+- `app/backend/tests/test_case_workbench_persistence_plan.py`
 - `app/backend/tests/test_case_timeline_deadline_risk.py`
 - `app/backend/tests/test_case_team_access_policy.py`
 - `app/backend/tests/test_case_task_notification_policy.py`
@@ -108,6 +118,7 @@ This keeps:
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
+- `app/backend/tests/test_legal_source_durable_index_plan.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
 - `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`
@@ -125,12 +136,14 @@ This keeps:
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
+- `docs/BILLING_QUOTA_MIGRATION_PLAN.md`
 - `docs/BILLING_QUOTA_PERSISTENCE_PLAN.md`
 - `docs/BILLING_USAGE_QUOTA_POLICY.md`
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_INTAKE_COMPLETENESS.md`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
 - `docs/CASE_WORKBENCH_PAYLOAD.md`
+- `docs/CASE_WORKBENCH_PERSISTENCE_PLAN.md`
 - `docs/CASE_TIMELINE_DEADLINE_RISK.md`
 - `docs/CASE_TEAM_ACCESS_POLICY.md`
 - `docs/CASE_TASK_NOTIFICATION_POLICY.md`
@@ -146,6 +159,7 @@ This keeps:
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LEGAL_SOURCE_INGESTION_METADATA.md`
 - `docs/LEGAL_SOURCE_FRESHNESS_POLICY.md`
+- `docs/LEGAL_SOURCE_DURABLE_INDEX_PLAN.md`
 - `docs/LAWYER_REVIEW_WORKFLOW_POLICY.md`
 - `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/MATTER_AUDIT_RETENTION_POLICY.md`
