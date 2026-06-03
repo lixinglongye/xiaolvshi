@@ -27,6 +27,7 @@ POST /api/v1/maintenance/release-readiness
   "privacy-redaction": "pass",
   "instruction-injection-audit": "pass",
   "feedback-triage": "pass",
+  "feedback-roadmap-alignment": "pass",
   "user-needs-radar": "pass",
   "legal-review-benchmark": "pass",
   "legal-knowledge-audit": "pass",
@@ -52,6 +53,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Privacy redaction coverage.
 - Instruction injection audit coverage.
 - Feedback triage coverage.
+- Feedback roadmap alignment coverage.
 - User needs radar coverage.
 - Legal review benchmark coverage.
 - Legal knowledge seed audit coverage.

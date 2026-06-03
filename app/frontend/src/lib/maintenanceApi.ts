@@ -127,6 +127,33 @@ type UserNeedsRadarResponse = {
   data: UserNeedsRadar;
 };
 
+export type FeedbackRoadmapRule = {
+  id: string;
+  need_id: string;
+  triage_rule_ids: string[];
+  labels: string[];
+  keywords: string[];
+  reason: string;
+};
+
+export type FeedbackRoadmapCatalog = {
+  status: string;
+  rule_count: number;
+  mapped_need_count: number;
+  mapped_need_ids: string[];
+  rules: FeedbackRoadmapRule[];
+  coverage: {
+    radar_need_count: number;
+    unmapped_need_ids: string[];
+  };
+  maintenance_actions: string[];
+};
+
+type FeedbackRoadmapCatalogResponse = {
+  success: boolean;
+  data: FeedbackRoadmapCatalog;
+};
+
 export type LegalReviewBenchmarkCaseResult = {
   case_id: string;
   title: string;
@@ -247,6 +274,18 @@ export async function getUserNeedsRadar(): Promise<UserNeedsRadar> {
     return payload.data;
   }
   return payload as UserNeedsRadar;
+}
+
+export async function getFeedbackRoadmapCatalog(): Promise<FeedbackRoadmapCatalog> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/feedback-roadmap',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as FeedbackRoadmapCatalogResponse | FeedbackRoadmapCatalog;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as FeedbackRoadmapCatalog;
 }
 
 export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {

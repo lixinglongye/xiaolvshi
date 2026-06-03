@@ -18,8 +18,10 @@ import {
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
+  getFeedbackRoadmapCatalog,
   getReleaseReadiness,
   getUserNeedsRadar,
+  type FeedbackRoadmapCatalog,
   type LegalKnowledgeAudit,
   type LegalReviewBenchmark,
   type LegalRagEvaluationPolicy,
@@ -65,6 +67,7 @@ function Inner() {
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
+  const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,10 +77,11 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness, needsRadar, benchmarkData, legalKnowledge, ragEvaluation] = await Promise.all([
+      const [evidence, readiness, needsRadar, feedbackMap, benchmarkData, legalKnowledge, ragEvaluation] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getUserNeedsRadar(),
+        getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
         getLegalKnowledgeAudit(),
         getLegalRagEvaluationPolicy(),
@@ -86,6 +90,7 @@ function Inner() {
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
       setUserNeeds(needsRadar);
+      setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
       setLegalAudit(legalKnowledge);
       setRagPolicy(ragEvaluation);
@@ -395,6 +400,58 @@ function Inner() {
                     </TableBody>
                   </Table>
                 </div>
+              </section>
+            )}
+
+            {feedbackRoadmap && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Feedback roadmap</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {feedbackRoadmap.rule_count} rules · {feedbackRoadmap.mapped_need_count}/
+                      {feedbackRoadmap.coverage.radar_need_count} mapped needs
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                    {feedbackRoadmap.status}
+                  </Badge>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rule</TableHead>
+                        <TableHead>Need</TableHead>
+                        <TableHead>Triage rules</TableHead>
+                        <TableHead>Labels</TableHead>
+                        <TableHead>Reason</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackRoadmap.rules.map((rule) => (
+                        <TableRow key={rule.id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{rule.id}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">{rule.need_id}</TableCell>
+                          <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                            {rule.triage_rule_ids.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            {rule.labels.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{rule.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {feedbackRoadmap.coverage.unmapped_need_ids.length > 0 && (
+                  <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    Unmapped needs: {feedbackRoadmap.coverage.unmapped_need_ids.join(', ')}
+                  </div>
+                )}
               </section>
             )}
 

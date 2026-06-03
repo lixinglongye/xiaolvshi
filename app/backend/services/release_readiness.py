@@ -252,6 +252,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_feedback_triage.py -q",
             ),
             ReleaseCheck(
+                id="feedback-roadmap-alignment",
+                title="Feedback roadmap alignment coverage",
+                category="maintenance",
+                required=True,
+                owner="product_maintainer",
+                evidence_paths=(
+                    "app/backend/services/feedback_roadmap_alignment.py",
+                    "app/backend/tests/test_feedback_roadmap_alignment.py",
+                    "docs/FEEDBACK_ROADMAP_ALIGNMENT.md",
+                ),
+                validation_command="python -m pytest tests/test_feedback_roadmap_alignment.py -q",
+            ),
+            ReleaseCheck(
                 id="user-needs-radar",
                 title="User needs radar coverage",
                 category="maintenance",

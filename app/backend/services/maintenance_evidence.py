@@ -194,8 +194,11 @@ class MaintenanceEvidenceService:
                 cadence="Review when user segments, product scope, or public support applications change.",
                 evidence_paths=(
                     "docs/USER_RESEARCH_AND_MAINTENANCE.md",
+                    "app/backend/services/feedback_roadmap_alignment.py",
                     "app/backend/services/user_needs_radar.py",
+                    "app/backend/tests/test_feedback_roadmap_alignment.py",
                     "docs/USER_NEEDS_RADAR.md",
+                    "docs/FEEDBACK_ROADMAP_ALIGNMENT.md",
                 ),
                 weight=10,
             ),

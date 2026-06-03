@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from services.feedback_tickets import Feedback_ticketsService
+from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.feedback_triage import FeedbackTriageService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
@@ -105,6 +106,7 @@ class FeedbackTriagePreviewResponse(BaseModel):
     reasons: List[str]
     operator_actions: List[str]
     summary: str
+    roadmap_alignment: Optional[dict] = None
 
 
 # ---------- Routes ----------
@@ -179,7 +181,9 @@ async def preview_feedback_triage(
 ):
     """Preview deterministic feedback triage without creating a ticket."""
     _ = current_user
-    return FeedbackTriageService().triage(data.model_dump())
+    triage = FeedbackTriageService().triage(data.model_dump())
+    triage["roadmap_alignment"] = FeedbackRoadmapAlignmentService().align(data.model_dump())
+    return triage
 
 
 @router.get("/{id}", response_model=Feedback_ticketsResponse)

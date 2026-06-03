@@ -1,6 +1,7 @@
 from typing import Literal
 
 from fastapi import APIRouter, Query
+from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -27,6 +28,15 @@ async def get_user_needs_radar():
     return {
         "success": True,
         "data": UserNeedsRadarService().build_radar(),
+    }
+
+
+@router.get("/feedback-roadmap")
+async def get_feedback_roadmap_mapping():
+    """Return feedback-to-roadmap mapping rules for maintenance planning."""
+    return {
+        "success": True,
+        "data": FeedbackRoadmapAlignmentService().build_mapping_catalog(),
     }
 
 
