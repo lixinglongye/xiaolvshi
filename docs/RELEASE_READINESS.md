@@ -18,6 +18,7 @@ POST /api/v1/maintenance/release-readiness
   "frontend-build": "pass",
   "secret-scan": "pass",
   "model-capability-matrix": "pass",
+  "model-escalation-policy": "pass",
   "deep-review-release-decision": "pass",
   "document-preflight": "pass",
   "extraction-quality": "pass",
@@ -40,6 +41,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Frontend production build.
 - Secret and credential scan.
 - Gemini model capability matrix coverage.
+- Cheap-first model escalation policy coverage.
 - Deep-review release decision coverage.
 - Document preflight routing coverage.
 - Extraction quality audit coverage.

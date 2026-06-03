@@ -116,11 +116,50 @@ export type ModelCapabilityMatrix = {
   };
 };
 
+export type ModelEscalationStep = {
+  order: number;
+  mode: string;
+  task: string;
+  model_alias: string;
+  resolved_model: string;
+  trigger: string;
+  requires_operator_review: boolean;
+  stop_after_failure: boolean;
+};
+
+export type ModelEscalationPlan = {
+  task: string;
+  display_name: string;
+  max_attempts: number;
+  hard_stop_signals: string[];
+  steps: ModelEscalationStep[];
+  quality_signals: string[];
+  rationale: string;
+};
+
+export type ModelEscalationPolicy = {
+  status: string;
+  research_basis: Array<{
+    id: string;
+    url: string;
+    signal: string;
+  }>;
+  policy_notes: string[];
+  plans: ModelEscalationPlan[];
+  coverage: {
+    plan_count: number;
+    tasks: string[];
+    max_attempts: number;
+    premium_escalation_tasks: string[];
+  };
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
+  escalation_policy?: ModelEscalationPolicy;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };

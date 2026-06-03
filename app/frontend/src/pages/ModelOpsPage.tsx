@@ -69,6 +69,7 @@ function Inner() {
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
+  const escalationRows = data?.escalation_policy?.plans ?? [];
   const totals = data?.usage.totals;
 
   return (
@@ -255,6 +256,65 @@ function Inner() {
                     </TableCell>
                     <TableCell className="text-stone-700">{row.candidate_count}</TableCell>
                     <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{row.requirement.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Escalation policy</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                {data?.escalation_policy?.coverage.plan_count ?? 0} plans · max{' '}
+                {data?.escalation_policy?.coverage.max_attempts ?? 0} attempts
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-white">
+              {data?.escalation_policy?.status ?? 'not loaded'}
+            </Badge>
+          </div>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Steps</TableHead>
+                  <TableHead>Quality signals</TableHead>
+                  <TableHead>Hard stops</TableHead>
+                  <TableHead>Rationale</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {escalationRows.map((plan) => (
+                  <TableRow key={plan.task}>
+                    <TableCell>
+                      <div className="font-semibold text-stone-950">{plan.display_name}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{plan.task}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[320px]">
+                      <div className="space-y-1">
+                        {plan.steps.map((step) => (
+                          <div key={`${plan.task}-${step.order}`} className="rounded-[6px] border border-stone-950/10 bg-white px-2 py-1">
+                            <div className="font-mono text-[11px] text-stone-950">
+                              {step.order}. {step.mode}: {step.resolved_model}
+                            </div>
+                            {step.requires_operator_review && (
+                              <div className="mt-1 text-[11px] font-semibold text-red-700">operator review</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                      {plan.quality_signals.join(', ')}
+                    </TableCell>
+                    <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                      {plan.hard_stop_signals.join(', ') || '-'}
+                    </TableCell>
+                    <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{plan.rationale}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

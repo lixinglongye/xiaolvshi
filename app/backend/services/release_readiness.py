@@ -147,6 +147,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_capability_matrix.py tests/test_model_catalog.py tests/test_model_budget.py -q",
             ),
             ReleaseCheck(
+                id="model-escalation-policy",
+                title="Cheap-first model escalation policy coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_escalation_policy.py",
+                    "app/backend/tests/test_model_escalation_policy.py",
+                    "docs/MODEL_ESCALATION_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_escalation_policy.py -q",
+            ),
+            ReleaseCheck(
                 id="document-preflight",
                 title="Document preflight routing coverage",
                 category="legal_quality",
