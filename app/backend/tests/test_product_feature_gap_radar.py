@@ -69,16 +69,22 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "task runtime notification policy summaries" in gaps["case-workbench"]["current_state"]
     assert "localStorage summary cache" in gaps["legal-knowledge-rag"]["current_state"]
     assert "selected-source request metadata propagation" in gaps["legal-knowledge-rag"]["current_state"]
+    assert "metadata-level selected-source citation validation" in gaps["legal-knowledge-rag"]["current_state"]
     assert "report preflight" in gaps["billing-entitlements"]["current_state"]
     assert "generated_documents CRUD quota guard" in gaps["billing-entitlements"]["current_state"]
+    assert "case generation quota guard" in gaps["billing-entitlements"]["current_state"]
     assert "local-only payment/invoice/plan-change reconciliation policy evidence" in gaps["billing-entitlements"]["current_state"]
     assert "app/frontend/src/pages/CaseDetailPage.tsx" in gaps["document-generation"]["evidence_paths"]
     assert "app/backend/tests/test_generated_documents_quota.py" in gaps["document-generation"]["evidence_paths"]
+    assert "app/backend/tests/test_case_generation_quota.py" in gaps["document-generation"]["evidence_paths"]
     assert "app/backend/services/legal_rag_request_metadata.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_selected_source_validation.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/services/billing_payment_reconciliation.py" in gaps["billing-entitlements"]["evidence_paths"]
+    assert "LegalBench/LexGLUE/COLIEE research registry" in gaps["model-cost-ops"]["current_state"]
+    assert "app/backend/services/legal_benchmark_research_registry.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert any("live risk-state" in action for action in gaps["case-workbench"]["next_actions"])
-    assert any("generated report citations" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
-    assert any("direct case and deep-review document generation paths" in action for action in gaps["billing-entitlements"]["next_actions"])
+    assert any("deep-review report persistence" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
+    assert any("deep-review first-principles document generation" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
 
 

@@ -25,6 +25,8 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["summary"]["completed_medium_large_update_count"] >= 77
     assert ledger["summary"]["completed_medium_large_update_count"] >= 81
     assert ledger["summary"]["completed_medium_large_update_count"] >= 86
+    assert ledger["summary"]["completed_medium_large_update_count"] >= 88
+    assert ledger["summary"]["completed_medium_large_update_count"] >= 89
     assert ledger["summary"]["completed_medium_large_update_count"] < TARGET_MEDIUM_LARGE_UPDATE_COUNT
     assert ledger["summary"]["remaining_medium_large_update_count"] > 0
     assert ledger["summary"]["continuous_hours_verified"] == 0
@@ -94,10 +96,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-research-context-cache" in completed_ids
     assert "document-generation-quota-consumption-attempt" in completed_ids
     assert "generated-documents-crud-quota-guard" in completed_ids
+    assert "case-generation-quota-guard" in completed_ids
     assert "legal-rag-selected-source-request-metadata" in completed_ids
+    assert "legal-rag-selected-source-citation-validation" in completed_ids
     assert "billing-payment-reconciliation-policy" in completed_ids
     assert "case-task-runtime-notification-summary" in completed_ids
     assert "legal-document-benchmark-suite" in completed_ids
+    assert "legal-benchmark-research-registry" in completed_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -107,10 +112,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-research-context-cache" not in queue_ids
     assert "document-generation-quota-consumption-attempt" not in queue_ids
     assert "generated-documents-crud-quota-guard" not in queue_ids
+    assert "case-generation-quota-guard" not in queue_ids
     assert "legal-rag-selected-source-request-metadata" not in queue_ids
+    assert "legal-rag-selected-source-citation-validation" not in queue_ids
     assert "billing-payment-reconciliation-policy" not in queue_ids
     assert "case-task-runtime-notification-summary" not in queue_ids
     assert "legal-document-benchmark-suite" not in queue_ids
+    assert "legal-benchmark-research-registry" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

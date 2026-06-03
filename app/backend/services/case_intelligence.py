@@ -25,6 +25,7 @@ from models.fact_events import Fact_events
 from models.generated_documents import Generated_documents
 from models.import_jobs import Import_jobs
 from models.legal_sources import Legal_sources
+from services.billing_entitlement_quota_binding import BillingEntitlementQuotaBindingService, build_quota_subject_hash
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
 from services.legal_rag_request_metadata import legal_rag_citation_metadata, sanitize_case_request_metadata
 from sqlalchemy import select
@@ -39,6 +40,7 @@ MAX_TEXT_PER_FILE = 80_000
 DISALLOWED_EXTENSIONS = {".exe", ".bat", ".cmd", ".com", ".dll", ".msi", ".ps1", ".sh", ".scr", ".jar"}
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
 AUDIO_VIDEO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".mp4", ".mov", ".avi", ".wmv"}
+CASE_GENERATION_QUOTA_UNITS = 1
 
 MATERIAL_CATEGORIES: list[tuple[str, str, str, list[str]]] = [
     ("identity", "主体身份材料", "身份证明/主体资格材料", ["身份证", "营业执照", "法定代表人", "授权委托", "统一社会信用代码"]),
@@ -103,6 +105,40 @@ def _unique(items: list[str], limit: int = 12) -> list[str]:
         if len(result) >= limit:
             break
     return result
+
+
+def _case_generation_quota_event_id(
+    *,
+    user_id: str,
+    case_id: int,
+    doc_type: str,
+    source: str,
+) -> str:
+    payload = {
+        "schema": "case-document-generation-quota.v1",
+        "quota_subject_hash": build_quota_subject_hash(user_id),
+        "case_id": case_id,
+        "doc_type": str(doc_type or "")[:80],
+        "source": source,
+    }
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return f"case_document_{hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:32]}"
+
+
+class CaseGenerationQuotaError(Exception):
+    """Raised when a case document generation route is blocked by report quota."""
+
+    def __init__(self, summary: dict[str, Any]):
+        self.summary = summary
+        usage_event = summary.get("last_usage_event") or {}
+        self.detail = {
+            "code": "report_quota_blocked",
+            "decision_status": usage_event.get("decision_status") or summary.get("decision_status"),
+            "reason_codes": summary.get("reason_codes") or usage_event.get("reason_codes") or [],
+            "quota_window": summary.get("quota_window"),
+            "reports_remaining": summary.get("reports_remaining"),
+        }
+        super().__init__("case_generation_report_quota_blocked")
 
 
 def _normalize_text(text: str) -> str:
@@ -1079,6 +1115,7 @@ class CaseDraftingService:
         *,
         case_id: int,
         user_id: str,
+        user_role: str = "user",
         request_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         workspace = await self.load_workspace(case_id, user_id)
@@ -1095,6 +1132,13 @@ class CaseDraftingService:
                 missing.append(f"{row['evidence_no']} 页码/份数需确认")
         markdown = self._render_evidence_catalog_markdown(workspace["case"], rows, missing)
         qa = self._qa_gate("证据目录", missing, rows)
+        quota_summary = await self._consume_case_generation_quota(
+            user_id=user_id,
+            user_role=user_role,
+            case_id=case_id,
+            doc_type="证据目录",
+            source="cases.generate.evidence_catalog",
+        )
         document = await self._persist_document(
             user_id=user_id,
             case_id=case_id,
@@ -1109,13 +1153,20 @@ class CaseDraftingService:
             request_metadata=safe_request_metadata,
             status="待律师复核",
         )
-        return {"success": True, "document_id": document.id, "document": self._serialize_document(document), "qa_report": qa}
+        return {
+            "success": True,
+            "document_id": document.id,
+            "document": self._serialize_document(document),
+            "qa_report": qa,
+            "quota": self._safe_quota_summary(quota_summary),
+        }
 
     async def generate_civil_complaint(
         self,
         *,
         case_id: int,
         user_id: str,
+        user_role: str = "user",
         force_draft: bool = True,
         request_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
@@ -1131,6 +1182,13 @@ class CaseDraftingService:
             }
         content, evidence_citations, legal_citations = await self._render_civil_complaint(workspace, preflight)
         qa = self._qa_gate("民事起诉状", preflight["missing_required"], evidence_citations)
+        quota_summary = await self._consume_case_generation_quota(
+            user_id=user_id,
+            user_role=user_role,
+            case_id=case_id,
+            doc_type="民事起诉状",
+            source="cases.generate.civil_complaint",
+        )
         document = await self._persist_document(
             user_id=user_id,
             case_id=case_id,
@@ -1152,6 +1210,7 @@ class CaseDraftingService:
             "document": self._serialize_document(document),
             "preflight": preflight,
             "qa_report": qa,
+            "quota": self._safe_quota_summary(quota_summary),
         }
 
     def preflight_civil_complaint(self, workspace: dict[str, Any]) -> dict[str, Any]:
@@ -1418,6 +1477,47 @@ class CaseDraftingService:
         await self.db.commit()
         await self.db.refresh(doc)
         return doc
+
+    async def _consume_case_generation_quota(
+        self,
+        *,
+        user_id: str,
+        user_role: str,
+        case_id: int,
+        doc_type: str,
+        source: str,
+    ) -> dict[str, Any]:
+        summary = await BillingEntitlementQuotaBindingService(self.db).consume_report_usage(
+            user_id=user_id,
+            user_role=user_role,
+            quota_subject_hash=build_quota_subject_hash(user_id),
+            source=source,
+            event_id=_case_generation_quota_event_id(
+                user_id=user_id,
+                case_id=case_id,
+                doc_type=doc_type,
+                source=source,
+            ),
+            units=CASE_GENERATION_QUOTA_UNITS,
+        )
+        usage_event = summary.get("last_usage_event") or {}
+        if usage_event.get("decision_status") == "blocked":
+            raise CaseGenerationQuotaError(summary)
+        return summary
+
+    def _safe_quota_summary(self, summary: dict[str, Any]) -> dict[str, Any]:
+        usage_event = summary.get("last_usage_event") or {}
+        return {
+            "decision_status": usage_event.get("decision_status") or summary.get("decision_status"),
+            "reason_codes": summary.get("reason_codes") or usage_event.get("reason_codes") or [],
+            "quota_window": summary.get("quota_window"),
+            "reports_remaining": summary.get("reports_remaining"),
+            "privacy_boundary": {
+                "raw_document_text_included": False,
+                "case_claims_included": False,
+                "pii_included": False,
+            },
+        }
 
     def _serialize_document(self, doc: Generated_documents) -> dict[str, Any]:
         return {

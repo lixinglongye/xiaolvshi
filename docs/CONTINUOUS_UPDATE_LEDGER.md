@@ -29,12 +29,15 @@ badge. The current follow-up evidence adds a read-only billing report preflight
 route, privacy-safe case edit runtime events for material/evidence/fact/task
 changes, metadata-only Legal RAG context cache/copy controls, a best-effort
 document-generation quota consumption attempt, server-side generated_documents
-CRUD quota guards, selected-source Legal RAG request metadata propagation, a
-local-only billing payment reconciliation policy, task runtime notification
-summaries, and a deterministic laptop-safe legal document benchmark suite.
+CRUD quota guards, case evidence-catalog/civil-complaint quota guards,
+selected-source Legal RAG request metadata propagation, metadata-level
+selected-source citation validation, a local-only billing payment
+reconciliation policy, task runtime notification summaries, a deterministic
+laptop-safe legal document benchmark suite, and a LegalBench/LexGLUE/COLIEE
+research registry mapped to low-resource local tests.
 These are reviewable product slices; they do not finish real payment provider
-settlement or webhook verification, full generated-report citation validation
-against selected source IDs, direct case/deep-review generation quota
+settlement or webhook verification, automatic deep-review report binding for
+selected-source validation, deep-review first-principles generation quota
 enforcement, raw contract extraction, or a database-backed team workspace.
 
 ## Completion Policy

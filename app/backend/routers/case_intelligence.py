@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,7 +8,7 @@ from core.database import get_db
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 from services.case_ai_workbench import CaseAIWorkbenchService
-from services.case_intelligence import CaseDraftingService, CaseImportService
+from services.case_intelligence import CaseDraftingService, CaseGenerationQuotaError, CaseImportService
 
 router = APIRouter(prefix="/api/v1/cases", tags=["case-intelligence"])
 
@@ -142,8 +142,11 @@ async def generate_evidence_catalog(
         return await service.generate_evidence_catalog(
             case_id=case_id,
             user_id=str(current_user.id),
+            user_role=current_user.role,
             request_metadata=request.request_metadata,
         )
+    except CaseGenerationQuotaError as exc:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=exc.detail)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
@@ -162,9 +165,12 @@ async def generate_civil_complaint(
         return await service.generate_civil_complaint(
             case_id=case_id,
             user_id=str(current_user.id),
+            user_role=current_user.role,
             force_draft=request.force_draft,
             request_metadata=request.request_metadata,
         )
+    except CaseGenerationQuotaError as exc:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=exc.detail)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:

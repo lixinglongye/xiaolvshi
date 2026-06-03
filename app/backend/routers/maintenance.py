@@ -25,6 +25,7 @@ from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
+from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
@@ -698,6 +699,15 @@ async def get_legal_external_research_digest():
     return {
         "success": True,
         "data": LegalExternalResearchDigestService().build_digest(),
+    }
+
+
+@router.get("/legal-review-benchmark/research-registry")
+async def get_legal_benchmark_research_registry():
+    """Return public legal benchmark lessons mapped to local low-resource validation."""
+    return {
+        "success": True,
+        "data": LegalBenchmarkResearchRegistryService().build_registry(),
     }
 
 

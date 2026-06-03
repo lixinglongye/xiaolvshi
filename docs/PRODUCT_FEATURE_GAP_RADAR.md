@@ -29,23 +29,25 @@ The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
 and a best-effort document-generation quota consumption attempt. The newest
 backend and full-stack slices add server-side generated_documents CRUD quota
-guards, selected-source Legal RAG request metadata in case AI and document
-records, a local-only billing payment reconciliation policy, task runtime
-notification summaries, and a deterministic laptop-safe legal document benchmark
-suite.
+guards, case evidence-catalog/civil-complaint quota guards, selected-source
+Legal RAG request metadata in case AI and document records, metadata-level
+selected-source citation validation, a local-only billing payment reconciliation
+policy, task runtime notification summaries, a deterministic laptop-safe legal
+document benchmark suite, and a LegalBench/LexGLUE/COLIEE research registry
+mapped to local low-resource validation.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
-provider settlement/webhook verification, full generated-report citation
-validation against selected sources, raw contract extraction, direct
-case/deep-review quota enforcement, or database-backed team workspace is
-finished.
+provider settlement/webhook verification, automatic deep-review report binding
+for selected-source validation, raw contract extraction, deep-review
+first-principles generation quota enforcement, or database-backed team workspace
+is finished.
 
 The frontend productization queue has moved from route exposure to deeper
 workflow binding:
 
 - Runtime event deltas should refresh live risk state and evidence graph views.
-- Generated report citations should be validated against selected Legal RAG source IDs.
-- Generated_documents CRUD quota guards should extend to direct case and deep-review generation paths.
+- Selected-source citation validation should bind into deep-review report persistence and export checks.
+- Case/CRUD quota guards should extend to deep-review first-principles generation.
 - Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
 
 ## Scope
