@@ -19,6 +19,7 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["goal"]["target_medium_large_update_count"] == TARGET_MEDIUM_LARGE_UPDATE_COUNT
     assert ledger["summary"]["completed_medium_large_update_count"] >= 10
     assert ledger["summary"]["completed_medium_large_update_count"] >= 63
+    assert ledger["summary"]["completed_medium_large_update_count"] >= 66
     assert ledger["summary"]["completed_medium_large_update_count"] < TARGET_MEDIUM_LARGE_UPDATE_COUNT
     assert ledger["summary"]["remaining_medium_large_update_count"] > 0
     assert ledger["summary"]["continuous_hours_verified"] == 0
@@ -69,9 +70,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-workbench-persistence-plan" in completed_ids
     assert "legal-source-durable-index-plan" in completed_ids
     assert "billing-quota-migration-plan" in completed_ids
-    assert "case-workbench-repository-implementation" in queue_ids
-    assert "legal-source-index-repository" in queue_ids
-    assert "billing-quota-repository-implementation" in queue_ids
+    assert "case-workbench-repository-implementation" in completed_ids
+    assert "legal-source-index-repository" in completed_ids
+    assert "billing-quota-repository-implementation" in completed_ids
+    assert "case-workbench-runtime-route-binding" in queue_ids
+    assert "legal-rag-query-index-binding" in queue_ids
+    assert "billing-entitlement-repository-binding" in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

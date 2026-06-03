@@ -18,10 +18,11 @@ The response includes:
 - `low_resource_test_policy`: fixture limits, serial execution policy, and default benchmark endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
 
-The latest integrated batch moves case workbench persistence planning, legal
-source durable index planning, and billing quota migration planning from the
-queue into shipped repository evidence. The next queue now focuses on the
-actual repository implementations behind those plans.
+Recent integrated batches moved case workbench persistence planning, legal
+source durable index planning, billing quota migration planning, and the first
+validated repository implementations from the queue into shipped repository
+evidence. The next queue now focuses on binding those repositories into runtime
+routes, legal RAG retrieval, and entitlement responses.
 
 ## Completion Policy
 
@@ -52,16 +53,24 @@ This keeps:
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/routers/maintenance.py`
+- `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`
+- `app/backend/models/billing_quota_idempotency_keys.py`
+- `app/backend/models/billing_quota_usage_counters.py`
+- `app/backend/models/case_workbench_section_states.py`
+- `app/backend/models/case_workbench_state_events.py`
+- `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/services/billing_quota_migration_plan.py`
 - `app/backend/services/billing_quota_persistence_plan.py`
+- `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_usage_quota_policy.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
 - `app/backend/services/case_workbench_persistence_plan.py`
+- `app/backend/services/case_workbench_state_repository.py`
 - `app/backend/services/case_timeline_deadline_risk.py`
 - `app/backend/services/case_team_access_policy.py`
 - `app/backend/services/case_task_notification_policy.py`
@@ -79,6 +88,7 @@ This keeps:
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
 - `app/backend/services/legal_source_durable_index_plan.py`
+- `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
@@ -96,12 +106,14 @@ This keeps:
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_billing_quota_migration_plan.py`
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
+- `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
 - `app/backend/tests/test_case_workbench_persistence_plan.py`
+- `app/backend/tests/test_case_workbench_state_repository.py`
 - `app/backend/tests/test_case_timeline_deadline_risk.py`
 - `app/backend/tests/test_case_team_access_policy.py`
 - `app/backend/tests/test_case_task_notification_policy.py`
@@ -119,6 +131,7 @@ This keeps:
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
 - `app/backend/tests/test_legal_source_durable_index_plan.py`
+- `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
 - `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`

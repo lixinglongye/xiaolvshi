@@ -31,27 +31,35 @@ It is safe to say this repository has active development, reviewability controls
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
-- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, and client delivery transparency.
+- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
 - `app/backend/services/maintenance_evidence.py`
+- `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`
+- `app/backend/models/billing_quota_idempotency_keys.py`
+- `app/backend/models/billing_quota_usage_counters.py`
+- `app/backend/models/case_workbench_section_states.py`
+- `app/backend/models/case_workbench_state_events.py`
+- `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/services/billing_quota_migration_plan.py`
 - `app/backend/services/billing_quota_persistence_plan.py`
+- `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_usage_quota_policy.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
 - `app/backend/services/case_workbench_persistence_plan.py`
+- `app/backend/services/case_workbench_state_repository.py`
 - `app/backend/services/case_timeline_deadline_risk.py`
 - `app/backend/services/case_team_access_policy.py`
 - `app/backend/services/case_task_notification_policy.py`
@@ -69,6 +77,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
 - `app/backend/services/legal_source_durable_index_plan.py`
+- `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
@@ -88,12 +97,14 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_billing_quota_migration_plan.py`
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
+- `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
 - `app/backend/tests/test_case_workbench_persistence_plan.py`
+- `app/backend/tests/test_case_workbench_state_repository.py`
 - `app/backend/tests/test_case_timeline_deadline_risk.py`
 - `app/backend/tests/test_case_team_access_policy.py`
 - `app/backend/tests/test_case_task_notification_policy.py`
@@ -111,6 +122,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
 - `app/backend/tests/test_legal_source_durable_index_plan.py`
+- `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
 - `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`

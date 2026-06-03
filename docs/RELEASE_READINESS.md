@@ -107,7 +107,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -118,15 +118,23 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 ## Related files
 
 - `app/backend/services/release_readiness.py`
+- `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`
+- `app/backend/models/billing_quota_idempotency_keys.py`
+- `app/backend/models/billing_quota_usage_counters.py`
+- `app/backend/models/case_workbench_section_states.py`
+- `app/backend/models/case_workbench_state_events.py`
+- `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/services/billing_quota_migration_plan.py`
 - `app/backend/services/billing_quota_persistence_plan.py`
+- `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_usage_quota_policy.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
 - `app/backend/services/case_workbench_persistence_plan.py`
+- `app/backend/services/case_workbench_state_repository.py`
 - `app/backend/services/client_delivery_transparency_policy.py`
 - `app/backend/services/contract_clause_extraction_schema.py`
 - `app/backend/services/deadline_validation_policy.py`
@@ -139,6 +147,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
 - `app/backend/services/legal_source_durable_index_plan.py`
+- `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/small_legal_document_corpus_expansion.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
 - `app/backend/services/model_default_recommendation_snapshot.py`
@@ -155,11 +164,13 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_billing_quota_migration_plan.py`
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
+- `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
 - `app/backend/tests/test_case_workbench_persistence_plan.py`
+- `app/backend/tests/test_case_workbench_state_repository.py`
 - `app/backend/tests/test_client_delivery_transparency_policy.py`
 - `app/backend/tests/test_contract_clause_extraction_schema.py`
 - `app/backend/tests/test_deadline_validation_policy.py`
@@ -172,6 +183,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
 - `app/backend/tests/test_legal_source_durable_index_plan.py`
+- `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
 - `app/backend/tests/test_model_default_recommendation_snapshot.py`
