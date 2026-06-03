@@ -48,9 +48,11 @@
 - Legal fixture local run packages: `/api/v1/maintenance/legal-review-benchmark/local-run-package` bundles a tiny cheap-first subset with request JSON, one-at-a-time PowerShell/curl templates, observation slots, and run-report payload scaffolding.
 - Legal fixture response normalizers: `/api/v1/maintenance/legal-review-benchmark/local-response-normalizer` converts local OpenAI-compatible gateway responses into fixture-smoke observations and run-report payloads with secret-like value redaction.
 - Legal fixture local run reviews: `/api/v1/maintenance/legal-review-benchmark/local-run-review` normalizes one or two local gateway responses, runs fixture smoke scoring, builds the cheap-first run report, and returns an evidence bundle in one low-resource maintenance step.
+- Legal fixture result archives: `/api/v1/maintenance/legal-review-benchmark/result-archive` converts normalized fixture observations into release-safe summaries without raw model output, gateway JSON, credentials, or client document content.
 - Legal fixture run reports: `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` converts fixture observations into cheap-first release decisions and fixture-scoped escalation actions.
 - Legal fixture evidence bundles: `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` archives component statuses, validation commands, release-safe claims, and cheap-first run evidence for small local benchmark cycles.
 - Continuous update ledger: `/api/v1/maintenance/continuous-update-ledger` tracks shipped and planned medium/large maintenance updates, the remaining count toward 100+ updates, and the 24-hour evidence requirements without claiming completion early.
+- Product feature gap radar: `/api/v1/maintenance/product-feature-gaps` keeps unfinished product capabilities visible across case workflow, document generation, contract review, evidence, OCR/import, collaboration, billing, feedback, model ops, legal knowledge, and safety.
 
 ## Near-Term Maintenance Tasks
 

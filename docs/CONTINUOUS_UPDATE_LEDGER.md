@@ -48,8 +48,11 @@ This keeps:
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/services/release_readiness.py`
+- `app/backend/services/product_feature_gap_radar.py`
+- `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
+- `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/OSS_MAINTENANCE_EVIDENCE.md`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
 - `docs/RELEASE_READINESS.md`

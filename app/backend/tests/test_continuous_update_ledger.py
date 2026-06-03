@@ -43,8 +43,9 @@ def test_continuous_update_ledger_completed_entries_are_reviewable():
 def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     queue_ids = {entry["id"] for entry in ledger["next_update_queue"]}
+    completed_ids = {entry["id"] for entry in ledger["completed_updates"]}
 
-    assert "cheap-first-result-archive" in queue_ids
+    assert "cheap-first-result-archive" in completed_ids
     assert "gemini-price-refresh-monitor" in queue_ids
     assert "small-legal-document-corpus-expansion" in queue_ids
     assert "frontend-local-run-review-form" in queue_ids

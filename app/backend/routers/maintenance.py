@@ -12,12 +12,14 @@ from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_response_normalizer import LegalFixtureResponseNormalizerService
+from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
+from services.product_feature_gap_radar import ProductFeatureGapRadarService
 from services.release_readiness import ReleaseReadinessService
 from services.user_needs_radar import UserNeedsRadarService
 
@@ -51,6 +53,15 @@ async def get_feedback_roadmap_mapping():
     return {
         "success": True,
         "data": FeedbackRoadmapAlignmentService().build_mapping_catalog(),
+    }
+
+
+@router.get("/product-feature-gaps")
+async def get_product_feature_gap_radar():
+    """Return product-wide feature gaps that still need implementation."""
+    return {
+        "success": True,
+        "data": ProductFeatureGapRadarService().build_radar(),
     }
 
 
@@ -275,6 +286,24 @@ async def build_legal_review_fixture_evidence_bundle(payload: dict[str, dict]):
     return {
         "success": True,
         "data": LegalFixtureEvidenceBundleService().build_bundle(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/result-archive")
+async def get_legal_review_fixture_result_archive_template():
+    """Return a release-safe archive template for cheap-first fixture results."""
+    return {
+        "success": True,
+        "data": LegalFixtureResultArchiveService().build_archive(),
+    }
+
+
+@router.post("/legal-review-benchmark/result-archive")
+async def build_legal_review_fixture_result_archive(payload: dict[str, Any]):
+    """Build a release-safe archive summary from normalized fixture observations."""
+    return {
+        "success": True,
+        "data": LegalFixtureResultArchiveService().build_archive(payload),
     }
 
 

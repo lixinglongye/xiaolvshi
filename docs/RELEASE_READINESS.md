@@ -91,11 +91,11 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
+- Legal review benchmark coverage, including research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -107,10 +107,15 @@ Optional evidence checks, such as OSS maintenance evidence and the continuous up
 
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/product_feature_gap_radar.py`
+- `app/backend/services/legal_fixture_result_archive.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_product_feature_gap_radar.py`
+- `app/backend/tests/test_legal_fixture_result_archive.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`

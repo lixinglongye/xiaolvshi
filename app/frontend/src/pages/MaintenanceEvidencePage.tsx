@@ -22,6 +22,7 @@ import {
   getLegalFixturePromptPack,
   getLegalFixtureLocalRunPackage,
   getLegalFixtureResponseNormalizerTemplate,
+  getLegalFixtureResultArchive,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
@@ -43,6 +44,7 @@ import {
   type LegalFixturePromptPack,
   type LegalFixtureLocalRunPackage,
   type LegalFixtureResponseNormalizer,
+  type LegalFixtureResultArchive,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
@@ -145,6 +147,7 @@ function Inner() {
   const [normalizerTemplateLoading, setNormalizerTemplateLoading] = useState(false);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
+  const [fixtureResultArchive, setFixtureResultArchive] = useState<LegalFixtureResultArchive | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
   const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,6 +173,7 @@ function Inner() {
         fixtureLocalRunPackageData,
         fixtureRunPlanData,
         fixtureRunReportData,
+        fixtureResultArchiveData,
         fixtureSmokeData,
         fixtureImprovementData,
         legalKnowledge,
@@ -189,6 +193,7 @@ function Inner() {
         getLegalFixtureLocalRunPackage(),
         getLegalFixtureRunPlan(),
         getLegalFixtureRunReport(),
+        getLegalFixtureResultArchive(),
         getLegalReviewFixtureSmoke(),
         getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
@@ -209,6 +214,7 @@ function Inner() {
       setFixtureLocalRunPackage(fixtureLocalRunPackageData);
       setFixtureRunPlan(fixtureRunPlanData);
       setFixtureRunReport(fixtureRunReportData);
+      setFixtureResultArchive(fixtureResultArchiveData);
       setFixtureSmoke(fixtureSmokeData);
       setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
@@ -2004,6 +2010,83 @@ function Inner() {
                       ))}
                     </ul>
                     <div className="mt-4 text-xs leading-5 text-stone-500">{fixtureRunReport.privacy_note}</div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {fixtureResultArchive && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture result archive</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureResultArchive.summary.archived_fixture_count} archived fixtures /{' '}
+                      {fixtureResultArchive.summary.request_metadata_count} request metadata rows
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className={statusClass[fixtureResultArchive.status] ?? statusClass.warn}>
+                      {fixtureResultArchive.status.replace(/_/g, ' ')}
+                    </Badge>
+                    <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                      {fixtureResultArchive.summary.release_decision.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureResultArchive.summary.archived_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">archived fixtures</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureResultArchive.summary.request_metadata_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">request metadata</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureResultArchive.summary.dropped_raw_field_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">dropped raw fields</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="break-words text-xl font-black text-stone-950">
+                      {fixtureResultArchive.summary.release_decision.replace(/_/g, ' ')}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">release decision</div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Archive policy</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div className="break-all font-mono">{fixtureResultArchive.archive_record.source_endpoint}</div>
+                      <div>
+                        {fixtureResultArchive.summary.observed_fixture_count}/
+                        {fixtureResultArchive.summary.fixture_count} observed fixtures
+                      </div>
+                      <div>
+                        Evidence bundle: {fixtureResultArchive.summary.evidence_bundle_status.replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-stone-500">{fixtureResultArchive.privacy_note}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Archive actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixtureResultArchive.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </section>

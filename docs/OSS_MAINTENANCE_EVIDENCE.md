@@ -20,7 +20,7 @@ The response includes:
 - `application_guardrails`: claims that must be manually verified before submitting a support form.
 - `form_answer`: a concise English or Chinese paragraph suitable for support application fields.
 
-The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets.
+The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets and `/api/v1/maintenance/product-feature-gaps` as the incomplete product capability register.
 
 ## Why this exists
 
@@ -31,23 +31,26 @@ It is safe to say this repository has active development, reviewability controls
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal-review benchmark cases, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal-review benchmark cases, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Review operations: citation, evidence, and legal grounding quick audits.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
-- Maintenance planning: user research, maintenance notes, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
 - `app/backend/services/maintenance_evidence.py`
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_maintenance_evidence.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`

@@ -676,6 +676,69 @@ export type LegalFixtureRunReport = {
   privacy_note: string;
 };
 
+export type LegalFixtureResultArchiveFixtureSummary = {
+  fixture_id: string;
+  title: string;
+  smoke_status: string;
+  score: number;
+  observed_route: string;
+  expected_routes: string[];
+  matched_signal_count: number;
+  missing_signal_count: number;
+  missing_task_count: number;
+  high_priority_action_count: number;
+  observed_model?: string | null;
+  observed_phase?: string | null;
+  observed_cost_usd?: number | null;
+  recommended_next_step: string;
+};
+
+export type LegalFixtureResultArchiveRequestSummary = {
+  fixture_id: string;
+  phase?: string | null;
+  model?: string | null;
+  estimated_cost_usd?: number | null;
+  http_status?: number | null;
+  archived_fields: string[];
+};
+
+export type LegalFixtureResultArchive = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_count: number;
+    observed_fixture_count: number;
+    archived_fixture_count: number;
+    request_metadata_count: number;
+    dropped_raw_field_count: number;
+    input_observation_count: number;
+    release_decision: string;
+    evidence_bundle_status: string;
+    observed_cost_usd?: number | null;
+  };
+  archive_record: {
+    id: string;
+    source_endpoint: string;
+    source_report_endpoint: string;
+    source_bundle_endpoint: string;
+    archive_fields: string[];
+    excluded_fields: string[];
+  };
+  fixture_result_summaries: LegalFixtureResultArchiveFixtureSummary[];
+  request_metadata_summaries: LegalFixtureResultArchiveRequestSummary[];
+  release_claims: {
+    can_claim: string[];
+    claim_after_run: string[];
+    must_not_claim: string[];
+  };
+  validation_commands: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalFixtureModelCandidate = {
   role: string;
   model: string;
@@ -939,6 +1002,11 @@ type LegalFixtureRunReportResponse = {
   data: LegalFixtureRunReport;
 };
 
+type LegalFixtureResultArchiveResponse = {
+  success: boolean;
+  data: LegalFixtureResultArchive;
+};
+
 type LegalFixtureModelMatrixResponse = {
   success: boolean;
   data: LegalFixtureModelMatrix;
@@ -1185,6 +1253,18 @@ export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport>
     return payload.data;
   }
   return payload as LegalFixtureRunReport;
+}
+
+export async function getLegalFixtureResultArchive(): Promise<LegalFixtureResultArchive> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/result-archive',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureResultArchiveResponse | LegalFixtureResultArchive;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureResultArchive;
 }
 
 export async function getLegalFixtureModelMatrix(): Promise<LegalFixtureModelMatrix> {
