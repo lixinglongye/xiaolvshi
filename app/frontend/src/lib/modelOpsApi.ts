@@ -75,6 +75,12 @@ export type ModelRuntimeRouter = {
   status: string;
   request_fields: Record<string, string>;
   enforcement: string[];
+  auto_task_inference?: {
+    status: string;
+    default_task: string;
+    rules: string[];
+    safeguards: string[];
+  };
   task_defaults: ModelBudgetDecision[];
 };
 

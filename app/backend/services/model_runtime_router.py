@@ -5,6 +5,7 @@ from typing import Any
 
 from services.model_budget import ModelBudgetDecision, model_budget_decision
 from services.model_budget import TASK_GROUPS
+from services.model_task_inference import task_inference_policy_for_api
 
 
 @dataclass(frozen=True)
@@ -112,19 +113,20 @@ def runtime_router_policy_for_api() -> dict[str, Any]:
     return {
         "status": "ready",
         "request_fields": {
-            "task": "Selects the task budget and default model. Unknown tasks fall back to review.",
+            "task": "Selects the task budget and default model. Use auto to infer from messages.",
             "model": "Optional model name or alias. Omitted values use the task default.",
             "allow_over_budget_model": (
                 "False by default. When false, over-budget or operator-review models route to the task recommended model."
             ),
         },
         "enforcement": [
-            "Default text calls use the declared task instead of always using fast routing.",
+            "Default text calls use deterministic task inference instead of always using fast routing.",
             "Explicit over-budget models are downgraded to the task recommended model unless allow_over_budget_model is true.",
             "Premium models outside PDF/image exception paths require explicit allowance before runtime use.",
             "Gateway-specific model names remain pass-through, but pricing is marked unverified.",
             "Usage counters record the normalized task, not prompt text or document content.",
         ],
+        "auto_task_inference": task_inference_policy_for_api(),
         "task_defaults": [
             model_budget_decision(None, task=task).to_api()
             for task in TASK_GROUPS

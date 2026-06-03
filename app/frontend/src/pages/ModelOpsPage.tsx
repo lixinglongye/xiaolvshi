@@ -69,6 +69,7 @@ function Inner() {
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
+  const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
@@ -262,7 +263,7 @@ function Inner() {
               <div>
                 <h2 className="text-xl font-black text-stone-950">Runtime router</h2>
                 <div className="mt-1 text-sm text-stone-600">
-                  {runtimeDefaults.length} task defaults / {runtimeRouterFields.length} request fields
+                  {runtimeDefaults.length} task defaults / {taskInferenceRules.length} auto rules
                 </div>
               </div>
               <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
@@ -305,6 +306,23 @@ function Inner() {
                 </TableBody>
               </Table>
             </div>
+            {data.runtime_router.auto_task_inference && (
+              <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-semibold text-stone-950">Auto task inference</div>
+                  <Badge variant="outline" className="bg-white">
+                    default {data.runtime_router.auto_task_inference.default_task}
+                  </Badge>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {taskInferenceRules.map((rule) => (
+                    <div key={rule} className="rounded-[6px] border border-stone-950/10 bg-white px-3 py-2 text-xs leading-5 text-stone-600">
+                      {rule}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         )}
 

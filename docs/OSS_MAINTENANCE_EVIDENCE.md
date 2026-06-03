@@ -28,7 +28,7 @@ It is safe to say this repository has active development, reviewability controls
 
 ## Evidence categories
 
-- Model operations: model catalog, budget policy, runtime routing, fallback chains, routing replay, usage-safe telemetry.
+- Model operations: model catalog, budget policy, task inference, runtime routing, fallback chains, routing replay, usage-safe telemetry.
 - Quality control: deep-review quality gates.
 - Review operations: citation and evidence audits.
 - Release management: risk scoring and unified release decision.

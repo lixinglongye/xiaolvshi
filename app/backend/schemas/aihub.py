@@ -53,8 +53,8 @@ class GenTxtRequest(BaseModel):
         description="Optional model name or routing alias. If omitted, the task default is used.",
     )
     task: str = Field(
-        default="fast",
-        description="Routing task, e.g. fast, classification, ocr, review, pdf. Unknown values fall back to review.",
+        default="auto",
+        description="Routing task, e.g. auto, fast, classification, ocr, review, pdf. Auto infers from messages.",
     )
     allow_over_budget_model: bool = Field(
         default=False,
@@ -78,6 +78,10 @@ class GenTxtResponse(BaseModel):
     budget_decision: Optional[dict[str, Any]] = Field(
         default=None,
         description="Runtime model routing decision without prompts, documents, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without prompt text or credentials.",
     )
     usage: Optional[dict] = Field(default=None, description="Token usage statistics.")
 

@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_task_inference import infer_gentxt_task
 from services.model_runtime_router import resolve_runtime_model
 from services.model_usage import model_usage_registry
 
@@ -160,9 +161,14 @@ class AIHubService:
         Returns:
             Txt2TxtResponse: generated text response.
         """
+        task_inference = infer_gentxt_task(
+            request.task,
+            request.messages,
+            response_format=request.response_format,
+        )
         route = resolve_runtime_model(
             request.model,
-            task=request.task,
+            task=task_inference.task,
             allow_over_budget_model=request.allow_over_budget_model,
         )
         model = route.resolved_model
@@ -192,6 +198,7 @@ class AIHubService:
                 model=model,
                 task=route.task,
                 budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
                 usage=usage,
             )
 
@@ -210,9 +217,14 @@ class AIHubService:
         Yields:
             str: Generated text content chunk (plain text, not JSON).
         """
+        task_inference = infer_gentxt_task(
+            request.task,
+            request.messages,
+            response_format=request.response_format,
+        )
         route = resolve_runtime_model(
             request.model,
-            task=request.task,
+            task=task_inference.task,
             allow_over_budget_model=request.allow_over_budget_model,
         )
         model = route.resolved_model

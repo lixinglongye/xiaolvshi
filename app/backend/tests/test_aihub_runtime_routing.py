@@ -71,6 +71,32 @@ async def test_gentxt_uses_declared_review_task_default_model():
 
 
 @pytest.mark.asyncio
+async def test_gentxt_auto_infers_legal_review_task():
+    model_usage_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.gentxt(
+        GenTxtRequest(
+            messages=[
+                ChatMessage(
+                    role="user",
+                    content="Review this contract clause for liability and breach risk.",
+                )
+            ],
+            temperature=0,
+        )
+    )
+
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash"
+    assert response.task == "review"
+    assert response.task_inference["source"] == "auto"
+    assert response.task_inference["task"] == "review"
+    assert response.budget_decision["budget_mode"] == "balanced"
+
+
+@pytest.mark.asyncio
 async def test_gentxt_downgrades_fast_premium_request_by_default():
     model_usage_registry.reset()
     service = AIHubService()

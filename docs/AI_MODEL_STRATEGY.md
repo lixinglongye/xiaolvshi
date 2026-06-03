@@ -37,7 +37,9 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `/api/v1/aihub/models` 还会返回 `budget_policy`：它解释每个任务为什么使用 cheap-first、balanced 或 premium-exception 策略，并标出显式 premium 模型是否超过该任务预算。默认 `APP_AI_PREMIUM_REQUIRES_REVIEW=true`，用于提示维护者对非 PDF/非媒体场景的 premium 使用做人工确认。
 
-`runtime_router` 将 `POST /api/v1/aihub/gentxt` 的 `task`、`model` 和 `allow_over_budget_model` 转换为实际模型；默认会把超预算或需要人工复核的显式模型降级到任务推荐模型。
+`task_inference` 让 `POST /api/v1/aihub/gentxt` 默认使用 `task=auto`，通过确定性规则把分类、OCR、法律审查、预检/摘要等请求映射到合适任务，避免忘传 `task=review` 时把法律审查误放到 fast 路由。
+
+`runtime_router` 将 `task`、`model` 和 `allow_over_budget_model` 转换为实际模型；默认会把超预算或需要人工复核的显式模型降级到任务推荐模型。
 
 同一接口还会返回 `capability_matrix`：它按任务列出 required capabilities、max cost tier、runtime default、recommended model 和候选模型数量。矩阵先过滤能力不满足的模型，再按 stable 状态、成本、延迟和 fit score 排序；未知 NewAPI 模型名仍可透传，但不会被视为已验证价格模型。
 
@@ -85,7 +87,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 批量任务上线前先调用 `/api/v1/aihub/models` 确认当前路由角色。
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
-- `/model-ops` 会展示 Runtime router，帮助维护者确认 `gentxt` 请求字段和任务默认模型。
+- `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。
 - `/model-ops` 会展示 Escalation policy，帮助维护者确认哪些质量信号会触发平衡模型验证或 premium exception。
 - `/model-ops` 会展示 Fallback chains，帮助维护者确认每个任务的低价主模型、回退模型和 premium 人工复核边界。
 - `/model-ops` 会展示 Routing replay，帮助维护者在发布前发现 cheap-first 路由漂移。

@@ -22,7 +22,8 @@
 
 - API 路由稳定性：`/api/v1/aihub/models` 返回的别名、默认模型和网关可用性。
 - 成本指标：OCR/分类/审查/PDF 分析各阶段 token 用量和模型分布；当前可通过 `/api/v1/aihub/models/usage` 和前端 `/model-ops` 查看本进程内聚合数据。
-- 运行时路由：`POST /api/v1/aihub/gentxt` 的 `task` 字段决定默认模型，超预算显式模型默认降级到任务推荐模型。
+- 任务推断：`POST /api/v1/aihub/gentxt` 默认 `task=auto`，会用确定性规则把分类、OCR、法律审查、预检/摘要映射到不同成本任务。
+- 运行时路由：`POST /api/v1/aihub/gentxt` 的任务结果决定默认模型，超预算显式模型默认降级到任务推荐模型。
 - 升级策略：`/api/v1/aihub/models` 的 `escalation_policy` 记录 cheap-first 起点、质量失败升级信号和隐私/提示注入硬停止规则。
 - 回退链：`/api/v1/aihub/models` 的 `fallback_chains` 记录每个任务的 primary、verify、fallback 和 premium-exception 顺序，便于网关模型不可用时仍低价优先。
 - 成本预测：`/api/v1/aihub/models` 的 `cost_forecast` 会对 cheap-first cascade 与 premium-only baseline 做月度成本对比。
@@ -45,6 +46,7 @@
 - 每次模型路由、提示词、检索、报告结构或上传解析改动后，运行法律审查基准并把结果纳入发布准备记录。
 - 为合同类型扩展专项策略：劳动合同、租赁合同、采购合同、服务合同、股权/投资协议。
 - 定期检查 Gemini/NewAPI 网关模型名称变更，移除停用模型，更新 `.env.example` 和模型目录。
+- 用 `model_task_inference.py` 检查未显式传 task 的请求是否能被稳定映射到 cheap-first 或 balanced 任务。
 - 用 `model_runtime_router.py` 检查真实文本请求是否按任务选择模型，避免所有文本请求都落在同一默认路由。
 - 根据法律审查基准和真实反馈调整 `model_escalation_policy.py`，但不要把 premium 模型设成高频任务默认值。
 - 用 `model_cost_forecast.py` 复查高频任务的预计成本节省；当网关价格变化时同步更新模型目录和预测画像。

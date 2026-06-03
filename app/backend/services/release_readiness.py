@@ -161,6 +161,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py -q",
             ),
             ReleaseCheck(
+                id="model-task-inference",
+                title="Model task inference coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_task_inference.py",
+                    "app/backend/tests/test_model_task_inference.py",
+                    "docs/MODEL_TASK_INFERENCE.md",
+                ),
+                validation_command="python -m pytest tests/test_model_task_inference.py -q",
+            ),
+            ReleaseCheck(
                 id="model-escalation-policy",
                 title="Cheap-first model escalation policy coverage",
                 category="model_ops",

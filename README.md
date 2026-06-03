@@ -11,6 +11,7 @@
 - 后端环境变量示例：`app/backend/.env.example`
 - AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
 - 模型能力成本矩阵：`app/backend/services/model_capability_matrix.py`
+- 模型任务推断：[docs/MODEL_TASK_INFERENCE.md](docs/MODEL_TASK_INFERENCE.md)
 - 运行时模型路由：[docs/MODEL_RUNTIME_ROUTER.md](docs/MODEL_RUNTIME_ROUTER.md)
 - 模型升级策略：[docs/MODEL_ESCALATION_POLICY.md](docs/MODEL_ESCALATION_POLICY.md)
 - 模型成本预测：[docs/MODEL_COST_FORECAST.md](docs/MODEL_COST_FORECAST.md)

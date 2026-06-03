@@ -45,5 +45,6 @@ def test_runtime_router_policy_lists_task_defaults_without_secrets():
 
     assert policy["status"] == "ready"
     assert "task" in policy["request_fields"]
+    assert policy["auto_task_inference"]["default_task"] == "auto"
     assert {item["task"] for item in policy["task_defaults"]} >= {"fast", "classification", "review", "pdf"}
     assert "sk-" not in str(policy)
