@@ -6,6 +6,7 @@ The legal research backlog converts external legal-AI papers and benchmark sourc
 
 ```http
 GET /api/v1/maintenance/legal-review-benchmark/research-backlog
+GET /api/v1/maintenance/legal-review-benchmark/external-research-digest
 ```
 
 The endpoint returns:
@@ -17,6 +18,8 @@ The endpoint returns:
 - `maintenance_actions`: how to use the backlog in release planning.
 
 The frontend maintenance page also renders this backlog so maintainers can inspect research sources, next queued work, cheap-first alignment, local-run fit, and linked release gates without opening raw JSON.
+
+The external research digest endpoint keeps the public source metadata, engineering takeaways, local validation targets, and license/privacy gates separate from the prioritized backlog. It does not download datasets or copy public benchmark examples into the repository.
 
 ## Research Sources
 
@@ -51,7 +54,9 @@ For small machines, use `/local-run-package?fixture_limit=1` followed by `/local
 ## Related Files
 
 - `app/backend/services/legal_research_backlog.py`
+- `app/backend/services/legal_external_research_digest.py`
 - `app/backend/tests/test_legal_research_backlog.py`
+- `app/backend/tests/test_legal_external_research_digest.py`
 - `app/backend/routers/maintenance.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
@@ -59,6 +64,7 @@ For small machines, use `/local-run-package?fixture_limit=1` followed by `/local
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/maintenance_evidence.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/USER_NEEDS_RADAR.md`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`

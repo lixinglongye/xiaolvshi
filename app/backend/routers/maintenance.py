@@ -17,6 +17,7 @@ from services.legal_fixture_response_normalizer import LegalFixtureResponseNorma
 from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
@@ -129,6 +130,15 @@ async def get_legal_review_research_backlog():
     return {
         "success": True,
         "data": LegalResearchBacklogService().build_backlog(),
+    }
+
+
+@router.get("/legal-review-benchmark/external-research-digest")
+async def get_legal_external_research_digest():
+    """Return external legal-AI research signals mapped to local engineering work."""
+    return {
+        "success": True,
+        "data": LegalExternalResearchDigestService().build_digest(),
     }
 
 

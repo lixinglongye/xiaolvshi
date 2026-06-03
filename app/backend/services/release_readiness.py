@@ -520,6 +520,7 @@ class ReleaseReadinessService:
                 owner="legal_review_owner",
                 evidence_paths=(
                     "app/backend/services/legal_review_benchmark.py",
+                    "app/backend/services/legal_external_research_digest.py",
                     "app/backend/services/legal_research_backlog.py",
                     "app/frontend/src/lib/maintenanceApi.ts",
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
@@ -537,6 +538,7 @@ class ReleaseReadinessService:
                     "app/backend/services/legal_fixture_evidence_bundle.py",
                     "app/backend/services/legal_fixture_improvement.py",
                     "app/backend/tests/test_legal_review_benchmark.py",
+                    "app/backend/tests/test_legal_external_research_digest.py",
                     "app/backend/tests/test_legal_research_backlog.py",
                     "app/backend/tests/test_legal_public_benchmark_sampler.py",
                     "app/backend/tests/test_legal_fixture_quick_suite.py",
@@ -552,6 +554,7 @@ class ReleaseReadinessService:
                     "app/backend/tests/test_legal_fixture_evidence_bundle.py",
                     "app/backend/tests/test_legal_fixture_improvement.py",
                     "docs/LEGAL_REVIEW_BENCHMARK.md",
+                    "docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md",
                     "docs/LEGAL_RESEARCH_BACKLOG.md",
                     "docs/LEGAL_BENCHMARK_FIXTURES.md",
                     "docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md",
@@ -568,7 +571,7 @@ class ReleaseReadinessService:
                     "docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md",
                     "docs/LEGAL_FIXTURE_IMPROVEMENT.md",
                 ),
-                validation_command="python -m pytest tests/test_legal_research_backlog.py tests/test_legal_review_benchmark.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_local_run_package.py tests/test_legal_fixture_response_normalizer.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py tests/test_legal_fixture_run_report.py tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_improvement.py -q",
+                validation_command="python -m pytest tests/test_legal_external_research_digest.py tests/test_legal_research_backlog.py tests/test_legal_review_benchmark.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_local_run_package.py tests/test_legal_fixture_response_normalizer.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py tests/test_legal_fixture_run_report.py tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_improvement.py -q",
             ),
             ReleaseCheck(
                 id="legal-knowledge-audit",

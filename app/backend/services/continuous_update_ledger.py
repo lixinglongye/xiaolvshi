@@ -159,6 +159,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "low-cost-routing", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="legal-external-research-digest",
+                title="External legal AI research digest",
+                category="user_research",
+                size="large",
+                status="shipped",
+                impact="Maps LegalBench, CUAD, RAGAS, CRAG, and FrugalGPT signals into local legal benchmark, RAG, and cheap-first routing work.",
+                evidence_paths=(
+                    "app/backend/services/legal_external_research_digest.py",
+                    "app/backend/tests/test_legal_external_research_digest.py",
+                    "docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md",
+                ),
+                release_gate_links=("legal-review-benchmark", "oss-maintenance-evidence"),
+                user_need_ids=("grounded-legal-output", "low-cost-routing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="legal-research-backlog-ui",
                 title="Legal research backlog reviewer panel",
                 category="frontend_ui",
