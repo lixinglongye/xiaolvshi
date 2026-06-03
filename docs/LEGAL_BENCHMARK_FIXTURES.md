@@ -54,6 +54,8 @@ Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` to convert o
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` to bundle smoke scores, model routing evidence, run reports, validation commands, and release-safe claims after a small local run.
 
+Use `/api/v1/maintenance/legal-review-benchmark/public-sampler` to map reviewed LegalBench, CUAD, LexGLUE, or Pile of Law samples back to these local fixtures without downloading public datasets during default tests.
+
 ## Release Use
 
 The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.
@@ -61,6 +63,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 ## Related Files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
@@ -69,6 +72,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
@@ -77,6 +81,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`

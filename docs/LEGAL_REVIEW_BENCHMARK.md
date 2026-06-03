@@ -11,6 +11,8 @@ Model, prompt, retrieval, extraction, and report-schema changes should be evalua
 ```http
 GET /api/v1/maintenance/legal-review-benchmark
 POST /api/v1/maintenance/legal-review-benchmark
+GET /api/v1/maintenance/legal-review-benchmark/public-sampler
+POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 GET /api/v1/maintenance/legal-review-benchmark/fixture-improvements
@@ -42,6 +44,8 @@ It also returns a lightweight public benchmark source catalog and small syntheti
 ```
 
 Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores.
+
+`GET/POST /public-sampler` turns LegalBench, CUAD, LexGLUE, and Pile of Law into a resource-capped sampling plan. It maps reviewed public-source samples back to local fixtures and benchmark cases, but it does not download data.
 
 `GET /fixture-smoke` returns the small synthetic document fixtures, expected signals, expected task outputs, and an empty observation template.
 
@@ -80,7 +84,7 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 
 ## Public Sources and Fixtures
 
-The suite catalogs LegalBench, CUAD, LexGLUE, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
+The suite catalogs LegalBench, CUAD, LexGLUE, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Use `/public-sampler` to create a reviewed, capped sampling plan before touching any public examples. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
 
 Bundled local fixtures are short synthetic snippets for:
 
@@ -124,6 +128,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 ## Related files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
@@ -133,6 +138,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
@@ -141,6 +147,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_PROMPT_PACK.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`

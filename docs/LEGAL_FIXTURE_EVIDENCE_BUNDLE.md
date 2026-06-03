@@ -34,6 +34,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 ## What It Contains
 
 - component statuses for the benchmark suite, fixture smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan,
+- public benchmark sampler status for reviewed, resource-capped external benchmark plans,
 - artifact references and archive fields for release evidence,
 - validation commands for small local tests,
 - release claims that are safe to make from synthetic fixture evidence,
@@ -43,11 +44,12 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 ## Workflow
 
 1. Fetch `/fixture-model-matrix`, `/prompt-pack`, `/gateway-manifest`, and `/fixture-run-plan`.
-2. Run cheap-first fixture batches one request at a time.
-3. Submit normalized observations to `/fixture-smoke`.
-4. Submit the same payload to `/fixture-run-report`.
-5. Submit the payload to `/fixture-evidence-bundle`.
-6. Archive the returned component statuses, release claims, validation commands, and evidence paths with release-readiness notes.
+2. Fetch `/public-sampler` if public benchmark samples will be reviewed for the release.
+3. Run cheap-first fixture batches one request at a time.
+4. Submit normalized observations to `/fixture-smoke`.
+5. Submit the same payload to `/fixture-run-report`.
+6. Submit the payload to `/fixture-evidence-bundle`.
+7. Archive the returned component statuses, release claims, validation commands, and evidence paths with release-readiness notes.
 
 ## Safety
 
@@ -59,10 +61,13 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
+- `app/backend/services/legal_public_benchmark_sampler.py`
+- `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`

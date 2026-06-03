@@ -8,6 +8,7 @@ from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 
 
@@ -22,6 +23,7 @@ class LegalFixtureEvidenceBundleService:
         self.run_plan_service = LegalFixtureRunPlanService()
         self.run_report_service = LegalFixtureRunReportService()
         self.improvement_service = LegalFixtureImprovementService()
+        self.public_sampler_service = LegalPublicBenchmarkSamplerService()
 
     def build_bundle(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         observations = self._observations(payload)
@@ -30,6 +32,7 @@ class LegalFixtureEvidenceBundleService:
         model_matrix = self.model_matrix_service.build_matrix()
         prompt_pack = self.prompt_pack_service.build_pack()
         gateway_manifest = self.gateway_manifest_service.build_manifest()
+        public_sampler = self.public_sampler_service.build_plan()
         run_plan = self.run_plan_service.build_plan()
         run_report = self.run_report_service.build_report(payload)
         improvement = self.improvement_service.build_plan(observations)
@@ -39,6 +42,7 @@ class LegalFixtureEvidenceBundleService:
             self._component("model_matrix", model_matrix["status"], "/api/v1/maintenance/legal-review-benchmark/fixture-model-matrix"),
             self._component("prompt_pack", prompt_pack["status"], "/api/v1/maintenance/legal-review-benchmark/prompt-pack"),
             self._component("gateway_manifest", gateway_manifest["status"], "/api/v1/maintenance/legal-review-benchmark/gateway-manifest"),
+            self._component("public_sampler", public_sampler["status"], "/api/v1/maintenance/legal-review-benchmark/public-sampler"),
             self._component("run_plan", run_plan["status"], "/api/v1/maintenance/legal-review-benchmark/fixture-run-plan"),
             self._component("run_report", run_report["status"], "/api/v1/maintenance/legal-review-benchmark/fixture-run-report"),
             self._component("improvement_plan", improvement["status"], "/api/v1/maintenance/legal-review-benchmark/fixture-improvements"),
@@ -65,6 +69,7 @@ class LegalFixtureEvidenceBundleService:
                 "prompt_count": prompt_pack["summary"]["fixture_count"],
                 "cheap_first_candidate_count": model_matrix["summary"]["cheap_first_candidate_count"],
                 "observed_fixture_count": run_report["summary"]["observed_fixture_count"],
+                "public_sampler_source_count": public_sampler["summary"]["source_count"],
                 "release_decision": run_report["release_decision"],
                 "estimated_cheap_first_cost_usd": run_plan["summary"]["estimated_min_cost_usd"],
                 "estimated_worst_case_cost_usd": run_plan["summary"]["estimated_max_cost_usd"],
@@ -117,6 +122,12 @@ class LegalFixtureEvidenceBundleService:
                 "archive_fields": ["release_decision", "fixture_reports", "recommended_actions"],
             },
             {
+                "id": "public-benchmark-sampler",
+                "title": "Resource-capped public benchmark sampler",
+                "evidence_paths": ["docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md", "app/backend/services/legal_public_benchmark_sampler.py"],
+                "archive_fields": ["source_plans", "sampling_batches", "resource_policy"],
+            },
+            {
                 "id": "fixture-evidence-bundle",
                 "title": "Release evidence bundle",
                 "evidence_paths": ["docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md", "app/backend/services/legal_fixture_evidence_bundle.py"],
@@ -127,7 +138,7 @@ class LegalFixtureEvidenceBundleService:
     def _validation_commands(self) -> list[str]:
         return [
             "python -m pytest tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py -q",
-            "python -m pytest tests/test_legal_review_benchmark.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_improvement.py -q",
+            "python -m pytest tests/test_legal_review_benchmark.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_improvement.py -q",
         ]
 
     def _release_claims(self, run_report: dict[str, Any]) -> dict[str, Any]:

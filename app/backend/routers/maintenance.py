@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
@@ -9,6 +9,7 @@ from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -64,6 +65,24 @@ async def evaluate_legal_review_benchmark(run_results: dict[str, dict]):
     return {
         "success": True,
         "data": service.evaluate(run_results),
+    }
+
+
+@router.get("/legal-review-benchmark/public-sampler")
+async def get_legal_public_benchmark_sampler():
+    """Return a resource-capped public benchmark sampling plan."""
+    return {
+        "success": True,
+        "data": LegalPublicBenchmarkSamplerService().build_plan(),
+    }
+
+
+@router.post("/legal-review-benchmark/public-sampler")
+async def build_legal_public_benchmark_sampler(config: dict[str, Any]):
+    """Build a public benchmark sampling plan from explicit source review settings."""
+    return {
+        "success": True,
+        "data": LegalPublicBenchmarkSamplerService().build_plan(config),
     }
 
 

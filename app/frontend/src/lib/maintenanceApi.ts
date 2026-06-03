@@ -501,6 +501,7 @@ export type LegalFixtureEvidenceBundle = {
     prompt_count: number;
     cheap_first_candidate_count: number;
     observed_fixture_count: number;
+    public_sampler_source_count: number;
     release_decision: string;
     estimated_cheap_first_cost_usd: number;
     estimated_worst_case_cost_usd: number;
@@ -522,6 +523,67 @@ export type LegalFixtureEvidenceBundle = {
     claim_after_run: string[];
     must_not_claim: string[];
   };
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
+export type LegalPublicBenchmarkSampler = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    research_basis: Array<{
+      id: string;
+      url: string;
+      use: string;
+    }>;
+  };
+  summary: {
+    source_count: number;
+    sampling_ready_source_count: number;
+    license_review_required_source_count: number;
+    catalog_only_source_count: number;
+    local_fixture_count: number;
+    benchmark_case_count: number;
+    max_samples_per_source: number;
+    max_local_sample_chars: number;
+  };
+  source_plans: Array<{
+    source_id: string;
+    title: string;
+    url: string;
+    source_type: string;
+    priority: string;
+    resource_profile: string;
+    sample_strategy: string;
+    local_fixture_ids: string[];
+    benchmark_case_ids: string[];
+    validation_targets: string[];
+    license_gate: string;
+    task_fit: string[];
+    source_license_note: string;
+    source_size_note: string;
+    sampling_state: string;
+    max_samples: number;
+    max_sample_chars: number;
+    download_policy: string;
+    recommended_action: string;
+  }>;
+  sampling_batches: Array<{
+    id: string;
+    source_ids: string[];
+    local_fixture_ids: string[];
+    target_endpoint: string;
+    run_condition: string;
+  }>;
+  resource_policy: {
+    default_mode: string;
+    network_access: string;
+    max_samples_per_source: number;
+    max_local_sample_chars: number;
+    storage_policy: string;
+  };
+  validation_commands: string[];
   recommended_actions: string[];
   privacy_note: string;
 };
@@ -622,6 +684,11 @@ type LegalFixtureEvidenceBundleResponse = {
   data: LegalFixtureEvidenceBundle;
 };
 
+type LegalPublicBenchmarkSamplerResponse = {
+  success: boolean;
+  data: LegalPublicBenchmarkSampler;
+};
+
 export type LegalKnowledgeAudit = {
   status: string;
   score: number;
@@ -718,6 +785,18 @@ export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
     return payload.data;
   }
   return payload as LegalReviewBenchmark;
+}
+
+export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/public-sampler',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalPublicBenchmarkSamplerResponse | LegalPublicBenchmarkSampler;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalPublicBenchmarkSampler;
 }
 
 export async function getLegalReviewFixtureSmoke(): Promise<LegalReviewFixtureSmoke> {

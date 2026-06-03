@@ -21,6 +21,7 @@ import {
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
+  getLegalPublicBenchmarkSampler,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
@@ -36,6 +37,7 @@ import {
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
+  type LegalPublicBenchmarkSampler,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
@@ -67,7 +69,10 @@ const statusClass: Record<string, string> = {
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
+  sampling_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  catalog_only: 'border-stone-200 bg-stone-50 text-stone-700',
   needs_escalation: 'border-red-200 bg-red-50 text-red-800',
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
@@ -102,6 +107,7 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
@@ -123,6 +129,7 @@ function Inner() {
         needsRadar,
         feedbackMap,
         benchmarkData,
+        publicBenchmarkSamplerData,
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
         fixturePromptPackData,
@@ -138,6 +145,7 @@ function Inner() {
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalPublicBenchmarkSampler(),
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
         getLegalFixturePromptPack(),
@@ -154,6 +162,7 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setPublicBenchmarkSampler(publicBenchmarkSamplerData);
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
       setFixturePromptPack(fixturePromptPackData);
@@ -620,6 +629,116 @@ function Inner() {
                     </ul>
                   </div>
                 )}
+              </section>
+            )}
+
+            {publicBenchmarkSampler && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {publicBenchmarkSampler.summary.source_count} sources / max{' '}
+                      {publicBenchmarkSampler.summary.max_samples_per_source} samples each /{' '}
+                      {publicBenchmarkSampler.resource_policy.network_access.replace(/_/g, ' ')}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[publicBenchmarkSampler.status] ?? statusClass.ready}>
+                    {publicBenchmarkSampler.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkSampler.summary.sampling_ready_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">sampling ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkSampler.summary.license_review_required_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">license review</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkSampler.summary.catalog_only_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">catalog only</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkSampler.summary.local_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">local fixtures</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Sampling state</TableHead>
+                        <TableHead>Local mapping</TableHead>
+                        <TableHead>Strategy</TableHead>
+                        <TableHead>Gate</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {publicBenchmarkSampler.source_plans.map((source) => (
+                        <TableRow key={source.source_id}>
+                          <TableCell>
+                            <a
+                              className="inline-flex items-center gap-1 font-semibold text-stone-950 hover:underline"
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.title}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{source.source_id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{source.resource_profile.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[source.sampling_state] ?? statusClass.warn}>
+                              {source.sampling_state.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-2 text-xs text-stone-600">max {source.max_samples} samples</div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">Fixtures</div>
+                            <div className="break-words font-mono text-[11px]">{source.local_fixture_ids.join(', ')}</div>
+                            <div className="mt-2 font-semibold text-stone-950">Cases</div>
+                            <div className="break-words font-mono text-[11px]">{source.benchmark_case_ids.join(', ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {source.sample_strategy}
+                            <div className="mt-2 font-mono text-[11px] text-stone-500">
+                              {source.download_policy.replace(/_/g, ' ')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-[11px] text-stone-950">{source.license_gate}</div>
+                            <div className="mt-2">{source.recommended_action}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Sampler actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {publicBenchmarkSampler.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs leading-5 text-stone-500">{publicBenchmarkSampler.privacy_note}</div>
+                </div>
               </section>
             )}
 
