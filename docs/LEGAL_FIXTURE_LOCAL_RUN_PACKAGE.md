@@ -17,6 +17,7 @@ GET /api/v1/maintenance/legal-review-benchmark/local-run-package?fixture_limit=1
 - `run_steps`: one-at-a-time PowerShell and curl command templates.
 - `observation_template`: normalized fixture-smoke payload slots.
 - `run_report_payload_template`: combined observations plus run metadata for `/fixture-run-report`.
+- `local-response-normalizer`: the follow-up endpoint that can extract `choices[0].message.content` from gateway responses.
 - `follow_up_endpoints`: fixture-smoke, fixture-run-report, and fixture-evidence-bundle.
 - `checks`: deterministic package readiness checks.
 
@@ -26,9 +27,9 @@ GET /api/v1/maintenance/legal-review-benchmark/local-run-package?fixture_limit=1
 2. Save each `request_files[].body` locally using its `file_name`.
 3. Keep `APP_AI_BASE_URL` as an OpenAI-compatible `/v1` base URL and keep `APP_AI_KEY` in the local shell environment.
 4. Run each `run_steps[].command_templates.powershell` or `curl` command one at a time.
-5. Copy `choices[0].message.content` into `observation_template[fixture_id].output_text`.
-6. Submit observations to `/fixture-smoke`.
-7. Submit the same payload to `/fixture-run-report` and `/fixture-evidence-bundle`.
+5. Paste the gateway response into `/local-response-normalizer`.
+6. Submit `run_report_payload.observations` to `/fixture-smoke`.
+7. Submit `run_report_payload` to `/fixture-run-report` and `/fixture-evidence-bundle`.
 8. Escalate only selected fixtures that fail smoke coverage or keep high-priority improvement actions.
 
 ## Safety
@@ -42,17 +43,21 @@ GET /api/v1/maintenance/legal-review-benchmark/local-run-package?fixture_limit=1
 
 ```bash
 python -m pytest tests/test_legal_fixture_local_run_package.py tests/test_legal_fixture_quick_suite.py -q
+python -m pytest tests/test_legal_fixture_response_normalizer.py tests/test_legal_fixture_local_run_package.py -q
 python -m pytest tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py -q
 ```
 
 ## Related Files
 
 - `app/backend/services/legal_fixture_local_run_package.py`
+- `app/backend/services/legal_fixture_response_normalizer.py`
 - `app/backend/tests/test_legal_fixture_local_run_package.py`
+- `app/backend/tests/test_legal_fixture_response_normalizer.py`
 - `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/routers/maintenance.py`
 - `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
+- `docs/LEGAL_FIXTURE_RESPONSE_NORMALIZER.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`

@@ -9,6 +9,7 @@ from services.legal_fixture_local_run_package import LegalFixtureLocalRunPackage
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
+from services.legal_fixture_response_normalizer import LegalFixtureResponseNormalizerService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
@@ -172,6 +173,24 @@ async def get_legal_review_fixture_local_run_package(
     return {
         "success": True,
         "data": LegalFixtureLocalRunPackageService().build_package(fixture_limit),
+    }
+
+
+@router.get("/legal-review-benchmark/local-response-normalizer")
+async def get_legal_review_fixture_response_normalizer_template():
+    """Return a template for normalizing local gateway responses into fixture observations."""
+    return {
+        "success": True,
+        "data": LegalFixtureResponseNormalizerService().template(),
+    }
+
+
+@router.post("/legal-review-benchmark/local-response-normalizer")
+async def normalize_legal_review_fixture_response(payload: dict[str, Any]):
+    """Normalize local gateway responses into fixture-smoke and run-report payloads."""
+    return {
+        "success": True,
+        "data": LegalFixtureResponseNormalizerService().normalize(payload),
     }
 
 
