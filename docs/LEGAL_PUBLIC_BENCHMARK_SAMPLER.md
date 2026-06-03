@@ -34,6 +34,7 @@ POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 ## Local Run Policy
 
 - Default local runs stay on synthetic fixtures from `/fixture-smoke`.
+- Low-resource local checks can start from `/quick-suite`, which maps a 3-fixture subset back to public source metadata without downloading datasets.
 - Public-source sampling requires source-level license, attribution, privacy, and resource review.
 - The sampler caps samples per source and sample text size before any reviewed import.
 - Large corpus sources stay out of laptop tests unless a resource-controlled CI job is approved.

@@ -19,6 +19,9 @@ def test_legal_fixture_evidence_bundle_builds_not_run_template():
     assert bundle["status"] == "not_run"
     assert bundle["summary"]["component_count"] >= 8
     assert bundle["summary"]["not_run_component_count"] >= 1
+    assert bundle["summary"]["quick_suite_fixture_count"] == 3
+    assert any(item["id"] == "quick_suite" for item in bundle["components"])
+    assert any(item["id"] == "fixture-quick-suite" for item in bundle["artifacts"])
     assert any(item["id"] == "fixture-evidence-bundle" for item in bundle["artifacts"])
     assert bundle["validation_commands"]
     assert "sk-" not in str(bundle)

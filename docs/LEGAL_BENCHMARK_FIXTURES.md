@@ -29,6 +29,7 @@ This project keeps legal benchmark runs lightweight by separating public benchma
 ```http
 GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
+GET /api/v1/maintenance/legal-review-benchmark/quick-suite
 ```
 
 The evaluator accepts observed output text and an optional route for each fixture. It returns:
@@ -39,6 +40,8 @@ The evaluator accepts observed output text and an optional route for each fixtur
 - missing signals and missing task outputs.
 
 This is meant for quick laptop checks after prompt, routing, report schema, extraction, or safety changes.
+
+Use `/api/v1/maintenance/legal-review-benchmark/quick-suite` to fetch a default 3-fixture laptop-safe subset before running the full fixture run plan.
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` to convert smoke-test gaps into prompt clauses, report-schema targets, and validation hints.
 
@@ -64,6 +67,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
+- `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
@@ -73,6 +77,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
+- `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
@@ -82,6 +87,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
+- `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`

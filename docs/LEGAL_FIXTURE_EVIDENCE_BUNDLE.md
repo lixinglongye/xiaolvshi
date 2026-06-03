@@ -33,7 +33,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 
 ## What It Contains
 
-- component statuses for the benchmark suite, fixture smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan,
+- component statuses for the benchmark suite, quick suite, fixture smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan,
 - public benchmark sampler status for reviewed, resource-capped external benchmark plans,
 - artifact references and archive fields for release evidence,
 - validation commands for small local tests,
@@ -43,7 +43,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 
 ## Workflow
 
-1. Fetch `/fixture-model-matrix`, `/prompt-pack`, `/gateway-manifest`, and `/fixture-run-plan`.
+1. Fetch `/quick-suite` on low-resource machines, then fetch `/fixture-model-matrix`, `/prompt-pack`, `/gateway-manifest`, and `/fixture-run-plan`.
 2. Fetch `/public-sampler` if public benchmark samples will be reviewed for the release.
 3. Run cheap-first fixture batches one request at a time.
 4. Submit normalized observations to `/fixture-smoke`.
@@ -61,6 +61,8 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
+- `app/backend/services/legal_fixture_quick_suite.py`
+- `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_run_report.py`
@@ -68,6 +70,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
+- `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`

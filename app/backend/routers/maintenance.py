@@ -7,6 +7,7 @@ from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestS
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
+from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
@@ -83,6 +84,17 @@ async def build_legal_public_benchmark_sampler(config: dict[str, Any]):
     return {
         "success": True,
         "data": LegalPublicBenchmarkSamplerService().build_plan(config),
+    }
+
+
+@router.get("/legal-review-benchmark/quick-suite")
+async def get_legal_review_fixture_quick_suite(
+    fixture_limit: int = Query(default=3, ge=1, le=4, description="Number of small local fixtures to include."),
+):
+    """Return the smallest laptop-safe legal fixture benchmark run plan."""
+    return {
+        "success": True,
+        "data": LegalFixtureQuickSuiteService().build_suite(fixture_limit),
     }
 
 

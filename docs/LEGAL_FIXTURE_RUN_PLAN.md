@@ -21,13 +21,14 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 ## Workflow
 
 1. Fetch `/fixture-model-matrix` to inspect model candidates and premium boundaries.
-2. Fetch `/fixture-run-plan`.
-3. Run `cheap_first` batches first, one request at a time.
-4. Submit normalized outputs to `/fixture-smoke`.
-5. Run only the `escalation_if_needed` steps whose cheap-first smoke result fails or leaves high-priority improvement actions.
-6. Submit the same observations to `/fixture-run-report`.
-7. Submit the same observations to `/fixture-evidence-bundle`.
-8. Attach smoke scores, the run report, and the evidence bundle to release-readiness evidence before changing default model routes.
+2. For low-resource machines, fetch `/quick-suite` first and run only the selected fixture subset.
+3. Fetch `/fixture-run-plan`.
+4. Run `cheap_first` batches first, one request at a time.
+5. Submit normalized outputs to `/fixture-smoke`.
+6. Run only the `escalation_if_needed` steps whose cheap-first smoke result fails or leaves high-priority improvement actions.
+7. Submit the same observations to `/fixture-run-report`.
+8. Submit the same observations to `/fixture-evidence-bundle`.
+9. Attach smoke scores, the run report, and the evidence bundle to release-readiness evidence before changing default model routes.
 
 ## Safety
 

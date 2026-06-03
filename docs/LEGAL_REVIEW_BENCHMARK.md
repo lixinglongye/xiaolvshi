@@ -13,6 +13,7 @@ GET /api/v1/maintenance/legal-review-benchmark
 POST /api/v1/maintenance/legal-review-benchmark
 GET /api/v1/maintenance/legal-review-benchmark/public-sampler
 POST /api/v1/maintenance/legal-review-benchmark/public-sampler
+GET /api/v1/maintenance/legal-review-benchmark/quick-suite
 GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 GET /api/v1/maintenance/legal-review-benchmark/fixture-improvements
@@ -47,6 +48,8 @@ Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores
 
 `GET/POST /public-sampler` turns LegalBench, CUAD, LexGLUE, and Pile of Law into a resource-capped sampling plan. It maps reviewed public-source samples back to local fixtures and benchmark cases, but it does not download data.
 
+`GET /quick-suite` returns the smallest laptop-safe benchmark plan. By default it selects 3 synthetic fixtures, maps them to public benchmark source metadata, keeps `max_parallel_requests=1`, and points normalized observations to `/fixture-smoke`, `/fixture-run-report`, and `/fixture-evidence-bundle`.
+
 `GET /fixture-smoke` returns the small synthetic document fixtures, expected signals, expected task outputs, and an empty observation template.
 
 `POST /fixture-smoke` accepts observed model or pipeline output by fixture ID:
@@ -74,7 +77,7 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 
 `GET/POST /fixture-run-report` combines fixture smoke coverage, improvement actions, optional run metadata, and the run plan into a cheap-first release decision.
 
-`GET/POST /fixture-evidence-bundle` aggregates the benchmark suite, smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan into a release-ready evidence bundle with safe claims and validation commands.
+`GET/POST /fixture-evidence-bundle` aggregates the benchmark suite, quick suite, smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan into a release-ready evidence bundle with safe claims and validation commands.
 
 ## Research Basis
 
@@ -85,6 +88,8 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 ## Public Sources and Fixtures
 
 The suite catalogs LegalBench, CUAD, LexGLUE, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Use `/public-sampler` to create a reviewed, capped sampling plan before touching any public examples. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
+
+For low-resource local machines, use `/quick-suite` before the full run plan. It selects a default 3-fixture subset covering contract risk, evidence completeness, and low-text PDF extraction.
 
 Bundled local fixtures are short synthetic snippets for:
 
