@@ -107,7 +107,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, case evidence graph contracts, case workbench payload contracts, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, legal source ingestion metadata, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, case evidence graph contracts, case workbench payload contracts, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -129,6 +129,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/services/contract_clause_extraction_schema.py`
 - `app/backend/services/deadline_validation_policy.py`
 - `app/backend/services/document_delivery_package_manifest.py`
+- `app/backend/services/document_version_diff_checklist.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
@@ -158,6 +159,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_contract_clause_extraction_schema.py`
 - `app/backend/tests/test_deadline_validation_policy.py`
 - `app/backend/tests/test_document_delivery_package_manifest.py`
+- `app/backend/tests/test_document_version_diff_checklist.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
@@ -185,6 +187,7 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `docs/CONTRACT_CLAUSE_EXTRACTION_SCHEMA.md`
 - `docs/DEADLINE_VALIDATION_POLICY.md`
 - `docs/DOCUMENT_DELIVERY_PACKAGE_MANIFEST.md`
+- `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`

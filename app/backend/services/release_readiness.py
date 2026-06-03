@@ -931,6 +931,20 @@ class ReleaseReadinessService:
                 manual_note="This validates delivery package metadata; actual file bundling and portal delivery remain separate product work.",
             ),
             ReleaseCheck(
+                id="document-version-diff-checklist",
+                title="Document version diff checklist",
+                category="legal_quality",
+                required=False,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/document_version_diff_checklist.py",
+                    "app/backend/tests/test_document_version_diff_checklist.py",
+                    "docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md",
+                ),
+                validation_command="python -m pytest tests/test_document_version_diff_checklist.py tests/test_document_delivery_package_manifest.py -q",
+                manual_note="This validates client-visible version diff metadata only; actual document comparison and portal rendering remain separate.",
+            ),
+            ReleaseCheck(
                 id="evidence-exhibit-package-policy",
                 title="Evidence exhibit package policy",
                 category="legal_quality",

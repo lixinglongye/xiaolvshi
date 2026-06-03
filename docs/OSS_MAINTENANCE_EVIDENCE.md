@@ -33,7 +33,7 @@ It is safe to say this repository has active development, reviewability controls
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
 - Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
-- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case workbench payload contract, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, the client delivery risk checklist, and client delivery transparency.
+- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case workbench payload contract, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
@@ -58,6 +58,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/services/contract_clause_extraction_schema.py`
 - `app/backend/services/deadline_validation_policy.py`
 - `app/backend/services/document_delivery_package_manifest.py`
+- `app/backend/services/document_version_diff_checklist.py`
 - `app/backend/services/evidence_exhibit_package_policy.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
@@ -96,6 +97,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/tests/test_contract_clause_extraction_schema.py`
 - `app/backend/tests/test_deadline_validation_policy.py`
 - `app/backend/tests/test_document_delivery_package_manifest.py`
+- `app/backend/tests/test_document_version_diff_checklist.py`
 - `app/backend/tests/test_evidence_exhibit_package_policy.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
@@ -133,6 +135,7 @@ It is safe to say this repository has active development, reviewability controls
 - `docs/EVIDENCE_EXHIBIT_PACKAGE_POLICY.md`
 - `docs/CONTRACT_CLAUSE_EXTRACTION_SCHEMA.md`
 - `docs/DOCUMENT_DELIVERY_PACKAGE_MANIFEST.md`
+- `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`

@@ -63,6 +63,7 @@ This keeps:
 - `app/backend/services/contract_clause_extraction_schema.py`
 - `app/backend/services/deadline_validation_policy.py`
 - `app/backend/services/document_delivery_package_manifest.py`
+- `app/backend/services/document_version_diff_checklist.py`
 - `app/backend/services/evidence_exhibit_package_policy.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
@@ -99,6 +100,7 @@ This keeps:
 - `app/backend/tests/test_contract_clause_extraction_schema.py`
 - `app/backend/tests/test_deadline_validation_policy.py`
 - `app/backend/tests/test_document_delivery_package_manifest.py`
+- `app/backend/tests/test_document_version_diff_checklist.py`
 - `app/backend/tests/test_evidence_exhibit_package_policy.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
@@ -137,6 +139,7 @@ This keeps:
 - `docs/CONTRACT_CLAUSE_EXTRACTION_SCHEMA.md`
 - `docs/DEADLINE_VALIDATION_POLICY.md`
 - `docs/DOCUMENT_DELIVERY_PACKAGE_MANIFEST.md`
+- `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/EVIDENCE_EXHIBIT_PACKAGE_POLICY.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`

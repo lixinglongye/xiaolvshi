@@ -17,6 +17,7 @@ from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
+from services.document_version_diff_checklist import DocumentVersionDiffChecklistService
 from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
@@ -407,6 +408,24 @@ async def evaluate_document_delivery_package_manifest(payload: dict[str, Any]):
     return {
         "success": True,
         "data": DocumentDeliveryPackageManifestService().build_manifest(payload),
+    }
+
+
+@router.get("/document-version-diff-checklist")
+async def get_document_version_diff_checklist_template():
+    """Return client-visible document version diff checklist metadata."""
+    return {
+        "success": True,
+        "data": DocumentVersionDiffChecklistService().build_checklist(),
+    }
+
+
+@router.post("/document-version-diff-checklist")
+async def evaluate_document_version_diff_checklist(payload: dict[str, Any]):
+    """Evaluate version diff metadata before client-visible delivery."""
+    return {
+        "success": True,
+        "data": DocumentVersionDiffChecklistService().build_checklist(payload),
     }
 
 

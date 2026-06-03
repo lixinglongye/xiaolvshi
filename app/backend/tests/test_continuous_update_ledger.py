@@ -64,6 +64,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-workbench-ui-binding" in completed_ids
     assert "legal-source-ingestion-metadata" in completed_ids
     assert "billing-quota-persistence" in completed_ids
+    assert "document-version-diff-checklist" in completed_ids
     assert "case-workbench-persistent-state" in queue_ids
     assert "legal-source-durable-index" in queue_ids
     assert "billing-quota-migration-plan" in queue_ids

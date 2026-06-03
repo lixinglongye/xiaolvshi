@@ -929,6 +929,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "document-generation"),
             ),
             LedgerEntry(
+                id="document-version-diff-checklist",
+                title="Document version diff checklist",
+                category="product_planning",
+                size="medium",
+                status="shipped",
+                impact="Adds client-safe metadata checks for generated document version ids, changed sections, change summaries, reviewer role, and source support before delivery.",
+                evidence_paths=(
+                    "app/backend/services/document_version_diff_checklist.py",
+                    "app/backend/tests/test_document_version_diff_checklist.py",
+                    "docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md",
+                ),
+                release_gate_links=("document-version-diff-checklist", "document-delivery-package-manifest"),
+                user_need_ids=("document-generation", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="case-workbench-ui-binding",
                 title="Case workbench UI binding",
                 category="frontend_ui",
