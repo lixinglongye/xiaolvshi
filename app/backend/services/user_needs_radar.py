@@ -104,6 +104,12 @@ class UserNeedsRadarService:
                 url="docs/USER_RESEARCH_AND_MAINTENANCE.md",
                 signal="Target users need low-cost review, traceable evidence, missing facts, and lawyer-review escalation.",
             ),
+            ResearchSource(
+                id="legal-research-backlog",
+                title="Legal research to engineering backlog",
+                url="docs/LEGAL_RESEARCH_BACKLOG.md",
+                signal="Paper and benchmark signals should become tested engineering work before they are used in public release claims.",
+            ),
         )
 
     def _needs(self) -> tuple[UserNeed, ...]:
@@ -118,7 +124,7 @@ class UserNeedsRadarService:
                 impact=10,
                 effort=5,
                 confidence=9,
-                source_ids=("legalbench", "stanford-legal-rag", "local-maintenance-notes"),
+                source_ids=("legalbench", "stanford-legal-rag", "local-maintenance-notes", "legal-research-backlog"),
                 evidence_paths=(
                     "app/backend/services/citation_audit.py",
                     "app/backend/services/evidence_audit.py",
@@ -141,7 +147,7 @@ class UserNeedsRadarService:
                 impact=9,
                 effort=4,
                 confidence=8,
-                source_ids=("local-maintenance-notes", "internal-feedback-triage"),
+                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog"),
                 evidence_paths=(
                     "app/backend/services/model_budget.py",
                     "app/backend/services/document_preflight.py",
@@ -186,7 +192,7 @@ class UserNeedsRadarService:
                 impact=9,
                 effort=5,
                 confidence=8,
-                source_ids=("local-maintenance-notes", "internal-feedback-triage"),
+                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog"),
                 evidence_paths=(
                     "app/backend/services/extraction_quality.py",
                     "app/backend/routers/deep_review.py",
@@ -209,7 +215,7 @@ class UserNeedsRadarService:
                 impact=8,
                 effort=4,
                 confidence=8,
-                source_ids=("internal-feedback-triage", "stanford-legal-rag"),
+                source_ids=("internal-feedback-triage", "stanford-legal-rag", "legal-research-backlog"),
                 evidence_paths=(
                     "app/backend/services/instruction_injection_audit.py",
                     "app/backend/services/document_preflight.py",
@@ -232,7 +238,7 @@ class UserNeedsRadarService:
                 impact=8,
                 effort=6,
                 confidence=7,
-                source_ids=("local-maintenance-notes",),
+                source_ids=("local-maintenance-notes", "legal-research-backlog"),
                 evidence_paths=(
                     "app/frontend/src/pages/DeepReportPage.tsx",
                     "app/backend/services/report_quality_gate.py",

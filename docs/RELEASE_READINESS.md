@@ -91,7 +91,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
+- Legal review benchmark coverage, including research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
@@ -106,5 +106,8 @@ Optional evidence checks, such as OSS maintenance evidence, are tracked but do n
 ## Related files
 
 - `app/backend/services/release_readiness.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_release_readiness.py`
+- `app/backend/tests/test_legal_research_backlog.py`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`

@@ -29,7 +29,7 @@ It is safe to say this repository has active development, reviewability controls
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal-review benchmark cases, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal-review benchmark cases, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Review operations: citation, evidence, and legal grounding quick audits.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
@@ -38,6 +38,9 @@ It is safe to say this repository has active development, reviewability controls
 ## Related files
 
 - `app/backend/services/maintenance_evidence.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_maintenance_evidence.py`
+- `app/backend/tests/test_legal_research_backlog.py`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`

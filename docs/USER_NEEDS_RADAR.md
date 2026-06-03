@@ -22,6 +22,14 @@ GET /api/v1/maintenance/user-needs
 
 The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `maintenance_actions`.
 
+Related legal-AI research planning is exposed at:
+
+```http
+GET /api/v1/maintenance/legal-review-benchmark/research-backlog
+```
+
+Use that endpoint when converting LegalBench, FrugalGPT, RAGAS, CRAG, or CUAD signals into concrete benchmark, routing, grounding, or UI tasks.
+
 ## Scoring
 
 ```text
@@ -42,6 +50,7 @@ The score is a planning signal, not product analytics. It does not use private u
 - Stanford legal RAG hallucination evaluation: legal tools still need citation grounding checks, professional review, and hallucination-aware release gates.
 - Internal feedback triage: support work should distinguish security, access, legal-output risk, pipeline failure, and usability.
 - Local user research notes: target users need low-cost review, traceable evidence, missing facts, and lawyer-review escalation.
+- Legal research backlog: paper and benchmark signals should become tested engineering work before they are used in public release claims.
 
 ## Current High-Priority Needs
 
@@ -54,6 +63,9 @@ The score is a planning signal, not product analytics. It does not use private u
 ## Related files
 
 - `app/backend/services/user_needs_radar.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_user_needs_radar.py`
+- `app/backend/tests/test_legal_research_backlog.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`

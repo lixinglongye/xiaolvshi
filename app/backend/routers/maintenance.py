@@ -14,6 +14,7 @@ from services.legal_fixture_response_normalizer import LegalFixtureResponseNorma
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
+from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -69,6 +70,15 @@ async def evaluate_legal_review_benchmark(run_results: dict[str, dict]):
     return {
         "success": True,
         "data": service.evaluate(run_results),
+    }
+
+
+@router.get("/legal-review-benchmark/research-backlog")
+async def get_legal_review_research_backlog():
+    """Return research-backed engineering backlog for legal-review benchmark work."""
+    return {
+        "success": True,
+        "data": LegalResearchBacklogService().build_backlog(),
     }
 
 

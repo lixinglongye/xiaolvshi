@@ -11,6 +11,7 @@ Model, prompt, retrieval, extraction, and report-schema changes should be evalua
 ```http
 GET /api/v1/maintenance/legal-review-benchmark
 POST /api/v1/maintenance/legal-review-benchmark
+GET /api/v1/maintenance/legal-review-benchmark/research-backlog
 GET /api/v1/maintenance/legal-review-benchmark/public-sampler
 POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 GET /api/v1/maintenance/legal-review-benchmark/quick-suite
@@ -50,6 +51,8 @@ It also returns a lightweight public benchmark source catalog and small syntheti
 ```
 
 Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores.
+
+`GET /research-backlog` maps LegalBench, FrugalGPT, RAGAS, CRAG, and CUAD signals into prioritized engineering items for cheap-first routing, legal task coverage, RAG grounding, retrieval failure cases, contract-clause sampling, and UI review visibility.
 
 `GET/POST /public-sampler` turns LegalBench, CUAD, LexGLUE, and Pile of Law into a resource-capped sampling plan. It maps reviewed public-source samples back to local fixtures and benchmark cases, but it does not download data.
 
@@ -93,6 +96,7 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 ## Research Basis
 
 - LegalBench: use multiple legal reasoning task families instead of a single generic accuracy score.
+- FrugalGPT: use cheap-first cascade routing and escalate only selected failures when cost matters.
 - RAGAS: track faithfulness, answer relevance, and context relevance for RAG-style outputs.
 - CRAG: use comprehensive factual QA and retrieval-style checks for answer reliability.
 
@@ -144,6 +148,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 ## Related files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
@@ -157,6 +162,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_research_backlog.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
@@ -169,6 +175,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_PROMPT_PACK.md`

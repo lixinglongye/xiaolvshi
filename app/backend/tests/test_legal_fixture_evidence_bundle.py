@@ -20,8 +20,11 @@ def test_legal_fixture_evidence_bundle_builds_not_run_template():
     assert bundle["summary"]["component_count"] >= 8
     assert bundle["summary"]["not_run_component_count"] >= 1
     assert bundle["summary"]["quick_suite_fixture_count"] == 3
+    assert bundle["summary"]["research_backlog_item_count"] >= 6
     assert any(item["id"] == "quick_suite" for item in bundle["components"])
+    assert any(item["id"] == "research_backlog" for item in bundle["components"])
     assert any(item["id"] == "fixture-quick-suite" for item in bundle["artifacts"])
+    assert any(item["id"] == "legal-research-backlog" for item in bundle["artifacts"])
     assert any(item["id"] == "fixture-local-run-review" for item in bundle["artifacts"])
     assert any(item["id"] == "fixture-evidence-bundle" for item in bundle["artifacts"])
     assert bundle["validation_commands"]

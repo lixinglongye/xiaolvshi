@@ -34,6 +34,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 ## What It Contains
 
 - component statuses for the benchmark suite, quick suite, fixture smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan,
+- research-backed backlog status for converting paper and benchmark signals into tested engineering work,
 - public benchmark sampler status for reviewed, resource-capped external benchmark plans,
 - artifact references and archive fields for release evidence,
 - validation commands for small local tests,
@@ -61,7 +62,9 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 ## Related Files
 
 - `app/backend/services/legal_fixture_evidence_bundle.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
+- `app/backend/tests/test_legal_research_backlog.py`
 - `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
@@ -71,6 +74,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`

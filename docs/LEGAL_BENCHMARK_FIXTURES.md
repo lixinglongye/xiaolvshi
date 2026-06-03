@@ -43,6 +43,8 @@ This is meant for quick laptop checks after prompt, routing, report schema, extr
 
 Use `/api/v1/maintenance/legal-review-benchmark/quick-suite` to fetch a default 3-fixture laptop-safe subset before running the full fixture run plan.
 
+Use `/api/v1/maintenance/legal-review-benchmark/research-backlog` before adding fixtures so each new test maps back to a research source, user need, release gate, and evidence path.
+
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` to convert smoke-test gaps into prompt clauses, report-schema targets, and validation hints.
 
 Use `/api/v1/maintenance/legal-review-benchmark/prompt-pack` to fetch cheap-first Gemini/NewAPI prompt payloads for the same fixtures.
@@ -72,6 +74,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 ## Related Files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_research_backlog.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
@@ -85,6 +88,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_research_backlog.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
 - `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
@@ -98,6 +102,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_RESEARCH_BACKLOG.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
 - `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`

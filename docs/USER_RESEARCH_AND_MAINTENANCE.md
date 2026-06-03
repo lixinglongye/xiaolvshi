@@ -39,6 +39,7 @@
 - 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；通过 `/api/v1/maintenance/legal-review-benchmark/prompt-pack` 获取 cheap-first Gemini/NewAPI 小文书 prompt；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-smoke` 评估模型或流水线输出覆盖率；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` 把缺失项转成 prompt/schema 改进计划。LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
 - Legal grounding quick audits: `/api/v1/legal-knowledge/grounding-quick-audit` combines citation, evidence, and RAG signals into a low-resource release warning/blocker before reports are used as evidence.
 
+- Legal research backlogs: `/api/v1/maintenance/legal-review-benchmark/research-backlog` maps LegalBench, FrugalGPT, RAGAS, CRAG, and CUAD signals into concrete algorithm, model-routing, benchmark, grounding, and UI review tasks.
 - Public benchmark samplers: `/api/v1/maintenance/legal-review-benchmark/public-sampler` maps reviewed LegalBench, CUAD, LexGLUE, and Pile of Law samples back to small local fixtures with no default dataset download.
 - Legal fixture quick suites: `/api/v1/maintenance/legal-review-benchmark/quick-suite` returns a default 3-fixture laptop-safe subset before full fixture-run-plan execution.
 - Legal fixture model matrices: `/api/v1/maintenance/legal-review-benchmark/fixture-model-matrix` shows fixture-level Gemini/NewAPI cheap-first, fallback, and premium-exception candidates before any gateway spend.
