@@ -111,6 +111,43 @@ export type ModelCallsiteAudit = {
   recommended_actions: string[];
 };
 
+export type ModelRouteTelemetryBucket = {
+  requests: number;
+  successes: number;
+  failures: number;
+  auto_inferred: number;
+  explicit_task: number;
+  downgraded_to_recommended: number;
+  over_budget_requested: number;
+  operator_review_requested: number;
+  allowed_over_budget: number;
+  unknown_price_model: number;
+  stream_requests: number;
+  last_seen_at: number;
+  models: Record<string, number>;
+};
+
+export type ModelRouteTelemetry = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    request_count: number;
+    auto_inferred_ratio: number;
+    downgrade_ratio: number;
+    over_budget_request_ratio: number;
+    failure_rate: number;
+    operator_review_request_count: number;
+    allowed_over_budget_count: number;
+    unknown_price_model_count: number;
+  };
+  totals: ModelRouteTelemetryBucket;
+  by_task: Record<string, ModelRouteTelemetryBucket>;
+  by_inference_source: Record<string, ModelRouteTelemetryBucket>;
+};
+
 export type ModelCapabilityCandidate = {
   model_id: string;
   status: string;
@@ -372,6 +409,7 @@ export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
+  route_telemetry?: ModelRouteTelemetry;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;

@@ -39,6 +39,7 @@ from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_runtime_router import runtime_router_policy_for_api
+from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
@@ -145,6 +146,7 @@ async def list_models():
             "auto-pdf": task_default_model("pdf"),
         },
         "runtime_router": runtime_router_policy_for_api(),
+        "route_telemetry": model_route_telemetry_registry.snapshot(),
         "callsite_audit": ModelCallsiteAuditService().audit(),
         "budget_policy": budget_policy_for_api(),
         "capability_matrix": ModelCapabilityMatrixService().build_matrix(),

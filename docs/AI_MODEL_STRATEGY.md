@@ -43,6 +43,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `runtime_router` 将 `task`、`model` 和 `allow_over_budget_model` 转换为实际模型；默认会把超预算或需要人工复核的显式模型降级到任务推荐模型。
 
+`route_telemetry` 记录运行时路由聚合指标，包括自动推断比例、降级比例、超预算请求、人工复核请求和未知价格模型，帮助维护者确认 cheap-first 策略是否在真实调用中生效。
+
 同一接口还会返回 `capability_matrix`：它按任务列出 required capabilities、max cost tier、runtime default、recommended model 和候选模型数量。矩阵先过滤能力不满足的模型，再按 stable 状态、成本、延迟和 fit score 排序；未知 NewAPI 模型名仍可透传，但不会被视为已验证价格模型。
 
 `escalation_policy` 定义 cheap-first cascade：高频任务先用 cheap model，低置信、JSON/schema 失败、引用/证据/质量门禁失败时才进入 verify 或 retry-up；`privacy_high`、`instruction_high`、`extraction_quality_fail` 这类信号会硬停止，避免把不安全或不可审查输入继续送进更贵模型。
@@ -90,6 +92,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。
+- `/model-ops` 会展示 Route telemetry，帮助维护者观察真实请求的自动推断、降级和超预算情况。
 - `/model-ops` 会展示 Callsite audit，帮助维护者确认 service 层 AIHub 文本调用都带有显式 task。
 - `/model-ops` 会展示 Escalation policy，帮助维护者确认哪些质量信号会触发平衡模型验证或 premium exception。
 - `/model-ops` 会展示 Fallback chains，帮助维护者确认每个任务的低价主模型、回退模型和 premium 人工复核边界。

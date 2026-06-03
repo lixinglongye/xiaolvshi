@@ -70,6 +70,7 @@ function Inner() {
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
+  const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
@@ -324,6 +325,87 @@ function Inner() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {data?.route_telemetry && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_telemetry.summary.request_count} routed requests /{' '}
+                  {Math.round(data.route_telemetry.summary.downgrade_ratio * 100)}% downgraded
+                </div>
+              </div>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                {data.route_telemetry.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_telemetry.summary.auto_inferred_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">auto inferred</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_telemetry.summary.over_budget_request_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">over budget</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry.summary.operator_review_request_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review-gated</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry.summary.unknown_price_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown price</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead>Auto</TableHead>
+                    <TableHead>Downgraded</TableHead>
+                    <TableHead>Over budget</TableHead>
+                    <TableHead>Failure</TableHead>
+                    <TableHead>Models</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                        No routed text calls recorded in this backend process.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryRows.map(([task, bucket]) => (
+                      <TableRow key={task}>
+                        <TableCell className="font-mono font-semibold text-stone-950">{task}</TableCell>
+                        <TableCell>{formatNumber(bucket.requests)}</TableCell>
+                        <TableCell>{formatNumber(bucket.auto_inferred)}</TableCell>
+                        <TableCell>{formatNumber(bucket.downgraded_to_recommended)}</TableCell>
+                        <TableCell>{formatNumber(bucket.over_budget_requested)}</TableCell>
+                        <TableCell>{formatNumber(bucket.failures)}</TableCell>
+                        <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                          {Object.entries(bucket.models).map(([model, count]) => `${model}:${count}`).join(', ')}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </section>
         )}
 

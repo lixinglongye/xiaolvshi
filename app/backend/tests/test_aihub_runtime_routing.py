@@ -1,6 +1,7 @@
 import pytest
 
 from schemas.aihub import ChatMessage, GenTxtRequest
+from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
 
 pytest.importorskip("httpx")
@@ -48,6 +49,7 @@ class _FakeClient:
 @pytest.mark.asyncio
 async def test_gentxt_uses_declared_review_task_default_model():
     model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
     service = AIHubService()
     fake_client = _FakeClient()
     service.client = fake_client
@@ -68,11 +70,15 @@ async def test_gentxt_uses_declared_review_task_default_model():
 
     usage = model_usage_registry.snapshot()["models"]["gemini-2.5-flash"]
     assert usage["tasks"] == {"review": 1}
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["request_count"] == 1
+    assert route_snapshot["by_task"]["review"]["explicit_task"] == 1
 
 
 @pytest.mark.asyncio
 async def test_gentxt_auto_infers_legal_review_task():
     model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
     service = AIHubService()
     fake_client = _FakeClient()
     service.client = fake_client
@@ -94,11 +100,15 @@ async def test_gentxt_auto_infers_legal_review_task():
     assert response.task_inference["source"] == "auto"
     assert response.task_inference["task"] == "review"
     assert response.budget_decision["budget_mode"] == "balanced"
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["auto_inferred_ratio"] == 1.0
+    assert route_snapshot["by_inference_source"]["auto"]["models"] == {"gemini-2.5-flash": 1}
 
 
 @pytest.mark.asyncio
 async def test_gentxt_downgrades_fast_premium_request_by_default():
     model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
     service = AIHubService()
     fake_client = _FakeClient()
     service.client = fake_client
@@ -116,3 +126,6 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     assert response.budget_decision["requested_resolved_model"] == "gemini-2.5-pro"
     assert response.budget_decision["routed_to_recommended_model"] is True
     assert "sk-" not in str(response.model_dump())
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["downgrade_ratio"] == 1.0
+    assert route_snapshot["summary"]["operator_review_request_count"] == 1

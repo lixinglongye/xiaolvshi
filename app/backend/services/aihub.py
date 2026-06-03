@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_task_inference import infer_gentxt_task
 from services.model_runtime_router import resolve_runtime_model
 from services.model_usage import model_usage_registry
@@ -192,6 +193,11 @@ class AIHubService:
             content = response.choices[0].message.content or ""
             usage = self._usage_from_response(response)
             self._record_model_usage(model=model, task=route.task, started_at=started_at, success=True, usage=usage)
+            model_route_telemetry_registry.record(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+            )
 
             return GenTxtResponse(
                 content=content,
@@ -204,6 +210,11 @@ class AIHubService:
 
         except Exception as e:
             self._record_model_usage(model=model, task=route.task, started_at=started_at, success=False)
+            model_route_telemetry_registry.record(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+            )
             logger.error(f"gentxt error: {e}")
             raise
 
@@ -249,9 +260,21 @@ class AIHubService:
                 if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
             self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=True)
+            model_route_telemetry_registry.record(
+                route=route,
+                task_inference=task_inference,
+                stream=True,
+                success=True,
+            )
 
         except Exception as e:
             self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=False)
+            model_route_telemetry_registry.record(
+                route=route,
+                task_inference=task_inference,
+                stream=True,
+                success=False,
+            )
             logger.error(f"gentxt_stream error: {e}")
             raise
 
