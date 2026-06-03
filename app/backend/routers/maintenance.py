@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, Query
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
+from services.user_needs_radar import UserNeedsRadarService
 
 
 router = APIRouter(prefix="/api/v1/maintenance", tags=["maintenance"])
@@ -16,6 +17,15 @@ async def get_oss_maintenance_evidence(
     return {
         "success": True,
         "data": MaintenanceEvidenceService().build_profile(language),
+    }
+
+
+@router.get("/user-needs")
+async def get_user_needs_radar():
+    """Return deterministic user-need priorities for roadmap and release planning."""
+    return {
+        "success": True,
+        "data": UserNeedsRadarService().build_radar(),
     }
 
 

@@ -22,9 +22,10 @@ POST /api/v1/maintenance/release-readiness
   "extraction-quality": "pass",
   "privacy-redaction": "pass",
   "instruction-injection-audit": "pass",
+  "feedback-triage": "pass",
+  "user-needs-radar": "pass",
   "legal-knowledge-audit": "pass",
-  "legal-rag-evaluation": "pass",
-  "feedback-triage": "pass"
+  "legal-rag-evaluation": "pass"
 }
 ```
 
@@ -42,6 +43,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Privacy redaction coverage.
 - Instruction injection audit coverage.
 - Feedback triage coverage.
+- User needs radar coverage.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
 

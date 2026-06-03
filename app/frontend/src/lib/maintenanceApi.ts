@@ -77,6 +77,56 @@ type ReleaseReadinessResponse = {
   validation_commands: ReleaseValidationCommand[];
 };
 
+export type UserNeed = {
+  id: string;
+  title: string;
+  category: string;
+  user_segments: string[];
+  pain_point: string;
+  product_response: string;
+  impact: number;
+  effort: number;
+  confidence: number;
+  source_ids: string[];
+  evidence_paths: string[];
+  release_gate_links: string[];
+  next_actions: string[];
+  priority_score: number;
+  priority_band: string;
+};
+
+export type UserNeedsRadar = {
+  status: string;
+  method: {
+    scoring: string;
+    input_sources: Array<{
+      id: string;
+      title: string;
+      url: string;
+      signal: string;
+    }>;
+    limitations: string[];
+  };
+  summary: {
+    need_count: number;
+    top_need_ids: string[];
+    high_priority_count: number;
+    source_coverage: Record<string, number>;
+  };
+  needs: UserNeed[];
+  roadmap: Array<{
+    phase: string;
+    focus_need_ids: string[];
+    exit_criteria: string[];
+  }>;
+  maintenance_actions: string[];
+};
+
+type UserNeedsRadarResponse = {
+  success: boolean;
+  data: UserNeedsRadar;
+};
+
 export type LegalKnowledgeAudit = {
   status: string;
   score: number;
@@ -137,6 +187,18 @@ export async function getReleaseReadiness(): Promise<ReleaseReadinessResponse> {
     method: 'GET',
   });
   return (resp?.data ?? resp) as ReleaseReadinessResponse;
+}
+
+export async function getUserNeedsRadar(): Promise<UserNeedsRadar> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as UserNeedsRadarResponse | UserNeedsRadar;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as UserNeedsRadar;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

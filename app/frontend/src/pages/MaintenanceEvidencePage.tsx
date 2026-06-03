@@ -12,18 +12,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getLegalKnowledgeAudit,
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
   getReleaseReadiness,
+  getUserNeedsRadar,
   type LegalKnowledgeAudit,
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
+  type UserNeedsRadar,
 } from '@/lib/maintenanceApi';
 
 const categoryClass: Record<string, string> = {
@@ -33,6 +35,12 @@ const categoryClass: Record<string, string> = {
   release_management: 'bg-red-50 text-red-800 border-red-200',
   product: 'bg-indigo-50 text-indigo-800 border-indigo-200',
   maintenance: 'bg-stone-50 text-stone-800 border-stone-200',
+};
+
+const priorityClass: Record<string, string> = {
+  high: 'border-red-200 bg-red-50 text-red-800',
+  medium: 'border-amber-200 bg-amber-50 text-amber-900',
+  low: 'border-stone-200 bg-stone-50 text-stone-700',
 };
 
 function roleLabel(role?: string) {
@@ -54,6 +62,7 @@ function Inner() {
   const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
+  const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -62,15 +71,17 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness, legalKnowledge, ragEvaluation] = await Promise.all([
+      const [evidence, readiness, needsRadar, legalKnowledge, ragEvaluation] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
+        getUserNeedsRadar(),
         getLegalKnowledgeAudit(),
         getLegalRagEvaluationPolicy(),
       ]);
       setData(evidence);
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
+      setUserNeeds(needsRadar);
       setLegalAudit(legalKnowledge);
       setRagPolicy(ragEvaluation);
     } catch (err) {
@@ -171,10 +182,10 @@ function Inner() {
           <Card className="surface-card">
             <CardContent className="p-5">
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[8px] bg-stone-950 text-white">
-                <ShieldCheck className="h-5 w-5" />
+                <Target className="h-5 w-5" />
               </div>
-              <div className="text-3xl font-black text-stone-950">{controls.length}</div>
-              <div className="mt-1 text-sm text-stone-600">release controls</div>
+              <div className="text-3xl font-black text-stone-950">{userNeeds?.summary.high_priority_count ?? 0}</div>
+              <div className="mt-1 text-sm text-stone-600">high-priority needs</div>
             </CardContent>
           </Card>
         </div>
@@ -294,6 +305,85 @@ function Inner() {
                           <TableCell>{check.required ? 'yes' : 'no'}</TableCell>
                           <TableCell className="max-w-[420px] font-mono text-[11px] text-stone-600">
                             {check.validation_command || check.manual_note || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </section>
+            )}
+
+            {userNeeds && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User needs radar</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {userNeeds.summary.need_count} needs · {userNeeds.summary.high_priority_count} high priority ·{' '}
+                      {userNeeds.method.input_sources.length} sources
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                    {userNeeds.status}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-3">
+                  {userNeeds.roadmap.map((phase) => (
+                    <div key={phase.phase} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-xs font-semibold uppercase text-stone-500">{phase.phase}</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {phase.focus_need_ids.map((id) => (
+                          <Badge key={id} variant="outline" className="bg-white font-mono text-[11px]">
+                            {id}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-xs font-semibold uppercase text-stone-500">Scoring</div>
+                    <div className="mt-2 text-sm leading-6 text-stone-700">{userNeeds.method.scoring}</div>
+                  </div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Need</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Users</TableHead>
+                        <TableHead>Release gates</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {userNeeds.needs.slice(0, 7).map((need) => (
+                        <TableRow key={need.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{need.title}</div>
+                            <div className="mt-1 max-w-[440px] text-xs leading-5 text-stone-600">{need.pain_point}</div>
+                            <div className="mt-2 font-mono text-[11px] text-stone-500">{need.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={priorityClass[need.priority_band] ?? priorityClass.low}>
+                              {need.priority_band} · {need.priority_score}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            {need.user_segments.join(', ')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[260px] flex-wrap gap-1">
+                              {need.release_gate_links.map((gate) => (
+                                <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {gate}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {need.next_actions[0] || '-'}
                           </TableCell>
                         </TableRow>
                       ))}

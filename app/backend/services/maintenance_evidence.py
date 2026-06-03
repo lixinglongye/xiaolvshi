@@ -178,7 +178,11 @@ class MaintenanceEvidenceService:
                 description="The repository documents target users, workflow priorities, maintenance metrics, and application-safe claims.",
                 responsibility="User workflow research, maintenance roadmap updates, and support-application accuracy.",
                 cadence="Review when user segments, product scope, or public support applications change.",
-                evidence_paths=("docs/USER_RESEARCH_AND_MAINTENANCE.md",),
+                evidence_paths=(
+                    "docs/USER_RESEARCH_AND_MAINTENANCE.md",
+                    "app/backend/services/user_needs_radar.py",
+                    "docs/USER_NEEDS_RADAR.md",
+                ),
                 weight=10,
             ),
         ]

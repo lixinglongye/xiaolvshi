@@ -198,6 +198,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_feedback_triage.py -q",
             ),
             ReleaseCheck(
+                id="user-needs-radar",
+                title="User needs radar coverage",
+                category="maintenance",
+                required=True,
+                owner="product_maintainer",
+                evidence_paths=(
+                    "app/backend/services/user_needs_radar.py",
+                    "app/backend/tests/test_user_needs_radar.py",
+                    "docs/USER_NEEDS_RADAR.md",
+                ),
+                validation_command="python -m pytest tests/test_user_needs_radar.py -q",
+            ),
+            ReleaseCheck(
                 id="legal-knowledge-audit",
                 title="Legal knowledge seed audit coverage",
                 category="legal_quality",
