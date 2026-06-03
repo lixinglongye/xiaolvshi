@@ -521,6 +521,8 @@ class ReleaseReadinessService:
                 evidence_paths=(
                     "app/backend/services/legal_review_benchmark.py",
                     "app/backend/services/legal_research_backlog.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/backend/services/legal_public_benchmark_sampler.py",
                     "app/backend/services/legal_fixture_quick_suite.py",
                     "app/backend/services/legal_fixture_model_matrix.py",

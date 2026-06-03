@@ -16,6 +16,8 @@ The endpoint returns:
 - `next_iteration_queue`: the next highest-signal work items.
 - `maintenance_actions`: how to use the backlog in release planning.
 
+The frontend maintenance page also renders this backlog so maintainers can inspect research sources, next queued work, cheap-first alignment, local-run fit, and linked release gates without opening raw JSON.
+
 ## Research Sources
 
 - LegalBench: legal reasoning evaluation should cover multiple legal task families, not a single generic score.
@@ -51,6 +53,8 @@ For small machines, use `/local-run-package?fixture_limit=1` followed by `/local
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
+- `app/frontend/src/lib/maintenanceApi.ts`
+- `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/maintenance_evidence.py`

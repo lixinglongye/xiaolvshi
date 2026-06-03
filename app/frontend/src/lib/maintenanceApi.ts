@@ -127,6 +127,73 @@ type UserNeedsRadarResponse = {
   data: UserNeedsRadar;
 };
 
+export type LegalResearchSource = {
+  id: string;
+  title: string;
+  url: string;
+  source_type: string;
+  signal: string;
+  project_application: string;
+};
+
+export type LegalResearchBacklogItem = {
+  id: string;
+  title: string;
+  workstream: string;
+  source_ids: string[];
+  user_need_ids: string[];
+  release_gate_links: string[];
+  evidence_paths: string[];
+  impact: number;
+  effort: number;
+  confidence: number;
+  cost_sensitivity: number;
+  local_run_fit: number;
+  next_actions: string[];
+  priority_score: number;
+  priority_band: string;
+};
+
+export type LegalResearchBacklog = {
+  status: string;
+  method: {
+    type: string;
+    scoring: string;
+    input_sources: LegalResearchSource[];
+    limitations: string[];
+  };
+  summary: {
+    source_count: number;
+    backlog_item_count: number;
+    high_priority_count: number;
+    cheap_first_item_count: number;
+    local_run_item_count: number;
+    workstream_count: number;
+    source_coverage: Record<string, number>;
+  };
+  backlog: LegalResearchBacklogItem[];
+  workstream_plan: Array<{
+    workstream: string;
+    item_ids: string[];
+    top_priority_score: number;
+    primary_release_gates: string[];
+  }>;
+  next_iteration_queue: Array<{
+    item_id: string;
+    title: string;
+    priority_score: number;
+    first_action: string;
+    release_gate_links: string[];
+  }>;
+  maintenance_actions: string[];
+  privacy_note: string;
+};
+
+type LegalResearchBacklogResponse = {
+  success: boolean;
+  data: LegalResearchBacklog;
+};
+
 export type FeedbackRoadmapRule = {
   id: string;
   need_id: string;
@@ -628,6 +695,8 @@ export type LegalFixtureEvidenceBundle = {
     warning_component_count: number;
     not_run_component_count: number;
     fixture_count: number;
+    research_backlog_item_count?: number;
+    research_high_priority_count?: number;
     prompt_count: number;
     cheap_first_candidate_count: number;
     observed_fixture_count: number;
@@ -930,6 +999,18 @@ export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
     return payload.data;
   }
   return payload as LegalReviewBenchmark;
+}
+
+export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/research-backlog',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalResearchBacklogResponse | LegalResearchBacklog;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalResearchBacklog;
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

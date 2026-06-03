@@ -20,6 +20,8 @@ The response includes:
 - `application_guardrails`: claims that must be manually verified before submitting a support form.
 - `form_answer`: a concise English or Chinese paragraph suitable for support application fields.
 
+The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -42,5 +44,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_maintenance_evidence.py`
 - `app/backend/tests/test_legal_research_backlog.py`
+- `app/frontend/src/lib/maintenanceApi.ts`
+- `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`

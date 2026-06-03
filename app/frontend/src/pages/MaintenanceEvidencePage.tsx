@@ -25,6 +25,7 @@ import {
   getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
+  getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
@@ -44,6 +45,7 @@ import {
   type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
+  type LegalResearchBacklog,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
@@ -119,6 +121,7 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -147,6 +150,7 @@ function Inner() {
         needsRadar,
         feedbackMap,
         benchmarkData,
+        researchBacklogData,
         publicBenchmarkSamplerData,
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
@@ -164,6 +168,7 @@ function Inner() {
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalResearchBacklog(),
         getLegalPublicBenchmarkSampler(),
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
@@ -182,6 +187,7 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setResearchBacklog(researchBacklogData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
@@ -530,6 +536,168 @@ function Inner() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </section>
+            )}
+
+            {researchBacklog && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal research backlog</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {researchBacklog.summary.backlog_item_count} items / {researchBacklog.summary.source_count} sources /{' '}
+                      {researchBacklog.summary.workstream_count} workstreams
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[researchBacklog.status] ?? statusClass.ready}>
+                    {researchBacklog.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {researchBacklog.summary.high_priority_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high-priority items</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {researchBacklog.summary.cheap_first_item_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first items</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {researchBacklog.summary.local_run_item_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">local-run fit</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {researchBacklog.next_iteration_queue.length}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">queued updates</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Next iteration queue</h3>
+                    <div className="space-y-3">
+                      {researchBacklog.next_iteration_queue.map((item) => (
+                        <div key={item.item_id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="bg-stone-950 text-white">
+                              {item.priority_score}
+                            </Badge>
+                            <span className="font-mono text-xs text-stone-500">{item.item_id}</span>
+                          </div>
+                          <div className="text-sm font-semibold text-stone-950">{item.title}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.first_action}</div>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {item.release_gate_links.map((gate) => (
+                              <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                {gate}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Research sources</h3>
+                    <div className="space-y-3">
+                      {researchBacklog.method.input_sources.map((source) => (
+                        <div key={source.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-sm font-semibold text-stone-950 hover:underline"
+                            >
+                              {source.title}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            <Badge variant="outline" className="bg-white">
+                              {source.source_type.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="text-xs leading-5 text-stone-600">{source.signal}</div>
+                          <div className="mt-2 text-xs leading-5 text-stone-500">{source.project_application}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Research</TableHead>
+                        <TableHead>Needs</TableHead>
+                        <TableHead>Release gates</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {researchBacklog.backlog.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{item.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{item.id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{item.workstream.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={priorityClass[item.priority_band] ?? priorityClass.low}>
+                              {item.priority_band} / {item.priority_score}
+                            </Badge>
+                            <div className="mt-2 text-[11px] leading-5 text-stone-500">
+                              cost {item.cost_sensitivity} / local {item.local_run_fit}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            {item.source_ids.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {item.user_need_ids.join(', ')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[280px] flex-wrap gap-1">
+                              {item.release_gate_links.map((gate) => (
+                                <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {gate}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {item.next_actions[0] || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Maintenance actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {researchBacklog.maintenance_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs leading-5 text-stone-500">{researchBacklog.privacy_note}</div>
                 </div>
               </section>
             )}

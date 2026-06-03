@@ -30,6 +30,8 @@ GET /api/v1/maintenance/legal-review-benchmark/research-backlog
 
 Use that endpoint when converting LegalBench, FrugalGPT, RAGAS, CRAG, or CUAD signals into concrete benchmark, routing, grounding, or UI tasks.
 
+The maintenance UI renders the radar and the research backlog together so maintainers can compare user needs against research-backed engineering tasks before choosing the next update.
+
 ## Scoring
 
 ```text
