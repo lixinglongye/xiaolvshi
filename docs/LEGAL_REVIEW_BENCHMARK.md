@@ -21,6 +21,8 @@ GET /api/v1/maintenance/legal-review-benchmark/gateway-manifest
 GET /api/v1/maintenance/legal-review-benchmark/fixture-run-plan
 GET /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
+GET /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
+POST /api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle
 ```
 
 `GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
@@ -67,6 +69,8 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 `GET /fixture-run-plan` turns the safe gateway manifest into laptop-safe serial batches, cheap-first cost estimates, worst-case escalation estimates, and post-run smoke/improvement targets.
 
 `GET/POST /fixture-run-report` combines fixture smoke coverage, improvement actions, optional run metadata, and the run plan into a cheap-first release decision.
+
+`GET/POST /fixture-evidence-bundle` aggregates the benchmark suite, smoke evaluator, model matrix, prompt pack, gateway manifest, run plan, run report, and improvement plan into a release-ready evidence bundle with safe claims and validation commands.
 
 ## Research Basis
 
@@ -125,6 +129,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
@@ -133,6 +138,7 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
+- `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
@@ -140,5 +146,6 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
+- `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`
 - `app/backend/services/release_readiness.py`

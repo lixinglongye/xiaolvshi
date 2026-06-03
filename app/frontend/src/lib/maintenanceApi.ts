@@ -486,6 +486,46 @@ export type LegalFixtureModelMatrix = {
   privacy_note: string;
 };
 
+export type LegalFixtureEvidenceBundle = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    component_count: number;
+    blocking_component_count: number;
+    warning_component_count: number;
+    not_run_component_count: number;
+    fixture_count: number;
+    prompt_count: number;
+    cheap_first_candidate_count: number;
+    observed_fixture_count: number;
+    release_decision: string;
+    estimated_cheap_first_cost_usd: number;
+    estimated_worst_case_cost_usd: number;
+  };
+  components: Array<{
+    id: string;
+    status: string;
+    endpoint: string;
+  }>;
+  artifacts: Array<{
+    id: string;
+    title: string;
+    evidence_paths: string[];
+    archive_fields: string[];
+  }>;
+  validation_commands: string[];
+  release_claims: {
+    can_claim: string[];
+    claim_after_run: string[];
+    must_not_claim: string[];
+  };
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -575,6 +615,11 @@ type LegalFixtureRunReportResponse = {
 type LegalFixtureModelMatrixResponse = {
   success: boolean;
   data: LegalFixtureModelMatrix;
+};
+
+type LegalFixtureEvidenceBundleResponse = {
+  success: boolean;
+  data: LegalFixtureEvidenceBundle;
 };
 
 export type LegalKnowledgeAudit = {
@@ -745,6 +790,18 @@ export async function getLegalFixtureModelMatrix(): Promise<LegalFixtureModelMat
     return payload.data;
   }
   return payload as LegalFixtureModelMatrix;
+}
+
+export async function getLegalFixtureEvidenceBundle(): Promise<LegalFixtureEvidenceBundle> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureEvidenceBundleResponse | LegalFixtureEvidenceBundle;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureEvidenceBundle;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

@@ -2,6 +2,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
@@ -149,12 +150,30 @@ async def get_legal_review_fixture_model_matrix():
     }
 
 
+@router.get("/legal-review-benchmark/fixture-evidence-bundle")
+async def get_legal_review_fixture_evidence_bundle_template():
+    """Return a release evidence bundle for legal fixture maintenance."""
+    return {
+        "success": True,
+        "data": LegalFixtureEvidenceBundleService().build_bundle(),
+    }
+
+
 @router.post("/legal-review-benchmark/fixture-run-report")
 async def build_legal_review_fixture_run_report(payload: dict[str, dict]):
     """Summarize fixture observations into cheap-first release and escalation decisions."""
     return {
         "success": True,
         "data": LegalFixtureRunReportService().build_report(payload),
+    }
+
+
+@router.post("/legal-review-benchmark/fixture-evidence-bundle")
+async def build_legal_review_fixture_evidence_bundle(payload: dict[str, dict]):
+    """Bundle fixture observations, model routing, and validation evidence."""
+    return {
+        "success": True,
+        "data": LegalFixtureEvidenceBundleService().build_bundle(payload),
     }
 
 

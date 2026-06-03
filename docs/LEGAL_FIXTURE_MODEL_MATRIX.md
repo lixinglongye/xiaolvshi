@@ -32,3 +32,4 @@ The endpoint returns model metadata only. It does not call NewAPI, Gemini, OpenA
 - `app/backend/services/model_fallback_chains.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
+- `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

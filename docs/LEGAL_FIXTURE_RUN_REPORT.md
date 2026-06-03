@@ -36,6 +36,8 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 - `review_warnings_before_release`: results are usable but need maintainer review before release readiness is marked pass.
 - `keep_cheap_first_defaults`: cheap-first fixture observations pass without high-priority improvement actions.
 
+Submit the same payload to `/fixture-evidence-bundle` after this report so release readiness can archive the run report, validation commands, and support-application-safe claims together.
+
 ## Safety
 
 - The service scores request payloads only and does not call a model.
@@ -47,8 +49,11 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_run_plan.py`
+- `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
+- `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
+- `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

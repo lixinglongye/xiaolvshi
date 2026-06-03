@@ -26,7 +26,8 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 4. Submit normalized outputs to `/fixture-smoke`.
 5. Run only the `escalation_if_needed` steps whose cheap-first smoke result fails or leaves high-priority improvement actions.
 6. Submit the same observations to `/fixture-run-report`.
-7. Attach smoke scores and the run report to release-readiness evidence before changing default model routes.
+7. Submit the same observations to `/fixture-evidence-bundle`.
+8. Attach smoke scores, the run report, and the evidence bundle to release-readiness evidence before changing default model routes.
 
 ## Safety
 
@@ -39,11 +40,14 @@ The endpoint returns batch and step metadata only. It does not call NewAPI, Gemi
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
+- `app/backend/tests/test_legal_fixture_evidence_bundle.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
+- `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`

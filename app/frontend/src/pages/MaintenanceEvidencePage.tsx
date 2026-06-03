@@ -15,6 +15,7 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getLegalFixtureImprovementPlan,
+  getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
   getLegalFixturePromptPack,
   getLegalFixtureRunPlan,
@@ -28,6 +29,7 @@ import {
   getReleaseReadiness,
   getUserNeedsRadar,
   type FeedbackRoadmapCatalog,
+  type LegalFixtureEvidenceBundle,
   type LegalFixtureImprovementPlan,
   type LegalFixtureModelMatrix,
   type LegalFixturePromptPack,
@@ -65,6 +67,7 @@ const statusClass: Record<string, string> = {
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  blocked: 'border-red-200 bg-red-50 text-red-800',
   needs_escalation: 'border-red-200 bg-red-50 text-red-800',
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
@@ -99,6 +102,7 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
@@ -119,6 +123,7 @@ function Inner() {
         needsRadar,
         feedbackMap,
         benchmarkData,
+        fixtureEvidenceBundleData,
         fixtureModelMatrixData,
         fixturePromptPackData,
         fixtureRunPlanData,
@@ -133,6 +138,7 @@ function Inner() {
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
         getLegalFixturePromptPack(),
         getLegalFixtureRunPlan(),
@@ -148,6 +154,7 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
       setFixturePromptPack(fixturePromptPackData);
       setFixtureRunPlan(fixtureRunPlanData);
@@ -613,6 +620,117 @@ function Inner() {
                     </ul>
                   </div>
                 )}
+              </section>
+            )}
+
+            {fixtureEvidenceBundle && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture evidence bundle</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureEvidenceBundle.summary.component_count} components /{' '}
+                      {fixtureEvidenceBundle.summary.release_decision.replace(/_/g, ' ')}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[fixtureEvidenceBundle.status] ?? statusClass.warn}>
+                    {fixtureEvidenceBundle.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureEvidenceBundle.summary.observed_fixture_count}/
+                      {fixtureEvidenceBundle.summary.fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">observed fixtures</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureEvidenceBundle.summary.cheap_first_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first candidates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureEvidenceBundle.summary.blocking_component_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocking components</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(fixtureEvidenceBundle.summary.estimated_cheap_first_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first estimate</div>
+                  </div>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Component</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Endpoint</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fixtureEvidenceBundle.components.map((component) => (
+                          <TableRow key={component.id}>
+                            <TableCell className="font-mono text-xs text-stone-700">{component.id}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[component.status] ?? statusClass.warn}>
+                                {component.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] break-all font-mono text-[11px] text-stone-500">
+                              {component.endpoint}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release claims</h3>
+                    <div className="space-y-4 text-sm leading-6 text-stone-700">
+                      <div>
+                        <div className="mb-1 font-semibold text-stone-950">Can claim</div>
+                        <ul className="space-y-1">
+                          {fixtureEvidenceBundle.release_claims.can_claim.map((claim) => (
+                            <li key={claim} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-700" />
+                              <span>{claim}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <div className="mb-1 font-semibold text-stone-950">After run</div>
+                        <ul className="space-y-1">
+                          {fixtureEvidenceBundle.release_claims.claim_after_run.map((claim) => (
+                            <li key={claim} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-amber-600" />
+                              <span>{claim}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Bundle actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {fixtureEvidenceBundle.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs leading-5 text-stone-500">{fixtureEvidenceBundle.privacy_note}</div>
+                </div>
               </section>
             )}
 
