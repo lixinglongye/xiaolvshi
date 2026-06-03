@@ -16,6 +16,7 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 GET /api/v1/maintenance/legal-review-benchmark/fixture-improvements
 POST /api/v1/maintenance/legal-review-benchmark/fixture-improvements
 GET /api/v1/maintenance/legal-review-benchmark/prompt-pack
+GET /api/v1/maintenance/legal-review-benchmark/gateway-manifest
 ```
 
 `GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
@@ -54,6 +55,8 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 `GET/POST /fixture-improvements` converts fixture smoke gaps into prompt clauses, report-schema targets, and validation hints so failed small-document tests produce actionable algorithm and schema work.
 
 `GET /prompt-pack` returns cheap-first model prompt payloads for the same fixtures, including recommended Gemini/NewAPI task defaults, request parameters, output schema, and follow-up evaluation endpoints.
+
+`GET /gateway-manifest` returns safe OpenAI-compatible request bodies and local AI hub payloads for those prompt rows. It uses placeholders for `APP_AI_BASE_URL` and `APP_AI_KEY`, does not call a model, and records the cheap-first escalation path for each fixture.
 
 ## Research Basis
 
@@ -108,12 +111,15 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
+- `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
+- `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_FIXTURE_PROMPT_PACK.md`
+- `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`
 - `app/backend/services/release_readiness.py`

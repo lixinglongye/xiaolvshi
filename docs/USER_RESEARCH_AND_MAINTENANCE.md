@@ -38,6 +38,8 @@
 - 反馈路线图映射：通过 `/api/v1/maintenance/feedback-roadmap` 查看反馈类别如何映射到用户需求 ID 和发布门禁。
 - 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；通过 `/api/v1/maintenance/legal-review-benchmark/prompt-pack` 获取 cheap-first Gemini/NewAPI 小文书 prompt；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-smoke` 评估模型或流水线输出覆盖率；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` 把缺失项转成 prompt/schema 改进计划。LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
 
+- Legal fixture gateway manifests: `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` provides safe NewAPI/OpenAI-compatible request manifests after `/prompt-pack`, using placeholders instead of real keys and linking outputs back to `/fixture-smoke` and `/fixture-improvements`.
+
 ## Near-Term Maintenance Tasks
 
 - 为模型路由增加单元测试，覆盖 `auto-fast`、`auto-review`、`auto-pdf` 和显式模型透传。

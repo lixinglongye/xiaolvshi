@@ -2,6 +2,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
@@ -106,6 +107,15 @@ async def get_legal_review_fixture_prompt_pack():
     return {
         "success": True,
         "data": LegalFixturePromptPackService().build_pack(),
+    }
+
+
+@router.get("/legal-review-benchmark/gateway-manifest")
+async def get_legal_review_fixture_gateway_manifest():
+    """Return safe OpenAI-compatible request manifests for local legal fixture evaluation."""
+    return {
+        "success": True,
+        "data": LegalFixtureGatewayManifestService().build_manifest(),
     }
 
 

@@ -28,6 +28,8 @@ The endpoint returns prompt rows only. It does not call a model, read API keys, 
 3. Submit model output to `/fixture-smoke`.
 4. Submit the same observations to `/fixture-improvements` when coverage is weak.
 
+If a caller needs ready-to-fill request bodies instead of raw prompt rows, fetch `/gateway-manifest` for OpenAI-compatible chat payloads and local `/api/v1/aihub/gentxt` payloads with key placeholders.
+
 ## Safety
 
 - Prompt rows include only synthetic local fixture text.
@@ -37,7 +39,10 @@ The endpoint returns prompt rows only. It does not call a model, read API keys, 
 ## Related Files
 
 - `app/backend/services/legal_fixture_prompt_pack.py`
+- `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
+- `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`
