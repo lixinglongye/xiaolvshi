@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -7,6 +8,46 @@ from typing import Any
 PASSING_STATES = {"pass", "passed", "ok", "ready_for_spot_check", "ready_for_release_candidate"}
 WARNING_STATES = {"warn", "warning", "needs_context", "lawyer_review_required"}
 FAILING_STATES = {"fail", "failed", "blocked", "error"}
+
+TASK_ALIASES: dict[str, tuple[str, ...]] = {
+    "risk_matrix": ("risk matrix", "risk table", "risk item", "liability finding"),
+    "missing_facts": ("missing facts", "missing information", "fact gap", "not included"),
+    "replacement_clause": ("replacement clause", "clause rewrite", "fallback wording"),
+    "executive_summary": ("executive summary", "summary for approval", "approval summary"),
+    "evidence_tasks": ("evidence task", "evidence checklist", "collect evidence"),
+    "pending_facts": ("pending facts", "open facts", "fact still needed"),
+    "risk_items": ("risk items", "risk finding", "risk list"),
+    "citations": ("citation", "legal source", "source appendix"),
+    "extraction_quality": ("extraction quality", "ocr confidence", "low text"),
+    "ocr_pages": ("ocr pages", "scanned page", "page image"),
+    "low_text_pages": ("low text pages", "low text page", "recognized text confidence"),
+    "route_reason": ("route reason", "routing reason", "pdf route"),
+    "privacy_scan": ("privacy scan", "redacted identifier", "personal identifier"),
+    "redacted_preview": ("redacted preview", "redacted id", "redacted phone"),
+    "preflight_warning": ("preflight warning", "preflight block", "operator review"),
+    "instruction_audit": ("instruction audit", "prompt override", "hidden instructions"),
+    "operator_action": ("operator action", "manual review", "review trigger"),
+    "secret_safety": ("secret safety", "no secret", "hidden prompt"),
+}
+
+SIGNAL_ALIASES: dict[str, tuple[str, ...]] = {
+    "liability_cap": ("liability cap", "capped at one month", "cap on liability", "liability is capped"),
+    "missing_sla": ("missing sla", "service level attachment", "attachment is referenced but not included"),
+    "termination_cure_period": ("cure period", "10 days written notice", "failure to cure"),
+    "confidentiality_carveout_gap": ("confidentiality carveout", "no carveout", "data misuse"),
+    "deposit_amount": ("deposit", "5000", "deposit amount"),
+    "repair_notice_dates": ("repair notice", "2025-11-12", "2025-11-20", "water leakage"),
+    "missing_invoice": ("missing invoice", "no invoice", "attached no invoice"),
+    "missing_handover_checklist": ("handover checklist", "checklist is missing"),
+    "low_text_page": ("low text page", "low text", "scanned image"),
+    "ocr_confidence_gap": ("ocr confidence", "recognized text confidence", "confidence is low"),
+    "version_conflict": ("version conflict", "draft v3", "final"),
+    "appendix_reference": ("appendix reference", "appendix b", "signature page references"),
+    "redacted_identifier": ("redacted identifier", "redacted-id", "redacted-phone"),
+    "prompt_override_attempt": ("prompt override", "ignore previous review rules", "hidden instructions"),
+    "loan_evidence_gap": ("loan evidence", "repayment evidence", "interest calculation"),
+    "preflight_block_candidate": ("preflight block", "preflight warning", "operator review"),
+}
 
 
 @dataclass(frozen=True)
@@ -76,6 +117,7 @@ class LegalReviewBenchmarkService:
         cases = [case.to_api() for case in self._cases()]
         public_sources = [source.to_api() for source in self._public_sources()]
         document_fixtures = [document.to_api() for document in self._document_fixtures()]
+        fixture_smoke_template = self.build_fixture_smoke_template(cases=cases, fixtures=document_fixtures)
         return {
             "status": "ready",
             "method": {
@@ -108,6 +150,7 @@ class LegalReviewBenchmarkService:
             "document_fixture_count": len(document_fixtures),
             "public_sources": public_sources,
             "document_fixtures": document_fixtures,
+            "fixture_smoke_template": fixture_smoke_template,
             "cases": cases,
             "default_run_template": {
                 case["id"]: {
@@ -116,6 +159,88 @@ class LegalReviewBenchmarkService:
                 }
                 for case in cases
             },
+        }
+
+    def build_fixture_smoke_template(
+        self,
+        *,
+        cases: list[dict[str, Any]] | None = None,
+        fixtures: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        cases = cases or [case.to_api() for case in self._cases()]
+        fixtures = fixtures or [document.to_api() for document in self._document_fixtures()]
+        routes_by_case = {str(case["id"]): str(case["expected_route"]) for case in cases}
+        rows = []
+        for fixture in fixtures:
+            expected_routes = sorted(
+                {
+                    routes_by_case[case_id]
+                    for case_id in fixture["linked_case_ids"]
+                    if case_id in routes_by_case
+                }
+            )
+            rows.append(
+                {
+                    "id": fixture["id"],
+                    "title": fixture["title"],
+                    "matter_type": fixture["matter_type"],
+                    "linked_case_ids": fixture["linked_case_ids"],
+                    "expected_routes": expected_routes,
+                    "expected_tasks": fixture["expected_tasks"],
+                    "expected_signals": fixture["expected_signals"],
+                    "input_excerpt": fixture["sample_text"],
+                    "observation_template": {
+                        "output_text": "",
+                        "route": "",
+                        "structured_outputs": {},
+                    },
+                }
+            )
+        return {
+            "status": "ready",
+            "method": {
+                "type": "local-fixture-smoke-evaluator",
+                "score_formula": "55 percent signal coverage, 35 percent task output coverage, 10 percent route match.",
+                "pass_thresholds": {"pass": 80, "warn": 60, "fail": 0},
+                "local_resource_policy": "Run on short synthetic snippets only; no model call or large corpus import is required.",
+            },
+            "fixture_count": len(rows),
+            "fixtures": rows,
+            "default_observations": {
+                row["id"]: {
+                    "output_text": "",
+                    "route": "",
+                    "structured_outputs": {},
+                }
+                for row in rows
+            },
+        }
+
+    def evaluate_fixture_smoke(self, observations: dict[str, Any] | None = None) -> dict[str, Any]:
+        template = self.build_fixture_smoke_template()
+        observations = observations or {}
+        fixture_results = [
+            self._evaluate_fixture(row, observations.get(row["id"]))
+            for row in template["fixtures"]
+        ]
+        if not observations:
+            status = "not_run"
+            score = 0
+        else:
+            score = round(sum(item["score"] for item in fixture_results) / max(1, len(fixture_results)))
+            status = self._fixture_status(score, fixture_results)
+        return {
+            "status": status,
+            "score": score,
+            "fixture_count": template["fixture_count"],
+            "passed_fixture_count": sum(1 for item in fixture_results if item["status"] == "pass"),
+            "warning_fixture_count": sum(1 for item in fixture_results if item["status"] == "warn"),
+            "failed_fixture_count": sum(1 for item in fixture_results if item["status"] == "fail"),
+            "not_run_fixture_count": sum(1 for item in fixture_results if item["status"] == "not_run"),
+            "fixture_results": fixture_results,
+            "blocking_fixture_ids": [item["fixture_id"] for item in fixture_results if item["status"] == "fail"],
+            "recommended_actions": self._fixture_recommended_actions(status, fixture_results),
+            "template": template,
         }
 
     def evaluate(self, run_results: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -332,6 +457,54 @@ class LegalReviewBenchmarkService:
             ),
         )
 
+    def _evaluate_fixture(self, fixture: dict[str, Any], observation: Any) -> dict[str, Any]:
+        observation_dict = self._observation_dict(observation)
+        if not self._has_observation(observation_dict):
+            return {
+                "fixture_id": fixture["id"],
+                "title": fixture["title"],
+                "status": "not_run",
+                "score": 0,
+                "metric_scores": {
+                    "signal_coverage": 0,
+                    "task_output_coverage": 0,
+                    "route_match": 0,
+                },
+                "matched_signals": [],
+                "missing_signals": fixture["expected_signals"],
+                "matched_tasks": [],
+                "missing_tasks": fixture["expected_tasks"],
+                "expected_routes": fixture["expected_routes"],
+                "observed_route": "",
+            }
+
+        observed_text = self._observation_text(observation_dict)
+        observed_route = str(observation_dict.get("route") or "").strip()
+        matched_signals = self._matched_labels(fixture["expected_signals"], observed_text, SIGNAL_ALIASES)
+        matched_tasks = self._matched_labels(fixture["expected_tasks"], observed_text, TASK_ALIASES)
+        signal_score = self._coverage_score(matched_signals, fixture["expected_signals"])
+        task_score = self._coverage_score(matched_tasks, fixture["expected_tasks"])
+        route_score = self._route_score(observed_route, fixture["expected_routes"])
+        score = round((signal_score * 0.55) + (task_score * 0.35) + (route_score * 0.10))
+        status = self._score_status(score)
+        return {
+            "fixture_id": fixture["id"],
+            "title": fixture["title"],
+            "status": status,
+            "score": score,
+            "metric_scores": {
+                "signal_coverage": signal_score,
+                "task_output_coverage": task_score,
+                "route_match": route_score,
+            },
+            "matched_signals": matched_signals,
+            "missing_signals": [label for label in fixture["expected_signals"] if label not in matched_signals],
+            "matched_tasks": matched_tasks,
+            "missing_tasks": [label for label in fixture["expected_tasks"] if label not in matched_tasks],
+            "expected_routes": fixture["expected_routes"],
+            "observed_route": observed_route,
+        }
+
     def _evaluate_case(self, case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
         metric_scores = {
             metric: self._metric_score(result.get(metric))
@@ -384,6 +557,18 @@ class LegalReviewBenchmarkService:
             return "warn"
         return "fail"
 
+    def _fixture_status(self, score: int, fixture_results: list[dict[str, Any]]) -> str:
+        if any(item["status"] == "fail" for item in fixture_results):
+            return "fail"
+        return self._score_status(score)
+
+    def _score_status(self, score: int) -> str:
+        if score >= 80:
+            return "pass"
+        if score >= 60:
+            return "warn"
+        return "fail"
+
     def _recommended_actions(self, status: str, case_results: list[dict[str, Any]]) -> list[str]:
         if status == "not_run":
             return ["Run the benchmark template after each major model, prompt, retrieval, or report-schema change."]
@@ -396,6 +581,19 @@ class LegalReviewBenchmarkService:
         if status == "warn":
             return ["Review warning cases before public release and document any waived benchmark gaps."]
         return ["Benchmark suite passed; keep results attached to release-readiness evidence."]
+
+    def _fixture_recommended_actions(self, status: str, fixture_results: list[dict[str, Any]]) -> list[str]:
+        if status == "not_run":
+            return ["Run the fixture smoke evaluator with observed output text after prompt, model, or report-schema changes."]
+        failed = [item for item in fixture_results if item["status"] == "fail"]
+        if failed:
+            return [
+                f"Improve fixture {item['fixture_id']} coverage for signals: {', '.join(item['missing_signals'][:6])}."
+                for item in failed
+            ]
+        if status == "warn":
+            return ["Review fixture smoke warnings before public release and add missing output fields where needed."]
+        return ["Fixture smoke suite passed on local synthetic legal documents."]
 
     def _task_family_counts(self, cases: list[dict[str, Any]]) -> dict[str, int]:
         counts: dict[str, int] = {}
@@ -410,6 +608,50 @@ class LegalReviewBenchmarkService:
             for metric in case["required_metrics"]:
                 counts[metric] = counts.get(metric, 0) + 1
         return counts
+
+    def _observation_dict(self, observation: Any) -> dict[str, Any]:
+        if isinstance(observation, str):
+            return {"output_text": observation}
+        if isinstance(observation, dict):
+            return observation
+        return {}
+
+    def _has_observation(self, observation: dict[str, Any]) -> bool:
+        return bool(str(observation.get("output_text") or "").strip() or observation.get("structured_outputs"))
+
+    def _observation_text(self, observation: dict[str, Any]) -> str:
+        parts = [
+            str(observation.get("output_text") or ""),
+            str(observation.get("summary") or ""),
+            str(observation.get("route_reason") or ""),
+            json.dumps(observation.get("structured_outputs") or {}, ensure_ascii=False, sort_keys=True),
+        ]
+        return " ".join(parts).lower()
+
+    def _matched_labels(
+        self,
+        expected_labels: list[str],
+        observed_text: str,
+        alias_map: dict[str, tuple[str, ...]],
+    ) -> list[str]:
+        matched: list[str] = []
+        for label in expected_labels:
+            aliases = (label, label.replace("_", " "), *alias_map.get(label, ()))
+            if any(alias.lower() in observed_text for alias in aliases):
+                matched.append(label)
+        return matched
+
+    def _coverage_score(self, matched_labels: list[str], expected_labels: list[str]) -> int:
+        if not expected_labels:
+            return 100
+        return round((len(set(matched_labels)) / len(set(expected_labels))) * 100)
+
+    def _route_score(self, observed_route: str, expected_routes: list[str]) -> int:
+        if not expected_routes:
+            return 100
+        if not observed_route:
+            return 0
+        return 100 if observed_route in expected_routes else 0
 
 
 def _dict(value: Any) -> dict[str, Any]:

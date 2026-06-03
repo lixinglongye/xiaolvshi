@@ -178,8 +178,8 @@ class MaintenanceEvidenceService:
                 id="deep-review-quality-gates",
                 category="quality",
                 title="Deep-review quality gate",
-                description="Deterministic gates verify that a report has enough structure, grounding, pending-fact handling, and disclaimers before review.",
-                responsibility="Quality gate tuning, regression tests, and release criteria maintenance.",
+                description="Deterministic gates and fixture smoke tests verify report structure, grounding, pending-fact handling, disclaimers, and small legal document coverage before review.",
+                responsibility="Quality gate tuning, legal fixture smoke coverage, regression tests, and release criteria maintenance.",
                 cadence="Review whenever report schema, legal source handling, or delivery policy changes.",
                 evidence_paths=(
                     "app/backend/services/report_quality_gate.py",

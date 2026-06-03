@@ -11,6 +11,8 @@ Model, prompt, retrieval, extraction, and report-schema changes should be evalua
 ```http
 GET /api/v1/maintenance/legal-review-benchmark
 POST /api/v1/maintenance/legal-review-benchmark
+GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
+POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 ```
 
 `GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
@@ -30,6 +32,21 @@ It also returns a lightweight public benchmark source catalog and small syntheti
 ```
 
 Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores.
+
+`GET /fixture-smoke` returns the small synthetic document fixtures, expected signals, expected task outputs, and an empty observation template.
+
+`POST /fixture-smoke` accepts observed model or pipeline output by fixture ID:
+
+```json
+{
+  "fixture-service-agreement-small": {
+    "route": "fast",
+    "output_text": "risk matrix ... liability cap ... missing facts ... replacement clause ..."
+  }
+}
+```
+
+The smoke evaluator scores signal coverage, task output coverage, and route match. It does not call a model and does not fetch public datasets.
 
 ## Research Basis
 

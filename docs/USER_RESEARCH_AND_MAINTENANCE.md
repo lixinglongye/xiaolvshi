@@ -36,7 +36,7 @@
 - 产品活跃度：上传文件数量、完成审查数量、案件工作台问答数量、用户中断率。
 - 用户需求雷达：通过 `/api/v1/maintenance/user-needs` 查看当前需求优先级、外部研究来源、证据路径和发布门禁关联。
 - 反馈路线图映射：通过 `/api/v1/maintenance/feedback-roadmap` 查看反馈类别如何映射到用户需求 ID 和发布门禁。
-- 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；默认只跑小型合成文书 fixture，LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
+- 法律审查基准：通过 `/api/v1/maintenance/legal-review-benchmark` 检查合同风险识别、证据完整性、长 PDF 解析、隐私上传、提示注入和法律 RAG grounding 场景；通过 `/api/v1/maintenance/legal-review-benchmark/fixture-smoke` 用小型合成文书评估模型或流水线输出覆盖率。LegalBench、CUAD、LexGLUE 和 Pile of Law 仅作为公开 benchmark 候选目录。
 
 ## Near-Term Maintenance Tasks
 

@@ -60,6 +60,26 @@ async def evaluate_legal_review_benchmark(run_results: dict[str, dict]):
     }
 
 
+@router.get("/legal-review-benchmark/fixture-smoke")
+async def get_legal_review_fixture_smoke_template():
+    """Return local synthetic legal document fixture smoke-test templates."""
+    service = LegalReviewBenchmarkService()
+    return {
+        "success": True,
+        "data": service.evaluate_fixture_smoke(),
+    }
+
+
+@router.post("/legal-review-benchmark/fixture-smoke")
+async def evaluate_legal_review_fixture_smoke(observations: dict[str, dict]):
+    """Evaluate supplied legal fixture smoke-test observations."""
+    service = LegalReviewBenchmarkService()
+    return {
+        "success": True,
+        "data": service.evaluate_fixture_smoke(observations),
+    }
+
+
 @router.get("/release-readiness")
 async def get_release_readiness():
     """Return the default release checklist before validation results are supplied."""

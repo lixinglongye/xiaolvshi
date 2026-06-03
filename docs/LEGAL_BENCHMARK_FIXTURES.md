@@ -24,6 +24,22 @@ This project keeps legal benchmark runs lightweight by separating public benchma
 - `fixture-low-text-pdf-page-small`: OCR confidence, low-text page handling, version conflict, and extraction routing checks.
 - `fixture-adversarial-upload-small`: privacy redaction, prompt-injection visibility, loan evidence gaps, and safety preflight checks.
 
+## Smoke Evaluator
+
+```http
+GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
+POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
+```
+
+The evaluator accepts observed output text and an optional route for each fixture. It returns:
+
+- signal coverage,
+- task output coverage,
+- route match,
+- missing signals and missing task outputs.
+
+This is meant for quick laptop checks after prompt, routing, report schema, extraction, or safety changes.
+
 ## Release Use
 
 The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.

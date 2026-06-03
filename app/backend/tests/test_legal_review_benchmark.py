@@ -53,6 +53,65 @@ def test_legal_review_benchmark_document_fixtures_map_to_known_cases():
         assert fixture["expected_signals"]
 
 
+def test_legal_review_fixture_smoke_template_tracks_all_fixtures():
+    service = LegalReviewBenchmarkService()
+    suite = service.build_suite()
+    template = service.build_fixture_smoke_template()
+
+    assert suite["fixture_smoke_template"]["fixture_count"] == suite["document_fixture_count"]
+    assert template["status"] == "ready"
+    assert template["fixture_count"] == len(template["default_observations"])
+    assert all(row["input_excerpt"] for row in template["fixtures"])
+
+
+def test_legal_review_fixture_smoke_default_is_not_run():
+    result = LegalReviewBenchmarkService().evaluate_fixture_smoke()
+
+    assert result["status"] == "not_run"
+    assert result["score"] == 0
+    assert result["not_run_fixture_count"] == result["fixture_count"]
+    assert result["recommended_actions"]
+
+
+def test_legal_review_fixture_smoke_passes_complete_observations():
+    service = LegalReviewBenchmarkService()
+    template = service.build_fixture_smoke_template()
+    observations = {}
+    for fixture in template["fixtures"]:
+        observations[fixture["id"]] = {
+            "route": fixture["expected_routes"][0],
+            "output_text": " ".join(fixture["expected_signals"] + fixture["expected_tasks"]),
+        }
+
+    result = service.evaluate_fixture_smoke(observations)
+
+    assert result["status"] == "pass"
+    assert result["score"] == 100
+    assert result["passed_fixture_count"] == result["fixture_count"]
+    assert result["blocking_fixture_ids"] == []
+
+
+def test_legal_review_fixture_smoke_fails_sparse_observation():
+    service = LegalReviewBenchmarkService()
+    template = service.build_fixture_smoke_template()
+    fixture = template["fixtures"][0]
+
+    result = service.evaluate_fixture_smoke(
+        {
+            fixture["id"]: {
+                "route": "review",
+                "output_text": "short summary only",
+            }
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert fixture["id"] in result["blocking_fixture_ids"]
+    failed = next(item for item in result["fixture_results"] if item["fixture_id"] == fixture["id"])
+    assert failed["missing_signals"]
+    assert failed["metric_scores"]["route_match"] == 0
+
+
 def test_legal_review_benchmark_default_evaluation_is_not_run():
     result = LegalReviewBenchmarkService().evaluate()
 
@@ -111,3 +170,35 @@ def test_legal_review_benchmark_route_returns_suite():
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["suite"]["case_count"] >= 6
+
+
+def test_legal_review_fixture_smoke_routes_return_template_and_evaluation():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.maintenance import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    get_response = client.get("/api/v1/maintenance/legal-review-benchmark/fixture-smoke")
+    assert get_response.status_code == 200
+    template_payload = get_response.json()
+    assert template_payload["success"] is True
+    assert template_payload["data"]["template"]["fixture_count"] >= 4
+
+    fixture = template_payload["data"]["template"]["fixtures"][0]
+    post_response = client.post(
+        "/api/v1/maintenance/legal-review-benchmark/fixture-smoke",
+        json={
+            fixture["id"]: {
+                "route": fixture["expected_routes"][0],
+                "output_text": " ".join(fixture["expected_signals"] + fixture["expected_tasks"]),
+            }
+        },
+    )
+    assert post_response.status_code == 200
+    assert post_response.json()["success"] is True
+    assert post_response.json()["data"]["fixture_results"][0]["status"] == "pass"
