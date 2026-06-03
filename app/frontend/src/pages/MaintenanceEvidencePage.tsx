@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import {
   getLegalFixtureModelMatrix,
   getLegalFixturePromptPack,
   getLegalFixtureLocalRunPackage,
+  getLegalFixtureResponseNormalizerTemplate,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
   getLegalKnowledgeAudit,
@@ -30,12 +32,14 @@ import {
   getFeedbackRoadmapCatalog,
   getReleaseReadiness,
   getUserNeedsRadar,
+  normalizeLegalFixtureResponse,
   type FeedbackRoadmapCatalog,
   type LegalFixtureEvidenceBundle,
   type LegalFixtureImprovementPlan,
   type LegalFixtureModelMatrix,
   type LegalFixturePromptPack,
   type LegalFixtureLocalRunPackage,
+  type LegalFixtureResponseNormalizer,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
   type LegalKnowledgeAudit,
@@ -120,6 +124,11 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
+  const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
+  const [normalizerPayloadText, setNormalizerPayloadText] = useState('');
+  const [normalizerError, setNormalizerError] = useState('');
+  const [normalizerLoading, setNormalizerLoading] = useState(false);
+  const [normalizerTemplateLoading, setNormalizerTemplateLoading] = useState(false);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
   const [fixtureSmoke, setFixtureSmoke] = useState<LegalReviewFixtureSmoke | null>(null);
@@ -209,6 +218,38 @@ function Inner() {
     await navigator.clipboard.writeText(data.form_answer);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
+  };
+
+  const loadNormalizerTemplate = async () => {
+    setNormalizerTemplateLoading(true);
+    setNormalizerError('');
+    try {
+      const template = await getLegalFixtureResponseNormalizerTemplate();
+      setNormalizerPayloadText(JSON.stringify(template.payload_shape, null, 2));
+    } catch (err) {
+      console.error(err);
+      setNormalizerError('Response normalizer template failed to load.');
+    } finally {
+      setNormalizerTemplateLoading(false);
+    }
+  };
+
+  const normalizeFixtureResponse = async () => {
+    setNormalizerLoading(true);
+    setNormalizerError('');
+    try {
+      const payload = normalizerPayloadText.trim() ? JSON.parse(normalizerPayloadText) : {};
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setNormalizerError('Normalizer payload must be a JSON object.');
+        return;
+      }
+      setFixtureResponseNormalizer(await normalizeLegalFixtureResponse(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setNormalizerError(err instanceof SyntaxError ? 'Normalizer payload is not valid JSON.' : 'Response normalization failed.');
+    } finally {
+      setNormalizerLoading(false);
+    }
   };
 
   return (
@@ -1388,6 +1429,175 @@ function Inner() {
                 </div>
               </section>
             )}
+
+            <section className="mb-8">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-black text-stone-950">Legal fixture response normalizer</h2>
+                  <div className="mt-1 text-sm text-stone-600">
+                    {fixtureResponseNormalizer
+                      ? `${fixtureResponseNormalizer.summary.normalized_observation_count} observations / ${fixtureResponseNormalizer.summary.redacted_response_count} redacted`
+                      : 'convert local gateway responses into fixture-smoke and run-report payloads'}
+                  </div>
+                </div>
+                <Badge variant="outline" className={statusClass[fixtureResponseNormalizer?.status ?? 'not_run'] ?? statusClass.warn}>
+                  {(fixtureResponseNormalizer?.status ?? 'not_run').replace(/_/g, ' ')}
+                </Badge>
+              </div>
+
+              {normalizerError && (
+                <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                  <AlertTriangle className="h-4 w-4" />
+                  {normalizerError}
+                </div>
+              )}
+
+              <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-stone-950">Gateway response payload</div>
+                      <div className="mt-1 text-xs text-stone-500">Paste local response JSON only; omit headers, keys, prompts, and client files.</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="soft-button"
+                        onClick={loadNormalizerTemplate}
+                        disabled={normalizerTemplateLoading}
+                      >
+                        {normalizerTemplateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clipboard className="h-4 w-4" />}
+                        Template
+                      </Button>
+                      <Button type="button" className="law-button" onClick={normalizeFixtureResponse} disabled={normalizerLoading}>
+                        {normalizerLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
+                        Normalize
+                      </Button>
+                    </div>
+                  </div>
+                  <Textarea
+                    value={normalizerPayloadText}
+                    onChange={(event) => setNormalizerPayloadText(event.target.value)}
+                    className="min-h-[280px] resize-y rounded-[8px] bg-white font-mono text-xs leading-5"
+                    spellCheck={false}
+                    placeholder='{"responses":{"fixture-service-agreement-small":{"route":"fast","model":"gemini-2.5-flash-lite","http_status":200,"gateway_response":{"choices":[{"message":{"content":"{\"fixture_id\":\"fixture-service-agreement-small\",\"route\":\"fast\"}"}}]}}}}'
+                  />
+                  <div className="mt-3 text-xs leading-5 text-stone-500">
+                    {fixtureResponseNormalizer?.privacy_note ??
+                      'The backend extracts message content, redacts secret-like values, and returns only normalized fixture payloads.'}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">
+                        {fixtureResponseNormalizer?.summary.response_count ?? 0}
+                      </div>
+                      <div className="mt-1 text-sm text-stone-600">responses</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">
+                        {fixtureResponseNormalizer?.summary.normalized_observation_count ?? 0}
+                      </div>
+                      <div className="mt-1 text-sm text-stone-600">observations</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">
+                        {fixtureResponseNormalizer?.summary.parsed_json_content_count ?? 0}
+                      </div>
+                      <div className="mt-1 text-sm text-stone-600">JSON parsed</div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">
+                        {fixtureResponseNormalizer?.summary.warning_check_count ?? 0}
+                      </div>
+                      <div className="mt-1 text-sm text-stone-600">warnings</div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Route</TableHead>
+                          <TableHead>Content</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(fixtureResponseNormalizer?.response_summaries ?? []).length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="py-6 text-center text-stone-500">
+                              Load a template or paste a local gateway response to normalize.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          fixtureResponseNormalizer?.response_summaries.map((row) => (
+                            <TableRow key={row.fixture_id}>
+                              <TableCell>
+                                <div className="font-mono text-xs font-semibold text-stone-950">{row.fixture_id}</div>
+                                <div className="mt-1 text-[11px] text-stone-500">
+                                  {row.known_fixture ? 'known fixture' : 'unknown fixture'}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={statusClass[row.status] ?? statusClass.warn}>
+                                  {row.status.replace(/_/g, ' ')}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[220px] font-mono text-xs text-stone-600">{row.model || '-'}</TableCell>
+                              <TableCell className="font-mono text-xs text-stone-600">{row.route || '-'}</TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>{row.content_length} chars</div>
+                                <div>{row.json_content_parsed ? 'JSON parsed' : 'plain text'}</div>
+                                {row.redacted && <div className="font-semibold text-amber-700">redacted</div>}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+
+              {fixtureResponseNormalizer && (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Next payloads</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>
+                        <span className="font-semibold text-stone-950">fixture-smoke:</span>{' '}
+                        <span className="font-mono">run_report_payload.observations</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-stone-950">run-report:</span>{' '}
+                        <span className="font-mono">run_report_payload</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-stone-950">metadata rows:</span>{' '}
+                        {Object.keys(fixtureResponseNormalizer.run_report_payload.run_metadata).length}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Normalizer actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {fixtureResponseNormalizer.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </section>
 
             {fixtureRunReport && (
               <section className="mb-8">

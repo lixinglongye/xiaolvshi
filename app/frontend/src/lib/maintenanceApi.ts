@@ -447,6 +447,59 @@ export type LegalFixtureLocalRunPackage = {
   privacy_note: string;
 };
 
+export type LegalFixtureResponseNormalizerTemplate = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  payload_shape: Record<string, unknown>;
+  validation_command: string;
+};
+
+export type LegalFixtureResponseNormalizer = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    response_count: number;
+    normalized_observation_count: number;
+    run_metadata_count: number;
+    known_fixture_count: number;
+    parsed_json_content_count: number;
+    redacted_response_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+  };
+  observations: Record<string, unknown>;
+  run_report_payload: {
+    observations: Record<string, unknown>;
+    run_metadata: Record<string, unknown>;
+  };
+  response_summaries: Array<{
+    fixture_id: string;
+    known_fixture: boolean;
+    http_status?: number | null;
+    model: string;
+    route?: string | null;
+    content_length: number;
+    json_content_parsed: boolean;
+    redacted: boolean;
+    status: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalFixtureRunReportRow = {
   fixture_id: string;
   title: string;
@@ -751,6 +804,16 @@ type LegalFixtureLocalRunPackageResponse = {
   data: LegalFixtureLocalRunPackage;
 };
 
+type LegalFixtureResponseNormalizerTemplateResponse = {
+  success: boolean;
+  data: LegalFixtureResponseNormalizerTemplate;
+};
+
+type LegalFixtureResponseNormalizerResponse = {
+  success: boolean;
+  data: LegalFixtureResponseNormalizer;
+};
+
 type LegalFixtureRunReportResponse = {
   success: boolean;
   data: LegalFixtureRunReport;
@@ -939,6 +1002,33 @@ export async function getLegalFixtureLocalRunPackage(): Promise<LegalFixtureLoca
     return payload.data;
   }
   return payload as LegalFixtureLocalRunPackage;
+}
+
+export async function getLegalFixtureResponseNormalizerTemplate(): Promise<LegalFixtureResponseNormalizerTemplate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/local-response-normalizer',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalFixtureResponseNormalizerTemplateResponse
+    | LegalFixtureResponseNormalizerTemplate;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureResponseNormalizerTemplate;
+}
+
+export async function normalizeLegalFixtureResponse(payload: Record<string, unknown>): Promise<LegalFixtureResponseNormalizer> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/local-response-normalizer',
+    method: 'POST',
+    data: payload,
+  });
+  const response = (resp?.data ?? resp) as LegalFixtureResponseNormalizerResponse | LegalFixtureResponseNormalizer;
+  if ('success' in response && 'data' in response) {
+    return response.data;
+  }
+  return response as LegalFixtureResponseNormalizer;
 }
 
 export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport> {
