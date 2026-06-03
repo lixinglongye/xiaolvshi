@@ -1,6 +1,7 @@
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query
+from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
@@ -50,6 +51,15 @@ async def get_feedback_roadmap_mapping():
     return {
         "success": True,
         "data": FeedbackRoadmapAlignmentService().build_mapping_catalog(),
+    }
+
+
+@router.get("/continuous-update-ledger")
+async def get_continuous_update_ledger():
+    """Return the long-running update ledger without claiming completion early."""
+    return {
+        "success": True,
+        "data": ContinuousUpdateLedgerService().build_ledger(),
     }
 
 

@@ -597,6 +597,20 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_legal_grounding_quick_audit.py tests/test_legal_rag_evaluation.py tests/test_citation_audit.py tests/test_evidence_audit.py -q",
             ),
             ReleaseCheck(
+                id="continuous-update-ledger",
+                title="Continuous update ledger evidence",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                validation_command="python -m pytest tests/test_continuous_update_ledger.py -q",
+                manual_note="This is progress evidence only; it must not claim the 24-hour or 100-update goal is complete before both are reviewable.",
+            ),
+            ReleaseCheck(
                 id="oss-maintenance-evidence",
                 title="OSS maintenance evidence",
                 category="maintenance",

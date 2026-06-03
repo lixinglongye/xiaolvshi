@@ -50,6 +50,7 @@
 - Legal fixture local run reviews: `/api/v1/maintenance/legal-review-benchmark/local-run-review` normalizes one or two local gateway responses, runs fixture smoke scoring, builds the cheap-first run report, and returns an evidence bundle in one low-resource maintenance step.
 - Legal fixture run reports: `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` converts fixture observations into cheap-first release decisions and fixture-scoped escalation actions.
 - Legal fixture evidence bundles: `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` archives component statuses, validation commands, release-safe claims, and cheap-first run evidence for small local benchmark cycles.
+- Continuous update ledger: `/api/v1/maintenance/continuous-update-ledger` tracks shipped and planned medium/large maintenance updates, the remaining count toward 100+ updates, and the 24-hour evidence requirements without claiming completion early.
 
 ## Near-Term Maintenance Tasks
 

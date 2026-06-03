@@ -20,7 +20,7 @@ The response includes:
 - `application_guardrails`: claims that must be manually verified before submitting a support form.
 - `form_answer`: a concise English or Chinese paragraph suitable for support application fields.
 
-The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface.
+The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets.
 
 ## Why this exists
 
@@ -35,16 +35,19 @@ It is safe to say this repository has active development, reviewability controls
 - Review operations: citation, evidence, and legal grounding quick audits.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, report mapping, and API types.
-- Maintenance planning: user research and maintenance notes.
+- Maintenance planning: user research, maintenance notes, and the continuous update ledger.
 
 ## Related files
 
 - `app/backend/services/maintenance_evidence.py`
+- `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_maintenance_evidence.py`
+- `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
+- `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`
