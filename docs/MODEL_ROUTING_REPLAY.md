@@ -24,6 +24,7 @@ The response includes `routing_replay` next to:
 - `budget_policy`
 - `capability_matrix`
 - `escalation_policy`
+- `fallback_chains`
 - `cost_forecast`
 - `cost_guardrails`
 - `models`

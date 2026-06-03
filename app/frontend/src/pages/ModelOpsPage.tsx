@@ -70,6 +70,7 @@ function Inner() {
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
+  const fallbackChainRows = data?.fallback_chains?.chains ?? [];
   const routingReplayRows = data?.routing_replay?.scenarios ?? [];
   const forecastRows = data?.cost_forecast?.profiles ?? [];
   const guardrailRows = data?.cost_guardrails?.checks ?? [];
@@ -346,6 +347,130 @@ function Inner() {
                     </TableCell>
                     <TableCell className="text-stone-700">{row.candidate_count}</TableCell>
                     <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{row.requirement.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Fallback chains</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                {data?.fallback_chains?.summary.chain_count ?? 0} chains /{' '}
+                {data?.fallback_chains?.summary.operator_review_step_count ?? 0} operator-review steps
+              </div>
+            </div>
+            <Badge
+              variant="outline"
+              className={
+                data?.fallback_chains?.status === 'pass'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : data?.fallback_chains?.status === 'fail'
+                    ? 'border-red-200 bg-red-50 text-red-800'
+                    : 'border-amber-200 bg-amber-50 text-amber-900'
+              }
+            >
+              {data?.fallback_chains?.status ?? 'not loaded'}
+            </Badge>
+          </div>
+          <div className="mb-3 grid gap-3 md:grid-cols-4">
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.fallback_chains?.summary.cheap_primary_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">cheap primaries</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.fallback_chains?.summary.premium_exception_task_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">premium tasks</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.fallback_chains?.summary.warn_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">warnings</div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-2xl font-black text-stone-950">
+                {data?.fallback_chains?.summary.fail_count ?? 0}
+              </div>
+              <div className="mt-1 text-sm text-stone-600">failures</div>
+            </div>
+          </div>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Chain</TableHead>
+                  <TableHead>Hard stops</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fallbackChainRows.map((chain) => (
+                  <TableRow key={chain.task}>
+                    <TableCell>
+                      <div className="font-semibold text-stone-950">{chain.display_name}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{chain.task}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          chain.status === 'pass'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                            : chain.status === 'fail'
+                              ? 'border-red-200 bg-red-50 text-red-800'
+                              : 'border-amber-200 bg-amber-50 text-amber-900'
+                        }
+                      >
+                        {chain.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={costClass[chain.max_cost_tier] ?? 'bg-white'}>
+                        max {chain.max_cost_tier}
+                      </Badge>
+                      <div className="mt-1 text-xs text-stone-500">{chain.budget_mode}</div>
+                    </TableCell>
+                    <TableCell className="max-w-[420px]">
+                      <div className="space-y-1">
+                        {chain.steps.map((step) => (
+                          <div key={`${chain.task}-${step.order}`} className="rounded-[6px] border border-stone-950/10 bg-white px-2 py-1">
+                            <div className="font-mono text-[11px] text-stone-950">
+                              {step.order}. {step.role}: {step.resolved_model}
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              <Badge variant="outline" className={costClass[step.cost_tier] ?? 'bg-white'}>
+                                {step.cost_tier}
+                              </Badge>
+                              <Badge variant="outline" className="bg-white">
+                                {step.latency_tier}
+                              </Badge>
+                              {step.requires_operator_review && (
+                                <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800">
+                                  review
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                      {chain.hard_stop_signals.join(', ') || '-'}
+                    </TableCell>
+                    <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                      {chain.recommended_action}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

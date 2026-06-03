@@ -203,6 +203,57 @@ export type ModelRoutingReplay = {
   scenarios: ModelRoutingReplayScenario[];
 };
 
+export type ModelFallbackChainStep = {
+  order: number;
+  role: string;
+  trigger: string;
+  model_alias?: string | null;
+  resolved_model: string;
+  cost_tier: string;
+  latency_tier: string;
+  model_status: string;
+  requires_operator_review: boolean;
+  source: string;
+  note: string;
+};
+
+export type ModelFallbackChain = {
+  task: string;
+  display_name: string;
+  status: string;
+  budget_mode: string;
+  max_cost_tier: string;
+  runtime_default_model?: string | null;
+  recommended_model?: string | null;
+  source: string;
+  hard_stop_signals: string[];
+  steps: ModelFallbackChainStep[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  recommended_action: string;
+};
+
+export type ModelFallbackChains = {
+  status: string;
+  method: {
+    strategy: string;
+    notes: string[];
+  };
+  summary: {
+    chain_count: number;
+    pass_count: number;
+    warn_count: number;
+    fail_count: number;
+    cheap_primary_count: number;
+    operator_review_step_count: number;
+    premium_exception_task_count: number;
+  };
+  chains: ModelFallbackChain[];
+};
+
 export type ModelCostForecastProfile = {
   task: string;
   initial_model: string;
@@ -283,6 +334,7 @@ export type ModelOpsResponse = {
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;
+  fallback_chains?: ModelFallbackChains;
   routing_replay?: ModelRoutingReplay;
   cost_forecast?: ModelCostForecast;
   cost_guardrails?: ModelCostGuardrails;

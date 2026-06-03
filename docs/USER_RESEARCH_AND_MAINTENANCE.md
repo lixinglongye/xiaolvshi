@@ -23,6 +23,7 @@
 - API 路由稳定性：`/api/v1/aihub/models` 返回的别名、默认模型和网关可用性。
 - 成本指标：OCR/分类/审查/PDF 分析各阶段 token 用量和模型分布；当前可通过 `/api/v1/aihub/models/usage` 和前端 `/model-ops` 查看本进程内聚合数据。
 - 升级策略：`/api/v1/aihub/models` 的 `escalation_policy` 记录 cheap-first 起点、质量失败升级信号和隐私/提示注入硬停止规则。
+- 回退链：`/api/v1/aihub/models` 的 `fallback_chains` 记录每个任务的 primary、verify、fallback 和 premium-exception 顺序，便于网关模型不可用时仍低价优先。
 - 成本预测：`/api/v1/aihub/models` 的 `cost_forecast` 会对 cheap-first cascade 与 premium-only baseline 做月度成本对比。
 - 成本守卫：`/api/v1/aihub/models` 的 `cost_guardrails` 会检查预算占用、失败率、premium 请求比例、未知价格模型和 cheap-first 节省目标。
 - 路由回放：`/api/v1/aihub/models` 的 `routing_replay` 会用固定法律工作流场景检查 cheap-first 起点、premium 人工复核和硬停止是否发生漂移。
@@ -47,6 +48,7 @@
 - 用 `model_cost_forecast.py` 复查高频任务的预计成本节省；当网关价格变化时同步更新模型目录和预测画像。
 - 用 `model_cost_guardrails.py` 监控实际用量漂移，发现 premium 比例或未知价格模型异常时先修路由再增加预算。
 - 用 `model_routing_replay.py` 在发布前回放典型场景，确认便宜模型优先策略没有被配置改动破坏。
+- 用 `model_fallback_chains.py` 检查模型不可用、质量不足或需要人工复核时的下一步模型选择。
 
 ## Application-Safe Claim
 

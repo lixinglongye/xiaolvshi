@@ -19,6 +19,7 @@ The response includes:
 - `budget_policy`
 - `capability_matrix`
 - `escalation_policy`
+- `fallback_chains`
 - `routing_replay`
 - `models`
 - `usage`
@@ -69,11 +70,15 @@ The policy object contains only routing metadata. It does not store prompts, doc
 
 `routing_replay` replays fixed legal workflow scenarios against this policy. It verifies that routine routes remain cheap-first, premium review routes still require operator review, and hard-stop signals do not select another model.
 
+`fallback_chains` turns these escalation steps into per-task primary, verify, fallback, and premium-exception chains. This makes gateway or model availability changes easier to inspect before a maintainer changes defaults.
+
 ## Related files
 
 - `app/backend/services/model_escalation_policy.py`
+- `app/backend/services/model_fallback_chains.py`
 - `app/backend/services/model_routing_replay.py`
 - `app/backend/tests/test_model_escalation_policy.py`
+- `app/backend/tests/test_model_fallback_chains.py`
 - `app/backend/tests/test_model_routing_replay.py`
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/pages/ModelOpsPage.tsx`

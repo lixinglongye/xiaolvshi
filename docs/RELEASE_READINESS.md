@@ -22,6 +22,7 @@ POST /api/v1/maintenance/release-readiness
   "model-cost-forecast": "pass",
   "model-cost-guardrails": "pass",
   "model-routing-replay": "pass",
+  "model-fallback-chains": "pass",
   "deep-review-release-decision": "pass",
   "document-preflight": "pass",
   "extraction-quality": "pass",
@@ -49,6 +50,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Model cost forecast coverage.
 - Model cost guardrail coverage.
 - Model routing replay coverage.
+- Model fallback chain coverage.
 - Deep-review release decision coverage.
 - Document preflight routing coverage.
 - Extraction quality audit coverage.

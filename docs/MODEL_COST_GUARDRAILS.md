@@ -26,6 +26,8 @@ The response includes `cost_guardrails` next to:
 - `budget_policy`
 - `capability_matrix`
 - `escalation_policy`
+- `fallback_chains`
+- `routing_replay`
 
 ## Checks
 
