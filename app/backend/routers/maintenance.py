@@ -2,6 +2,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Query
 from services.billing_entitlement_gap import BillingEntitlementGapService
+from services.billing_quota_persistence_plan import BillingQuotaPersistencePlanService
 from services.billing_usage_quota_policy import BillingUsageQuotaPolicyService, UsageRequest, UsageSnapshot
 from services.case_evidence_graph import CaseEvidenceGraphService
 from services.case_intake_completeness import CaseIntakeCompletenessService
@@ -13,6 +14,7 @@ from services.case_workbench_payload import CaseWorkbenchPayloadService
 from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
+from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
 from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
@@ -40,6 +42,7 @@ from services.legal_external_research_digest import LegalExternalResearchDigestS
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
+from services.legal_source_ingestion_metadata import LegalSourceIngestionMetadataService
 from services.legal_source_freshness_policy import LegalSourceFreshnessPolicyService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
@@ -154,6 +157,24 @@ async def evaluate_billing_usage_quota_policy(payload: dict[str, Any]):
             UsageSnapshot(**snapshot_fields),
             UsageRequest(**request_fields),
         ),
+    }
+
+
+@router.get("/billing-quota-persistence-plan")
+async def get_billing_quota_persistence_plan():
+    """Return privacy-safe billing quota counter persistence plan metadata."""
+    return {
+        "success": True,
+        "data": BillingQuotaPersistencePlanService().build_plan(),
+    }
+
+
+@router.post("/billing-quota-persistence-plan")
+async def evaluate_billing_quota_persistence_plan(events: list[dict[str, Any]]):
+    """Evaluate sample billing quota events before durable persistence."""
+    return {
+        "success": True,
+        "data": BillingQuotaPersistencePlanService().build_plan(events),
     }
 
 
@@ -386,6 +407,24 @@ async def evaluate_document_delivery_package_manifest(payload: dict[str, Any]):
     return {
         "success": True,
         "data": DocumentDeliveryPackageManifestService().build_manifest(payload),
+    }
+
+
+@router.get("/contract-clause-extraction-schema")
+async def get_contract_clause_extraction_schema_template():
+    """Return contract clause extraction and review schema metadata."""
+    return {
+        "success": True,
+        "data": ContractClauseExtractionSchemaService().build_schema(),
+    }
+
+
+@router.post("/contract-clause-extraction-schema")
+async def evaluate_contract_clause_extraction_schema(clauses: list[dict[str, Any]]):
+    """Evaluate extracted contract clause metadata before clause-level review."""
+    return {
+        "success": True,
+        "data": ContractClauseExtractionSchemaService().build_schema(clauses),
     }
 
 
@@ -683,6 +722,27 @@ async def evaluate_legal_source_freshness_policy(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalSourceFreshnessPolicyService().build_policy(sources if isinstance(sources, list) else None),
+    }
+
+
+@router.get("/legal-review-benchmark/source-ingestion-metadata")
+async def get_legal_source_ingestion_metadata_template():
+    """Return legal source ingestion metadata schema and sample evaluation."""
+    return {
+        "success": True,
+        "data": LegalSourceIngestionMetadataService().build_metadata_contract(),
+    }
+
+
+@router.post("/legal-review-benchmark/source-ingestion-metadata")
+async def evaluate_legal_source_ingestion_metadata(payload: dict[str, Any]):
+    """Evaluate legal source ingestion metadata records without raw legal text."""
+    records = payload.get("records")
+    return {
+        "success": True,
+        "data": LegalSourceIngestionMetadataService().build_metadata_contract(
+            records if isinstance(records, list) else None
+        ),
     }
 
 

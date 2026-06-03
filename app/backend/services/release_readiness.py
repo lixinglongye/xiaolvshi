@@ -662,6 +662,20 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_legal_external_research_digest.py tests/test_legal_research_backlog.py tests/test_legal_review_benchmark.py tests/test_legal_document_benchmark_fixtures.py tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_gateway_manifest.py tests/test_legal_fixture_run_plan.py tests/test_legal_fixture_local_run_package.py tests/test_legal_fixture_response_normalizer.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py tests/test_legal_fixture_run_report.py tests/test_legal_fixture_evidence_bundle.py tests/test_legal_fixture_improvement.py -q",
             ),
             ReleaseCheck(
+                id="contract-clause-extraction-schema",
+                title="Contract clause extraction schema",
+                category="legal_quality",
+                required=False,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/contract_clause_extraction_schema.py",
+                    "app/backend/tests/test_contract_clause_extraction_schema.py",
+                    "docs/CONTRACT_CLAUSE_EXTRACTION_SCHEMA.md",
+                ),
+                validation_command="python -m pytest tests/test_contract_clause_extraction_schema.py tests/test_legal_document_benchmark_fixtures.py -q",
+                manual_note="This is a metadata schema for clause-level review; full extraction from raw contracts remains separate implementation work.",
+            ),
+            ReleaseCheck(
                 id="legal-knowledge-audit",
                 title="Legal knowledge seed audit coverage",
                 category="legal_quality",
@@ -686,6 +700,20 @@ class ReleaseReadinessService:
                     "docs/LEGAL_SOURCE_FRESHNESS_POLICY.md",
                 ),
                 validation_command="python -m pytest tests/test_legal_source_freshness_policy.py tests/test_legal_knowledge_audit.py -q",
+            ),
+            ReleaseCheck(
+                id="legal-source-ingestion-metadata",
+                title="Legal source ingestion metadata",
+                category="legal_quality",
+                required=False,
+                owner="legal_knowledge_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_source_ingestion_metadata.py",
+                    "app/backend/tests/test_legal_source_ingestion_metadata.py",
+                    "docs/LEGAL_SOURCE_INGESTION_METADATA.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py -q",
+                manual_note="This defines metadata-only source ingestion contracts; durable indexing and source-body storage remain separate.",
             ),
             ReleaseCheck(
                 id="legal-rag-evaluation",
@@ -1027,6 +1055,20 @@ class ReleaseReadinessService:
                 ),
                 validation_command="python -m pytest tests/test_billing_usage_quota_policy.py tests/test_billing_entitlement_gap.py -q",
                 manual_note="This evaluates local quota counters only; live payment provider integration remains separate.",
+            ),
+            ReleaseCheck(
+                id="billing-quota-persistence-plan",
+                title="Billing quota persistence plan",
+                category="maintenance",
+                required=False,
+                owner="product_maintainer",
+                evidence_paths=(
+                    "app/backend/services/billing_quota_persistence_plan.py",
+                    "app/backend/tests/test_billing_quota_persistence_plan.py",
+                    "docs/BILLING_QUOTA_PERSISTENCE_PLAN.md",
+                ),
+                validation_command="python -m pytest tests/test_billing_quota_persistence_plan.py tests/test_billing_usage_quota_policy.py -q",
+                manual_note="This defines privacy-safe counter persistence metadata only; database migrations and payment integration remain separate.",
             ),
             ReleaseCheck(
                 id="oss-maintenance-evidence",

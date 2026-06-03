@@ -60,9 +60,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-role-permission-matrix" in completed_ids
     assert "billing-usage-quota-policy" in completed_ids
     assert "feedback-lifecycle-policy" in completed_ids
-    assert "case-workbench-ui-binding" in queue_ids
-    assert "legal-source-ingestion-metadata" in queue_ids
-    assert "billing-quota-persistence" in queue_ids
+    assert "contract-clause-extraction-schema" in completed_ids
+    assert "case-workbench-ui-binding" in completed_ids
+    assert "legal-source-ingestion-metadata" in completed_ids
+    assert "billing-quota-persistence" in completed_ids
+    assert "case-workbench-persistent-state" in queue_ids
+    assert "legal-source-durable-index" in queue_ids
+    assert "billing-quota-migration-plan" in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

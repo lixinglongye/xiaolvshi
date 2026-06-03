@@ -21,6 +21,7 @@ import {
   getCaseTaskNotificationPolicy,
   getCaseTimelineDeadlineRisk,
   getCaseTeamAccessPolicy,
+  getCaseWorkbenchPayload,
   getClientDeliveryRiskChecklist,
   getContinuousUpdateLedger,
   getEvidenceExhibitPackagePolicy,
@@ -54,6 +55,7 @@ import {
   type CaseTaskNotificationPolicy,
   type CaseTimelineDeadlineRisk,
   type CaseTeamAccessPolicy,
+  type CaseWorkbenchPayload,
   type ClientDeliveryRiskChecklist,
   type ContinuousUpdateLedger,
   type ContinuousUpdateLedgerEntry,
@@ -105,6 +107,7 @@ const priorityClass: Record<string, string> = {
   critical: 'border-red-300 bg-red-100 text-red-900',
   high: 'border-red-200 bg-red-50 text-red-800',
   medium: 'border-amber-200 bg-amber-50 text-amber-900',
+  info: 'border-sky-200 bg-sky-50 text-sky-800',
   low: 'border-stone-200 bg-stone-50 text-stone-700',
 };
 
@@ -119,6 +122,7 @@ const statusClass: Record<string, string> = {
   preflight: 'border-sky-200 bg-sky-50 text-sky-800',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  needs_attention: 'border-amber-200 bg-amber-50 text-amber-900',
   manual_review: 'border-amber-200 bg-amber-50 text-amber-900',
   ocr_needed: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
@@ -191,6 +195,7 @@ function Inner() {
     useState<EvidenceExhibitPackagePolicy | null>(null);
   const [caseTaskNotificationPolicy, setCaseTaskNotificationPolicy] =
     useState<CaseTaskNotificationPolicy | null>(null);
+  const [caseWorkbenchPayload, setCaseWorkbenchPayload] = useState<CaseWorkbenchPayload | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -244,6 +249,7 @@ function Inner() {
         lawyerReviewWorkflowPolicyData,
         evidenceExhibitPackagePolicyData,
         caseTaskNotificationPolicyData,
+        caseWorkbenchPayloadData,
         benchmarkData,
         researchBacklogData,
         publicBenchmarkSamplerData,
@@ -276,6 +282,7 @@ function Inner() {
         getLawyerReviewWorkflowPolicy(),
         getEvidenceExhibitPackagePolicy(),
         getCaseTaskNotificationPolicy(),
+        getCaseWorkbenchPayload(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
         getLegalPublicBenchmarkSampler(),
@@ -309,6 +316,7 @@ function Inner() {
       setLawyerReviewWorkflowPolicy(lawyerReviewWorkflowPolicyData);
       setEvidenceExhibitPackagePolicy(evidenceExhibitPackagePolicyData);
       setCaseTaskNotificationPolicy(caseTaskNotificationPolicyData);
+      setCaseWorkbenchPayload(caseWorkbenchPayloadData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
@@ -1209,6 +1217,190 @@ function Inner() {
                   </div>
                 </div>
               )}
+            </div>
+          </section>
+        )}
+
+        {caseWorkbenchPayload && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Case workbench payload</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Frontend-ready template payload for the case workbench dashboard, sections, blockers, and actions.
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant="outline"
+                  className={statusClass[caseWorkbenchPayload.dashboard.status] ?? statusClass.not_run}
+                >
+                  dashboard: {caseWorkbenchPayload.dashboard.status.replace(/_/g, ' ')}
+                </Badge>
+                <Badge variant="outline" className="bg-white font-mono text-[11px]">
+                  {caseWorkbenchPayload.payload_id}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase text-stone-500">Dashboard status</div>
+                <div className="mt-2 text-2xl font-black text-stone-950">
+                  {caseWorkbenchPayload.dashboard.status.replace(/_/g, ' ')}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-stone-500">
+                  {caseWorkbenchPayload.dashboard.deterministic ? 'deterministic local template' : 'dynamic payload'}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase text-stone-500">Sections</div>
+                <div className="mt-2 text-2xl font-black text-stone-950">
+                  {caseWorkbenchPayload.dashboard.evaluated_section_count}/
+                  {caseWorkbenchPayload.dashboard.section_count}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-stone-500">evaluated sections</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase text-stone-500">Blockers</div>
+                <div className="mt-2 text-2xl font-black text-stone-950">
+                  {caseWorkbenchPayload.dashboard.blocker_count}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-stone-500">
+                  {caseWorkbenchPayload.dashboard.primary_blocker?.title ?? 'no blocking items'}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase text-stone-500">Next actions</div>
+                <div className="mt-2 text-2xl font-black text-stone-950">
+                  {caseWorkbenchPayload.dashboard.next_action_count}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-stone-500">
+                  {caseWorkbenchPayload.dashboard.critical_action_count} critical
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-2">
+                  <h3 className="text-sm font-black uppercase text-stone-500">Sections</h3>
+                  <div className="text-xs text-stone-500">
+                    {caseWorkbenchPayload.case_ref} / {caseWorkbenchPayload.matter_ref}
+                  </div>
+                </div>
+                <div className="max-h-[360px] overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Section</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Metrics</TableHead>
+                        <TableHead>Preview</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {caseWorkbenchPayload.sections.map((section) => (
+                        <TableRow key={section.id}>
+                          <TableCell className="max-w-[240px]">
+                            <div className="font-semibold text-stone-950">{section.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{section.id}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{section.source}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline" className={statusClass[section.status] ?? statusClass.not_run}>
+                                {section.status.replace(/_/g, ' ')}
+                              </Badge>
+                              <Badge variant="outline" className="bg-white">
+                                {section.input_state.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-[11px] text-stone-500">severity: {section.severity}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px]">
+                            <div className="flex flex-wrap gap-1">
+                              {section.metrics.map((metric) => (
+                                <Badge key={metric.id} variant="outline" className="bg-white text-[11px]">
+                                  {metric.label}: {formatInline(metric.value)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {section.empty_state?.message ??
+                              (section.preview_items.length
+                                ? `${section.preview_items.length} preview items`
+                                : 'No preview items')}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Blockers</h3>
+                    <Badge variant="outline" className="bg-white">
+                      {caseWorkbenchPayload.blockers.length}
+                    </Badge>
+                  </div>
+                  {caseWorkbenchPayload.blockers.length === 0 ? (
+                    <div className="border-t border-stone-950/10 pt-3 text-sm text-stone-600">
+                      No blockers in the current template payload.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-stone-950/10">
+                      {caseWorkbenchPayload.blockers.slice(0, 4).map((blocker) => (
+                        <div key={blocker.id} className="py-3 first:pt-1 last:pb-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className={statusClass.blocked}>
+                              {blocker.severity}
+                            </Badge>
+                            <span className="text-xs font-semibold text-stone-950">{blocker.title}</span>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{blocker.reason}</div>
+                          <div className="mt-1 text-[11px] leading-5 text-stone-500">
+                            {blocker.source_section.replace(/_/g, ' ')}: {blocker.required_action}
+                          </div>
+                        </div>
+                      ))}
+                      {caseWorkbenchPayload.blockers.length > 4 && (
+                        <div className="pt-3 text-xs text-stone-500">
+                          +{caseWorkbenchPayload.blockers.length - 4} more blockers
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <Badge variant="outline" className="bg-white">
+                      {caseWorkbenchPayload.next_actions.length}
+                    </Badge>
+                  </div>
+                  <div className="divide-y divide-stone-950/10">
+                    {caseWorkbenchPayload.next_actions.slice(0, 6).map((action) => (
+                      <div key={action.id} className="py-3 first:pt-1 last:pb-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className={priorityClass[action.priority] ?? priorityClass.low}>
+                            {action.priority}
+                          </Badge>
+                          <span className="font-mono text-[11px] text-stone-500">
+                            {action.source_section.replace(/_/g, ' ')} / {action.owner.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-xs leading-5 text-stone-700">{action.action}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}

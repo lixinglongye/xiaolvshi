@@ -102,12 +102,12 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback roadmap alignment coverage.
 - Feedback lifecycle policy coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including research-backed legal AI backlog planning, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
+- Legal review benchmark coverage, including research-backed legal AI backlog planning, legal document benchmark fixtures, contract clause extraction schema, small legal corpus expansion, RAG failure fixtures, resource-capped public benchmark samplers, quick laptop-safe fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, case evidence graph contracts, case workbench payload contracts, case role permission matrices, matter intake readiness, deadline validation, document delivery package manifests, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, case evidence graph contracts, case workbench payload contracts, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, legal source ingestion metadata, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -120,17 +120,20 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/billing_entitlement_gap.py`
+- `app/backend/services/billing_quota_persistence_plan.py`
 - `app/backend/services/billing_usage_quota_policy.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
 - `app/backend/services/client_delivery_transparency_policy.py`
+- `app/backend/services/contract_clause_extraction_schema.py`
 - `app/backend/services/deadline_validation_policy.py`
 - `app/backend/services/document_delivery_package_manifest.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
+- `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
 - `app/backend/services/small_legal_document_corpus_expansion.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
@@ -146,17 +149,20 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
+- `app/backend/tests/test_billing_quota_persistence_plan.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
 - `app/backend/tests/test_client_delivery_transparency_policy.py`
+- `app/backend/tests/test_contract_clause_extraction_schema.py`
 - `app/backend/tests/test_deadline_validation_policy.py`
 - `app/backend/tests/test_document_delivery_package_manifest.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
+- `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
@@ -170,17 +176,20 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 - `app/backend/tests/test_legal_research_backlog.py`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
+- `docs/BILLING_QUOTA_PERSISTENCE_PLAN.md`
 - `docs/BILLING_USAGE_QUOTA_POLICY.md`
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
 - `docs/CASE_WORKBENCH_PAYLOAD.md`
 - `docs/CLIENT_DELIVERY_TRANSPARENCY_POLICY.md`
+- `docs/CONTRACT_CLAUSE_EXTRACTION_SCHEMA.md`
 - `docs/DEADLINE_VALIDATION_POLICY.md`
 - `docs/DOCUMENT_DELIVERY_PACKAGE_MANIFEST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
+- `docs/LEGAL_SOURCE_INGESTION_METADATA.md`
 - `docs/LEGAL_SOURCE_FRESHNESS_POLICY.md`
 - `docs/SMALL_LEGAL_DOCUMENT_CORPUS_EXPANSION.md`
 - `docs/MATTER_INTAKE_READINESS_POLICY.md`

@@ -952,6 +952,94 @@ type CaseTaskNotificationPolicyResponse = {
   data: CaseTaskNotificationPolicy;
 };
 
+export type CaseWorkbenchMetric = {
+  id: string;
+  label: string;
+  value: string | number | boolean | null;
+};
+
+export type CaseWorkbenchSection = {
+  id: string;
+  title: string;
+  source: string;
+  input_state: string;
+  status: string;
+  raw_status: string;
+  severity: string;
+  summary: Record<string, string | number | boolean | null>;
+  metrics: CaseWorkbenchMetric[];
+  preview_items: Array<Record<string, string | number | boolean | string[] | null>>;
+  empty_state?: {
+    title: string;
+    message: string;
+  } | null;
+};
+
+export type CaseWorkbenchBlocker = {
+  id: string;
+  source_section: string;
+  source: string;
+  severity: string;
+  title: string;
+  reason: string;
+  required_action: string;
+};
+
+export type CaseWorkbenchNextAction = {
+  id: string;
+  source_section: string;
+  priority: string;
+  owner: string;
+  action: string;
+};
+
+export type CaseWorkbenchPayload = {
+  payload_id: string;
+  version: number;
+  status: string;
+  case_ref: string;
+  matter_ref: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  dashboard: {
+    status: string;
+    deterministic: boolean;
+    section_count: number;
+    evaluated_section_count: number;
+    blocker_count: number;
+    next_action_count: number;
+    critical_action_count: number;
+    cards: Array<{
+      section_id: string;
+      title: string;
+      status: string;
+      severity: string;
+      primary_metric: CaseWorkbenchMetric | null;
+    }>;
+    primary_blocker: CaseWorkbenchBlocker | null;
+    primary_next_action: CaseWorkbenchNextAction | null;
+  };
+  sections: CaseWorkbenchSection[];
+  blockers: CaseWorkbenchBlocker[];
+  next_actions: CaseWorkbenchNextAction[];
+  source_contracts: Array<{
+    section_id: string;
+    source: string;
+    input_state: string;
+    status: string;
+    validation_commands: string[];
+  }>;
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type CaseWorkbenchPayloadResponse = {
+  success: boolean;
+  data: CaseWorkbenchPayload;
+};
+
 export type LegalReviewBenchmarkCaseResult = {
   case_id: string;
   title: string;
@@ -1942,6 +2030,18 @@ export async function getCaseTaskNotificationPolicy(): Promise<CaseTaskNotificat
     return payload.data;
   }
   return payload as CaseTaskNotificationPolicy;
+}
+
+export async function getCaseWorkbenchPayload(): Promise<CaseWorkbenchPayload> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case-workbench-payload',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as CaseWorkbenchPayloadResponse | CaseWorkbenchPayload;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as CaseWorkbenchPayload;
 }
 
 export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
