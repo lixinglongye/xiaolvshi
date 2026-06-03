@@ -53,6 +53,7 @@ This keeps:
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_team_access_policy.py`
 - `app/backend/services/client_delivery_risk_checklist.py`
+- `app/backend/services/legal_document_template_matrix.py`
 - `app/backend/services/legal_external_research_digest.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
@@ -60,6 +61,7 @@ This keeps:
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_team_access_policy.py`
 - `app/backend/tests/test_client_delivery_risk_checklist.py`
+- `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_external_research_digest.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
@@ -69,6 +71,7 @@ This keeps:
 - `docs/CASE_INTAKE_COMPLETENESS.md`
 - `docs/CASE_TEAM_ACCESS_POLICY.md`
 - `docs/CLIENT_DELIVERY_RISK_CHECKLIST.md`
+- `docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md`
 - `docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/OSS_MAINTENANCE_EVIDENCE.md`

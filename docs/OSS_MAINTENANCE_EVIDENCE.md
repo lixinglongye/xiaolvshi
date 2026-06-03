@@ -31,7 +31,7 @@ It is safe to say this repository has active development, reviewability controls
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal-review benchmark cases, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal document template coverage, legal-review benchmark cases, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Review operations: citation, evidence, legal grounding quick audits, the case evidence graph contract, the case intake completeness checklist, and the client delivery risk checklist.
 - Security and collaboration: least-privilege case team roles, client-only scopes, sensitive-operation approvals, and access audit requirements.
 - Release management: risk scoring and unified release decision.
@@ -49,6 +49,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/services/client_delivery_risk_checklist.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/services/legal_external_research_digest.py`
+- `app/backend/services/legal_document_template_matrix.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_maintenance_evidence.py`
@@ -60,6 +61,7 @@ It is safe to say this repository has active development, reviewability controls
 - `app/backend/tests/test_client_delivery_risk_checklist.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/backend/tests/test_legal_external_research_digest.py`
+- `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
@@ -71,5 +73,6 @@ It is safe to say this repository has active development, reviewability controls
 - `docs/CLIENT_DELIVERY_RISK_CHECKLIST.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md`
+- `docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md`
 - `docs/USER_RESEARCH_AND_MAINTENANCE.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`

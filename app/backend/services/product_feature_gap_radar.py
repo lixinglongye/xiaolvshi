@@ -131,10 +131,13 @@ class ProductFeatureGapRadarService:
                 evidence_paths=(
                     "app/backend/services/generated_documents.py",
                     "app/backend/services/documents.py",
+                    "app/backend/services/legal_document_template_matrix.py",
+                    "app/backend/tests/test_legal_document_template_matrix.py",
+                    "docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md",
                     "docs/PRODUCT_FEATURE_GAP_RADAR.md",
                 ),
                 next_actions=(
-                    "Inventory first five document templates and required variables.",
+                    "Wire the document template matrix into concrete generation and export flows.",
                     "Add deterministic draft status and review-required markers.",
                     "Gate exports on source support and missing-fact checks.",
                 ),

@@ -20,6 +20,7 @@ from services.legal_fixture_response_normalizer import LegalFixtureResponseNorma
 from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_document_template_matrix import LegalDocumentTemplateMatrixService
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
@@ -131,6 +132,15 @@ async def get_client_delivery_risk_checklist():
     return {
         "success": True,
         "data": ClientDeliveryRiskChecklistService().build_checklist(),
+    }
+
+
+@router.get("/legal-document-template-matrix")
+async def get_legal_document_template_matrix():
+    """Return legal document template, format, export, and review gate coverage."""
+    return {
+        "success": True,
+        "data": LegalDocumentTemplateMatrixService().build_matrix(),
     }
 
 

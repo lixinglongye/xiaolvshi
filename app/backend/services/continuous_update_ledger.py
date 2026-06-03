@@ -458,6 +458,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "reviewer-visibility", "safe-ai-ops"),
             ),
             LedgerEntry(
+                id="legal-document-template-matrix",
+                title="Legal document template matrix",
+                category="product_planning",
+                size="large",
+                status="shipped",
+                impact="Defines required fields, formatting requirements, blockers, lawyer-review gates, and export formats for six legal document types.",
+                evidence_paths=(
+                    "app/backend/services/legal_document_template_matrix.py",
+                    "app/backend/tests/test_legal_document_template_matrix.py",
+                    "docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md",
+                ),
+                release_gate_links=("legal-document-template-matrix", "product-feature-gap-radar"),
+                user_need_ids=("document-generation", "case-workbench", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="billing-entitlement-gap-evidence",
                 title="Billing entitlement gap evidence",
                 category="product_planning",

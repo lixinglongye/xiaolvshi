@@ -687,6 +687,20 @@ class ReleaseReadinessService:
                 manual_note="This defines disclosure and review gates; concrete delivery-package evaluation depends on citation, evidence, and lawyer-review states.",
             ),
             ReleaseCheck(
+                id="legal-document-template-matrix",
+                title="Legal document template matrix",
+                category="legal_quality",
+                required=False,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_document_template_matrix.py",
+                    "app/backend/tests/test_legal_document_template_matrix.py",
+                    "docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_document_template_matrix.py -q",
+                manual_note="This is template coverage and delivery-gate metadata; full DOCX/PDF renderer enforcement remains a separate implementation step.",
+            ),
+            ReleaseCheck(
                 id="billing-entitlement-gap",
                 title="Billing entitlement gap evidence",
                 category="maintenance",
