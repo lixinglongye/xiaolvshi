@@ -85,7 +85,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including lightweight synthetic document fixtures.
+- Legal review benchmark coverage, including lightweight synthetic document fixtures and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
 

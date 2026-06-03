@@ -2,6 +2,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.legal_fixture_improvement import LegalFixtureImprovementService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -77,6 +78,24 @@ async def evaluate_legal_review_fixture_smoke(observations: dict[str, dict]):
     return {
         "success": True,
         "data": service.evaluate_fixture_smoke(observations),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-improvements")
+async def get_legal_review_fixture_improvement_template():
+    """Return an empty legal fixture improvement plan template."""
+    return {
+        "success": True,
+        "data": LegalFixtureImprovementService().build_plan(),
+    }
+
+
+@router.post("/legal-review-benchmark/fixture-improvements")
+async def build_legal_review_fixture_improvement_plan(observations: dict[str, dict]):
+    """Convert fixture smoke observations into prompt and report-schema improvement actions."""
+    return {
+        "success": True,
+        "data": LegalFixtureImprovementService().build_plan(observations),
     }
 
 
