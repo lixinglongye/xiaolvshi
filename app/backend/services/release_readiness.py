@@ -174,6 +174,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_task_inference.py -q",
             ),
             ReleaseCheck(
+                id="model-callsite-audit",
+                title="Model callsite task audit coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_callsite_audit.py",
+                    "app/backend/tests/test_model_callsite_audit.py",
+                    "docs/MODEL_CALLSITE_AUDIT.md",
+                ),
+                validation_command="python -m pytest tests/test_model_callsite_audit.py -q",
+            ),
+            ReleaseCheck(
                 id="model-escalation-policy",
                 title="Cheap-first model escalation policy coverage",
                 category="model_ops",

@@ -541,6 +541,7 @@ class DeepReviewService:
         request = GenTxtRequest(
             messages=messages,
             model=resolve_model(settings.app_ai_fast_model, task="fast"),
+            task="classification",
             stream=False,
             temperature=0.1,
             max_tokens=256,
@@ -596,7 +597,8 @@ class DeepReviewService:
     ) -> tuple[Any, Dict[str, Any]]:
         """Run one bounded agent step and return parsed JSON plus trace metadata."""
         started = time.time()
-        model = resolve_model(model or settings.app_ai_review_model, task=self._model_task_for_stage(stage_id))
+        stage_task = self._model_task_for_stage(stage_id)
+        model = resolve_model(model or settings.app_ai_review_model, task=stage_task)
         messages = [
             ChatMessage(role="system", content=system_prompt.strip()),
             ChatMessage(
@@ -610,6 +612,7 @@ class DeepReviewService:
         request = GenTxtRequest(
             messages=messages,
             model=model,
+            task=stage_task,
             stream=False,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -720,6 +723,7 @@ class DeepReviewService:
                 ),
             ],
             model=model,
+            task="fast",
             stream=False,
             temperature=0.0,
             max_tokens=max(2048, min(max_tokens, 10000)),
@@ -2617,6 +2621,7 @@ pending_facts 必须写清该事实如何影响风险等级、法律依据或修
         request = GenTxtRequest(
             messages=messages,
             model=resolve_model(settings.app_ai_review_model, task="review"),
+            task="review",
             stream=False,
             temperature=0.5,
             max_tokens=4096,

@@ -20,6 +20,7 @@ POST /api/v1/maintenance/release-readiness
   "model-capability-matrix": "pass",
   "model-runtime-router": "pass",
   "model-task-inference": "pass",
+  "model-callsite-audit": "pass",
   "model-escalation-policy": "pass",
   "model-cost-forecast": "pass",
   "model-cost-guardrails": "pass",
@@ -50,6 +51,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Gemini model capability matrix coverage.
 - Runtime model router coverage.
 - Model task inference coverage.
+- Model callsite task audit coverage.
 - Cheap-first model escalation policy coverage.
 - Model cost forecast coverage.
 - Model cost guardrail coverage.

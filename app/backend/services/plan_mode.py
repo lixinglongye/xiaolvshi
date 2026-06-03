@@ -425,6 +425,7 @@ class PlanModeService:
             response = await AIHubService().gentxt(
                 GenTxtRequest(
                     model=resolve_model(settings.app_ai_fast_model, task="fast"),
+                    task="fast",
                     temperature=0.1,
                     max_tokens=4096,
                     messages=[

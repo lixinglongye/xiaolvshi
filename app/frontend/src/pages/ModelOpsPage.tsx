@@ -70,6 +70,7 @@ function Inner() {
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
+  const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const escalationRows = data?.escalation_policy?.plans ?? [];
@@ -323,6 +324,94 @@ function Inner() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {data?.callsite_audit && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Callsite audit</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.callsite_audit.summary.explicit_task_count} explicit /{' '}
+                  {data.callsite_audit.summary.callsite_count} service calls
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.callsite_audit.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.callsite_audit.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.callsite_audit.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.callsite_audit.summary.missing_task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">missing tasks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.callsite_audit.summary.with_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">explicit models</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.callsite_audit.summary.fail_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">failures</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Callsite</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {callsiteRows.map((row) => (
+                    <TableRow key={`${row.file}:${row.line}`}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">
+                          {row.file}:{row.line}
+                        </div>
+                        <div className="mt-1 text-xs text-stone-500">{row.function}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{row.has_task ? 'explicit' : 'missing'}</TableCell>
+                      <TableCell>{row.has_model ? 'explicit' : '-'}</TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </section>
         )}
 

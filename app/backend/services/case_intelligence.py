@@ -616,6 +616,7 @@ identity, contract, performance, payment, communication, damage, procedure, docu
                         ChatMessage(role="user", content=prompt),
                     ],
                     model=model,
+                    task="classification",
                     stream=False,
                     temperature=0.0,
                     max_tokens=700,

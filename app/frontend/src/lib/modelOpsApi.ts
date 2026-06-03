@@ -84,6 +84,33 @@ export type ModelRuntimeRouter = {
   task_defaults: ModelBudgetDecision[];
 };
 
+export type ModelCallsiteAudit = {
+  status: string;
+  method: {
+    type: string;
+    scope: string;
+    notes: string[];
+  };
+  summary: {
+    callsite_count: number;
+    explicit_task_count: number;
+    missing_task_count: number;
+    with_model_count: number;
+    fail_count: number;
+    warn_count: number;
+  };
+  callsites: Array<{
+    file: string;
+    line: number;
+    function: string;
+    has_task: boolean;
+    has_model: boolean;
+    status: string;
+    reason: string;
+  }>;
+  recommended_actions: string[];
+};
+
 export type ModelCapabilityCandidate = {
   model_id: string;
   status: string;
@@ -345,6 +372,7 @@ export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
+  callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;
   escalation_policy?: ModelEscalationPolicy;

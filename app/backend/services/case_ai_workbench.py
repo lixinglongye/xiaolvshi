@@ -70,6 +70,7 @@ class CaseAIWorkbenchService:
         response = await AIHubService().gentxt(
             GenTxtRequest(
                 model=model,
+                task="review",
                 temperature=0.2,
                 max_tokens=2600,
                 messages=messages,

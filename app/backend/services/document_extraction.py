@@ -277,6 +277,7 @@ class DocumentExtractionService:
                         ),
                     ],
                     model=model,
+                    task="ocr",
                     stream=False,
                     temperature=0.0,
                     max_tokens=2500,

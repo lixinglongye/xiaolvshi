@@ -35,6 +35,8 @@ The response includes `runtime_router` with request fields, enforcement rules, a
 
 Non-streaming text responses include `task_inference` and `budget_decision`, which record the inferred task, selected model, requested model, over-budget status, and whether the request was routed to the recommended model.
 
+`callsite_audit` is exposed on the same model-ops endpoint to verify that service-layer `GenTxtRequest` calls provide explicit `task=...` metadata instead of relying only on inference.
+
 ## Safety
 
 The router records only model names, task names, cost tier metadata, and aggregate usage. It does not store prompts, documents, file names, API keys, passwords, emails, or user identifiers.
@@ -43,9 +45,11 @@ The router records only model names, task names, cost tier metadata, and aggrega
 
 - `app/backend/services/model_runtime_router.py`
 - `app/backend/services/model_task_inference.py`
+- `app/backend/services/model_callsite_audit.py`
 - `app/backend/services/aihub.py`
 - `app/backend/schemas/aihub.py`
 - `app/backend/tests/test_model_runtime_router.py`
 - `app/backend/tests/test_model_task_inference.py`
+- `app/backend/tests/test_model_callsite_audit.py`
 - `app/backend/tests/test_aihub_runtime_routing.py`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
