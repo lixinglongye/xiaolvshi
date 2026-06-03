@@ -25,9 +25,13 @@ authenticated runtime/RAG/billing usage routes, and typed frontend API clients
 from the queue into shipped evidence. The latest frontend batch also ships the
 main-app runtime router discovery smoke, a case overview runtime state/event
 panel, a metadata-only legal RAG research panel, and a global billing quota
-badge. These are reviewable product slices; they do not finish the deeper flows
-for automatic edit-event capture, selected-source citation propagation, payment
-provider states, or deep-review quota consumption.
+badge. The current follow-up evidence adds a read-only billing report preflight
+route, privacy-safe case edit runtime events for material/evidence/fact/task
+changes, metadata-only Legal RAG context cache/copy controls, and a best-effort
+document-generation quota consumption attempt. These are reviewable product
+slices; they do not finish selected-source citation propagation, payment
+provider reconciliation, invoice states, or server-side deep-review full quota
+enforcement.
 
 ## Completion Policy
 
@@ -174,6 +178,11 @@ This keeps:
 - `app/frontend/src/lib/billingUsageApi.ts`
 - `app/frontend/src/lib/legalRagApi.ts`
 - `app/frontend/src/lib/workbenchRuntimeApi.ts`
+- `app/frontend/src/components/billing/BillingUsageBadge.tsx`
+- `app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx`
+- `app/frontend/src/components/cases/LegalRagResearchPanel.tsx`
+- `app/frontend/src/components/Layout.tsx`
+- `app/frontend/src/pages/CaseDetailPage.tsx`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`

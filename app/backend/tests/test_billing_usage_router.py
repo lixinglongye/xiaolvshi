@@ -217,6 +217,84 @@ async def test_get_me_accepts_explicit_quota_subject_hash(app, db_session):
 
 
 @pytest.mark.asyncio
+async def test_preflight_report_returns_decision_without_recording_usage(app, db_session):
+    await _subscription(db_session)
+
+    response = await _request(
+        app,
+        "POST",
+        "/api/v1/billing-usage/preflight-report",
+        json_body={
+            "source": "report_generation",
+            "requested_units": 2,
+            "quota_window": QUOTA_WINDOW,
+        },
+    )
+
+    usage_count = await db_session.scalar(select(func.count(BillingQuotaUsageCounter.id)))
+    ledger_count = await db_session.scalar(select(func.count(BillingQuotaIdempotencyKey.id)))
+    payload = response.json()
+    data = payload["data"]
+
+    assert response.status_code == 200
+    assert payload["success"] is True
+    assert data["can_create_report"] is True
+    assert data["decision_status"] == "ready"
+    assert data["reason_codes"] == []
+    assert data["remaining"] == 20
+    assert data["reports_remaining"] == 20
+    assert data["requested_units"] == 2
+    assert data["quota_window"] == QUOTA_WINDOW
+    assert usage_count == 0
+    assert ledger_count == 0
+    _assert_raw_identity_not_exposed(payload)
+
+
+@pytest.mark.asyncio
+async def test_preflight_report_blocks_over_limit_without_creating_usage_rows(app, db_session):
+    await _subscription(db_session, limit=1)
+    consume_body = {
+        "source": "report_generation",
+        "event_id": "preflight-over-limit-seed",
+        "units": 1,
+        "quota_window": QUOTA_WINDOW,
+    }
+
+    consumed = await _request(app, "POST", "/api/v1/billing-usage/consume-report", json_body=consume_body)
+    usage_count_before = await db_session.scalar(select(func.count(BillingQuotaUsageCounter.id)))
+    ledger_count_before = await db_session.scalar(select(func.count(BillingQuotaIdempotencyKey.id)))
+    preflight = await _request(
+        app,
+        "POST",
+        "/api/v1/billing-usage/preflight-report",
+        json_body={
+            "requested_units": 1,
+            "quota_window": QUOTA_WINDOW,
+        },
+    )
+    usage_count_after = await db_session.scalar(select(func.count(BillingQuotaUsageCounter.id)))
+    ledger_count_after = await db_session.scalar(select(func.count(BillingQuotaIdempotencyKey.id)))
+    payload = preflight.json()
+    data = payload["data"]
+
+    assert consumed.status_code == 200
+    assert preflight.status_code == 200
+    assert payload["success"] is True
+    assert data["can_create_report"] is False
+    assert data["decision_status"] == "blocked"
+    assert data["reason_codes"] == ["report_quota_exhausted"]
+    assert data["remaining"] == 0
+    assert data["reports_remaining"] == 0
+    assert data["requested_units"] == 1
+    assert data["quota_window"] == QUOTA_WINDOW
+    assert usage_count_before == 1
+    assert ledger_count_before == 1
+    assert usage_count_after == usage_count_before
+    assert ledger_count_after == ledger_count_before
+    _assert_raw_identity_not_exposed(payload)
+
+
+@pytest.mark.asyncio
 async def test_consume_report_idempotent_replay_does_not_double_count(app, db_session):
     await _subscription(db_session)
     request_body = {

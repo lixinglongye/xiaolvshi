@@ -116,6 +116,13 @@ OpenAPI. The related optional frontend checks use `npm run typecheck` to verify
 the case workbench state event panel, metadata-only legal RAG research panel,
 and billing usage badge wiring.
 
+Additional optional evidence now covers the billing report preflight route,
+privacy-safe case edit runtime event binding, metadata-only legal RAG context
+cache/copy controls, and the document-generation quota consumption attempt. These
+checks remain non-blocking and do not claim payment provider reconciliation,
+selected-source citation propagation, or server-side deep-review full quota
+enforcement.
+
 ## Status values
 
 - `manual_validation_required`: one or more required checks have not been run.
@@ -218,6 +225,11 @@ and billing usage badge wiring.
 - `app/frontend/src/lib/billingUsageApi.ts`
 - `app/frontend/src/lib/legalRagApi.ts`
 - `app/frontend/src/lib/workbenchRuntimeApi.ts`
+- `app/frontend/src/components/billing/BillingUsageBadge.tsx`
+- `app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx`
+- `app/frontend/src/components/cases/LegalRagResearchPanel.tsx`
+- `app/frontend/src/components/Layout.tsx`
+- `app/frontend/src/pages/CaseDetailPage.tsx`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`
 - `docs/BILLING_QUOTA_PERSISTENCE_PLAN.md`

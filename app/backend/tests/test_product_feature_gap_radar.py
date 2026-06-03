@@ -65,9 +65,15 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx" in gaps["case-workbench"]["evidence_paths"]
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/frontend/src/components/billing/BillingUsageBadge.tsx" in gaps["billing-entitlements"]["evidence_paths"]
-    assert any("material, fact, and task edits" in action for action in gaps["case-workbench"]["next_actions"])
+    assert "privacy-safe material/evidence/fact/task edit event binding" in gaps["case-workbench"]["current_state"]
+    assert "localStorage summary cache" in gaps["legal-knowledge-rag"]["current_state"]
+    assert "report preflight" in gaps["billing-entitlements"]["current_state"]
+    assert "best-effort document-generation quota consumption attempt" in gaps["billing-entitlements"]["current_state"]
+    assert "app/frontend/src/pages/CaseDetailPage.tsx" in gaps["document-generation"]["evidence_paths"]
+    assert any("live risk-state" in action for action in gaps["case-workbench"]["next_actions"])
     assert any("case AI prompts" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
-    assert any("deep-review consumption" in action for action in gaps["billing-entitlements"]["next_actions"])
+    assert any("server-side deep-review full quota enforcement" in action for action in gaps["billing-entitlements"]["next_actions"])
+    assert any("payment provider state reconciliation" in action for action in gaps["billing-entitlements"]["next_actions"])
 
 
 def test_product_feature_gap_radar_has_no_secret_material():

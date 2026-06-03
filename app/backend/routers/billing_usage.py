@@ -26,6 +26,13 @@ class ConsumeReportUsageRequest(BaseModel):
     quota_subject_hash: Optional[str] = None
 
 
+class PreflightReportUsageRequest(BaseModel):
+    requested_units: int = 1
+    quota_window: Optional[str] = None
+    quota_subject_hash: Optional[str] = None
+    source: Optional[str] = None
+
+
 def _quota_subject_hash(current_user: UserResponse, quota_subject_hash: str | None) -> str:
     if quota_subject_hash:
         return quota_subject_hash
@@ -51,6 +58,31 @@ async def get_my_billing_usage(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    return {"success": True, "data": summary}
+
+
+@router.post("/preflight-report")
+async def preflight_report_usage(
+    data: PreflightReportUsageRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not isinstance(data.requested_units, int) or isinstance(data.requested_units, bool) or data.requested_units <= 0:
+        raise HTTPException(status_code=400, detail="billing_entitlement_quota_units_must_be_positive")
+
+    try:
+        summary = await BillingEntitlementQuotaBindingService(db).build_entitlement_summary(
+            user_id=str(current_user.id),
+            user_role=current_user.role,
+            quota_subject_hash=_quota_subject_hash(current_user, data.quota_subject_hash),
+            quota_window=data.quota_window,
+            requested_units=data.requested_units,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    summary = dict(summary)
+    summary["requested_units"] = data.requested_units
     return {"success": True, "data": summary}
 
 

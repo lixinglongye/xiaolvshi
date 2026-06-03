@@ -11,7 +11,15 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert profile["signals"]
     assert all(signal["evidence_paths"] for signal in profile["signals"])
     assert "release_decision" in " ".join(evidence_paths)
-    assert any("runtime router discovery smoke" in guardrail for guardrail in profile["application_guardrails"])
+    assert "app/frontend/src/pages/CaseDetailPage.tsx" in evidence_paths
+    assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in evidence_paths
+    assert "app/backend/routers/billing_usage.py" in evidence_paths
+    assert "Billing report preflight route" in profile["release_management"]["release_readiness_controls"]
+    assert "Case edit runtime event binding" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG research context cache" in profile["release_management"]["release_readiness_controls"]
+    assert "Document generation quota consumption attempt" in profile["release_management"]["release_readiness_controls"]
+    assert any("payment provider reconciliation" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("server-side deep-review quota enforcement" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

@@ -25,18 +25,22 @@ snapshots, price refresh monitoring, cost regression snapshots, and route
 telemetry persistence planning. The latest UI evidence adds runtime router
 discovery smoke, the case workbench runtime state/event panel, the metadata-only
 legal RAG research panel, and the global billing usage badge.
+The current follow-up evidence also adds billing report preflight, privacy-safe
+case edit runtime events, metadata-only Legal RAG context cache/copy controls,
+and a best-effort document-generation quota consumption attempt.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
-integration, selected-source citation propagation, raw contract extraction, or
-database-backed team workspace is finished.
+provider reconciliation, selected-source citation propagation, raw contract
+extraction, server-side deep-review full quota enforcement, or database-backed
+team workspace is finished.
 
 The frontend productization queue has moved from route exposure to deeper
 workflow binding:
 
-- Persisted material, fact, and task edits should emit workbench state events.
+- Runtime event deltas should refresh live risk state and evidence graph views.
 - Selected legal RAG source IDs should flow into case AI prompts and report citation checks.
-- Deep-review report creation should consume quota through the entitlement binding.
-- Payment, invoice, and plan-change states still need privacy-safe implementation.
+- Best-effort document-generation quota consumption should move to server-side deep-review full quota enforcement.
+- Payment provider reconciliation, invoice, and plan-change states still need privacy-safe implementation.
 
 ## Scope
 

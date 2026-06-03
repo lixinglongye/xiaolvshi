@@ -46,6 +46,12 @@ import {
   type CaseTaskRecord,
   type GeneratedCaseDocument,
 } from '@/lib/caseApi';
+import { consumeBillingReportUsage } from '@/lib/billingUsageApi';
+import {
+  applyCaseWorkbenchStateEvent,
+  type CaseWorkbenchSectionId,
+  type CaseWorkbenchStateEvent,
+} from '@/lib/workbenchRuntimeApi';
 import { useI18n } from '@/contexts/I18nContext';
 
 type TabKey = 'overview' | 'materials' | 'evidence' | 'facts' | 'timeline' | 'research' | 'documents' | 'tasks' | 'team' | 'settings';
@@ -126,6 +132,75 @@ function downloadText(filename: string, content: string) {
 function copyToClipboard(content: string, message = '已复制') {
   navigator.clipboard.writeText(content || '');
   toast.success(message);
+}
+
+const WORKBENCH_STATE_SCHEMA_VERSION = 'case-workbench-state-v1';
+const WORKBENCH_POLICY_VERSION = 'case-workbench-persistence-v1';
+const CASE_DETAIL_RUNTIME_SOURCE = 'case_detail_page';
+
+type WorkbenchEventInput = {
+  section: CaseWorkbenchSectionId;
+  operation?: string;
+  itemCount: number;
+  changedItemRefs: string[];
+  changedFieldNames: string[];
+  stateDelta: Record<string, unknown>;
+  reviewRequired?: boolean;
+  validationStatus?: string;
+};
+
+function safeRef(value: unknown, fallback = 'ref'): string {
+  const token = String(value ?? '')
+    .trim()
+    .replace(/[^A-Za-z0-9:_-]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 96);
+  return token || fallback;
+}
+
+function randomEventSuffix(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 10);
+  }
+  return Math.random().toString(36).slice(2, 12);
+}
+
+function objectRef(prefix: string, id: unknown): string {
+  return `${prefix}_${safeRef(id, 'unknown')}`;
+}
+
+function extractEvidenceRefs(value?: string | null): string[] {
+  const matches = String(value || '').match(/\b[A-Za-z]{1,12}-\d{1,8}\b/g) || [];
+  return Array.from(new Set(matches.map((item) => safeRef(item))));
+}
+
+function dueDateStatus(value?: string | null): string {
+  if (!value) return 'none';
+  const due = new Date(value);
+  if (Number.isNaN(due.getTime())) return 'set';
+  return due.getTime() < Date.now() ? 'overdue' : 'scheduled';
+}
+
+function normalizedFactConfidence(value?: string | null): string {
+  const text = String(value || '').toLowerCase();
+  if (text.includes('high') || text.includes('高')) return 'high';
+  if (text.includes('low') || text.includes('低')) return 'low';
+  return 'medium';
+}
+
+function normalizedTaskStatus(value?: string | null): string {
+  const text = String(value || '').toLowerCase();
+  if (text.includes('complete') || text.includes('done') || text.includes('完成')) return 'completed';
+  if (text.includes('progress') || text.includes('进行')) return 'in_progress';
+  return 'open';
+}
+
+function normalizedTaskPriority(value?: string | null): string {
+  const text = String(value || '').toLowerCase();
+  if (text.includes('high') || text.includes('高')) return 'high';
+  if (text.includes('low') || text.includes('低')) return 'low';
+  return 'normal';
 }
 
 function buildEvidenceDirectory(materials: CaseMaterialRecord[]): string {
@@ -244,6 +319,7 @@ function Inner() {
   const [researchResults, setResearchResults] = useState<string[]>([]);
   const [researchLoading, setResearchLoading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const runtimeStateVersionRef = useRef(0);
 
   const [materialForm, setMaterialForm] = useState({
     title: '',
@@ -350,6 +426,274 @@ function Inner() {
     }
   };
 
+  const nextRuntimeStateVersion = () => {
+    const next = Math.max(runtimeStateVersionRef.current + 1, Math.floor(Date.now() / 1000));
+    runtimeStateVersionRef.current = next;
+    return next;
+  };
+
+  const emitWorkbenchEvent = async ({
+    section,
+    operation = 'upsert_snapshot',
+    itemCount,
+    changedItemRefs,
+    changedFieldNames,
+    stateDelta,
+    reviewRequired = false,
+    validationStatus = 'pass',
+  }: WorkbenchEventInput) => {
+    if (!caseItem) return;
+    const now = new Date().toISOString();
+    const stateVersion = nextRuntimeStateVersion();
+    const caseRefHash = String(caseItem.id);
+    const safeSection = safeRef(section, 'section');
+    const suffix = randomEventSuffix();
+    const event: CaseWorkbenchStateEvent = {
+      event_id: `cwp_event_case_detail_${safeRef(caseRefHash, 'case')}_${safeSection}_${stateVersion}_${suffix}`,
+      event_type: 'case_workbench_state_event',
+      timestamp: now,
+      idempotency_key: `cwp:v1:${safeRef(caseRefHash, 'case')}:${safeSection}:${stateVersion}:case_detail_${suffix}`,
+      case_ref_hash: caseRefHash,
+      matter_ref_hash: `workspace_${safeRef(caseRefHash, 'case')}`,
+      actor_ref_hash: 'actor_hash_current_user',
+      section,
+      operation,
+      state_version: stateVersion,
+      previous_state_version: stateVersion - 1,
+      schema_version: WORKBENCH_STATE_SCHEMA_VERSION,
+      source_component: CASE_DETAIL_RUNTIME_SOURCE,
+      payload_kind: 'metadata_snapshot',
+      item_count: itemCount,
+      changed_item_refs: changedItemRefs.map((item) => safeRef(item)).filter(Boolean),
+      changed_field_names: changedFieldNames,
+      state_delta: {
+        schema_version: WORKBENCH_STATE_SCHEMA_VERSION,
+        section,
+        state_version: stateVersion,
+        item_count: itemCount,
+        updated_at: now,
+        updated_by_role: 'lawyer',
+        source_component: CASE_DETAIL_RUNTIME_SOURCE,
+        policy_version: WORKBENCH_POLICY_VERSION,
+        ...stateDelta,
+      },
+      retention_bucket: 'active_case_workbench',
+      policy_version: WORKBENCH_POLICY_VERSION,
+      review_required: reviewRequired,
+      validation_status: validationStatus,
+      created_at: now,
+    };
+
+    try {
+      await applyCaseWorkbenchStateEvent(caseRefHash, event);
+    } catch (error) {
+      console.warn('Case workbench state event was not recorded', error);
+    }
+  };
+
+  const recordGeneratedReportUsage = async (document: GeneratedCaseDocument | null | undefined) => {
+    if (!caseItem || !document?.id) return;
+    try {
+      await consumeBillingReportUsage({
+        source: 'case_document_generation',
+        event_id: objectRef(`case_${caseItem.id}_generated_document`, document.id),
+        units: 1,
+      });
+    } catch (error) {
+      console.warn('Billing report usage was not recorded', error);
+    }
+  };
+
+  const emitMaterialRuntimeEvent = (material: CaseMaterialRecord, nextMaterials: CaseMaterialRecord[]) => {
+    const materialRef = objectRef('material', material.id);
+    const nodeRef = objectRef('material_node', material.id);
+    void emitWorkbenchEvent({
+      section: 'evidence_graph',
+      itemCount: nextMaterials.length,
+      changedItemRefs: [materialRef, nodeRef],
+      changedFieldNames: ['node_ref_hash', 'node_type', 'entity_ref_hash', 'review_status', 'source_section', 'updated_at'],
+      stateDelta: {
+        summary: {
+          node_count: nextMaterials.length,
+          review_required_count: nextMaterials.filter((item) => item.is_evidence && !item.proof_purpose).length,
+        },
+        graph_nodes: [
+          {
+            node_ref_hash: nodeRef,
+            node_type: material.is_evidence ? 'evidence' : 'material',
+            entity_ref_hash: materialRef,
+            review_status: material.is_evidence && !material.proof_purpose ? 'needs_review' : 'recorded',
+            source_section: 'materials',
+          },
+        ],
+      },
+      reviewRequired: Boolean(material.is_evidence && !material.proof_purpose),
+      validationStatus: material.is_evidence && !material.proof_purpose ? 'warning' : 'pass',
+    });
+  };
+
+  const emitEvidenceGraphRuntimeEvent = (material: CaseMaterialRecord, nextMaterials: CaseMaterialRecord[]) => {
+    const evidenceItems = nextMaterials.filter((item) => item.is_evidence);
+    const materialRef = objectRef('material', material.id);
+    const nodeRef = objectRef('evidence_node', material.id);
+    const missingPurposeCount = evidenceItems.filter((item) => !item.proof_purpose).length;
+    const missingPurpose = !material.proof_purpose;
+
+    void emitWorkbenchEvent({
+      section: 'evidence_graph',
+      itemCount: evidenceItems.length,
+      changedItemRefs: [materialRef, nodeRef],
+      changedFieldNames: [
+        'node_ref_hash',
+        'node_type',
+        'entity_ref_hash',
+        'evidence_ref_hash',
+        'review_status',
+        'source_section',
+        'gap_ref_hash',
+        'gap_code',
+        'severity',
+        'updated_at',
+      ],
+      stateDelta: {
+        summary: {
+          node_count: evidenceItems.length,
+          gap_count: missingPurposeCount,
+          warning_gap_count: missingPurposeCount,
+          review_required_count: missingPurposeCount,
+        },
+        graph_nodes: [
+          {
+            node_ref_hash: nodeRef,
+            node_type: 'evidence',
+            entity_ref_hash: materialRef,
+            evidence_ref_hash: materialRef,
+            review_status: missingPurpose ? 'needs_review' : 'ready',
+            source_section: 'materials',
+          },
+        ],
+        gap_flags: missingPurpose
+          ? [
+              {
+                gap_ref_hash: objectRef('evidence_gap_proof_purpose', material.id),
+                gap_code: 'missing_proof_purpose',
+                severity: 'warning',
+                source_section: 'materials',
+                evidence_ref_hash: materialRef,
+                review_status: 'open',
+              },
+            ]
+          : [],
+      },
+      reviewRequired: missingPurpose,
+      validationStatus: missingPurpose ? 'warning' : 'pass',
+    });
+  };
+
+  const emitFactRuntimeEvent = (fact: CaseFactRecord, nextFacts: CaseFactRecord[]) => {
+    const factRef = objectRef('fact', fact.id);
+    const evidenceRefs = extractEvidenceRefs(fact.source_refs);
+    const reviewRequiredCount = nextFacts.filter((item) => !extractEvidenceRefs(item.source_refs).length).length;
+
+    void emitWorkbenchEvent({
+      section: 'facts',
+      itemCount: nextFacts.length,
+      changedItemRefs: [factRef, ...evidenceRefs],
+      changedFieldNames: [
+        'fact_ref_hash',
+        'fact_type',
+        'status',
+        'materiality',
+        'dispute_status',
+        'chronology_date',
+        'date_precision',
+        'confidence_level',
+        'source_evidence_refs',
+        'updated_at',
+      ],
+      stateDelta: {
+        summary: {
+          fact_count: nextFacts.length,
+          review_required_count: reviewRequiredCount,
+        },
+        fact_states: [
+          {
+            fact_ref_hash: factRef,
+            fact_type: 'timeline_event',
+            status: fact.verified_by_user ? 'verified' : 'pending_review',
+            materiality: 'material',
+            dispute_status: fact.contradiction_note ? 'needs_review' : 'unreviewed',
+            chronology_date: fact.event_date || undefined,
+            date_precision: fact.event_date ? 'day' : 'unknown',
+            confidence_level: normalizedFactConfidence(fact.confidence),
+            source_evidence_refs: evidenceRefs,
+          },
+        ],
+      },
+      reviewRequired: !evidenceRefs.length,
+      validationStatus: evidenceRefs.length ? 'pass' : 'warning',
+    });
+  };
+
+  const emitTaskRuntimeEvent = (task: CaseTaskRecord, nextTasks: CaseTaskRecord[]) => {
+    const taskRef = objectRef('task', task.id);
+    const status = normalizedTaskStatus(task.status);
+    const priority = normalizedTaskPriority(task.priority);
+    const activeCount = nextTasks.filter((item) => normalizedTaskStatus(item.status) !== 'completed').length;
+    const completedCount = nextTasks.length - activeCount;
+    const overdueCount = nextTasks.filter((item) => dueDateStatus(item.due_date) === 'overdue').length;
+    const reviewRequired = priority === 'high' || dueDateStatus(task.due_date) === 'overdue';
+
+    void emitWorkbenchEvent({
+      section: 'tasks',
+      itemCount: nextTasks.length,
+      changedItemRefs: [taskRef],
+      changedFieldNames: [
+        'task_ref_hash',
+        'task_type',
+        'status',
+        'priority',
+        'owner_role',
+        'due_at',
+        'due_date_status',
+        'escalation_status',
+        'blocker_codes',
+        'dependency_refs',
+        'review_required',
+        'completed_at',
+        'updated_at',
+      ],
+      stateDelta: {
+        summary: {
+          task_count: nextTasks.length,
+          active_count: activeCount,
+          completed_count: completedCount,
+          overdue_count: overdueCount,
+          urgent_count: nextTasks.filter((item) => normalizedTaskPriority(item.priority) === 'high').length,
+          review_required_count: nextTasks.filter((item) => normalizedTaskPriority(item.priority) === 'high' || dueDateStatus(item.due_date) === 'overdue').length,
+        },
+        task_states: [
+          {
+            task_ref_hash: taskRef,
+            task_type: task.related_object_type ? `${safeRef(task.related_object_type, 'case')}_task` : 'case_task',
+            status,
+            priority,
+            owner_role: task.assigned_to ? 'case_team_member' : 'lawyer',
+            due_at: task.due_date || undefined,
+            due_date_status: dueDateStatus(task.due_date),
+            escalation_status: dueDateStatus(task.due_date) === 'overdue' ? 'watch' : 'none',
+            blocker_codes: [],
+            dependency_refs: [],
+            review_required: reviewRequired,
+            completed_at: status === 'completed' ? new Date().toISOString() : undefined,
+          },
+        ],
+      },
+      reviewRequired,
+      validationStatus: reviewRequired ? 'warning' : 'pass',
+    });
+  };
+
   const submitMaterial = async () => {
     if (!caseItem || !materialForm.title.trim()) {
       toast.error('请输入材料名称');
@@ -377,6 +721,7 @@ function Inner() {
     const nextMaterials = [...materials, created];
     setMaterials(nextMaterials);
     await refreshCounts({ material_count: nextMaterials.length, evidence_completeness: nextMaterials.some((m) => m.is_evidence && !m.proof_purpose) ? '中' : '高' });
+    emitMaterialRuntimeEvent(created, nextMaterials);
     setMaterialDialog(false);
     setMaterialForm({ title: '', material_type: '证据', source: '用户上传', parsed_text: '', is_evidence: true, proof_purpose: '', page_refs: '' });
     toast.success('材料已入库');
@@ -391,7 +736,9 @@ function Inner() {
       legality_status: material.legality_status || '待核实',
       admissibility_risk: material.admissibility_risk || '待律师复核',
     });
-    setMaterials((prev) => prev.map((item) => (item.id === material.id ? updated : item)));
+    const nextMaterials = materials.map((item) => (item.id === material.id ? updated : item));
+    setMaterials(nextMaterials);
+    emitEvidenceGraphRuntimeEvent(updated, nextMaterials);
     toast.success('已标记为证据');
   };
 
@@ -405,7 +752,9 @@ function Inner() {
       fact_no: nextNo('F', facts, 'fact_no'),
       ...factForm,
     });
-    setFacts((prev) => [...prev, created]);
+    const nextFacts = [...facts, created];
+    setFacts(nextFacts);
+    emitFactRuntimeEvent(created, nextFacts);
     setFactDialog(false);
     setFactForm({ event_date: '', fact_text: '', persons: '', amount: '', source_refs: '', confidence: '中', verified_by_user: false, contradiction_note: '' });
     toast.success('事实已加入时间线');
@@ -417,10 +766,19 @@ function Inner() {
       return;
     }
     const created = await createCaseTask({ case_id: caseItem.id, ...taskForm });
-    setTasks((prev) => [...prev, created]);
+    const nextTasks = [...tasks, created];
+    setTasks(nextTasks);
+    emitTaskRuntimeEvent(created, nextTasks);
     setTaskDialog(false);
     setTaskForm({ title: '', description: '', assigned_to: '', due_date: '', priority: '中', status: '待开始' });
     toast.success('任务已创建');
+  };
+
+  const toggleTaskStatus = async (task: CaseTaskRecord) => {
+    const updated = await updateCaseTask(task.id, { status: task.status === '已完成' ? '进行中' : '已完成' });
+    const nextTasks = tasks.map((item) => (item.id === task.id ? updated : item));
+    setTasks(nextTasks);
+    emitTaskRuntimeEvent(updated, nextTasks);
   };
 
   const submitParty = async () => {
@@ -447,6 +805,7 @@ function Inner() {
           return;
         }
         setDocuments((prev) => [result.document as GeneratedCaseDocument, ...prev]);
+        void recordGeneratedReportUsage(result.document as GeneratedCaseDocument);
         setDocDialog(false);
         setActiveTab('documents');
         const missing = result.preflight?.missing_required || [];
@@ -478,6 +837,7 @@ function Inner() {
       input_data_json: JSON.stringify({ case_id: caseItem.id, material_count: materials.length, fact_count: facts.length }),
     });
     setDocuments((prev) => [created, ...prev]);
+    void recordGeneratedReportUsage(created);
     setDocDialog(false);
     setActiveTab('documents');
     toast.success(`${docType}已生成`);
@@ -806,10 +1166,7 @@ function Inner() {
                 <TasksTab
                   tasks={tasks}
                   onAdd={() => setTaskDialog(true)}
-                  onToggle={async (task) => {
-                    const updated = await updateCaseTask(task.id, { status: task.status === '已完成' ? '进行中' : '已完成' });
-                    setTasks((prev) => prev.map((item) => (item.id === task.id ? updated : item)));
-                  }}
+                  onToggle={toggleTaskStatus}
                 />
               </TabsContent>
 
