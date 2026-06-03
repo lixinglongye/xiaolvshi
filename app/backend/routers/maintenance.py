@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query
 from services.billing_entitlement_gap import BillingEntitlementGapService
 from services.case_evidence_graph import CaseEvidenceGraphService
 from services.case_intake_completeness import CaseIntakeCompletenessService
+from services.case_timeline_deadline_risk import CaseTimelineDeadlineRiskService
 from services.case_team_access_policy import CaseTeamAccessPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
@@ -27,6 +28,7 @@ from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerS
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
+from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.product_feature_gap_radar import ProductFeatureGapRadarService
 from services.release_readiness import ReleaseReadinessService
 from services.user_needs_radar import UserNeedsRadarService
@@ -118,6 +120,24 @@ async def evaluate_case_intake_completeness(payload: dict[str, Any]):
     }
 
 
+@router.get("/case-timeline-deadline-risk")
+async def get_case_timeline_deadline_risk_template():
+    """Return deterministic case timeline and deadline-risk metadata."""
+    return {
+        "success": True,
+        "data": CaseTimelineDeadlineRiskService().build_assessment(),
+    }
+
+
+@router.post("/case-timeline-deadline-risk")
+async def evaluate_case_timeline_deadline_risk(events: list[dict[str, Any]]):
+    """Evaluate deadline risk from supplied event metadata without using the current date."""
+    return {
+        "success": True,
+        "data": CaseTimelineDeadlineRiskService().build_assessment(events),
+    }
+
+
 @router.get("/case-team-access-policy")
 async def get_case_team_access_policy():
     """Return least-privilege case collaboration and audit policy metadata."""
@@ -160,6 +180,24 @@ async def evaluate_legal_document_export_readiness(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalDocumentExportReadinessService().build_readiness(payload),
+    }
+
+
+@router.get("/ocr-import-readiness-policy")
+async def get_ocr_import_readiness_policy_template():
+    """Return OCR/import readiness state policy metadata."""
+    return {
+        "success": True,
+        "data": OcrImportReadinessPolicyService().build_policy(),
+    }
+
+
+@router.post("/ocr-import-readiness-policy")
+async def evaluate_ocr_import_readiness_policy(payload: dict[str, Any]):
+    """Evaluate OCR/import readiness from upload preflight metadata."""
+    return {
+        "success": True,
+        "data": OcrImportReadinessPolicyService().build_policy(payload),
     }
 
 

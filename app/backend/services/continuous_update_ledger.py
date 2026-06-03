@@ -428,6 +428,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("case-workbench", "document-generation", "grounded-legal-output"),
             ),
             LedgerEntry(
+                id="case-timeline-deadline-risk",
+                title="Case timeline deadline risk",
+                category="product_planning",
+                size="medium",
+                status="shipped",
+                impact="Adds deterministic event, deadline, urgent-blocker, and missing-fact risk metadata for the case workspace.",
+                evidence_paths=(
+                    "app/backend/services/case_timeline_deadline_risk.py",
+                    "app/backend/tests/test_case_timeline_deadline_risk.py",
+                    "docs/CASE_TIMELINE_DEADLINE_RISK.md",
+                ),
+                release_gate_links=("case-timeline-deadline-risk", "case-intake-completeness"),
+                user_need_ids=("case-workbench", "reviewer-visibility", "safe-ai-ops"),
+            ),
+            LedgerEntry(
                 id="case-team-access-policy",
                 title="Case team access policy",
                 category="safety",
@@ -486,6 +501,21 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("legal-document-export-readiness", "legal-document-template-matrix"),
                 user_need_ids=("document-generation", "grounded-legal-output", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="ocr-import-readiness-policy",
+                title="OCR import readiness policy",
+                category="product_planning",
+                size="medium",
+                status="shipped",
+                impact="Defines uploaded, preflight, OCR-needed, OCR-failed, parsed, blocked, and manual-review states for scanned or low-text files.",
+                evidence_paths=(
+                    "app/backend/services/ocr_import_readiness_policy.py",
+                    "app/backend/tests/test_ocr_import_readiness_policy.py",
+                    "docs/OCR_IMPORT_READINESS_POLICY.md",
+                ),
+                release_gate_links=("ocr-import-readiness-policy", "product-feature-gap-radar"),
+                user_need_ids=("document-intake", "case-workbench", "low-resource-testing"),
             ),
             LedgerEntry(
                 id="billing-entitlement-gap-evidence",

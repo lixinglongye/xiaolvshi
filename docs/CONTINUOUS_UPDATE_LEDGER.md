@@ -51,8 +51,10 @@ This keeps:
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
+- `app/backend/services/case_timeline_deadline_risk.py`
 - `app/backend/services/case_team_access_policy.py`
 - `app/backend/services/client_delivery_risk_checklist.py`
+- `app/backend/services/ocr_import_readiness_policy.py`
 - `app/backend/services/legal_document_template_matrix.py`
 - `app/backend/services/legal_document_export_readiness.py`
 - `app/backend/services/legal_external_research_digest.py`
@@ -60,8 +62,10 @@ This keeps:
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
+- `app/backend/tests/test_case_timeline_deadline_risk.py`
 - `app/backend/tests/test_case_team_access_policy.py`
 - `app/backend/tests/test_client_delivery_risk_checklist.py`
+- `app/backend/tests/test_ocr_import_readiness_policy.py`
 - `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_document_export_readiness.py`
 - `app/backend/tests/test_legal_external_research_digest.py`
@@ -71,8 +75,10 @@ This keeps:
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_INTAKE_COMPLETENESS.md`
+- `docs/CASE_TIMELINE_DEADLINE_RISK.md`
 - `docs/CASE_TEAM_ACCESS_POLICY.md`
 - `docs/CLIENT_DELIVERY_RISK_CHECKLIST.md`
+- `docs/OCR_IMPORT_READINESS_POLICY.md`
 - `docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md`
 - `docs/LEGAL_DOCUMENT_EXPORT_READINESS.md`
 - `docs/LEGAL_EXTERNAL_RESEARCH_DIGEST.md`
