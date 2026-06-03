@@ -174,6 +174,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_route_telemetry.py tests/test_aihub_runtime_routing.py -q",
             ),
             ReleaseCheck(
+                id="model-route-guardrails",
+                title="Model route guardrail coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_route_guardrails.py",
+                    "app/backend/tests/test_model_route_guardrails.py",
+                    "docs/MODEL_ROUTE_GUARDRAILS.md",
+                ),
+                validation_command="python -m pytest tests/test_model_route_guardrails.py -q",
+            ),
+            ReleaseCheck(
                 id="model-task-inference",
                 title="Model task inference coverage",
                 category="model_ops",

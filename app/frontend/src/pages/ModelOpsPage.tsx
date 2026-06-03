@@ -71,6 +71,7 @@ function Inner() {
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
+  const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
   const capabilityRows = data?.capability_matrix?.tasks ?? [];
@@ -403,6 +404,93 @@ function Inner() {
                       </TableRow>
                     ))
                   )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.route_guardrails && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route guardrails</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_guardrails.blocking_check_ids.length} blocking ·{' '}
+                  {data.route_guardrails.warning_check_ids.length} warning checks
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.route_guardrails.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.route_guardrails.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.route_guardrails.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_guardrails.summary.failure_rate * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">route failures</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_guardrails.summary.over_budget_route_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">over budget</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_guardrails.summary.operator_review_route_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review gated</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_guardrails.summary.unknown_price_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown price</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeGuardrailRows.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell className="font-mono text-xs font-semibold text-stone-950">{check.id}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            check.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : check.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{check.ratio != null ? `${Math.round(check.ratio * 100)}%` : check.value}</TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

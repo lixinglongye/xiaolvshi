@@ -148,6 +148,34 @@ export type ModelRouteTelemetry = {
   by_inference_source: Record<string, ModelRouteTelemetryBucket>;
 };
 
+export type ModelRouteGuardrailCheck = {
+  id: string;
+  status: string;
+  value: number;
+  ratio?: number;
+  warn_threshold?: number;
+  fail_threshold?: number;
+  reason: string;
+};
+
+export type ModelRouteGuardrails = {
+  status: string;
+  thresholds: Record<string, number>;
+  summary: {
+    request_count: number;
+    failure_rate: number;
+    over_budget_route_ratio: number;
+    downgrade_ratio: number;
+    operator_review_route_ratio: number;
+    unknown_price_model_count: number;
+    allowed_over_budget_count: number;
+  };
+  checks: ModelRouteGuardrailCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelCapabilityCandidate = {
   model_id: string;
   status: string;
@@ -410,6 +438,7 @@ export type ModelOpsResponse = {
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
   route_telemetry?: ModelRouteTelemetry;
+  route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;
   capability_matrix?: ModelCapabilityMatrix;

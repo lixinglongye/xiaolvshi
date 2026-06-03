@@ -25,12 +25,15 @@ GET /api/v1/aihub/models
 The response includes `route_telemetry` next to:
 
 - `runtime_router`
+- `route_guardrails`
 - `callsite_audit`
 - `budget_policy`
 - `cost_guardrails`
 - `usage`
 
-The frontend `/model-ops` page shows route telemetry summary cards and a per-task telemetry table.
+The frontend `/model-ops` page shows route telemetry summary cards, a per-task telemetry table, and route guardrail pass/warn/fail checks.
+
+`route_guardrails` uses the same aggregate telemetry snapshot to evaluate route failure rate, over-budget ratio, downgrade ratio, operator-review ratio, unknown-price models, and allowed over-budget requests. Empty telemetry is treated as no data rather than a release blocker.
 
 ## Safety
 
@@ -39,9 +42,11 @@ Route telemetry stores aggregate routing metadata only. It does not store prompt
 ## Related files
 
 - `app/backend/services/model_route_telemetry.py`
+- `app/backend/services/model_route_guardrails.py`
 - `app/backend/services/aihub.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_route_telemetry.py`
+- `app/backend/tests/test_model_route_guardrails.py`
 - `app/backend/tests/test_aihub_runtime_routing.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
