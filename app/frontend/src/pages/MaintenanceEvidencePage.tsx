@@ -15,11 +15,13 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getLegalKnowledgeAudit,
+  getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
   getReleaseReadiness,
   getUserNeedsRadar,
   type LegalKnowledgeAudit,
+  type LegalReviewBenchmark,
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
@@ -63,6 +65,7 @@ function Inner() {
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
+  const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -71,10 +74,11 @@ function Inner() {
     setLoading(true);
     setError('');
     try {
-      const [evidence, readiness, needsRadar, legalKnowledge, ragEvaluation] = await Promise.all([
+      const [evidence, readiness, needsRadar, benchmarkData, legalKnowledge, ragEvaluation] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getUserNeedsRadar(),
+        getLegalReviewBenchmark(),
         getLegalKnowledgeAudit(),
         getLegalRagEvaluationPolicy(),
       ]);
@@ -82,6 +86,7 @@ function Inner() {
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
       setUserNeeds(needsRadar);
+      setBenchmark(benchmarkData);
       setLegalAudit(legalKnowledge);
       setRagPolicy(ragEvaluation);
     } catch (err) {
@@ -390,6 +395,105 @@ function Inner() {
                     </TableBody>
                   </Table>
                 </div>
+              </section>
+            )}
+
+            {benchmark && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal review benchmark</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {benchmark.case_count} cases · {Object.keys(benchmark.suite.task_family_counts).length} task families ·{' '}
+                      {Object.keys(benchmark.suite.required_metric_counts).length} metrics
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      benchmark.status === 'pass'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                        : benchmark.status === 'fail'
+                          ? 'border-red-200 bg-red-50 text-red-800'
+                          : 'border-stone-200 bg-stone-50 text-stone-700'
+                    }
+                  >
+                    {benchmark.status} · {benchmark.score}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{benchmark.passed_case_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">passed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{benchmark.warning_case_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">warnings</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{benchmark.failed_case_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">failed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{benchmark.not_run_case_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">not run</div>
+                  </div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Case</TableHead>
+                        <TableHead>Family</TableHead>
+                        <TableHead>Route</TableHead>
+                        <TableHead>Metrics</TableHead>
+                        <TableHead>Gates</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {benchmark.suite.cases.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{item.title}</div>
+                            <div className="mt-1 max-w-[420px] text-xs leading-5 text-stone-600">{item.scenario}</div>
+                            <div className="mt-2 font-mono text-[11px] text-stone-500">{item.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-white">
+                              {item.task_family.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-600">{item.expected_route}</TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {item.required_metrics.join(', ')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[260px] flex-wrap gap-1">
+                              {item.release_gate_links.map((gate) => (
+                                <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {gate}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {benchmark.recommended_actions.length > 0 && (
+                  <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Benchmark actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {benchmark.recommended_actions.slice(0, 4).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </section>
             )}
 

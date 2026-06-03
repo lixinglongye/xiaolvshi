@@ -127,6 +127,54 @@ type UserNeedsRadarResponse = {
   data: UserNeedsRadar;
 };
 
+export type LegalReviewBenchmarkCaseResult = {
+  case_id: string;
+  title: string;
+  status: string;
+  score: number;
+  expected_route: string;
+  metric_scores: Record<string, number>;
+  missing_metrics: string[];
+  release_gate_links: string[];
+};
+
+export type LegalReviewBenchmark = {
+  status: string;
+  score: number;
+  case_count: number;
+  passed_case_count: number;
+  warning_case_count: number;
+  failed_case_count: number;
+  not_run_case_count: number;
+  blocking_case_ids: string[];
+  recommended_actions: string[];
+  case_results: LegalReviewBenchmarkCaseResult[];
+  suite: {
+    status: string;
+    case_count: number;
+    task_family_counts: Record<string, number>;
+    required_metric_counts: Record<string, number>;
+    cases: Array<{
+      id: string;
+      title: string;
+      matter_type: string;
+      task_family: string;
+      user_segment: string;
+      scenario: string;
+      expected_route: string;
+      expected_outputs: string[];
+      required_metrics: string[];
+      benchmark_sources: string[];
+      release_gate_links: string[];
+    }>;
+  };
+};
+
+type LegalReviewBenchmarkResponse = {
+  success: boolean;
+  data: LegalReviewBenchmark;
+};
+
 export type LegalKnowledgeAudit = {
   status: string;
   score: number;
@@ -199,6 +247,18 @@ export async function getUserNeedsRadar(): Promise<UserNeedsRadar> {
     return payload.data;
   }
   return payload as UserNeedsRadar;
+}
+
+export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalReviewBenchmarkResponse | LegalReviewBenchmark;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalReviewBenchmark;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

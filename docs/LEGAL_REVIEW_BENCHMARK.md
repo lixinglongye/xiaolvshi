@@ -1,0 +1,76 @@
+# Legal Review Benchmark
+
+The project now has a deterministic benchmark suite for legal-review pipeline changes.
+
+## Purpose
+
+Model, prompt, retrieval, extraction, and report-schema changes should be evaluated against repeatable legal workflow scenarios. The benchmark suite provides a stable set of cases and required metrics before a release is marked ready.
+
+## Endpoints
+
+```http
+GET /api/v1/maintenance/legal-review-benchmark
+POST /api/v1/maintenance/legal-review-benchmark
+```
+
+`GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
+
+`POST` accepts benchmark results keyed by case ID:
+
+```json
+{
+  "service-contract-risk": {
+    "field_coverage": "pass",
+    "risk_grounding": "pass",
+    "release_decision": "pass",
+    "cost_route": "pass"
+  }
+}
+```
+
+Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores.
+
+## Research Basis
+
+- LegalBench: use multiple legal reasoning task families instead of a single generic accuracy score.
+- RAGAS: track faithfulness, answer relevance, and context relevance for RAG-style outputs.
+- CRAG: use comprehensive factual QA and retrieval-style checks for answer reliability.
+
+## Benchmark Cases
+
+- Service contract risk review.
+- Lease dispute evidence completeness.
+- Long PDF extraction and routing.
+- Privacy-sensitive upload.
+- Instruction-injection upload resilience.
+- Legal RAG grounding.
+
+## Required Metric Families
+
+- Field coverage.
+- Risk grounding.
+- Citation grounding.
+- Evidence plan completeness.
+- Extraction quality.
+- Privacy and instruction-risk visibility.
+- Secret safety.
+- Cheap-first or premium-exception route correctness.
+- Release decision.
+
+## Release Use
+
+The `legal-review-benchmark` release-readiness check requires this service, its tests, and this document. It should be run after any major change to:
+
+- model routing,
+- prompts,
+- report schema,
+- retrieval or legal source handling,
+- PDF extraction,
+- safety preflight.
+
+## Related files
+
+- `app/backend/services/legal_review_benchmark.py`
+- `app/backend/routers/maintenance.py`
+- `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/services/release_readiness.py`

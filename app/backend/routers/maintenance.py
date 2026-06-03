@@ -1,6 +1,7 @@
 from typing import Literal
 
 from fastapi import APIRouter, Query
+from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
 from services.user_needs_radar import UserNeedsRadarService
@@ -26,6 +27,26 @@ async def get_user_needs_radar():
     return {
         "success": True,
         "data": UserNeedsRadarService().build_radar(),
+    }
+
+
+@router.get("/legal-review-benchmark")
+async def get_legal_review_benchmark_suite():
+    """Return the deterministic benchmark suite for legal-review pipeline changes."""
+    service = LegalReviewBenchmarkService()
+    return {
+        "success": True,
+        "data": service.evaluate(),
+    }
+
+
+@router.post("/legal-review-benchmark")
+async def evaluate_legal_review_benchmark(run_results: dict[str, dict]):
+    """Evaluate supplied benchmark results for release planning."""
+    service = LegalReviewBenchmarkService()
+    return {
+        "success": True,
+        "data": service.evaluate(run_results),
     }
 
 

@@ -24,6 +24,7 @@ POST /api/v1/maintenance/release-readiness
   "instruction-injection-audit": "pass",
   "feedback-triage": "pass",
   "user-needs-radar": "pass",
+  "legal-review-benchmark": "pass",
   "legal-knowledge-audit": "pass",
   "legal-rag-evaluation": "pass"
 }
@@ -44,6 +45,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Instruction injection audit coverage.
 - Feedback triage coverage.
 - User needs radar coverage.
+- Legal review benchmark coverage.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
 

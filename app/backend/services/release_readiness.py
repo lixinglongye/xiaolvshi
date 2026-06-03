@@ -211,6 +211,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_user_needs_radar.py -q",
             ),
             ReleaseCheck(
+                id="legal-review-benchmark",
+                title="Legal review benchmark coverage",
+                category="legal_quality",
+                required=True,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_review_benchmark.py",
+                    "app/backend/tests/test_legal_review_benchmark.py",
+                    "docs/LEGAL_REVIEW_BENCHMARK.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_review_benchmark.py -q",
+            ),
+            ReleaseCheck(
                 id="legal-knowledge-audit",
                 title="Legal knowledge seed audit coverage",
                 category="legal_quality",

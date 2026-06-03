@@ -117,8 +117,11 @@ class MaintenanceEvidenceService:
                 cadence="Review whenever report schema, legal source handling, or delivery policy changes.",
                 evidence_paths=(
                     "app/backend/services/report_quality_gate.py",
+                    "app/backend/services/legal_review_benchmark.py",
                     "app/backend/tests/test_report_quality_gate.py",
+                    "app/backend/tests/test_legal_review_benchmark.py",
                     "docs/DEEP_REVIEW_QUALITY_GATES.md",
+                    "docs/LEGAL_REVIEW_BENCHMARK.md",
                 ),
                 weight=15,
             ),
