@@ -428,6 +428,64 @@ export type LegalFixtureRunReport = {
   privacy_note: string;
 };
 
+export type LegalFixtureModelCandidate = {
+  role: string;
+  model: string;
+  known_model: boolean;
+  provider: string;
+  family: string;
+  status: string;
+  cost_tier: string;
+  latency_tier: string;
+  context_window_tokens?: number | null;
+  input_usd_per_million_tokens?: number | null;
+  output_usd_per_million_tokens?: number | null;
+  over_fixture_budget: boolean;
+  requires_operator_review: boolean;
+  source: string;
+  trigger: string;
+};
+
+export type LegalFixtureModelMatrixRow = {
+  fixture_id: string;
+  title: string;
+  task: string;
+  smoke_route: string;
+  status: string;
+  budget_mode: string;
+  max_cost_tier: string;
+  runtime_default_model?: string | null;
+  capability_recommended_model?: string | null;
+  candidate_ladder: LegalFixtureModelCandidate[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  recommended_action: string;
+};
+
+export type LegalFixtureModelMatrix = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_count: number;
+    pass_count: number;
+    warning_count: number;
+    cheap_first_candidate_count: number;
+    premium_candidate_count: number;
+    operator_review_candidate_count: number;
+    unknown_candidate_count: number;
+  };
+  fixtures: LegalFixtureModelMatrixRow[];
+  warning_fixture_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -512,6 +570,11 @@ type LegalFixtureRunPlanResponse = {
 type LegalFixtureRunReportResponse = {
   success: boolean;
   data: LegalFixtureRunReport;
+};
+
+type LegalFixtureModelMatrixResponse = {
+  success: boolean;
+  data: LegalFixtureModelMatrix;
 };
 
 export type LegalKnowledgeAudit = {
@@ -670,6 +733,18 @@ export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport>
     return payload.data;
   }
   return payload as LegalFixtureRunReport;
+}
+
+export async function getLegalFixtureModelMatrix(): Promise<LegalFixtureModelMatrix> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-model-matrix',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalFixtureModelMatrixResponse | LegalFixtureModelMatrix;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalFixtureModelMatrix;
 }
 
 export async function getLegalKnowledgeAudit(): Promise<LegalKnowledgeAudit> {

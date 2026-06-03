@@ -44,6 +44,8 @@ Use `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` to convert
 
 Use `/api/v1/maintenance/legal-review-benchmark/prompt-pack` to fetch cheap-first Gemini/NewAPI prompt payloads for the same fixtures.
 
+Use `/api/v1/maintenance/legal-review-benchmark/fixture-model-matrix` to inspect fixture-level Gemini/NewAPI candidate ladders before spending on escalations.
+
 Use `/api/v1/maintenance/legal-review-benchmark/gateway-manifest` to fetch safe OpenAI-compatible request bodies and local AI hub payloads for laptop-sized fixture checks without storing real keys.
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-plan` to run those requests in serial cheap-first batches before any conditional escalation.
@@ -57,18 +59,21 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 ## Related Files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
+- `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`

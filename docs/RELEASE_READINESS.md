@@ -85,7 +85,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Feedback triage coverage.
 - Feedback roadmap alignment coverage.
 - User needs radar coverage.
-- Legal review benchmark coverage, including cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, cheap-first fixture run reports, lightweight synthetic document fixtures, and fixture-driven improvement plans.
+- Legal review benchmark coverage, including fixture-level Gemini/NewAPI model matrices, cheap-first fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, cheap-first fixture run reports, lightweight synthetic document fixtures, and fixture-driven improvement plans.
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation coverage.
 

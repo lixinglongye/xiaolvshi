@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
+from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
@@ -136,6 +137,15 @@ async def get_legal_review_fixture_run_report_template():
     return {
         "success": True,
         "data": LegalFixtureRunReportService().build_report(),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-model-matrix")
+async def get_legal_review_fixture_model_matrix():
+    """Return fixture-level Gemini/NewAPI cheap-first candidate ladders."""
+    return {
+        "success": True,
+        "data": LegalFixtureModelMatrixService().build_matrix(),
     }
 
 

@@ -23,10 +23,11 @@ The endpoint returns prompt rows only. It does not call a model, read API keys, 
 
 ## Workflow
 
-1. Fetch `/prompt-pack`.
-2. Run each prompt through the configured OpenAI-compatible gateway, starting with the cheap trial model where appropriate.
-3. Submit model output to `/fixture-smoke`.
-4. Submit the same observations to `/fixture-improvements` when coverage is weak.
+1. Fetch `/fixture-model-matrix` to confirm cheap-first and escalation candidates.
+2. Fetch `/prompt-pack`.
+3. Run each prompt through the configured OpenAI-compatible gateway, starting with the cheap trial model where appropriate.
+4. Submit model output to `/fixture-smoke`.
+5. Submit the same observations to `/fixture-improvements` when coverage is weak.
 
 If a caller needs ready-to-fill request bodies instead of raw prompt rows, fetch `/gateway-manifest` for OpenAI-compatible chat payloads and local `/api/v1/aihub/gentxt` payloads with key placeholders.
 
@@ -42,15 +43,18 @@ After smoke observations exist, fetch `/fixture-run-report` to decide whether ch
 ## Related Files
 
 - `app/backend/services/legal_fixture_prompt_pack.py`
+- `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_gateway_manifest.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/services/legal_fixture_run_report.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
+- `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_gateway_manifest.py`
 - `app/backend/tests/test_legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`

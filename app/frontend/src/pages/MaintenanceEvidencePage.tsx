@@ -15,6 +15,7 @@ import {
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
   getLegalFixtureImprovementPlan,
+  getLegalFixtureModelMatrix,
   getLegalFixturePromptPack,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
@@ -28,6 +29,7 @@ import {
   getUserNeedsRadar,
   type FeedbackRoadmapCatalog,
   type LegalFixtureImprovementPlan,
+  type LegalFixtureModelMatrix,
   type LegalFixturePromptPack,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
@@ -97,6 +99,7 @@ function Inner() {
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
+  const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
@@ -116,6 +119,7 @@ function Inner() {
         needsRadar,
         feedbackMap,
         benchmarkData,
+        fixtureModelMatrixData,
         fixturePromptPackData,
         fixtureRunPlanData,
         fixtureRunReportData,
@@ -129,6 +133,7 @@ function Inner() {
         getUserNeedsRadar(),
         getFeedbackRoadmapCatalog(),
         getLegalReviewBenchmark(),
+        getLegalFixtureModelMatrix(),
         getLegalFixturePromptPack(),
         getLegalFixtureRunPlan(),
         getLegalFixtureRunReport(),
@@ -143,6 +148,7 @@ function Inner() {
       setUserNeeds(needsRadar);
       setFeedbackRoadmap(feedbackMap);
       setBenchmark(benchmarkData);
+      setFixtureModelMatrix(fixtureModelMatrixData);
       setFixturePromptPack(fixturePromptPackData);
       setFixtureRunPlan(fixtureRunPlanData);
       setFixtureRunReport(fixtureRunReportData);
@@ -607,6 +613,117 @@ function Inner() {
                     </ul>
                   </div>
                 )}
+              </section>
+            )}
+
+            {fixtureModelMatrix && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture model matrix</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {fixtureModelMatrix.summary.fixture_count} fixtures /{' '}
+                      {fixtureModelMatrix.summary.cheap_first_candidate_count} cheap-first candidates /{' '}
+                      {fixtureModelMatrix.summary.operator_review_candidate_count} operator-review candidates
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[fixtureModelMatrix.status] ?? statusClass.warn}>
+                    {fixtureModelMatrix.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">{fixtureModelMatrix.summary.pass_count}</div>
+                    <div className="mt-1 text-sm text-stone-600">passing ladders</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureModelMatrix.summary.premium_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium candidates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureModelMatrix.summary.unknown_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown candidates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {fixtureModelMatrix.summary.warning_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">warnings</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Budget</TableHead>
+                        <TableHead>Cheap-first</TableHead>
+                        <TableHead>Escalation candidates</TableHead>
+                        <TableHead>Checks</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fixtureModelMatrix.fixtures.map((row) => {
+                        const cheap = row.candidate_ladder.find((item) => item.role === 'cheap_first');
+                        const escalation = row.candidate_ladder.filter((item) => item.role !== 'cheap_first').slice(0, 3);
+                        return (
+                          <TableRow key={row.fixture_id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">route {row.smoke_route}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{row.budget_mode}</div>
+                              <div>max {row.max_cost_tier}</div>
+                              <div className="font-mono text-[11px]">{row.runtime_default_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">{cheap?.model ?? '-'}</div>
+                              <div>
+                                {cheap?.cost_tier ?? '-'} / {cheap?.latency_tier ?? '-'}
+                              </div>
+                              <div>{cheap?.known_model ? 'catalog priced' : 'gateway price unknown'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              {escalation.map((candidate) => (
+                                <div key={`${row.fixture_id}-${candidate.role}-${candidate.model}`} className="mb-1">
+                                  <span className="font-mono text-[11px] text-stone-950">{candidate.model}</span>{' '}
+                                  <span>
+                                    {candidate.role.replace(/_/g, ' ')} / {candidate.cost_tier}
+                                    {candidate.requires_operator_review ? ' / review' : ''}
+                                  </span>
+                                </div>
+                              ))}
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className={statusClass[row.status] ?? statusClass.warn}>
+                                {row.status}
+                              </Badge>
+                              <div className="mt-2">{row.recommended_action}</div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Matrix actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {fixtureModelMatrix.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs leading-5 text-stone-500">{fixtureModelMatrix.privacy_note}</div>
+                </div>
               </section>
             )}
 

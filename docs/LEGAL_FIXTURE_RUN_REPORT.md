@@ -45,7 +45,10 @@ POST /api/v1/maintenance/legal-review-benchmark/fixture-run-report
 ## Related Files
 
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_run_plan.py`
 - `app/backend/tests/test_legal_fixture_run_report.py`
+- `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
+- `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_RUN_PLAN.md`
