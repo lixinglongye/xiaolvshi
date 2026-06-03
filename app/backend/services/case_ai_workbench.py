@@ -19,6 +19,7 @@ from models.generated_documents import Generated_documents
 from models.legal_sources import Legal_sources
 from schemas.aihub import ChatMessage, GenTxtRequest
 from services.aihub import AIHubService
+from services.legal_rag_request_metadata import legal_rag_metadata_prompt_lines, sanitize_case_request_metadata
 from services.model_catalog import resolve_model
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ class CaseAIWorkbenchService:
         user_id: str,
         message: str,
         conversation_history: Optional[list[dict[str, str]]] = None,
+        request_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         clean_message = (message or "").strip()
         if not clean_message:
@@ -60,11 +62,13 @@ class CaseAIWorkbenchService:
 
         workspace = await self._load_workspace(case_id, user_id)
         context_text = self._build_context(workspace)
+        safe_request_metadata = sanitize_case_request_metadata(request_metadata)
         messages = self._build_messages(
             case_title=workspace["case"].title,
             context_text=context_text,
             message=clean_message,
             conversation_history=conversation_history or [],
+            request_metadata=safe_request_metadata,
         )
         model = resolve_model(settings.app_ai_review_model or settings.app_ai_fast_model, task="review")
         response = await AIHubService().gentxt(
@@ -164,6 +168,7 @@ class CaseAIWorkbenchService:
         context_text: str,
         message: str,
         conversation_history: list[dict[str, str]],
+        request_metadata: dict[str, Any] | None = None,
     ) -> list[ChatMessage]:
         system_prompt = """你是律审雷达的案件 AI 工作台，不是通用闲聊助手。
 
@@ -182,6 +187,9 @@ class CaseAIWorkbenchService:
                 content=f"当前案件：{case_title}\n\n以下是结构化案件上下文：\n{context_text}",
             ),
         ]
+        metadata_lines = legal_rag_metadata_prompt_lines(request_metadata)
+        if metadata_lines:
+            messages.append(ChatMessage(role="user", content="\n".join(metadata_lines)))
         for item in conversation_history[-8:]:
             role = item.get("role")
             if role not in {"user", "assistant"}:

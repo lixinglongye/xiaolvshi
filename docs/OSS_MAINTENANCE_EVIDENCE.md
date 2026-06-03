@@ -32,21 +32,26 @@ Recent UI evidence includes runtime router discovery smoke, the case workbench
 state event panel, the legal RAG research panel, and the billing usage workspace
 badge. Current follow-up evidence adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
-and a best-effort document-generation quota consumption attempt. Future claims
-for payment provider reconciliation, selected-source citation propagation, and
-server-side deep-review full quota enforcement should still stay out of support
-applications until matching merged evidence exists.
+and a best-effort document-generation quota consumption attempt. New backend and
+full-stack evidence also adds generated_documents CRUD quota guards,
+selected-source Legal RAG request metadata, a local-only billing payment
+reconciliation policy, task runtime notification summaries, and a deterministic
+laptop-safe legal document benchmark suite. Future claims for real payment
+provider settlement/webhook verification, full generated-report citation
+validation against selected source IDs, and direct case/deep-review quota
+enforcement should still stay out of support applications until matching merged
+evidence exists.
 
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
-- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding and routes, privacy-safe case edit runtime events, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, and client delivery transparency.
+- Review operations: citation, evidence, source freshness, evidence exhibit packages, legal grounding quick audits, selected-source request metadata, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding and routes, privacy-safe case edit runtime events, task runtime notification summaries, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -64,7 +69,9 @@ applications until matching merged evidence exists.
 - `app/backend/services/billing_quota_persistence_plan.py`
 - `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_entitlement_quota_binding.py`
+- `app/backend/services/billing_payment_reconciliation.py`
 - `app/backend/services/billing_usage_quota_policy.py`
+- `app/backend/routers/generated_documents.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
@@ -86,6 +93,7 @@ applications until matching merged evidence exists.
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
+- `app/backend/services/legal_document_benchmark_suite.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`
@@ -93,6 +101,10 @@ applications until matching merged evidence exists.
 - `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/legal_rag_index_binding.py`
 - `app/backend/routers/legal_rag.py`
+- `app/backend/services/legal_rag_request_metadata.py`
+- `app/backend/routers/case_intelligence.py`
+- `app/backend/services/case_intelligence.py`
+- `app/backend/services/case_ai_workbench.py`
 - `app/backend/services/lawyer_review_workflow_policy.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`
 - `app/backend/services/matter_audit_retention_policy.py`
@@ -115,7 +127,9 @@ applications until matching merged evidence exists.
 - `app/backend/tests/test_billing_quota_persistence_plan.py`
 - `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_entitlement_quota_binding.py`
+- `app/backend/tests/test_billing_payment_reconciliation.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
+- `app/backend/tests/test_generated_documents_quota.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
@@ -137,6 +151,7 @@ applications until matching merged evidence exists.
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
+- `app/backend/tests/test_legal_document_benchmark_suite.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
 - `app/backend/tests/test_legal_source_freshness_policy.py`
@@ -144,6 +159,7 @@ applications until matching merged evidence exists.
 - `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_legal_rag_index_binding.py`
 - `app/backend/tests/test_legal_rag_router.py`
+- `app/backend/tests/test_legal_rag_request_metadata.py`
 - `app/backend/tests/test_lawyer_review_workflow_policy.py`
 - `app/backend/tests/test_maintenance_heartbeat_evidence.py`
 - `app/backend/tests/test_matter_audit_retention_policy.py`

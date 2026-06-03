@@ -20,6 +20,36 @@ import {
 } from '@/lib/legalRagApi';
 import { cn } from '@/lib/utils';
 
+export type LegalRagResearchSafeMetadata = {
+  schema_version: 'legal-rag-research-safe-metadata-v1';
+  selected_source_ids: string[];
+  selected_source_count: number;
+  plan_status: string;
+  evaluation_status: string;
+  blocked: boolean;
+  freshness_statuses: string[];
+  coverage_counts: Record<string, number>;
+  reason_codes: string[];
+  metric_scores: Record<string, number>;
+  unsupported_claim_count: number;
+  pii_finding_count: number;
+  evaluated_at: string;
+  privacy_boundary: {
+    raw_legal_text_included: false;
+    user_claims_included: false;
+    pii_included: false;
+  };
+};
+
+export type LegalRagResearchEvaluationResult = {
+  plan: LegalRagRetrievalPlan;
+  evaluation: LegalRagEvaluation;
+  unsupportedClaimCount: number;
+  piiFindingCount: number;
+  selectedSourceIds: string[];
+  safeMetadata: LegalRagResearchSafeMetadata;
+};
+
 export type LegalRagResearchPanelProps = {
   caseId?: number | string;
   caseRefHash?: string;
@@ -28,12 +58,7 @@ export type LegalRagResearchPanelProps = {
   defaultUseCase?: string;
   defaultSourceIds?: string[];
   className?: string;
-  onEvaluated?: (result: {
-    plan: LegalRagRetrievalPlan;
-    evaluation: LegalRagEvaluation;
-    unsupportedClaimCount: number;
-    piiFindingCount: number;
-  }) => void;
+  onEvaluated?: (result: LegalRagResearchEvaluationResult) => void;
 };
 
 type EvaluationBundle = {
@@ -183,6 +208,33 @@ function buildCachedSummary(plan: LegalRagRetrievalPlan, evaluation: LegalRagEva
     metric_scores: { ...(evaluation.metric_scores || {}) },
     reason_codes: [...(plan.reason_codes || [])],
     timestamp: new Date().toISOString(),
+  };
+}
+
+function buildSafeMetadata(
+  summary: CachedLegalRagSummary,
+  unsupportedClaimCount: number,
+  piiFindingCount: number,
+): LegalRagResearchSafeMetadata {
+  return {
+    schema_version: 'legal-rag-research-safe-metadata-v1',
+    selected_source_ids: [...summary.selected_source_ids],
+    selected_source_count: summary.selected_source_ids.length,
+    plan_status: summary.status.plan,
+    evaluation_status: summary.status.evaluation,
+    blocked: summary.status.blocked,
+    freshness_statuses: [...summary.status.freshness_statuses],
+    coverage_counts: { ...summary.coverage_counts },
+    reason_codes: [...summary.reason_codes],
+    metric_scores: { ...summary.metric_scores },
+    unsupported_claim_count: unsupportedClaimCount,
+    pii_finding_count: piiFindingCount,
+    evaluated_at: summary.timestamp,
+    privacy_boundary: {
+      raw_legal_text_included: false,
+      user_claims_included: false,
+      pii_included: false,
+    },
   };
 }
 
@@ -381,11 +433,18 @@ export function LegalRagResearchPanel({
       setFreshSummary(nextSummary);
       setCachedSummary(nextSummary);
       setResultOrigin('fresh');
+      const safeMetadata = buildSafeMetadata(
+        nextSummary,
+        nextBundle.unsupportedClaimCount,
+        nextBundle.piiFindingCount,
+      );
       onEvaluated?.({
         plan: nextBundle.plan,
         evaluation: nextBundle.evaluation,
         unsupportedClaimCount: nextBundle.unsupportedClaimCount,
         piiFindingCount: nextBundle.piiFindingCount,
+        selectedSourceIds: [...nextSummary.selected_source_ids],
+        safeMetadata,
       });
       toast.success(plan.blocked ? '检索计划已返回阻塞原因' : '法律 RAG 元数据评估完成');
     } catch (err) {

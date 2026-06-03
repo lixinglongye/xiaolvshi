@@ -276,6 +276,8 @@ export interface CaseAIChatResponse {
   };
 }
 
+export type CaseRequestMetadata = Record<string, unknown>;
+
 interface ListResponse<T> {
   items: T[];
   total: number;
@@ -386,12 +388,27 @@ export function confirmCaseImportClusters(jobId: number, clusters: Array<{ clust
   return invoke<{ status: string; created_case_ids: number[] }>(`/api/v1/cases/import-jobs/${jobId}/confirm-clusters`, 'POST', { clusters });
 }
 
-export function generateCaseEvidenceCatalog(caseId: number) {
-  return invoke<CaseGeneratedDocumentResponse>(`/api/v1/cases/${caseId}/generate/evidence-catalog`, 'POST', {});
+export function generateCaseEvidenceCatalog(caseId: number, requestMetadata?: CaseRequestMetadata) {
+  return invoke<CaseGeneratedDocumentResponse>(
+    `/api/v1/cases/${caseId}/generate/evidence-catalog`,
+    'POST',
+    requestMetadata ? { request_metadata: requestMetadata } : {},
+  );
 }
 
-export function generateCaseCivilComplaint(caseId: number, forceDraft = true) {
-  return invoke<CaseGeneratedDocumentResponse>(`/api/v1/cases/${caseId}/generate/civil-complaint`, 'POST', { force_draft: forceDraft });
+export function generateCaseCivilComplaint(
+  caseId: number,
+  forceDraft = true,
+  requestMetadata?: CaseRequestMetadata,
+) {
+  return invoke<CaseGeneratedDocumentResponse>(
+    `/api/v1/cases/${caseId}/generate/civil-complaint`,
+    'POST',
+    {
+      force_draft: forceDraft,
+      ...(requestMetadata ? { request_metadata: requestMetadata } : {}),
+    },
+  );
 }
 
 export function caseAiChat(
@@ -399,6 +416,7 @@ export function caseAiChat(
   data: {
     message: string;
     conversation_history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    request_metadata?: CaseRequestMetadata;
   },
 ) {
   return invoke<CaseAIChatResponse>(`/api/v1/cases/${caseId}/ai-chat`, 'POST', data, 180_000);

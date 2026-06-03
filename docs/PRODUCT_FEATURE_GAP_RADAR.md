@@ -27,20 +27,26 @@ discovery smoke, the case workbench runtime state/event panel, the metadata-only
 legal RAG research panel, and the global billing usage badge.
 The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
-and a best-effort document-generation quota consumption attempt.
+and a best-effort document-generation quota consumption attempt. The newest
+backend and full-stack slices add server-side generated_documents CRUD quota
+guards, selected-source Legal RAG request metadata in case AI and document
+records, a local-only billing payment reconciliation policy, task runtime
+notification summaries, and a deterministic laptop-safe legal document benchmark
+suite.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
-provider reconciliation, selected-source citation propagation, raw contract
-extraction, server-side deep-review full quota enforcement, or database-backed
-team workspace is finished.
+provider settlement/webhook verification, full generated-report citation
+validation against selected sources, raw contract extraction, direct
+case/deep-review quota enforcement, or database-backed team workspace is
+finished.
 
 The frontend productization queue has moved from route exposure to deeper
 workflow binding:
 
 - Runtime event deltas should refresh live risk state and evidence graph views.
-- Selected legal RAG source IDs should flow into case AI prompts and report citation checks.
-- Best-effort document-generation quota consumption should move to server-side deep-review full quota enforcement.
-- Payment provider reconciliation, invoice, and plan-change states still need privacy-safe implementation.
+- Generated report citations should be validated against selected Legal RAG source IDs.
+- Generated_documents CRUD quota guards should extend to direct case and deep-review generation paths.
+- Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
 
 ## Scope
 
@@ -118,8 +124,8 @@ focused local checks:
 
 ```powershell
 python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_cost_regression_snapshots.py tests/test_route_telemetry_persistence_plan.py -q
-python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py tests/test_legal_source_durable_index_plan.py tests/test_legal_source_index_repository.py tests/test_legal_rag_index_binding.py tests/test_legal_rag_router.py tests/test_contract_clause_extraction_schema.py -q
-python -m pytest tests/test_case_workbench_payload.py tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_state_repository.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py tests/test_document_delivery_package_manifest.py tests/test_document_version_diff_checklist.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_billing_quota_persistence_plan.py tests/test_billing_quota_migration_plan.py tests/test_billing_quota_repository.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py tests/test_feedback_lifecycle_policy.py -q
+python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_document_benchmark_suite.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py tests/test_legal_source_durable_index_plan.py tests/test_legal_source_index_repository.py tests/test_legal_rag_index_binding.py tests/test_legal_rag_router.py tests/test_legal_rag_request_metadata.py tests/test_contract_clause_extraction_schema.py -q
+python -m pytest tests/test_case_workbench_payload.py tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_state_repository.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py tests/test_case_task_notification_policy.py tests/test_document_delivery_package_manifest.py tests/test_document_version_diff_checklist.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_billing_quota_persistence_plan.py tests/test_billing_quota_migration_plan.py tests/test_billing_quota_repository.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py tests/test_generated_documents_quota.py tests/test_billing_payment_reconciliation.py tests/test_feedback_lifecycle_policy.py -q
 npm run typecheck
 ```
 

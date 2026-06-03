@@ -4,7 +4,10 @@ import Markdown from 'markdown-to-jsx';
 import Layout from '@/components/Layout';
 import AuthGuard from '@/components/AuthGuard';
 import CaseWorkbenchRuntimePanel from '@/components/cases/CaseWorkbenchRuntimePanel';
-import LegalRagResearchPanel from '@/components/cases/LegalRagResearchPanel';
+import LegalRagResearchPanel, {
+  type LegalRagResearchEvaluationResult,
+  type LegalRagResearchSafeMetadata,
+} from '@/components/cases/LegalRagResearchPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -137,6 +140,24 @@ function copyToClipboard(content: string, message = '已复制') {
 const WORKBENCH_STATE_SCHEMA_VERSION = 'case-workbench-state-v1';
 const WORKBENCH_POLICY_VERSION = 'case-workbench-persistence-v1';
 const CASE_DETAIL_RUNTIME_SOURCE = 'case_detail_page';
+const CASE_REQUEST_METADATA_SCHEMA_VERSION = 'case-request-metadata-v1';
+const CASE_LEGAL_RAG_METADATA_CACHE_PREFIX = 'xiaolvshi:case-detail:legal-rag-request-metadata:v1:';
+
+type CaseAiRequestPurpose = 'case_ai_chat' | 'case_research' | 'case_document_generation';
+
+type CaseAiRequestMetadata = {
+  schema_version: typeof CASE_REQUEST_METADATA_SCHEMA_VERSION;
+  source_component: typeof CASE_DETAIL_RUNTIME_SOURCE;
+  purpose: CaseAiRequestPurpose;
+  document_type?: string;
+  legal_rag_selected_source_ids: string[];
+  legal_rag: LegalRagResearchSafeMetadata;
+  privacy_boundary: {
+    raw_legal_text_included: false;
+    user_claims_included: false;
+    pii_included: false;
+  };
+};
 
 type WorkbenchEventInput = {
   section: CaseWorkbenchSectionId;
@@ -168,6 +189,100 @@ function randomEventSuffix(): string {
 
 function objectRef(prefix: string, id: unknown): string {
   return `${prefix}_${safeRef(id, 'unknown')}`;
+}
+
+function caseLegalRagMetadataCacheKey(caseIdValue: number): string {
+  return `${CASE_LEGAL_RAG_METADATA_CACHE_PREFIX}${safeRef(caseIdValue, 'case')}`;
+}
+
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
+
+function stringValues(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && Boolean(item.trim())) : [];
+}
+
+function numberValues(value: unknown): Record<string, number> {
+  const record = recordValue(value);
+  if (!record) return {};
+  return Object.fromEntries(
+    Object.entries(record).filter((entry): entry is [string, number] => (
+      typeof entry[1] === 'number' && Number.isFinite(entry[1])
+    )),
+  );
+}
+
+function finiteNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeLegalRagSafeMetadata(value: unknown): LegalRagResearchSafeMetadata | null {
+  const record = recordValue(value);
+  if (!record) return null;
+  const selectedSourceIds = Array.from(new Set(stringValues(record.selected_source_ids)));
+  if (!selectedSourceIds.length) return null;
+  return {
+    schema_version: 'legal-rag-research-safe-metadata-v1',
+    selected_source_ids: selectedSourceIds,
+    selected_source_count: finiteNumber(record.selected_source_count, selectedSourceIds.length),
+    plan_status: typeof record.plan_status === 'string' ? record.plan_status : 'unknown',
+    evaluation_status: typeof record.evaluation_status === 'string' ? record.evaluation_status : 'unknown',
+    blocked: typeof record.blocked === 'boolean' ? record.blocked : false,
+    freshness_statuses: stringValues(record.freshness_statuses),
+    coverage_counts: numberValues(record.coverage_counts),
+    reason_codes: stringValues(record.reason_codes),
+    metric_scores: numberValues(record.metric_scores),
+    unsupported_claim_count: finiteNumber(record.unsupported_claim_count),
+    pii_finding_count: finiteNumber(record.pii_finding_count),
+    evaluated_at: typeof record.evaluated_at === 'string' ? record.evaluated_at : new Date().toISOString(),
+    privacy_boundary: {
+      raw_legal_text_included: false,
+      user_claims_included: false,
+      pii_included: false,
+    },
+  };
+}
+
+function readCaseLegalRagMetadata(caseIdValue: number): LegalRagResearchSafeMetadata | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(caseLegalRagMetadataCacheKey(caseIdValue));
+    return raw ? normalizeLegalRagSafeMetadata(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCaseLegalRagMetadata(caseIdValue: number, metadata: LegalRagResearchSafeMetadata | null) {
+  if (typeof window === 'undefined') return;
+  const cacheKey = caseLegalRagMetadataCacheKey(caseIdValue);
+  if (!metadata) {
+    window.localStorage.removeItem(cacheKey);
+    return;
+  }
+  window.localStorage.setItem(cacheKey, JSON.stringify(metadata));
+}
+
+function buildCaseRequestMetadata(
+  metadata: LegalRagResearchSafeMetadata | null,
+  purpose: CaseAiRequestPurpose,
+  documentType?: string,
+): CaseAiRequestMetadata | undefined {
+  if (!metadata?.selected_source_ids.length) return undefined;
+  return {
+    schema_version: CASE_REQUEST_METADATA_SCHEMA_VERSION,
+    source_component: CASE_DETAIL_RUNTIME_SOURCE,
+    purpose,
+    ...(documentType ? { document_type: documentType } : {}),
+    legal_rag_selected_source_ids: [...metadata.selected_source_ids],
+    legal_rag: metadata,
+    privacy_boundary: {
+      raw_legal_text_included: false,
+      user_claims_included: false,
+      pii_included: false,
+    },
+  };
 }
 
 function extractEvidenceRefs(value?: string | null): string[] {
@@ -318,6 +433,7 @@ function Inner() {
   const [researchQuery, setResearchQuery] = useState('');
   const [researchResults, setResearchResults] = useState<string[]>([]);
   const [researchLoading, setResearchLoading] = useState(false);
+  const [legalRagMetadata, setLegalRagMetadata] = useState<LegalRagResearchSafeMetadata | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const runtimeStateVersionRef = useRef(0);
 
@@ -376,6 +492,14 @@ function Inner() {
   }, [caseId]);
 
   useEffect(() => {
+    if (!Number.isFinite(caseId)) {
+      setLegalRagMetadata(null);
+      return;
+    }
+    setLegalRagMetadata(readCaseLegalRagMetadata(caseId));
+  }, [caseId]);
+
+  useEffect(() => {
     if (!Number.isFinite(caseId)) return;
     setChatCacheReady(false);
     const fallback = [createChatSession(1)];
@@ -415,6 +539,16 @@ function Inner() {
     if (!container) return;
     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
   }, [chatMessages, chatLoading]);
+
+  const handleLegalRagEvaluated = (result: LegalRagResearchEvaluationResult) => {
+    if (!Number.isFinite(caseId)) return;
+    const metadata = normalizeLegalRagSafeMetadata({
+      ...result.safeMetadata,
+      selected_source_ids: result.selectedSourceIds,
+    });
+    setLegalRagMetadata(metadata);
+    writeCaseLegalRagMetadata(caseId, metadata);
+  };
 
   const refreshCounts = async (updates: Partial<CaseRecord>) => {
     if (!caseItem) return;
@@ -795,11 +929,12 @@ function Inner() {
 
   const generateDocument = async (docType = docForm.doc_type) => {
     if (!caseItem) return;
+    const requestMetadata = buildCaseRequestMetadata(legalRagMetadata, 'case_document_generation', docType);
     if (docType === '证据目录' || docType === '起诉状') {
       try {
         const result = docType === '证据目录'
-          ? await generateCaseEvidenceCatalog(caseItem.id)
-          : await generateCaseCivilComplaint(caseItem.id, true);
+          ? await generateCaseEvidenceCatalog(caseItem.id, requestMetadata)
+          : await generateCaseCivilComplaint(caseItem.id, true, requestMetadata);
         if (!result.success || !result.document) {
           toast.error(result.message || `${docType}生成失败`);
           return;
@@ -824,6 +959,7 @@ function Inner() {
     const citationMap = {
       materials: materials.filter((m) => content.includes(m.material_no || '')).map((m) => m.material_no),
       unsupported_facts: unsupportedFacts.map((fact) => fact.fact_no),
+      ...(requestMetadata ? { legal_rag_selected_source_ids: requestMetadata.legal_rag.selected_source_ids } : {}),
     };
     const created = await createGeneratedCaseDocument({
       case_id: caseItem.id,
@@ -834,7 +970,12 @@ function Inner() {
       status: docType.includes('目录') ? '待复核' : '草稿',
       generated_by: 'case_workspace',
       citation_map: JSON.stringify(citationMap),
-      input_data_json: JSON.stringify({ case_id: caseItem.id, material_count: materials.length, fact_count: facts.length }),
+      input_data_json: JSON.stringify({
+        case_id: caseItem.id,
+        material_count: materials.length,
+        fact_count: facts.length,
+        ...(requestMetadata ? { request_metadata: requestMetadata } : {}),
+      }),
     });
     setDocuments((prev) => [created, ...prev]);
     void recordGeneratedReportUsage(created);
@@ -846,11 +987,13 @@ function Inner() {
   const runResearch = async () => {
     if (!caseItem) return;
     const query = researchQuery.trim() || caseItem?.case_type || '案件法律研究';
+    const requestMetadata = buildCaseRequestMetadata(legalRagMetadata, 'case_research');
     setResearchLoading(true);
     try {
       const result = await caseAiChat(caseItem.id, {
         message: `请基于当前案件上下文和本地法条库，围绕“${query}”做法律研究提纲。要求：区分已有依据和需继续检索核验的依据，绑定争议焦点、证据短板和下一步。`,
         conversation_history: chatMessages.slice(-6),
+        ...(requestMetadata ? { request_metadata: requestMetadata } : {}),
       });
       setResearchResults([result.response]);
     } catch (error) {
@@ -878,9 +1021,11 @@ function Inner() {
     setChatInput('');
     setChatLoading(true);
     try {
+      const requestMetadata = buildCaseRequestMetadata(legalRagMetadata, 'case_ai_chat');
       const result = await caseAiChat(caseItem.id, {
         message: prompt,
         conversation_history: history,
+        ...(requestMetadata ? { request_metadata: requestMetadata } : {}),
       });
       setChatSessions((prev) => prev.map((session) => (
         session.id === targetChatId
@@ -1155,6 +1300,7 @@ function Inner() {
                 <LegalRagResearchPanel
                   caseId={caseItem.id}
                   defaultUseCase={caseItem.case_type || 'contract_review'}
+                  onEvaluated={handleLegalRagEvaluated}
                 />
               </TabsContent>
 

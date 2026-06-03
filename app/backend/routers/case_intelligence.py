@@ -17,13 +17,19 @@ class ConfirmClustersRequest(BaseModel):
     clusters: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class GenerateEvidenceCatalogRequest(BaseModel):
+    request_metadata: dict[str, Any] | None = None
+
+
 class GenerateCivilComplaintRequest(BaseModel):
     force_draft: bool = True
+    request_metadata: dict[str, Any] | None = None
 
 
 class CaseAIChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=6000)
     conversation_history: list[dict[str, str]] = Field(default_factory=list)
+    request_metadata: dict[str, Any] | None = None
 
 
 @router.post("/import-zip")
@@ -127,12 +133,17 @@ async def get_case_workspace(
 @router.post("/{case_id}/generate/evidence-catalog")
 async def generate_evidence_catalog(
     case_id: int,
+    request: GenerateEvidenceCatalogRequest = Body(default_factory=GenerateEvidenceCatalogRequest),
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     service = CaseDraftingService(db)
     try:
-        return await service.generate_evidence_catalog(case_id=case_id, user_id=str(current_user.id))
+        return await service.generate_evidence_catalog(
+            case_id=case_id,
+            user_id=str(current_user.id),
+            request_metadata=request.request_metadata,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
@@ -152,6 +163,7 @@ async def generate_civil_complaint(
             case_id=case_id,
             user_id=str(current_user.id),
             force_draft=request.force_draft,
+            request_metadata=request.request_metadata,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -173,6 +185,7 @@ async def case_ai_chat(
             user_id=str(current_user.id),
             message=request.message,
             conversation_history=request.conversation_history,
+            request_metadata=request.request_metadata,
         )
     except ValueError as exc:
         detail = str(exc)

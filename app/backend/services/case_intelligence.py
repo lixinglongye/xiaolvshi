@@ -26,6 +26,7 @@ from models.generated_documents import Generated_documents
 from models.import_jobs import Import_jobs
 from models.legal_sources import Legal_sources
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
+from services.legal_rag_request_metadata import legal_rag_citation_metadata, sanitize_case_request_metadata
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -1073,8 +1074,15 @@ class CaseDraftingService:
         claims = (await self.db.execute(select(Claims).where(Claims.case_id == case_id, Claims.user_id == user_id).order_by(Claims.claim_no, Claims.id))).scalars().all()
         return {"case": case, "materials": materials, "facts": facts, "parties": parties, "evidence_items": evidence_items, "claims": claims}
 
-    async def generate_evidence_catalog(self, *, case_id: int, user_id: str) -> dict[str, Any]:
+    async def generate_evidence_catalog(
+        self,
+        *,
+        case_id: int,
+        user_id: str,
+        request_metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         workspace = await self.load_workspace(case_id, user_id)
+        safe_request_metadata = sanitize_case_request_metadata(request_metadata)
         evidence_items = workspace["evidence_items"] or self._evidence_items_from_materials(workspace["materials"])
         missing = []
         rows = []
@@ -1098,12 +1106,21 @@ class CaseDraftingService:
             evidence_citations=[{"evidence_id": row["evidence_no"], "evidence_name": row["evidence_name"]} for row in rows],
             legal_citations=[],
             qa_report=qa,
+            request_metadata=safe_request_metadata,
             status="待律师复核",
         )
         return {"success": True, "document_id": document.id, "document": self._serialize_document(document), "qa_report": qa}
 
-    async def generate_civil_complaint(self, *, case_id: int, user_id: str, force_draft: bool = True) -> dict[str, Any]:
+    async def generate_civil_complaint(
+        self,
+        *,
+        case_id: int,
+        user_id: str,
+        force_draft: bool = True,
+        request_metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         workspace = await self.load_workspace(case_id, user_id)
+        safe_request_metadata = sanitize_case_request_metadata(request_metadata)
         preflight = self.preflight_civil_complaint(workspace)
         if preflight["blocking"] and not force_draft:
             return {
@@ -1125,6 +1142,7 @@ class CaseDraftingService:
             evidence_citations=evidence_citations,
             legal_citations=legal_citations,
             qa_report=qa,
+            request_metadata=safe_request_metadata,
             status="草稿-待补充" if preflight["blocking"] else "草稿-待律师复核",
         )
         return {
@@ -1369,8 +1387,15 @@ class CaseDraftingService:
         evidence_citations: list[dict[str, Any]],
         legal_citations: list[dict[str, Any]],
         qa_report: dict[str, Any],
+        request_metadata: dict[str, Any] | None = None,
         status: str,
     ) -> Generated_documents:
+        safe_request_metadata = sanitize_case_request_metadata(request_metadata)
+        generation_plan_payload = dict(generation_plan)
+        citation_map_payload: dict[str, Any] = {"evidence": evidence_citations, "legal": legal_citations}
+        if safe_request_metadata:
+            generation_plan_payload["request_metadata"] = safe_request_metadata
+            citation_map_payload["legal_rag"] = legal_rag_citation_metadata(safe_request_metadata)
         doc = Generated_documents(
             user_id=user_id,
             case_id=case_id,
@@ -1379,13 +1404,13 @@ class CaseDraftingService:
             content=content,
             content_markdown=content,
             content_json=_json_dumps(content_json),
-            generation_plan_json=_json_dumps(generation_plan),
+            generation_plan_json=_json_dumps(generation_plan_payload),
             evidence_citations_json=_json_dumps(evidence_citations),
             legal_citations_json=_json_dumps(legal_citations),
             qa_report_json=_json_dumps(qa_report),
             draft_label="AI草稿-需律师复核",
-            input_data_json=_json_dumps(generation_plan),
-            citation_map=_json_dumps({"evidence": evidence_citations, "legal": legal_citations}),
+            input_data_json=_json_dumps(generation_plan_payload),
+            citation_map=_json_dumps(citation_map_payload),
             status=status,
             generated_by="legal_agent_team",
         )

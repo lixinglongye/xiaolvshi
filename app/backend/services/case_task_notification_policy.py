@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
+import re
 from typing import Any
 
 
@@ -8,6 +10,13 @@ DONE_STATUSES = {"done", "completed", "closed", "cancelled"}
 URGENT_PRIORITIES = {"urgent", "critical", "high"}
 CLIENT_MATERIAL_STATUSES = {"waiting_client", "client_pending", "needs_client_materials"}
 LAWYER_REVIEW_STATUSES = {"review_needed", "lawyer_review", "pending_review"}
+BLOCKED_TASK_STATUSES = {"blocked", "stalled", "on_hold", "waiting_dependency", "waiting_external"}
+URGENT_DUE_DATE_STATUSES = {"overdue", "past_due", "urgent", "due", "due_today", "today"}
+DUE_SOON_DATE_STATUSES = {"near", "soon", "due_soon", "upcoming", "within_3_days"}
+ACTIVE_ESCALATION_STATUSES = {"active", "pending", "requested", "escalated", "needs_escalation"}
+SAFE_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9:_-]{0,127}$")
+SAFE_CODE_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
+RUNTIME_TASK_EVENT_SUMMARY_ID = "case-task-runtime-event-notification-summary-v1"
 
 
 @dataclass(frozen=True)
@@ -142,6 +151,94 @@ class CaseTaskNotificationPolicyService:
             },
         }
 
+    def build_runtime_event_policy_summary(
+        self,
+        events: Iterable[Mapping[str, Any]] | Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Summarize notification and escalation suggestions from task runtime events.
+
+        This helper is intentionally side-effect free. It accepts sanitized case
+        workbench runtime events, extracts task metadata, and returns policy
+        suggestions only. It does not dispatch notifications or persist message
+        bodies.
+        """
+        event_items = self._runtime_event_items(events)
+        task_candidates: list[dict[str, Any]] = []
+        task_event_summaries: list[dict[str, Any]] = []
+        ignored_event_count = 0
+        malformed_task_state_count = 0
+
+        for event_index, event in enumerate(event_items, start=1):
+            section = self._safe_code(event.get("section"), "")
+            if section != "tasks":
+                ignored_event_count += 1
+                continue
+
+            task_states = self._runtime_task_states(event)
+            valid_task_count = 0
+            for task_index, task_state in enumerate(task_states, start=1):
+                if not isinstance(task_state, Mapping):
+                    malformed_task_state_count += 1
+                    continue
+                valid_task_count += 1
+                task_candidates.append(self._task_from_runtime_event(event, task_state, task_index))
+
+            task_event_summaries.append(
+                {
+                    "event_id": self._safe_identifier(event.get("event_id"), f"runtime-event-{event_index}"),
+                    "case_id": self._safe_identifier(event.get("case_ref_hash"), "unknown-case"),
+                    "section": "tasks",
+                    "operation": self._safe_code(event.get("operation"), "unknown"),
+                    "payload_kind": self._safe_code(event.get("payload_kind"), "unknown"),
+                    "state_version": self._optional_int(event.get("state_version")),
+                    "status_event": self._is_task_status_event(event),
+                    "task_state_count": valid_task_count,
+                    "changed_task_refs": self._safe_identifier_list(event.get("changed_item_refs")),
+                }
+            )
+
+        policy = self.build_policy(task_candidates)
+        status = "ready" if task_candidates else ("empty" if event_items else "template")
+        notification_suggestions = policy["notification_queue"]
+        escalation_suggestions = policy["blocking_urgent_tasks"]
+
+        return {
+            "status": status,
+            "summary_id": RUNTIME_TASK_EVENT_SUMMARY_ID,
+            "policy_id": policy["policy_id"],
+            "method": {
+                "type": "deterministic-runtime-task-event-notification-policy-summary",
+                "notes": [
+                    "The helper reads task runtime event metadata only.",
+                    "No notification dispatch, external call, or database write is performed.",
+                    "Raw text, message bodies, fact prose, document text, filenames, prompts, and model output are not copied into the summary.",
+                ],
+            },
+            "summary": {
+                "event_count": len(event_items),
+                "task_event_count": len(task_event_summaries),
+                "ignored_event_count": ignored_event_count,
+                "task_status_event_count": sum(1 for item in task_event_summaries if item["status_event"]),
+                "task_state_count": len(task_candidates),
+                "malformed_task_state_count": malformed_task_state_count,
+                "notification_suggestion_count": len(notification_suggestions),
+                "escalation_suggestion_count": len(escalation_suggestions),
+                "urgent_escalation_suggestion_count": policy["summary"]["urgent_escalation_count"],
+                "missing_owner_count": policy["summary"]["missing_owner_count"],
+                "dispatch_performed": False,
+                "raw_text_stored": False,
+            },
+            "task_event_summaries": task_event_summaries,
+            "notification_suggestions": notification_suggestions,
+            "escalation_suggestions": escalation_suggestions,
+            "policy_summary": policy["summary"],
+            "privacy_notes": [
+                "Runtime summaries include opaque case and task refs, status codes, priority, due-window metadata, and trigger ids only.",
+                "The caller must render any human-readable notification copy from authorized live case content at dispatch time.",
+                "This helper is suitable for previewing notification and escalation policy decisions, not for sending or storing notifications.",
+            ],
+        }
+
     def _notification_channels(self) -> tuple[NotificationChannel, ...]:
         return (
             NotificationChannel(
@@ -211,6 +308,13 @@ class CaseTaskNotificationPolicyService:
                 channel_order=("review_queue", "case_workspace"),
                 reviewer_action="Route the item to legal review before any client-facing delivery step.",
             ),
+            TriggerRule(
+                rule_id="runtime-task-blocker-escalation",
+                trigger="active task has blocker_codes, a blocked status, or an active escalation_status",
+                severity="blocking",
+                channel_order=("team_escalation", "case_workspace"),
+                reviewer_action="Review the runtime blocker and either clear it, reassign the task, or escalate to the case owner.",
+            ),
         )
 
     def _escalation_rules(self) -> tuple[EscalationRule, ...]:
@@ -243,20 +347,39 @@ class CaseTaskNotificationPolicyService:
                 action="Move the task into review queue and block client delivery until review is complete.",
                 audit_required=True,
             ),
+            EscalationRule(
+                rule_id="runtime-task-blocker-escalation",
+                applies_when="task runtime metadata reports blocker_codes, a blocked status, or an active escalation_status",
+                escalate_to=("task_owner", "case_owner", "team_coordinator"),
+                action="Create a policy suggestion for blocker review without sending a notification automatically.",
+                audit_required=True,
+            ),
         )
 
     def _evaluate_task(self, task: dict[str, Any]) -> dict[str, Any]:
         status = str(task.get("status") or "open").strip().lower()
         priority = str(task.get("priority") or "normal").strip().lower()
         days_until_due = self._optional_int(task.get("days_until_due"))
+        due_date_status = self._safe_code(task.get("due_date_status"), "")
+        escalation_status = self._safe_code(task.get("escalation_status"), "none")
+        blocker_codes = self._safe_code_tuple(task.get("blocker_codes"))
         done = status in DONE_STATUSES
         owner_missing = not done and not self._has_owner(task)
         urgent_escalation = not done and (
             (days_until_due is not None and days_until_due <= self.URGENT_DUE_DAYS) or priority in URGENT_PRIORITIES
+            or due_date_status in URGENT_DUE_DATE_STATUSES
         )
-        due_soon = not done and days_until_due is not None and self.URGENT_DUE_DAYS < days_until_due <= self.DUE_SOON_DAYS
+        due_soon = not done and (
+            (days_until_due is not None and self.URGENT_DUE_DAYS < days_until_due <= self.DUE_SOON_DAYS)
+            or due_date_status in DUE_SOON_DATE_STATUSES
+        )
         client_material = not done and self._requires_client_materials(task, status)
         lawyer_review = not done and self._requires_lawyer_review(task, status)
+        runtime_blocker = not done and (
+            status in BLOCKED_TASK_STATUSES
+            or escalation_status in ACTIVE_ESCALATION_STATUSES
+            or bool(blocker_codes)
+        )
 
         triggers: list[str] = []
         blocking_reasons: list[str] = []
@@ -279,6 +402,10 @@ class CaseTaskNotificationPolicyService:
         if lawyer_review:
             triggers.append("lawyer-review-reminder")
             recommended_channels.extend(["review_queue", "case_workspace"])
+        if runtime_blocker:
+            triggers.append("runtime-task-blocker-escalation")
+            recommended_channels.extend(["team_escalation", "case_workspace"])
+            blocking_reasons.append("runtime_task_blocker")
 
         return {
             "task_id": str(task.get("task_id") or task.get("id") or "unknown-task"),
@@ -286,11 +413,15 @@ class CaseTaskNotificationPolicyService:
             "status": status,
             "priority": priority,
             "days_until_due": days_until_due,
+            "due_date_status": due_date_status,
+            "escalation_status": escalation_status,
+            "blocker_codes": blocker_codes,
             "done": done,
             "owner_missing": owner_missing,
             "urgent_escalation": urgent_escalation,
             "requires_client_materials": client_material,
             "requires_lawyer_review": lawyer_review,
+            "runtime_blocker": runtime_blocker,
             "triggers": tuple(dict.fromkeys(triggers)),
             "blocking_reasons": tuple(dict.fromkeys(blocking_reasons)),
             "recommended_channels": tuple(dict.fromkeys(recommended_channels)),
@@ -342,3 +473,86 @@ class CaseTaskNotificationPolicyService:
             return int(value)
         except (TypeError, ValueError):
             return None
+
+    def _runtime_event_items(
+        self,
+        events: Iterable[Mapping[str, Any]] | Mapping[str, Any] | None,
+    ) -> list[Mapping[str, Any]]:
+        if events is None:
+            return []
+        if isinstance(events, Mapping):
+            return [events]
+        if isinstance(events, (str, bytes)):
+            return []
+        if isinstance(events, Iterable):
+            return [event for event in events if isinstance(event, Mapping)]
+        return []
+
+    def _runtime_task_states(self, event: Mapping[str, Any]) -> list[Any]:
+        state_delta = event.get("state_delta")
+        if not isinstance(state_delta, Mapping):
+            return []
+        task_states = state_delta.get("task_states")
+        if not isinstance(task_states, list):
+            return []
+        return task_states
+
+    def _task_from_runtime_event(
+        self,
+        event: Mapping[str, Any],
+        task_state: Mapping[str, Any],
+        task_index: int,
+    ) -> dict[str, Any]:
+        return {
+            "case_id": self._safe_identifier(event.get("case_ref_hash"), "unknown-case"),
+            "task_id": self._safe_identifier(
+                task_state.get("task_ref_hash") or task_state.get("task_id"),
+                f"unknown-task-{task_index}",
+            ),
+            "status": self._safe_code(task_state.get("status"), "open"),
+            "priority": self._safe_code(task_state.get("priority"), "normal"),
+            "task_type": self._safe_code(task_state.get("task_type"), ""),
+            "owner_role": self._safe_code(task_state.get("owner_role"), ""),
+            "due_date_status": self._safe_code(task_state.get("due_date_status"), ""),
+            "escalation_status": self._safe_code(task_state.get("escalation_status"), "none"),
+            "blocker_codes": self._safe_code_tuple(task_state.get("blocker_codes")),
+            "requires_lawyer_review": task_state.get("review_required") is True,
+        }
+
+    def _is_task_status_event(self, event: Mapping[str, Any]) -> bool:
+        changed_fields = event.get("changed_field_names")
+        if not isinstance(changed_fields, list):
+            return False
+        return any(isinstance(field, str) and field.strip().lower() == "status" for field in changed_fields)
+
+    def _safe_identifier(self, value: Any, fallback: str) -> str:
+        if not isinstance(value, str):
+            return fallback
+        text = value.strip()
+        if not text or not SAFE_IDENTIFIER_PATTERN.match(text):
+            return fallback
+        return text
+
+    def _safe_identifier_list(self, value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        safe_items: list[str] = []
+        for item in value:
+            safe_item = self._safe_identifier(item, "")
+            if safe_item:
+                safe_items.append(safe_item)
+        return list(dict.fromkeys(safe_items))
+
+    def _safe_code(self, value: Any, fallback: str) -> str:
+        if not isinstance(value, str):
+            return fallback
+        text = value.strip().lower()
+        if not text or not SAFE_CODE_PATTERN.match(text):
+            return fallback
+        return text
+
+    def _safe_code_tuple(self, value: Any) -> tuple[str, ...]:
+        if not isinstance(value, list):
+            return ()
+        safe_codes = [self._safe_code(item, "") for item in value]
+        return tuple(dict.fromkeys(code for code in safe_codes if code))

@@ -132,3 +132,29 @@ def test_billing_preflight_route_is_optional_release_evidence():
     assert check["blocks_release"] is False
     assert "app/backend/tests/test_billing_usage_router.py" in check["evidence_paths"]
     assert "server-side enforcement" in check["manual_note"]
+
+
+def test_recent_backend_product_slices_are_optional_release_evidence():
+    service = ReleaseReadinessService()
+    expected_commands = {
+        "generated-documents-crud-quota-guard": "python -m pytest tests/test_generated_documents_quota.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py -q",
+        "legal-rag-selected-source-request-metadata": "python -m pytest tests/test_legal_rag_request_metadata.py -q",
+        "billing-payment-reconciliation-policy": "python -m pytest tests/test_billing_payment_reconciliation.py -q",
+        "case-task-runtime-notification-summary": "python -m pytest tests/test_case_task_notification_policy.py -q",
+        "legal-document-benchmark-suite": "python -m pytest tests/test_legal_document_benchmark_suite.py -q",
+    }
+    commands = {
+        item["check_id"]: item["command"]
+        for item in service.default_validation_commands()
+        if item["check_id"] in expected_commands
+    }
+    result = service.evaluate({check_id: "not_run" for check_id in expected_commands})
+    checks = {check["id"]: check for check in result["checks"]}
+
+    assert commands == expected_commands
+    for check_id in expected_commands:
+        assert checks[check_id]["required"] is False
+        assert checks[check_id]["blocks_release"] is False
+    assert "direct case/deep-review generation paths" in checks["generated-documents-crud-quota-guard"]["manual_note"]
+    assert "metadata only" in checks["legal-rag-selected-source-request-metadata"]["manual_note"]
+    assert "does not verify real payment provider settlement" in checks["billing-payment-reconciliation-policy"]["manual_note"]

@@ -66,14 +66,20 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/frontend/src/components/billing/BillingUsageBadge.tsx" in gaps["billing-entitlements"]["evidence_paths"]
     assert "privacy-safe material/evidence/fact/task edit event binding" in gaps["case-workbench"]["current_state"]
+    assert "task runtime notification policy summaries" in gaps["case-workbench"]["current_state"]
     assert "localStorage summary cache" in gaps["legal-knowledge-rag"]["current_state"]
+    assert "selected-source request metadata propagation" in gaps["legal-knowledge-rag"]["current_state"]
     assert "report preflight" in gaps["billing-entitlements"]["current_state"]
-    assert "best-effort document-generation quota consumption attempt" in gaps["billing-entitlements"]["current_state"]
+    assert "generated_documents CRUD quota guard" in gaps["billing-entitlements"]["current_state"]
+    assert "local-only payment/invoice/plan-change reconciliation policy evidence" in gaps["billing-entitlements"]["current_state"]
     assert "app/frontend/src/pages/CaseDetailPage.tsx" in gaps["document-generation"]["evidence_paths"]
+    assert "app/backend/tests/test_generated_documents_quota.py" in gaps["document-generation"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_request_metadata.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
+    assert "app/backend/services/billing_payment_reconciliation.py" in gaps["billing-entitlements"]["evidence_paths"]
     assert any("live risk-state" in action for action in gaps["case-workbench"]["next_actions"])
-    assert any("case AI prompts" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
-    assert any("server-side deep-review full quota enforcement" in action for action in gaps["billing-entitlements"]["next_actions"])
-    assert any("payment provider state reconciliation" in action for action in gaps["billing-entitlements"]["next_actions"])
+    assert any("generated report citations" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
+    assert any("direct case and deep-review document generation paths" in action for action in gaps["billing-entitlements"]["next_actions"])
+    assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
 
 
 def test_product_feature_gap_radar_has_no_secret_material():

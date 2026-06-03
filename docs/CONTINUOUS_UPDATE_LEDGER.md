@@ -27,11 +27,15 @@ main-app runtime router discovery smoke, a case overview runtime state/event
 panel, a metadata-only legal RAG research panel, and a global billing quota
 badge. The current follow-up evidence adds a read-only billing report preflight
 route, privacy-safe case edit runtime events for material/evidence/fact/task
-changes, metadata-only Legal RAG context cache/copy controls, and a best-effort
-document-generation quota consumption attempt. These are reviewable product
-slices; they do not finish selected-source citation propagation, payment
-provider reconciliation, invoice states, or server-side deep-review full quota
-enforcement.
+changes, metadata-only Legal RAG context cache/copy controls, a best-effort
+document-generation quota consumption attempt, server-side generated_documents
+CRUD quota guards, selected-source Legal RAG request metadata propagation, a
+local-only billing payment reconciliation policy, task runtime notification
+summaries, and a deterministic laptop-safe legal document benchmark suite.
+These are reviewable product slices; they do not finish real payment provider
+settlement or webhook verification, full generated-report citation validation
+against selected source IDs, direct case/deep-review generation quota
+enforcement, raw contract extraction, or a database-backed team workspace.
 
 ## Completion Policy
 
@@ -83,6 +87,8 @@ This keeps:
 - `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_entitlement_quota_binding.py`
 - `app/backend/services/billing_usage_quota_policy.py`
+- `app/backend/services/billing_payment_reconciliation.py`
+- `app/backend/routers/generated_documents.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_intake_completeness.py`
 - `app/backend/services/case_role_permission_matrix.py`
@@ -122,6 +128,11 @@ This keeps:
 - `app/backend/services/ocr_import_readiness_policy.py`
 - `app/backend/services/small_legal_document_corpus_expansion.py`
 - `app/backend/services/legal_document_template_matrix.py`
+- `app/backend/services/legal_document_benchmark_suite.py`
+- `app/backend/services/legal_rag_request_metadata.py`
+- `app/backend/routers/case_intelligence.py`
+- `app/backend/services/case_intelligence.py`
+- `app/backend/services/case_ai_workbench.py`
 - `app/backend/services/legal_document_export_readiness.py`
 - `app/backend/services/legal_external_research_digest.py`
 - `app/backend/services/product_feature_gap_radar.py`
@@ -132,6 +143,8 @@ This keeps:
 - `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_entitlement_quota_binding.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
+- `app/backend/tests/test_billing_payment_reconciliation.py`
+- `app/backend/tests/test_generated_documents_quota.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_intake_completeness.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
@@ -171,6 +184,8 @@ This keeps:
 - `app/backend/tests/test_ocr_import_readiness_policy.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_legal_document_template_matrix.py`
+- `app/backend/tests/test_legal_document_benchmark_suite.py`
+- `app/backend/tests/test_legal_rag_request_metadata.py`
 - `app/backend/tests/test_legal_document_export_readiness.py`
 - `app/backend/tests/test_legal_external_research_digest.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`

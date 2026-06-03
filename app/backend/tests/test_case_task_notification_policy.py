@@ -14,6 +14,10 @@ def _policy(tasks=None) -> dict:
     return CaseTaskNotificationPolicyService().build_policy(tasks)
 
 
+def _runtime_summary(events=None) -> dict:
+    return CaseTaskNotificationPolicyService().build_runtime_event_policy_summary(events)
+
+
 def test_policy_contains_required_metadata_sections():
     policy = _policy()
 
@@ -142,6 +146,112 @@ def test_policy_payload_has_no_sensitive_data_patterns():
     serialized = json.dumps(payload, ensure_ascii=False)
 
     assert not SENSITIVE_DATA_PATTERN.search(serialized)
+
+
+def test_runtime_task_status_event_builds_policy_suggestion_summary_without_dispatch():
+    event = {
+        "event_id": "cwp-event-task-status-001",
+        "event_type": "case_workbench_state_event",
+        "case_ref_hash": "case_hash_task_status_abcdefghijkl",
+        "section": "tasks",
+        "operation": "append_delta",
+        "state_version": 3,
+        "payload_kind": "metadata_delta",
+        "changed_item_refs": ["task_hash_status_abcdefghijkl"],
+        "changed_field_names": ["status", "priority", "due_date_status"],
+        "state_delta": {
+            "task_states": [
+                {
+                    "task_ref_hash": "task_hash_status_abcdefghijkl",
+                    "task_type": "lawyer_review",
+                    "status": "review_needed",
+                    "priority": "normal",
+                    "owner_role": "lawyer",
+                    "due_date_status": "urgent",
+                    "escalation_status": "requested",
+                    "blocker_codes": ["evidence_gap"],
+                    "review_required": True,
+                    "raw_content": "Client narrative must not be copied",
+                }
+            ],
+        },
+        "message": "Do not notify someone@example.test with password details",
+    }
+
+    summary = _runtime_summary([event])
+    serialized = json.dumps(summary, ensure_ascii=False)
+
+    assert summary["status"] == "ready"
+    assert summary["summary_id"] == "case-task-runtime-event-notification-summary-v1"
+    assert summary["summary"]["task_status_event_count"] == 1
+    assert summary["summary"]["task_state_count"] == 1
+    assert summary["summary"]["dispatch_performed"] is False
+    assert summary["summary"]["raw_text_stored"] is False
+    assert summary["task_event_summaries"][0]["changed_task_refs"] == ["task_hash_status_abcdefghijkl"]
+    assert summary["notification_suggestions"][0]["task_id"] == "task_hash_status_abcdefghijkl"
+    escalation = summary["escalation_suggestions"][0]
+    assert "urgent-deadline-escalation" in escalation["triggers"]
+    assert "lawyer-review-reminder" in escalation["triggers"]
+    assert "runtime-task-blocker-escalation" in escalation["triggers"]
+    assert "team_escalation" in escalation["recommended_channels"]
+    assert "Client narrative" not in serialized
+    assert "someone@example.test" not in serialized
+    assert "password" not in serialized
+
+
+def test_runtime_summary_ignores_non_task_events_and_unsafe_refs():
+    summary = _runtime_summary(
+        [
+            {
+                "event_id": "cwp-event-facts-001",
+                "case_ref_hash": "case_hash_facts_abcdefghijkl",
+                "section": "facts",
+                "operation": "append_delta",
+                "state_version": 1,
+                "payload_kind": "metadata_delta",
+                "state_delta": {
+                    "fact_states": [
+                        {
+                            "fact_ref_hash": "fact_hash_abcdefghijkl",
+                            "fact_text": "Raw fact prose must not be copied",
+                        }
+                    ]
+                },
+            },
+            {
+                "event_id": "cwp-event-task-status-unsafe-001",
+                "case_ref_hash": "case_hash_runtime_abcdefghijkl",
+                "section": "tasks",
+                "operation": "append_delta",
+                "state_version": 2,
+                "payload_kind": "metadata_delta",
+                "changed_item_refs": ["bad ref with spaces"],
+                "changed_field_names": ["status"],
+                "state_delta": {
+                    "task_states": [
+                        {
+                            "task_ref_hash": "raw task label with spaces",
+                            "task_type": "client_material_request",
+                            "status": "waiting_client",
+                            "priority": "normal",
+                            "owner_role": "lawyer",
+                            "due_date_status": "near",
+                        }
+                    ]
+                },
+            },
+        ]
+    )
+    serialized = json.dumps(summary, ensure_ascii=False)
+
+    assert summary["summary"]["ignored_event_count"] == 1
+    assert summary["summary"]["task_state_count"] == 1
+    assert summary["task_event_summaries"][0]["changed_task_refs"] == []
+    assert summary["notification_suggestions"][0]["task_id"] == "unknown-task-1"
+    assert "client-material-reminder" in summary["notification_suggestions"][0]["triggers"]
+    assert "due-soon-reminder" in summary["notification_suggestions"][0]["triggers"]
+    assert "Raw fact prose" not in serialized
+    assert "raw task label with spaces" not in serialized
 
 
 def test_case_task_notification_policy_route_returns_template_and_escalation():

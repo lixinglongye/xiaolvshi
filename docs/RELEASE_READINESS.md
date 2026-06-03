@@ -118,10 +118,14 @@ and billing usage badge wiring.
 
 Additional optional evidence now covers the billing report preflight route,
 privacy-safe case edit runtime event binding, metadata-only legal RAG context
-cache/copy controls, and the document-generation quota consumption attempt. These
-checks remain non-blocking and do not claim payment provider reconciliation,
-selected-source citation propagation, or server-side deep-review full quota
-enforcement.
+cache/copy controls, the document-generation quota consumption attempt,
+server-side generated_documents CRUD quota guards, selected-source Legal RAG
+request metadata, a local-only billing payment reconciliation policy, task
+runtime notification summaries, and a deterministic laptop-safe legal document
+benchmark suite. These checks remain non-blocking and do not claim real payment
+provider settlement or webhook verification, full generated-report citation
+validation against selected source IDs, or direct case/deep-review generation
+quota enforcement.
 
 ## Status values
 
@@ -147,6 +151,8 @@ enforcement.
 - `app/backend/services/billing_quota_repository.py`
 - `app/backend/services/billing_entitlement_quota_binding.py`
 - `app/backend/services/billing_usage_quota_policy.py`
+- `app/backend/services/billing_payment_reconciliation.py`
+- `app/backend/routers/generated_documents.py`
 - `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/case_role_permission_matrix.py`
 - `app/backend/services/case_workbench_payload.py`
@@ -169,7 +175,12 @@ enforcement.
 - `app/backend/services/legal_source_index_repository.py`
 - `app/backend/services/legal_rag_index_binding.py`
 - `app/backend/routers/legal_rag.py`
+- `app/backend/services/legal_rag_request_metadata.py`
+- `app/backend/routers/case_intelligence.py`
+- `app/backend/services/case_intelligence.py`
+- `app/backend/services/case_ai_workbench.py`
 - `app/backend/services/small_legal_document_corpus_expansion.py`
+- `app/backend/services/legal_document_benchmark_suite.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
 - `app/backend/services/model_default_recommendation_snapshot.py`
 - `app/backend/services/model_price_refresh_monitor.py`
@@ -189,6 +200,8 @@ enforcement.
 - `app/backend/tests/test_billing_quota_repository.py`
 - `app/backend/tests/test_billing_entitlement_quota_binding.py`
 - `app/backend/tests/test_billing_usage_quota_policy.py`
+- `app/backend/tests/test_billing_payment_reconciliation.py`
+- `app/backend/tests/test_generated_documents_quota.py`
 - `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `app/backend/tests/test_case_workbench_payload.py`
@@ -211,7 +224,9 @@ enforcement.
 - `app/backend/tests/test_legal_source_index_repository.py`
 - `app/backend/tests/test_legal_rag_index_binding.py`
 - `app/backend/tests/test_legal_rag_router.py`
+- `app/backend/tests/test_legal_rag_request_metadata.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
+- `app/backend/tests/test_legal_document_benchmark_suite.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
 - `app/backend/tests/test_model_default_recommendation_snapshot.py`
 - `app/backend/tests/test_model_price_refresh_monitor.py`
