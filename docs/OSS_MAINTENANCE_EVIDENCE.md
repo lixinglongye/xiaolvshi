@@ -28,7 +28,7 @@ It is safe to say this repository has active development, reviewability controls
 
 ## Evidence categories
 
-- Model operations: model catalog, configuration audit, default optimization, gateway compatibility, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
+- Model operations: model catalog, configuration audit, default optimization, gateway compatibility, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
 - Quality control: deep-review quality gates, legal-review benchmark cases, resource-capped public benchmark samplers, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Review operations: citation and evidence audits.
 - Release management: risk scoring and unified release decision.

@@ -58,6 +58,7 @@
 - 用 `model_configuration_audit.py` 检查 `.env` 解析出的 cheap、OCR、classification、review 和 PDF 角色是否符合成本层级和能力预期。
 - 用 `model_default_optimization.py` 检查默认模型是否仍指向最便宜的合格 Gemini 模型，并在价格或网关模型名变化时更新 env 建议。
 - 用 `model_gateway_compatibility.py` 检查 NewAPI/OpenAI-compatible 网关前缀模型名是否仍能映射到本地 Gemini 目录和价格能力元数据。
+- 用 `model_lifecycle_policy.py` 检查默认模型是否仍固定到稳定、具体、低价优先的 Gemini/NewAPI 模型 ID，避免 preview、latest、deprecated 或未知网关模型漂移进默认路由。
 - 用 `model_ops_readiness.py` 汇总模型配置、路由、遥测、回放、回退链和成本守卫，作为发布前模型运维总门禁。
 - 用 `model_task_inference.py` 检查未显式传 task 的请求是否能被稳定映射到 cheap-first 或 balanced 任务。
 - 用 `model_runtime_router.py` 检查真实文本请求是否按任务选择模型，避免所有文本请求都落在同一默认路由。

@@ -212,6 +212,66 @@ export type ModelGatewayCompatibility = {
   recommended_actions: string[];
 };
 
+export type ModelLifecycleConfiguredRole = {
+  role: string;
+  model: string;
+  task: string;
+  max_cost_tier: string;
+  canonical_model?: string | null;
+  lifecycle_state: string;
+  cost_tier?: string | null;
+  model_status: string;
+  default_allowed: boolean;
+  cheap_first_aligned: boolean;
+  reason: string;
+};
+
+export type ModelLifecyclePolicy = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    catalog_model_count: number;
+    stable_catalog_count: number;
+    preview_catalog_count: number;
+    configured_role_count: number;
+    default_allowed_count: number;
+    preview_default_count: number;
+    deprecated_default_count: number;
+    latest_alias_default_count: number;
+    unknown_default_count: number;
+    cheap_first_aligned_count: number;
+  };
+  configured_roles: ModelLifecycleConfiguredRole[];
+  catalog_lifecycle: Array<{
+    model: string;
+    status: string;
+    cost_tier: string;
+    default_policy: string;
+    preferred_default_role: string;
+    pricing_source_url: string;
+  }>;
+  alias_policy: {
+    canonical_prefixes: string[];
+    pass_through: string;
+    latest_alias_default_policy: string;
+    deprecated_generations: string[];
+    stable_default_examples: string[];
+  };
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type ModelOpsReadinessCheck = {
   id: string;
   label: string;
@@ -732,6 +792,7 @@ export type ModelOpsResponse = {
   model_configuration_audit?: ModelConfigurationAudit;
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
+  lifecycle_policy?: ModelLifecyclePolicy;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   request_cost_bounds?: ModelRequestCostBounds;

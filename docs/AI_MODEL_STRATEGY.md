@@ -42,6 +42,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `model_ops_readiness` 汇总配置审计、路由、推理预算、请求参数、调用点审计、遥测、守卫、回放、回退链和成本控制，给出模型运维是否可发布的 pass/warn/fail 结论。
 `default_optimization` 将能力矩阵和成本预测转成默认模型调优计划，指出哪个 env var 应该回到最便宜的可用 Gemini 模型，以及预计月度节省。
 `gateway_compatibility` 识别 `models/`、`google/`、`openrouter/google/` 等网关前缀形式，让本地成本和能力判断仍能映射到 canonical Gemini 模型。
+`lifecycle_policy` 检查 Gemini/NewAPI 默认模型是否固定到稳定、具体、低价优先的模型 ID；preview 模型和 `latest` 别名只能作为显式实验，Gemini 1.x、1.5 和 2.0 代停用模型不得作为默认值。
 
 `task_inference` 让 `POST /api/v1/aihub/gentxt` 默认使用 `task=auto`，通过确定性规则把分类、OCR、法律审查、预检/摘要等请求映射到合适任务，避免忘传 `task=review` 时把法律审查误放到 fast 路由。
 
@@ -107,6 +108,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `/model-ops` 会展示 Model ops readiness，把分散的模型运维信号汇总成发布前的阻塞和告警结论。
 - `/model-ops` 会展示 Default optimization，帮助维护者把 fast、classification、OCR、review 和 PDF 默认模型保持在最便宜的合格 Gemini 路径上。
 - `/model-ops` 会展示 Gateway compatibility，帮助维护者确认 NewAPI 或其他 OpenAI-compatible 网关返回的 Gemini 前缀模型名仍能匹配本地目录。
+- `/model-ops` 会展示 Lifecycle policy，帮助维护者在发布前拒绝 deprecated、preview、latest 或未知网关默认模型。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Configuration audit，帮助维护者确认环境变量解析出的模型角色没有误配成高价或能力不足模型。
 - `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。

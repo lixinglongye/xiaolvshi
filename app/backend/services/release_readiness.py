@@ -186,6 +186,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_gateway_compatibility.py tests/test_model_catalog.py -q",
             ),
             ReleaseCheck(
+                id="model-lifecycle-policy",
+                title="Gemini model lifecycle policy coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_lifecycle_policy.py",
+                    "app/backend/tests/test_model_lifecycle_policy.py",
+                    "docs/MODEL_LIFECYCLE_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_lifecycle_policy.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
+            ),
+            ReleaseCheck(
                 id="model-ops-readiness",
                 title="Model operations readiness coverage",
                 category="model_ops",

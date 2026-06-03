@@ -74,6 +74,7 @@ function Inner() {
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
+  const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
@@ -487,6 +488,128 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.lifecycle_policy && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini lifecycle policy</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.lifecycle_policy.summary.stable_catalog_count} stable /{' '}
+                  {data.lifecycle_policy.summary.preview_catalog_count} preview /{' '}
+                  {data.lifecycle_policy.summary.default_allowed_count} defaults allowed
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.lifecycle_policy.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.lifecycle_policy.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.lifecycle_policy.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.lifecycle_policy.summary.latest_alias_default_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">latest aliases</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.lifecycle_policy.summary.deprecated_default_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">deprecated defaults</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.lifecycle_policy.summary.unknown_default_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown defaults</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.lifecycle_policy.summary.cheap_first_aligned_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first aligned</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Lifecycle</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Budget</TableHead>
+                    <TableHead>Default</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lifecycleRows.map((row) => (
+                    <TableRow key={`${row.role}-${row.task}`}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.role}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.lifecycle_state === 'stable'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : row.lifecycle_state === 'deprecated'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {row.lifecycle_state.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.model_status}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        <div className="font-mono text-stone-950">{row.model}</div>
+                        <div className="font-mono text-[11px]">{row.canonical_model ?? '-'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                          {row.cost_tier ?? 'unknown'}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">max {row.max_cost_tier}</div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        <div>{row.default_allowed ? 'allowed' : 'review required'}</div>
+                        <div>{row.cheap_first_aligned ? 'cheap-first' : 'cost drift'}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[480px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Alias policy</h3>
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-2">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Canonical prefixes</div>
+                  <div className="font-mono text-xs">{data.lifecycle_policy.alias_policy.canonical_prefixes.join(', ')}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Default examples</div>
+                  <div className="font-mono text-xs">{data.lifecycle_policy.alias_policy.stable_default_examples.join(', ')}</div>
+                </div>
+                <div>{data.lifecycle_policy.alias_policy.pass_through}</div>
+                <div>{data.lifecycle_policy.alias_policy.latest_alias_default_policy}</div>
+              </div>
             </div>
           </section>
         )}
