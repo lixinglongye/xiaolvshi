@@ -17,6 +17,7 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("configuration-audit", "Model configuration audit", "configuration", "model_configuration_audit"),
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
+    ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
     ReadinessComponent("lifecycle-policy", "Gemini lifecycle policy", "configuration", "lifecycle_policy"),
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),

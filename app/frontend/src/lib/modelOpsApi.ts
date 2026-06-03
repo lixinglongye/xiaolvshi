@@ -212,6 +212,66 @@ export type ModelGatewayCompatibility = {
   recommended_actions: string[];
 };
 
+export type ModelGatewayHealthPlanRole = {
+  role: string;
+  model: string;
+  canonical_model?: string | null;
+  is_known_model: boolean;
+  cost_tier?: string | null;
+  model_status: string;
+  cheap_first_aligned: boolean;
+  estimated_probe_cost_usd?: number | null;
+  reason: string;
+};
+
+export type ModelGatewayHealthPlan = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    base_url_configured: boolean;
+    api_key_configured: boolean;
+    normalized_base_url: string;
+    configured_role_count: number;
+    known_low_resource_role_count: number;
+    unknown_role_count: number;
+    cheap_first_low_cost_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    estimated_probe_cost_usd?: number | null;
+  };
+  gateway_config: {
+    base_url_configured: boolean;
+    base_url_display: string;
+    api_key_configured: boolean;
+    api_key_display: string;
+    timeout_seconds?: number | null;
+    requires_https: boolean;
+  };
+  role_models: ModelGatewayHealthPlanRole[];
+  dry_run_contracts: Array<{
+    id: string;
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+    body?: Record<string, unknown>;
+    purpose: string;
+    expected_success: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -792,6 +852,7 @@ export type ModelOpsResponse = {
   model_configuration_audit?: ModelConfigurationAudit;
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
+  gateway_health_plan?: ModelGatewayHealthPlan;
   lifecycle_policy?: ModelLifecyclePolicy;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;

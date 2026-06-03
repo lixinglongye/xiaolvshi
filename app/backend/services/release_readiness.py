@@ -186,6 +186,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_gateway_compatibility.py tests/test_model_catalog.py -q",
             ),
             ReleaseCheck(
+                id="model-gateway-health-plan",
+                title="Model gateway health plan coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_gateway_health_plan.py",
+                    "app/backend/tests/test_model_gateway_health_plan.py",
+                    "docs/MODEL_GATEWAY_HEALTH_PLAN.md",
+                ),
+                validation_command="python -m pytest tests/test_model_gateway_health_plan.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q",
+            ),
+            ReleaseCheck(
                 id="model-lifecycle-policy",
                 title="Gemini model lifecycle policy coverage",
                 category="model_ops",

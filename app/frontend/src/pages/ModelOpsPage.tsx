@@ -74,6 +74,8 @@ function Inner() {
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
+  const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
+  const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
@@ -484,6 +486,122 @@ function Inner() {
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.gateway_health_plan && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.gateway_health_plan.summary.base_url_configured ? 'base URL ready' : 'base URL missing'} /{' '}
+                  {data.gateway_health_plan.summary.api_key_configured ? 'key configured' : 'key missing'} /{' '}
+                  {data.gateway_health_plan.summary.cheap_first_low_cost_count} cheap-first roles
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.gateway_health_plan.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.gateway_health_plan.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.gateway_health_plan.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="truncate font-mono text-sm font-black text-stone-950">
+                  {data.gateway_health_plan.gateway_config.base_url_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">base URL</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_health_plan.summary.unknown_role_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown models</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_health_plan.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(data.gateway_health_plan.summary.estimated_probe_cost_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap probe estimate</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Probe</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayHealthRows.map((row) => (
+                    <TableRow key={row.role}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.role}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.cheap_first_aligned ? 'cheap-first' : 'review cost'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        <div className="font-mono text-stone-950">{row.model}</div>
+                        <div className="font-mono text-[11px]">{row.canonical_model ?? '-'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                          {row.cost_tier ?? 'unknown'}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.model_status}</div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-600">
+                        {formatUsd(row.estimated_probe_cost_usd)}
+                      </TableCell>
+                      <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Probe</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>URL</TableHead>
+                    <TableHead>Expected</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayHealthContracts.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-semibold text-stone-950">{row.id}</TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.method}</TableCell>
+                      <TableCell className="max-w-[320px] font-mono text-xs text-stone-700">{row.url}</TableCell>
+                      <TableCell className="max-w-[480px] text-xs leading-5 text-stone-600">
+                        {row.expected_success}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

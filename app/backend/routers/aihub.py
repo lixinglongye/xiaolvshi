@@ -41,6 +41,7 @@ from services.model_default_optimization import ModelDefaultOptimizationService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
+from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -161,6 +162,7 @@ async def list_models():
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
+    gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
@@ -169,6 +171,7 @@ async def list_models():
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
+        "gateway_health_plan": gateway_health_plan,
         "lifecycle_policy": lifecycle_policy,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,
@@ -199,6 +202,7 @@ async def list_models():
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
         "gateway_compatibility": gateway_compatibility,
+        "gateway_health_plan": gateway_health_plan,
         "lifecycle_policy": lifecycle_policy,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,

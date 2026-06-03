@@ -26,6 +26,8 @@ The runtime still sends the requested gateway model name to the gateway, but loc
 
 The frontend `/model-ops` page shows the same report with role rows and gateway prefix examples.
 
+Use [MODEL_GATEWAY_HEALTH_PLAN.md](MODEL_GATEWAY_HEALTH_PLAN.md) before live gateway probes. It checks base URL shape, secret presence, placeholder dry-run contracts, and cheap-first probe models without calling the gateway.
+
 ## Release Check
 
 Run:
