@@ -28,6 +28,9 @@ class ModelProfile:
     output_usd_per_million_tokens: float | None = None
     output_usd_per_image: float | None = None
     pricing_note: str = "Google Gemini API paid tier, standard mode. Gateway billing may differ."
+    status: str = "stable"
+    context_window_tokens: int | None = None
+    pricing_source_url: str = "https://ai.google.dev/gemini-api/docs/pricing"
 
 
 GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
@@ -42,6 +45,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         notes="Default cost-first model for high-volume pipeline stages.",
         input_usd_per_million_tokens=0.10,
         output_usd_per_million_tokens=0.40,
+        context_window_tokens=1_048_576,
     ),
     ModelProfile(
         id="gemini-2.5-flash",
@@ -54,6 +58,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         notes="Balanced default for legal analysis when quality matters.",
         input_usd_per_million_tokens=0.30,
         output_usd_per_million_tokens=2.50,
+        context_window_tokens=1_048_576,
     ),
     ModelProfile(
         id="gemini-2.5-pro",
@@ -70,6 +75,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
             "Google Gemini API paid tier, standard mode, prompts <= 200k tokens. "
             "Gateway billing and long-context pricing may differ."
         ),
+        context_window_tokens=1_048_576,
     ),
     ModelProfile(
         id="gemini-3.1-flash-lite",
@@ -77,9 +83,12 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         family="gemini",
         cost_tier="low",
         latency_tier="fast",
-        capabilities=("text", "vision", "json", "audio", "video", "agentic"),
+        capabilities=("text", "vision", "json", "audio", "video", "grounding", "agentic"),
         best_for=("agentic-routing", "translation", "simple-data-processing", "high-volume-tasks"),
         notes="Newer cost-efficient option; enable by setting APP_AI_CHEAP_MODEL when your gateway supports it.",
+        input_usd_per_million_tokens=0.25,
+        output_usd_per_million_tokens=1.50,
+        context_window_tokens=1_000_000,
     ),
     ModelProfile(
         id="gemini-3.5-flash",
@@ -90,6 +99,23 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         capabilities=("text", "vision", "json", "grounding", "coding", "agentic"),
         best_for=("agentic-workflows", "coding", "grounded-research", "sustained-reasoning"),
         notes="Current stable Flash option; more capable but more expensive than Flash-Lite defaults.",
+        input_usd_per_million_tokens=0.50,
+        output_usd_per_million_tokens=3.00,
+        context_window_tokens=1_000_000,
+    ),
+    ModelProfile(
+        id="gemini-3.1-pro-preview",
+        provider="google",
+        family="gemini",
+        cost_tier="premium",
+        latency_tier="slower",
+        capabilities=("text", "vision", "json", "grounding", "long-context", "complex-reasoning", "agentic"),
+        best_for=("complex-legal-reasoning", "grounded-research", "final-review", "hard-benchmark-cases"),
+        notes="Preview Pro option for difficult reasoning; require operator review before making it a default.",
+        input_usd_per_million_tokens=2.00,
+        output_usd_per_million_tokens=12.00,
+        status="preview",
+        context_window_tokens=1_000_000,
     ),
     ModelProfile(
         id="gemini-2.5-flash-image",
@@ -102,6 +128,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         input_usd_per_million_tokens=0.30,
         output_usd_per_image=0.039,
         pricing_note="Google Gemini API paid tier, standard mode. Output image price is approximate per 1024x1024 image.",
+        status="stable",
     ),
     ModelProfile(
         id="gemini-3-pro-image",
@@ -111,6 +138,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         latency_tier="slower",
         capabilities=("image", "image-edit"),
         best_for=("high-quality-image-generation",),
+        status="preview",
     ),
 )
 
@@ -220,7 +248,10 @@ def catalog_for_api() -> list[dict[str, object]]:
                 "output_usd_per_million_tokens": item.output_usd_per_million_tokens,
                 "output_usd_per_image": item.output_usd_per_image,
                 "note": item.pricing_note,
+                "source_url": item.pricing_source_url,
             },
+            "status": item.status,
+            "context_window_tokens": item.context_window_tokens,
             "configured_roles": [role for role, model_id in configured.items() if model_id == item.id],
         }
         for item in GEMINI_MODEL_CATALOG

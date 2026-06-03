@@ -68,6 +68,7 @@ function Inner() {
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const budgetRows = data?.budget_policy.task_decisions ?? [];
+  const capabilityRows = data?.capability_matrix?.tasks ?? [];
   const totals = data?.usage.totals;
 
   return (
@@ -198,6 +199,70 @@ function Inner() {
         </section>
 
         <section className="mb-8">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-stone-950">Capability matrix</h2>
+              <div className="mt-1 text-sm text-stone-600">
+                {data?.capability_matrix?.coverage.task_count ?? 0} tasks ·{' '}
+                {(data?.capability_matrix?.coverage.recommended_models ?? []).length} recommended models
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-white">
+              {data?.capability_matrix?.status ?? 'not loaded'}
+            </Badge>
+          </div>
+          <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Task</TableHead>
+                  <TableHead>Recommended</TableHead>
+                  <TableHead>Runtime default</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Capabilities</TableHead>
+                  <TableHead>Candidates</TableHead>
+                  <TableHead>Reason</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {capabilityRows.map((row) => (
+                  <TableRow key={row.task}>
+                    <TableCell>
+                      <div className="font-semibold text-stone-950">{row.requirement.display_name}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-stone-700">{row.recommended_model}</TableCell>
+                    <TableCell>
+                      <div className="font-mono text-xs text-stone-700">{row.runtime_default_model}</div>
+                      <Badge
+                        variant="outline"
+                        className={
+                          row.runtime_default_is_recommended
+                            ? 'mt-1 border-emerald-200 bg-emerald-50 text-emerald-800'
+                            : 'mt-1 border-amber-200 bg-amber-50 text-amber-900'
+                        }
+                      >
+                        {row.runtime_default_is_recommended ? 'aligned' : 'review'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={costClass[row.requirement.max_cost_tier] ?? 'bg-white'}>
+                        max {row.requirement.max_cost_tier}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                      {row.requirement.required_capabilities.join(', ')}
+                    </TableCell>
+                    <TableCell className="text-stone-700">{row.candidate_count}</TableCell>
+                    <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{row.requirement.reason}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        <section className="mb-8">
           <h2 className="mb-3 text-xl font-black text-stone-950">Model catalog</h2>
           <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
             <Table>
@@ -206,6 +271,8 @@ function Inner() {
                   <TableHead>Model</TableHead>
                   <TableHead>Cost</TableHead>
                   <TableHead>Latency</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Context</TableHead>
                   <TableHead>Token price</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Best for</TableHead>
@@ -221,6 +288,8 @@ function Inner() {
                       </Badge>
                     </TableCell>
                     <TableCell>{model.latency_tier}</TableCell>
+                    <TableCell>{model.status}</TableCell>
+                    <TableCell>{model.context_window_tokens ? formatNumber(model.context_window_tokens) : '-'}</TableCell>
                     <TableCell className="text-xs text-stone-600">
                       in {formatUsd(model.pricing.input_usd_per_million_tokens)} / out{' '}
                       {formatUsd(model.pricing.output_usd_per_million_tokens)}

@@ -29,6 +29,7 @@ from services.aihub import (
     InvalidImageInputError,
     InvalidPdfInputError,
 )
+from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_catalog import catalog_for_api, task_default_model
 from services.model_usage import model_usage_registry
@@ -135,6 +136,7 @@ async def list_models():
             "auto-pdf": task_default_model("pdf"),
         },
         "budget_policy": budget_policy_for_api(),
+        "capability_matrix": ModelCapabilityMatrixService().build_matrix(),
         "models": catalog_for_api(),
         "usage": model_usage_registry.snapshot(),
     }

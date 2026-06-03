@@ -10,6 +10,7 @@
 - 合同审查知识库：`app/backend/data/legal_knowledge/contract_law_seed.json`
 - 后端环境变量示例：`app/backend/.env.example`
 - AI 模型路由策略：[docs/AI_MODEL_STRATEGY.md](docs/AI_MODEL_STRATEGY.md)
+- 模型能力成本矩阵：`app/backend/services/model_capability_matrix.py`
 - 用户研究与维护说明：[docs/USER_RESEARCH_AND_MAINTENANCE.md](docs/USER_RESEARCH_AND_MAINTENANCE.md)
 - 开源维护证明接口：[docs/OSS_MAINTENANCE_EVIDENCE.md](docs/OSS_MAINTENANCE_EVIDENCE.md)
 - 用户反馈分类处理：[docs/FEEDBACK_TRIAGE.md](docs/FEEDBACK_TRIAGE.md)

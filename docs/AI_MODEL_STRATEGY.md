@@ -37,6 +37,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `/api/v1/aihub/models` 还会返回 `budget_policy`：它解释每个任务为什么使用 cheap-first、balanced 或 premium-exception 策略，并标出显式 premium 模型是否超过该任务预算。默认 `APP_AI_PREMIUM_REQUIRES_REVIEW=true`，用于提示维护者对非 PDF/非媒体场景的 premium 使用做人工确认。
 
+同一接口还会返回 `capability_matrix`：它按任务列出 required capabilities、max cost tier、runtime default、recommended model 和候选模型数量。矩阵先过滤能力不满足的模型，再按 stable 状态、成本、延迟和 fit score 排序；未知 NewAPI 模型名仍可透传，但不会被视为已验证价格模型。
+
 ## Cost-First Defaults
 
 当前默认策略：
@@ -44,6 +46,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 高频、低风险任务使用 `gemini-2.5-flash-lite`：OCR、材料分类、Plan Mode 理解、预检、轻量结构化处理。
 - 法律审查主体流程使用 `gemini-2.5-flash`：风险识别、条款映射、法律分析、案件问答。
 - 只在必要时使用 `gemini-2.5-pro`：大 PDF、复杂推理、最终复核或低价模型失败后的人工指定升级。
+- Gemini 3 系列用于显式能力升级：`gemini-3.1-flash-lite` 适合低成本 agentic/grounding 任务，`gemini-3.5-flash` 适合更强的 grounded research，`gemini-3.1-pro-preview` 只作为预览 premium 复核候选。
 
 这样做的依据是 Gemini 官方价格页将 `gemini-2.5-flash-lite` 描述为面向规模化使用的最小、最具成本效益模型，并给出低于 Flash/Pro 的输入输出价格。官方模型页也标注 `gemini-2.5-flash` 适合低延迟、高吞吐且需要推理的任务，`gemini-2.5-pro` 用于复杂任务和深度推理。
 
@@ -56,6 +59,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `gemini-2.5-pro`
 - `gemini-3.1-flash-lite`
 - `gemini-3.5-flash`
+- `gemini-3.1-pro-preview`
 - `gemini-2.5-flash-image`
 - `gemini-3-pro-image`
 

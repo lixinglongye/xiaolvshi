@@ -8,6 +8,8 @@ export type ModelCatalogItem = {
   family: string;
   cost_tier: string;
   latency_tier: string;
+  status: string;
+  context_window_tokens?: number | null;
   capabilities: string[];
   best_for: string[];
   notes?: string;
@@ -16,6 +18,7 @@ export type ModelCatalogItem = {
     output_usd_per_million_tokens: number | null;
     output_usd_per_image: number | null;
     note: string;
+    source_url?: string;
   };
   configured_roles: string[];
 };
@@ -68,10 +71,56 @@ export type ModelBudgetPolicy = {
   task_decisions: ModelBudgetDecision[];
 };
 
+export type ModelCapabilityCandidate = {
+  model_id: string;
+  status: string;
+  cost_tier: string;
+  latency_tier: string;
+  context_window_tokens?: number | null;
+  input_usd_per_million_tokens?: number | null;
+  output_usd_per_million_tokens?: number | null;
+  preferred_capability_hits: string[];
+  missing_preferred_capabilities: string[];
+  over_task_budget: boolean;
+  fit_score: number;
+};
+
+export type ModelCapabilityTask = {
+  task: string;
+  requirement: {
+    task: string;
+    display_name: string;
+    required_capabilities: string[];
+    preferred_capabilities: string[];
+    max_cost_tier: string;
+    preferred_latency_tier: string;
+    default_alias: string;
+    reason: string;
+  };
+  recommended_model: string;
+  runtime_default_model: string;
+  runtime_default_is_recommended: boolean;
+  candidate_count: number;
+  candidates: ModelCapabilityCandidate[];
+};
+
+export type ModelCapabilityMatrix = {
+  status: string;
+  selection_policy: string[];
+  source_notes: string[];
+  tasks: ModelCapabilityTask[];
+  coverage: {
+    task_count: number;
+    recommended_models: string[];
+    premium_exception_tasks: string[];
+  };
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   budget_policy: ModelBudgetPolicy;
+  capability_matrix?: ModelCapabilityMatrix;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };

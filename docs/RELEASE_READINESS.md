@@ -17,6 +17,7 @@ POST /api/v1/maintenance/release-readiness
   "frontend-typecheck": "pass",
   "frontend-build": "pass",
   "secret-scan": "pass",
+  "model-capability-matrix": "pass",
   "deep-review-release-decision": "pass",
   "document-preflight": "pass",
   "extraction-quality": "pass",
@@ -38,6 +39,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Frontend TypeScript check.
 - Frontend production build.
 - Secret and credential scan.
+- Gemini model capability matrix coverage.
 - Deep-review release decision coverage.
 - Document preflight routing coverage.
 - Extraction quality audit coverage.

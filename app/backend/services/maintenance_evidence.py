@@ -103,7 +103,9 @@ class MaintenanceEvidenceService:
                 evidence_paths=(
                     "app/backend/services/model_catalog.py",
                     "app/backend/services/model_budget.py",
+                    "app/backend/services/model_capability_matrix.py",
                     "app/backend/tests/test_model_catalog.py",
+                    "app/backend/tests/test_model_capability_matrix.py",
                     "docs/AI_MODEL_STRATEGY.md",
                 ),
                 weight=15,

@@ -29,6 +29,9 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "review" in catalog["gemini-2.5-flash"]["configured_roles"]
     assert "pdf" in catalog["gemini-2.5-pro"]["configured_roles"]
     assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
+    assert catalog["gemini-3.1-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.25
+    assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
+    assert catalog["gemini-2.5-flash-lite"]["context_window_tokens"] >= 1_000_000
 
 
 def test_estimate_token_cost_uses_catalog_pricing():

@@ -77,6 +77,7 @@ class ReleaseReadinessService:
                 owner="engineering",
                 evidence_paths=(
                     "app/backend/tests/test_model_catalog.py",
+                    "app/backend/tests/test_model_capability_matrix.py",
                     "app/backend/tests/test_report_quality_gate.py",
                     "app/backend/tests/test_citation_audit.py",
                     "app/backend/tests/test_evidence_audit.py",
@@ -130,6 +131,20 @@ class ReleaseReadinessService:
                     "docs/DEEP_REVIEW_RELEASE_DECISION.md",
                 ),
                 validation_command="python -m pytest tests/test_release_decision.py -q",
+            ),
+            ReleaseCheck(
+                id="model-capability-matrix",
+                title="Gemini model capability matrix coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_capability_matrix.py",
+                    "app/backend/services/model_catalog.py",
+                    "app/backend/tests/test_model_capability_matrix.py",
+                    "docs/AI_MODEL_STRATEGY.md",
+                ),
+                validation_command="python -m pytest tests/test_model_capability_matrix.py tests/test_model_catalog.py tests/test_model_budget.py -q",
             ),
             ReleaseCheck(
                 id="document-preflight",
