@@ -701,6 +701,20 @@ class ReleaseReadinessService:
                 manual_note="This is template coverage and delivery-gate metadata; full DOCX/PDF renderer enforcement remains a separate implementation step.",
             ),
             ReleaseCheck(
+                id="legal-document-export-readiness",
+                title="Legal document export readiness",
+                category="legal_quality",
+                required=False,
+                owner="legal_review_owner",
+                evidence_paths=(
+                    "app/backend/services/legal_document_export_readiness.py",
+                    "app/backend/tests/test_legal_document_export_readiness.py",
+                    "docs/LEGAL_DOCUMENT_EXPORT_READINESS.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_document_export_readiness.py -q",
+                manual_note="This checks export status metadata only; actual DOCX/PDF rendering and storage integration are separate implementation steps.",
+            ),
+            ReleaseCheck(
                 id="billing-entitlement-gap",
                 title="Billing entitlement gap evidence",
                 category="maintenance",

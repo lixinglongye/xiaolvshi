@@ -20,6 +20,7 @@ from services.legal_fixture_response_normalizer import LegalFixtureResponseNorma
 from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_document_export_readiness import LegalDocumentExportReadinessService
 from services.legal_document_template_matrix import LegalDocumentTemplateMatrixService
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
@@ -141,6 +142,24 @@ async def get_legal_document_template_matrix():
     return {
         "success": True,
         "data": LegalDocumentTemplateMatrixService().build_matrix(),
+    }
+
+
+@router.get("/legal-document-export-readiness")
+async def get_legal_document_export_readiness_template():
+    """Return final-export gate metadata for generated legal documents."""
+    return {
+        "success": True,
+        "data": LegalDocumentExportReadinessService().build_readiness(),
+    }
+
+
+@router.post("/legal-document-export-readiness")
+async def evaluate_legal_document_export_readiness(payload: dict[str, Any]):
+    """Evaluate final-export readiness from status metadata without reading files."""
+    return {
+        "success": True,
+        "data": LegalDocumentExportReadinessService().build_readiness(payload),
     }
 
 

@@ -473,6 +473,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("document-generation", "case-workbench", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="legal-document-export-readiness",
+                title="Legal document export readiness",
+                category="product_planning",
+                size="medium",
+                status="shipped",
+                impact="Blocks final export until template fields, blocker clearance, lawyer review, source support, redaction, version lock, and format support pass.",
+                evidence_paths=(
+                    "app/backend/services/legal_document_export_readiness.py",
+                    "app/backend/tests/test_legal_document_export_readiness.py",
+                    "docs/LEGAL_DOCUMENT_EXPORT_READINESS.md",
+                ),
+                release_gate_links=("legal-document-export-readiness", "legal-document-template-matrix"),
+                user_need_ids=("document-generation", "grounded-legal-output", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="billing-entitlement-gap-evidence",
                 title="Billing entitlement gap evidence",
                 category="product_planning",
