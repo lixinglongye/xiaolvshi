@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_reasoning_policy import resolve_reasoning_effort
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_task_inference import infer_gentxt_task
 from services.model_runtime_router import resolve_runtime_model
@@ -173,6 +174,11 @@ class AIHubService:
             allow_over_budget_model=request.allow_over_budget_model,
         )
         model = route.resolved_model
+        reasoning_policy = resolve_reasoning_effort(
+            model=model,
+            task=route.task,
+            requested_effort=request.reasoning_effort,
+        )
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -187,6 +193,8 @@ class AIHubService:
             }
             if request.response_format:
                 params["response_format"] = request.response_format
+            if reasoning_policy.gateway_parameter:
+                params["reasoning_effort"] = reasoning_policy.gateway_parameter
 
             response = await client.chat.completions.create(**params)
 
@@ -205,6 +213,7 @@ class AIHubService:
                 task=route.task,
                 budget_decision=route.to_api(),
                 task_inference=task_inference.to_api(),
+                reasoning_policy=reasoning_policy.to_api(),
                 usage=usage,
             )
 
@@ -239,6 +248,11 @@ class AIHubService:
             allow_over_budget_model=request.allow_over_budget_model,
         )
         model = route.resolved_model
+        reasoning_policy = resolve_reasoning_effort(
+            model=model,
+            task=route.task,
+            requested_effort=request.reasoning_effort,
+        )
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -253,6 +267,8 @@ class AIHubService:
             }
             if request.response_format:
                 params["response_format"] = request.response_format
+            if reasoning_policy.gateway_parameter:
+                params["reasoning_effort"] = reasoning_policy.gateway_parameter
 
             stream = await client.chat.completions.create(**params)
 

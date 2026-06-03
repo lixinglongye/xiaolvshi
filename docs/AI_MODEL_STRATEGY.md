@@ -43,6 +43,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `runtime_router` 将 `task`、`model` 和 `allow_over_budget_model` 转换为实际模型；默认会把超预算或需要人工复核的显式模型降级到任务推荐模型。
 
+`reasoning_policy` 为 Gemini/OpenAI-compatible `reasoning_effort` 设置任务默认值：高频 fast/OCR/classification 尽量关闭或最小化 thinking，法律 review 使用 low，PDF/复杂复核才使用 high。未知网关模型会省略该参数以保持透传兼容。
+
 `route_telemetry` 记录运行时路由聚合指标，包括自动推断比例、降级比例、超预算请求、人工复核请求和未知价格模型，帮助维护者确认 cheap-first 策略是否在真实调用中生效。
 
 `route_guardrails` 将路由遥测转换成 pass/warn/fail 检查，覆盖失败率、超预算比例、降级比例、人工复核比例、未知价格模型和允许超预算次数，帮助维护者在发布前发现 cheap-first 路由漂移。
@@ -94,6 +96,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - 维护者可以打开前端 `/model-ops` 或调用 `/api/v1/aihub/models/usage` 查看本进程内模型请求次数、成功/失败计数、平均延迟和 token 汇总。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Runtime router 和 auto task inference，帮助维护者确认 `gentxt` 请求字段、任务默认模型和自动推断规则。
+- `/model-ops` 会展示 Reasoning policy，帮助维护者确认 thinking budget 是否仍按任务低价优先。
 - `/model-ops` 会展示 Route telemetry，帮助维护者观察真实请求的自动推断、降级和超预算情况。
 - `/model-ops` 会展示 Route guardrails，帮助维护者把运行时路由遥测转成发布前的阻塞和告警项。
 - `/model-ops` 会展示 Callsite audit，帮助维护者确认 service 层 AIHub 文本调用都带有显式 task。

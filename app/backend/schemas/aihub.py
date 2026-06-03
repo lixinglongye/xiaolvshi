@@ -67,6 +67,13 @@ class GenTxtRequest(BaseModel):
         default=None,
         description="Optional OpenAI-compatible response_format, e.g. {'type': 'json_object'}.",
     )
+    reasoning_effort: Optional[Literal["auto", "none", "minimal", "low", "medium", "high"]] = Field(
+        default=None,
+        description=(
+            "Optional Gemini/OpenAI-compatible reasoning effort. Auto keeps cheap tasks low-cost "
+            "and raises effort only for review/PDF routes."
+        ),
+    )
 
 
 class GenTxtResponse(BaseModel):
@@ -82,6 +89,10 @@ class GenTxtResponse(BaseModel):
     task_inference: Optional[dict[str, Any]] = Field(
         default=None,
         description="Deterministic task inference metadata without prompt text or credentials.",
+    )
+    reasoning_policy: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Reasoning effort routing decision without prompts, documents, or credentials.",
     )
     usage: Optional[dict] = Field(default=None, description="Token usage statistics.")
 

@@ -84,6 +84,30 @@ export type ModelRuntimeRouter = {
   task_defaults: ModelBudgetDecision[];
 };
 
+export type ModelReasoningDecision = {
+  task: string;
+  model: string;
+  requested_effort?: string | null;
+  effective_effort?: string | null;
+  gateway_parameter?: string | null;
+  source: string;
+  adjusted: boolean;
+  supported_efforts: string[];
+  cost_mode: string;
+  reason: string;
+};
+
+export type ModelReasoningPolicy = {
+  status: string;
+  request_field: {
+    name: string;
+    values: string[];
+    default: string;
+  };
+  policy_notes: string[];
+  task_defaults: ModelReasoningDecision[];
+};
+
 export type ModelCallsiteAudit = {
   status: string;
   method: {
@@ -437,6 +461,7 @@ export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
+  reasoning_policy?: ModelReasoningPolicy;
   route_telemetry?: ModelRouteTelemetry;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;

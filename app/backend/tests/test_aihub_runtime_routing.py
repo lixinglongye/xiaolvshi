@@ -63,10 +63,12 @@ async def test_gentxt_uses_declared_review_task_default_model():
     )
 
     assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash"
+    assert fake_client.chat.completions.calls[0]["reasoning_effort"] == "low"
     assert response.model == "gemini-2.5-flash"
     assert response.task == "review"
     assert response.budget_decision["budget_mode"] == "balanced"
     assert response.budget_decision["routed_to_recommended_model"] is False
+    assert response.reasoning_policy["effective_effort"] == "low"
 
     usage = model_usage_registry.snapshot()["models"]["gemini-2.5-flash"]
     assert usage["tasks"] == {"review": 1}
@@ -122,9 +124,11 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     )
 
     assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash-lite"
+    assert fake_client.chat.completions.calls[0]["reasoning_effort"] == "none"
     assert response.model == "gemini-2.5-flash-lite"
     assert response.budget_decision["requested_resolved_model"] == "gemini-2.5-pro"
     assert response.budget_decision["routed_to_recommended_model"] is True
+    assert response.reasoning_policy["cost_mode"] == "thinking-disabled"
     assert "sk-" not in str(response.model_dump())
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["summary"]["downgrade_ratio"] == 1.0

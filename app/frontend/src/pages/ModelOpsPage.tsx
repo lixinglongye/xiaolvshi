@@ -70,6 +70,7 @@ function Inner() {
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
+  const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
@@ -326,6 +327,64 @@ function Inner() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {data?.reasoning_policy && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Reasoning policy</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {reasoningRows.length} task defaults / request default {data.reasoning_policy.request_field.default}
+                </div>
+              </div>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-800">
+                {data.reasoning_policy.status}
+              </Badge>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Effort</TableHead>
+                    <TableHead>Mode</TableHead>
+                    <TableHead>Supported</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reasoningRows.map((row) => (
+                    <TableRow key={`reasoning-${row.task}`}>
+                      <TableCell className="font-mono font-semibold text-stone-950">{row.task}</TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.model}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.cost_mode === 'elevated-thinking'
+                              ? 'border-amber-200 bg-amber-50 text-amber-900'
+                              : row.cost_mode === 'thinking-disabled'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                                : 'bg-white'
+                          }
+                        >
+                          {row.effective_effort ?? 'omitted'}
+                        </Badge>
+                        {row.adjusted && <div className="mt-1 text-[11px] font-semibold text-amber-700">adjusted</div>}
+                      </TableCell>
+                      <TableCell className="text-xs text-stone-600">{row.cost_mode}</TableCell>
+                      <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                        {row.supported_efforts.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </section>
         )}
 
