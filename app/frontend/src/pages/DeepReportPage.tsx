@@ -588,12 +588,59 @@ function UploadForm({ onReportGenerated, onUseMockData }: UploadFormProps) {
 // Main Report Page
 // ═══════════════════════════════════════════════════════════
 
+type ReportLoadIssue = {
+  kind: 'error' | 'empty';
+  message: string;
+};
+
+interface ReportLoadStateCardProps {
+  issue: ReportLoadIssue;
+  onBackToUpload: () => void;
+  onRetry?: () => void;
+  reportId?: string;
+}
+
+function ReportLoadStateCard({ issue, onBackToUpload, onRetry, reportId }: ReportLoadStateCardProps) {
+  const isEmpty = issue.kind === 'empty';
+  return (
+    <Layout>
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <Card className={isEmpty ? 'border-slate-200 bg-white' : 'border-red-200 bg-red-50'}>
+          <CardContent className="py-6">
+            <div className="flex items-start gap-4">
+              <div className={`mt-0.5 rounded-full p-2 ${isEmpty ? 'bg-slate-100 text-slate-600' : 'bg-red-100 text-red-700'}`}>
+                {isEmpty ? <FileText className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className={`font-semibold mb-2 ${isEmpty ? 'text-slate-900' : 'text-red-800'}`}>
+                  {isEmpty ? '没有找到可展示的真实报告' : '报告加载失败'}
+                </div>
+                <div className={`text-sm ${isEmpty ? 'text-slate-600' : 'text-red-700'}`}>{issue.message}</div>
+                {reportId && (
+                  <div className="mt-3 rounded-md border border-slate-200 bg-white/80 px-3 py-2 text-xs text-slate-500">
+                    报告 ID：{reportId}
+                  </div>
+                )}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {onRetry && <Button variant="outline" onClick={onRetry}>重试加载</Button>}
+                  <Button variant={isEmpty ? 'default' : 'outline'} onClick={onBackToUpload}>新建审查</Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
+}
+
 function Inner() {
   const { id } = useParams();
   const [mode, setMode] = useState<'upload' | 'report'>(id ? 'report' : 'upload');
   const [report, setReport] = useState<DeepReviewReport | null>(id ? null : mockDeepReport);
   const [loadingReport, setLoadingReport] = useState(Boolean(id));
-  const [loadError, setLoadError] = useState('');
+  const [loadIssue, setLoadIssue] = useState<ReportLoadIssue | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [activeSection, setActiveSection] = useState('cover');
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -615,42 +662,77 @@ function Inner() {
   }, [handleScroll]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setMode('upload');
+      setReport(mockDeepReport);
+      setLoadingReport(false);
+      setLoadIssue(null);
+      return;
+    }
+
     let cancelled = false;
+    setMode('report');
+    setReport(null);
     setLoadingReport(true);
-    setLoadError('');
-    getDeepReviewReport(id).then((response) => {
-      if (cancelled) return;
-      if (response.success && response.report) {
+    setLoadIssue(null);
+
+    const loadPersistedReport = async () => {
+      try {
+        const response = await getDeepReviewReport(id);
+        if (cancelled) return;
+        if (!response.success) {
+          setLoadIssue({
+            kind: 'error',
+            message: response.error || '真实报告加载失败，请稍后重试。',
+          });
+          return;
+        }
+        if (!response.report) {
+          setLoadIssue({
+            kind: 'empty',
+            message: '接口返回成功，但没有报告正文可展示。请确认报告 ID 是否正确，或重新发起审查。',
+          });
+          return;
+        }
         setReport(mapAIReportToFrontend(response.report));
-        setMode('report');
-      } else {
-        setLoadError(response.error || '深度审查报告加载失败');
+      } catch (error) {
+        if (!cancelled) {
+          setLoadIssue({
+            kind: 'error',
+            message: error instanceof Error ? error.message : '真实报告加载失败，请稍后重试。',
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingReport(false);
+        }
       }
-    }).catch((error) => {
-      if (!cancelled) {
-        setLoadError(error instanceof Error ? error.message : '深度审查报告加载失败');
-      }
-    }).finally(() => {
-      if (!cancelled) setLoadingReport(false);
-    });
+    };
+
+    void loadPersistedReport();
+
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
   const handleReportGenerated = (newReport: DeepReviewReport) => {
     setReport(newReport);
+    setLoadIssue(null);
     setMode('report');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleUseMockData = () => {
     setReport(mockDeepReport);
+    setLoadIssue(null);
     setMode('report');
   };
 
   const handleBackToUpload = () => {
+    setLoadingReport(false);
+    setLoadIssue(null);
+    setReport(mockDeepReport);
     setMode('upload');
   };
 
@@ -677,19 +759,14 @@ function Inner() {
     );
   }
 
-  if (loadError) {
+  if (loadIssue) {
     return (
-      <Layout>
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="py-6">
-              <div className="font-semibold text-red-800 mb-2">报告加载失败</div>
-              <div className="text-sm text-red-700">{loadError}</div>
-              <Button className="mt-4" variant="outline" onClick={handleBackToUpload}>新建审查</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
+      <ReportLoadStateCard
+        issue={loadIssue}
+        onBackToUpload={handleBackToUpload}
+        onRetry={id ? () => setReloadKey((value) => value + 1) : undefined}
+        reportId={id}
+      />
     );
   }
 
@@ -699,7 +776,19 @@ function Inner() {
   }
 
   if (!report) {
-    return null;
+    return (
+      <ReportLoadStateCard
+        issue={{
+          kind: 'empty',
+          message: id
+            ? '当前报告详情没有可展示内容，系统不会回退到演示报告。请重试加载或重新发起审查。'
+            : '当前还没有生成报告，请先发起审查或打开演示报告。',
+        }}
+        onBackToUpload={handleBackToUpload}
+        onRetry={id ? () => setReloadKey((value) => value + 1) : undefined}
+        reportId={id}
+      />
+    );
   }
 
   const signRecConfig: Record<string, { label: string; color: string }> = {

@@ -1,6 +1,8 @@
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query
+from services.billing_entitlement_gap import BillingEntitlementGapService
+from services.case_evidence_graph import CaseEvidenceGraphService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
@@ -62,6 +64,33 @@ async def get_product_feature_gap_radar():
     return {
         "success": True,
         "data": ProductFeatureGapRadarService().build_radar(),
+    }
+
+
+@router.get("/billing-entitlement-gap")
+async def get_billing_entitlement_gap_evidence():
+    """Return deterministic billing and entitlement gap evidence."""
+    return {
+        "success": True,
+        "data": BillingEntitlementGapService().build_gap_evidence(),
+    }
+
+
+@router.get("/case-evidence-graph")
+async def get_case_evidence_graph_template():
+    """Return the backend contract for case fact-evidence-citation-risk graphs."""
+    return {
+        "success": True,
+        "data": CaseEvidenceGraphService().build_graph(),
+    }
+
+
+@router.post("/case-evidence-graph")
+async def build_case_evidence_graph(payload: dict[str, Any]):
+    """Build a graph summary from normalized report fields without reading client files."""
+    return {
+        "success": True,
+        "data": CaseEvidenceGraphService().build_graph(payload),
     }
 
 

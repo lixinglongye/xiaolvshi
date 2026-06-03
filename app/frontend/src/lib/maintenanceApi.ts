@@ -127,6 +127,55 @@ type UserNeedsRadarResponse = {
   data: UserNeedsRadar;
 };
 
+export type ProductFeatureGap = {
+  id: string;
+  title: string;
+  module: string;
+  current_state: string;
+  target_capability: string;
+  user_segments: string[];
+  impact: number;
+  urgency: number;
+  effort: number;
+  confidence: number;
+  dependencies: string[];
+  evidence_paths: string[];
+  next_actions: string[];
+  priority_score: number;
+  priority_band: string;
+  completion_state: string;
+};
+
+export type ProductFeatureGapDeliveryPhase = {
+  id: string;
+  title: string;
+  objective: string;
+  gap_ids: string[];
+  exit_criteria: string[];
+};
+
+export type ProductFeatureGapRadar = {
+  status: string;
+  summary: {
+    feature_gap_count: number;
+    high_priority_count: number;
+    module_count: number;
+    top_gap_ids: string[];
+    modules: string[];
+    ready_for_public_feature_claim: boolean;
+    completion_policy: string[];
+  };
+  feature_gaps: ProductFeatureGap[];
+  delivery_phases: ProductFeatureGapDeliveryPhase[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type ProductFeatureGapRadarResponse = {
+  success: boolean;
+  data: ProductFeatureGapRadar;
+};
+
 export type LegalResearchSource = {
   id: string;
   title: string;
@@ -1094,6 +1143,18 @@ export async function getUserNeedsRadar(): Promise<UserNeedsRadar> {
     return payload.data;
   }
   return payload as UserNeedsRadar;
+}
+
+export async function getProductFeatureGapRadar(): Promise<ProductFeatureGapRadar> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/product-feature-gaps',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as ProductFeatureGapRadarResponse | ProductFeatureGapRadar;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ProductFeatureGapRadar;
 }
 
 export async function getFeedbackRoadmapCatalog(): Promise<FeedbackRoadmapCatalog> {

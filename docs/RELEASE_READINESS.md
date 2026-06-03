@@ -95,7 +95,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal knowledge seed audit coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, case evidence graph contracts, and the continuous update ledger, are tracked but do not block releases.
 
 ## Status values
 
@@ -107,15 +107,21 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 
 - `app/backend/services/release_readiness.py`
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/billing_entitlement_gap.py`
+- `app/backend/services/case_evidence_graph.py`
 - `app/backend/services/product_feature_gap_radar.py`
 - `app/backend/services/legal_fixture_result_archive.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_billing_entitlement_gap.py`
+- `app/backend/tests/test_case_evidence_graph.py`
 - `app/backend/tests/test_product_feature_gap_radar.py`
 - `app/backend/tests/test_legal_fixture_result_archive.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/BILLING_ENTITLEMENT_GAP.md`
+- `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`

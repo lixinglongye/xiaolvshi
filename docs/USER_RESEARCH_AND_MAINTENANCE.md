@@ -53,6 +53,8 @@
 - Legal fixture evidence bundles: `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` archives component statuses, validation commands, release-safe claims, and cheap-first run evidence for small local benchmark cycles.
 - Continuous update ledger: `/api/v1/maintenance/continuous-update-ledger` tracks shipped and planned medium/large maintenance updates, the remaining count toward 100+ updates, and the 24-hour evidence requirements without claiming completion early.
 - Product feature gap radar: `/api/v1/maintenance/product-feature-gaps` keeps unfinished product capabilities visible across case workflow, document generation, contract review, evidence, OCR/import, collaboration, billing, feedback, model ops, legal knowledge, and safety.
+- Billing entitlement gap evidence: `/api/v1/maintenance/billing-entitlement-gap` records deterministic paid-order, SKU/plan, report-unlock, and monthly quota guards without integrating a live payment gateway.
+- Case evidence graph contracts: `/api/v1/maintenance/case-evidence-graph` maps normalized risks, evidence requirements, legal citations, and pending facts into a reviewable graph contract before a full case graph UI is built.
 
 ## Near-Term Maintenance Tasks
 

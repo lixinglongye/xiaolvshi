@@ -33,6 +33,7 @@ import {
   getLegalRagEvaluationPolicy,
   getMaintenanceEvidence,
   getFeedbackRoadmapCatalog,
+  getProductFeatureGapRadar,
   getReleaseReadiness,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
@@ -55,6 +56,7 @@ import {
   type LegalRagEvaluationPolicy,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
+  type ProductFeatureGapRadar,
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
   type UserNeedsRadar,
@@ -75,6 +77,7 @@ const categoryClass: Record<string, string> = {
 };
 
 const priorityClass: Record<string, string> = {
+  critical: 'border-red-300 bg-red-100 text-red-900',
   high: 'border-red-200 bg-red-50 text-red-800',
   medium: 'border-amber-200 bg-amber-50 text-amber-900',
   low: 'border-stone-200 bg-stone-50 text-stone-700',
@@ -93,6 +96,7 @@ const statusClass: Record<string, string> = {
   needs_escalation: 'border-red-200 bg-red-50 text-red-800',
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
+  incomplete: 'border-red-200 bg-red-50 text-red-800',
   in_progress: 'border-sky-200 bg-sky-50 text-sky-800',
   planned: 'border-stone-200 bg-stone-50 text-stone-700',
   shipped: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -131,6 +135,7 @@ function Inner() {
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
+  const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
@@ -162,6 +167,7 @@ function Inner() {
         evidence,
         readiness,
         needsRadar,
+        productFeatureGapData,
         feedbackMap,
         continuousLedgerData,
         benchmarkData,
@@ -182,6 +188,7 @@ function Inner() {
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getUserNeedsRadar(),
+        getProductFeatureGapRadar(),
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
         getLegalReviewBenchmark(),
@@ -203,6 +210,7 @@ function Inner() {
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
       setUserNeeds(needsRadar);
+      setProductFeatureGaps(productFeatureGapData);
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
       setBenchmark(benchmarkData);
@@ -673,6 +681,137 @@ function Inner() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </section>
+            )}
+
+            {productFeatureGaps && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Product feature gap radar</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {productFeatureGaps.summary.feature_gap_count} gaps /{' '}
+                      {productFeatureGaps.summary.high_priority_count} high priority /{' '}
+                      {productFeatureGaps.summary.module_count} modules
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[productFeatureGaps.status] ?? statusClass.incomplete}
+                    >
+                      {productFeatureGaps.status.toUpperCase()}
+                    </Badge>
+                    <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800">
+                      public feature claim:{' '}
+                      {productFeatureGaps.summary.ready_for_public_feature_claim ? 'ready' : 'blocked'}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-red-200 bg-red-50 p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-red-800">Incomplete status</h3>
+                    <div className="text-sm leading-6 text-red-900">
+                      This register is incomplete product planning evidence. It means these modules still require shipped
+                      implementation evidence before the product can claim full legal workflow coverage.
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {productFeatureGaps.summary.top_gap_ids.map((id) => (
+                        <Badge key={id} variant="outline" className="border-red-200 bg-white font-mono text-[11px]">
+                          {id}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Delivery phases</h3>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {productFeatureGaps.delivery_phases.map((phase) => (
+                        <div key={phase.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="font-semibold text-stone-950">{phase.title}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{phase.objective}</div>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {phase.gap_ids.slice(0, 5).map((gapId) => (
+                              <Badge key={gapId} variant="outline" className="bg-white font-mono text-[10px]">
+                                {gapId}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="mt-2 text-[11px] leading-5 text-stone-500">
+                            Exit: {phase.exit_criteria[0] || '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Gap</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Current state</TableHead>
+                        <TableHead>Target capability</TableHead>
+                        <TableHead>Next actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productFeatureGaps.feature_gaps.slice(0, 6).map((gap) => (
+                        <TableRow key={gap.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{gap.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{gap.id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{gap.module.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={priorityClass[gap.priority_band] ?? priorityClass.medium}
+                            >
+                              {gap.priority_band} / {gap.priority_score}
+                            </Badge>
+                            <div className="mt-2 text-[11px] leading-5 text-stone-500">
+                              state: {gap.completion_state}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {gap.current_state}
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {gap.target_capability}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <ul className="space-y-1">
+                              {gap.next_actions.map((action) => (
+                                <li key={action} className="flex gap-2">
+                                  <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                                  <span>{action}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Completion policy</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {productFeatureGaps.summary.completion_policy.map((policy) => (
+                      <li key={policy} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{policy}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 text-xs leading-5 text-stone-500">{productFeatureGaps.privacy_note}</div>
                 </div>
               </section>
             )}
