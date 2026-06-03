@@ -42,6 +42,7 @@ from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
+from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -229,6 +230,24 @@ async def model_usage():
     return {
         "success": True,
         "usage": model_usage_registry.snapshot(),
+    }
+
+
+@router.get("/models/gateway-probe-template")
+async def gateway_probe_template():
+    """Return the sanitized payload shape for evaluating manual gateway probes."""
+    return {
+        "success": True,
+        "data": ModelGatewayProbeEvaluationService().template(),
+    }
+
+
+@router.post("/models/gateway-probe-evaluation")
+async def evaluate_gateway_probe(payload: dict[str, Any]):
+    """Evaluate sanitized gateway model-list and tiny chat probe results."""
+    return {
+        "success": True,
+        "data": ModelGatewayProbeEvaluationService().evaluate(payload),
     }
 
 

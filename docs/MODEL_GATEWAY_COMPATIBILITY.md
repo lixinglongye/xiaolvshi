@@ -28,6 +28,8 @@ The frontend `/model-ops` page shows the same report with role rows and gateway 
 
 Use [MODEL_GATEWAY_HEALTH_PLAN.md](MODEL_GATEWAY_HEALTH_PLAN.md) before live gateway probes. It checks base URL shape, secret presence, placeholder dry-run contracts, and cheap-first probe models without calling the gateway.
 
+Use [MODEL_GATEWAY_PROBE_EVALUATION.md](MODEL_GATEWAY_PROBE_EVALUATION.md) after manual probes to turn sanitized `/v1/models` and tiny chat results into cheap-first default recommendations.
+
 ## Release Check
 
 Run:

@@ -199,6 +199,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_gateway_health_plan.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q",
             ),
             ReleaseCheck(
+                id="model-gateway-probe-evaluation",
+                title="Model gateway probe evaluation coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/tests/test_model_gateway_probe_evaluation.py",
+                    "docs/MODEL_GATEWAY_PROBE_EVALUATION.md",
+                ),
+                validation_command="python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q",
+            ),
+            ReleaseCheck(
                 id="model-lifecycle-policy",
                 title="Gemini model lifecycle policy coverage",
                 category="model_ops",

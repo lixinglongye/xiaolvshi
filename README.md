@@ -15,6 +15,7 @@
 - 默认模型优化计划：[docs/MODEL_DEFAULT_OPTIMIZATION.md](docs/MODEL_DEFAULT_OPTIMIZATION.md)
 - 网关模型兼容性：[docs/MODEL_GATEWAY_COMPATIBILITY.md](docs/MODEL_GATEWAY_COMPATIBILITY.md)
 - 网关健康检查计划：[docs/MODEL_GATEWAY_HEALTH_PLAN.md](docs/MODEL_GATEWAY_HEALTH_PLAN.md)
+- 网关探测结果评估：[docs/MODEL_GATEWAY_PROBE_EVALUATION.md](docs/MODEL_GATEWAY_PROBE_EVALUATION.md)
 - Gemini 模型生命周期策略：[docs/MODEL_LIFECYCLE_POLICY.md](docs/MODEL_LIFECYCLE_POLICY.md)
 - 模型能力成本矩阵：`app/backend/services/model_capability_matrix.py`
 - 模型任务推断：[docs/MODEL_TASK_INFERENCE.md](docs/MODEL_TASK_INFERENCE.md)

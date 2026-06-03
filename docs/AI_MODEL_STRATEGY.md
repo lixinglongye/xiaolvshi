@@ -43,6 +43,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `default_optimization` 将能力矩阵和成本预测转成默认模型调优计划，指出哪个 env var 应该回到最便宜的可用 Gemini 模型，以及预计月度节省。
 `gateway_compatibility` 识别 `models/`、`google/`、`openrouter/google/` 等网关前缀形式，让本地成本和能力判断仍能映射到 canonical Gemini 模型。
 `gateway_health_plan` 检查 `APP_AI_BASE_URL`、`APP_AI_KEY` 是否已安全配置，生成 `/models` 和低价 JSON probe 的占位符请求，并确认高频任务仍使用便宜 Gemini 默认模型；它不会自动调用网关。
+`gateway_probe_evaluation` 接收维护者手动运行 `/v1/models` 和 tiny chat probe 后的脱敏结果，评估网关实际可用 Gemini 模型，并给出 cheap-first `.env` 推荐。
 `lifecycle_policy` 检查 Gemini/NewAPI 默认模型是否固定到稳定、具体、低价优先的模型 ID；preview 模型和 `latest` 别名只能作为显式实验，Gemini 1.x、1.5 和 2.0 代停用模型不得作为默认值。
 
 `task_inference` 让 `POST /api/v1/aihub/gentxt` 默认使用 `task=auto`，通过确定性规则把分类、OCR、法律审查、预检/摘要等请求映射到合适任务，避免忘传 `task=review` 时把法律审查误放到 fast 路由。
@@ -110,6 +111,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - `/model-ops` 会展示 Default optimization，帮助维护者把 fast、classification、OCR、review 和 PDF 默认模型保持在最便宜的合格 Gemini 路径上。
 - `/model-ops` 会展示 Gateway compatibility，帮助维护者确认 NewAPI 或其他 OpenAI-compatible 网关返回的 Gemini 前缀模型名仍能匹配本地目录。
 - `/model-ops` 会展示 Gateway health plan，帮助维护者在真实请求前检查 base URL、key 配置状态和低价 probe 请求。
+- `/api/v1/aihub/models/gateway-probe-evaluation` 会评估脱敏后的 `/v1/models` 和 tiny chat probe 结果，辅助选择最便宜的可用默认模型。
 - `/model-ops` 会展示 Lifecycle policy，帮助维护者在发布前拒绝 deprecated、preview、latest 或未知网关默认模型。
 - `/model-ops` 会展示 Budget policy，帮助定位哪些任务仍在使用 premium 或未知价格模型。
 - `/model-ops` 会展示 Configuration audit，帮助维护者确认环境变量解析出的模型角色没有误配成高价或能力不足模型。
