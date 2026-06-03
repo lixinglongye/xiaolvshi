@@ -69,6 +69,7 @@ function Inner() {
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
+  const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
@@ -261,6 +262,83 @@ function Inner() {
             ))}
           </div>
         </section>
+
+        {data?.model_configuration_audit && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Configuration audit</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.model_configuration_audit.summary.role_count} roles /{' '}
+                  {data.model_configuration_audit.summary.unknown_model_count} unknown models
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  data.model_configuration_audit.status === 'pass'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : data.model_configuration_audit.status === 'fail'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }
+              >
+                {data.model_configuration_audit.status}
+              </Badge>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Gaps</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {configurationAuditRows.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{check.label}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{check.env_var ?? '-'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            check.status === 'pass'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                              : check.status === 'fail'
+                                ? 'border-red-200 bg-red-50 text-red-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                          }
+                        >
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{check.model}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[check.cost_tier || ''] ?? 'bg-white'}>
+                          {check.cost_tier ?? 'unknown'}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">max {check.max_cost_tier}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                        {check.missing_required_capabilities.length || check.missing_preferred_capabilities.length
+                          ? [...check.missing_required_capabilities, ...check.missing_preferred_capabilities].join(', ')
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
 
         {data?.runtime_router && (
           <section className="mb-8">

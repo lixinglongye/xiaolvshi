@@ -168,8 +168,14 @@ def premium_text_model() -> str:
 def task_default_model(task: str) -> str:
     """Return the configured model for a known task, preferring low-cost defaults."""
     task = (task or "fast").strip().lower()
-    if task in {"fast", "cheap", "routing", "classification", "classifier", "ocr"}:
+    if task in {"cheap"}:
         return cheap_text_model()
+    if task in {"fast", "routing"}:
+        return _configured_model(getattr(settings, "app_ai_fast_model", None), cheap_text_model())
+    if task in {"ocr"}:
+        return _configured_model(getattr(settings, "app_ocr_model", None), cheap_text_model())
+    if task in {"classification", "classifier"}:
+        return _configured_model(getattr(settings, "app_ai_classifier_model", None), cheap_text_model())
     if task in {"review", "legal-review", "analysis", "chat", "document-generation"}:
         return _configured_model(getattr(settings, "app_ai_review_model", None), balanced_text_model())
     if task in {"pdf", "large-pdf", "final-review", "complex"}:

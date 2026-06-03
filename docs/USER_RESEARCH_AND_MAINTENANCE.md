@@ -48,6 +48,7 @@
 - 每次模型路由、提示词、检索、报告结构或上传解析改动后，运行法律审查基准并把结果纳入发布准备记录。
 - 为合同类型扩展专项策略：劳动合同、租赁合同、采购合同、服务合同、股权/投资协议。
 - 定期检查 Gemini/NewAPI 网关模型名称变更，移除停用模型，更新 `.env.example` 和模型目录。
+- 用 `model_configuration_audit.py` 检查 `.env` 解析出的 cheap、OCR、classification、review 和 PDF 角色是否符合成本层级和能力预期。
 - 用 `model_task_inference.py` 检查未显式传 task 的请求是否能被稳定映射到 cheap-first 或 balanced 任务。
 - 用 `model_runtime_router.py` 检查真实文本请求是否按任务选择模型，避免所有文本请求都落在同一默认路由。
 - 用 `model_reasoning_policy.py` 检查 Gemini `reasoning_effort` 是否仍按高频任务低 thinking、复杂任务高 thinking 的策略执行。

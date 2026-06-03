@@ -33,6 +33,7 @@ from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
 from services.model_catalog import catalog_for_api, task_default_model
+from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
 from services.model_escalation_policy import ModelEscalationPolicyService
@@ -150,6 +151,7 @@ async def list_models():
             "auto-pdf": task_default_model("pdf"),
         },
         "runtime_router": runtime_router_policy_for_api(),
+        "model_configuration_audit": ModelConfigurationAuditService().audit(),
         "reasoning_policy": reasoning_policy_for_api(),
         "request_policy": generation_request_policy_for_api(),
         "route_telemetry": route_telemetry,

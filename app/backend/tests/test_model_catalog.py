@@ -3,10 +3,16 @@ from services import model_catalog
 
 def test_resolve_model_prefers_cost_first_aliases(monkeypatch):
     monkeypatch.setattr(model_catalog.settings, "app_ai_cheap_model", "cheap-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_fast_model", "fast-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ocr_model", "ocr-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_classifier_model", "classifier-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_review_model", "review-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_pdf_model", "pdf-model", raising=False)
 
-    assert model_catalog.resolve_model("auto-fast", task="review") == "cheap-model"
+    assert model_catalog.resolve_model("cheap", task="review") == "cheap-model"
+    assert model_catalog.resolve_model("auto-fast", task="review") == "fast-model"
+    assert model_catalog.resolve_model("auto-ocr", task="review") == "ocr-model"
+    assert model_catalog.resolve_model(None, task="classification") == "classifier-model"
     assert model_catalog.resolve_model("auto-review", task="fast") == "review-model"
     assert model_catalog.resolve_model("auto-pdf", task="fast") == "pdf-model"
 

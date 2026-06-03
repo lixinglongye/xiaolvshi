@@ -84,6 +84,45 @@ export type ModelRuntimeRouter = {
   task_defaults: ModelBudgetDecision[];
 };
 
+export type ModelConfigurationAuditCheck = {
+  id: string;
+  status: string;
+  label: string;
+  model: string;
+  env_var?: string | null;
+  is_known_model: boolean;
+  cost_tier?: string | null;
+  max_cost_tier: string;
+  preferred_cost_tier?: string | null;
+  required_capabilities: string[];
+  preferred_capabilities: string[];
+  missing_required_capabilities: string[];
+  missing_preferred_capabilities: string[];
+  over_budget: boolean;
+  rationale: string;
+  reason: string;
+};
+
+export type ModelConfigurationAudit = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    role_count: number;
+    pass_count: number;
+    warn_count: number;
+    fail_count: number;
+    unknown_model_count: number;
+    premium_default_count: number;
+  };
+  checks: ModelConfigurationAuditCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -491,6 +530,7 @@ export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
   runtime_router?: ModelRuntimeRouter;
+  model_configuration_audit?: ModelConfigurationAudit;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   route_telemetry?: ModelRouteTelemetry;

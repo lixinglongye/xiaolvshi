@@ -147,6 +147,19 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_capability_matrix.py tests/test_model_catalog.py tests/test_model_budget.py -q",
             ),
             ReleaseCheck(
+                id="model-configuration-audit",
+                title="Model configuration audit coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_configuration_audit.py",
+                    "app/backend/tests/test_model_configuration_audit.py",
+                    "docs/MODEL_CONFIGURATION_AUDIT.md",
+                ),
+                validation_command="python -m pytest tests/test_model_configuration_audit.py tests/test_model_catalog.py tests/test_model_budget.py -q",
+            ),
+            ReleaseCheck(
                 id="model-runtime-router",
                 title="Runtime model router coverage",
                 category="model_ops",
