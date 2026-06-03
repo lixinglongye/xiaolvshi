@@ -458,6 +458,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("case-workbench", "reviewer-visibility", "safe-ai-ops"),
             ),
             LedgerEntry(
+                id="matter-audit-retention-policy",
+                title="Matter audit retention policy",
+                category="safety",
+                size="medium",
+                status="shipped",
+                impact="Defines privacy-minimized audit events, forbidden fields, retention buckets, and release blockers for matter workflows.",
+                evidence_paths=(
+                    "app/backend/services/matter_audit_retention_policy.py",
+                    "app/backend/tests/test_matter_audit_retention_policy.py",
+                    "docs/MATTER_AUDIT_RETENTION_POLICY.md",
+                ),
+                release_gate_links=("matter-audit-retention-policy", "case-team-access-policy"),
+                user_need_ids=("case-workbench", "reviewer-visibility", "safe-ai-ops"),
+            ),
+            LedgerEntry(
                 id="client-delivery-risk-checklist",
                 title="Client delivery risk checklist",
                 category="safety",

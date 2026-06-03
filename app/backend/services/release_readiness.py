@@ -673,6 +673,20 @@ class ReleaseReadinessService:
                 manual_note="This is the deterministic least-privilege policy contract; database-backed membership enforcement remains a separate implementation step.",
             ),
             ReleaseCheck(
+                id="matter-audit-retention-policy",
+                title="Matter audit retention policy",
+                category="security",
+                required=False,
+                owner="security_privacy_owner",
+                evidence_paths=(
+                    "app/backend/services/matter_audit_retention_policy.py",
+                    "app/backend/tests/test_matter_audit_retention_policy.py",
+                    "docs/MATTER_AUDIT_RETENTION_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_matter_audit_retention_policy.py -q",
+                manual_note="This defines audit event and minimization rules; persistent audit storage remains a separate implementation step.",
+            ),
+            ReleaseCheck(
                 id="client-delivery-risk-checklist",
                 title="Client delivery risk checklist",
                 category="legal_quality",

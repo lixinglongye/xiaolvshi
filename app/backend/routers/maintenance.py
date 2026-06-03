@@ -28,6 +28,7 @@ from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerS
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
+from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.product_feature_gap_radar import ProductFeatureGapRadarService
 from services.release_readiness import ReleaseReadinessService
@@ -198,6 +199,24 @@ async def evaluate_ocr_import_readiness_policy(payload: dict[str, Any]):
     return {
         "success": True,
         "data": OcrImportReadinessPolicyService().build_policy(payload),
+    }
+
+
+@router.get("/matter-audit-retention-policy")
+async def get_matter_audit_retention_policy_template():
+    """Return privacy-minimized matter audit retention policy metadata."""
+    return {
+        "success": True,
+        "data": MatterAuditRetentionPolicyService().build_policy(),
+    }
+
+
+@router.post("/matter-audit-retention-policy")
+async def evaluate_matter_audit_retention_policy(sample_events: list[dict[str, Any]]):
+    """Evaluate sample audit event metadata against retention and minimization policy."""
+    return {
+        "success": True,
+        "data": MatterAuditRetentionPolicyService().build_policy(sample_events),
     }
 
 
