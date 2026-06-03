@@ -481,14 +481,17 @@ class ReleaseReadinessService:
                 owner="legal_review_owner",
                 evidence_paths=(
                     "app/backend/services/legal_review_benchmark.py",
+                    "app/backend/services/legal_fixture_prompt_pack.py",
                     "app/backend/services/legal_fixture_improvement.py",
                     "app/backend/tests/test_legal_review_benchmark.py",
+                    "app/backend/tests/test_legal_fixture_prompt_pack.py",
                     "app/backend/tests/test_legal_fixture_improvement.py",
                     "docs/LEGAL_REVIEW_BENCHMARK.md",
                     "docs/LEGAL_BENCHMARK_FIXTURES.md",
+                    "docs/LEGAL_FIXTURE_PROMPT_PACK.md",
                     "docs/LEGAL_FIXTURE_IMPROVEMENT.md",
                 ),
-                validation_command="python -m pytest tests/test_legal_review_benchmark.py tests/test_legal_fixture_improvement.py -q",
+                validation_command="python -m pytest tests/test_legal_review_benchmark.py tests/test_legal_fixture_prompt_pack.py tests/test_legal_fixture_improvement.py -q",
             ),
             ReleaseCheck(
                 id="legal-knowledge-audit",

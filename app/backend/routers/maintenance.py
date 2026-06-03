@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, Query
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.legal_fixture_improvement import LegalFixtureImprovementService
+from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.maintenance_evidence import MaintenanceEvidenceService
 from services.release_readiness import ReleaseReadinessService
@@ -96,6 +97,15 @@ async def build_legal_review_fixture_improvement_plan(observations: dict[str, di
     return {
         "success": True,
         "data": LegalFixtureImprovementService().build_plan(observations),
+    }
+
+
+@router.get("/legal-review-benchmark/prompt-pack")
+async def get_legal_review_fixture_prompt_pack():
+    """Return cheap-first model prompt payloads for local legal fixture evaluation."""
+    return {
+        "success": True,
+        "data": LegalFixturePromptPackService().build_pack(),
     }
 
 

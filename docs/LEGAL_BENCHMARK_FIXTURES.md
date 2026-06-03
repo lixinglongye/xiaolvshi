@@ -42,6 +42,8 @@ This is meant for quick laptop checks after prompt, routing, report schema, extr
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-improvements` to convert smoke-test gaps into prompt clauses, report-schema targets, and validation hints.
 
+Use `/api/v1/maintenance/legal-review-benchmark/prompt-pack` to fetch cheap-first Gemini/NewAPI prompt payloads for the same fixtures.
+
 ## Release Use
 
 The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.
@@ -49,8 +51,10 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 ## Related Files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `app/backend/services/release_readiness.py`

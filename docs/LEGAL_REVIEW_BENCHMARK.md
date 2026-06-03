@@ -15,6 +15,7 @@ GET /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 POST /api/v1/maintenance/legal-review-benchmark/fixture-smoke
 GET /api/v1/maintenance/legal-review-benchmark/fixture-improvements
 POST /api/v1/maintenance/legal-review-benchmark/fixture-improvements
+GET /api/v1/maintenance/legal-review-benchmark/prompt-pack
 ```
 
 `GET` returns the suite, required metrics, a default run template, and a `not_run` evaluation.
@@ -51,6 +52,8 @@ Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores
 The smoke evaluator scores signal coverage, task output coverage, and route match. It does not call a model and does not fetch public datasets.
 
 `GET/POST /fixture-improvements` converts fixture smoke gaps into prompt clauses, report-schema targets, and validation hints so failed small-document tests produce actionable algorithm and schema work.
+
+`GET /prompt-pack` returns cheap-first model prompt payloads for the same fixtures, including recommended Gemini/NewAPI task defaults, request parameters, output schema, and follow-up evaluation endpoints.
 
 ## Research Basis
 
@@ -104,10 +107,13 @@ The `legal-review-benchmark` release-readiness check requires this service, its 
 ## Related files
 
 - `app/backend/services/legal_review_benchmark.py`
+- `app/backend/services/legal_fixture_prompt_pack.py`
 - `app/backend/services/legal_fixture_improvement.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_legal_review_benchmark.py`
+- `app/backend/tests/test_legal_fixture_prompt_pack.py`
 - `app/backend/tests/test_legal_fixture_improvement.py`
 - `docs/LEGAL_BENCHMARK_FIXTURES.md`
+- `docs/LEGAL_FIXTURE_PROMPT_PACK.md`
 - `docs/LEGAL_FIXTURE_IMPROVEMENT.md`
 - `app/backend/services/release_readiness.py`
