@@ -1754,6 +1754,22 @@ class ReleaseReadinessService:
                 manual_note="This blocks unsupported public claims about adoption, benchmark scores, payment settlement, production accuracy, or third-party PR volume.",
             ),
             ReleaseCheck(
+                id="legal-document-coverage-claim-policy",
+                title="Legal document coverage claim policy",
+                category="safety",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_coverage_claim_policy.py",
+                    "app/backend/tests/test_legal_document_coverage_claim_policy.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "docs/LEGAL_DOCUMENT_COVERAGE_CLAIM_POLICY.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_document_coverage_claim_policy.py tests/test_legal_document_benchmark_coverage.py -q",
+                manual_note="This blocks broad, real-client, public-benchmark, and unsupported legal-document coverage claims while allowing only repository-backed synthetic fixture coverage wording.",
+            ),
+            ReleaseCheck(
                 id="case-export-readiness",
                 title="Case export readiness",
                 category="backend",

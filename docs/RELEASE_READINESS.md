@@ -1,6 +1,6 @@
 # Release Readiness
 
-Recent optional evidence: `legal-document-benchmark-coverage` and `legal-document-benchmark-coverage-ui` expose the local legal-document fixture coverage matrix in backend release checks and the maintenance UI. The checks are metadata-only and do not claim external benchmark scores, model-run accuracy, or real client-document testing.
+Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, and `legal-document-coverage-claim-policy` expose the local legal-document fixture coverage matrix in backend release checks, the maintenance UI, and a claim-review route. The checks are metadata-only and do not claim external benchmark scores, model-run accuracy, universal document support, or real client-document testing.
 
 Additional optional evidence: `legal-document-benchmark-gap-fixtures` validates the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures against the same low-resource benchmark suite.
 

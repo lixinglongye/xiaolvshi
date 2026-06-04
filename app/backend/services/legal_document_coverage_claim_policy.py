@@ -50,8 +50,36 @@ PRIVACY_BOUNDARY = {
     "prompt_or_model_output_included": False,
     "pii_included": False,
     "secret_included": False,
-    "output_scope": "claim hashes, matched document-type ids, reason codes, coverage counts, and status only",
+    "external_dataset_content_included": False,
+    "output_scope": "claim hashes, matched document-type ids, reason codes, coverage counts, source URLs, and status only",
 }
+
+RESEARCH_CALIBRATION = [
+    {
+        "id": "legalbench",
+        "source_url": "https://arxiv.org/abs/2308.11462",
+        "scope": "collaborative legal reasoning benchmark with many task families",
+        "local_boundary": "Do not describe the local synthetic fixture matrix as a LegalBench run, score, or leaderboard result.",
+    },
+    {
+        "id": "lexglue",
+        "source_url": "https://arxiv.org/abs/2110.00976",
+        "scope": "legal language understanding benchmark suite across multiple datasets",
+        "local_boundary": "Do not describe local document-type fixtures as LexGLUE coverage or model performance.",
+    },
+    {
+        "id": "coliee",
+        "source_url": "https://sites.ualberta.ca/~rabelo/COLIEE2024/",
+        "scope": "legal information retrieval and entailment competition tasks",
+        "local_boundary": "Do not claim COLIEE participation, ranking, retrieval quality, or entailment accuracy.",
+    },
+    {
+        "id": "cuad",
+        "source_url": "https://arxiv.org/abs/2103.06268",
+        "scope": "expert-annotated contract review dataset used for clause extraction and contract understanding research",
+        "local_boundary": "Do not claim CUAD-scale contract review validation from six local synthetic fixtures.",
+    },
+]
 
 
 class LegalDocumentCoverageClaimPolicyService:
@@ -99,6 +127,7 @@ class LegalDocumentCoverageClaimPolicyService:
                 "Validated on real client documents.",
                 "Achieves public LegalBench leaderboard results.",
             ],
+            "research_calibration": list(RESEARCH_CALIBRATION),
             "privacy_boundary": dict(PRIVACY_BOUNDARY),
         }
 

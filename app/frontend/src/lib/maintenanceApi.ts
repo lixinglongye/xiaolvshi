@@ -2264,12 +2264,16 @@ export type MaintenanceReleaseClaimCompliance = {
     claim_hash: string;
     status: string;
     reason_codes: string[];
+    matched_document_types?: string[];
+    unsupported_document_types?: string[];
   }>;
   summary: {
     claim_count: number;
     blocked_count: number;
     review_required_count: number;
     ready_count: number;
+    supported_type_claim_count?: number;
+    unsupported_type_claim_count?: number;
   };
   recommended_actions: string[];
   privacy_boundary: MaintenancePrivacyBoundary;
@@ -2278,6 +2282,30 @@ export type MaintenanceReleaseClaimCompliance = {
 type MaintenanceReleaseClaimComplianceResponse = {
   success: boolean;
   data: MaintenanceReleaseClaimCompliance;
+};
+
+export type MaintenanceLegalDocumentCoverageClaimPolicy = MaintenanceReleaseClaimCompliance & {
+  coverage_summary: {
+    coverage_status: string;
+    target_document_type_count: number;
+    covered_document_type_count: number;
+    missing_document_type_count: number;
+    covered_document_types: string[];
+    source_endpoint: string;
+  };
+  allowed_claim_template: string;
+  forbidden_claim_examples: string[];
+  research_calibration: Array<{
+    id: string;
+    source_url: string;
+    scope: string;
+    local_boundary: string;
+  }>;
+};
+
+type MaintenanceLegalDocumentCoverageClaimPolicyResponse = {
+  success: boolean;
+  data: MaintenanceLegalDocumentCoverageClaimPolicy;
 };
 
 export type MaintenanceCaseExportReadiness = {
@@ -2747,6 +2775,13 @@ const syntheticReleaseClaimCompliancePayload = {
   claims: [
     'Repository-backed maintenance evidence is available.',
     'LegalBench score and payment provider verified claims require removal.',
+  ],
+};
+
+const syntheticLegalDocumentCoverageClaimPolicyPayload = {
+  claims: [
+    'Repository tests include synthetic local fixtures covering civil complaint, lawyer letter, contract review, evidence catalog, settlement agreement, and legal opinion.',
+    'The product supports every legal document and is validated on real client documents with LegalBench leaderboard results.',
   ],
 };
 
@@ -3433,6 +3468,17 @@ export async function getMaintenanceReleaseClaimCompliance(
   return unwrapMaintenanceData<MaintenanceReleaseClaimComplianceResponse['data']>(resp);
 }
 
+export async function getMaintenanceLegalDocumentCoverageClaimPolicy(
+  payload: Record<string, unknown> = syntheticLegalDocumentCoverageClaimPolicyPayload,
+): Promise<MaintenanceLegalDocumentCoverageClaimPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-coverage/claims',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceLegalDocumentCoverageClaimPolicyResponse['data']>(resp);
+}
+
 export async function getMaintenanceCaseExportReadiness(
   payload: Record<string, unknown> = syntheticCaseExportReadinessPayload,
 ): Promise<MaintenanceCaseExportReadiness> {
@@ -3491,6 +3537,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     bundleIntegrity,
     privacyRetention,
     releaseClaims,
+    legalDocumentCoverageClaims,
     caseExport,
     adminAudit,
     quotaDecision,
@@ -3501,6 +3548,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     getMaintenanceEvidenceBundleIntegrity(),
     getMaintenancePrivacyRetentionRules(),
     getMaintenanceReleaseClaimCompliance(),
+    getMaintenanceLegalDocumentCoverageClaimPolicy(),
     getMaintenanceCaseExportReadiness(),
     getMaintenanceAdminAuditPolicy(),
     getMaintenanceQuotaDeliveryDecision(),
@@ -3509,6 +3557,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
   ]);
 
   const releaseClaimReasons = allClaimReasonCodes(releaseClaims);
+  const legalDocumentClaimReasons = allClaimReasonCodes(legalDocumentCoverageClaims);
   const gates: MaintenanceGateSnapshotItem[] = [
     {
       id: 'feedback-issue-clusters',
@@ -3579,6 +3628,20 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
       ],
       reason_codes: releaseClaimReasons,
       privacy_boundary: releaseClaims.privacy_boundary,
+    },
+    {
+      id: 'legal-document-coverage-claim-policy',
+      label: 'Legal document coverage claim policy',
+      endpoint: '/api/v1/maintenance/legal-review-benchmark/document-coverage/claims',
+      method: 'POST',
+      status: legalDocumentCoverageClaims.status,
+      counts: [
+        { label: 'claims', value: legalDocumentCoverageClaims.summary.claim_count },
+        { label: 'blocked', value: legalDocumentCoverageClaims.summary.blocked_count },
+        { label: 'covered types', value: legalDocumentCoverageClaims.coverage_summary.covered_document_type_count },
+      ],
+      reason_codes: legalDocumentClaimReasons,
+      privacy_boundary: legalDocumentCoverageClaims.privacy_boundary,
     },
     {
       id: 'case-export-readiness',
@@ -3673,7 +3736,9 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
       reason_code_count: reasonCodes.length,
       metadata_only_count: gates.filter((gate) => isRawBoundaryClean(gate.privacy_boundary)).length,
       raw_boundary_violation_count: gates.filter((gate) => !isRawBoundaryClean(gate.privacy_boundary)).length,
-      unsupported_claim_reason_count: unsupportedClaimReasonCount(releaseClaimReasons),
+      unsupported_claim_reason_count: unsupportedClaimReasonCount(
+        uniqueCodes(releaseClaimReasons, legalDocumentClaimReasons),
+      ),
     },
     labels: ['metadata-only', 'no raw legal text', 'no benchmark or payment claims'],
     gates,

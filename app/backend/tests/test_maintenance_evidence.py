@@ -37,6 +37,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark gap fixtures" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -66,8 +67,11 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/admin_audit_policy.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_coverage.py" in evidence_paths
+    assert "app/backend/services/legal_document_coverage_claim_policy.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_benchmark_coverage.py" in evidence_paths
+    assert "app/backend/tests/test_legal_document_coverage_claim_policy.py" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in evidence_paths
+    assert "docs/LEGAL_DOCUMENT_COVERAGE_CLAIM_POLICY.md" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
     assert "app/backend/services/legal_adoption_research_bridge.py" in evidence_paths
     assert "app/backend/tests/test_legal_adoption_research_bridge.py" in evidence_paths
@@ -114,6 +118,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("does not prove tests" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Validation event evidence accepts only sanitized" in guardrail for guardrail in profile["application_guardrails"])
     assert any("deep-review first-principles generation are quota guarded" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("legal document coverage claim policy" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("repository-backed synthetic fixture wording" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

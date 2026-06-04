@@ -22,6 +22,8 @@ def test_legal_document_coverage_claim_policy_allows_scoped_local_fixture_claims
     assert result["coverage_summary"]["missing_document_type_count"] == 0
     assert result["summary"]["ready_count"] == 1
     assert result["summary"]["supported_type_claim_count"] == 1
+    assert result["privacy_boundary"]["external_dataset_content_included"] is False
+    assert {item["id"] for item in result["research_calibration"]} == {"legalbench", "lexglue", "coliee", "cuad"}
     assert set(result["claim_checks"][0]["matched_document_types"]) == {
         "civil_complaint",
         "lawyer_letter",

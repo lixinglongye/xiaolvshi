@@ -239,6 +239,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "evidence-bundle-integrity": "python -m pytest tests/test_evidence_bundle_integrity.py -q",
         "privacy-retention-rules": "python -m pytest tests/test_privacy_retention_rules.py -q",
         "release-claim-compliance": "python -m pytest tests/test_release_claim_compliance.py -q",
+        "legal-document-coverage-claim-policy": "python -m pytest tests/test_legal_document_coverage_claim_policy.py tests/test_legal_document_benchmark_coverage.py -q",
         "case-export-readiness": "python -m pytest tests/test_case_export_readiness.py tests/test_deep_review_selected_source_binding.py -q",
         "admin-audit-policy": "python -m pytest tests/test_admin_audit_policy.py -q",
         "continuous-session-evidence": "python -m pytest tests/test_continuous_session_evidence.py -q",
@@ -280,6 +281,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "repeated user feedback" in checks["feedback-issue-cluster"]["manual_note"]
     assert "missing proof purposes" in checks["evidence-bundle-integrity"]["manual_note"]
     assert "retention and deletion review rules" in checks["privacy-retention-rules"]["manual_note"]
+    assert "unsupported legal-document coverage claims" in checks["legal-document-coverage-claim-policy"]["manual_note"]
+    assert "repository-backed synthetic fixture coverage wording" in checks["legal-document-coverage-claim-policy"]["manual_note"]
     assert "not proof that the 24-hour session is complete" in checks["continuous-session-run-monitor"]["manual_note"]
     assert "unsupported public claims" in checks["release-claim-compliance"]["manual_note"]
     assert "selected-source validation before case export" in checks["case-export-readiness"]["manual_note"]

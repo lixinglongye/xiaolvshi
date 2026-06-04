@@ -1,8 +1,10 @@
 # Continuous Update Ledger
 
-Latest product-quality slice: `legal-document-benchmark-coverage` and `legal-document-benchmark-coverage-ui` add a metadata-only legal document coverage matrix, maintenance route, tests, and UI panel for low-resource fixture planning. The matrix still keeps broad coverage claims blocked until the missing synthetic document types are added and validated.
+Latest product-quality slice: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, and `legal-document-coverage-claim-policy` add a metadata-only legal document coverage matrix, maintenance route, tests, UI panel, and claim-review gate for low-resource fixture planning. The claim policy keeps broad, real-client, public-benchmark, and unsupported document coverage wording blocked.
 
 Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures so the current local coverage matrix reaches 6/6 target document types. This still does not prove broad real-world document coverage or live model accuracy.
+
+Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
 
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
