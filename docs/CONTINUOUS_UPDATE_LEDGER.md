@@ -109,6 +109,14 @@ or emails. It is an evidence index only and must not claim the 24-hour target is
 ready unless real timestamped events and the 100+ update evidence both pass the
 joined gate.
 
+`docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` defines the upcoming metadata-only
+`GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` endpoint. It
+indexes Gemini/NewAPI model id normalization, task labels, cost tiers, candidate
+chains, warnings, and evidence paths for cheap-first selection review. It must
+not store API keys, gateway credentials, prompts, raw legal text, raw model
+outputs, or emails, and it must not be counted as proof that NewAPI was called
+or that the 24-hour continuous window is complete.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -146,6 +154,7 @@ replace the fixture record itself.
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
+- `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

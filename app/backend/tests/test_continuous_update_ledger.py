@@ -57,6 +57,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
 
     assert "cheap-first-result-archive" in completed_ids
     assert "gemini-price-refresh-monitor" in completed_ids
+    assert "gemini-newapi-model-selector" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -125,6 +126,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "git-history-cadence-evidence" not in queue_ids
     assert "validation-event-evidence-normalizer" not in queue_ids
     assert "continuous-session-review-packet" not in queue_ids
+    assert "gemini-newapi-model-selector" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -159,6 +161,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_continuous_session_review_packet.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_git_history_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

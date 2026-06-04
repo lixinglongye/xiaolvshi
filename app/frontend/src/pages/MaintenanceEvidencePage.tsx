@@ -53,6 +53,7 @@ import {
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
+  getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
   getReleaseReadiness,
   getUserNeedsRadar,
@@ -67,6 +68,7 @@ import {
   type ContinuousUpdateLedgerEntry,
   type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
+  type GeminiNewApiModelSelectorEvidence,
   type LawyerReviewWorkflowPolicy,
   type LegalDocumentExportReadiness,
   type LegalDocumentTemplateMatrix,
@@ -196,6 +198,18 @@ function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][numbe
   return [outputScope, ...flags];
 }
 
+function geminiNewApiPrivacyBoundarySummary(boundary: GeminiNewApiModelSelectorEvidence['privacy_boundary']) {
+  const outputScope =
+    typeof boundary.output_scope === 'string'
+      ? boundary.output_scope
+      : 'metadata-only model selector evidence; no NewAPI invocation claim';
+  const flags = Object.entries(boundary)
+    .filter(([key, value]) => key !== 'output_scope' && (typeof value === 'boolean' || typeof value === 'string'))
+    .slice(0, 6)
+    .map(([key, value]) => `${displayToken(key)}: ${formatInline(value)}`);
+  return [outputScope, ...flags];
+}
+
 function blockerSummary(blocker: MaintenanceContinuousSessionTimeline['blockers'][number]) {
   if (typeof blocker === 'string') return blocker;
   return blocker.title ?? blocker.detail ?? blocker.required_action ?? blocker.code ?? blocker.id ?? 'review required';
@@ -270,6 +284,8 @@ function Inner() {
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
+  const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
+    useState<GeminiNewApiModelSelectorEvidence | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
@@ -329,6 +345,7 @@ function Inner() {
         publicBenchmarkSamplerData,
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
+        geminiNewApiModelSelectorData,
         fixturePromptPackData,
         fixtureLocalRunPackageData,
         fixtureRunPlanData,
@@ -368,6 +385,7 @@ function Inner() {
         getLegalPublicBenchmarkSampler(),
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
+        getGeminiNewApiModelSelectorEvidence(),
         getLegalFixturePromptPack(),
         getLegalFixtureLocalRunPackage(),
         getLegalFixtureRunPlan(),
@@ -408,6 +426,7 @@ function Inner() {
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
+      setGeminiNewApiModelSelector(geminiNewApiModelSelectorData);
       setFixturePromptPack(fixturePromptPackData);
       setFixtureLocalRunPackage(fixtureLocalRunPackageData);
       setFixtureRunPlan(fixtureRunPlanData);
@@ -3358,6 +3377,138 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{fixtureModelMatrix.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {geminiNewApiModelSelector && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only selector evidence; excludes credentials, prompts, raw legal text, and raw model outputs.
+                      This panel does not claim an actual NewAPI call was made.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[geminiNewApiModelSelector.status] ?? statusClass.review_recommended}
+                  >
+                    {geminiNewApiModelSelector.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {geminiNewApiModelSelector.summary.task_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {geminiNewApiModelSelector.summary.cheap_first_ready_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {geminiNewApiModelSelector.summary.premium_exception_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {geminiNewApiModelSelector.summary.catalog_review_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">catalog reviews</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {geminiNewApiModelSelector.summary.unknown_model_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown models</div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Selected model</TableHead>
+                          <TableHead>Cost tier</TableHead>
+                          <TableHead>Decision</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiNewApiModelSelector.task_recommendations.slice(0, 6).map((item) => (
+                          <TableRow key={`${item.task}-${item.selected_model}`}>
+                            <TableCell className="max-w-[260px]">
+                              <div className="font-semibold text-stone-950">{item.task}</div>
+                              {item.escalation_chain && item.escalation_chain.length > 0 && (
+                                <div className="mt-1 text-xs leading-5 text-stone-600">
+                                  escalate: {item.escalation_chain.slice(0, 3).join(' -> ')}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">{item.selected_model}</div>
+                              <div className="font-mono text-[11px]">{item.canonical_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-white">
+                                {item.cost_tier ?? 'unknown'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>{item.decision ?? item.route_mode ?? '-'}</div>
+                              {item.route_mode && item.decision && (
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{item.route_mode}</div>
+                              )}
+                              {item.warnings && item.warnings.length > 0 && (
+                                <div className="mt-1 text-amber-800">{item.warnings.slice(0, 2).join('; ')}</div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Observed model review</h3>
+                      <div className="space-y-3">
+                        {geminiNewApiModelSelector.observed_model_reviews.slice(0, 4).map((review) => (
+                          <div key={`${review.raw_model}-${review.status}`} className="text-xs leading-5 text-stone-600">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono font-semibold text-stone-950">{review.raw_model}</span>
+                              <Badge variant="outline" className={statusClass[review.status] ?? statusClass.not_run}>
+                                {review.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                            <div className="mt-1 font-mono text-[11px]">{review.canonical_model ?? '-'}</div>
+                            {review.action && <div className="mt-1">{review.action}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {geminiNewApiPrivacyBoundarySummary(geminiNewApiModelSelector.privacy_boundary).map((item) => (
+                          <li key={item} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

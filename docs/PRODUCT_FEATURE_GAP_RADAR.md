@@ -42,6 +42,13 @@ delivery decisions, deterministic feedback issue clustering, metadata-only
 evidence bundle integrity checks, privacy retention rules, release-claim
 compliance checks, case export readiness checks, and admin audit policy
 evidence.
+Model-cost evidence now also includes the scoped Gemini/NewAPI model selector
+evidence contract for `GET`/`POST`
+`/api/v1/maintenance/gemini-newapi-model-selector`. That contract is
+metadata-only selection review for normalized model ids, task labels, cost
+tiers, cheap-first candidate chains, warnings, and evidence paths. It does not
+call NewAPI, store prompts or raw model output, or close the 24-hour maintenance
+proof gap.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding

@@ -58,6 +58,13 @@ Gateway ids that look Gemini-like but are not in the local catalog are not
 blocked outright. They are marked `catalog_review` with warning severity and
 remain explicit-only until tier, stability, and default suitability are checked.
 
+`docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` scopes the upcoming
+`GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` evidence
+endpoint. That endpoint should turn catalog ids, `models/`, `google/`,
+`google:`, and unknown Gemini-like ids into metadata-only selection audit rows
+and task-specific cheap-first candidate chains. It does not call NewAPI and does
+not prove 24-hour maintenance completion.
+
 ## Cheap-First Defaults
 
 High-volume tasks must default to:

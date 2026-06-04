@@ -22,6 +22,7 @@ POST /api/v1/maintenance/release-readiness
   "model-default-optimization": "pass",
   "model-default-recommendation-snapshot": "pass",
   "gemini-newapi-cheap-first-policy": "pass",
+  "gemini-newapi-model-selector": "pass",
   "model-price-refresh-monitor": "pass",
   "model-gateway-compatibility": "pass",
   "model-gateway-health-plan": "pass",
@@ -72,6 +73,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Model default optimization coverage.
 - Gemini/NewAPI default recommendation snapshot coverage.
 - Gemini/NewAPI cheap-first policy coverage.
+- Gemini/NewAPI model selector evidence coverage.
 - Gemini and gateway price refresh monitor coverage.
 - Model gateway compatibility coverage.
 - Model gateway health plan coverage.
@@ -131,6 +133,11 @@ New optional checks also cover deep-review selected-source report binding,
 quota delivery decisions, deterministic feedback issue clustering, evidence
 bundle integrity, privacy retention rules, release-claim compliance, case export
 readiness, and admin audit policy.
+The Gemini/NewAPI model selector evidence check is documentation-scoped until
+the endpoint ships. It should verify metadata-only model id normalization,
+cheap-first task candidate chains, premium exception boundaries, warnings, and
+evidence paths; it must not imply that NewAPI was called or that 24-hour
+maintenance completion is proven.
 These checks remain non-blocking and do not claim real payment provider
 settlement or webhook verification, automatic deep-review report binding for
 selected-source validation, public benchmark scores, or external adoption.
@@ -268,6 +275,7 @@ selected-source validation, public benchmark scores, or external adoption.
 - `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LEGAL_SOURCE_INGESTION_METADATA.md`

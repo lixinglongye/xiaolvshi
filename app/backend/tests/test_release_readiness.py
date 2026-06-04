@@ -134,6 +134,26 @@ def test_billing_preflight_route_is_optional_release_evidence():
     assert "server-side enforcement" in check["manual_note"]
 
 
+def test_gemini_newapi_model_selector_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands() if item["check_id"] == "gemini-newapi-model-selector"
+    ]
+    result = service.evaluate({"gemini-newapi-model-selector": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "gemini-newapi-model-selector")
+
+    assert commands == [
+        {
+            "check_id": "gemini-newapi-model-selector",
+            "command": "python -m pytest tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "gateway credentials" in check["manual_note"]
+
+
 def test_recent_backend_product_slices_are_optional_release_evidence():
     service = ReleaseReadinessService()
     expected_commands = {

@@ -31,6 +31,7 @@ from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
 from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
@@ -794,6 +795,24 @@ async def evaluate_gemini_newapi_cheap_first_policy(payload: dict[str, Any]):
         "data": GeminiNewapiCheapFirstPolicyService().build_policy(
             observed_models if isinstance(observed_models, list) else None
         ),
+    }
+
+
+@router.get("/gemini-newapi-model-selector")
+async def get_gemini_newapi_model_selector():
+    """Return metadata-only Gemini/NewAPI model selection recommendations."""
+    return {
+        "success": True,
+        "data": GeminiNewapiModelSelectorService().build_selector(),
+    }
+
+
+@router.post("/gemini-newapi-model-selector")
+async def evaluate_gemini_newapi_model_selector(payload: Any = Body(default=None)):
+    """Evaluate Gemini/NewAPI model ids and task routes without calling the gateway."""
+    return {
+        "success": True,
+        "data": GeminiNewapiModelSelectorService().build_selector(payload),
     }
 
 

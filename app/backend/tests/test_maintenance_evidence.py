@@ -36,6 +36,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Case task runtime notification summary" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]
@@ -55,6 +56,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/admin_audit_policy.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
+    assert "app/backend/services/gemini_newapi_model_selector.py" in evidence_paths
+    assert "app/backend/tests/test_gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/services/continuous_session_evidence.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_evidence.py" in evidence_paths
     assert "app/backend/services/continuous_session_timeline.py" in evidence_paths

@@ -1565,6 +1565,54 @@ export type LegalFixtureModelMatrix = {
   privacy_note: string;
 };
 
+export type GeminiNewApiModelSelectorRecommendation = {
+  task: string;
+  selected_model: string;
+  canonical_model?: string;
+  cost_tier?: string;
+  route_mode?: string;
+  decision?: string;
+  escalation_chain?: string[];
+  warnings?: string[];
+};
+
+export type GeminiNewApiObservedModelReview = {
+  raw_model: string;
+  canonical_model?: string | null;
+  status: string;
+  action?: string;
+  warnings?: string[];
+};
+
+export type GeminiNewApiCheapFirstLadder = {
+  task_group: string;
+  tasks?: string[];
+  ladder?: Array<{
+    order: number;
+    model: string;
+    cost_tier: string;
+    role?: string;
+  }>;
+};
+
+export type GeminiNewApiModelSelectorEvidence = {
+  status: string;
+  summary: {
+    task_count?: number;
+    recommendation_count?: number;
+    cheap_first_ready_count?: number;
+    premium_exception_count?: number;
+    catalog_review_count?: number;
+    unknown_model_count?: number;
+    raw_payload_echoed?: boolean;
+  };
+  task_recommendations: GeminiNewApiModelSelectorRecommendation[];
+  observed_model_reviews: GeminiNewApiObservedModelReview[];
+  cheap_first_ladders: GeminiNewApiCheapFirstLadder[];
+  privacy_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalFixtureEvidenceBundle = {
   status: string;
   method: {
@@ -1816,6 +1864,11 @@ type LegalFixtureResultArchiveResponse = {
 type LegalFixtureModelMatrixResponse = {
   success: boolean;
   data: LegalFixtureModelMatrix;
+};
+
+type GeminiNewApiModelSelectorEvidenceResponse = {
+  success: boolean;
+  data: GeminiNewApiModelSelectorEvidence;
 };
 
 type LegalFixtureEvidenceBundleResponse = {
@@ -2946,6 +2999,25 @@ export async function getLegalFixtureModelMatrix(): Promise<LegalFixtureModelMat
     return payload.data;
   }
   return payload as LegalFixtureModelMatrix;
+}
+
+export async function getGeminiNewApiModelSelectorEvidence(): Promise<GeminiNewApiModelSelectorEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-model-selector',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<GeminiNewApiModelSelectorEvidenceResponse['data']>(resp);
+}
+
+export async function postGeminiNewApiModelSelectorEvidence(
+  payload: Record<string, unknown> = {},
+): Promise<GeminiNewApiModelSelectorEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-model-selector',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<GeminiNewApiModelSelectorEvidenceResponse['data']>(resp);
 }
 
 export async function getLegalFixtureEvidenceBundle(): Promise<LegalFixtureEvidenceBundle> {
