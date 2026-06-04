@@ -55,6 +55,7 @@ from services.model_request_policy import generation_request_policy_for_api
 from services.model_route_guardrails import ModelRouteGuardrailService
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
+from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
@@ -153,6 +154,7 @@ async def list_models():
     forecast = ModelCostForecastService().build_forecast()
     route_telemetry = model_route_telemetry_registry.snapshot()
     route_telemetry_repository = RouteTelemetryRepositoryService().build_repository()
+    route_telemetry_ops_summary = RouteTelemetryOpsSummaryService().build_summary(route_telemetry_repository)
     runtime_router = runtime_router_policy_for_api()
     model_configuration_audit = ModelConfigurationAuditService().audit()
     reasoning_policy = reasoning_policy_for_api()
@@ -192,6 +194,7 @@ async def list_models():
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
+        "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,
@@ -226,6 +229,7 @@ async def list_models():
         "request_policy": request_policy,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
+        "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,

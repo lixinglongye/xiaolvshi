@@ -77,6 +77,7 @@ from services.release_claim_compliance import ReleaseClaimComplianceService
 from services.release_readiness import ReleaseReadinessService
 from services.route_telemetry_persistence_plan import RouteTelemetryPersistencePlanService
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
+from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.admin_audit_policy import AdminAuditPolicyService
@@ -919,6 +920,15 @@ async def append_route_telemetry_repository_events(events: list[dict[str, Any]])
     return {
         "success": True,
         "data": RouteTelemetryRepositoryService().append_events(events),
+    }
+
+
+@router.get("/route-telemetry-ops-summary")
+async def get_route_telemetry_ops_summary():
+    """Return cheap-first operations summary from persisted route telemetry."""
+    return {
+        "success": True,
+        "data": RouteTelemetryOpsSummaryService().build_summary(),
     }
 
 

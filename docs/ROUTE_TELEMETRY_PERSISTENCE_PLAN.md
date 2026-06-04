@@ -75,6 +75,14 @@ The AIHub model-ops payload also includes `route_telemetry_repository`, and the
 ModelOps page renders the persisted request count, daily bucket count, rejected
 latest event count, storage mode, and daily aggregate table.
 
+`RouteTelemetryOpsSummaryService` consumes the repository daily buckets and
+totals to expose release-review operations checks. It does not read raw event
+payloads and uses the same privacy boundary as the repository.
+
+```http
+GET /api/v1/maintenance/route-telemetry-ops-summary
+```
+
 ## Pre-Persistence Checks
 
 Before writing route telemetry to a durable sink:
@@ -98,6 +106,8 @@ Run:
 cd D:\小律师\app\backend
 python -m pytest tests/test_route_telemetry_persistence_plan.py -q
 python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q
+python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
 python -m compileall services/route_telemetry_persistence_plan.py
 python -m compileall services/route_telemetry_repository.py
+python -m compileall services/route_telemetry_ops_summary.py
 ```

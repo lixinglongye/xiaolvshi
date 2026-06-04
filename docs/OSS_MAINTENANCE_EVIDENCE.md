@@ -22,6 +22,13 @@ The response includes:
 
 The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets and `/api/v1/maintenance/product-feature-gaps` as the incomplete product capability register.
 
+`docs/ROUTE_TELEMETRY_OPS_SUMMARY.md` documents the implemented
+`GET /api/v1/maintenance/route-telemetry-ops-summary` endpoint. It summarizes
+sanitized persisted route telemetry aggregates for failure, premium-model,
+over-budget, operator-review, unknown-model, and downgrade review, while
+excluding prompts, legal text, credentials, raw payloads, emails, and raw model
+outputs.
+
 `docs/CONTINUOUS_SESSION_EVIDENCE.md` documents the backend validator and
 reviewer contract for continuous 24-hour session validation. Support forms
 should distinguish the already reviewable 100+ update evidence from the

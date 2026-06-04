@@ -36,6 +36,9 @@ POST /api/v1/maintenance/release-readiness
   "model-request-cost-bounds": "pass",
   "model-cache-policy": "pass",
   "model-route-telemetry": "pass",
+  "route-telemetry-persistence-plan": "pass",
+  "route-telemetry-repository": "pass",
+  "route-telemetry-ops-summary": "pass",
   "model-route-guardrails": "pass",
   "model-task-inference": "pass",
   "model-callsite-audit": "pass",
@@ -88,6 +91,8 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Model request cost bounds coverage.
 - Model cache policy coverage.
 - Model route telemetry coverage.
+- Privacy-safe route telemetry repository coverage.
+- Route telemetry operations summary coverage.
 - Model route guardrail coverage.
 - Model task inference coverage.
 - Model callsite task audit coverage.
@@ -111,7 +116,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases. The route telemetry repository and operations summary are required because they provide the reviewable runtime evidence needed before model-routing release claims.
 
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app

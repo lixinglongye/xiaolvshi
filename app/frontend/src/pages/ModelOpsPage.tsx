@@ -167,6 +167,7 @@ function Inner() {
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeTelemetryRepositoryRows = data?.route_telemetry_repository?.daily_buckets ?? [];
+  const routeTelemetryOpsRows = data?.route_telemetry_ops_summary?.daily_rows ?? [];
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
@@ -1905,6 +1906,103 @@ function Inner() {
                         </TableCell>
                         <TableCell className="font-mono text-xs text-stone-700">
                           {formatUsd(row.estimated_cost_usd_sum)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.route_telemetry_ops_summary && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry ops summary</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_telemetry_ops_summary.summary.request_count} persisted requests /{' '}
+                  {Math.round(data.route_telemetry_ops_summary.summary.failure_rate * 100)}% failure /{' '}
+                  {Math.round(data.route_telemetry_ops_summary.summary.premium_request_ratio * 100)}% premium
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.route_telemetry_ops_summary.status)}>
+                {data.route_telemetry_ops_summary.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_ops_summary.summary.downgrade_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first downgrades</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {Math.round(data.route_telemetry_ops_summary.summary.over_budget_ratio * 100)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">over-budget pressure</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_ops_summary.summary.unknown_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown models</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(data.route_telemetry_ops_summary.summary.estimated_cost_usd_sum)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">persisted cost sum</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Next action</div>
+                  <div>{data.route_telemetry_ops_summary.recommended_actions[0]}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Privacy boundary</div>
+                  <div>
+                    raw payload storage {data.route_telemetry_ops_summary.summary.raw_payload_storage_allowed ? 'on' : 'off'} /{' '}
+                    source {data.route_telemetry_ops_summary.privacy_boundary.source}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead>Failure</TableHead>
+                    <TableHead>Downgrade</TableHead>
+                    <TableHead>Over budget</TableHead>
+                    <TableHead>Premium</TableHead>
+                    <TableHead>Models</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryOpsRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                        No persisted route telemetry events yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryOpsRows.map((row) => (
+                      <TableRow key={`route-ops-${row.day}`}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">{row.day}</TableCell>
+                        <TableCell>{formatNumber(row.request_count)}</TableCell>
+                        <TableCell>{Math.round(row.failure_rate * 100)}%</TableCell>
+                        <TableCell>{Math.round(row.downgrade_ratio * 100)}%</TableCell>
+                        <TableCell>{Math.round(row.over_budget_ratio * 100)}%</TableCell>
+                        <TableCell>{Math.round(row.premium_request_ratio * 100)}%</TableCell>
+                        <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                          {Object.entries(row.models).map(([model, count]) => `${model}:${count}`).join(', ')}
                         </TableCell>
                       </TableRow>
                     ))

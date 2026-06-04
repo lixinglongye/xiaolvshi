@@ -754,6 +754,69 @@ export type ModelRouteTelemetryRepository = {
   validation_commands: string[];
 };
 
+export type ModelRouteTelemetryOpsSummary = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  thresholds: Record<string, number>;
+  summary: {
+    stored_event_count: number;
+    daily_bucket_count: number;
+    request_count: number;
+    success_count: number;
+    failure_count: number;
+    downgrade_count: number;
+    over_budget_count: number;
+    operator_review_count: number;
+    premium_request_count: number;
+    unknown_model_count: number;
+    estimated_cost_usd_sum: number;
+    failure_rate: number;
+    downgrade_ratio: number;
+    over_budget_ratio: number;
+    operator_review_ratio: number;
+    premium_request_ratio: number;
+    empty_repository: boolean;
+    repository_status: string;
+    raw_payload_storage_allowed: boolean;
+    storage_mode: string;
+  };
+  daily_rows: Array<{
+    day: string;
+    request_count: number;
+    success_count: number;
+    failure_count: number;
+    downgrade_count: number;
+    over_budget_count: number;
+    operator_review_count: number;
+    premium_request_count: number;
+    estimated_cost_usd_sum: number;
+    models: Record<string, number>;
+    failure_rate: number;
+    downgrade_ratio: number;
+    over_budget_ratio: number;
+    operator_review_ratio: number;
+    premium_request_ratio: number;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    value: number;
+    ratio?: number;
+    warn_threshold?: number;
+    fail_threshold?: number;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  release_guardrails: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelRouteGuardrailCheck = {
   id: string;
   status: string;
@@ -1055,6 +1118,7 @@ export type ModelOpsResponse = {
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
   route_telemetry_repository?: ModelRouteTelemetryRepository;
+  route_telemetry_ops_summary?: ModelRouteTelemetryOpsSummary;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;

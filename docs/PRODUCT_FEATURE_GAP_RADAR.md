@@ -22,9 +22,12 @@ lifecycle policy, legal source ingestion metadata, legal source durable index
 planning, legal source index repository persistence, legal RAG index binding and
 routes, Gemini/NewAPI cheap-first policy metadata, default model recommendation
 snapshots, price refresh monitoring, cost regression snapshots, and route
-telemetry persistence planning. The latest UI evidence adds runtime router
-discovery smoke, the case workbench runtime state/event panel, the metadata-only
-legal RAG research panel, and the global billing usage badge.
+telemetry persistence planning. Model-cost evidence now also includes a
+privacy-safe route telemetry repository and operations summary for persisted
+route failure, premium-model, over-budget, operator-review, unknown-model, and
+downgrade review. The latest UI evidence adds runtime router discovery smoke,
+the case workbench runtime state/event panel, the metadata-only legal RAG
+research panel, and the global billing usage badge.
 The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
 and a best-effort document-generation quota consumption attempt. The newest
@@ -62,6 +65,12 @@ premium exceptions, unknown Gemini-like catalog review, and high-frequency
 explicit premium blocking or warning. It remains metadata-only selector
 regression evidence and does not prove live NewAPI execution or 24-hour
 completion.
+`docs/ROUTE_TELEMETRY_OPS_SUMMARY.md` scopes the implemented
+`GET /api/v1/maintenance/route-telemetry-ops-summary` endpoint as a
+repository-backed operations review over sanitized daily aggregates. It is
+release evidence for cheap-first drift and route health checks, but it must not
+be described as storing prompts, legal text, raw payloads, raw model outputs,
+credentials, emails, or production health proof when no route events exist.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding

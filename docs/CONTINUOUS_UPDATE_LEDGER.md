@@ -42,6 +42,10 @@ legal-AI research, professional AI governance/adoption signals, existing user
 needs, product feature gaps, cheap-first validation commands, and release gates
 without storing survey free text, raw benchmark samples, legal text, model
 outputs, or secrets.
+The latest model-ops batch adds a route telemetry operations summary that turns
+sanitized persisted route aggregates into release-review checks for failures,
+premium-model drift, over-budget pressure, operator-review load, unknown
+models, and cheap-first downgrade evidence.
 This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy
