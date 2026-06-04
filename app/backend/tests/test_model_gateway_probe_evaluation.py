@@ -128,6 +128,53 @@ def test_gateway_probe_evaluation_blocks_raw_image_or_prompt_payload_fields():
     assert "generated.png" not in str(result)
 
 
+def test_gateway_probe_evaluation_blocks_secret_like_values_without_echoing_them():
+    secret_value = "s" + "k-" + ("A" * 24)
+    bearer_value = "Bearer " + ("token_" * 4)
+    email_value = "ops" + "@" + "example.test"
+    data_uri_value = "data:image/png;" + "base64," + ("A" * 16)
+    result = ModelGatewayProbeEvaluationService().evaluate(
+        {
+            "models_response": {
+                "data": [
+                    {"id": "gemini-2.5-flash-lite", "owner": email_value},
+                    {"id": "gemini-2.5-flash-image"},
+                ]
+            },
+            "chat_probe_results": {
+                "gemini-2.5-flash-lite": {
+                    "status": "pass",
+                    "http_status": 200,
+                    "json_ok": True,
+                    "trace_id": secret_value,
+                    "debug_value": bearer_value,
+                }
+            },
+            "image_probe_results": {
+                "gemini-2.5-flash-image": {
+                    "status": "pass",
+                    "http_status": 200,
+                    "image_count": 1,
+                    "thumbnail": data_uri_value,
+                }
+            },
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert "sanitized-payload-fields" in result["blocking_check_ids"]
+    assert result["summary"]["forbidden_payload_field_count"] == 4
+    reason = next(check["reason"] for check in result["checks"] if check["id"] == "sanitized-payload-fields")
+    assert "#api_key_like" in reason
+    assert "#bearer_token" in reason
+    assert "#email_like" in reason
+    assert "#data_uri_like" in reason
+    assert secret_value not in str(result)
+    assert bearer_value not in str(result)
+    assert email_value not in str(result)
+    assert data_uri_value not in str(result)
+
+
 def test_gateway_probe_evaluation_route_returns_template_and_evaluation():
     import pytest
 

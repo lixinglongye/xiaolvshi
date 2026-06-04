@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from services.model_budget import COST_TIER_RANK
@@ -30,6 +31,13 @@ FORBIDDEN_PAYLOAD_KEYS = {
     "b64_json",
     "base64",
 }
+FORBIDDEN_VALUE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("api_key_like", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b")),
+    ("bearer_token", re.compile(r"\bbearer\s+[A-Za-z0-9._-]{10,}", re.IGNORECASE)),
+    ("email_like", re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)),
+    ("url_like", re.compile(r"https?://", re.IGNORECASE)),
+    ("data_uri_like", re.compile(r"\bdata:image/|base64,", re.IGNORECASE)),
+)
 
 
 class ModelGatewayProbeEvaluationService:
@@ -150,7 +158,7 @@ class ModelGatewayProbeEvaluationService:
             "recommended_actions": self._recommended_actions(blocking, warnings, recommended_env),
             "privacy_note": (
                 "Probe evaluation accepts sanitized model IDs, HTTP status, latency, boolean JSON checks, and image counts only. "
-                "Do not submit API keys, Authorization headers, prompts, image URLs, base64 data, user documents, emails, or raw model outputs."
+                "Do not submit API keys, bearer tokens, Authorization headers, prompts, image URLs, base64 data, user documents, emails, or raw model outputs."
             ),
         }
 
@@ -527,14 +535,14 @@ class ModelGatewayProbeEvaluationService:
             actions.append("Resolve warnings before unattended batch runs; explicit experiments can remain manually gated.")
         if not actions:
             actions.append("Gateway probe results support the current cheap-first defaults.")
-        actions.append("Never commit raw gateway responses that include Authorization headers, prompts, image URLs, base64 data, or model outputs.")
+        actions.append("Never commit raw gateway responses that include API keys, bearer tokens, Authorization headers, prompts, image URLs, base64 data, emails, or model outputs.")
         return actions[:6]
 
     def _forbidden_payload_check(self, forbidden_payload_paths: list[str]) -> dict[str, Any]:
         return {
             "id": "sanitized-payload-fields",
             "status": "fail" if forbidden_payload_paths else "pass",
-            "reason": "Payload contains forbidden raw or secret-bearing fields: " + ", ".join(forbidden_payload_paths[:8]) + "."
+            "reason": "Payload contains forbidden raw or secret-bearing fields/values: " + ", ".join(forbidden_payload_paths[:8]) + "."
             if forbidden_payload_paths
             else "Payload contains only allowed sanitized probe metadata fields.",
         }
@@ -556,7 +564,20 @@ class ModelGatewayProbeEvaluationService:
                 paths.extend(self._forbidden_payload_paths(child, f"{path}[{index}]"))
                 if len(paths) >= 12:
                     return paths[:12]
+        elif isinstance(value, str):
+            risk = self._forbidden_value_risk(value)
+            if risk:
+                paths.append(f"{path or 'value'}#{risk}")
         return paths[:12]
+
+    def _forbidden_value_risk(self, value: str) -> str | None:
+        if not value:
+            return None
+        sample = value[:4096]
+        for risk, pattern in FORBIDDEN_VALUE_PATTERNS:
+            if pattern.search(sample):
+                return risk
+        return None
 
     def _safe_path_key(self, key: str) -> str:
         if key.lower().startswith("sk-") or len(key) > 80:

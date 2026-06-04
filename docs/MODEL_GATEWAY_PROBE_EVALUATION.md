@@ -39,7 +39,7 @@ POST /api/v1/aihub/models/gateway-probe-evaluation
 ```
 
 The evaluator also accepts `model_ids` as a plain array and chat or image probe rows as arrays. It only needs model IDs, HTTP status, JSON success, image counts, and latency.
-It fails closed when submitted payloads include raw or secret-bearing fields such as `Authorization`, `api_key`, `prompt`, `messages`, `image_url`, `b64_json`, `raw_response`, or model output text.
+It fails closed when submitted payloads include raw or secret-bearing fields such as `Authorization`, `api_key`, `prompt`, `messages`, `image_url`, `b64_json`, `raw_response`, or model output text. It also scans string values for key-like tokens, bearer tokens, email addresses, URLs, and data-URI/base64 image payloads. The response reports only sanitized paths and risk labels, not the matched values.
 
 ## What It Reports
 
@@ -51,6 +51,7 @@ It fails closed when submitted payloads include raw or secret-bearing fields suc
 - `.env` recommendations for cheap, fast, OCR, classification, review, PDF, and image roles,
 - blockers when no known stable low-cost Gemini text model is available,
 - blockers for forbidden raw/secret payload fields,
+- blockers for forbidden raw/secret payload values without echoing the value,
 - warnings for failed probes, missing chat or image probes, and unknown Gemini model names.
 
 ## Workflow
@@ -59,7 +60,7 @@ It fails closed when submitted payloads include raw or secret-bearing fields suc
 2. Run `GET {{APP_AI_BASE_URL}}/models` manually.
 3. Run a tiny chat probe for the cheapest candidate.
 4. After text probes pass, optionally run `image-generation-smoke` for the configured image model with `n=1`.
-5. Remove Authorization headers, prompts, documents, image URLs, base64 payloads, and raw model output.
+5. Remove Authorization headers, bearer tokens, API keys, prompts, documents, image URLs, base64 payloads, emails, and raw model output.
 6. Submit only sanitized model IDs, probe status, HTTP status, image count, JSON boolean, and latency in `/model-ops` or to `/gateway-probe-evaluation`.
 7. Review `.env` recommendations before changing defaults.
 
@@ -71,7 +72,7 @@ python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_g
 
 ## Safety
 
-Do not submit or commit API keys, Authorization headers, user prompts, client documents, emails, image URLs, base64 data, or raw model outputs. The evaluator is deterministic and does not call the gateway.
+Do not submit or commit API keys, bearer tokens, Authorization headers, user prompts, client documents, emails, image URLs, base64 data, or raw model outputs. The evaluator is deterministic and does not call the gateway.
 
 ## Related Files
 

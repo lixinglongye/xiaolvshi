@@ -171,6 +171,21 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="gateway-probe-secret-value-guard",
+                title="Gateway probe secret value guard",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact="Blocks key-like tokens, bearer tokens, emails, URLs, and data-URI/base64 image values in sanitized gateway probe evaluation without echoing the matched values.",
+                evidence_paths=(
+                    "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/tests/test_model_gateway_probe_evaluation.py",
+                    "docs/MODEL_GATEWAY_PROBE_EVALUATION.md",
+                ),
+                release_gate_links=("model-gateway-probe-evaluation", "model-gateway-health-plan"),
+                user_need_ids=("safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="model-gateway-health-plan",
                 title="Gateway health planning before live requests",
                 category="model_ops",
