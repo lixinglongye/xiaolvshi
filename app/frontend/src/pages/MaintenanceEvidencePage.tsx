@@ -2421,8 +2421,8 @@ function Inner() {
                                 '-'
                               ) : (
                                 <div className="space-y-1">
-                                  {entry.evidence_paths.slice(0, 2).map((path) => (
-                                    <div key={path} className="break-all font-mono text-[11px]">
+                                  {entry.evidence_paths.slice(0, 2).map((path, index) => (
+                                    <div key={`${entry.id}-${path}-${index}`} className="break-all font-mono text-[11px]">
                                       {path}
                                     </div>
                                   ))}
@@ -5318,8 +5318,8 @@ function Inner() {
                         <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">{signal.cadence}</TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            {signal.evidence_paths.map((path) => (
-                              <div key={path} className="break-all font-mono text-[11px] text-stone-600">
+                            {signal.evidence_paths.map((path, index) => (
+                              <div key={`${signal.id}-${path}-${index}`} className="break-all font-mono text-[11px] text-stone-600">
                                 {path}
                               </div>
                             ))}

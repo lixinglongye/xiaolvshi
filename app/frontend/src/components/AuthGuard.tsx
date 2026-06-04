@@ -45,7 +45,8 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
                 variant="outline"
                 className="w-full mt-3"
                 onClick={() => {
-                  window.location.href = '/api/v1/auth/dev-login?role=admin';
+                  const frontendOrigin = encodeURIComponent(window.location.origin);
+                  window.location.href = `/api/v1/auth/dev-login?role=admin&frontend_origin=${frontendOrigin}`;
                 }}
               >
                 {lang === 'zh' ? '本地测试登录（管理员）' : 'Local test login (admin)'}

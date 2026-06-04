@@ -1,7 +1,7 @@
 import logging
 import os
 from typing import Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import httpx
 from core.auth import (
@@ -81,6 +81,36 @@ def is_local_dev_request(request: Request) -> bool:
     return os.getenv("ENABLE_DEV_LOGIN", "").lower() in {"true", "1", "yes"}
 
 
+def _local_frontend_origin(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    parsed = urlparse(value)
+    hostname = (parsed.hostname or "").lower()
+    if parsed.scheme not in {"http", "https"}:
+        return None
+    if hostname not in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}:
+        return None
+    if not parsed.netloc:
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def get_dev_login_frontend_url(request: Request, frontend_origin: Optional[str] = None) -> str:
+    """Resolve a safe local frontend origin for dev-login redirects."""
+    referer = request.headers.get("referer")
+    referer_origin = None
+    if referer:
+        parsed_referer = urlparse(referer)
+        if parsed_referer.scheme and parsed_referer.netloc:
+            referer_origin = f"{parsed_referer.scheme}://{parsed_referer.netloc}"
+
+    for candidate in (frontend_origin, request.headers.get("origin"), referer_origin):
+        safe_origin = _local_frontend_origin(candidate)
+        if safe_origin:
+            return safe_origin
+    return settings.frontend_url.rstrip("/")
+
+
 @router.get("/login")
 async def login(request: Request, db: AsyncSession = Depends(get_db)):
     """Start OIDC login flow with PKCE."""
@@ -111,6 +141,7 @@ async def dev_login(
     request: Request,
     role: str = Query("admin", pattern="^(admin|user)$"),
     redirect: bool = Query(True),
+    frontend_origin: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Issue a local development token without OIDC.
@@ -156,7 +187,8 @@ async def dev_login(
             "token_type": "Bearer",
         }
     )
-    return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?{fragment}", status_code=status.HTTP_302_FOUND)
+    frontend_url = get_dev_login_frontend_url(request, frontend_origin=frontend_origin)
+    return RedirectResponse(url=f"{frontend_url}/auth/callback?{fragment}", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/callback")

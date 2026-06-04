@@ -38,6 +38,7 @@ from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
@@ -121,6 +122,12 @@ class PrivacyRetentionRulesRequest(BaseModel):
 
 
 class ReleaseClaimComplianceRequest(BaseModel):
+    claims: list[Any] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class LegalDocumentCoverageClaimPolicyRequest(BaseModel):
     claims: list[Any] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="ignore")
@@ -1042,6 +1049,15 @@ async def get_legal_document_benchmark_coverage():
     return {
         "success": True,
         "data": LegalDocumentBenchmarkCoverageService().build_matrix(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-coverage/claims")
+async def evaluate_legal_document_coverage_claims(payload: LegalDocumentCoverageClaimPolicyRequest):
+    """Check legal document coverage claims without echoing raw claim text."""
+    return {
+        "success": True,
+        "data": LegalDocumentCoverageClaimPolicyService().evaluate(payload.claims),
     }
 
 
