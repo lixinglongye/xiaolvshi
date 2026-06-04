@@ -159,6 +159,8 @@ function Inner() {
   const probeModelRows = probeEvaluation?.model_rows ?? [];
   const activeCheapFirstCalibration = cheapFirstCalibration ?? data?.cheap_first_calibration ?? null;
   const cheapFirstRows = activeCheapFirstCalibration?.calibration_rows ?? [];
+  const priceRefreshChecks = data?.price_refresh_monitor?.checks ?? [];
+  const priceRefreshSignals = data?.price_refresh_monitor?.drift_signals ?? [];
   const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
@@ -1033,6 +1035,127 @@ function Inner() {
                 </div>
               </>
             )}
+          </section>
+        )}
+
+        {data?.price_refresh_monitor && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Price refresh monitor</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.price_refresh_monitor.summary.refresh_needed_count} refresh signals /{' '}
+                  {data.price_refresh_monitor.summary.missing_price_metadata_count} missing prices /{' '}
+                  {data.price_refresh_monitor.summary.observed_model_count} observed models
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.price_refresh_monitor.status)}>
+                {data.price_refresh_monitor.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.price_refresh_monitor.summary.blocking_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.price_refresh_monitor.summary.warning_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.price_refresh_monitor.summary.drift_signal_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">drift signals</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="break-words text-lg font-black text-stone-950">
+                  {data.price_refresh_monitor.summary.high_frequency_tasks.join(', ')}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first tasks</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Summary</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {priceRefreshChecks.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell className="font-mono text-xs font-semibold text-stone-950">{check.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {Object.entries(check.summary)
+                          .map(([key, value]) => `${key}: ${String(value)}`)
+                          .join(', ')}
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        {check.recommended_action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Signal</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {priceRefreshSignals.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-8 text-center text-stone-500">
+                        No Gemini/NewAPI price refresh drift found in local metadata.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    priceRefreshSignals.slice(0, 12).map((signal) => (
+                      <TableRow key={signal.id}>
+                        <TableCell>
+                          <div className="font-mono text-xs font-semibold text-stone-950">{signal.signal_type}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{signal.id}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(signal.severity)}>
+                            {signal.severity}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[260px] font-mono text-xs text-stone-700">
+                          {signal.model ?? '-'}
+                        </TableCell>
+                        <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                          {signal.reason}
+                        </TableCell>
+                        <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                          {signal.recommended_action}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </section>
         )}
 

@@ -100,6 +100,26 @@ Observed model ids are redacted when they look like credentials or contact data.
 
 ## Low-Resource Validation
 
+## Model Ops Integration
+
+The monitor is now part of the main `GET /api/v1/aihub/models` payload as
+`price_refresh_monitor`. `ModelOpsReadinessService` treats it as a required
+cost component, so a failing high-frequency default or an unreviewed pricing
+drift can block model-ops release readiness before the UI promotes a new
+Gemini/NewAPI default.
+
+The frontend `/model-ops` page shows:
+
+- monitor status, blocking count, warning count, drift signal count, and the
+  high-frequency cheap-first tasks
+- each monitor check summary and recommended action
+- observed drift signals such as unknown Gemini-like ids, preview or premium
+  model usage, and missing price metadata
+
+This integration remains metadata-only. It does not call the gateway and does
+not expose credentials, prompts, legal text, client identifiers, or raw model
+outputs.
+
 Run the targeted tests:
 
 ```powershell

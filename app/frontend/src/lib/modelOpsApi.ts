@@ -402,6 +402,44 @@ export type ModelCheapFirstCalibration = {
   validation_commands: string[];
 };
 
+export type ModelPriceRefreshMonitorCheck = {
+  id: string;
+  status: string;
+  summary: Record<string, number | string | boolean | null>;
+  rows: Array<Record<string, unknown>>;
+  recommended_action: string;
+};
+
+export type ModelPriceRefreshMonitorSignal = {
+  id: string;
+  severity: string;
+  signal_type: string;
+  model?: string | null;
+  reason: string;
+  requires_price_refresh: boolean;
+  recommended_action: string;
+};
+
+export type ModelPriceRefreshMonitor = {
+  status: string;
+  summary: {
+    check_count: number;
+    blocking_count: number;
+    warning_count: number;
+    drift_signal_count: number;
+    refresh_needed_count: number;
+    missing_price_metadata_count: number;
+    high_frequency_tasks: string[];
+    forecast_profile_count: number;
+    observed_model_count: number;
+  };
+  checks: ModelPriceRefreshMonitorCheck[];
+  drift_signals: ModelPriceRefreshMonitorSignal[];
+  recommended_actions: string[];
+  privacy_note: string[];
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -1235,50 +1273,110 @@ export type ModelOpsResponse = {
   cost_forecast?: ModelCostForecast;
   cost_guardrails?: ModelCostGuardrails;
   cheap_first_calibration?: ModelCheapFirstCalibration;
+  price_refresh_monitor?: ModelPriceRefreshMonitor;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
 
+type ApiRequest = {
+  url: string;
+  method: 'GET' | 'POST';
+  data?: Record<string, unknown>;
+};
+
+function unwrapApiPayload(value: unknown): unknown {
+  if (value && typeof value === 'object' && 'data' in value) {
+    const data = (value as { data?: unknown }).data;
+    if (data && typeof data === 'object' && 'data' in data) {
+      return (data as { data?: unknown }).data;
+    }
+    return data ?? value;
+  }
+  return value;
+}
+
+function hasModelOpsPayload(value: unknown): boolean {
+  return Boolean(
+    value
+      && typeof value === 'object'
+      && (
+        Array.isArray((value as { models?: unknown }).models)
+        || Boolean((value as { status?: unknown }).status)
+        || Boolean((value as { payload_shape?: unknown }).payload_shape)
+      ),
+  );
+}
+
+async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
+  let sdkError: unknown = null;
+  try {
+    const response = await client.apiCall.invoke({
+      url: request.url,
+      method: request.method,
+      data: request.data,
+    });
+    const payload = unwrapApiPayload(response);
+    if (hasModelOpsPayload(payload)) {
+      return payload as T;
+    }
+  } catch (err) {
+    sdkError = err;
+  }
+
+  if (typeof globalThis.fetch === 'function') {
+    const response = await globalThis.fetch(request.url, {
+      method: request.method,
+      credentials: 'include',
+      headers: request.data ? { 'Content-Type': 'application/json' } : undefined,
+      body: request.data ? JSON.stringify(request.data) : undefined,
+    });
+    if (!response.ok) {
+      throw new Error(`Model ops API request failed with HTTP ${response.status}.`);
+    }
+    return unwrapApiPayload(await response.json()) as T;
+  }
+
+  if (sdkError) {
+    throw sdkError;
+  }
+  throw new Error('Model ops API response was empty.');
+}
+
 export async function getModelOps(): Promise<ModelOpsResponse> {
-  const resp = await client.apiCall.invoke({
+  return invokeModelOpsApi<ModelOpsResponse>({
     url: '/api/v1/aihub/models',
     method: 'GET',
   });
-  return (resp?.data ?? resp) as ModelOpsResponse;
 }
 
 export async function getModelGatewayProbeTemplate(): Promise<ModelGatewayProbeTemplate> {
-  const resp = await client.apiCall.invoke({
+  return invokeModelOpsApi<ModelGatewayProbeTemplate>({
     url: '/api/v1/aihub/models/gateway-probe-template',
     method: 'GET',
   });
-  return (resp?.data?.data ?? resp?.data ?? resp) as ModelGatewayProbeTemplate;
 }
 
 export async function evaluateModelGatewayProbe(payload: Record<string, unknown>): Promise<ModelGatewayProbeEvaluation> {
-  const resp = await client.apiCall.invoke({
+  return invokeModelOpsApi<ModelGatewayProbeEvaluation>({
     url: '/api/v1/aihub/models/gateway-probe-evaluation',
     method: 'POST',
     data: payload,
   });
-  return (resp?.data?.data ?? resp?.data ?? resp) as ModelGatewayProbeEvaluation;
 }
 
 export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibration> {
-  const resp = await client.apiCall.invoke({
+  return invokeModelOpsApi<ModelCheapFirstCalibration>({
     url: '/api/v1/aihub/models/cheap-first-calibration',
     method: 'GET',
   });
-  return (resp?.data?.data ?? resp?.data ?? resp) as ModelCheapFirstCalibration;
 }
 
 export async function evaluateCheapFirstCalibration(
   payload: Record<string, unknown>,
 ): Promise<ModelCheapFirstCalibration> {
-  const resp = await client.apiCall.invoke({
+  return invokeModelOpsApi<ModelCheapFirstCalibration>({
     url: '/api/v1/aihub/models/cheap-first-calibration',
     method: 'POST',
     data: payload,
   });
-  return (resp?.data?.data ?? resp?.data ?? resp) as ModelCheapFirstCalibration;
 }

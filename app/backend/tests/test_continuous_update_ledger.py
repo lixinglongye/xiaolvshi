@@ -57,6 +57,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
 
     assert "cheap-first-result-archive" in completed_ids
     assert "gemini-price-refresh-monitor" in completed_ids
+    assert "model-price-refresh-monitor-readiness-ui" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
@@ -189,6 +190,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_ops_summary.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_triage_queue.py -q" in ledger["validation_commands"]

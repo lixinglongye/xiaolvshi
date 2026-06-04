@@ -6,6 +6,12 @@ Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence
 
 Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
 
+Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
+Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
+readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
+unpriced gateway models now surface as release-review evidence before they can
+be treated as cheap-first defaults.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

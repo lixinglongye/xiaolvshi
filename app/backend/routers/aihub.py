@@ -47,6 +47,7 @@ from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
+from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_request_cost_bounds import ModelRequestCostBoundsService
 from services.model_runtime_router import runtime_router_policy_for_api
@@ -187,6 +188,10 @@ async def list_models():
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
     cheap_first_calibration = GeminiNewapiCheapFirstCalibrationService().build_calibration()
+    price_refresh_monitor = ModelPriceRefreshMonitorService().build_monitor(
+        observed_gateway_models,
+        forecast,
+    )
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -214,6 +219,7 @@ async def list_models():
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
+        "price_refresh_monitor": price_refresh_monitor,
     }
     return {
         "success": True,
@@ -251,6 +257,7 @@ async def list_models():
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
+        "price_refresh_monitor": price_refresh_monitor,
         "models": catalog_for_api(),
         "usage": usage,
     }

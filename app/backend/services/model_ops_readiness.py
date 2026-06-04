@@ -64,6 +64,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "cost",
         "cheap_first_calibration",
     ),
+    ReadinessComponent(
+        "price-refresh-monitor",
+        "Gemini/NewAPI price refresh monitor",
+        "cost",
+        "price_refresh_monitor",
+    ),
 )
 
 

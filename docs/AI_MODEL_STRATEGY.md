@@ -145,6 +145,19 @@ steps and optional `.env` suggestions. It never writes configuration and never
 calls NewAPI, Gemini, OpenAI, or another gateway; maintainers must apply changes
 manually and rerun the listed validation commands.
 
+## Price Refresh Monitor Integration
+
+`price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in
+`model_ops_readiness`. It checks high-frequency defaults, local cost forecast
+model references, observed gateway model ids, and preview/premium catalog
+watchlist entries before a maintainer treats a Gemini/NewAPI model as a default.
+
+The `/model-ops` page displays this monitor beside cheap-first calibration and
+lifecycle policy. Unknown Gemini-like gateway ids, premium or preview observed
+models, and missing price metadata stay visible as drift signals. The monitor is
+local metadata only: it does not call NewAPI/Gemini and does not return API
+keys, prompts, legal text, client data, or raw model output.
+
 ## Sources
 
 - Google Gemini OpenAI compatibility: https://ai.google.dev/gemini-api/docs/openai

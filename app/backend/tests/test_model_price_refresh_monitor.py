@@ -135,3 +135,29 @@ def test_price_refresh_monitor_route_reviews_observed_models():
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["status"] == "warn"
+
+
+def test_model_ops_route_includes_price_refresh_monitor_readiness_signal():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+
+    response = testclient.TestClient(app).get("/api/v1/aihub/models")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["price_refresh_monitor"]["status"] in {"pass", "warn", "fail"}
+    assert payload["price_refresh_monitor"]["summary"]["high_frequency_tasks"] == [
+        "fast",
+        "classification",
+        "ocr",
+    ]
+    assert any(
+        check["source_key"] == "price_refresh_monitor"
+        for check in payload["model_ops_readiness"]["checks"]
+    )

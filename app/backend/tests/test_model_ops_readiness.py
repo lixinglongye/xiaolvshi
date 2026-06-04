@@ -85,3 +85,6 @@ def test_model_ops_route_includes_readiness():
     assert payload["success"] is True
     assert payload["model_ops_readiness"]["status"] in {"pass", "warn", "fail"}
     assert payload["model_ops_readiness"]["checks"]
+    assert "price_refresh_monitor" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
