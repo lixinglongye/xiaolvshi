@@ -18,6 +18,13 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
+    ReadinessComponent(
+        "gateway-probe-evaluation",
+        "Gateway probe evaluation",
+        "manual_evidence",
+        "gateway_probe_evaluation",
+        required=False,
+    ),
     ReadinessComponent("lifecycle-policy", "Gemini lifecycle policy", "configuration", "lifecycle_policy"),
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),
@@ -80,7 +87,7 @@ class ModelOpsReadinessService:
         checks = [self._evaluate_component(component, signals.get(component.source_key)) for component in MODEL_OPS_COMPONENTS]
         status = self._status(checks)
         blocking = [check for check in checks if check["status"] == "fail" and check["required"]]
-        warnings = [check for check in checks if check["status"] == "warn"]
+        warnings = [check for check in checks if check["status"] == "warn" or (check["status"] == "fail" and not check["required"])]
         return {
             "status": status,
             "release_recommendation": self._release_recommendation(status),
@@ -123,7 +130,7 @@ class ModelOpsReadinessService:
 
     def _component_status(self, component: ReadinessComponent, data: dict[str, Any]) -> str:
         if not data:
-            return "fail"
+            return "fail" if component.required else "warn"
         if component.source_key == "budget_policy":
             return "pass" if _list(data.get("task_decisions")) else "fail"
         value = str(data.get("status") or "").strip().lower()
@@ -131,13 +138,17 @@ class ModelOpsReadinessService:
             return "pass"
         if value in {"warn", "warning", "manual_review"}:
             return "warn"
+        if value == "not_run" and not component.required:
+            return "warn"
         if value in {"fail", "failed", "blocked", "error"}:
             return "fail"
-        return "fail"
+        return "fail" if component.required else "warn"
 
     def _reason(self, component: ReadinessComponent, data: dict[str, Any], status: str) -> str:
         if not data:
-            return f"{component.label} is missing from the model operations payload."
+            if component.required:
+                return f"{component.label} is missing from the model operations payload."
+            return f"{component.label} is optional manual evidence and has not been supplied."
         blocking_ids = _list(data.get("blocking_check_ids"))
         warning_ids = _list(data.get("warning_check_ids"))
         summary = data.get("summary") if isinstance(data.get("summary"), dict) else {}
@@ -158,7 +169,7 @@ class ModelOpsReadinessService:
     def _status(self, checks: list[dict[str, Any]]) -> str:
         if any(check["status"] == "fail" and check["required"] for check in checks):
             return "fail"
-        if any(check["status"] == "warn" for check in checks):
+        if any(check["status"] == "warn" or (check["status"] == "fail" and not check["required"]) for check in checks):
             return "warn"
         return "pass"
 
@@ -175,7 +186,8 @@ class ModelOpsReadinessService:
             if check["status"] == "pass":
                 continue
             if check["status"] == "fail":
-                actions.append(f"Resolve blocking model-ops signal: {check['label']}.")
+                prefix = "Resolve blocking model-ops signal" if check["required"] else "Review optional model-ops signal"
+                actions.append(f"{prefix}: {check['label']}.")
             else:
                 actions.append(f"Review model-ops warning: {check['label']}.")
         if not actions:

@@ -68,6 +68,36 @@ def test_model_ops_readiness_fails_when_required_signal_is_missing():
     assert "runtime-router" in result["blocking_check_ids"]
 
 
+def test_model_ops_readiness_warns_when_optional_probe_evaluation_is_missing():
+    signals = _signals("pass")
+    signals.pop("gateway_probe_evaluation")
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gateway-probe-evaluation" in result["warning_check_ids"]
+    assert "gateway-probe-evaluation" not in result["blocking_check_ids"]
+    probe_check = next(check for check in result["checks"] if check["id"] == "gateway-probe-evaluation")
+    assert probe_check["required"] is False
+
+
+def test_model_ops_readiness_warns_on_failed_optional_probe_when_supplied():
+    signals = _signals("pass")
+    signals["gateway_probe_evaluation"] = {
+        "status": "fail",
+        "summary": {"warn_count": 0, "fail_count": 1},
+        "blocking_check_ids": ["sanitized-payload-fields"],
+        "warning_check_ids": [],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gateway-probe-evaluation" in result["warning_check_ids"]
+    assert "gateway-probe-evaluation" not in result["blocking_check_ids"]
+    assert any("Gateway probe evaluation" in action for action in result["recommended_actions"])
+
+
 def test_model_ops_route_includes_readiness():
     import pytest
 
@@ -88,3 +118,7 @@ def test_model_ops_route_includes_readiness():
     assert "price_refresh_monitor" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gateway_probe_evaluation" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["gateway_probe_evaluation"]["status"] == "not_run"

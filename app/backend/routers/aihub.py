@@ -184,6 +184,7 @@ async def list_models():
     ]
     default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
+    gateway_probe_evaluation = ModelGatewayProbeEvaluationService().evaluate()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
@@ -199,6 +200,7 @@ async def list_models():
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_health_plan": gateway_health_plan,
+        "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,
@@ -238,6 +240,7 @@ async def list_models():
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_health_plan": gateway_health_plan,
+        "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,

@@ -79,6 +79,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "image-gateway-health-plan" in completed_ids
     assert "image-gateway-probe-evaluation" in completed_ids
     assert "gateway-probe-secret-value-guard" in completed_ids
+    assert "gateway-probe-readiness-binding" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -156,6 +157,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "image-gateway-health-plan" not in queue_ids
     assert "image-gateway-probe-evaluation" not in queue_ids
     assert "gateway-probe-secret-value-guard" not in queue_ids
+    assert "gateway-probe-readiness-binding" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids

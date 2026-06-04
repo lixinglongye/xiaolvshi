@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default optimization, gateway compatibility, gateway health planning, Gemini lifecycle policy, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, and Gemini/NewAPI cheap-first calibration. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, and price refresh monitoring. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 
@@ -22,8 +22,8 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 25,
-      "pass_count": 25,
+      "component_count": 27,
+      "pass_count": 27,
       "warn_count": 0,
       "fail_count": 0,
       "blocking_count": 0,
@@ -43,6 +43,7 @@ The readiness service checks:
 - default optimization plan,
 - gateway compatibility,
 - gateway health plan,
+- gateway probe evaluation,
 - Gemini lifecycle policy,
 - budget policy,
 - capability matrix,
@@ -63,9 +64,10 @@ The readiness service checks:
 - escalation policy,
 - cost forecast,
 - cost guardrails,
-- Gemini/NewAPI cheap-first calibration.
+- Gemini/NewAPI cheap-first calibration,
+- Gemini/NewAPI price refresh monitor.
 
-Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready.
+Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs.
 
 ## Release Readiness
 
@@ -85,6 +87,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_default_optimization.py`
 - `app/backend/services/model_gateway_compatibility.py`
 - `app/backend/services/model_gateway_health_plan.py`
+- `app/backend/services/model_gateway_probe_evaluation.py`
 - `app/backend/services/model_lifecycle_policy.py`
 - `app/backend/services/model_request_cost_bounds.py`
 - `app/backend/services/model_cache_policy.py`
@@ -98,6 +101,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_default_optimization.py`
 - `app/backend/tests/test_model_gateway_compatibility.py`
 - `app/backend/tests/test_model_gateway_health_plan.py`
+- `app/backend/tests/test_model_gateway_probe_evaluation.py`
 - `app/backend/tests/test_model_lifecycle_policy.py`
 - `app/backend/tests/test_model_request_cost_bounds.py`
 - `app/backend/tests/test_model_cache_policy.py`

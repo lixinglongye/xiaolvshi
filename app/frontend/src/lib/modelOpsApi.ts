@@ -1268,6 +1268,7 @@ export type ModelOpsResponse = {
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
   gateway_health_plan?: ModelGatewayHealthPlan;
+  gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
   lifecycle_policy?: ModelLifecyclePolicy;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;

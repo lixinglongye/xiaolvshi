@@ -186,6 +186,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="gateway-probe-readiness-binding",
+                title="Gateway probe readiness binding",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact="Adds sanitized gateway probe evaluation as optional manual evidence in model-ops readiness, warning on missing or failed probe evidence without blocking unrelated required signals.",
+                evidence_paths=(
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "docs/MODEL_OPS_READINESS.md",
+                ),
+                release_gate_links=("model-ops-readiness", "model-gateway-probe-evaluation"),
+                user_need_ids=("safe-ai-ops", "low-cost-routing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="model-gateway-health-plan",
                 title="Gateway health planning before live requests",
                 category="model_ops",
