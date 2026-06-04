@@ -77,6 +77,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "image-auto-route-default" in completed_ids
     assert "image-price-refresh-monitor" in completed_ids
     assert "image-gateway-health-plan" in completed_ids
+    assert "image-gateway-probe-evaluation" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -152,6 +153,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "image-auto-route-default" not in queue_ids
     assert "image-price-refresh-monitor" not in queue_ids
     assert "image-gateway-health-plan" not in queue_ids
+    assert "image-gateway-probe-evaluation" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
@@ -195,6 +197,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_continuous_session_review_packet.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_git_history_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py "
+        "tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]

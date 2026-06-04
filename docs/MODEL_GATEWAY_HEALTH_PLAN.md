@@ -31,7 +31,7 @@ The plan returns three maintainer-run probes:
 These requests are examples only. The backend does not send them automatically.
 Run the image probe only after the model-list and cheap JSON probes pass, because it is billed per generated image rather than per tiny token budget.
 
-After manually running the probes, submit sanitized model IDs, HTTP status, JSON success, and latency to [MODEL_GATEWAY_PROBE_EVALUATION.md](MODEL_GATEWAY_PROBE_EVALUATION.md). Do not include Authorization headers, prompts, documents, or raw model output.
+After manually running the probes, submit sanitized model IDs, HTTP status, JSON success, image count, and latency to [MODEL_GATEWAY_PROBE_EVALUATION.md](MODEL_GATEWAY_PROBE_EVALUATION.md). Do not include Authorization headers, prompts, documents, image URLs, base64 data, or raw model output.
 
 ## Validation
 

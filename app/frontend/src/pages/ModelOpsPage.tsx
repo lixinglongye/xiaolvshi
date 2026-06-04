@@ -732,8 +732,8 @@ function Inner() {
               <h2 className="text-xl font-black text-stone-950">Gateway probe evaluation</h2>
               <div className="mt-1 text-sm text-stone-600">
                 {probeEvaluation
-                  ? `${probeEvaluation.summary.observed_model_count} observed / ${probeEvaluation.summary.probed_cheap_candidate_count} cheap probes passed`
-                  : 'sanitized model list and tiny chat probe review'}
+                  ? `${probeEvaluation.summary.observed_model_count} observed / ${probeEvaluation.summary.probed_cheap_candidate_count} cheap probes / ${probeEvaluation.summary.probed_image_candidate_count} image probes`
+                  : 'sanitized model list, tiny chat probe, and image smoke review'}
               </div>
             </div>
             <Badge variant="outline" className={statusClass(probeEvaluation?.status)}>
@@ -782,20 +782,26 @@ function Inner() {
                 onChange={(event) => setProbePayloadText(event.target.value)}
                 className="min-h-[260px] resize-y rounded-[8px] bg-white font-mono text-xs leading-5"
                 spellCheck={false}
-                placeholder='{"models_response":{"data":[{"id":"gemini-2.5-flash-lite"}]},"chat_probe_results":{"gemini-2.5-flash-lite":{"status":"pass","http_status":200,"json_ok":true,"latency_ms":1200}}}'
+                placeholder='{"models_response":{"data":[{"id":"gemini-2.5-flash-lite"},{"id":"gemini-2.5-flash-image"}]},"chat_probe_results":{"gemini-2.5-flash-lite":{"status":"pass","http_status":200,"json_ok":true,"latency_ms":1200}},"image_probe_results":{"gemini-2.5-flash-image":{"status":"pass","http_status":200,"image_count":1,"latency_ms":2400}}}'
               />
               <div className="mt-3 text-xs leading-5 text-stone-500">
-                {probeEvaluation?.privacy_note ?? 'The backend evaluates sanitized IDs, HTTP status, latency, and JSON booleans only.'}
+                {probeEvaluation?.privacy_note ?? 'The backend evaluates sanitized IDs, HTTP status, latency, JSON booleans, and image counts only.'}
               </div>
             </div>
 
             <div className="grid gap-3">
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-4">
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
                     {probeEvaluation?.summary.cheap_candidate_count ?? 0}
                   </div>
                   <div className="mt-1 text-sm text-stone-600">cheap candidates</div>
+                </div>
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">
+                    {probeEvaluation?.summary.probed_image_candidate_count ?? 0}
+                  </div>
+                  <div className="mt-1 text-sm text-stone-600">image probes</div>
                 </div>
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
@@ -805,9 +811,9 @@ function Inner() {
                 </div>
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
-                    {probeEvaluation?.summary.warning_check_count ?? 0}
+                    {probeEvaluation?.summary.forbidden_payload_field_count ?? 0}
                   </div>
-                  <div className="mt-1 text-sm text-stone-600">warnings</div>
+                  <div className="mt-1 text-sm text-stone-600">blocked fields</div>
                 </div>
               </div>
 
@@ -929,9 +935,22 @@ function Inner() {
                           {row.chat_probe_status}
                         </Badge>
                         <div className="mt-1 text-[11px] text-stone-500">HTTP {row.http_status ?? '-'}</div>
+                        {row.image_probe_status !== 'not_supplied' && (
+                          <div className="mt-2">
+                            <Badge variant="outline" className={statusClass(row.image_probe_status)}>
+                              image {row.image_probe_status}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {row.image_count ?? 0} img / HTTP {row.image_http_status ?? '-'}
+                            </div>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-600">
-                        {row.latency_ms == null ? '-' : `${formatNumber(row.latency_ms)}ms`}
+                        <div>{row.latency_ms == null ? '-' : `${formatNumber(row.latency_ms)}ms`}</div>
+                        {row.image_latency_ms != null && (
+                          <div className="mt-1 text-[11px] text-stone-500">image {formatNumber(row.image_latency_ms)}ms</div>
+                        )}
                       </TableCell>
                       <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>

@@ -284,7 +284,7 @@ async def gateway_probe_template():
 
 @router.post("/models/gateway-probe-evaluation")
 async def evaluate_gateway_probe(payload: dict[str, Any]):
-    """Evaluate sanitized gateway model-list and tiny chat probe results."""
+    """Evaluate sanitized gateway model-list, tiny chat, and image smoke probe results."""
     return {
         "success": True,
         "data": ModelGatewayProbeEvaluationService().evaluate(payload),
