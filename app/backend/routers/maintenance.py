@@ -18,6 +18,7 @@ from services.case_export_readiness import CaseExportReadinessService
 from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
+from services.continuous_session_evidence import ContinuousSessionEvidenceService
 from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
@@ -678,6 +679,24 @@ async def build_maintenance_heartbeat_evidence(events: list[dict[str, Any]]):
     return {
         "success": True,
         "data": MaintenanceHeartbeatEvidenceService().build_evidence(events),
+    }
+
+
+@router.get("/continuous-session-evidence")
+async def get_continuous_session_evidence_template():
+    """Return a stricter continuous-session evidence template for the 24-hour goal."""
+    return {
+        "success": True,
+        "data": ContinuousSessionEvidenceService().build_report(),
+    }
+
+
+@router.post("/continuous-session-evidence")
+async def build_continuous_session_evidence(payload: Any = Body(default=None)):
+    """Evaluate explicit session events without claiming 24-hour completion early."""
+    return {
+        "success": True,
+        "data": ContinuousSessionEvidenceService().build_report(payload),
     }
 
 

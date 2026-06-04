@@ -93,6 +93,7 @@ class ContinuousUpdateLedgerService:
             ],
             "validation_commands": [
                 "python -m pytest tests/test_continuous_update_ledger.py -q",
+                "python -m pytest tests/test_continuous_session_evidence.py -q",
                 "python -m pytest tests/test_runtime_router_discovery.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q",
             ],
@@ -797,6 +798,21 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("maintenance-heartbeat-evidence", "oss-maintenance-evidence"),
                 user_need_ids=("reviewer-visibility",),
+            ),
+            LedgerEntry(
+                id="continuous-session-evidence-validator",
+                title="Continuous session evidence validator",
+                category="maintenance",
+                size="large",
+                status="shipped",
+                impact="Validates explicit 24-hour maintenance-session metadata with max-gap, credential-scan, low-resource test, and 100+ update-count checks without inventing completion evidence.",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_evidence.py",
+                    "app/backend/tests/test_continuous_session_evidence.py",
+                    "docs/CONTINUOUS_SESSION_EVIDENCE.md",
+                ),
+                release_gate_links=("continuous-session-evidence", "continuous-update-ledger", "oss-maintenance-evidence"),
+                user_need_ids=("reviewer-visibility", "low-resource-testing"),
             ),
             LedgerEntry(
                 id="frontend-local-run-review-form",

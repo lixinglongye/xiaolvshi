@@ -540,6 +540,36 @@ class ProductFeatureGapRadarService:
                     "Persist admin audit decisions for sensitive actions.",
                 ),
             ),
+            ProductFeatureGap(
+                id="continuous-maintenance-evidence",
+                title="Continuous maintenance evidence",
+                module="maintenance",
+                current_state="The 100+ update ledger, heartbeat evidence export, and continuous session evidence validator exist, including max-gap, credential-scan, low-resource legal fixture, and 100+ update-count checks. The reviewer-facing product still lacks a single persisted timeline that joins commits, tests, pushes, low-resource benchmark events, release reviews, and support-claim readiness.",
+                target_capability="A reviewer-facing maintenance timeline that proves or blocks 24-hour claims with timestamped repository evidence.",
+                user_segments=("maintainer", "support_ops"),
+                impact=8,
+                urgency=9,
+                effort=5,
+                confidence=8,
+                dependencies=("feedback-loop", "model-cost-ops", "safety-compliance"),
+                evidence_paths=(
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/services/maintenance_heartbeat_evidence.py",
+                    "app/backend/services/continuous_session_evidence.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/tests/test_maintenance_heartbeat_evidence.py",
+                    "app/backend/tests/test_continuous_session_evidence.py",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md",
+                    "docs/CONTINUOUS_SESSION_EVIDENCE.md",
+                    "docs/PRODUCT_FEATURE_GAP_RADAR.md",
+                ),
+                next_actions=(
+                    "Persist reviewed session events without storing raw legal text or credentials.",
+                    "Wire the validator into the maintenance page as a combined 100+ update and 24-hour timeline.",
+                    "Attach low-resource legal fixture checks to the session evidence report.",
+                ),
+            ),
         )
 
     def _delivery_phases(self) -> tuple[DeliveryPhase, ...]:
@@ -569,6 +599,7 @@ class ProductFeatureGapRadarService:
                     "model-cost-ops",
                     "feedback-loop",
                     "safety-compliance",
+                    "continuous-maintenance-evidence",
                 ),
                 exit_criteria=(
                     "Legal knowledge retrieval has jurisdiction, freshness, and citation checks.",

@@ -821,6 +821,19 @@ class ReleaseReadinessService:
                 manual_note="This exports heartbeat evidence format only; it must not claim the 24-hour target is complete without reviewable events.",
             ),
             ReleaseCheck(
+                id="continuous-session-evidence",
+                title="Continuous session evidence validator",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_evidence.py",
+                    "app/backend/tests/test_continuous_session_evidence.py",
+                ),
+                validation_command="python -m pytest tests/test_continuous_session_evidence.py -q",
+                manual_note="This validates explicit 24-hour session metadata with max-gap, secret-scan, low-resource test, and 100+ update-count checks; it does not create proof by itself.",
+            ),
+            ReleaseCheck(
                 id="product-feature-gap-radar",
                 title="Product feature gap radar",
                 category="maintenance",

@@ -62,6 +62,16 @@ condition is still unsatisfied, so `completion_ready` remains `false`.
 
 Small legal fixture tests can count only when they produce repository-backed evidence such as a service, test, documentation update, endpoint, or reviewer-facing UI change. Local-only experiments, raw model outputs, account credentials, and client documents must not be committed.
 
+`docs/CONTINUOUS_SESSION_EVIDENCE.md` defines the reviewer-facing contract for
+the 24-hour session validator, and
+`POST /api/v1/maintenance/continuous-session-evidence` evaluates explicit
+session metadata. The ledger should continue to expose the 100+ update count
+separately from the continuous-time proof so a reviewer can see that update
+volume is satisfied while the time-window gate remains open. The validator
+joins timestamped commits, tests, pushes, review actions, credential scans, and
+low-resource legal fixture records without copying raw legal text or model
+output into repository evidence.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -83,10 +93,18 @@ This keeps:
 - Public benchmark sources as metadata only until license and attribution review pass.
 - Model calls manual and serial.
 
+For 24-hour evidence, each small legal-document run should add only a compact
+metadata record: fixture IDs, route labels, coverage score, command label,
+timestamp, and repository evidence paths. This lets the same low-resource tests
+support both product quality checks and the continuous maintenance timeline.
+
 ## Related Files
 
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/continuous_session_evidence.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_continuous_session_evidence.py`
+- `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `app/backend/main.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`

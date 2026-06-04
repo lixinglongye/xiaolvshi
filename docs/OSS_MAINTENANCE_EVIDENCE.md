@@ -22,6 +22,11 @@ The response includes:
 
 The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets and `/api/v1/maintenance/product-feature-gaps` as the incomplete product capability register.
 
+`docs/CONTINUOUS_SESSION_EVIDENCE.md` documents the backend validator and
+reviewer contract for continuous 24-hour session validation. Support forms
+should distinguish the already reviewable 100+ update evidence from the
+still-unproven 24-hour continuous window.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -59,7 +64,7 @@ still stay out of support applications until matching merged evidence exists.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -71,6 +76,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/backend/models/case_workbench_state_events.py`
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/continuous_session_evidence.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/routers/billing_usage.py`
 - `app/backend/services/billing_quota_migration_plan.py`
@@ -192,6 +198,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/frontend/src/pages/CaseDetailPage.tsx`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`
 - `docs/BILLING_QUOTA_PERSISTENCE_PLAN.md`

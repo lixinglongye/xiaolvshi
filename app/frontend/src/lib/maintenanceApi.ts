@@ -1875,6 +1875,457 @@ type LegalRagEvaluationPolicyResponse = {
   data: LegalRagEvaluationPolicy;
 };
 
+export type MaintenancePrivacyBoundary = {
+  raw_feedback_echoed?: boolean;
+  raw_document_text_included?: boolean;
+  raw_legal_text_included?: boolean;
+  raw_claim_text_included?: boolean;
+  raw_payload_included?: boolean;
+  pii_returned?: boolean;
+  pii_included?: boolean;
+  secret_included?: boolean;
+  provider_payload_included?: boolean;
+  billing_provider_payload_included?: boolean;
+  user_claims_included?: boolean;
+  output_scope?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceFeedbackIssueCluster = {
+  cluster_id: string;
+  normalized_topic: string;
+  severity: string;
+  count: number;
+  counts: Record<string, number>;
+  affected_user_segment_tags: string[];
+  evidence_refs: string[];
+};
+
+export type MaintenanceFeedbackIssueClusters = {
+  status: string;
+  method: {
+    mode?: string;
+    model_calls?: number;
+    external_network_calls?: number;
+    stores_raw_feedback?: boolean;
+    max_input_items?: number;
+    max_text_chars_per_item?: number;
+    [key: string]: unknown;
+  };
+  summary: {
+    input_item_count: number;
+    processed_item_count: number;
+    ignored_item_count: number;
+    truncated_item_count: number;
+    cluster_count: number;
+    raw_payload_echoed: boolean;
+    [key: string]: unknown;
+  };
+  clusters: MaintenanceFeedbackIssueCluster[];
+  privacy: MaintenancePrivacyBoundary & {
+    retained_fields?: string[];
+    redacted_patterns?: string[];
+  };
+};
+
+type MaintenanceFeedbackIssueClustersResponse = {
+  success: boolean;
+  data: MaintenanceFeedbackIssueClusters;
+};
+
+export type MaintenanceEvidenceBundleIntegrity = {
+  status: string;
+  score: number;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    evidence_count: number;
+    duplicate_group_count: number;
+    missing_source_count: number;
+    missing_proof_purpose_count: number;
+    metadata_gap_total: number;
+    ready_for_review: boolean;
+  };
+  duplicate_groups: Array<{
+    group_id: string;
+    match_on: string;
+    count: number;
+    evidence_ids: string[];
+    recommended_action: string;
+  }>;
+  missing_source_ids: string[];
+  missing_proof_purpose_ids: string[];
+  metadata_gap_counts: Record<string, number>;
+  item_reviews: Array<{
+    evidence_id: string;
+    safe_hash: string;
+    status: string;
+    missing_fields: string[];
+    metadata_gaps: string[];
+    duplicate_group_ids: string[];
+    privacy_flags: string[];
+  }>;
+  recommended_actions: string[];
+  privacy_notes: string[];
+  validation_commands: string[];
+};
+
+type MaintenanceEvidenceBundleIntegrityResponse = {
+  success: boolean;
+  data: MaintenanceEvidenceBundleIntegrity;
+};
+
+export type MaintenancePrivacyRetentionRules = {
+  status: string;
+  policy_version: string;
+  default_rules: Array<{
+    artifact_type: string;
+    retention_days: number;
+    delete_trigger: string;
+    requires_reviewer_confirmation: boolean;
+  }>;
+  evaluations: Array<{
+    artifact_id: string;
+    retention_class: string;
+    retention_days: number | null;
+    delete_trigger: string;
+    requires_reviewer_confirmation: boolean;
+    reason_codes: string[];
+  }>;
+  summary: {
+    rule_count: number;
+    evaluated_artifact_count: number;
+    manual_confirmation_count: number;
+    unknown_artifact_count: number;
+  };
+  recommended_actions: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenancePrivacyRetentionRulesResponse = {
+  success: boolean;
+  data: MaintenancePrivacyRetentionRules;
+};
+
+export type MaintenanceReleaseClaimCompliance = {
+  status: string;
+  policy_version: string;
+  claim_checks: Array<{
+    claim_hash: string;
+    status: string;
+    reason_codes: string[];
+  }>;
+  summary: {
+    claim_count: number;
+    blocked_count: number;
+    review_required_count: number;
+    ready_count: number;
+  };
+  recommended_actions: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenanceReleaseClaimComplianceResponse = {
+  success: boolean;
+  data: MaintenanceReleaseClaimCompliance;
+};
+
+export type MaintenanceCaseExportReadiness = {
+  status: string;
+  required_sections: string[];
+  present_sections: string[];
+  missing_sections: string[];
+  selected_source_validation_status: string;
+  reason_codes: string[];
+  recommended_actions: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenanceCaseExportReadinessResponse = {
+  success: boolean;
+  data: MaintenanceCaseExportReadiness;
+};
+
+export type MaintenanceAdminAuditPolicy = {
+  status: string;
+  policy_version: string;
+  checks: Array<{
+    action_type: string;
+    risk_level: string;
+    approval_required: boolean;
+    audit_required: boolean;
+    reason_codes: string[];
+  }>;
+  summary: {
+    action_count: number;
+    approval_required_count: number;
+    high_risk_count: number;
+  };
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenanceAdminAuditPolicyResponse = {
+  success: boolean;
+  data: MaintenanceAdminAuditPolicy;
+};
+
+export type MaintenanceQuotaDeliveryDecision = {
+  status: string;
+  action: string;
+  action_label: string;
+  reason_codes: string[];
+  quota_window?: string | null;
+  reports_remaining?: number | null;
+  report_quota_monthly?: number | null;
+  decision: string;
+  required_next_steps: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenanceQuotaDeliveryDecisionResponse = {
+  success: boolean;
+  data: MaintenanceQuotaDeliveryDecision;
+};
+
+export type MaintenanceSelectedSourceBinding = {
+  status: string;
+  binding: {
+    status: string;
+    delivery_status: string;
+    reason_codes: string[];
+    selected_source_ids: string[];
+    cited_source_ids: string[];
+    unexpected_source_ids: string[];
+    missing_selected_source_ids: string[];
+    stale_source_ids: string[];
+    unknown_source_ids: string[];
+    counts: Record<string, number>;
+    privacy_boundary: MaintenancePrivacyBoundary;
+  };
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+type MaintenanceSelectedSourceBindingResponse = {
+  success: boolean;
+  data: MaintenanceSelectedSourceBinding;
+};
+
+export type MaintenanceContinuousSessionEvidence = {
+  status: string;
+  summary: {
+    target_continuous_hours: number;
+    target_medium_large_update_count: number;
+    completed_medium_large_update_count: number;
+    remaining_medium_large_update_count: number;
+    event_count: number;
+    valid_event_count: number;
+    invalid_event_count: number;
+    max_allowed_gap_hours: number;
+    verified_continuous_hours: number;
+    continuous_hours_remaining: number;
+    required_event_types: string[];
+    missing_event_types: string[];
+    low_resource_test_evidence: boolean;
+    ready_for_goal_claim: boolean;
+    raw_payload_echoed: boolean;
+  };
+  best_window: {
+    start_timestamp: string | null;
+    end_timestamp: string | null;
+    record_count: number;
+    event_types: string[];
+    record_ids: string[];
+    verified_continuous_hours: number;
+    max_observed_gap_hours: number;
+  };
+  gap_analysis: Array<{
+    id: string;
+    status: string;
+    detail: string;
+  }>;
+  privacy_note: string;
+  validation_commands: string[];
+};
+
+type MaintenanceContinuousSessionEvidenceResponse = {
+  success: boolean;
+  data: MaintenanceContinuousSessionEvidence;
+};
+
+export type MaintenanceGateSnapshotCount = {
+  label: string;
+  value: string | number | boolean | null | undefined;
+};
+
+export type MaintenanceGateSnapshotItem = {
+  id: string;
+  label: string;
+  endpoint: string;
+  method: 'GET' | 'POST';
+  status: string;
+  counts: MaintenanceGateSnapshotCount[];
+  reason_codes: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+};
+
+export type MaintenanceGateSnapshot = {
+  status: string;
+  summary: {
+    gate_count: number;
+    ready_count: number;
+    blocked_count: number;
+    review_required_count: number;
+    reason_code_count: number;
+    metadata_only_count: number;
+    raw_boundary_violation_count: number;
+    unsupported_claim_reason_count: number;
+  };
+  labels: string[];
+  gates: MaintenanceGateSnapshotItem[];
+};
+
+const syntheticFeedbackIssueClusterPayload = {
+  items: [
+    {
+      id: 'ticket-upload-1',
+      content: 'PDF upload timed out during extraction for a lawyer.',
+      segment: 'lawyer',
+      tags: ['desktop'],
+    },
+    {
+      id: 'ticket-export-1',
+      content: 'Exported DOCX layout needs review before delivery.',
+      segment: 'legal_ops',
+    },
+  ],
+};
+
+const syntheticEvidenceBundleIntegrityPayload = {
+  items: [
+    {
+      evidence_id: 'EV-001',
+      source_id: 'upload-001',
+      proof_purpose: 'Proves contract formation metadata.',
+      evidence_date: '2026-05-01',
+      amount: '120000.00',
+      content_hash: 'sha256:contract-001',
+      file_name: 'contract.pdf',
+    },
+    {
+      evidence_id: 'EV-002',
+      source_id: 'upload-002',
+      proof_purpose: '',
+      evidence_date: '2026-05-03',
+      amount: '30000',
+      content_hash: 'sha256:contract-001',
+      file_name: 'payment-record.pdf',
+    },
+  ],
+};
+
+const syntheticPrivacyRetentionRulesPayload = {
+  artifacts: [
+    { artifact_id: 'report-001', artifact_type: 'deep_review_report' },
+    { artifact_id: 'quota-001', artifact_type: 'quota_usage_event' },
+  ],
+};
+
+const syntheticReleaseClaimCompliancePayload = {
+  claims: [
+    'Repository-backed maintenance evidence is available.',
+    'LegalBench score and payment provider verified claims require removal.',
+  ],
+};
+
+const syntheticCaseExportReadinessPayload = {
+  report: {
+    report_meta: { selected_source_validation: { delivery_status: 'ready' } },
+    risk_scoring: { overall_score: 20 },
+    citations: [{ source_id: 'law:contract-001' }],
+    evidence: [{ evidence_id: 'EV-001' }],
+    release_decision: { status: 'ready' },
+  },
+};
+
+const syntheticAdminAuditPolicyPayload = {
+  actions: [
+    { action_type: 'override_quota', actor_role: 'admin' },
+    { action_type: 'view_dashboard', actor_role: 'admin' },
+  ],
+};
+
+const syntheticQuotaDeliveryDecisionPayload = {
+  action: 'deliver_to_client',
+  quota_summary: {
+    decision_status: 'blocked',
+    reason_codes: ['report_quota_exhausted'],
+    reports_remaining: 0,
+    report_quota_monthly: 20,
+    quota_window: '2026-06',
+  },
+  release_decision: { status: 'ready' },
+};
+
+const syntheticSelectedSourceBindingPayload = {
+  report: {
+    report_meta: { report_id: 'RPT-001' },
+    citation_map: { citations: [{ source_id: 'law:contract-001' }] },
+    generation_plan: { steps: [{ selected_source_binding_checked: true }] },
+  },
+  request_metadata: { legal_rag_selected_source_ids: ['law:contract-001'] },
+  block_on_failure: true,
+};
+
+function unwrapMaintenanceData<T>(resp: unknown): T {
+  const outer = resp as { data?: unknown } | null | undefined;
+  const payload = (outer?.data ?? resp) as { success: boolean; data: T } | T;
+  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+    return (payload as { success: boolean; data: T }).data;
+  }
+  return payload as T;
+}
+
+function uniqueCodes(...values: Array<string[] | undefined>): string[] {
+  return Array.from(new Set(values.flatMap((value) => value ?? []).filter(Boolean))).sort();
+}
+
+function allClaimReasonCodes(claims: MaintenanceReleaseClaimCompliance): string[] {
+  return uniqueCodes(...claims.claim_checks.map((claim) => claim.reason_codes));
+}
+
+function isRawBoundaryClean(boundary: MaintenancePrivacyBoundary): boolean {
+  return !(
+    boundary.raw_feedback_echoed === true ||
+    boundary.raw_document_text_included === true ||
+    boundary.raw_legal_text_included === true ||
+    boundary.raw_claim_text_included === true ||
+    boundary.raw_payload_included === true ||
+    boundary.pii_returned === true ||
+    boundary.pii_included === true ||
+    boundary.secret_included === true ||
+    boundary.provider_payload_included === true ||
+    boundary.billing_provider_payload_included === true ||
+    boundary.user_claims_included === true
+  );
+}
+
+function snapshotStatus(gates: MaintenanceGateSnapshotItem[]): string {
+  if (gates.some((gate) => gate.status === 'blocked' || gate.status === 'fail')) return 'blocked';
+  if (gates.some((gate) => gate.status === 'review_required' || gate.status === 'review_recommended')) {
+    return 'review_required';
+  }
+  if (gates.some((gate) => gate.status === 'collecting' || gate.status === 'in_progress')) {
+    return 'in_progress';
+  }
+  return 'ready';
+}
+
+function unsupportedClaimReasonCount(reasonCodes: string[]): number {
+  return reasonCodes.filter((code) => code.includes('benchmark') || code.includes('payment')).length;
+}
+
 export async function getMaintenanceEvidence(language: MaintenanceLanguage): Promise<MaintenanceEvidenceProfile> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/maintenance/oss-evidence?language=${language}`,
@@ -2292,4 +2743,295 @@ export async function getLegalRagEvaluationPolicy(): Promise<LegalRagEvaluationP
     return payload.data;
   }
   return payload as LegalRagEvaluationPolicy;
+}
+
+export async function getMaintenanceFeedbackIssueClusters(
+  payload: Record<string, unknown> = syntheticFeedbackIssueClusterPayload,
+): Promise<MaintenanceFeedbackIssueClusters> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/feedback/issue-clusters',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceFeedbackIssueClustersResponse['data']>(resp);
+}
+
+export async function getMaintenanceEvidenceBundleIntegrity(
+  payload: Record<string, unknown> = syntheticEvidenceBundleIntegrityPayload,
+): Promise<MaintenanceEvidenceBundleIntegrity> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/evidence/bundle-integrity',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceEvidenceBundleIntegrityResponse['data']>(resp);
+}
+
+export async function getMaintenancePrivacyRetentionRules(
+  payload: Record<string, unknown> = syntheticPrivacyRetentionRulesPayload,
+): Promise<MaintenancePrivacyRetentionRules> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/privacy/retention-rules',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenancePrivacyRetentionRulesResponse['data']>(resp);
+}
+
+export async function getMaintenanceReleaseClaimCompliance(
+  payload: Record<string, unknown> = syntheticReleaseClaimCompliancePayload,
+): Promise<MaintenanceReleaseClaimCompliance> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/compliance/release-claims',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceReleaseClaimComplianceResponse['data']>(resp);
+}
+
+export async function getMaintenanceCaseExportReadiness(
+  payload: Record<string, unknown> = syntheticCaseExportReadinessPayload,
+): Promise<MaintenanceCaseExportReadiness> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/case/export-readiness',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceCaseExportReadinessResponse['data']>(resp);
+}
+
+export async function getMaintenanceAdminAuditPolicy(
+  payload: Record<string, unknown> = syntheticAdminAuditPolicyPayload,
+): Promise<MaintenanceAdminAuditPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/admin/audit-policy',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceAdminAuditPolicyResponse['data']>(resp);
+}
+
+export async function getMaintenanceQuotaDeliveryDecision(
+  payload: Record<string, unknown> = syntheticQuotaDeliveryDecisionPayload,
+): Promise<MaintenanceQuotaDeliveryDecision> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/billing/quota-delivery-decision',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceQuotaDeliveryDecisionResponse['data']>(resp);
+}
+
+export async function getMaintenanceSelectedSourceBinding(
+  payload: Record<string, unknown> = syntheticSelectedSourceBindingPayload,
+): Promise<MaintenanceSelectedSourceBinding> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/deep-review/selected-source-binding',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceSelectedSourceBindingResponse['data']>(resp);
+}
+
+export async function getMaintenanceContinuousSessionEvidence(): Promise<MaintenanceContinuousSessionEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-evidence',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionEvidenceResponse['data']>(resp);
+}
+
+export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnapshot> {
+  const [
+    feedbackClusters,
+    bundleIntegrity,
+    privacyRetention,
+    releaseClaims,
+    caseExport,
+    adminAudit,
+    quotaDecision,
+    selectedSourceBinding,
+    continuousSessionEvidence,
+  ] = await Promise.all([
+    getMaintenanceFeedbackIssueClusters(),
+    getMaintenanceEvidenceBundleIntegrity(),
+    getMaintenancePrivacyRetentionRules(),
+    getMaintenanceReleaseClaimCompliance(),
+    getMaintenanceCaseExportReadiness(),
+    getMaintenanceAdminAuditPolicy(),
+    getMaintenanceQuotaDeliveryDecision(),
+    getMaintenanceSelectedSourceBinding(),
+    getMaintenanceContinuousSessionEvidence(),
+  ]);
+
+  const releaseClaimReasons = allClaimReasonCodes(releaseClaims);
+  const gates: MaintenanceGateSnapshotItem[] = [
+    {
+      id: 'feedback-issue-clusters',
+      label: 'Feedback issue clusters',
+      endpoint: '/api/v1/maintenance/feedback/issue-clusters',
+      method: 'POST',
+      status: feedbackClusters.status,
+      counts: [
+        { label: 'items', value: feedbackClusters.summary.processed_item_count },
+        { label: 'clusters', value: feedbackClusters.summary.cluster_count },
+        {
+          label: 'hashed refs',
+          value: feedbackClusters.clusters.reduce((total, cluster) => total + (cluster.counts.hashed_refs ?? 0), 0),
+        },
+      ],
+      reason_codes: feedbackClusters.clusters.map((cluster) => cluster.normalized_topic),
+      privacy_boundary: feedbackClusters.privacy,
+    },
+    {
+      id: 'evidence-bundle-integrity',
+      label: 'Evidence bundle integrity',
+      endpoint: '/api/v1/maintenance/evidence/bundle-integrity',
+      method: 'POST',
+      status: bundleIntegrity.status,
+      counts: [
+        { label: 'evidence', value: bundleIntegrity.summary.evidence_count },
+        { label: 'duplicates', value: bundleIntegrity.summary.duplicate_group_count },
+        { label: 'metadata gaps', value: bundleIntegrity.summary.metadata_gap_total },
+      ],
+      reason_codes: uniqueCodes(
+        bundleIntegrity.duplicate_groups.map((group) => `duplicate_${group.match_on}`),
+        Object.entries(bundleIntegrity.metadata_gap_counts)
+          .filter(([key, value]) => key !== 'total' && value > 0)
+          .map(([key]) => key),
+        bundleIntegrity.missing_source_ids.length ? ['missing_source_id'] : [],
+        bundleIntegrity.missing_proof_purpose_ids.length ? ['missing_proof_purpose'] : [],
+      ),
+      privacy_boundary: {
+        raw_document_text_included: false,
+        pii_included: false,
+        output_scope: bundleIntegrity.privacy_notes[2] ?? 'metadata-only integrity counts and safe hashes',
+      },
+    },
+    {
+      id: 'privacy-retention-rules',
+      label: 'Privacy retention rules',
+      endpoint: '/api/v1/maintenance/privacy/retention-rules',
+      method: 'POST',
+      status: privacyRetention.status,
+      counts: [
+        { label: 'rules', value: privacyRetention.summary.rule_count },
+        { label: 'evaluated', value: privacyRetention.summary.evaluated_artifact_count },
+        { label: 'manual confirms', value: privacyRetention.summary.manual_confirmation_count },
+      ],
+      reason_codes: uniqueCodes(...privacyRetention.evaluations.map((evaluation) => evaluation.reason_codes)),
+      privacy_boundary: privacyRetention.privacy_boundary,
+    },
+    {
+      id: 'release-claim-compliance',
+      label: 'Release claim compliance',
+      endpoint: '/api/v1/maintenance/compliance/release-claims',
+      method: 'POST',
+      status: releaseClaims.status,
+      counts: [
+        { label: 'claims', value: releaseClaims.summary.claim_count },
+        { label: 'blocked', value: releaseClaims.summary.blocked_count },
+        { label: 'review', value: releaseClaims.summary.review_required_count },
+      ],
+      reason_codes: releaseClaimReasons,
+      privacy_boundary: releaseClaims.privacy_boundary,
+    },
+    {
+      id: 'case-export-readiness',
+      label: 'Case export readiness',
+      endpoint: '/api/v1/maintenance/case/export-readiness',
+      method: 'POST',
+      status: caseExport.status,
+      counts: [
+        { label: 'required', value: caseExport.required_sections.length },
+        { label: 'present', value: caseExport.present_sections.length },
+        { label: 'missing', value: caseExport.missing_sections.length },
+      ],
+      reason_codes: caseExport.reason_codes,
+      privacy_boundary: caseExport.privacy_boundary,
+    },
+    {
+      id: 'admin-audit-policy',
+      label: 'Admin audit policy',
+      endpoint: '/api/v1/maintenance/admin/audit-policy',
+      method: 'POST',
+      status: adminAudit.status,
+      counts: [
+        { label: 'actions', value: adminAudit.summary.action_count },
+        { label: 'approvals', value: adminAudit.summary.approval_required_count },
+        { label: 'high risk', value: adminAudit.summary.high_risk_count },
+      ],
+      reason_codes: uniqueCodes(...adminAudit.checks.map((check) => check.reason_codes)),
+      privacy_boundary: adminAudit.privacy_boundary,
+    },
+    {
+      id: 'quota-delivery-decision',
+      label: 'Quota delivery decision',
+      endpoint: '/api/v1/maintenance/billing/quota-delivery-decision',
+      method: 'POST',
+      status: quotaDecision.status,
+      counts: [
+        { label: 'remaining', value: quotaDecision.reports_remaining },
+        { label: 'monthly', value: quotaDecision.report_quota_monthly },
+        { label: 'reasons', value: quotaDecision.reason_codes.length },
+      ],
+      reason_codes: quotaDecision.reason_codes,
+      privacy_boundary: quotaDecision.privacy_boundary,
+    },
+    {
+      id: 'selected-source-binding',
+      label: 'Selected-source binding',
+      endpoint: '/api/v1/maintenance/deep-review/selected-source-binding',
+      method: 'POST',
+      status: selectedSourceBinding.status,
+      counts: [
+        { label: 'selected', value: selectedSourceBinding.binding.counts.selected_source_count ?? 0 },
+        { label: 'cited', value: selectedSourceBinding.binding.counts.cited_source_count ?? 0 },
+        { label: 'unexpected', value: selectedSourceBinding.binding.unexpected_source_ids.length },
+      ],
+      reason_codes: selectedSourceBinding.binding.reason_codes,
+      privacy_boundary: selectedSourceBinding.privacy_boundary,
+    },
+    {
+      id: 'continuous-session-evidence',
+      label: '24h session validator',
+      endpoint: '/api/v1/maintenance/continuous-session-evidence',
+      method: 'GET',
+      status: continuousSessionEvidence.status,
+      counts: [
+        { label: 'verified hours', value: continuousSessionEvidence.summary.verified_continuous_hours },
+        { label: 'remaining hours', value: continuousSessionEvidence.summary.continuous_hours_remaining },
+        { label: 'events', value: continuousSessionEvidence.summary.event_count },
+      ],
+      reason_codes: uniqueCodes(
+        continuousSessionEvidence.gap_analysis.map((gap) => gap.id),
+        continuousSessionEvidence.summary.missing_event_types.map((eventType) => `missing_${eventType}`),
+      ),
+      privacy_boundary: {
+        raw_payload_included: continuousSessionEvidence.summary.raw_payload_echoed,
+        raw_legal_text_included: false,
+        pii_included: false,
+        output_scope: 'metadata-only 24h session template; no synthetic completion claim',
+      },
+    },
+  ];
+  const reasonCodes = uniqueCodes(...gates.map((gate) => gate.reason_codes));
+
+  return {
+    status: snapshotStatus(gates),
+    summary: {
+      gate_count: gates.length,
+      ready_count: gates.filter((gate) => gate.status === 'ready').length,
+      blocked_count: gates.filter((gate) => gate.status === 'blocked' || gate.status === 'fail').length,
+      review_required_count: gates.filter((gate) =>
+        ['review_required', 'review_recommended'].includes(gate.status),
+      ).length,
+      reason_code_count: reasonCodes.length,
+      metadata_only_count: gates.filter((gate) => isRawBoundaryClean(gate.privacy_boundary)).length,
+      raw_boundary_violation_count: gates.filter((gate) => !isRawBoundaryClean(gate.privacy_boundary)).length,
+      unsupported_claim_reason_count: unsupportedClaimReasonCount(releaseClaimReasons),
+    },
+    labels: ['metadata-only', 'no raw legal text', 'no benchmark or payment claims'],
+    gates,
+  };
 }

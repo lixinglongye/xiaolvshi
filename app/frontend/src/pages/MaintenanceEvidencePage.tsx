@@ -45,6 +45,7 @@ import {
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
   getMaintenanceEvidence,
+  getMaintenanceGateSnapshot,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
@@ -81,6 +82,7 @@ import {
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
+  type MaintenanceGateSnapshot,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
@@ -122,12 +124,15 @@ const statusClass: Record<string, string> = {
   template: 'border-stone-200 bg-stone-50 text-stone-700',
   uploaded: 'border-stone-200 bg-stone-50 text-stone-700',
   preflight: 'border-sky-200 bg-sky-50 text-sky-800',
+  collecting: 'border-sky-200 bg-sky-50 text-sky-800',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_attention: 'border-amber-200 bg-amber-50 text-amber-900',
   manual_review: 'border-amber-200 bg-amber-50 text-amber-900',
   ocr_needed: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  pass_with_warnings: 'border-amber-200 bg-amber-50 text-amber-900',
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
   missing: 'border-red-200 bg-red-50 text-red-800',
@@ -160,6 +165,19 @@ function formatInline(value: unknown) {
   return JSON.stringify(value);
 }
 
+function displayToken(value: string) {
+  return value.replace(/_/g, ' ');
+}
+
+function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][number]['privacy_boundary']) {
+  const outputScope = typeof boundary.output_scope === 'string' ? boundary.output_scope : 'metadata-only reviewer output';
+  const flags = Object.entries(boundary)
+    .filter(([key, value]) => key !== 'output_scope' && typeof value === 'boolean')
+    .slice(0, 3)
+    .map(([key, value]) => `${displayToken(key)}: ${String(value)}`);
+  return [outputScope, ...flags];
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 
@@ -178,6 +196,7 @@ function Inner() {
   const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
+  const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
@@ -269,6 +288,7 @@ function Inner() {
         fixtureImprovementData,
         legalKnowledge,
         ragEvaluation,
+        maintenanceGateSnapshotData,
       ] = await Promise.all([
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
@@ -303,6 +323,7 @@ function Inner() {
         getLegalFixtureImprovementPlan(),
         getLegalKnowledgeAudit(),
         getLegalRagEvaluationPolicy(),
+        getMaintenanceGateSnapshot(),
       ]);
       setData(evidence);
       setReleaseReadiness(readiness.data);
@@ -338,6 +359,7 @@ function Inner() {
       setFixtureImprovement(fixtureImprovementData);
       setLegalAudit(legalKnowledge);
       setRagPolicy(ragEvaluation);
+      setMaintenanceGateSnapshot(maintenanceGateSnapshotData);
     } catch (err) {
       console.error(err);
       setError('Maintenance evidence failed to load.');
@@ -589,6 +611,134 @@ function Inner() {
             </CardContent>
           </Card>
         </div>
+
+        {maintenanceGateSnapshot && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">100+ maintenance gates</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  metadata-only / no raw legal text / no benchmark or payment claims
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass[maintenanceGateSnapshot.status] ?? statusClass.review_required}
+              >
+                {displayToken(maintenanceGateSnapshot.status)}
+              </Badge>
+            </div>
+
+            <div className="overflow-hidden rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <div className="grid gap-3 border-b border-stone-950/10 p-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {maintenanceGateSnapshot.summary.gate_count}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">new endpoints</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {maintenanceGateSnapshot.summary.ready_count}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">ready</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {maintenanceGateSnapshot.summary.blocked_count}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">blocked</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {maintenanceGateSnapshot.summary.reason_code_count}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">reason codes</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {maintenanceGateSnapshot.summary.metadata_only_count}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">metadata-only</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 border-b border-stone-950/10 px-4 py-3">
+                {maintenanceGateSnapshot.labels.map((label) => (
+                  <Badge key={label} variant="outline" className="bg-white">
+                    {label}
+                  </Badge>
+                ))}
+                <Badge variant="outline" className="border-red-200 bg-red-50 text-red-800">
+                  unsupported claim reasons: {maintenanceGateSnapshot.summary.unsupported_claim_reason_count}
+                </Badge>
+                <Badge variant="outline" className="bg-white">
+                  raw boundary violations: {maintenanceGateSnapshot.summary.raw_boundary_violation_count}
+                </Badge>
+              </div>
+
+              <div className="divide-y divide-stone-950/10">
+                {maintenanceGateSnapshot.gates.map((gate) => (
+                  <div
+                    key={gate.id}
+                    className="grid gap-3 px-4 py-3 lg:grid-cols-[1.1fr_1fr_1.1fr_1.35fr]"
+                  >
+                    <div>
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.not_run}>
+                          {displayToken(gate.status)}
+                        </Badge>
+                        <span className="font-semibold text-stone-950">{gate.label}</span>
+                      </div>
+                      <div className="break-all font-mono text-[11px] text-stone-500">
+                        {gate.method} {gate.endpoint}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap content-start gap-2">
+                      {gate.counts.map((count) => (
+                        <Badge key={count.label} variant="outline" className="bg-white">
+                          {count.label}: {formatInline(count.value)}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap content-start gap-2">
+                      {gate.reason_codes.length > 0 ? (
+                        <>
+                          {gate.reason_codes.slice(0, 4).map((code) => (
+                            <Badge key={code} variant="outline" className="bg-white">
+                              {displayToken(code)}
+                            </Badge>
+                          ))}
+                          {gate.reason_codes.length > 4 && (
+                            <Badge variant="outline" className="bg-white">
+                              +{gate.reason_codes.length - 4}
+                            </Badge>
+                          )}
+                        </>
+                      ) : (
+                        <Badge variant="outline" className="bg-white">
+                          no reason codes
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {privacyBoundarySummary(gate.privacy_boundary)
+                        .slice(0, 4)
+                        .map((item) => (
+                          <div key={item} className="break-words">
+                            {item}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {(caseIntakeCompleteness ||
           caseTeamAccessPolicy ||

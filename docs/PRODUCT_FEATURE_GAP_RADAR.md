@@ -55,6 +55,9 @@ workflow binding:
 - Selected-source citation validation should bind into live deep-review persistence and export actions.
 - Quota summaries should bind into reviewer-visible export, delivery, and account-plan decisions.
 - Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
+- Continuous 24-hour maintenance evidence should bind the 100+ update ledger,
+  heartbeat records, push/test validation, and low-resource legal fixture runs
+  into one reviewer timeline before any support application claims completion.
 
 ## Scope
 
@@ -72,6 +75,7 @@ significant hardening:
 - Model cost operations
 - Legal knowledge base and RAG
 - Safety and compliance
+- Continuous maintenance evidence
 
 Each gap includes:
 
@@ -118,6 +122,25 @@ evidence.
 Focus on permissions/team workspace and billing/entitlements. The exit condition
 is role-scoped case access, auditable changes, deterministic plan limits, and
 privacy-safe usage metering.
+
+### Cross-Phase Evidence Gap: Continuous Session Validation
+
+The 100+ update target is now reviewable through repository artifacts, and the
+backend continuous-session validator can evaluate explicit metadata. The product
+still needs a combined reviewer-facing timeline, so the validator should not be
+treated as a backend-only metric. It should become a product capability that
+shows:
+
+- the longest verified maintenance window,
+- timestamped commits, test runs, pushes, and review actions,
+- links back to shipped update evidence,
+- laptop-safe legal fixture runs for small machines, and
+- explicit blockers when the 24-hour window is not proven.
+
+This gap is linked to legal-document benchmark work because a long maintenance
+session should include lightweight, repeatable legal quality checks. The
+acceptable default is a quick-suite or local-run-review record with synthetic
+fixture IDs and coverage metadata, not a large public benchmark download.
 
 ## Validation
 

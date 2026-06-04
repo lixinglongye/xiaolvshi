@@ -67,6 +67,18 @@ Use `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` to bund
 
 Use `/api/v1/maintenance/legal-review-benchmark/public-sampler` to map reviewed LegalBench, CUAD, LexGLUE, or Pile of Law samples back to these local fixtures without downloading public datasets during default tests.
 
+## Continuous Maintenance Evidence
+
+Small legal-document fixtures can contribute to the continuous 24-hour
+maintenance record when they are run as metadata-only validation events. A valid
+maintenance event should reference fixture IDs, route labels, coverage scores,
+timestamps, command labels, and repository evidence paths only.
+
+This connects the legal benchmark work to the 100+ update goal without
+overloading a low-resource local machine. The reviewer should see that large
+public datasets stayed as cataloged candidates, while the default evidence came
+from synthetic quick-suite or local-run-review checks.
+
 ## Release Use
 
 The fixtures support the `legal-review-benchmark` release-readiness check. They are intended for deterministic local tests, while larger public benchmarks can be sampled later in a resource-controlled CI job after license review.
@@ -113,4 +125,5 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `docs/LEGAL_FIXTURE_LOCAL_RUN_REVIEW.md`
 - `docs/LEGAL_FIXTURE_RUN_REPORT.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
+- `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `app/backend/services/release_readiness.py`
