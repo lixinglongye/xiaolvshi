@@ -26,9 +26,10 @@ telemetry persistence planning. Model-cost evidence now also includes a
 privacy-safe route telemetry repository and operations summary for persisted
 route failure, premium-model, over-budget, operator-review, unknown-model, and
 downgrade review, plus a triage queue that turns those checks into maintainer
-actions. The latest UI evidence adds runtime router discovery smoke, the case
-workbench runtime state/event panel, the metadata-only legal RAG research panel,
-and the global billing usage badge.
+actions and a remediation plan that maps triage into reviewed cheap-first env
+suggestions. The latest UI evidence adds runtime router discovery smoke, the
+case workbench runtime state/event panel, the metadata-only legal RAG research
+panel, and the global billing usage badge.
 The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
 and a best-effort document-generation quota consumption attempt. The newest
@@ -77,6 +78,10 @@ credentials, emails, or production health proof when no route events exist.
 action queue over those operations checks. It still cannot prove production
 health when no route events exist, and it must not include raw route events or
 model payloads.
+`docs/ROUTE_TELEMETRY_REMEDIATION_PLAN.md` scopes the implemented
+`GET /api/v1/maintenance/route-telemetry-remediation` endpoint as an
+operator-reviewed plan over triage and default optimization metadata. It never
+writes config or calls gateways.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding

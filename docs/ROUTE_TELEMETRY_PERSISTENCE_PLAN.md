@@ -83,9 +83,14 @@ payloads and uses the same privacy boundary as the repository.
 maintainer actions for cheap-first route drift, daily hotspots, and missing
 staging telemetry.
 
+`RouteTelemetryRemediationPlanService` consumes the triage queue and default
+optimization rows to produce operator-reviewed env suggestions and validation
+commands. It never writes configuration and never calls gateways.
+
 ```http
 GET /api/v1/maintenance/route-telemetry-ops-summary
 GET /api/v1/maintenance/route-telemetry-triage
+GET /api/v1/maintenance/route-telemetry-remediation
 ```
 
 ## Pre-Persistence Checks
@@ -113,8 +118,10 @@ python -m pytest tests/test_route_telemetry_persistence_plan.py -q
 python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q
 python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
 python -m pytest tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py -q
+python -m pytest tests/test_route_telemetry_remediation_plan.py tests/test_route_telemetry_triage_queue.py tests/test_model_default_optimization.py -q
 python -m compileall services/route_telemetry_persistence_plan.py
 python -m compileall services/route_telemetry_repository.py
 python -m compileall services/route_telemetry_ops_summary.py
 python -m compileall services/route_telemetry_triage_queue.py
+python -m compileall services/route_telemetry_remediation_plan.py
 ```

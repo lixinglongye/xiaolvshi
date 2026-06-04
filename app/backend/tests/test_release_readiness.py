@@ -183,6 +183,7 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
             "route-telemetry-persistence-plan",
             "route-telemetry-ops-summary",
             "route-telemetry-triage-queue",
+            "route-telemetry-remediation-plan",
         }
     }
     result = service.evaluate(
@@ -191,6 +192,7 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
             "route-telemetry-persistence-plan": "not_run",
             "route-telemetry-ops-summary": "not_run",
             "route-telemetry-triage-queue": "not_run",
+            "route-telemetry-remediation-plan": "not_run",
         }
     )
     checks = {check["id"]: check for check in result["checks"]}
@@ -200,15 +202,18 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
         "route-telemetry-repository": "python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q",
         "route-telemetry-ops-summary": "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q",
         "route-telemetry-triage-queue": "python -m pytest tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py -q",
+        "route-telemetry-remediation-plan": "python -m pytest tests/test_route_telemetry_remediation_plan.py tests/test_route_telemetry_triage_queue.py tests/test_model_default_optimization.py -q",
     }
     assert checks["route-telemetry-persistence-plan"]["required"] is False
     assert checks["route-telemetry-repository"]["required"] is True
     assert checks["route-telemetry-ops-summary"]["required"] is True
     assert checks["route-telemetry-triage-queue"]["required"] is True
+    assert checks["route-telemetry-remediation-plan"]["required"] is True
     assert checks["route-telemetry-persistence-plan"]["blocks_release"] is False
     assert checks["route-telemetry-repository"]["blocks_release"] is True
     assert checks["route-telemetry-ops-summary"]["blocks_release"] is True
     assert checks["route-telemetry-triage-queue"]["blocks_release"] is True
+    assert checks["route-telemetry-remediation-plan"]["blocks_release"] is True
     assert "durable storage and migrations remain separate" in checks["route-telemetry-persistence-plan"]["manual_note"]
     assert "persists sanitized route telemetry events locally" in checks["route-telemetry-repository"]["manual_note"]
     assert "raw model outputs" in checks["route-telemetry-repository"]["manual_note"]
@@ -216,6 +221,8 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
     assert "not proof that production routing is healthy" in checks["route-telemetry-ops-summary"]["manual_note"]
     assert "converts sanitized route telemetry operations checks into maintainer actions" in checks["route-telemetry-triage-queue"]["manual_note"]
     assert "no route events exist" in checks["route-telemetry-triage-queue"]["manual_note"]
+    assert "operator-reviewed remediation suggestions only" in checks["route-telemetry-remediation-plan"]["manual_note"]
+    assert "never writes configuration" in checks["route-telemetry-remediation-plan"]["manual_note"]
 
 
 def test_recent_backend_product_slices_are_optional_release_evidence():

@@ -35,6 +35,11 @@ summary checks into maintainer actions for cheap-first drift, daily hotspots,
 unknown models, and missing staging telemetry, without storing raw route events
 or model payloads.
 
+`docs/ROUTE_TELEMETRY_REMEDIATION_PLAN.md` documents the implemented
+`GET /api/v1/maintenance/route-telemetry-remediation` endpoint. It maps triage
+items to reviewed remediation steps, env suggestions, and validation commands
+without writing configuration or calling NewAPI/Gemini.
+
 `docs/CONTINUOUS_SESSION_EVIDENCE.md` documents the backend validator and
 reviewer contract for continuous 24-hour session validation. Support forms
 should distinguish the already reviewable 100+ update evidence from the

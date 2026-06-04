@@ -169,6 +169,8 @@ function Inner() {
   const routeTelemetryRepositoryRows = data?.route_telemetry_repository?.daily_buckets ?? [];
   const routeTelemetryOpsRows = data?.route_telemetry_ops_summary?.daily_rows ?? [];
   const routeTelemetryTriageRows = data?.route_telemetry_triage?.triage_items ?? [];
+  const routeTelemetryRemediationRows = data?.route_telemetry_remediation?.remediation_steps ?? [];
+  const routeTelemetryRemediationEnvRows = data?.route_telemetry_remediation?.recommended_env ?? [];
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
@@ -2113,6 +2115,159 @@ function Inner() {
                         <TableCell className="font-mono text-xs text-stone-700">{item.owner}</TableCell>
                         <TableCell className="max-w-[420px] break-words text-xs leading-5 text-stone-600">
                           {item.reason}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.route_telemetry_remediation && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry remediation plan</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_telemetry_remediation.summary.remediation_step_count} steps /{' '}
+                  {data.route_telemetry_remediation.summary.env_change_count} env changes /{' '}
+                  {data.route_telemetry_remediation.summary.manual_review_step_count} manual review
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.route_telemetry_remediation.status)}>
+                {data.route_telemetry_remediation.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_remediation.summary.blocking_step_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking steps</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_remediation.summary.env_change_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">env suggestions</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_remediation.summary.manual_review_step_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">manual review</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(data.route_telemetry_remediation.summary.estimated_monthly_savings_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">estimated savings</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Top remediation</div>
+                  <div>
+                    {data.route_telemetry_remediation.recommended_actions[0] ??
+                      'No remediation steps are blocking cheap-first Gemini/NewAPI routing.'}
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Execution boundary</div>
+                  <div>
+                    config written {data.route_telemetry_remediation.summary.configuration_written ? 'yes' : 'no'} / NewAPI
+                    called {data.route_telemetry_remediation.summary.newapi_called ? 'yes' : 'no'} / source{' '}
+                    {data.route_telemetry_remediation.privacy_boundary.source}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Env</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Current</TableHead>
+                    <TableHead>Recommended</TableHead>
+                    <TableHead>Change</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryRemediationEnvRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-stone-500">
+                        No env suggestions from route telemetry remediation.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryRemediationEnvRows.map((row) => (
+                      <TableRow key={`${row.env_var}-${row.task}`}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">{row.env_var}</TableCell>
+                        <TableCell>{row.task}</TableCell>
+                        <TableCell className="max-w-[220px] break-words font-mono text-xs text-stone-700">
+                          {row.current_value ?? 'manual'}
+                        </TableCell>
+                        <TableCell className="max-w-[220px] break-words font-mono text-xs text-stone-700">
+                          {row.recommended_value ?? 'manual'}
+                        </TableCell>
+                        <TableCell>{row.requires_change ? 'review change' : 'keep'}</TableCell>
+                        <TableCell className="max-w-[420px] break-words text-xs leading-5 text-stone-600">
+                          {row.reason}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Recommendation</TableHead>
+                    <TableHead>Review</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryRemediationRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-stone-500">
+                        No remediation steps.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryRemediationRows.map((step) => (
+                      <TableRow key={step.id}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">
+                          {step.priority}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(step.severity)}>
+                            {step.severity}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">{step.task}</TableCell>
+                        <TableCell className="max-w-[360px] text-sm leading-5 text-stone-800">
+                          <div className="font-semibold text-stone-950">{step.title}</div>
+                          <div className="mt-1 break-words">{step.action}</div>
+                          {step.recommended_env_assignment && (
+                            <div className="mt-1 break-words font-mono text-xs text-stone-600">
+                              {step.recommended_env_assignment}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>{step.requires_operator_review ? 'manual' : 'standard'}</TableCell>
+                        <TableCell className="max-w-[420px] break-words text-xs leading-5 text-stone-600">
+                          {step.reason}
                         </TableCell>
                       </TableRow>
                     ))

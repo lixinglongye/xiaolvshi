@@ -57,6 +57,7 @@ from services.model_route_telemetry import model_route_telemetry_registry
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
+from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
 from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
@@ -170,6 +171,10 @@ async def list_models():
     routing_replay = ModelRoutingReplayService().run_replay()
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
+    route_telemetry_remediation = RouteTelemetryRemediationPlanService().build_plan(
+        route_telemetry_triage,
+        default_optimization,
+    )
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
     observed_gateway_models = [
         item.get("model")
@@ -198,6 +203,7 @@ async def list_models():
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_telemetry_triage": route_telemetry_triage,
+        "route_telemetry_remediation": route_telemetry_remediation,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,
@@ -234,6 +240,7 @@ async def list_models():
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_telemetry_triage": route_telemetry_triage,
+        "route_telemetry_remediation": route_telemetry_remediation,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,

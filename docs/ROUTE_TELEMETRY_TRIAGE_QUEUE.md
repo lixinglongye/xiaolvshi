@@ -40,6 +40,9 @@ The AIHub model-ops payload includes `route_telemetry_triage`, and
 The frontend `/model-ops` page renders the queue between the route telemetry
 operations summary and route guardrails.
 
+`RouteTelemetryRemediationPlanService` consumes the queue to create
+operator-reviewed remediation steps and optional env suggestions.
+
 ## Item Shape
 
 Each triage item includes:

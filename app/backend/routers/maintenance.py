@@ -79,6 +79,7 @@ from services.route_telemetry_persistence_plan import RouteTelemetryPersistenceP
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
+from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.admin_audit_policy import AdminAuditPolicyService
@@ -939,6 +940,15 @@ async def get_route_telemetry_triage_queue():
     return {
         "success": True,
         "data": RouteTelemetryTriageQueueService().build_queue(),
+    }
+
+
+@router.get("/route-telemetry-remediation")
+async def get_route_telemetry_remediation_plan():
+    """Return operator-reviewed remediation plan for route telemetry triage."""
+    return {
+        "success": True,
+        "data": RouteTelemetryRemediationPlanService().build_plan(),
     }
 
 

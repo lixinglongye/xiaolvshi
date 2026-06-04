@@ -49,6 +49,9 @@ models, and cheap-first downgrade evidence.
 The follow-up triage queue converts those checks into prioritized maintainer
 actions, including daily hotspots and missing staging telemetry, without
 copying raw route events or model payloads.
+The newest remediation plan maps those triage actions to operator-reviewed
+cheap-first repair steps, env suggestions, and validation commands without
+writing config or calling NewAPI/Gemini.
 This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy

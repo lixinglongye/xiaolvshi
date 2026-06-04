@@ -860,6 +860,67 @@ export type ModelRouteTelemetryTriage = {
   validation_commands: string[];
 };
 
+export type ModelRouteTelemetryRemediationStep = {
+  id: string;
+  title: string;
+  severity: string;
+  priority: number;
+  source_triage_item_id: string;
+  source_check_id: string;
+  task: string;
+  env_var?: string | null;
+  current_model?: string | null;
+  recommended_model?: string | null;
+  recommended_env_assignment?: string | null;
+  requires_env_change: boolean;
+  requires_operator_review: boolean;
+  estimated_monthly_savings_usd?: number | null;
+  reason: string;
+  action: string;
+  validation_commands: string[];
+  release_gate_links: string[];
+  evidence_paths: string[];
+};
+
+export type ModelRouteTelemetryRecommendedEnv = {
+  env_var: string;
+  task: string;
+  current_value?: string | null;
+  recommended_value?: string | null;
+  requires_change: boolean;
+  source_step_id: string;
+  reason: string;
+};
+
+export type ModelRouteTelemetryRemediation = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    remediation_step_count: number;
+    blocking_step_count: number;
+    warning_step_count: number;
+    env_change_count: number;
+    manual_review_step_count: number;
+    source_triage_status: string;
+    source_triage_item_count: number;
+    default_optimization_status: string;
+    estimated_monthly_savings_usd: number;
+    newapi_called: boolean;
+    configuration_written: boolean;
+  };
+  remediation_steps: ModelRouteTelemetryRemediationStep[];
+  blocking_step_ids: string[];
+  warning_step_ids: string[];
+  recommended_env: ModelRouteTelemetryRecommendedEnv[];
+  recommended_actions: string[];
+  release_guardrails: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelRouteGuardrailCheck = {
   id: string;
   status: string;
@@ -1163,6 +1224,7 @@ export type ModelOpsResponse = {
   route_telemetry_repository?: ModelRouteTelemetryRepository;
   route_telemetry_ops_summary?: ModelRouteTelemetryOpsSummary;
   route_telemetry_triage?: ModelRouteTelemetryTriage;
+  route_telemetry_remediation?: ModelRouteTelemetryRemediation;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;

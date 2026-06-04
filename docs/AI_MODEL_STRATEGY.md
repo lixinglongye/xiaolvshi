@@ -140,6 +140,11 @@ pressure, operator-review load, unknown gateway models, daily hotspots, and
 missing staging telemetry. It does not read prompts, legal text, gateway
 payloads, credentials, emails, or raw model output.
 
+`route_telemetry_remediation` turns that triage queue into reviewed repair
+steps and optional `.env` suggestions. It never writes configuration and never
+calls NewAPI, Gemini, OpenAI, or another gateway; maintainers must apply changes
+manually and rerun the listed validation commands.
+
 ## Sources
 
 - Google Gemini OpenAI compatibility: https://ai.google.dev/gemini-api/docs/openai
