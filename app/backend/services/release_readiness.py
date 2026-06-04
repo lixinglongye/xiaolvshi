@@ -227,6 +227,23 @@ class ReleaseReadinessService:
                 manual_note="This replays selector scenarios deterministically without NewAPI calls; it stores model ids, tasks, checks, and warnings only.",
             ),
             ReleaseCheck(
+                id="gemini-newapi-cheap-first-calibration",
+                title="Gemini/NewAPI cheap-first calibration coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/gemini_newapi_cheap_first_calibration.py",
+                    "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md",
+                ),
+                validation_command="python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
+                manual_note="This is metadata-only cheap-first calibration evidence; it does not call NewAPI or store gateway credentials, prompts, legal text, or raw model outputs.",
+            ),
+            ReleaseCheck(
                 id="model-price-refresh-monitor",
                 title="Gemini and gateway price refresh monitor",
                 category="model_ops",

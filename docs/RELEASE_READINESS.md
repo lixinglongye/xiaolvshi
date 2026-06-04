@@ -208,6 +208,7 @@ external adoption.
 - `app/backend/services/document_version_diff_checklist.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
+- `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
@@ -257,6 +258,7 @@ external adoption.
 - `app/backend/tests/test_document_version_diff_checklist.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
+- `app/backend/tests/test_gemini_newapi_cheap_first_calibration.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
@@ -302,6 +304,7 @@ external adoption.
 - `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`

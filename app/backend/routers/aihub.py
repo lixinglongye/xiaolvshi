@@ -29,6 +29,7 @@ from services.aihub import (
     InvalidImageInputError,
     InvalidPdfInputError,
 )
+from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
 from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
@@ -174,6 +175,7 @@ async def list_models():
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
+    cheap_first_calibration = GeminiNewapiCheapFirstCalibrationService().build_calibration()
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -196,6 +198,7 @@ async def list_models():
         "routing_replay": routing_replay,
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
+        "cheap_first_calibration": cheap_first_calibration,
     }
     return {
         "success": True,
@@ -228,6 +231,7 @@ async def list_models():
         "routing_replay": routing_replay,
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
+        "cheap_first_calibration": cheap_first_calibration,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -257,6 +261,24 @@ async def evaluate_gateway_probe(payload: dict[str, Any]):
     return {
         "success": True,
         "data": ModelGatewayProbeEvaluationService().evaluate(payload),
+    }
+
+
+@router.get("/models/cheap-first-calibration")
+async def cheap_first_calibration():
+    """Return metadata-only Gemini/NewAPI cheap-first calibration evidence."""
+    return {
+        "success": True,
+        "data": GeminiNewapiCheapFirstCalibrationService().build_calibration(),
+    }
+
+
+@router.post("/models/cheap-first-calibration")
+async def evaluate_cheap_first_calibration(payload: dict[str, Any]):
+    """Evaluate sanitized cheap-first calibration metadata without calling NewAPI."""
+    return {
+        "success": True,
+        "data": GeminiNewapiCheapFirstCalibrationService().build_calibration(payload),
     }
 
 

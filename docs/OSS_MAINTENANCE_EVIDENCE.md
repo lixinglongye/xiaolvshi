@@ -126,7 +126,7 @@ still stay out of support applications until matching merged evidence exists.
 
 ## Evidence categories
 
-- Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, Gemini/NewAPI model selector evidence, Gemini/NewAPI selector replay evidence, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
+- Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, Gemini/NewAPI model selector evidence, Gemini/NewAPI selector replay evidence, Gemini/NewAPI cheap-first calibration, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
 - Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, case export readiness checks, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, LegalBench/LexGLUE/COLIEE research registry mapping and UI evidence, legal adoption research bridge evidence, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, citation validation, deep-review binding, and maintenance self-checks, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
 - Review operations: citation, evidence, source freshness, evidence exhibit packages, evidence bundle integrity, legal grounding quick audits, selected-source request metadata, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding and routes, privacy-safe case edit runtime events, task runtime notification summaries, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, quota delivery decisions, and client delivery transparency.
@@ -176,6 +176,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/backend/services/evidence_exhibit_package_policy.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
+- `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_document_benchmark_suite.py`
 - `app/backend/services/legal_adoption_research_bridge.py`
@@ -235,6 +236,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/backend/tests/test_evidence_exhibit_package_policy.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
+- `app/backend/tests/test_gemini_newapi_cheap_first_calibration.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
 - `app/backend/tests/test_legal_document_benchmark_suite.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
@@ -294,6 +296,7 @@ still stay out of support applications until matching merged evidence exists.
 - `docs/DOCUMENT_VERSION_DIFF_CHECKLIST.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`

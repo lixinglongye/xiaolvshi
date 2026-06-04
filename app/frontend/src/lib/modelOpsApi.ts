@@ -337,6 +337,71 @@ export type ModelGatewayProbeEvaluation = {
   privacy_note: string;
 };
 
+export type ModelCheapFirstCalibration = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    pass_count: number;
+    warn_count: number;
+    fail_count: number;
+    cheap_first_retained_count: number;
+    balanced_precheck_count: number;
+    premium_exception_count: number;
+    fixture_count: number;
+    observed_fixture_count: number;
+    selector_scenario_count: number;
+    cost_guardrail_status: string;
+    estimated_savings_ratio: number | null;
+    newapi_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  calibration_tasks: Array<{
+    id: string;
+    task: string;
+    product_area: string;
+    fixture_ids: string[];
+    expected_decision: string;
+    max_cost_tier: string;
+    quality_floor: number;
+    release_gate_links: string[];
+    user_need_ids: string[];
+  }>;
+  calibration_rows: Array<{
+    id: string;
+    task: string;
+    product_area: string;
+    status: string;
+    selected_model?: string | null;
+    canonical_model?: string | null;
+    decision?: string | null;
+    cost_tier: string;
+    fixture_ids: string[];
+    fixture_score: number;
+    quality_floor: number;
+    estimated_savings_ratio?: number | null;
+    calibration_decision: string;
+    reason_codes: string[];
+    checks: Array<{
+      id: string;
+      status: string;
+      expected: string;
+      actual: string | number | null;
+      reason: string;
+    }>;
+    release_gate_links: string[];
+    next_action: string;
+  }>;
+  source_summaries: Record<string, Record<string, unknown>>;
+  recommended_actions: string[];
+  release_guardrails: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -933,6 +998,7 @@ export type ModelOpsResponse = {
   routing_replay?: ModelRoutingReplay;
   cost_forecast?: ModelCostForecast;
   cost_guardrails?: ModelCostGuardrails;
+  cheap_first_calibration?: ModelCheapFirstCalibration;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -960,4 +1026,23 @@ export async function evaluateModelGatewayProbe(payload: Record<string, unknown>
     data: payload,
   });
   return (resp?.data?.data ?? resp?.data ?? resp) as ModelGatewayProbeEvaluation;
+}
+
+export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibration> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models/cheap-first-calibration',
+    method: 'GET',
+  });
+  return (resp?.data?.data ?? resp?.data ?? resp) as ModelCheapFirstCalibration;
+}
+
+export async function evaluateCheapFirstCalibration(
+  payload: Record<string, unknown>,
+): Promise<ModelCheapFirstCalibration> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models/cheap-first-calibration',
+    method: 'POST',
+    data: payload,
+  });
+  return (resp?.data?.data ?? resp?.data ?? resp) as ModelCheapFirstCalibration;
 }

@@ -34,6 +34,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("escalation-policy", "Escalation policy", "resilience", "escalation_policy"),
     ReadinessComponent("cost-forecast", "Cost forecast", "cost", "cost_forecast"),
     ReadinessComponent("cost-guardrails", "Cost guardrails", "cost", "cost_guardrails"),
+    ReadinessComponent(
+        "cheap-first-calibration",
+        "Gemini/NewAPI cheap-first calibration",
+        "cost",
+        "cheap_first_calibration",
+    ),
 )
 
 

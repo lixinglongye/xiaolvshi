@@ -139,21 +139,36 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     commands = {
         item["check_id"]: item["command"]
         for item in service.default_validation_commands()
-        if item["check_id"] in {"gemini-newapi-model-selector", "gemini-newapi-selector-replay"}
+        if item["check_id"]
+        in {
+            "gemini-newapi-model-selector",
+            "gemini-newapi-selector-replay",
+            "gemini-newapi-cheap-first-calibration",
+        }
     }
-    result = service.evaluate({"gemini-newapi-model-selector": "not_run", "gemini-newapi-selector-replay": "not_run"})
+    result = service.evaluate(
+        {
+            "gemini-newapi-model-selector": "not_run",
+            "gemini-newapi-selector-replay": "not_run",
+            "gemini-newapi-cheap-first-calibration": "not_run",
+        }
+    )
     checks = {check["id"]: check for check in result["checks"]}
 
     assert commands == {
         "gemini-newapi-model-selector": "python -m pytest tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
         "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
+        "gemini-newapi-cheap-first-calibration": "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
     }
     assert checks["gemini-newapi-model-selector"]["required"] is True
     assert checks["gemini-newapi-selector-replay"]["required"] is True
+    assert checks["gemini-newapi-cheap-first-calibration"]["required"] is True
     assert checks["gemini-newapi-model-selector"]["blocks_release"] is True
     assert checks["gemini-newapi-selector-replay"]["blocks_release"] is True
+    assert checks["gemini-newapi-cheap-first-calibration"]["blocks_release"] is True
     assert "does not call NewAPI" in checks["gemini-newapi-model-selector"]["manual_note"]
     assert "without NewAPI calls" in checks["gemini-newapi-selector-replay"]["manual_note"]
+    assert "metadata-only cheap-first calibration" in checks["gemini-newapi-cheap-first-calibration"]["manual_note"]
     assert "gateway credentials" in checks["gemini-newapi-model-selector"]["manual_note"]
 
 

@@ -16,9 +16,11 @@ import {
 import { AlertTriangle, ClipboardList, Gauge, Loader2, PlayCircle, RefreshCw, Route, Zap } from 'lucide-react';
 import {
   evaluateModelGatewayProbe,
+  getCheapFirstCalibration,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
+  type ModelCheapFirstCalibration,
   type ModelGatewayProbeEvaluation,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -70,12 +72,32 @@ function Inner() {
   const [probeLoading, setProbeLoading] = useState(false);
   const [probeTemplateLoading, setProbeTemplateLoading] = useState(false);
   const [probeError, setProbeError] = useState('');
+  const [cheapFirstCalibration, setCheapFirstCalibration] = useState<ModelCheapFirstCalibration | null>(null);
+  const [cheapFirstError, setCheapFirstError] = useState('');
 
   const load = async () => {
     setLoading(true);
     setError('');
+    setCheapFirstError('');
     try {
-      setData(await getModelOps());
+      const [modelOpsResult, calibrationResult] = await Promise.allSettled([
+        getModelOps(),
+        getCheapFirstCalibration(),
+      ]);
+      if (modelOpsResult.status === 'rejected') {
+        console.error(modelOpsResult.reason);
+        setError('Model telemetry failed to load.');
+        setData(null);
+      } else {
+        setData(modelOpsResult.value);
+        setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration ?? null);
+      }
+      if (calibrationResult.status === 'rejected') {
+        console.error(calibrationResult.reason);
+        setCheapFirstError('Cheap-first calibration failed to load.');
+      } else {
+        setCheapFirstCalibration(calibrationResult.value);
+      }
     } catch (err) {
       console.error(err);
       setError('Model telemetry failed to load.');
@@ -134,6 +156,8 @@ function Inner() {
   const probeEnvRows = probeEvaluation?.recommended_env ?? [];
   const probeCheckRows = probeEvaluation?.checks ?? [];
   const probeModelRows = probeEvaluation?.model_rows ?? [];
+  const activeCheapFirstCalibration = cheapFirstCalibration ?? data?.cheap_first_calibration ?? null;
+  const cheapFirstRows = activeCheapFirstCalibration?.calibration_rows ?? [];
   const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
@@ -883,6 +907,128 @@ function Inner() {
             </div>
           )}
         </section>
+
+        {(activeCheapFirstCalibration || cheapFirstError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first calibration</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCheapFirstCalibration
+                    ? `${activeCheapFirstCalibration.summary.cheap_first_retained_count} cheap defaults / ${activeCheapFirstCalibration.summary.balanced_precheck_count} balanced prechecks / ${activeCheapFirstCalibration.summary.premium_exception_count} premium exception`
+                    : 'metadata-only Gemini/NewAPI calibration'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCheapFirstCalibration?.status)}>
+                {activeCheapFirstCalibration?.status ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {cheapFirstError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {cheapFirstError}
+              </div>
+            )}
+
+            {activeCheapFirstCalibration && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.pass_count}/{activeCheapFirstCalibration.summary.task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">passing tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {Math.round((activeCheapFirstCalibration.summary.estimated_savings_ratio ?? 0) * 100)}%
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">forecast savings</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.observed_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">observed fixtures</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.newapi_called ? 'live' : 'local'}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway mode</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                    <div>
+                      <div className="mb-1 font-semibold text-stone-950">Next action</div>
+                      <div>{activeCheapFirstCalibration.recommended_actions[0]}</div>
+                    </div>
+                    <div>
+                      <div className="mb-1 font-semibold text-stone-950">Privacy boundary</div>
+                      <div>
+                        NewAPI called: {activeCheapFirstCalibration.summary.newapi_called ? 'yes' : 'no'} / raw payload echoed:{' '}
+                        {activeCheapFirstCalibration.summary.raw_payload_echoed ? 'yes' : 'no'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Decision</TableHead>
+                        <TableHead>Model</TableHead>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Release gates</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cheapFirstRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.product_area.replace(/_/g, ' ')}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.status)}>
+                              {row.status}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.reason_codes.join(', ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">{row.calibration_decision.replace(/_/g, ' ')}</div>
+                            <div>{row.decision?.replace(/_/g, ' ') ?? '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px]">
+                            <div className="font-mono text-xs text-stone-700">{row.selected_model ?? '-'}</div>
+                            <Badge variant="outline" className={costClass[row.cost_tier] ?? 'mt-1 bg-white'}>
+                              {row.cost_tier}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.fixture_score}/{row.quality_floor}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.fixture_ids.length || 'metadata only'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {row.release_gate_links.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">{row.next_action}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
+          </section>
+        )}
 
         {data?.lifecycle_policy && (
           <section className="mb-8">

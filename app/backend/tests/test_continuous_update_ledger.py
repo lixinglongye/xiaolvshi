@@ -59,6 +59,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-price-refresh-monitor" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
+    assert "gemini-newapi-cheap-first-calibration" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -132,6 +133,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-session-review-packet" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
+    assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -170,6 +172,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
 
 

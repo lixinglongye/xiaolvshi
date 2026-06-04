@@ -222,6 +222,7 @@ replace the fixture record itself.
 - `app/backend/services/evidence_exhibit_package_policy.py`
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
+- `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
@@ -278,6 +279,7 @@ replace the fixture record itself.
 - `app/backend/tests/test_evidence_exhibit_package_policy.py`
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
+- `app/backend/tests/test_gemini_newapi_cheap_first_calibration.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`
@@ -333,6 +335,7 @@ replace the fixture record itself.
 - `docs/EVIDENCE_EXHIBIT_PACKAGE_POLICY.md`
 - `docs/FEEDBACK_LIFECYCLE_POLICY.md`
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LEGAL_SOURCE_INGESTION_METADATA.md`
 - `docs/LEGAL_SOURCE_FRESHNESS_POLICY.md`
