@@ -35,6 +35,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Billing payment reconciliation policy" in profile["release_management"]["release_readiness_controls"]
     assert "Case task runtime notification summary" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -63,6 +64,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/release_claim_compliance.py" in evidence_paths
     assert "app/backend/services/admin_audit_policy.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
+    assert "app/backend/services/legal_document_benchmark_coverage.py" in evidence_paths
+    assert "app/backend/tests/test_legal_document_benchmark_coverage.py" in evidence_paths
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
     assert "app/backend/services/legal_adoption_research_bridge.py" in evidence_paths
     assert "app/backend/tests/test_legal_adoption_research_bridge.py" in evidence_paths

@@ -250,6 +250,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "billing-payment-reconciliation-policy": "python -m pytest tests/test_billing_payment_reconciliation.py -q",
         "case-task-runtime-notification-summary": "python -m pytest tests/test_case_task_notification_policy.py -q",
         "legal-document-benchmark-suite": "python -m pytest tests/test_legal_document_benchmark_suite.py -q",
+        "legal-document-benchmark-coverage": "python -m pytest tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py -q",
+        "legal-document-benchmark-coverage-ui": "npm run typecheck",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
@@ -288,6 +290,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "rejects raw logs" in checks["validation-event-evidence"]["manual_note"]
     assert "does not prove 24-hour completion" in checks["validation-event-evidence"]["manual_note"]
     assert "does not verify real payment provider settlement" in checks["billing-payment-reconciliation-policy"]["manual_note"]
+    assert "metadata-only coverage matrix" in checks["legal-document-benchmark-coverage"]["manual_note"]
+    assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

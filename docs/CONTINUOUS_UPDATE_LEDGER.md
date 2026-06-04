@@ -1,5 +1,7 @@
 # Continuous Update Ledger
 
+Latest product-quality slice: `legal-document-benchmark-coverage` and `legal-document-benchmark-coverage-ui` add a metadata-only legal document coverage matrix, maintenance route, tests, and UI panel for low-resource fixture planning. The matrix still keeps broad coverage claims blocked until the missing synthetic document types are added and validated.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

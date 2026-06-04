@@ -1929,9 +1929,81 @@ export type LegalReviewBenchmark = {
   };
 };
 
+export type LegalDocumentBenchmarkCoverageDimensionRow = {
+  label: string;
+  coverage_count: number;
+  case_ids: string[];
+  document_types: string[];
+  covered: boolean;
+};
+
+export type LegalDocumentBenchmarkCoverageCaseRow = {
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  required_section_count: number;
+  expected_citation_count: number;
+  expected_risk_label_count: number;
+  banned_pii_category_count: number;
+  coverage_axes: {
+    structure: string[];
+    citations: string[];
+    risk_labels: string[];
+    pii: string[];
+  };
+  local_run_fit: string;
+};
+
+export type LegalDocumentBenchmarkCoverageQueueItem = {
+  id: string;
+  priority: string;
+  document_type: string;
+  reason: string;
+  recommended_fixture_shape: string;
+  validation_target: string;
+};
+
+export type LegalDocumentBenchmarkCoverage = {
+  status: string;
+  summary: {
+    case_count: number;
+    target_document_type_count: number;
+    covered_document_type_count: number;
+    missing_document_type_count: number;
+    section_label_count: number;
+    citation_label_count: number;
+    risk_label_count: number;
+    pii_category_count: number;
+    max_local_fixtures_per_run: number;
+    model_calls: string;
+    network_access: string;
+  };
+  target_document_types: string[];
+  missing_document_types: string[];
+  case_rows: LegalDocumentBenchmarkCoverageCaseRow[];
+  dimensions: {
+    document_types: LegalDocumentBenchmarkCoverageDimensionRow[];
+    required_sections: LegalDocumentBenchmarkCoverageDimensionRow[];
+    expected_citations: LegalDocumentBenchmarkCoverageDimensionRow[];
+    expected_risk_labels: LegalDocumentBenchmarkCoverageDimensionRow[];
+    banned_pii_categories: LegalDocumentBenchmarkCoverageDimensionRow[];
+  };
+  next_fixture_queue: LegalDocumentBenchmarkCoverageQueueItem[];
+  recommended_actions: string[];
+  validation_commands: string[];
+  privacy_boundary: Record<string, unknown>;
+  privacy_note: string;
+};
+
 type LegalReviewBenchmarkResponse = {
   success: boolean;
   data: LegalReviewBenchmark;
+};
+
+type LegalDocumentBenchmarkCoverageResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkCoverage;
 };
 
 type LegalReviewFixtureSmokeResponse = {
@@ -3060,6 +3132,20 @@ export async function getLegalReviewBenchmark(): Promise<LegalReviewBenchmark> {
     return payload.data;
   }
   return payload as LegalReviewBenchmark;
+}
+
+export async function getLegalDocumentBenchmarkCoverage(): Promise<LegalDocumentBenchmarkCoverage> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-coverage',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkCoverageResponse
+    | LegalDocumentBenchmarkCoverage;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkCoverage;
 }
 
 export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {

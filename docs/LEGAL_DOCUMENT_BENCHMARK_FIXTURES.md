@@ -1,5 +1,7 @@
 # Legal Document Benchmark Fixtures
 
+Related coverage evidence: `docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md` maps the tiny synthetic fixtures to document-type, section, citation, risk-label, and PII coverage gaps without exposing fixture snippets or model outputs.
+
 This module adds a small, deterministic benchmark fixture set for Chinese legal-document smoke tests on low-resource local machines.
 
 ## Purpose

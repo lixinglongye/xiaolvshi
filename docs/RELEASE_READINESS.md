@@ -1,5 +1,7 @@
 # Release Readiness
 
+Recent optional evidence: `legal-document-benchmark-coverage` and `legal-document-benchmark-coverage-ui` expose the local legal-document fixture coverage matrix in backend release checks and the maintenance UI. The checks are metadata-only and do not claim external benchmark scores, model-run accuracy, or real client-document testing.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint

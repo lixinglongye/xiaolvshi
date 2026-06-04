@@ -104,6 +104,11 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "operator-reviewed route telemetry remediation plans" in gaps["model-cost-ops"]["current_state"]
     assert "maintenance UI for the metadata-only registry" in gaps["model-cost-ops"]["current_state"]
     assert "public adoption/research bridge" in gaps["model-cost-ops"]["current_state"]
+    assert "metadata-only benchmark coverage matrix" in gaps["contract-review"]["current_state"]
+    assert "broader real-world document coverage" in gaps["contract-review"]["current_state"]
+    assert "app/backend/services/legal_document_benchmark_coverage.py" in gaps["contract-review"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_benchmark_coverage.py" in gaps["contract-review"]["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in gaps["contract-review"]["evidence_paths"]
     assert "app/backend/services/legal_adoption_research_bridge.py" in gaps["feedback-loop"]["evidence_paths"]
     assert "app/backend/tests/test_legal_adoption_research_bridge.py" in gaps["feedback-loop"]["evidence_paths"]
     assert "app/backend/services/legal_benchmark_research_registry.py" in gaps["model-cost-ops"]["evidence_paths"]
@@ -157,6 +162,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("active-run monitor" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("support-facing index" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("validation event normalizer" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
+    assert any("benchmark coverage matrix" in action for action in gaps["contract-review"]["next_actions"])
 
 
 def test_product_feature_gap_radar_has_no_secret_material():

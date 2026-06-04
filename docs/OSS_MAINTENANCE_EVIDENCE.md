@@ -1,5 +1,7 @@
 # OSS Maintenance Evidence
 
+Maintenance evidence now includes a legal document benchmark coverage matrix. It helps reviewers see which tiny synthetic legal-document fixtures exist, which document types are still missing, and why broad coverage claims remain blocked until more low-resource fixtures are added.
+
 This project includes a small maintenance evidence endpoint for open-source support applications and reviewer-facing project summaries.
 
 ## Endpoint

@@ -36,6 +36,7 @@ import {
   getLegalFixtureResultArchive,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
+  getLegalDocumentBenchmarkCoverage,
   getLegalAdoptionResearchBridge,
   getLegalBenchmarkResearchRegistry,
   getGeminiNewApiSelectorReplayEvidence,
@@ -87,6 +88,7 @@ import {
   type LegalFixtureRunReport,
   type LegalAdoptionResearchBridge,
   type LegalBenchmarkResearchRegistry,
+  type LegalDocumentBenchmarkCoverage,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
   type LegalResearchBacklog,
@@ -311,6 +313,8 @@ function Inner() {
     useState<GeminiNewApiSelectorReplayEvidence | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
+  const [legalDocumentBenchmarkCoverage, setLegalDocumentBenchmarkCoverage] =
+    useState<LegalDocumentBenchmarkCoverage | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
   const [normalizerPayloadText, setNormalizerPayloadText] = useState('');
   const [normalizerError, setNormalizerError] = useState('');
@@ -364,6 +368,7 @@ function Inner() {
         caseTaskNotificationPolicyData,
         caseWorkbenchPayloadData,
         benchmarkData,
+        legalDocumentBenchmarkCoverageData,
         researchBacklogData,
         adoptionResearchBridgeData,
         benchmarkResearchRegistryData,
@@ -407,6 +412,7 @@ function Inner() {
         getCaseTaskNotificationPolicy(),
         getCaseWorkbenchPayload(),
         getLegalReviewBenchmark(),
+        getLegalDocumentBenchmarkCoverage(),
         getLegalResearchBacklog(),
         getLegalAdoptionResearchBridge(),
         getLegalBenchmarkResearchRegistry(),
@@ -451,6 +457,7 @@ function Inner() {
       setCaseTaskNotificationPolicy(caseTaskNotificationPolicyData);
       setCaseWorkbenchPayload(caseWorkbenchPayloadData);
       setBenchmark(benchmarkData);
+      setLegalDocumentBenchmarkCoverage(legalDocumentBenchmarkCoverageData);
       setResearchBacklog(researchBacklogData);
       setAdoptionResearchBridge(adoptionResearchBridgeData);
       setBenchmarkResearchRegistry(benchmarkResearchRegistryData);
@@ -3421,6 +3428,160 @@ function Inner() {
                     </ul>
                   </div>
                 )}
+              </section>
+            )}
+
+            {legalDocumentBenchmarkCoverage && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal document benchmark coverage</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkCoverage.summary.covered_document_type_count}/
+                      {legalDocumentBenchmarkCoverage.summary.target_document_type_count} document types covered /{' '}
+                      {legalDocumentBenchmarkCoverage.summary.missing_document_type_count} gaps
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalDocumentBenchmarkCoverage.status] ?? statusClass.warn}
+                  >
+                    {legalDocumentBenchmarkCoverage.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    { label: 'fixture cases', value: legalDocumentBenchmarkCoverage.summary.case_count },
+                    { label: 'sections', value: legalDocumentBenchmarkCoverage.summary.section_label_count },
+                    { label: 'citations', value: legalDocumentBenchmarkCoverage.summary.citation_label_count },
+                    { label: 'risk labels', value: legalDocumentBenchmarkCoverage.summary.risk_label_count },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Coverage axes</TableHead>
+                          <TableHead>Run fit</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkCoverage.case_rows.map((row) => (
+                          <TableRow key={row.case_id}>
+                            <TableCell className="max-w-[340px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className="bg-white font-mono text-[11px]">
+                                {row.document_type}
+                              </Badge>
+                              <div className="mt-2">{row.matter_type}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{row.required_section_count} sections</div>
+                              <div>{row.expected_citation_count} citations</div>
+                              <div>{row.expected_risk_label_count} risk labels</div>
+                              <div>{row.banned_pii_category_count} PII bans</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                                {row.local_run_fit.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Missing document types</h3>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {legalDocumentBenchmarkCoverage.missing_document_types.length === 0 ? (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                          all targets covered
+                        </Badge>
+                      ) : (
+                        legalDocumentBenchmarkCoverage.missing_document_types.map((documentType) => (
+                          <Badge key={documentType} variant="outline" className="bg-amber-50 text-amber-900">
+                            {documentType.replace(/_/g, ' ')}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>model calls: {String(legalDocumentBenchmarkCoverage.privacy_boundary.model_calls)}</div>
+                      <div>
+                        raw model output:{' '}
+                        {String(legalDocumentBenchmarkCoverage.privacy_boundary.returns_raw_model_output)}
+                      </div>
+                      <div>snippets: {String(legalDocumentBenchmarkCoverage.privacy_boundary.returns_snippets)}</div>
+                      <div>network: {legalDocumentBenchmarkCoverage.summary.network_access}</div>
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">
+                      {legalDocumentBenchmarkCoverage.privacy_note}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Next fixture</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Fixture shape</TableHead>
+                        <TableHead>Validation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentBenchmarkCoverage.next_fixture_queue.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-mono text-xs font-semibold text-stone-950">
+                            {item.document_type}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={priorityClass[item.priority] ?? priorityClass.medium}>
+                              {item.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">{item.reason}</TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            {item.recommended_fixture_shape}
+                          </TableCell>
+                          <TableCell className="break-all font-mono text-[11px] text-stone-500">
+                            {item.validation_target}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Coverage actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {legalDocumentBenchmarkCoverage.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </section>
             )}
 

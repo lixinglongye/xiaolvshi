@@ -37,6 +37,7 @@ from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplaySer
 from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
+from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
@@ -1032,6 +1033,15 @@ async def get_legal_document_benchmark_fixtures():
     return {
         "success": True,
         "data": LegalDocumentBenchmarkFixturesService().build_suite(),
+    }
+
+
+@router.get("/legal-review-benchmark/document-coverage")
+async def get_legal_document_benchmark_coverage():
+    """Return a metadata-only coverage matrix for local legal-document fixtures."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkCoverageService().build_matrix(),
     }
 
 
