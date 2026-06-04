@@ -219,8 +219,11 @@ export type ModelGatewayHealthPlanRole = {
   is_known_model: boolean;
   cost_tier?: string | null;
   model_status: string;
+  billing_unit: string;
+  probe_type: string;
   cheap_first_aligned: boolean;
   estimated_probe_cost_usd?: number | null;
+  output_usd_per_image?: number | null;
   reason: string;
 };
 
@@ -237,6 +240,7 @@ export type ModelGatewayHealthPlan = {
     normalized_base_url: string;
     configured_role_count: number;
     known_low_resource_role_count: number;
+    known_media_role_count: number;
     unknown_role_count: number;
     cheap_first_low_cost_count: number;
     blocking_check_count: number;

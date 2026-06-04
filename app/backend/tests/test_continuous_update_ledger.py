@@ -76,6 +76,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "pdf-image-route-telemetry" in completed_ids
     assert "image-auto-route-default" in completed_ids
     assert "image-price-refresh-monitor" in completed_ids
+    assert "image-gateway-health-plan" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -150,6 +151,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
     assert "image-price-refresh-monitor" not in queue_ids
+    assert "image-gateway-health-plan" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
@@ -197,6 +199,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_model_gateway_health_plan.py tests/test_model_price_refresh_monitor.py "
+        "tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
     assert (
         "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q && "
         "cd ../frontend && npm run typecheck"

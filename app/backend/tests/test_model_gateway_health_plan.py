@@ -11,9 +11,18 @@ def test_gateway_health_plan_uses_placeholders_and_cheap_probe(monkeypatch):
     assert plan["status"] == "pass"
     assert plan["summary"]["base_url_configured"] is True
     assert plan["summary"]["api_key_configured"] is True
+    assert plan["summary"]["known_media_role_count"] == 1
     assert plan["gateway_config"]["api_key_display"] == "{{APP_AI_KEY}}"
     assert plan["dry_run_contracts"][0]["url"] == "https://yibuapi.com/v1/models"
     assert plan["dry_run_contracts"][1]["body"]["model"] == "gemini-2.5-flash-lite"
+    assert plan["dry_run_contracts"][2]["id"] == "image-generation-smoke"
+    assert plan["dry_run_contracts"][2]["body"]["model"] == "gemini-2.5-flash-image"
+    image_role = next(row for row in plan["role_models"] if row["role"] == "image")
+    assert image_role["billing_unit"] == "image"
+    assert image_role["probe_type"] == "image-generation"
+    assert image_role["estimated_probe_cost_usd"] == 0.039
+    assert image_role["output_usd_per_image"] == 0.039
+    assert "image-probe-priced-model" not in plan["blocking_check_ids"]
     assert "local-secret-value" not in str(plan)
     assert "sk-" not in str(plan)
 
@@ -51,6 +60,20 @@ def test_gateway_health_plan_warns_unknown_gateway_models(monkeypatch):
     assert plan["status"] == "warn"
     assert "cheap-first-known-models" in plan["warning_check_ids"]
     assert plan["summary"]["unknown_role_count"] >= 1
+
+
+def test_gateway_health_plan_blocks_unpriced_image_default(monkeypatch):
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_base_url", "https://yibuapi.com/v1")
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", "configured")
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_image_model", "gemini-3-pro-image")
+
+    plan = ModelGatewayHealthPlanService().build_plan()
+
+    assert plan["status"] == "fail"
+    assert "image-probe-priced-model" in plan["blocking_check_ids"]
+    image_role = next(row for row in plan["role_models"] if row["role"] == "image")
+    assert image_role["cost_tier"] == "premium"
+    assert image_role["output_usd_per_image"] is None
 
 
 def test_model_ops_route_includes_gateway_health_plan():

@@ -21,6 +21,7 @@ import {
   getModelOps,
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
+  type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -54,6 +55,13 @@ function pricingText(model: ModelCatalogItem) {
     parts.push(`image ${formatUsd(model.pricing.output_usd_per_image)}`);
   }
   return parts.join(' / ');
+}
+
+function gatewayHealthProbeText(row: ModelGatewayHealthPlanRole) {
+  if (row.billing_unit === 'image' && row.output_usd_per_image != null) {
+    return `image ${formatUsd(row.output_usd_per_image)}`;
+  }
+  return formatUsd(row.estimated_probe_cost_usd);
 }
 
 function statusClass(status?: string) {
@@ -619,7 +627,7 @@ function Inner() {
                 {data.gateway_health_plan.status}
               </Badge>
             </div>
-            <div className="mb-3 grid gap-3 md:grid-cols-4">
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="truncate font-mono text-sm font-black text-stone-950">
                   {data.gateway_health_plan.gateway_config.base_url_display}
@@ -631,6 +639,12 @@ function Inner() {
                   {data.gateway_health_plan.summary.unknown_role_count}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">unknown models</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gateway_health_plan.summary.known_media_role_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">media roles</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
@@ -676,7 +690,8 @@ function Inner() {
                         <div className="mt-1 text-[11px] text-stone-500">{row.model_status}</div>
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-600">
-                        {formatUsd(row.estimated_probe_cost_usd)}
+                        <div>{gatewayHealthProbeText(row)}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.probe_type}</div>
                       </TableCell>
                       <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
                     </TableRow>
