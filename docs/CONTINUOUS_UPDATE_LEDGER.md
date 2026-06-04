@@ -72,6 +72,14 @@ joins timestamped commits, tests, pushes, review actions, credential scans, and
 low-resource legal fixture records without copying raw legal text or model
 output into repository evidence.
 
+`docs/CONTINUOUS_SESSION_TIMELINE.md` defines the implemented reviewer timeline
+for `GET`/`POST` `/api/v1/maintenance/continuous-session-timeline`. That
+endpoint consumes metadata only and merges the ledger, session validator,
+heartbeat, low-resource legal fixture, and release review evidence streams. It
+must not store secrets, account data, emails, raw legal text, raw gateway
+payloads, or model original outputs, and it must keep `completion_ready` blocked
+until the 24-hour window is actually proven.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -105,6 +113,7 @@ support both product quality checks and the continuous maintenance timeline.
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_session_evidence.py`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
+- `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/alembic/versions/b7a2c9d4e6f1_repository_persistence_indexes.py`

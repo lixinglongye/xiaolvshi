@@ -44,6 +44,7 @@ import {
   getLegalReviewBenchmark,
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
+  getMaintenanceContinuousSessionTimeline,
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
   getMatterAuditRetentionPolicy,
@@ -82,6 +83,7 @@ import {
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
+  type MaintenanceContinuousSessionTimeline,
   type MaintenanceGateSnapshot,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
@@ -178,6 +180,11 @@ function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][numbe
   return [outputScope, ...flags];
 }
 
+function blockerSummary(blocker: MaintenanceContinuousSessionTimeline['blockers'][number]) {
+  if (typeof blocker === 'string') return blocker;
+  return blocker.title ?? blocker.detail ?? blocker.required_action ?? blocker.code ?? blocker.id ?? 'review required';
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 
@@ -201,6 +208,8 @@ function Inner() {
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
+  const [continuousSessionTimeline, setContinuousSessionTimeline] =
+    useState<MaintenanceContinuousSessionTimeline | null>(null);
   const [caseIntakeCompleteness, setCaseIntakeCompleteness] = useState<CaseIntakeCompleteness | null>(null);
   const [caseTeamAccessPolicy, setCaseTeamAccessPolicy] = useState<CaseTeamAccessPolicy | null>(null);
   const [clientDeliveryRiskChecklist, setClientDeliveryRiskChecklist] = useState<ClientDeliveryRiskChecklist | null>(null);
@@ -261,6 +270,7 @@ function Inner() {
         productFeatureGapData,
         feedbackMap,
         continuousLedgerData,
+        continuousSessionTimelineData,
         caseIntakeCompletenessData,
         caseTeamAccessPolicyData,
         clientDeliveryRiskChecklistData,
@@ -296,6 +306,7 @@ function Inner() {
         getProductFeatureGapRadar(),
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
+        getMaintenanceContinuousSessionTimeline(),
         getCaseIntakeCompleteness(),
         getCaseTeamAccessPolicy(),
         getClientDeliveryRiskChecklist(),
@@ -332,6 +343,7 @@ function Inner() {
       setProductFeatureGaps(productFeatureGapData);
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
+      setContinuousSessionTimeline(continuousSessionTimelineData);
       setCaseIntakeCompleteness(caseIntakeCompletenessData);
       setCaseTeamAccessPolicy(caseTeamAccessPolicyData);
       setClientDeliveryRiskChecklist(clientDeliveryRiskChecklistData);
@@ -433,6 +445,20 @@ function Inner() {
   }, [ledgerCategoryFilter, ledgerEntries, ledgerSearch, ledgerStatusFilter]);
   const filteredCompletedLedgerCount = filteredLedgerEntries.filter((entry) => entry.bucket === 'completed_updates').length;
   const filteredQueuedLedgerCount = filteredLedgerEntries.filter((entry) => entry.bucket === 'next_update_queue').length;
+  const timelineVerifiedHours =
+    continuousSessionTimeline?.summary.verified_hours ??
+    continuousSessionTimeline?.summary.verified_continuous_hours ??
+    0;
+  const timelineRemainingHours =
+    continuousSessionTimeline?.summary.remaining_hours ??
+    continuousSessionTimeline?.summary.continuous_hours_remaining ??
+    0;
+  const timelineLedgerCount =
+    continuousSessionTimeline?.summary.ledger_count ??
+    continuousSessionTimeline?.summary.completed_medium_large_update_count ??
+    ledgerEntries.length;
+  const timelineEventCount =
+    continuousSessionTimeline?.summary.event_count ?? continuousSessionTimeline?.timeline_events.length ?? 0;
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -735,6 +761,81 @@ function Inner() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {continuousSessionTimeline && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">24h evidence timeline</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Reviewer view of observed session evidence; 24h completion is not claimed here.
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass[continuousSessionTimeline.status] ?? statusClass.in_progress}
+              >
+                {displayToken(continuousSessionTimeline.status)}
+              </Badge>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(timelineVerifiedHours)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">verified hours</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(timelineRemainingHours)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">remaining hours</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(timelineLedgerCount)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">ledger count</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(timelineEventCount)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">event count</div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Blockers</h3>
+                  {continuousSessionTimeline.blockers.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {continuousSessionTimeline.blockers.slice(0, 6).map((blocker, index) => (
+                        <Badge key={`${blockerSummary(blocker)}-${index}`} variant="outline" className="bg-[#fbfaf6]">
+                          {blockerSummary(blocker)}
+                        </Badge>
+                      ))}
+                      {continuousSessionTimeline.blockers.length > 6 && (
+                        <Badge variant="outline" className="bg-[#fbfaf6]">
+                          +{continuousSessionTimeline.blockers.length - 6}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-stone-600">No blockers reported by the timeline endpoint.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {privacyBoundarySummary(continuousSessionTimeline.privacy_boundary)
+                      .slice(0, 4)
+                      .map((item) => (
+                        <div key={item} className="break-words">
+                          {item}
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
             </div>
           </section>

@@ -55,9 +55,14 @@ workflow binding:
 - Selected-source citation validation should bind into live deep-review persistence and export actions.
 - Quota summaries should bind into reviewer-visible export, delivery, and account-plan decisions.
 - Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
-- Continuous 24-hour maintenance evidence should bind the 100+ update ledger,
+- Continuous 24-hour maintenance evidence now binds the 100+ update ledger,
   heartbeat records, push/test validation, and low-resource legal fixture runs
-  into one reviewer timeline before any support application claims completion.
+  into one reviewer timeline, while still blocking support-application
+  completion claims until real timestamped records prove the window.
+  `docs/CONTINUOUS_SESSION_TIMELINE.md` scopes the implemented
+  `GET`/`POST` `/api/v1/maintenance/continuous-session-timeline` endpoint as
+  metadata-only and keeps the 24-hour proof separate from the satisfied 100+
+  update count.
 
 ## Scope
 
@@ -125,11 +130,12 @@ privacy-safe usage metering.
 
 ### Cross-Phase Evidence Gap: Continuous Session Validation
 
-The 100+ update target is now reviewable through repository artifacts, and the
-backend continuous-session validator can evaluate explicit metadata. The product
-still needs a combined reviewer-facing timeline, so the validator should not be
-treated as a backend-only metric. It should become a product capability that
-shows:
+The 100+ update target is now reviewable through repository artifacts, the
+backend continuous-session validator can evaluate explicit metadata, and the
+maintenance page can show a compact reviewer-facing timeline. The product still
+needs persisted real session records and a fuller interactive timeline, so the
+validator should not be treated as a backend-only metric. It should continue to
+show:
 
 - the longest verified maintenance window,
 - timestamped commits, test runs, pushes, and review actions,
@@ -141,6 +147,10 @@ This gap is linked to legal-document benchmark work because a long maintenance
 session should include lightweight, repeatable legal quality checks. The
 acceptable default is a quick-suite or local-run-review record with synthetic
 fixture IDs and coverage metadata, not a large public benchmark download.
+The continuous-session timeline also joins release review evidence and
+public-claim guardrails, but it must not persist secrets, account
+data, emails, raw legal texts, copied benchmark samples, raw prompts, gateway
+payloads, or model original outputs.
 
 ## Validation
 

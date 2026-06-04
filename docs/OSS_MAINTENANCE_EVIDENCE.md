@@ -27,6 +27,14 @@ reviewer contract for continuous 24-hour session validation. Support forms
 should distinguish the already reviewable 100+ update evidence from the
 still-unproven 24-hour continuous window.
 
+`docs/CONTINUOUS_SESSION_TIMELINE.md` documents the implemented reviewer timeline
+for `GET`/`POST` `/api/v1/maintenance/continuous-session-timeline`. The
+timeline merges ledger, session validator, heartbeat, low-resource legal
+fixture, and release review metadata only. It must not store secrets, account
+data, emails, raw legal text, raw prompts, gateway payloads, or model original
+outputs, and support forms must not cite it as 24-hour proof until real
+timestamped records pass the gate.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -64,7 +72,7 @@ still stay out of support applications until matching merged evidence exists.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -199,6 +207,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
+- `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`
 - `docs/BILLING_QUOTA_PERSISTENCE_PLAN.md`

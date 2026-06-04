@@ -831,7 +831,21 @@ class ReleaseReadinessService:
                     "app/backend/tests/test_continuous_session_evidence.py",
                 ),
                 validation_command="python -m pytest tests/test_continuous_session_evidence.py -q",
-                manual_note="This validates explicit 24-hour session metadata with max-gap, secret-scan, low-resource test, and 100+ update-count checks; it does not create proof by itself.",
+                manual_note="This validates explicit 24-hour session metadata with max-gap, credential-scan, low-resource test, and 100+ update-count checks; it does not create proof by itself.",
+            ),
+            ReleaseCheck(
+                id="continuous-session-timeline",
+                title="Continuous session timeline",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_timeline.py",
+                    "app/backend/tests/test_continuous_session_timeline.py",
+                    "docs/CONTINUOUS_SESSION_TIMELINE.md",
+                ),
+                validation_command="python -m pytest tests/test_continuous_session_timeline.py -q",
+                manual_note="This joins ledger, session-validator, heartbeat, and low-resource legal fixture metadata into a reviewer timeline, while keeping 24-hour completion blocked until real events prove it.",
             ),
             ReleaseCheck(
                 id="product-feature-gap-radar",

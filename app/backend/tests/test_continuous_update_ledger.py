@@ -62,6 +62,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-cost-regression-snapshots" in completed_ids
     assert "twenty-four-hour-heartbeat-evidence" in completed_ids
     assert "continuous-session-evidence-validator" in completed_ids
+    assert "continuous-session-timeline" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "legal-source-freshness-policy" in completed_ids
     assert "maintenance-dashboard-filtering" in completed_ids
@@ -117,6 +118,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-export-readiness" in completed_ids
     assert "admin-audit-policy" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
+    assert "continuous-session-timeline" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -147,6 +149,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert "python -m pytest tests/test_continuous_session_evidence.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_continuous_session_timeline.py -q" in ledger["validation_commands"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

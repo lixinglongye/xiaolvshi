@@ -94,6 +94,7 @@ class ContinuousUpdateLedgerService:
             "validation_commands": [
                 "python -m pytest tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_continuous_session_evidence.py -q",
+                "python -m pytest tests/test_continuous_session_timeline.py -q",
                 "python -m pytest tests/test_runtime_router_discovery.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q",
             ],
@@ -812,6 +813,21 @@ class ContinuousUpdateLedgerService:
                     "docs/CONTINUOUS_SESSION_EVIDENCE.md",
                 ),
                 release_gate_links=("continuous-session-evidence", "continuous-update-ledger", "oss-maintenance-evidence"),
+                user_need_ids=("reviewer-visibility", "low-resource-testing"),
+            ),
+            LedgerEntry(
+                id="continuous-session-timeline",
+                title="Continuous session reviewer timeline",
+                category="maintenance",
+                size="large",
+                status="shipped",
+                impact="Combines ledger progress, explicit session validation, heartbeat records, low-resource fixture evidence, blockers, and privacy boundaries into a single reviewer-facing timeline.",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_timeline.py",
+                    "app/backend/tests/test_continuous_session_timeline.py",
+                    "docs/CONTINUOUS_SESSION_TIMELINE.md",
+                ),
+                release_gate_links=("continuous-session-timeline", "continuous-session-evidence", "continuous-update-ledger"),
                 user_need_ids=("reviewer-visibility", "low-resource-testing"),
             ),
             LedgerEntry(

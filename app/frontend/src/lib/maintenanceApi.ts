@@ -2112,6 +2112,50 @@ type MaintenanceSelectedSourceBindingResponse = {
   data: MaintenanceSelectedSourceBinding;
 };
 
+export type MaintenanceContinuousSessionTimelineEvent = {
+  id: string;
+  event_type: string;
+  title?: string;
+  timestamp?: string | null;
+  status?: string;
+  ledger_entry_id?: string | null;
+  evidence_paths?: string[];
+  notes?: string[];
+  [key: string]: unknown;
+};
+
+export type MaintenanceContinuousSessionTimelineBlocker = {
+  id?: string;
+  code?: string;
+  title?: string;
+  detail?: string;
+  required_action?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceContinuousSessionTimeline = {
+  status: string;
+  summary: {
+    verified_hours?: number;
+    remaining_hours?: number;
+    verified_continuous_hours?: number;
+    continuous_hours_remaining?: number;
+    ledger_count?: number;
+    completed_medium_large_update_count?: number;
+    event_count?: number;
+    [key: string]: unknown;
+  };
+  timeline_events: MaintenanceContinuousSessionTimelineEvent[];
+  blockers: Array<string | MaintenanceContinuousSessionTimelineBlocker>;
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceContinuousSessionTimelineResponse = {
+  success: boolean;
+  data: MaintenanceContinuousSessionTimeline;
+};
+
 export type MaintenanceContinuousSessionEvidence = {
   status: string;
   summary: {
@@ -2392,6 +2436,14 @@ export async function getContinuousUpdateLedger(): Promise<ContinuousUpdateLedge
     return payload.data;
   }
   return payload as ContinuousUpdateLedger;
+}
+
+export async function getMaintenanceContinuousSessionTimeline(): Promise<MaintenanceContinuousSessionTimeline> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-timeline',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionTimelineResponse['data']>(resp);
 }
 
 export async function getCaseIntakeCompleteness(): Promise<CaseIntakeCompleteness> {

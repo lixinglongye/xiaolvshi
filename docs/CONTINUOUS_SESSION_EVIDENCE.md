@@ -87,9 +87,15 @@ see a persisted frontend timeline that joins:
 - low-resource legal fixture evidence, and
 - release-safe OSS support claims.
 
-This gap should stay visible in the product feature radar until the validator is
-wired into the reviewer-facing maintenance page and backed by real session
-records.
+`docs/CONTINUOUS_SESSION_TIMELINE.md` defines the reviewer contract for the
+implemented `GET`/`POST`
+`/api/v1/maintenance/continuous-session-timeline` endpoint. That timeline
+joins ledger, validator, heartbeat, legal fixture, and release review
+metadata while keeping the 100+ update proof separate from the still-unproven
+24-hour window.
+
+This gap should stay visible in the product feature radar until the reviewer
+timeline is backed by real persisted session records.
 
 ## Reviewer Checklist
 
@@ -104,6 +110,7 @@ records.
 ## Related Documents
 
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/OSS_MAINTENANCE_EVIDENCE.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`

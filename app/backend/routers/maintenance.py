@@ -19,6 +19,7 @@ from services.client_delivery_transparency_policy import ClientDeliveryTranspare
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.continuous_session_evidence import ContinuousSessionEvidenceService
+from services.continuous_session_timeline import ContinuousSessionTimelineService
 from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
@@ -697,6 +698,24 @@ async def build_continuous_session_evidence(payload: Any = Body(default=None)):
     return {
         "success": True,
         "data": ContinuousSessionEvidenceService().build_report(payload),
+    }
+
+
+@router.get("/continuous-session-timeline")
+async def get_continuous_session_timeline_template():
+    """Return a combined timeline template for 100+ updates and 24-hour evidence."""
+    return {
+        "success": True,
+        "data": ContinuousSessionTimelineService().build_timeline(),
+    }
+
+
+@router.post("/continuous-session-timeline")
+async def build_continuous_session_timeline(payload: Any = Body(default=None)):
+    """Build a metadata-only reviewer timeline without echoing raw legal text."""
+    return {
+        "success": True,
+        "data": ContinuousSessionTimelineService().build_timeline(payload),
     }
 
 
