@@ -1821,6 +1821,22 @@ class ReleaseReadinessService:
                 manual_note="This adds deterministic laptop-safe legal document fixtures; public benchmark import and model-run evidence remain separate.",
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-gap-fixtures",
+                title="Legal document benchmark gap fixtures",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/tests/test_legal_document_benchmark_suite.py",
+                    "app/backend/tests/test_legal_document_benchmark_coverage.py",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
+                manual_note="This fills the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixture gaps in the local coverage matrix; it still does not prove external benchmark scores, live model accuracy, or real client-document coverage.",
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage",
                 title="Legal document benchmark coverage matrix",
                 category="quality",

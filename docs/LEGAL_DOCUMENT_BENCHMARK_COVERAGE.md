@@ -1,6 +1,6 @@
 # Legal Document Benchmark Coverage
 
-This slice adds a metadata-only coverage matrix for the tiny local legal-document benchmark fixtures.
+This slice adds a metadata-only coverage matrix for the tiny local legal-document benchmark fixtures and fills the first matrix gaps with synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures.
 
 ## Implemented evidence
 
@@ -27,7 +27,7 @@ The initial target matrix tracks:
 - `settlement_agreement`
 - `legal_opinion`
 
-The current local benchmark suite covers the first three. The matrix therefore keeps broad legal-document coverage claims blocked until synthetic fixtures exist for evidence catalogs, settlement agreements, and legal opinions.
+The current local benchmark suite covers all six target document types with synthetic, short, laptop-safe fixtures. This means the local target matrix is complete, but broad legal-document coverage claims remain blocked until larger public-source review, real-world workflow testing, and lawyer review evidence exist.
 
 ## Validation
 

@@ -7,7 +7,7 @@ from typing import Any
 
 PASS_THRESHOLD = 85
 WARN_THRESHOLD = 60
-MAX_CASES = 3
+MAX_CASES = 6
 MAX_SNIPPET_CHARS = 420
 
 
@@ -320,6 +320,80 @@ class LegalDocumentBenchmarkSuiteService:
                     "missing_data_confidentiality",
                     "acceptance_standard_unclear",
                     "fault_response_gap",
+                ),
+                banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
+            ),
+            LegalDocumentBenchmarkCase(
+                id="ldoc-evidence-catalog-mini",
+                title="\u8bc1\u636e\u76ee\u5f55\u771f\u5b9e\u6027\u4e0e\u8bc1\u660e\u76ee\u7684\u7247\u6bb5",
+                document_type="evidence_catalog",
+                matter_type="labor_overtime_dispute",
+                snippet=(
+                    "\u8bc1\u636e\u76ee\u5f55\uff1aE-001\u300a\u8003\u52e4\u8bb0\u5f55\u300b"
+                    "\u8bc1\u660e\u52a0\u73ed\u65f6\u95f4\uff0cE-002\u300a\u5de5\u8d44\u8868\u300b"
+                    "\u8bc1\u660e\u5de5\u8d44\u57fa\u6570\uff0cE-003\u300a\u5fae\u4fe1\u6c9f\u901a\u622a\u56fe\u300b"
+                    "\u5f85\u6838\u9a8c\u539f\u59cb\u8f7d\u4f53\u3002\u9700\u6807\u660e\u6765\u6e90\u3001"
+                    "\u9875\u7801\u3001\u8bc1\u660e\u76ee\u7684\u548c\u539f\u4ef6\u6838\u5bf9\u72b6\u6001\u3002"
+                ),
+                required_sections=("title", "case_caption", "evidence_list", "proof_purpose", "source_status", "authenticity_note"),
+                expected_citations=(
+                    "E-001\u300a\u8003\u52e4\u8bb0\u5f55\u300b",
+                    "E-003\u300a\u5fae\u4fe1\u6c9f\u901a\u622a\u56fe\u300b",
+                ),
+                expected_risk_labels=(
+                    "missing_original_carrier",
+                    "proof_purpose_unclear",
+                    "source_authenticity_review",
+                ),
+                banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
+            ),
+            LegalDocumentBenchmarkCase(
+                id="ldoc-settlement-agreement-mini",
+                title="\u548c\u89e3\u534f\u8bae\u4ed8\u6b3e\u4e0e\u64a4\u8bc9\u6761\u4ef6\u7247\u6bb5",
+                document_type="settlement_agreement",
+                matter_type="maintenance_fee_settlement",
+                snippet=(
+                    "\u548c\u89e3\u534f\u8bae\uff1aG\u516c\u53f8\u4e0eH\u4f9b\u5e94\u5546"
+                    "\u5c31\u7ef4\u4fee\u8d39\u4e89\u8bae\u8fbe\u6210\u5206\u671f\u4ed8\u6b3e\u5b89\u6392\uff0c"
+                    "\u9996\u671f20000\u5143\uff0c\u4f59\u6b3e\u4e24\u671f\u652f\u4ed8\u3002"
+                    "\u534f\u8bae\u7ea6\u5b9a\u5c65\u884c\u5b8c\u6bd5\u540e\u4e92\u4e0d\u8ffd\u7a76\uff0c"
+                    "\u4f46\u9700\u4fdd\u7559\u903e\u671f\u8fdd\u7ea6\u91d1\u3001\u64a4\u8bc9\u8282\u70b9"
+                    "\u548c\u4fdd\u5bc6\u6761\u6b3e\u3002"
+                ),
+                required_sections=("title", "parties", "settlement_amount", "payment_schedule", "release_scope", "breach_clause", "execution_tail"),
+                expected_citations=(
+                    "\u7b2c3\u6761\u4ed8\u6b3e\u5b89\u6392",
+                    "\u7b2c5\u6761\u8fdd\u7ea6\u8d23\u4efb",
+                ),
+                expected_risk_labels=(
+                    "release_scope_overbroad",
+                    "payment_schedule_review",
+                    "withdrawal_condition_check",
+                ),
+                banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
+            ),
+            LegalDocumentBenchmarkCase(
+                id="ldoc-legal-opinion-mini",
+                title="\u6cd5\u5f8b\u610f\u89c1\u4e66\u5047\u8bbe\u4e0e\u7ed3\u8bba\u9650\u5236\u7247\u6bb5",
+                document_type="legal_opinion",
+                matter_type="equity_repurchase_opinion",
+                snippet=(
+                    "\u6cd5\u5f8b\u610f\u89c1\u4e66\uff1a\u53d7I\u57fa\u91d1\u54a8\u8be2\uff0c"
+                    "\u5c31J\u9879\u76ee\u80a1\u6743\u56de\u8d2d\u6761\u6b3e\u6548\u529b\u51fa\u5177\u610f\u89c1\u3002"
+                    "\u6750\u6599\u5305\u62ec\u6295\u8d44\u534f\u8bae\u7b2c6\u6761\u3001"
+                    "\u8865\u5145\u534f\u8bae\u548c\u8463\u4e8b\u4f1a\u51b3\u8bae\u3002"
+                    "\u610f\u89c1\u9700\u533a\u5206\u4e8b\u5b9e\u5047\u8bbe\u3001\u6cd5\u5f8b\u4f9d\u636e\u3001"
+                    "\u98ce\u9669\u8bc4\u7ea7\u548c\u7ed3\u8bba\u9650\u5236\u3002"
+                ),
+                required_sections=("title", "engagement_scope", "facts_assumptions", "legal_basis", "analysis", "conclusion", "limitations"),
+                expected_citations=(
+                    "\u6295\u8d44\u534f\u8bae\u7b2c6\u6761",
+                    "\u8463\u4e8b\u4f1a\u51b3\u8bae",
+                ),
+                expected_risk_labels=(
+                    "assumption_boundary_required",
+                    "authority_basis_check",
+                    "conclusion_limitation_needed",
                 ),
                 banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
             ),

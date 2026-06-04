@@ -29,7 +29,7 @@ def test_legal_document_benchmark_suite_is_laptop_safe_and_small():
     suite = LegalDocumentBenchmarkSuiteService().build_suite()
 
     assert suite["status"] == "ready"
-    assert suite["summary"]["case_count"] == 3
+    assert suite["summary"]["case_count"] == 6
     assert suite["summary"]["check_count"] == 4
     assert suite["summary"]["language"] == "zh-CN"
     assert suite["summary"]["model_calls"] == "not_required"
@@ -52,7 +52,14 @@ def test_legal_document_benchmark_suite_covers_structure_citations_pii_and_risk(
         "pii_exclusion",
         "risk_labeling",
     }
-    assert {"civil_complaint", "lawyer_letter", "contract_review"} == document_types
+    assert {
+        "civil_complaint",
+        "lawyer_letter",
+        "contract_review",
+        "evidence_catalog",
+        "settlement_agreement",
+        "legal_opinion",
+    } == document_types
     assert any(check["hard_fail"] is True for check in suite["checks"] if check["id"] == "pii_exclusion")
 
     for case in suite["benchmark_cases"]:
@@ -60,6 +67,21 @@ def test_legal_document_benchmark_suite_covers_structure_citations_pii_and_risk(
         assert len(case["expected_citations"]) >= 2
         assert len(case["expected_risk_labels"]) >= 3
         assert {"identity_number", "mobile_phone", "email", "api_key"}.issubset(case["banned_pii_categories"])
+
+
+def test_legal_document_benchmark_suite_fills_coverage_matrix_document_gaps():
+    suite = LegalDocumentBenchmarkSuiteService().build_suite()
+    cases = {case["document_type"]: case for case in suite["benchmark_cases"]}
+
+    assert cases["evidence_catalog"]["id"] == "ldoc-evidence-catalog-mini"
+    assert "proof_purpose" in cases["evidence_catalog"]["required_sections"]
+    assert "source_authenticity_review" in cases["evidence_catalog"]["expected_risk_labels"]
+    assert cases["settlement_agreement"]["id"] == "ldoc-settlement-agreement-mini"
+    assert "payment_schedule" in cases["settlement_agreement"]["required_sections"]
+    assert "withdrawal_condition_check" in cases["settlement_agreement"]["expected_risk_labels"]
+    assert cases["legal_opinion"]["id"] == "ldoc-legal-opinion-mini"
+    assert "facts_assumptions" in cases["legal_opinion"]["required_sections"]
+    assert "conclusion_limitation_needed" in cases["legal_opinion"]["expected_risk_labels"]
 
 
 def test_legal_document_benchmark_suite_fixture_boundary_has_no_sensitive_values():

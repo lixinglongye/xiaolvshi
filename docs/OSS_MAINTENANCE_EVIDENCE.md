@@ -2,6 +2,8 @@
 
 Maintenance evidence now includes a legal document benchmark coverage matrix. It helps reviewers see which tiny synthetic legal-document fixtures exist, which document types are still missing, and why broad coverage claims remain blocked until more low-resource fixtures are added.
 
+The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, or real client-document coverage.
+
 This project includes a small maintenance evidence endpoint for open-source support applications and reviewer-facing project summaries.
 
 ## Endpoint

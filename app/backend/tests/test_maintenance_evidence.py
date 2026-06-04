@@ -35,6 +35,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Billing payment reconciliation policy" in profile["release_management"]["release_readiness_controls"]
     assert "Case task runtime notification summary" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal document benchmark gap fixtures" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]

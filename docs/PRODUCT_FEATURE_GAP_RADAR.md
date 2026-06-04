@@ -2,6 +2,8 @@
 
 Recent update: contract-review evidence now includes a legal document benchmark coverage matrix. It improves reviewer visibility for small synthetic fixtures but keeps broader real-world document coverage, raw contract parsing, fallback language, and negotiation workflow marked as gaps.
 
+The first coverage-matrix gap pass now adds synthetic fixtures for evidence catalogs, settlement agreements, and legal opinions. Product gap status remains incomplete because these fixtures are local regression evidence only.
+
 This document describes the deterministic product gap radar exposed by
 `app/backend/services/product_feature_gap_radar.py`.
 
