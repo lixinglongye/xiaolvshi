@@ -153,7 +153,9 @@ function Inner() {
         setProbeError('Probe payload must be a JSON object.');
         return;
       }
-      setProbeEvaluation(await evaluateModelGatewayProbe(payload as Record<string, unknown>));
+      const evaluation = await evaluateModelGatewayProbe(payload as Record<string, unknown>);
+      setProbeEvaluation(evaluation);
+      await load();
     } catch (err) {
       console.error(err);
       setProbeError(err instanceof SyntaxError ? 'Probe payload is not valid JSON.' : 'Gateway probe evaluation failed.');
@@ -173,9 +175,10 @@ function Inner() {
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
-  const probeEnvRows = probeEvaluation?.recommended_env ?? [];
-  const probeCheckRows = probeEvaluation?.checks ?? [];
-  const probeModelRows = probeEvaluation?.model_rows ?? [];
+  const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
+  const probeEnvRows = activeProbeEvaluation?.recommended_env ?? [];
+  const probeCheckRows = activeProbeEvaluation?.checks ?? [];
+  const probeModelRows = activeProbeEvaluation?.model_rows ?? [];
   const activeCheapFirstCalibration = cheapFirstCalibration ?? data?.cheap_first_calibration ?? null;
   const cheapFirstRows = activeCheapFirstCalibration?.calibration_rows ?? [];
   const priceRefreshChecks = data?.price_refresh_monitor?.checks ?? [];
@@ -739,13 +742,16 @@ function Inner() {
             <div>
               <h2 className="text-xl font-black text-stone-950">Gateway probe evaluation</h2>
               <div className="mt-1 text-sm text-stone-600">
-                {probeEvaluation
-                  ? `${probeEvaluation.summary.observed_model_count} observed / ${probeEvaluation.summary.probed_cheap_candidate_count} cheap probes / ${probeEvaluation.summary.probed_image_candidate_count} image probes`
+                {activeProbeEvaluation
+                  ? `${activeProbeEvaluation.summary.observed_model_count} observed / ${activeProbeEvaluation.summary.probed_cheap_candidate_count} cheap probes / ${activeProbeEvaluation.summary.probed_image_candidate_count} image probes`
                   : 'sanitized model list, tiny chat probe, and image smoke review'}
+                {activeProbeEvaluation?.stored_at && (
+                  <span className="ml-2 font-mono text-[11px] text-stone-500">{activeProbeEvaluation.stored_at}</span>
+                )}
               </div>
             </div>
-            <Badge variant="outline" className={statusClass(probeEvaluation?.status)}>
-              {probeEvaluation?.status ?? 'not evaluated'}
+            <Badge variant="outline" className={statusClass(activeProbeEvaluation?.status)}>
+              {activeProbeEvaluation?.status ?? 'not evaluated'}
             </Badge>
           </div>
 
@@ -793,7 +799,7 @@ function Inner() {
                 placeholder='{"models_response":{"data":[{"id":"gemini-2.5-flash-lite"},{"id":"gemini-2.5-flash-image"}]},"chat_probe_results":{"gemini-2.5-flash-lite":{"status":"pass","http_status":200,"json_ok":true,"latency_ms":1200}},"image_probe_results":{"gemini-2.5-flash-image":{"status":"pass","http_status":200,"image_count":1,"latency_ms":2400}}}'
               />
               <div className="mt-3 text-xs leading-5 text-stone-500">
-                {probeEvaluation?.privacy_note ?? 'The backend evaluates sanitized IDs, HTTP status, latency, JSON booleans, and image counts only.'}
+                {activeProbeEvaluation?.privacy_note ?? 'The backend evaluates sanitized IDs, HTTP status, latency, JSON booleans, and image counts only.'}
               </div>
             </div>
 
@@ -801,25 +807,25 @@ function Inner() {
               <div className="grid gap-3 sm:grid-cols-4">
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
-                    {probeEvaluation?.summary.cheap_candidate_count ?? 0}
+                    {activeProbeEvaluation?.summary.cheap_candidate_count ?? 0}
                   </div>
                   <div className="mt-1 text-sm text-stone-600">cheap candidates</div>
                 </div>
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
-                    {probeEvaluation?.summary.probed_image_candidate_count ?? 0}
+                    {activeProbeEvaluation?.summary.probed_image_candidate_count ?? 0}
                   </div>
                   <div className="mt-1 text-sm text-stone-600">image probes</div>
                 </div>
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
-                    {probeEvaluation?.summary.recommended_change_count ?? 0}
+                    {activeProbeEvaluation?.summary.recommended_change_count ?? 0}
                   </div>
                   <div className="mt-1 text-sm text-stone-600">env changes</div>
                 </div>
                 <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                   <div className="text-2xl font-black text-stone-950">
-                    {probeEvaluation?.summary.forbidden_payload_field_count ?? 0}
+                    {activeProbeEvaluation?.summary.forbidden_payload_field_count ?? 0}
                   </div>
                   <div className="mt-1 text-sm text-stone-600">blocked fields</div>
                 </div>

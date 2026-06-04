@@ -44,7 +44,7 @@ from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
-from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService
+from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
@@ -184,7 +184,7 @@ async def list_models():
     ]
     default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
-    gateway_probe_evaluation = ModelGatewayProbeEvaluationService().evaluate()
+    gateway_probe_evaluation = model_gateway_probe_evaluation_registry.latest()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
@@ -288,9 +288,11 @@ async def gateway_probe_template():
 @router.post("/models/gateway-probe-evaluation")
 async def evaluate_gateway_probe(payload: dict[str, Any]):
     """Evaluate sanitized gateway model-list, tiny chat, and image smoke probe results."""
+    result = ModelGatewayProbeEvaluationService().evaluate(payload)
+    model_gateway_probe_evaluation_registry.record(result)
     return {
         "success": True,
-        "data": ModelGatewayProbeEvaluationService().evaluate(payload),
+        "data": result,
     }
 
 

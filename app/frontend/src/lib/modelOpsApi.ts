@@ -289,6 +289,8 @@ export type ModelGatewayProbeTemplate = {
 
 export type ModelGatewayProbeEvaluation = {
   status: string;
+  source?: string;
+  stored_at?: string | null;
   method: {
     type: string;
     notes: string[];
@@ -1318,14 +1320,24 @@ function unwrapApiPayload(value: unknown): unknown {
 }
 
 function hasModelOpsPayload(value: unknown): boolean {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const payload = value as {
+    models?: unknown;
+    method?: unknown;
+    payload_shape?: unknown;
+    summary?: unknown;
+    checks?: unknown;
+    recommended_actions?: unknown;
+    calibration_tasks?: unknown;
+    calibration_rows?: unknown;
+  };
   return Boolean(
-    value
-      && typeof value === 'object'
-      && (
-        Array.isArray((value as { models?: unknown }).models)
-        || Boolean((value as { status?: unknown }).status)
-        || Boolean((value as { payload_shape?: unknown }).payload_shape)
-      ),
+    Array.isArray(payload.models)
+      || (Boolean(payload.method) && Boolean(payload.payload_shape))
+      || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
+      || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows)),
   );
 }
 

@@ -1,5 +1,18 @@
+import pytest
+
 from services import model_gateway_probe_evaluation
-from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService
+from services.model_gateway_probe_evaluation import (
+    REDACTED_MODEL_ID,
+    ModelGatewayProbeEvaluationService,
+    model_gateway_probe_evaluation_registry,
+)
+
+
+@pytest.fixture(autouse=True)
+def clear_gateway_probe_registry():
+    model_gateway_probe_evaluation_registry.clear()
+    yield
+    model_gateway_probe_evaluation_registry.clear()
 
 
 def test_gateway_probe_evaluation_recommends_cheap_first_models():
@@ -175,9 +188,22 @@ def test_gateway_probe_evaluation_blocks_secret_like_values_without_echoing_them
     assert data_uri_value not in str(result)
 
 
-def test_gateway_probe_evaluation_route_returns_template_and_evaluation():
-    import pytest
+def test_gateway_probe_evaluation_redacts_secret_like_model_ids():
+    secret_model = "s" + "k-" + ("B" * 24)
+    result = ModelGatewayProbeEvaluationService().evaluate(
+        {
+            "model_ids": [secret_model],
+            "chat_probe_results": {secret_model: {"status": "pass", "http_status": 200, "json_ok": True}},
+        }
+    )
 
+    assert result["status"] == "fail"
+    assert "sanitized-payload-fields" in result["blocking_check_ids"]
+    assert result["model_rows"][0]["model"] == REDACTED_MODEL_ID
+    assert secret_model not in str(result)
+
+
+def test_gateway_probe_evaluation_route_returns_template_and_evaluation():
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
     from routers.aihub import router
@@ -200,6 +226,53 @@ def test_gateway_probe_evaluation_route_returns_template_and_evaluation():
     )
     assert response.status_code == 200
     assert response.json()["data"]["summary"]["observed_model_count"] == 1
+
+    models_response = client.get("/api/v1/aihub/models")
+    assert models_response.status_code == 200
+    models_payload = models_response.json()
+    assert models_payload["gateway_probe_evaluation"]["status"] == "pass"
+    assert models_payload["gateway_probe_evaluation"]["source"] == "latest_sanitized_manual_probe"
+    probe_check = next(
+        check for check in models_payload["model_ops_readiness"]["checks"] if check["id"] == "gateway-probe-evaluation"
+    )
+    assert probe_check["status"] == "pass"
+
+
+def test_gateway_probe_evaluation_route_stores_minimal_snapshot_for_rejected_payload():
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+    secret_value = "s" + "k-" + ("C" * 24)
+
+    response = client.post(
+        "/api/v1/aihub/models/gateway-probe-evaluation",
+        json={
+            "models_response": {"data": [{"id": "gemini-2.5-flash-lite"}]},
+            "chat_probe_results": {
+                "gemini-2.5-flash-lite": {
+                    "status": "pass",
+                    "http_status": 200,
+                    "json_ok": True,
+                    "trace_id": secret_value,
+                }
+            },
+        },
+    )
+    assert response.status_code == 200
+    assert secret_value not in str(response.json())
+
+    models_response = client.get("/api/v1/aihub/models")
+    assert models_response.status_code == 200
+    models_payload = models_response.json()
+    assert secret_value not in str(models_payload)
+    assert models_payload["gateway_probe_evaluation"]["status"] == "fail"
+    assert models_payload["gateway_probe_evaluation"]["model_rows"] == []
+    assert models_payload["gateway_probe_evaluation"]["recommended_env"] == []
+    assert "sanitized-payload-fields" in models_payload["gateway_probe_evaluation"]["blocking_check_ids"]
 
 
 def test_gateway_probe_evaluation_uses_current_defaults_for_change_detection(monkeypatch):

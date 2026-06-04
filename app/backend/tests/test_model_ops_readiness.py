@@ -1,3 +1,4 @@
+from services.model_gateway_probe_evaluation import model_gateway_probe_evaluation_registry
 from services.model_ops_readiness import MODEL_OPS_COMPONENTS, ModelOpsReadinessService
 
 
@@ -121,6 +122,7 @@ def test_model_ops_route_includes_readiness():
     testclient = pytest.importorskip("fastapi.testclient")
     from routers.aihub import router
 
+    model_gateway_probe_evaluation_registry.clear()
     app = fastapi.FastAPI()
     app.include_router(router)
 

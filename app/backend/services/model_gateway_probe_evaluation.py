@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from datetime import datetime, timezone
 import re
 from typing import Any
 
@@ -38,6 +40,7 @@ FORBIDDEN_VALUE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("url_like", re.compile(r"https?://", re.IGNORECASE)),
     ("data_uri_like", re.compile(r"\bdata:image/|base64,", re.IGNORECASE)),
 )
+REDACTED_MODEL_ID = "redacted_model_id"
 
 
 class ModelGatewayProbeEvaluationService:
@@ -260,8 +263,8 @@ class ModelGatewayProbeEvaluationService:
         chat_probe_status = self._probe_status(chat_probe)
         image_probe_status = self._image_probe_status(image_probe)
         return {
-            "model": model_id,
-            "canonical_model": canonical,
+            "model": self._safe_model_name(model_id),
+            "canonical_model": self._safe_model_name(canonical),
             "is_known_model": profile is not None,
             "is_gemini_like": "gemini" in model_id.lower(),
             "provider": profile.provider if profile else "unknown",
@@ -362,14 +365,15 @@ class ModelGatewayProbeEvaluationService:
         result = []
         for env_var, task, row in targets:
             current = task_default_model(task)
-            recommended = row["model"] if row else current
+            current_safe = self._safe_model_name(current) or ""
+            recommended = row["model"] if row else current_safe
             result.append(
                 {
                     "env_var": env_var,
                     "task": task,
-                    "current_value": current,
+                    "current_value": current_safe,
                     "recommended_value": recommended,
-                    "requires_change": current != recommended,
+                    "requires_change": current_safe != recommended,
                     "reason": self._env_reason(task, row),
                 }
             )
@@ -583,6 +587,54 @@ class ModelGatewayProbeEvaluationService:
         if key.lower().startswith("sk-") or len(key) > 80:
             return "redacted_key"
         return key
+
+    def _safe_model_name(self, model_id: str | None) -> str | None:
+        if not model_id:
+            return None
+        if self._forbidden_value_risk(model_id):
+            return REDACTED_MODEL_ID
+        return model_id
+
+
+class ModelGatewayProbeEvaluationRegistry:
+    """Keep the latest sanitized manual probe evidence for readiness aggregation."""
+
+    def __init__(self) -> None:
+        self._service = ModelGatewayProbeEvaluationService()
+        self._latest: dict[str, Any] | None = None
+
+    def latest(self) -> dict[str, Any]:
+        if self._latest is None:
+            result = self._service.evaluate()
+            result["source"] = "no_manual_probe"
+            result["stored_at"] = None
+            return result
+        return deepcopy(self._latest)
+
+    def record(self, result: dict[str, Any]) -> dict[str, Any]:
+        snapshot = self._safe_snapshot(result)
+        self._latest = snapshot
+        return deepcopy(snapshot)
+
+    def clear(self) -> None:
+        self._latest = None
+
+    def _safe_snapshot(self, result: dict[str, Any]) -> dict[str, Any]:
+        snapshot = deepcopy(result)
+        snapshot["source"] = "latest_sanitized_manual_probe"
+        snapshot["stored_at"] = datetime.now(timezone.utc).isoformat()
+        summary = snapshot.get("summary") if isinstance(snapshot.get("summary"), dict) else {}
+        if summary.get("forbidden_payload_field_count"):
+            snapshot["model_rows"] = []
+            snapshot["recommended_env"] = []
+            snapshot["recommended_actions"] = [
+                "Discard the rejected probe payload and resubmit only sanitized model IDs, status, HTTP status, JSON booleans, image counts, and latency.",
+                "Never store or paste raw gateway responses, prompts, image URLs, base64 data, emails, bearer tokens, Authorization headers, or API keys.",
+            ]
+        return snapshot
+
+
+model_gateway_probe_evaluation_registry = ModelGatewayProbeEvaluationRegistry()
 
 
 def _safe_int(value: Any, default: int | None) -> int | None:
