@@ -8,6 +8,7 @@ from services.continuous_session_evidence import ContinuousSessionEvidenceServic
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.git_history_evidence import GitHistoryEvidenceService
 from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
+from services.validation_event_evidence import ValidationEventEvidenceService
 
 
 TARGET_CONTINUOUS_HOURS = 24
@@ -33,11 +34,13 @@ class ContinuousSessionTimelineService:
         session_service: ContinuousSessionEvidenceService | None = None,
         heartbeat_service: MaintenanceHeartbeatEvidenceService | None = None,
         git_history_service: GitHistoryEvidenceService | None = None,
+        validation_event_service: ValidationEventEvidenceService | None = None,
     ) -> None:
         self.ledger_service = ledger_service or ContinuousUpdateLedgerService()
         self.session_service = session_service or ContinuousSessionEvidenceService()
         self.heartbeat_service = heartbeat_service or MaintenanceHeartbeatEvidenceService()
         self.git_history_service = git_history_service or GitHistoryEvidenceService()
+        self.validation_event_service = validation_event_service or ValidationEventEvidenceService()
 
     def build_timeline(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -45,7 +48,11 @@ class ContinuousSessionTimelineService:
         ledger_summary = ledger["summary"]
         raw_events = payload if isinstance(payload, list) else data.get("events")
         events = raw_events if isinstance(raw_events, list) else []
-        heartbeat_events = data.get("heartbeat_events") if isinstance(data.get("heartbeat_events"), list) else events
+        validation_events = data.get("validation_events") if isinstance(data.get("validation_events"), list) else []
+        validation_report = self.validation_event_service.build_evidence({"events": validation_events})
+        normalized_validation_events = validation_report.get("normalized_session_events") or []
+        combined_events = events + normalized_validation_events
+        heartbeat_events = data.get("heartbeat_events") if isinstance(data.get("heartbeat_events"), list) else combined_events
         completed_updates = self._bounded_int(
             data.get("completed_medium_large_update_count"),
             ledger_summary["completed_medium_large_update_count"],
@@ -55,7 +62,7 @@ class ContinuousSessionTimelineService:
 
         session_report = self.session_service.build_report(
             {
-                "events": events,
+                "events": combined_events,
                 "completed_medium_large_update_count": completed_updates,
                 "target_medium_large_update_count": TARGET_MEDIUM_LARGE_UPDATE_COUNT,
                 "max_allowed_gap_hours": data.get("max_allowed_gap_hours"),
@@ -65,8 +72,20 @@ class ContinuousSessionTimelineService:
         git_history_report = self.git_history_service.build_evidence(
             data.get("git_history") if isinstance(data.get("git_history"), (dict, list)) else {"git_since": data.get("git_since")}
         )
-        timeline_events = self._timeline_events(session_report, ledger_summary, git_history_report)
-        blockers = self._blockers(session_report, heartbeat_report, git_history_report, completed_updates, timeline_events)
+        timeline_events = self._timeline_events(
+            session_report,
+            ledger_summary,
+            git_history_report,
+            {item.get("id") for item in normalized_validation_events if item.get("id")},
+        )
+        blockers = self._blockers(
+            session_report,
+            heartbeat_report,
+            git_history_report,
+            validation_report,
+            completed_updates,
+            timeline_events,
+        )
         completion_ready = not blockers and session_report["summary"]["ready_for_goal_claim"] is True
         status = "ready_for_review" if completion_ready else ("blocked" if self._has_hard_blocker(blockers) else "collecting")
 
@@ -83,6 +102,9 @@ class ContinuousSessionTimelineService:
                 "submitted_event_count": session_report["summary"]["event_count"],
                 "valid_event_count": session_report["summary"]["valid_event_count"],
                 "invalid_event_count": session_report["summary"]["invalid_event_count"],
+                "submitted_validation_event_count": validation_report["summary"]["event_count"],
+                "valid_validation_event_count": validation_report["summary"]["valid_event_count"],
+                "invalid_validation_event_count": validation_report["summary"]["invalid_event_count"],
                 "low_resource_event_count": sum(1 for item in timeline_events if item["low_resource"] is True),
                 "blocker_count": len(blockers),
                 "completion_ready": completion_ready,
@@ -100,6 +122,7 @@ class ContinuousSessionTimelineService:
                 "session_validator": session_report["summary"],
                 "heartbeat": heartbeat_report["summary"],
                 "git_history": git_history_report["summary"],
+                "validation_events": validation_report["summary"],
             },
             "low_resource_evidence_routes": list(LOW_RESOURCE_ROUTE_REFS),
             "reviewer_notes": self._reviewer_notes(blockers, completion_ready),
@@ -113,6 +136,7 @@ class ContinuousSessionTimelineService:
             },
             "validation_commands": [
                 "python -m pytest tests/test_continuous_session_timeline.py -q",
+                "python -m pytest tests/test_validation_event_evidence.py -q",
                 "python -m pytest tests/test_git_history_evidence.py -q",
                 "python -m pytest tests/test_continuous_session_evidence.py tests/test_maintenance_heartbeat_evidence.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_document_benchmark_suite.py -q",
@@ -124,6 +148,7 @@ class ContinuousSessionTimelineService:
         session_report: dict[str, Any],
         ledger_summary: dict[str, Any],
         git_history_report: dict[str, Any],
+        validation_event_ids: set[str],
     ) -> list[dict[str, Any]]:
         best_window_ids = set(session_report["best_window"].get("record_ids") or [])
         events = [
@@ -170,7 +195,9 @@ class ContinuousSessionTimelineService:
             events.append(
                 {
                     "id": record.get("id") or "",
-                    "source": "continuous_session_evidence",
+                    "source": "validation_event_evidence"
+                    if (record.get("id") or "") in validation_event_ids
+                    else "continuous_session_evidence",
                     "event_type": event_type,
                     "timestamp": record.get("timestamp"),
                     "status": record.get("status") or "fail",
@@ -191,6 +218,7 @@ class ContinuousSessionTimelineService:
         session_report: dict[str, Any],
         heartbeat_report: dict[str, Any],
         git_history_report: dict[str, Any],
+        validation_report: dict[str, Any],
         completed_updates: int,
         timeline_events: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
@@ -227,6 +255,27 @@ class ContinuousSessionTimelineService:
                     "id": "timeline-events-missing",
                     "severity": "review",
                     "detail": "No non-git timestamped maintenance events were submitted for the 24-hour timeline.",
+                }
+            )
+        validation_summary = validation_report.get("summary", {})
+        if validation_summary.get("invalid_event_count", 0) > 0:
+            blockers.append(
+                {
+                    "id": "invalid-validation-events",
+                    "severity": "hard",
+                    "detail": f"{validation_summary['invalid_event_count']} validation event(s) are invalid.",
+                }
+            )
+        elif validation_summary.get("event_count", 0) > 0 and validation_summary.get("missing_event_types"):
+            blockers.append(
+                {
+                    "id": "validation-event-types-missing",
+                    "severity": "review",
+                    "detail": ",".join(
+                        self._safe_token(item)
+                        for item in validation_summary["missing_event_types"]
+                        if self._safe_token(item)
+                    ),
                 }
             )
         if git_history_report["summary"].get("invalid_commit_count", 0) > 0:

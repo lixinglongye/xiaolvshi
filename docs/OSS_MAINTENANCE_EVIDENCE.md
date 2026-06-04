@@ -42,6 +42,15 @@ maximum adjacent-commit gap from Git commit metadata. It must not be used as
 automatic proof of test execution, remote push history, credential scanning, or
 low-resource legal fixture execution.
 
+`docs/VALIDATION_EVENT_EVIDENCE.md` documents the upcoming metadata-only
+`GET`/`POST` `/api/v1/maintenance/validation-event-evidence` endpoint for
+non-git validation events: input validation tests, credential scans, pushes,
+reviews/release reviews, and legal fixture checks. Support applications may
+cite it only as a reviewer-safe evidence source after records exist; it must
+not include raw stdout, raw stderr, logs, full legal text, raw model output,
+secrets, emails, or passwords, and it must not be described as completing the
+24-hour target.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -79,7 +88,7 @@ still stay out of support applications until matching merged evidence exists.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, validation-event metadata evidence, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -215,6 +224,7 @@ still stay out of support applications until matching merged evidence exists.
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
+- `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/BILLING_ENTITLEMENT_GAP.md`
 - `docs/BILLING_QUOTA_MIGRATION_PLAN.md`

@@ -2215,6 +2215,48 @@ type MaintenanceGitHistoryEvidenceResponse = {
   data: MaintenanceGitHistoryEvidence;
 };
 
+export type MaintenanceValidationEventType = 'test' | 'credential_scan' | 'push' | 'review' | 'legal_fixture';
+
+export type MaintenanceValidationEventEvidenceReview = {
+  event_type: MaintenanceValidationEventType | string;
+  status?: string;
+  count?: number;
+  missing?: boolean;
+  reviewer_note?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceValidationEventEvidence = {
+  status: string;
+  summary: {
+    event_type_counts?: Partial<Record<MaintenanceValidationEventType | string, number>>;
+    counts?: Partial<Record<MaintenanceValidationEventType | string, number>>;
+    test_count?: number;
+    credential_scan_count?: number;
+    push_count?: number;
+    review_count?: number;
+    legal_fixture_count?: number;
+    normalized_event_count?: number;
+    normalized_session_event_count?: number;
+    [key: string]: unknown;
+  };
+  normalized_session_events: Array<{
+    event_type?: MaintenanceValidationEventType | string;
+    timestamp?: string | null;
+    status?: string;
+    [key: string]: unknown;
+  }>;
+  event_reviews: MaintenanceValidationEventEvidenceReview[];
+  missing_event_types: Array<MaintenanceValidationEventType | string>;
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceValidationEventEvidenceResponse = {
+  success: boolean;
+  data: MaintenanceValidationEventEvidence;
+};
+
 export type MaintenanceContinuousSessionEvidence = {
   status: string;
   summary: {
@@ -2511,6 +2553,25 @@ export async function getMaintenanceGitHistoryEvidence(): Promise<MaintenanceGit
     method: 'GET',
   });
   return unwrapMaintenanceData<MaintenanceGitHistoryEvidenceResponse['data']>(resp);
+}
+
+export async function getMaintenanceValidationEventEvidence(): Promise<MaintenanceValidationEventEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/validation-event-evidence',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceValidationEventEvidenceResponse['data']>(resp);
+}
+
+export async function postMaintenanceValidationEventEvidence(
+  payload: Record<string, unknown>,
+): Promise<MaintenanceValidationEventEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/validation-event-evidence',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceValidationEventEvidenceResponse['data']>(resp);
 }
 
 export async function getCaseIntakeCompleteness(): Promise<CaseIntakeCompleteness> {

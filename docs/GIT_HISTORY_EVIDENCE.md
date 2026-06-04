@@ -10,6 +10,9 @@ GET /api/v1/maintenance/git-history-evidence
 The endpoint derives a reviewer-safe maintenance cadence summary from
 Git commit metadata. It is not a session validator, test report, push log,
 credential scan, legal benchmark run, or model-output archive.
+The upcoming `GET`/`POST`
+`/api/v1/maintenance/validation-event-evidence` endpoint is the companion
+surface for those non-commit records.
 
 ## Purpose
 
@@ -26,7 +29,9 @@ signals that answer:
 
 These signals prove commit cadence only. They do not automatically prove that
 tests passed, code was pushed to a remote, credential scanning ran, or
-low-resource legal fixtures were executed.
+low-resource legal fixtures were executed. Validation-event evidence may supply
+those rows as metadata, but the joined evidence still cannot prove a 24-hour
+session unless the full continuous-session timeline reaches the window.
 
 ## Metadata Source
 
@@ -82,10 +87,17 @@ The endpoint must keep these claims separate:
 - Low-resource legal fixture evidence: supported only by fixture IDs, route
   labels, coverage metadata, and validation command records from the legal
   fixture evidence flow.
+- Validation-event evidence: supported only by metadata-only records from
+  `GET`/`POST` `/api/v1/maintenance/validation-event-evidence`, covering input
+  validation `test`, `credential_scan`, `push`, `review`, and `legal_fixture`
+  events.
 
 When a reviewer surface joins git-history evidence with continuous-session
 timeline evidence, it labels git-derived rows as commit cadence and does not
 infer missing test, push, scan, or fixture rows from commits alone.
+When validation-event rows are also joined, they remain separate
+`validation_event` timeline rows and do not upgrade git cadence into a
+completion claim.
 
 ## Privacy Boundary
 
@@ -98,6 +110,8 @@ Git-history evidence must not store or return:
 - Raw legal text, raw client documents, copied benchmark samples, or original
   legal-source passages.
 - Raw patches, full diffs, file contents, or copied hunks.
+- Raw stdout, raw stderr, terminal transcripts, CI logs, scanner matches, or
+  remote URLs containing credentials.
 - Raw prompts, raw model requests, raw model responses, gateway payloads, or
   model original outputs.
 - Private reviewer comments or author identity details beyond opaque local
@@ -111,7 +125,7 @@ replace them with opaque labels before exposing them to reviewer surfaces.
 Run these repository-root checks after documentation or endpoint updates:
 
 ```powershell
-rg -n "Git History Evidence|git-history-evidence|commit cadence|longest_window|max_observed_gap|ready_for_goal_claim" docs
+rg -n "Git History Evidence|git-history-evidence|validation-event-evidence|commit cadence|credential_scan|legal_fixture|longest_window|max_observed_gap|ready_for_goal_claim" docs
 git diff --check
 ```
 
@@ -120,5 +134,6 @@ git diff --check
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
+- `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/OSS_MAINTENANCE_EVIDENCE.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`

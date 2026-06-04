@@ -862,6 +862,21 @@ class ReleaseReadinessService:
                 manual_note="This evaluates commit cadence from metadata-only git history, but it does not prove tests, credential scans, pushes, low-resource fixtures, or release review by itself.",
             ),
             ReleaseCheck(
+                id="validation-event-evidence",
+                title="Validation event evidence",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/validation_event_evidence.py",
+                    "app/backend/tests/test_validation_event_evidence.py",
+                    "app/backend/services/continuous_session_timeline.py",
+                    "docs/VALIDATION_EVENT_EVIDENCE.md",
+                ),
+                validation_command="python -m pytest tests/test_validation_event_evidence.py tests/test_continuous_session_timeline.py -q",
+                manual_note="This normalizes test, credential-scan, push, release-review, and legal fixture metadata for the timeline, but it rejects raw logs and still does not prove 24-hour completion by itself.",
+            ),
+            ReleaseCheck(
                 id="product-feature-gap-radar",
                 title="Product feature gap radar",
                 category="maintenance",

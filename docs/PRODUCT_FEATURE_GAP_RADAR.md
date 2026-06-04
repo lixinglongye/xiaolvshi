@@ -69,6 +69,14 @@ workflow binding:
   evidence only: commit count, longest cadence window, and maximum
   adjacent-commit gap from Git metadata, without inferring tests, pushes,
   credential scans, or legal fixture runs.
+  `docs/VALIDATION_EVENT_EVIDENCE.md` scopes the upcoming `GET`/`POST`
+  `/api/v1/maintenance/validation-event-evidence` endpoint as the metadata-only
+  source for those non-git validation rows. It accepts event metadata for
+  input validation `test`, `credential_scan`, `push`,
+  `review`/`release_review`, and `legal_fixture` events, but not raw stdout,
+  raw stderr, logs, full legal
+  text, raw model output, secrets, emails, or passwords. It can fill gaps that
+  git cadence cannot prove, but it still cannot prove 24-hour completion alone.
 
 ## Scope
 
@@ -146,6 +154,9 @@ show:
 - the longest verified maintenance window,
 - the longest git-derived cadence window and maximum adjacent-commit gap,
 - timestamped commits, test runs, pushes, and review actions,
+- metadata-only validation event evidence for input validation tests,
+  credential scans, pushes, review/release-review actions, and legal fixture
+  events,
 - links back to shipped update evidence,
 - laptop-safe legal fixture runs for small machines, and
 - explicit blockers when the 24-hour window is not proven.
@@ -156,8 +167,8 @@ acceptable default is a quick-suite or local-run-review record with synthetic
 fixture IDs and coverage metadata, not a large public benchmark download.
 The continuous-session timeline also joins release review evidence and
 public-claim guardrails, but it must not persist secrets, account
-data, emails, raw legal texts, copied benchmark samples, raw prompts, gateway
-payloads, raw patches, or model original outputs.
+data, emails, raw stdout, raw stderr, raw legal texts, copied benchmark
+samples, raw prompts, gateway payloads, raw patches, or model original outputs.
 
 ## Validation
 

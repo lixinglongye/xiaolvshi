@@ -58,6 +58,48 @@ def _reviewable_events():
     ]
 
 
+def _validation_events():
+    return [
+        {
+            "id": "validation-test",
+            "event_type": "test",
+            "timestamp": "2026-06-04T04:00:00Z",
+            "validation_id": "backend-focused-pytest",
+            "status": "passed",
+            "labels": ["low-resource"],
+        },
+        {
+            "id": "validation-scan",
+            "event_type": "credential_scan",
+            "timestamp": "2026-06-04T08:00:00Z",
+            "validation_id": "credential-scan",
+            "status": "clean",
+        },
+        {
+            "id": "validation-review",
+            "event_type": "release_review",
+            "timestamp": "2026-06-04T12:00:00Z",
+            "validation_id": "release-readiness",
+            "status": "reviewed",
+        },
+        {
+            "id": "validation-fixture",
+            "event_type": "legal_fixture",
+            "timestamp": "2026-06-04T16:00:00Z",
+            "validation_id": "legal-fixture-quick-suite",
+            "status": "success",
+            "labels": ["quick-suite"],
+        },
+        {
+            "id": "validation-push",
+            "event_type": "push",
+            "timestamp": "2026-06-04T20:00:00Z",
+            "commit_hash": "abcdef123456",
+            "status": "pushed",
+        },
+    ]
+
+
 def test_continuous_session_timeline_defaults_to_blocked_without_claiming_24h():
     timeline = ContinuousSessionTimelineService().build_timeline()
 
@@ -69,6 +111,8 @@ def test_continuous_session_timeline_defaults_to_blocked_without_claiming_24h():
     assert timeline["summary"]["raw_payload_echoed"] is False
     assert any(event["id"] == "ledger-100-plus-checkpoint" for event in timeline["timeline_events"])
     assert "git_history" in timeline["source_summaries"]
+    assert "validation_events" in timeline["source_summaries"]
+    assert "python -m pytest tests/test_validation_event_evidence.py -q" in timeline["validation_commands"]
     assert "python -m pytest tests/test_git_history_evidence.py -q" in timeline["validation_commands"]
     assert any(blocker["id"] == "timeline-events-missing" for blocker in timeline["blockers"])
 
@@ -146,3 +190,41 @@ def test_continuous_session_timeline_route_returns_template_and_assessment():
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["status"] == "ready_for_review"
+
+
+def test_continuous_session_timeline_accepts_validation_events_as_non_git_evidence():
+    timeline = ContinuousSessionTimelineService().build_timeline(
+        {
+            "max_allowed_gap_hours": 5,
+            "events": [
+                {
+                    "id": "commit-start",
+                    "event_type": "commit",
+                    "timestamp": "2026-06-04T00:00:00Z",
+                    "commit_hash": "1234567",
+                },
+                {
+                    "id": "commit-end",
+                    "event_type": "commit",
+                    "timestamp": "2026-06-05T00:30:00Z",
+                    "commit_hash": "abcdef9",
+                },
+            ],
+            "validation_events": _validation_events(),
+        }
+    )
+
+    assert timeline["status"] == "ready_for_review"
+    assert timeline["summary"]["completion_ready"] is True
+    assert timeline["summary"]["submitted_validation_event_count"] == 5
+    assert timeline["summary"]["valid_validation_event_count"] == 5
+    assert timeline["source_summaries"]["validation_events"]["ready_for_timeline"] is True
+    assert any(event["source"] == "validation_event_evidence" for event in timeline["timeline_events"])
+    assert {event["event_type"] for event in timeline["timeline_events"]} >= {
+        "commit",
+        "test",
+        "credential_scan",
+        "review",
+        "legal_fixture",
+        "push",
+    }

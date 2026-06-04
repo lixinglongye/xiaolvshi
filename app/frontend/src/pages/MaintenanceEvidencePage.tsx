@@ -48,6 +48,7 @@ import {
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
   getMaintenanceGitHistoryEvidence,
+  getMaintenanceValidationEventEvidence,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
@@ -87,6 +88,7 @@ import {
   type MaintenanceContinuousSessionTimeline,
   type MaintenanceGateSnapshot,
   type MaintenanceGitHistoryEvidence,
+  type MaintenanceValidationEventEvidence,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
@@ -188,6 +190,22 @@ function blockerSummary(blocker: MaintenanceContinuousSessionTimeline['blockers'
   return blocker.title ?? blocker.detail ?? blocker.required_action ?? blocker.code ?? blocker.id ?? 'review required';
 }
 
+const validationEventTypes = ['test', 'credential_scan', 'push', 'review', 'legal_fixture'] as const;
+
+function validationEventCount(data: MaintenanceValidationEventEvidence | null, eventType: string) {
+  if (!data) return 0;
+  const summary = data.summary;
+  const fromGroupedCounts = summary.event_type_counts?.[eventType] ?? summary.counts?.[eventType];
+  if (typeof fromGroupedCounts === 'number') return fromGroupedCounts;
+  const directCount = summary[`${eventType}_count`];
+  if (typeof directCount === 'number') return directCount;
+  const normalizedCount = data.normalized_session_events.filter((event) => event.event_type === eventType).length;
+  if (normalizedCount > 0) return normalizedCount;
+  return data.event_reviews
+    .filter((review) => review.event_type === eventType)
+    .reduce((total, review) => total + (typeof review.count === 'number' ? review.count : 1), 0);
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 
@@ -214,6 +232,8 @@ function Inner() {
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
     useState<MaintenanceContinuousSessionTimeline | null>(null);
   const [gitHistoryEvidence, setGitHistoryEvidence] = useState<MaintenanceGitHistoryEvidence | null>(null);
+  const [validationEventEvidence, setValidationEventEvidence] =
+    useState<MaintenanceValidationEventEvidence | null>(null);
   const [caseIntakeCompleteness, setCaseIntakeCompleteness] = useState<CaseIntakeCompleteness | null>(null);
   const [caseTeamAccessPolicy, setCaseTeamAccessPolicy] = useState<CaseTeamAccessPolicy | null>(null);
   const [clientDeliveryRiskChecklist, setClientDeliveryRiskChecklist] = useState<ClientDeliveryRiskChecklist | null>(null);
@@ -276,6 +296,7 @@ function Inner() {
         continuousLedgerData,
         continuousSessionTimelineData,
         gitHistoryEvidenceData,
+        validationEventEvidenceData,
         caseIntakeCompletenessData,
         caseTeamAccessPolicyData,
         clientDeliveryRiskChecklistData,
@@ -313,6 +334,7 @@ function Inner() {
         getContinuousUpdateLedger(),
         getMaintenanceContinuousSessionTimeline(),
         getMaintenanceGitHistoryEvidence(),
+        getMaintenanceValidationEventEvidence(),
         getCaseIntakeCompleteness(),
         getCaseTeamAccessPolicy(),
         getClientDeliveryRiskChecklist(),
@@ -351,6 +373,7 @@ function Inner() {
       setContinuousLedger(continuousLedgerData);
       setContinuousSessionTimeline(continuousSessionTimelineData);
       setGitHistoryEvidence(gitHistoryEvidenceData);
+      setValidationEventEvidence(validationEventEvidenceData);
       setCaseIntakeCompleteness(caseIntakeCompletenessData);
       setCaseTeamAccessPolicy(caseTeamAccessPolicyData);
       setClientDeliveryRiskChecklist(clientDeliveryRiskChecklistData);
@@ -488,6 +511,11 @@ function Inner() {
     gitHistoryEvidence?.summary.completion_claim_ready === true
       ? 'ready'
       : 'blocked';
+  const validationNormalizedEventCount =
+    validationEventEvidence?.summary.normalized_event_count ??
+    validationEventEvidence?.summary.normalized_session_event_count ??
+    validationEventEvidence?.normalized_session_events.length ??
+    0;
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -857,6 +885,75 @@ function Inner() {
                   <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
                   <div className="space-y-1 text-xs leading-5 text-stone-600">
                     {privacyBoundarySummary(continuousSessionTimeline.privacy_boundary)
+                      .slice(0, 4)
+                      .map((item) => (
+                        <div key={item} className="break-words">
+                          {item}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {validationEventEvidence && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Validation event evidence</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Metadata-only validation evidence; raw logs and raw legal text are not included. No 24h completion
+                  claim is made here.
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass[validationEventEvidence.status] ?? statusClass.review_required}
+              >
+                {displayToken(validationEventEvidence.status)}
+              </Badge>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                {validationEventTypes.map((eventType) => (
+                  <div key={eventType}>
+                    <div className="text-2xl font-black text-stone-950">
+                      {validationEventCount(validationEventEvidence, eventType)}
+                    </div>
+                    <div className="text-xs font-semibold uppercase text-stone-500">{displayToken(eventType)}</div>
+                  </div>
+                ))}
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {formatInline(validationNormalizedEventCount)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">normalized events</div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Missing types</h3>
+                  {validationEventEvidence.missing_event_types.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {validationEventEvidence.missing_event_types.map((eventType) => (
+                        <Badge key={eventType} variant="outline" className="bg-[#fbfaf6]">
+                          {displayToken(eventType)}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-stone-600">No missing validation event types reported.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {privacyBoundarySummary(validationEventEvidence.privacy_boundary)
                       .slice(0, 4)
                       .map((item) => (
                         <div key={item} className="break-words">

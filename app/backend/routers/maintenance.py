@@ -74,6 +74,7 @@ from services.route_telemetry_persistence_plan import RouteTelemetryPersistenceP
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.admin_audit_policy import AdminAuditPolicyService
+from services.validation_event_evidence import ValidationEventEvidenceService
 
 
 router = APIRouter(prefix="/api/v1/maintenance", tags=["maintenance"])
@@ -735,6 +736,24 @@ async def build_git_history_evidence(payload: Any = Body(default=None)):
     return {
         "success": True,
         "data": GitHistoryEvidenceService().build_evidence(payload),
+    }
+
+
+@router.get("/validation-event-evidence")
+async def get_validation_event_evidence_template():
+    """Return metadata-only validation event evidence for session timelines."""
+    return {
+        "success": True,
+        "data": ValidationEventEvidenceService().build_evidence(),
+    }
+
+
+@router.post("/validation-event-evidence")
+async def build_validation_event_evidence(payload: Any = Body(default=None)):
+    """Normalize validation event metadata without echoing raw logs or legal text."""
+    return {
+        "success": True,
+        "data": ValidationEventEvidenceService().build_evidence(payload),
     }
 
 

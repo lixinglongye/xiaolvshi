@@ -88,6 +88,16 @@ as cadence evidence only. It must not treat commit metadata as automatic proof
 that tests ran, commits were pushed, credential scans passed, or low-resource
 legal fixtures executed.
 
+`docs/VALIDATION_EVENT_EVIDENCE.md` defines the upcoming metadata-only contract
+for `GET`/`POST` `/api/v1/maintenance/validation-event-evidence`. That endpoint
+can add non-git validation rows for input validation tests, `credential_scan`,
+`push`, `review`/`release_review`, and `legal_fixture` events. Accepted records
+should contain only timestamps, opaque check/run/validation IDs, optional
+commit hashes, statuses, labels, and repository evidence paths. They must not
+store raw stdout, raw stderr, logs, complete legal text, raw model output,
+credentials, emails, or passwords, and they do not make the 24-hour target
+complete by themselves.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -123,6 +133,7 @@ replace the fixture record itself.
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_session_evidence.py`
 - `docs/GIT_HISTORY_EVIDENCE.md`
+- `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`
