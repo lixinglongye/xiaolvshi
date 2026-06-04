@@ -99,9 +99,12 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/continuous_session_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "app/backend/services/continuous_session_timeline.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
+    assert "app/backend/services/continuous_session_review_packet.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "app/backend/services/git_history_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "app/backend/services/validation_event_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "metadata-only continuous session timeline" in gaps["continuous-maintenance-evidence"]["current_state"]
+    assert "continuous session review packet" in gaps["continuous-maintenance-evidence"]["current_state"]
+    assert "stable packet hash" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert "git history cadence evidence" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert "validation event evidence normalizer" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert "max-gap, commit-window, credential-scan" in gaps["continuous-maintenance-evidence"]["current_state"]
@@ -110,6 +113,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("account plan review" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("maintenance page" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
+    assert any("support-facing index" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("validation event normalizer" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
 
 

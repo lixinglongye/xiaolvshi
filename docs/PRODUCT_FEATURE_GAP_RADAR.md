@@ -77,6 +77,14 @@ workflow binding:
   raw stderr, logs, full legal
   text, raw model output, secrets, emails, or passwords. It can fill gaps that
   git cadence cannot prove, but it still cannot prove 24-hour completion alone.
+  `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md` scopes the upcoming `GET`/`POST`
+  `/api/v1/maintenance/continuous-session-review-packet` endpoint as a
+  metadata-only reviewer/support packet over the ledger, timeline, git cadence,
+  and validation-event evidence. It should expose section statuses, hashes,
+  `evidence_paths`, blockers, review questions, and the privacy boundary, while
+  excluding raw logs/stdout/stderr, complete legal text, raw model output,
+  credentials, and emails. It is a review index only and cannot by itself
+  claim the 24-hour session is complete.
 
 ## Scope
 
@@ -159,7 +167,9 @@ show:
   events,
 - links back to shipped update evidence,
 - laptop-safe legal fixture runs for small machines, and
-- explicit blockers when the 24-hour window is not proven.
+- explicit blockers when the 24-hour window is not proven, and
+- a metadata-only review packet with section statuses, hashes, evidence paths,
+  blockers, review questions, and the active privacy boundary.
 
 This gap is linked to legal-document benchmark work because a long maintenance
 session should include lightweight, repeatable legal quality checks. The

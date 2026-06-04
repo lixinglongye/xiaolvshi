@@ -45,6 +45,7 @@ import {
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
   getMaintenanceContinuousSessionTimeline,
+  getMaintenanceContinuousSessionReviewPacket,
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
   getMaintenanceGitHistoryEvidence,
@@ -86,6 +87,7 @@ import {
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
   type MaintenanceContinuousSessionTimeline,
+  type MaintenanceContinuousSessionReviewPacket,
   type MaintenanceGateSnapshot,
   type MaintenanceGitHistoryEvidence,
   type MaintenanceValidationEventEvidence,
@@ -176,6 +178,15 @@ function displayToken(value: string) {
   return value.replace(/_/g, ' ');
 }
 
+function shortHash(value?: string) {
+  if (!value) return '-';
+  return value.length > 12 ? value.slice(0, 12) : value;
+}
+
+function readinessStatus(value?: boolean) {
+  return value ? 'ready' : 'blocked';
+}
+
 function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][number]['privacy_boundary']) {
   const outputScope = typeof boundary.output_scope === 'string' ? boundary.output_scope : 'metadata-only reviewer output';
   const flags = Object.entries(boundary)
@@ -231,6 +242,8 @@ function Inner() {
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
     useState<MaintenanceContinuousSessionTimeline | null>(null);
+  const [continuousSessionReviewPacket, setContinuousSessionReviewPacket] =
+    useState<MaintenanceContinuousSessionReviewPacket | null>(null);
   const [gitHistoryEvidence, setGitHistoryEvidence] = useState<MaintenanceGitHistoryEvidence | null>(null);
   const [validationEventEvidence, setValidationEventEvidence] =
     useState<MaintenanceValidationEventEvidence | null>(null);
@@ -295,6 +308,7 @@ function Inner() {
         feedbackMap,
         continuousLedgerData,
         continuousSessionTimelineData,
+        continuousSessionReviewPacketData,
         gitHistoryEvidenceData,
         validationEventEvidenceData,
         caseIntakeCompletenessData,
@@ -333,6 +347,7 @@ function Inner() {
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
         getMaintenanceContinuousSessionTimeline(),
+        getMaintenanceContinuousSessionReviewPacket(),
         getMaintenanceGitHistoryEvidence(),
         getMaintenanceValidationEventEvidence(),
         getCaseIntakeCompleteness(),
@@ -372,6 +387,7 @@ function Inner() {
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
       setContinuousSessionTimeline(continuousSessionTimelineData);
+      setContinuousSessionReviewPacket(continuousSessionReviewPacketData);
       setGitHistoryEvidence(gitHistoryEvidenceData);
       setValidationEventEvidence(validationEventEvidenceData);
       setCaseIntakeCompleteness(caseIntakeCompletenessData);
@@ -516,6 +532,14 @@ function Inner() {
     validationEventEvidence?.summary.normalized_session_event_count ??
     validationEventEvidence?.normalized_session_events.length ??
     0;
+  const reviewPacketReadinessFlags = continuousSessionReviewPacket
+    ? [
+        { label: 'updates', value: continuousSessionReviewPacket.summary.update_count_ready },
+        { label: 'timeline', value: continuousSessionReviewPacket.summary.timeline_completion_ready },
+        { label: 'git', value: continuousSessionReviewPacket.summary.git_cadence_ready },
+        { label: 'validation', value: continuousSessionReviewPacket.summary.validation_events_ready },
+      ]
+    : [];
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -891,6 +915,103 @@ function Inner() {
                           {item}
                         </div>
                       ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {continuousSessionReviewPacket && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Continuous session review packet</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Metadata-only packet; excludes raw legal text, raw logs, raw model outputs, credentials, and emails.
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={statusClass[continuousSessionReviewPacket.status] ?? statusClass.review_required}
+                >
+                  {displayToken(continuousSessionReviewPacket.status)}
+                </Badge>
+                <Badge variant="outline" className="bg-white font-mono">
+                  {shortHash(continuousSessionReviewPacket.summary.packet_hash)}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                {reviewPacketReadinessFlags.map((flag) => (
+                  <div key={flag.label}>
+                    <Badge
+                      variant="outline"
+                      className={statusClass[readinessStatus(flag.value)] ?? statusClass.warn}
+                    >
+                      {flag.label} {readinessStatus(flag.value)}
+                    </Badge>
+                  </div>
+                ))}
+                <div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[readinessStatus(continuousSessionReviewPacket.summary.packet_ready_for_support_claim)] ??
+                      statusClass.warn
+                    }
+                  >
+                    support claim {readinessStatus(continuousSessionReviewPacket.summary.packet_ready_for_support_claim)}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {formatInline(
+                      continuousSessionReviewPacket.summary.blocker_count ??
+                        continuousSessionReviewPacket.blockers.length,
+                    )}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">blockers</div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Blockers</h3>
+                  {continuousSessionReviewPacket.blockers.length > 0 ? (
+                    <div className="space-y-2">
+                      {continuousSessionReviewPacket.blockers.slice(0, 4).map((blocker) => (
+                        <div key={blocker.id} className="text-xs leading-5 text-stone-600">
+                          <div className="font-mono text-[11px] font-semibold text-stone-950">{blocker.id}</div>
+                          <div>{blocker.detail ?? blocker.severity ?? 'review required'}</div>
+                        </div>
+                      ))}
+                      {continuousSessionReviewPacket.blockers.length > 4 && (
+                        <Badge variant="outline" className="bg-[#fbfaf6]">
+                          +{continuousSessionReviewPacket.blockers.length - 4}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-stone-600">No packet blockers reported.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {privacyBoundarySummary(continuousSessionReviewPacket.privacy_boundary)
+                      .slice(0, 4)
+                      .map((item) => (
+                        <div key={item} className="break-words">
+                          {item}
+                        </div>
+                      ))}
+                    <div>raw model outputs included: false</div>
+                    <div>credentials and emails included: false</div>
                   </div>
                 </div>
               </div>

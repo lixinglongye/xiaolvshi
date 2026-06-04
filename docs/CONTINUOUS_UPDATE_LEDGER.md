@@ -98,6 +98,17 @@ store raw stdout, raw stderr, logs, complete legal text, raw model output,
 credentials, emails, or passwords, and they do not make the 24-hour target
 complete by themselves.
 
+`docs/CONTINUOUS_SESSION_REVIEW_PACKET.md` defines the upcoming
+`GET`/`POST` `/api/v1/maintenance/continuous-session-review-packet` endpoint.
+That endpoint packages the ledger, continuous-session timeline, git-history
+cadence, and validation-event evidence into a metadata-only reviewer/support
+packet. The packet may expose section statuses, hashes, repository
+`evidence_paths`, blockers, review questions, and the privacy boundary, but not
+raw logs, stdout, stderr, complete legal text, raw model output, credentials,
+or emails. It is an evidence index only and must not claim the 24-hour target is
+ready unless real timestamped events and the 100+ update evidence both pass the
+joined gate.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -134,6 +145,7 @@ replace the fixture record itself.
 - `app/backend/tests/test_continuous_session_evidence.py`
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
+- `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

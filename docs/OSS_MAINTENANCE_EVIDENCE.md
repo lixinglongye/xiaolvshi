@@ -51,6 +51,15 @@ not include raw stdout, raw stderr, logs, full legal text, raw model output,
 secrets, emails, or passwords, and it must not be described as completing the
 24-hour target.
 
+`docs/CONTINUOUS_SESSION_REVIEW_PACKET.md` documents the upcoming
+`GET`/`POST` `/api/v1/maintenance/continuous-session-review-packet` endpoint.
+Support applications may use it as a metadata-only reviewer packet that indexes
+ledger, timeline, git cadence, and validation-event evidence with section
+statuses, hashes, `evidence_paths`, blockers, review questions, and a privacy
+boundary. It must not include raw logs/stdout/stderr, complete legal text, raw
+model output, credentials, or emails, and it must not be cited as standalone
+proof that the 24-hour session is complete.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -88,7 +97,7 @@ still stay out of support applications until matching merged evidence exists.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, validation-event metadata evidence, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, continuous session review packet, validation-event metadata evidence, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -224,6 +233,7 @@ still stay out of support applications until matching merged evidence exists.
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
+- `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/BILLING_ENTITLEMENT_GAP.md`

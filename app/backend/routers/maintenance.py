@@ -19,6 +19,7 @@ from services.client_delivery_transparency_policy import ClientDeliveryTranspare
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.continuous_session_evidence import ContinuousSessionEvidenceService
+from services.continuous_session_review_packet import ContinuousSessionReviewPacketService
 from services.continuous_session_timeline import ContinuousSessionTimelineService
 from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
 from services.deadline_validation_policy import DeadlineValidationPolicyService
@@ -718,6 +719,24 @@ async def build_continuous_session_timeline(payload: Any = Body(default=None)):
     return {
         "success": True,
         "data": ContinuousSessionTimelineService().build_timeline(payload),
+    }
+
+
+@router.get("/continuous-session-review-packet")
+async def get_continuous_session_review_packet_template():
+    """Return a metadata-only reviewer packet for continuous maintenance evidence."""
+    return {
+        "success": True,
+        "data": ContinuousSessionReviewPacketService().build_packet(),
+    }
+
+
+@router.post("/continuous-session-review-packet")
+async def build_continuous_session_review_packet(payload: Any = Body(default=None)):
+    """Build a reviewer packet without echoing raw logs, legal text, or credentials."""
+    return {
+        "success": True,
+        "data": ContinuousSessionReviewPacketService().build_packet(payload),
     }
 
 

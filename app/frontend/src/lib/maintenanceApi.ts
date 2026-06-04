@@ -2257,6 +2257,46 @@ type MaintenanceValidationEventEvidenceResponse = {
   data: MaintenanceValidationEventEvidence;
 };
 
+export type MaintenanceContinuousSessionReviewPacketSection = {
+  id: string;
+  title: string;
+  status: string;
+  severity?: string;
+  detail?: string;
+  evidence_paths?: string[];
+};
+
+export type MaintenanceContinuousSessionReviewPacketBlocker = {
+  id: string;
+  severity?: string;
+  detail?: string;
+};
+
+export type MaintenanceContinuousSessionReviewPacket = {
+  status: string;
+  summary: {
+    update_count_ready?: boolean;
+    timeline_completion_ready?: boolean;
+    git_cadence_ready?: boolean;
+    validation_events_ready?: boolean;
+    packet_ready_for_support_claim?: boolean;
+    blocker_count?: number;
+    packet_hash?: string;
+    raw_payload_echoed?: boolean;
+    [key: string]: unknown;
+  };
+  packet_sections: MaintenanceContinuousSessionReviewPacketSection[];
+  reviewer_questions: string[];
+  blockers: MaintenanceContinuousSessionReviewPacketBlocker[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceContinuousSessionReviewPacketResponse = {
+  success: boolean;
+  data: MaintenanceContinuousSessionReviewPacket;
+};
+
 export type MaintenanceContinuousSessionEvidence = {
   status: string;
   summary: {
@@ -2572,6 +2612,25 @@ export async function postMaintenanceValidationEventEvidence(
     data: payload,
   });
   return unwrapMaintenanceData<MaintenanceValidationEventEvidenceResponse['data']>(resp);
+}
+
+export async function getMaintenanceContinuousSessionReviewPacket(): Promise<MaintenanceContinuousSessionReviewPacket> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-review-packet',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionReviewPacketResponse['data']>(resp);
+}
+
+export async function postMaintenanceContinuousSessionReviewPacket(
+  payload: Record<string, unknown>,
+): Promise<MaintenanceContinuousSessionReviewPacket> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-review-packet',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionReviewPacketResponse['data']>(resp);
 }
 
 export async function getCaseIntakeCompleteness(): Promise<CaseIntakeCompleteness> {

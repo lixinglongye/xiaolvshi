@@ -152,6 +152,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "admin-audit-policy": "python -m pytest tests/test_admin_audit_policy.py -q",
         "continuous-session-evidence": "python -m pytest tests/test_continuous_session_evidence.py -q",
         "continuous-session-timeline": "python -m pytest tests/test_continuous_session_timeline.py -q",
+        "continuous-session-review-packet": "python -m pytest tests/test_continuous_session_review_packet.py tests/test_continuous_session_timeline.py tests/test_validation_event_evidence.py -q",
         "git-history-evidence": "python -m pytest tests/test_git_history_evidence.py -q",
         "validation-event-evidence": "python -m pytest tests/test_validation_event_evidence.py tests/test_continuous_session_timeline.py -q",
         "billing-payment-reconciliation-policy": "python -m pytest tests/test_billing_payment_reconciliation.py -q",
@@ -188,6 +189,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "sensitive admin actions" in checks["admin-audit-policy"]["manual_note"]
     assert "does not create proof by itself" in checks["continuous-session-evidence"]["manual_note"]
     assert "keeping 24-hour completion blocked" in checks["continuous-session-timeline"]["manual_note"]
+    assert "not a substitute for real timestamped 24-hour evidence" in checks["continuous-session-review-packet"]["manual_note"]
     assert "does not prove tests" in checks["git-history-evidence"]["manual_note"]
     assert "rejects raw logs" in checks["validation-event-evidence"]["manual_note"]
     assert "does not prove 24-hour completion" in checks["validation-event-evidence"]["manual_note"]

@@ -38,6 +38,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
+    assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]
     assert "Git history cadence evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Validation event evidence normalizer" in profile["release_management"]["release_readiness_controls"]
     assert "app/backend/routers/generated_documents.py" in evidence_paths
@@ -58,6 +59,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_continuous_session_evidence.py" in evidence_paths
     assert "app/backend/services/continuous_session_timeline.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_timeline.py" in evidence_paths
+    assert "app/backend/services/continuous_session_review_packet.py" in evidence_paths
+    assert "app/backend/tests/test_continuous_session_review_packet.py" in evidence_paths
     assert "app/backend/services/git_history_evidence.py" in evidence_paths
     assert "app/backend/tests/test_git_history_evidence.py" in evidence_paths
     assert "app/backend/services/validation_event_evidence.py" in evidence_paths
@@ -67,6 +70,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("automatic deep-review report binding" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove completion" in guardrail for guardrail in profile["application_guardrails"])
     assert any("support claims must remain blocked" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("not a substitute for real timestamped 24-hour evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove tests" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Validation event evidence accepts only sanitized" in guardrail for guardrail in profile["application_guardrails"])
     assert any("deep-review first-principles generation are quota guarded" in guardrail for guardrail in profile["application_guardrails"])

@@ -9,6 +9,8 @@ POST /api/v1/maintenance/continuous-session-timeline
 GET /api/v1/maintenance/git-history-evidence
 GET /api/v1/maintenance/validation-event-evidence
 POST /api/v1/maintenance/validation-event-evidence
+GET /api/v1/maintenance/continuous-session-review-packet
+POST /api/v1/maintenance/continuous-session-review-packet
 ```
 
 The timeline is a reviewer-facing evidence join. It must not be treated as a
@@ -19,6 +21,12 @@ evidence can help prove commit cadence, but commit cadence alone does not prove
 tests, pushes, credential scans, legal fixture runs, or release readiness.
 Validation-event evidence fills those non-commit rows with metadata-only
 records, but it still cannot prove a 24-hour window by itself.
+The continuous-session review packet sits above these sources as a
+metadata-only reviewer/support packet: it reports section statuses, hashes,
+evidence paths, blockers, review questions, and the active privacy boundary. It
+does not store raw logs, raw stdout, raw stderr, complete legal texts, raw
+model outputs, credentials, or emails, and it cannot independently claim the
+24-hour session is complete.
 
 ## Purpose
 
@@ -156,6 +164,7 @@ that distinction explicit in `summary`, `gap_analysis`, and any reviewer text.
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
+- `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
 - `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
@@ -166,6 +175,6 @@ that distinction explicit in `summary`, `gap_analysis`, and any reviewer text.
 Run these repository-root checks after documentation or endpoint updates:
 
 ```powershell
-rg -n "Continuous Session Timeline|continuous-session-timeline|validation-event-evidence|git-history-evidence|commit cadence|credential_scan|legal_fixture|100\\+|24-hour|metadata-only|raw stdout|raw stderr|raw model outputs|raw legal" docs
+rg -n "Continuous Session Timeline|continuous-session-timeline|continuous-session-review-packet|validation-event-evidence|git-history-evidence|commit cadence|credential_scan|legal_fixture|100\\+|24-hour|metadata-only|raw stdout|raw stderr|raw model outputs|raw legal" docs
 git diff --check
 ```
