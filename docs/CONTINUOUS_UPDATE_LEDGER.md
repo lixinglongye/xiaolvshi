@@ -38,6 +38,13 @@ reconciliation policy, task runtime notification summaries, a deterministic
 laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/COLIEE
 research registry mapped to low-resource local tests, and a maintenance UI
 section for that registry.
+This batch also adds deep-review selected-source report binding, quota delivery
+decisions for export/client delivery/account-plan review, deterministic feedback
+issue clustering, metadata-only evidence bundle integrity checks, privacy
+retention rules, release-claim compliance checks, case export readiness checks,
+and admin audit policy evidence. The medium/large update count is now at or
+above 100, but the goal is still not complete because the 24-hour continuous
+validation window remains unproven.
 These are reviewable product slices; they do not finish real payment provider
 settlement or webhook verification, automatic deep-review report binding for
 selected-source validation, raw contract extraction, or a database-backed team
@@ -49,6 +56,9 @@ The ledger must not mark the goal complete until both conditions are true:
 
 1. A full 24-hour window is backed by timestamped commits, test runs, or validation records.
 2. At least 100 medium/large updates are reviewable in the repository.
+
+The second condition is currently satisfied by repository evidence. The first
+condition is still unsatisfied, so `completion_ready` remains `false`.
 
 Small legal fixture tests can count only when they produce repository-backed evidence such as a service, test, documentation update, endpoint, or reviewer-facing UI change. Local-only experiments, raw model outputs, account credentials, and client documents must not be committed.
 

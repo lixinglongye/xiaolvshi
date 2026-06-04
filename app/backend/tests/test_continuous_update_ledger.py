@@ -28,8 +28,8 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["summary"]["completed_medium_large_update_count"] >= 88
     assert ledger["summary"]["completed_medium_large_update_count"] >= 89
     assert ledger["summary"]["completed_medium_large_update_count"] >= 92
-    assert ledger["summary"]["completed_medium_large_update_count"] < TARGET_MEDIUM_LARGE_UPDATE_COUNT
-    assert ledger["summary"]["remaining_medium_large_update_count"] > 0
+    assert ledger["summary"]["completed_medium_large_update_count"] >= TARGET_MEDIUM_LARGE_UPDATE_COUNT
+    assert ledger["summary"]["remaining_medium_large_update_count"] == 0
     assert ledger["summary"]["continuous_hours_verified"] == 0
     assert ledger["summary"]["completion_ready"] is False
     assert not SECRET_PATTERN.search(str(ledger))
@@ -107,6 +107,14 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
+    assert "deep-review-selected-source-binding" in completed_ids
+    assert "quota-delivery-decision" in completed_ids
+    assert "feedback-issue-cluster" in completed_ids
+    assert "evidence-bundle-integrity" in completed_ids
+    assert "privacy-retention-rules" in completed_ids
+    assert "release-claim-compliance" in completed_ids
+    assert "case-export-readiness" in completed_ids
+    assert "admin-audit-policy" in completed_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -126,6 +134,14 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
+    assert "deep-review-selected-source-binding" not in queue_ids
+    assert "quota-delivery-decision" not in queue_ids
+    assert "feedback-issue-cluster" not in queue_ids
+    assert "evidence-bundle-integrity" not in queue_ids
+    assert "privacy-retention-rules" not in queue_ids
+    assert "release-claim-compliance" not in queue_ids
+    assert "case-export-readiness" not in queue_ids
+    assert "admin-audit-policy" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
 

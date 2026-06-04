@@ -142,6 +142,14 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "deep-review-document-generation-quota-guard": "python -m pytest tests/test_deep_review_document_quota.py tests/test_billing_entitlement_quota_binding.py -q",
         "legal-rag-selected-source-request-metadata": "python -m pytest tests/test_legal_rag_request_metadata.py -q",
         "legal-rag-selected-source-citation-validation": "python -m pytest tests/test_legal_rag_selected_source_validation.py tests/test_maintenance_legal_rag_selected_source_validation_route.py tests/test_legal_rag_request_metadata.py -q",
+        "deep-review-selected-source-binding": "python -m pytest tests/test_deep_review_selected_source_binding.py tests/test_legal_rag_selected_source_validation.py -q",
+        "quota-delivery-decision": "python -m pytest tests/test_quota_delivery_decision.py tests/test_deep_review_document_quota.py -q",
+        "feedback-issue-cluster": "python -m pytest tests/test_feedback_issue_cluster.py -q",
+        "evidence-bundle-integrity": "python -m pytest tests/test_evidence_bundle_integrity.py -q",
+        "privacy-retention-rules": "python -m pytest tests/test_privacy_retention_rules.py -q",
+        "release-claim-compliance": "python -m pytest tests/test_release_claim_compliance.py -q",
+        "case-export-readiness": "python -m pytest tests/test_case_export_readiness.py tests/test_deep_review_selected_source_binding.py -q",
+        "admin-audit-policy": "python -m pytest tests/test_admin_audit_policy.py -q",
         "billing-payment-reconciliation-policy": "python -m pytest tests/test_billing_payment_reconciliation.py -q",
         "case-task-runtime-notification-summary": "python -m pytest tests/test_case_task_notification_policy.py -q",
         "legal-document-benchmark-suite": "python -m pytest tests/test_legal_document_benchmark_suite.py -q",
@@ -166,6 +174,14 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "metadata only" in checks["legal-rag-selected-source-request-metadata"]["manual_note"]
     assert "citation_map and generation_plan source IDs" in checks["legal-rag-selected-source-citation-validation"]["manual_note"]
     assert "metadata-only maintenance self-check route" in checks["legal-rag-selected-source-citation-validation"]["manual_note"]
+    assert "deep-review report metadata" in checks["deep-review-selected-source-binding"]["manual_note"]
+    assert "account-plan review decisions" in checks["quota-delivery-decision"]["manual_note"]
+    assert "repeated user feedback" in checks["feedback-issue-cluster"]["manual_note"]
+    assert "missing proof purposes" in checks["evidence-bundle-integrity"]["manual_note"]
+    assert "retention and deletion review rules" in checks["privacy-retention-rules"]["manual_note"]
+    assert "unsupported public claims" in checks["release-claim-compliance"]["manual_note"]
+    assert "selected-source validation before case export" in checks["case-export-readiness"]["manual_note"]
+    assert "sensitive admin actions" in checks["admin-audit-policy"]["manual_note"]
     assert "does not verify real payment provider settlement" in checks["billing-payment-reconciliation-policy"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]

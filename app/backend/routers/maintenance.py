@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Body, Query
 from pydantic import BaseModel, ConfigDict, Field
 from services.billing_entitlement_gap import BillingEntitlementGapService
 from services.billing_quota_migration_plan import BillingQuotaMigrationPlanService
@@ -14,6 +14,7 @@ from services.case_team_access_policy import CaseTeamAccessPolicyService
 from services.case_task_notification_policy import CaseTaskNotificationPolicyService
 from services.case_workbench_payload import CaseWorkbenchPayloadService
 from services.case_workbench_persistence_plan import CaseWorkbenchPersistencePlanService
+from services.case_export_readiness import CaseExportReadinessService
 from services.client_delivery_transparency_policy import ClientDeliveryTransparencyPolicyService
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
@@ -21,10 +22,13 @@ from services.contract_clause_extraction_schema import ContractClauseExtractionS
 from services.deadline_validation_policy import DeadlineValidationPolicyService
 from services.document_delivery_package_manifest import DocumentDeliveryPackageManifestService
 from services.document_version_diff_checklist import DocumentVersionDiffChecklistService
+from services.evidence_bundle_integrity import EvidenceBundleIntegrityService
 from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolicyService
+from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
@@ -58,11 +62,15 @@ from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyS
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
+from services.privacy_retention_rules import PrivacyRetentionRulesService
 from services.product_feature_gap_radar import ProductFeatureGapRadarService
+from services.quota_delivery_decision import QuotaDeliveryDecisionService
+from services.release_claim_compliance import ReleaseClaimComplianceService
 from services.release_readiness import ReleaseReadinessService
 from services.route_telemetry_persistence_plan import RouteTelemetryPersistencePlanService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
+from services.admin_audit_policy import AdminAuditPolicyService
 
 
 router = APIRouter(prefix="/api/v1/maintenance", tags=["maintenance"])
@@ -72,6 +80,46 @@ class LegalRagSelectedSourceValidationRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     citation_map: Any | None = None
     generation_plan: Any | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class DeepReviewSelectedSourceBindingRequest(BaseModel):
+    report: dict[str, Any] = Field(default_factory=dict)
+    request_metadata: dict[str, Any] = Field(default_factory=dict)
+    block_on_failure: bool = True
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class QuotaDeliveryDecisionRequest(BaseModel):
+    action: str = "export_report"
+    quota_summary: dict[str, Any] = Field(default_factory=dict)
+    release_decision: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class PrivacyRetentionRulesRequest(BaseModel):
+    artifacts: list[dict[str, Any]] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class ReleaseClaimComplianceRequest(BaseModel):
+    claims: list[Any] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class CaseExportReadinessRequest(BaseModel):
+    report: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class AdminAuditPolicyRequest(BaseModel):
+    actions: list[dict[str, Any]] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="ignore")
 
@@ -120,6 +168,16 @@ async def evaluate_feedback_lifecycle_policy(payload: dict[str, Any]):
     return {
         "success": True,
         "data": FeedbackLifecyclePolicyService().evaluate_ticket(payload),
+    }
+
+
+@router.post("/feedback/issue-clusters")
+async def build_feedback_issue_clusters(payload: Any = Body(...)):
+    """Cluster feedback items into privacy-safe repeated issue groups."""
+    items = payload.get("items") if isinstance(payload, dict) else payload
+    return {
+        "success": True,
+        "data": FeedbackIssueClusterService().cluster(items if isinstance(items, list) else []),
     }
 
 
@@ -515,6 +573,24 @@ async def evaluate_evidence_exhibit_package_policy(payload: dict[str, Any]):
     }
 
 
+@router.post("/evidence/bundle-integrity")
+async def evaluate_evidence_bundle_integrity(payload: Any = Body(...)):
+    """Evaluate evidence bundle duplicates and metadata gaps without reading files."""
+    return {
+        "success": True,
+        "data": EvidenceBundleIntegrityService().build_report(payload),
+    }
+
+
+@router.post("/case/export-readiness")
+async def evaluate_case_export_readiness(payload: CaseExportReadinessRequest):
+    """Evaluate report export readiness without echoing raw report text."""
+    return {
+        "success": True,
+        "data": CaseExportReadinessService().evaluate(payload.report),
+    }
+
+
 @router.get("/legal-document-template-matrix")
 async def get_legal_document_template_matrix():
     """Return legal document template, format, export, and review gate coverage."""
@@ -794,6 +870,68 @@ async def validate_legal_rag_selected_source_citations(payload: LegalRagSelected
             citation_map=payload.citation_map,
             generation_plan=payload.generation_plan,
         ),
+    }
+
+
+@router.post("/deep-review/selected-source-binding")
+async def bind_deep_review_selected_source_validation(payload: DeepReviewSelectedSourceBindingRequest):
+    """Attach selected-source validation to a deep-review report without raw text echo."""
+    return {
+        "success": True,
+        "data": DeepReviewSelectedSourceBindingService().evaluate(
+            report=payload.report,
+            request_metadata=payload.request_metadata,
+            block_on_failure=payload.block_on_failure,
+        ),
+    }
+
+
+@router.post("/billing/quota-delivery-decision")
+async def evaluate_quota_delivery_decision(payload: QuotaDeliveryDecisionRequest):
+    """Evaluate export, delivery, or account-plan action from sanitized quota metadata."""
+    return {
+        "success": True,
+        "data": QuotaDeliveryDecisionService().decide(
+            action=payload.action,
+            quota_summary=payload.quota_summary,
+            release_decision=payload.release_decision,
+        ),
+    }
+
+
+@router.get("/privacy/retention-rules")
+async def get_privacy_retention_rules():
+    """Return privacy-safe retention and deletion rules for legal workflow artifacts."""
+    return {
+        "success": True,
+        "data": PrivacyRetentionRulesService().build_policy(),
+    }
+
+
+@router.post("/privacy/retention-rules")
+async def evaluate_privacy_retention_rules(payload: PrivacyRetentionRulesRequest):
+    """Evaluate artifact retention metadata without raw legal text or PII echo."""
+    return {
+        "success": True,
+        "data": PrivacyRetentionRulesService().build_policy(payload.artifacts),
+    }
+
+
+@router.post("/compliance/release-claims")
+async def evaluate_release_claim_compliance(payload: ReleaseClaimComplianceRequest):
+    """Check public release/support-application claims without echoing raw claim text."""
+    return {
+        "success": True,
+        "data": ReleaseClaimComplianceService().evaluate(payload.claims),
+    }
+
+
+@router.post("/admin/audit-policy")
+async def evaluate_admin_audit_policy(payload: AdminAuditPolicyRequest):
+    """Evaluate sensitive admin action audit requirements without raw payload echo."""
+    return {
+        "success": True,
+        "data": AdminAuditPolicyService().evaluate(payload.actions),
     }
 
 

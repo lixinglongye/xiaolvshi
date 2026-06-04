@@ -37,6 +37,11 @@ maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
 benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to local
 low-resource validation, and a maintenance UI section for that registry.
+The latest maintenance batch adds deep-review selected-source binding, quota
+delivery decisions, deterministic feedback issue clustering, metadata-only
+evidence bundle integrity checks, privacy retention rules, release-claim
+compliance checks, case export readiness checks, and admin audit policy
+evidence.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding
@@ -47,7 +52,7 @@ The frontend productization queue has moved from route exposure to deeper
 workflow binding:
 
 - Runtime event deltas should refresh live risk state and evidence graph views.
-- Selected-source citation validation should bind into deep-review report persistence and export checks.
+- Selected-source citation validation should bind into live deep-review persistence and export actions.
 - Quota summaries should bind into reviewer-visible export, delivery, and account-plan decisions.
 - Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
 

@@ -127,6 +127,10 @@ maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
 benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to
 low-resource local validation, and a maintenance UI section for that registry.
+New optional checks also cover deep-review selected-source report binding,
+quota delivery decisions, deterministic feedback issue clustering, evidence
+bundle integrity, privacy retention rules, release-claim compliance, case export
+readiness, and admin audit policy.
 These checks remain non-blocking and do not claim real payment provider
 settlement or webhook verification, automatic deep-review report binding for
 selected-source validation, public benchmark scores, or external adoption.

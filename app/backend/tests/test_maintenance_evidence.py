@@ -24,6 +24,14 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG selected-source request metadata" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source citation validation" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source validation maintenance route" in profile["release_management"]["release_readiness_controls"]
+    assert "Deep-review selected-source binding" in profile["release_management"]["release_readiness_controls"]
+    assert "Quota delivery decision" in profile["release_management"]["release_readiness_controls"]
+    assert "Feedback issue cluster" in profile["release_management"]["release_readiness_controls"]
+    assert "Evidence bundle integrity" in profile["release_management"]["release_readiness_controls"]
+    assert "Privacy retention rules" in profile["release_management"]["release_readiness_controls"]
+    assert "Release claim compliance" in profile["release_management"]["release_readiness_controls"]
+    assert "Case export readiness" in profile["release_management"]["release_readiness_controls"]
+    assert "Admin audit policy" in profile["release_management"]["release_readiness_controls"]
     assert "Billing payment reconciliation policy" in profile["release_management"]["release_readiness_controls"]
     assert "Case task runtime notification summary" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
@@ -33,7 +41,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/deep_review_document_quota.py" in evidence_paths
     assert "app/backend/services/legal_rag_request_metadata.py" in evidence_paths
     assert "app/backend/services/legal_rag_selected_source_validation.py" in evidence_paths
+    assert "app/backend/services/deep_review_selected_source_binding.py" in evidence_paths
+    assert "app/backend/services/evidence_bundle_integrity.py" in evidence_paths
     assert "app/backend/services/billing_payment_reconciliation.py" in evidence_paths
+    assert "app/backend/services/quota_delivery_decision.py" in evidence_paths
+    assert "app/backend/services/privacy_retention_rules.py" in evidence_paths
+    assert "app/backend/services/release_claim_compliance.py" in evidence_paths
+    assert "app/backend/services/admin_audit_policy.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
     assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
