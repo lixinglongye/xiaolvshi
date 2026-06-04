@@ -32,6 +32,7 @@ from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
+from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplayService
 from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
@@ -813,6 +814,24 @@ async def evaluate_gemini_newapi_model_selector(payload: Any = Body(default=None
     return {
         "success": True,
         "data": GeminiNewapiModelSelectorService().build_selector(payload),
+    }
+
+
+@router.get("/gemini-newapi-selector-replay")
+async def get_gemini_newapi_selector_replay():
+    """Return deterministic replay evidence for Gemini/NewAPI selector scenarios."""
+    return {
+        "success": True,
+        "data": GeminiNewapiSelectorReplayService().run_replay(),
+    }
+
+
+@router.post("/gemini-newapi-selector-replay")
+async def evaluate_gemini_newapi_selector_replay(payload: Any = Body(default=None)):
+    """Replay submitted selector scenarios without calling NewAPI."""
+    return {
+        "success": True,
+        "data": GeminiNewapiSelectorReplayService().run_replay(payload),
     }
 
 

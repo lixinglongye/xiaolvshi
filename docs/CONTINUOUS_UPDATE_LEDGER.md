@@ -109,13 +109,22 @@ or emails. It is an evidence index only and must not claim the 24-hour target is
 ready unless real timestamped events and the 100+ update evidence both pass the
 joined gate.
 
-`docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` defines the upcoming metadata-only
+`docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` defines the metadata-only
 `GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` endpoint. It
 indexes Gemini/NewAPI model id normalization, task labels, cost tiers, candidate
 chains, warnings, and evidence paths for cheap-first selection review. It must
 not store API keys, gateway credentials, prompts, raw legal text, raw model
 outputs, or emails, and it must not be counted as proof that NewAPI was called
 or that the 24-hour continuous window is complete.
+
+`docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md` defines the metadata-only
+`GET`/`POST` `/api/v1/maintenance/gemini-newapi-selector-replay` endpoint. It
+replays deterministic selector scenarios for fast/classification/OCR
+cheap-first behavior, review/document_generation balanced-after-precheck,
+large_pdf/final_review premium exceptions, unknown Gemini-like catalog review,
+and high-frequency explicit premium blocking or warning. Submitted rationale is
+not echoed. It stores selector regression metadata only and cannot prove live
+NewAPI execution or 24-hour completion.
 
 ## Low-Resource Test Path
 
@@ -155,6 +164,7 @@ replace the fixture record itself.
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
+- `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

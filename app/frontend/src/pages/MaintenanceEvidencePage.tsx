@@ -37,6 +37,7 @@ import {
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
   getLegalBenchmarkResearchRegistry,
+  getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
   getLegalResearchBacklog,
@@ -69,6 +70,7 @@ import {
   type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
   type GeminiNewApiModelSelectorEvidence,
+  type GeminiNewApiSelectorReplayEvidence,
   type LawyerReviewWorkflowPolicy,
   type LegalDocumentExportReadiness,
   type LegalDocumentTemplateMatrix,
@@ -198,7 +200,7 @@ function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][numbe
   return [outputScope, ...flags];
 }
 
-function geminiNewApiPrivacyBoundarySummary(boundary: GeminiNewApiModelSelectorEvidence['privacy_boundary']) {
+function geminiNewApiPrivacyBoundarySummary(boundary: Record<string, unknown>) {
   const outputScope =
     typeof boundary.output_scope === 'string'
       ? boundary.output_scope
@@ -286,6 +288,8 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
     useState<GeminiNewApiModelSelectorEvidence | null>(null);
+  const [geminiNewApiSelectorReplay, setGeminiNewApiSelectorReplay] =
+    useState<GeminiNewApiSelectorReplayEvidence | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
@@ -346,6 +350,7 @@ function Inner() {
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
         geminiNewApiModelSelectorData,
+        geminiNewApiSelectorReplayData,
         fixturePromptPackData,
         fixtureLocalRunPackageData,
         fixtureRunPlanData,
@@ -386,6 +391,7 @@ function Inner() {
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
         getGeminiNewApiModelSelectorEvidence(),
+        getGeminiNewApiSelectorReplayEvidence(),
         getLegalFixturePromptPack(),
         getLegalFixtureLocalRunPackage(),
         getLegalFixtureRunPlan(),
@@ -427,6 +433,7 @@ function Inner() {
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
       setGeminiNewApiModelSelector(geminiNewApiModelSelectorData);
+      setGeminiNewApiSelectorReplay(geminiNewApiSelectorReplayData);
       setFixturePromptPack(fixturePromptPackData);
       setFixtureLocalRunPackage(fixtureLocalRunPackageData);
       setFixtureRunPlan(fixtureRunPlanData);
@@ -3507,6 +3514,115 @@ function Inner() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {geminiNewApiSelectorReplay && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only replay evidence; does not call NewAPI and excludes credentials, prompts, raw legal
+                      text, and raw model outputs.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[geminiNewApiSelectorReplay.status] ?? statusClass.review_recommended}
+                  >
+                    {geminiNewApiSelectorReplay.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-7">
+                  {[
+                    { label: 'scenarios', value: geminiNewApiSelectorReplay.summary.scenario_count ?? 0 },
+                    { label: 'pass', value: geminiNewApiSelectorReplay.summary.pass_count ?? 0 },
+                    { label: 'warn', value: geminiNewApiSelectorReplay.summary.warn_count ?? 0 },
+                    { label: 'fail', value: geminiNewApiSelectorReplay.summary.fail_count ?? 0 },
+                    { label: 'cheap-first', value: geminiNewApiSelectorReplay.summary.cheap_first_pass_count ?? 0 },
+                    { label: 'premium', value: geminiNewApiSelectorReplay.summary.premium_exception_count ?? 0 },
+                    { label: 'catalog-review', value: geminiNewApiSelectorReplay.summary.catalog_review_count ?? 0 },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="text-xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.45fr_0.55fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Replay</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Selected model</TableHead>
+                          <TableHead>Decision</TableHead>
+                          <TableHead>Cost tier</TableHead>
+                          <TableHead>Recommended action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiNewApiSelectorReplay.replay_results.slice(0, 7).map((result) => (
+                          <TableRow key={result.id}>
+                            <TableCell className="max-w-[240px]">
+                              <div className="font-mono text-xs font-semibold text-stone-950">{result.id}</div>
+                              {result.actual?.route_mode && (
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                  {result.actual.route_mode}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[result.status] ?? statusClass.not_run}>
+                                {result.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">
+                                {result.actual?.selected_model ?? '-'}
+                              </div>
+                              <div className="font-mono text-[11px]">{result.actual?.canonical_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                              {result.actual?.decision ?? '-'}
+                              {result.actual?.warnings && result.actual.warnings.length > 0 && (
+                                <div className="mt-1 text-amber-800">{result.actual.warnings.slice(0, 2).join('; ')}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-white">
+                                {result.actual?.cost_tier ?? 'unknown'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {result.recommended_action ?? '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                      {geminiNewApiPrivacyBoundarySummary(geminiNewApiSelectorReplay.privacy_boundary).map((item) => (
+                        <li key={item} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
+                      Replay validation uses selector metadata only. NewAPI is not invoked; credentials, prompts, raw
+                      legal text, and raw model outputs stay outside this evidence payload.
                     </div>
                   </div>
                 </div>

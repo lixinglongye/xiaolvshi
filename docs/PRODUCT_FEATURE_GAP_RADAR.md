@@ -49,6 +49,14 @@ metadata-only selection review for normalized model ids, task labels, cost
 tiers, cheap-first candidate chains, warnings, and evidence paths. It does not
 call NewAPI, store prompts or raw model output, or close the 24-hour maintenance
 proof gap.
+The companion selector replay contract for `GET`/`POST`
+`/api/v1/maintenance/gemini-newapi-selector-replay` adds deterministic scenario
+replay evidence for fast/classification/OCR cheap-first behavior,
+review/document_generation balanced-after-precheck, large_pdf/final_review
+premium exceptions, unknown Gemini-like catalog review, and high-frequency
+explicit premium blocking or warning. It remains metadata-only selector
+regression evidence and does not prove live NewAPI execution or 24-hour
+completion.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding

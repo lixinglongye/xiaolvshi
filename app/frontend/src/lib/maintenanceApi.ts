@@ -1613,6 +1613,47 @@ export type GeminiNewApiModelSelectorEvidence = {
   validation_commands: string[];
 };
 
+export type GeminiNewApiSelectorReplayCheck = {
+  id: string;
+  status: string;
+  expected?: unknown;
+  actual?: unknown;
+  reason?: string;
+};
+
+export type GeminiNewApiSelectorReplayResult = {
+  id: string;
+  status: string;
+  scenario?: Record<string, unknown>;
+  actual?: {
+    selected_model?: string;
+    canonical_model?: string | null;
+    decision?: string;
+    cost_tier?: string;
+    route_mode?: string;
+    warnings?: string[];
+  };
+  checks?: GeminiNewApiSelectorReplayCheck[];
+  recommended_action?: string;
+};
+
+export type GeminiNewApiSelectorReplayEvidence = {
+  status: string;
+  summary: {
+    scenario_count?: number;
+    pass_count?: number;
+    warn_count?: number;
+    fail_count?: number;
+    cheap_first_pass_count?: number;
+    premium_exception_count?: number;
+    catalog_review_count?: number;
+    raw_payload_echoed?: boolean;
+  };
+  replay_results: GeminiNewApiSelectorReplayResult[];
+  privacy_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalFixtureEvidenceBundle = {
   status: string;
   method: {
@@ -1869,6 +1910,11 @@ type LegalFixtureModelMatrixResponse = {
 type GeminiNewApiModelSelectorEvidenceResponse = {
   success: boolean;
   data: GeminiNewApiModelSelectorEvidence;
+};
+
+type GeminiNewApiSelectorReplayEvidenceResponse = {
+  success: boolean;
+  data: GeminiNewApiSelectorReplayEvidence;
 };
 
 type LegalFixtureEvidenceBundleResponse = {
@@ -3018,6 +3064,25 @@ export async function postGeminiNewApiModelSelectorEvidence(
     data: payload,
   });
   return unwrapMaintenanceData<GeminiNewApiModelSelectorEvidenceResponse['data']>(resp);
+}
+
+export async function getGeminiNewApiSelectorReplayEvidence(): Promise<GeminiNewApiSelectorReplayEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-selector-replay',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<GeminiNewApiSelectorReplayEvidenceResponse['data']>(resp);
+}
+
+export async function postGeminiNewApiSelectorReplayEvidence(
+  payload: Record<string, unknown> = {},
+): Promise<GeminiNewApiSelectorReplayEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-selector-replay',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<GeminiNewApiSelectorReplayEvidenceResponse['data']>(resp);
 }
 
 export async function getLegalFixtureEvidenceBundle(): Promise<LegalFixtureEvidenceBundle> {

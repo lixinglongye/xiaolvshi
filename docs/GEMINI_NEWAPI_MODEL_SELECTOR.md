@@ -1,6 +1,6 @@
 # Gemini/NewAPI Model Selector Evidence
 
-This document scopes the upcoming Gemini/NewAPI model selector evidence endpoint.
+This document scopes the Gemini/NewAPI model selector evidence endpoint.
 It is a maintainer-facing selection audit and recommendation surface for
 OpenAI-compatible Gemini model ids. It is not a runtime model caller.
 
@@ -11,13 +11,13 @@ GET /api/v1/maintenance/gemini-newapi-model-selector
 POST /api/v1/maintenance/gemini-newapi-model-selector
 ```
 
-`GET` should return the deterministic selector policy, default task candidate
+`GET` returns the deterministic selector policy, default task candidate
 chains, normalization examples, warnings, and repository evidence paths.
 
-`POST` should accept maintainer-supplied metadata such as observed gateway model
+`POST` accepts maintainer-supplied metadata such as observed gateway model
 ids, task labels, selected cost tiers, candidate chains, warning decisions, and
-evidence paths. It should not accept secrets, prompts, raw legal material, or raw
-gateway/model output.
+evidence paths. It should not accept secrets, prompts, raw legal material, raw
+free-text rationale, or raw gateway/model output.
 
 ## Purpose
 
@@ -35,6 +35,14 @@ Gemini/NewAPI defaults:
 The endpoint is metadata-only. It advises and audits model selection. It does
 not call NewAPI, Gemini, OpenAI, OpenRouter, Yibu, or any other gateway. It also
 does not prove that the 24-hour continuous maintenance goal is complete.
+
+`docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md` scopes the companion deterministic
+scenario replay evidence endpoint:
+`GET`/`POST` `/api/v1/maintenance/gemini-newapi-selector-replay`. That endpoint
+replays fixed selector scenarios for cheap-first, balanced-after-precheck,
+unknown Gemini-like catalog review, premium exceptions, and high-frequency
+explicit premium blocks. It records metadata-only selector regression evidence
+and still does not call NewAPI or prove 24-hour maintenance completion.
 
 ## Model Id Normalization
 
@@ -180,6 +188,7 @@ git diff --check -- docs
 ## Related Files
 
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md`
+- `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/MODEL_GATEWAY_COMPATIBILITY.md`
 - `docs/MODEL_DEFAULT_RECOMMENDATION_SNAPSHOT.md`
 - `docs/MODEL_FALLBACK_CHAINS.md`

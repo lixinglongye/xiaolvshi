@@ -95,9 +95,13 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/backend/services/billing_payment_reconciliation.py" in gaps["billing-entitlements"]["evidence_paths"]
     assert "LegalBench/LexGLUE/COLIEE research registry" in gaps["model-cost-ops"]["current_state"]
     assert "task-level model selector audits" in gaps["model-cost-ops"]["current_state"]
+    assert "deterministic selector replay evidence" in gaps["model-cost-ops"]["current_state"]
     assert "maintenance UI for the metadata-only registry" in gaps["model-cost-ops"]["current_state"]
     assert "app/backend/services/legal_benchmark_research_registry.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/gemini_newapi_model_selector.py" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_selector_replay.py" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_selector_replay.py" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/continuous_session_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "app/backend/services/continuous_session_timeline.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
@@ -115,6 +119,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("account plan review" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("model selector audits" in action for action in gaps["model-cost-ops"]["next_actions"])
+    assert any("Replay selector scenarios" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("maintenance page" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("support-facing index" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("validation event normalizer" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])

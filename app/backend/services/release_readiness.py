@@ -213,6 +213,20 @@ class ReleaseReadinessService:
                 manual_note="This is metadata-only model selection audit evidence; it does not call NewAPI or store gateway credentials, prompts, legal text, or model outputs.",
             ),
             ReleaseCheck(
+                id="gemini-newapi-selector-replay",
+                title="Gemini/NewAPI selector replay coverage",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/gemini_newapi_selector_replay.py",
+                    "app/backend/tests/test_gemini_newapi_selector_replay.py",
+                    "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md",
+                ),
+                validation_command="python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
+                manual_note="This replays selector scenarios deterministically without NewAPI calls; it stores model ids, tasks, checks, and warnings only.",
+            ),
+            ReleaseCheck(
                 id="model-price-refresh-monitor",
                 title="Gemini and gateway price refresh monitor",
                 category="model_ops",
