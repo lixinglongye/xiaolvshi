@@ -36,6 +36,7 @@ import {
   getLegalFixtureResultArchive,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
+  getLegalBenchmarkResearchRegistry,
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
   getLegalResearchBacklog,
@@ -73,6 +74,7 @@ import {
   type LegalFixtureResultArchive,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
+  type LegalBenchmarkResearchRegistry,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
   type LegalResearchBacklog,
@@ -198,6 +200,8 @@ function Inner() {
   const [caseWorkbenchPayload, setCaseWorkbenchPayload] = useState<CaseWorkbenchPayload | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
+  const [benchmarkResearchRegistry, setBenchmarkResearchRegistry] =
+    useState<LegalBenchmarkResearchRegistry | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -252,6 +256,7 @@ function Inner() {
         caseWorkbenchPayloadData,
         benchmarkData,
         researchBacklogData,
+        benchmarkResearchRegistryData,
         publicBenchmarkSamplerData,
         fixtureEvidenceBundleData,
         fixtureModelMatrixData,
@@ -285,6 +290,7 @@ function Inner() {
         getCaseWorkbenchPayload(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
+        getLegalBenchmarkResearchRegistry(),
         getLegalPublicBenchmarkSampler(),
         getLegalFixtureEvidenceBundle(),
         getLegalFixtureModelMatrix(),
@@ -319,6 +325,7 @@ function Inner() {
       setCaseWorkbenchPayload(caseWorkbenchPayloadData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
+      setBenchmarkResearchRegistry(benchmarkResearchRegistryData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
       setFixtureModelMatrix(fixtureModelMatrixData);
@@ -2132,6 +2139,156 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{researchBacklog.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {benchmarkResearchRegistry && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal benchmark research registry</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only/source registry for {benchmarkResearchRegistry.summary.source_names.join(', ')} / no
+                      benchmark downloads, runs, scores, or leaderboard claims.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[benchmarkResearchRegistry.status] ?? statusClass.ready}
+                  >
+                    {benchmarkResearchRegistry.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                  This entry exposes public benchmark metadata and local planning mappings only. It is evidence for
+                  low-resource synthetic test design, not evidence that external LegalBench, LexGLUE, or COLIEE datasets
+                  were downloaded, executed, scored, or used for product benchmark claims.
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkResearchRegistry.summary.source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">registry sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkResearchRegistry.summary.low_resource_action_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">low-resource actions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-sm font-black uppercase text-stone-500">Dataset downloads</div>
+                    <div className="mt-2 text-sm font-semibold text-stone-950">
+                      {benchmarkResearchRegistry.low_resource_strategy.dataset_downloads.replace(/_/g, ' ')}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {
+                        benchmarkResearchRegistry.low_resource_strategy.fixture_cap
+                          .max_fixtures_per_source_without_review
+                      }
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">max fixtures/source without review</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Public source</TableHead>
+                        <TableHead>Local mapping</TableHead>
+                        <TableHead>Low-resource action</TableHead>
+                        <TableHead>Guardrails</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {benchmarkResearchRegistry.sources.map((source) => (
+                        <TableRow key={source.public_name}>
+                          <TableCell>
+                            <a
+                              className="inline-flex items-center gap-1 font-semibold text-stone-950 hover:underline"
+                              href={source.public_link}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.public_name}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                              {source.experience_takeaways.slice(0, 2).map((takeaway) => (
+                                <div key={takeaway} className="flex gap-2">
+                                  <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                                  <span>{takeaway}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {Object.entries(source.project_mapping).map(([key, value]) => (
+                              <div key={key}>
+                                <span className="font-semibold text-stone-950">{key.replace(/_/g, ' ')}:</span>{' '}
+                                {formatInline(value)}
+                              </div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {source.low_resource_action}
+                          </TableCell>
+                          <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                            {source.forbidden_claims.slice(0, 2).map((claim) => (
+                              <div key={claim} className="mb-1 flex gap-2">
+                                <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-red-600" />
+                                <span>{claim}</span>
+                              </div>
+                            ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Low-resource strategy</h3>
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="bg-white">
+                        {benchmarkResearchRegistry.low_resource_strategy.default_mode.replace(/_/g, ' ')}
+                      </Badge>
+                      <Badge variant="outline" className="bg-white">
+                        network {benchmarkResearchRegistry.low_resource_strategy.network_access.replace(/_/g, ' ')}
+                      </Badge>
+                      <Badge variant="outline" className="bg-white">
+                        sensitive data {benchmarkResearchRegistry.low_resource_strategy.sensitive_data.replace(/_/g, ' ')}
+                      </Badge>
+                    </div>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {benchmarkResearchRegistry.low_resource_strategy.actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Allowed claims</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {benchmarkResearchRegistry.allowed_claims.map((claim) => (
+                        <li key={claim} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-700" />
+                          <span>{claim}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">{benchmarkResearchRegistry.privacy_note}</div>
+                  </div>
                 </div>
               </section>
             )}

@@ -1404,7 +1404,7 @@ class ReleaseReadinessService:
                     "app/backend/services/billing_entitlement_quota_binding.py",
                 ),
                 validation_command="python -m pytest tests/test_generated_documents_quota.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py -q",
-                manual_note="This verifies generated_documents CRUD creation is quota guarded; case generation is covered separately and deep-review first-principles generation still requires complete server-side enforcement.",
+                manual_note="This verifies generated_documents CRUD creation is quota guarded; case generation and deep-review first-principles generation are covered separately.",
             ),
             ReleaseCheck(
                 id="case-generation-quota-guard",
@@ -1419,7 +1419,22 @@ class ReleaseReadinessService:
                     "app/backend/services/billing_entitlement_quota_binding.py",
                 ),
                 validation_command="python -m pytest tests/test_case_generation_quota.py tests/test_billing_entitlement_quota_binding.py -q",
-                manual_note="This verifies case evidence-catalog and civil-complaint generation consume report quota server-side; deep-review first-principles generation remains separate.",
+                manual_note="This verifies case evidence-catalog and civil-complaint generation consume report quota server-side; deep-review first-principles generation is covered separately.",
+            ),
+            ReleaseCheck(
+                id="deep-review-document-generation-quota-guard",
+                title="Deep-review document generation quota guard",
+                category="backend",
+                required=False,
+                owner="backend",
+                evidence_paths=(
+                    "app/backend/services/deep_review_document_quota.py",
+                    "app/backend/routers/deep_review.py",
+                    "app/backend/tests/test_deep_review_document_quota.py",
+                    "app/backend/services/billing_entitlement_quota_binding.py",
+                ),
+                validation_command="python -m pytest tests/test_deep_review_document_quota.py tests/test_billing_entitlement_quota_binding.py -q",
+                manual_note="This verifies /api/v1/deep-review/generate-document consumes report quota before first-principles generation and blocks exhausted users without calling the AI generator.",
             ),
             ReleaseCheck(
                 id="legal-rag-selected-source-request-metadata",
@@ -1447,9 +1462,11 @@ class ReleaseReadinessService:
                 evidence_paths=(
                     "app/backend/services/legal_rag_selected_source_validation.py",
                     "app/backend/tests/test_legal_rag_selected_source_validation.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/backend/tests/test_maintenance_legal_rag_selected_source_validation_route.py",
                 ),
-                validation_command="python -m pytest tests/test_legal_rag_selected_source_validation.py tests/test_legal_rag_request_metadata.py -q",
-                manual_note="This validates citation_map and generation_plan source IDs against selected-source metadata; automatic deep-review report binding remains separate.",
+                validation_command="python -m pytest tests/test_legal_rag_selected_source_validation.py tests/test_maintenance_legal_rag_selected_source_validation_route.py tests/test_legal_rag_request_metadata.py -q",
+                manual_note="This validates citation_map and generation_plan source IDs against selected-source metadata and exposes a metadata-only maintenance self-check route; automatic deep-review report binding remains separate.",
             ),
             ReleaseCheck(
                 id="billing-payment-reconciliation-policy",
@@ -1503,6 +1520,19 @@ class ReleaseReadinessService:
                 ),
                 validation_command="python -m pytest tests/test_legal_benchmark_research_registry.py -q",
                 manual_note="This maps LegalBench, LexGLUE, and COLIEE lessons to local synthetic validation; it does not claim public benchmark scores or external adoption.",
+            ),
+            ReleaseCheck(
+                id="legal-benchmark-research-registry-ui",
+                title="Legal benchmark research registry UI",
+                category="frontend_ui",
+                required=False,
+                owner="frontend",
+                evidence_paths=(
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                ),
+                validation_command="npm run typecheck",
+                manual_note="This exposes the metadata-only LegalBench/LexGLUE/COLIEE registry on the maintenance evidence page without claiming benchmark downloads, runs, scores, or leaderboard status.",
             ),
             ReleaseCheck(
                 id="oss-maintenance-evidence",

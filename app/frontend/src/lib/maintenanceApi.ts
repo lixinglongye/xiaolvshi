@@ -1669,6 +1669,44 @@ export type LegalPublicBenchmarkSampler = {
   privacy_note: string;
 };
 
+export type LegalBenchmarkResearchRegistry = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    source_count: number;
+    source_names: string[];
+    low_resource_action_count: number;
+    forbidden_claim_count: number;
+  };
+  sources: Array<{
+    public_name: string;
+    public_link: string;
+    experience_takeaways: string[];
+    project_mapping: Record<string, unknown>;
+    low_resource_action: string;
+    forbidden_claims: string[];
+  }>;
+  low_resource_strategy: {
+    default_mode: string;
+    network_access: string;
+    dataset_downloads: string;
+    sensitive_data: string;
+    fixture_cap: {
+      default_sources: number;
+      default_fixtures_per_source: number;
+      max_fixtures_per_source_without_review: number;
+    };
+    actions: string[];
+  };
+  allowed_claims: string[];
+  forbidden_claims: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -1788,6 +1826,11 @@ type LegalFixtureEvidenceBundleResponse = {
 type LegalPublicBenchmarkSamplerResponse = {
   success: boolean;
   data: LegalPublicBenchmarkSampler;
+};
+
+type LegalBenchmarkResearchRegistryResponse = {
+  success: boolean;
+  data: LegalBenchmarkResearchRegistry;
 };
 
 export type LegalKnowledgeAudit = {
@@ -2066,6 +2109,18 @@ export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {
     return payload.data;
   }
   return payload as LegalResearchBacklog;
+}
+
+export async function getLegalBenchmarkResearchRegistry(): Promise<LegalBenchmarkResearchRegistry> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/research-registry',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalBenchmarkResearchRegistryResponse | LegalBenchmarkResearchRegistry;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalBenchmarkResearchRegistry;
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

@@ -121,14 +121,15 @@ privacy-safe case edit runtime event binding, metadata-only legal RAG context
 cache/copy controls, the document-generation quota consumption attempt,
 server-side generated_documents CRUD quota guards, selected-source Legal RAG
 request metadata, case evidence-catalog/civil-complaint quota guards,
-metadata-level selected-source citation validation, a local-only billing payment
-reconciliation policy, task runtime notification summaries, a deterministic
-laptop-safe legal document benchmark suite, and a LegalBench/LexGLUE/COLIEE
-research registry mapped to low-resource local validation. These checks remain
-non-blocking and do not claim real payment provider settlement or webhook
-verification, automatic deep-review report binding for selected-source
-validation, public benchmark scores, or deep-review first-principles generation
-quota enforcement.
+deep-review first-principles document-generation quota guards, metadata-level
+selected-source citation validation, a metadata-only selected-source validation
+maintenance route, a local-only billing payment reconciliation policy, task
+runtime notification summaries, a deterministic laptop-safe legal document
+benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to
+low-resource local validation, and a maintenance UI section for that registry.
+These checks remain non-blocking and do not claim real payment provider
+settlement or webhook verification, automatic deep-review report binding for
+selected-source validation, public benchmark scores, or external adoption.
 
 ## Status values
 

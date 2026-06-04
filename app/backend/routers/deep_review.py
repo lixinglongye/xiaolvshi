@@ -8,7 +8,7 @@ import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +19,10 @@ from dependencies.auth import get_current_user
 from models.prompt_versions import Prompt_versions
 from schemas.auth import UserResponse
 from services.deep_review import DeepReviewService
+from services.deep_review_document_quota import (
+    DeepReviewDocumentQuotaError,
+    consume_deep_review_document_quota,
+)
 from services.document_preflight import DocumentReviewPreflightService
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
 from services.documents import DocumentsService
@@ -118,6 +122,7 @@ class GenerateDocumentRequest(BaseModel):
 class GenerateDocumentResponse(BaseModel):
     success: bool
     document: Optional[Dict[str, Any]] = None
+    quota: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
 
 
@@ -1723,6 +1728,14 @@ async def generate_document(
         raise HTTPException(status_code=400, detail="请指定文书类型。")
 
     try:
+        quota_summary = await consume_deep_review_document_quota(
+            db,
+            current_user=current_user,
+            doc_type=data.doc_type,
+            title=data.title,
+            input_data=data.input_data,
+            language=data.language,
+        )
         service = DeepReviewService()
         document = await service.generate_legal_document(
             doc_type=data.doc_type,
@@ -1731,7 +1744,9 @@ async def generate_document(
             input_data=data.input_data,
             language=data.language,
         )
-        return GenerateDocumentResponse(success=True, document=document)
+        return GenerateDocumentResponse(success=True, document=document, quota=quota_summary)
+    except DeepReviewDocumentQuotaError as e:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=e.detail)
     except ValueError as e:
         logger.warning(f"Document generation validation error: {e}")
         return GenerateDocumentResponse(success=False, error=str(e))

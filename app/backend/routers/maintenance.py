@@ -1,6 +1,7 @@
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel, ConfigDict, Field
 from services.billing_entitlement_gap import BillingEntitlementGapService
 from services.billing_quota_migration_plan import BillingQuotaMigrationPlanService
 from services.billing_quota_persistence_plan import BillingQuotaPersistencePlanService
@@ -45,6 +46,7 @@ from services.lawyer_review_workflow_policy import LawyerReviewWorkflowPolicySer
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
+from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
 from services.legal_source_ingestion_metadata import LegalSourceIngestionMetadataService
@@ -64,6 +66,14 @@ from services.user_needs_radar import UserNeedsRadarService
 
 
 router = APIRouter(prefix="/api/v1/maintenance", tags=["maintenance"])
+
+
+class LegalRagSelectedSourceValidationRequest(BaseModel):
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    citation_map: Any | None = None
+    generation_plan: Any | None = None
+
+    model_config = ConfigDict(extra="ignore")
 
 
 @router.get("/oss-evidence")
@@ -771,6 +781,19 @@ async def evaluate_legal_rag_failure_fixtures(observations: dict[str, Any]):
     return {
         "success": True,
         "data": LegalRagFailureFixturesService().evaluate_observations(observations),
+    }
+
+
+@router.post("/legal-rag/selected-source-validation")
+async def validate_legal_rag_selected_source_citations(payload: LegalRagSelectedSourceValidationRequest):
+    """Run a metadata-only self-check for selected-source citation validation."""
+    return {
+        "success": True,
+        "data": LegalRagSelectedSourceValidationService().validate(
+            request_metadata=payload.metadata,
+            citation_map=payload.citation_map,
+            generation_plan=payload.generation_plan,
+        ),
     }
 
 

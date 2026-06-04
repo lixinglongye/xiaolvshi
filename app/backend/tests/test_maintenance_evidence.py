@@ -20,21 +20,26 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Document generation quota consumption attempt" in profile["release_management"]["release_readiness_controls"]
     assert "Generated documents CRUD quota guard" in profile["release_management"]["release_readiness_controls"]
     assert "Case generation quota guard" in profile["release_management"]["release_readiness_controls"]
+    assert "Deep-review document generation quota guard" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source request metadata" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source citation validation" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG selected-source validation maintenance route" in profile["release_management"]["release_readiness_controls"]
     assert "Billing payment reconciliation policy" in profile["release_management"]["release_readiness_controls"]
     assert "Case task runtime notification summary" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "app/backend/routers/generated_documents.py" in evidence_paths
     assert "app/backend/routers/case_intelligence.py" in evidence_paths
+    assert "app/backend/services/deep_review_document_quota.py" in evidence_paths
     assert "app/backend/services/legal_rag_request_metadata.py" in evidence_paths
     assert "app/backend/services/legal_rag_selected_source_validation.py" in evidence_paths
     assert "app/backend/services/billing_payment_reconciliation.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
+    assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
     assert any("real provider settlement" in guardrail for guardrail in profile["application_guardrails"])
     assert any("automatic deep-review report binding" in guardrail for guardrail in profile["application_guardrails"])
-    assert any("deep-review first-principles generation quota enforcement" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("deep-review first-principles generation are quota guarded" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():
