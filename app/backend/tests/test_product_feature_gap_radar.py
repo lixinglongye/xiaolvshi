@@ -100,6 +100,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "metadata-only cheap-first calibration" in gaps["model-cost-ops"]["current_state"]
     assert "privacy-safe route telemetry repository aggregates" in gaps["model-cost-ops"]["current_state"]
     assert "persisted route telemetry operations summary checks" in gaps["model-cost-ops"]["current_state"]
+    assert "route telemetry triage actions" in gaps["model-cost-ops"]["current_state"]
     assert "maintenance UI for the metadata-only registry" in gaps["model-cost-ops"]["current_state"]
     assert "public adoption/research bridge" in gaps["model-cost-ops"]["current_state"]
     assert "app/backend/services/legal_adoption_research_bridge.py" in gaps["feedback-loop"]["evidence_paths"]
@@ -111,13 +112,16 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/backend/services/gemini_newapi_cheap_first_calibration.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/route_telemetry_repository.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/route_telemetry_ops_summary.py" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "app/backend/services/route_telemetry_triage_queue.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/tests/test_gemini_newapi_selector_replay.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/tests/test_route_telemetry_repository.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/tests/test_route_telemetry_ops_summary.py" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_triage_queue.py" in gaps["model-cost-ops"]["evidence_paths"]
     assert "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md" in gaps["model-cost-ops"]["evidence_paths"]
     assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md" in gaps["model-cost-ops"]["evidence_paths"]
     assert "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md" in gaps["model-cost-ops"]["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/frontend/src/pages/ModelOpsPage.tsx" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/continuous_session_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
@@ -143,6 +147,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("model selector audits" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("Replay selector scenarios" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("operations summary" in action for action in gaps["model-cost-ops"]["next_actions"])
+    assert any("triage actions" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("maintenance page" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("active-run monitor" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("support-facing index" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])

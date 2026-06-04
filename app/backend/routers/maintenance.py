@@ -78,6 +78,7 @@ from services.release_readiness import ReleaseReadinessService
 from services.route_telemetry_persistence_plan import RouteTelemetryPersistencePlanService
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
+from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.admin_audit_policy import AdminAuditPolicyService
@@ -929,6 +930,15 @@ async def get_route_telemetry_ops_summary():
     return {
         "success": True,
         "data": RouteTelemetryOpsSummaryService().build_summary(),
+    }
+
+
+@router.get("/route-telemetry-triage")
+async def get_route_telemetry_triage_queue():
+    """Return actionable triage queue from persisted route telemetry operations."""
+    return {
+        "success": True,
+        "data": RouteTelemetryTriageQueueService().build_queue(),
     }
 
 

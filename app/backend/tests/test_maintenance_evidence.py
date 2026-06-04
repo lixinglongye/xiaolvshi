@@ -42,6 +42,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini/NewAPI cheap-first calibration" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry operations summary" in profile["release_management"]["release_readiness_controls"]
+    assert "Route telemetry triage queue" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
@@ -78,6 +79,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/route_telemetry_ops_summary.py" in evidence_paths
     assert "app/backend/tests/test_route_telemetry_ops_summary.py" in evidence_paths
     assert "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md" in evidence_paths
+    assert "app/backend/services/route_telemetry_triage_queue.py" in evidence_paths
+    assert "app/backend/tests/test_route_telemetry_triage_queue.py" in evidence_paths
+    assert "docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md" in evidence_paths
     assert "app/backend/services/continuous_session_evidence.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_evidence.py" in evidence_paths
     assert "app/backend/services/continuous_session_timeline.py" in evidence_paths

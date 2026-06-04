@@ -40,6 +40,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "runtime_evidence",
         "route_telemetry_ops_summary",
     ),
+    ReadinessComponent(
+        "route-telemetry-triage",
+        "Route telemetry triage queue",
+        "runtime_evidence",
+        "route_telemetry_triage",
+    ),
     ReadinessComponent("route-guardrails", "Route guardrails", "runtime_evidence", "route_guardrails"),
     ReadinessComponent("routing-replay", "Routing replay", "simulation", "routing_replay"),
     ReadinessComponent("fallback-chains", "Fallback chains", "resilience", "fallback_chains"),

@@ -73,6 +73,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
+    assert "route-telemetry-triage-queue" in completed_ids
     assert "legal-source-freshness-policy" in completed_ids
     assert "maintenance-dashboard-filtering" in completed_ids
     assert "frontend-local-run-review-form" in completed_ids
@@ -138,6 +139,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
+    assert "route-telemetry-triage-queue" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
@@ -179,6 +181,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_ops_summary.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_route_telemetry_triage_queue.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
 
 

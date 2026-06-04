@@ -168,6 +168,7 @@ function Inner() {
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeTelemetryRepositoryRows = data?.route_telemetry_repository?.daily_buckets ?? [];
   const routeTelemetryOpsRows = data?.route_telemetry_ops_summary?.daily_rows ?? [];
+  const routeTelemetryTriageRows = data?.route_telemetry_triage?.triage_items ?? [];
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
@@ -2003,6 +2004,115 @@ function Inner() {
                         <TableCell>{Math.round(row.premium_request_ratio * 100)}%</TableCell>
                         <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
                           {Object.entries(row.models).map(([model, count]) => `${model}:${count}`).join(', ')}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.route_telemetry_triage && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry triage queue</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_telemetry_triage.summary.triage_item_count} actions /{' '}
+                  {data.route_telemetry_triage.summary.blocking_item_count} blocking /{' '}
+                  {data.route_telemetry_triage.summary.cheap_first_action_count} cheap-first
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.route_telemetry_triage.status)}>
+                {data.route_telemetry_triage.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_triage.summary.blocking_item_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking actions</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_triage.summary.warning_item_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warning actions</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_triage.summary.highest_priority}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">highest priority</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_triage.summary.source_request_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">source requests</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Top action</div>
+                  <div>{data.route_telemetry_triage.recommended_actions[0]}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Privacy boundary</div>
+                  <div>
+                    source {data.route_telemetry_triage.privacy_boundary.source} / raw payload storage{' '}
+                    {data.route_telemetry_triage.privacy_boundary.raw_payload_storage_allowed ? 'on' : 'off'}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Metric</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryTriageRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-stone-500">
+                        No route telemetry triage actions.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryTriageRows.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">
+                          {item.priority}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(item.severity)}>
+                            {item.severity}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[360px] text-sm leading-5 text-stone-800">
+                          <div className="font-semibold text-stone-950">{item.title}</div>
+                          <div className="mt-1 break-words">{item.action}</div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs leading-5 text-stone-700">
+                          <div>{item.metric}</div>
+                          <div>
+                            {String(item.value)} / {String(item.threshold)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">{item.owner}</TableCell>
+                        <TableCell className="max-w-[420px] break-words text-xs leading-5 text-stone-600">
+                          {item.reason}
                         </TableCell>
                       </TableRow>
                     ))

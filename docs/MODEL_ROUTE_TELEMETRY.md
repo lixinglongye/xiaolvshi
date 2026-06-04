@@ -27,14 +27,18 @@ them into release-review checks for route failures, over-budget pressure,
 operator-review load, premium model drift, unknown models, and cheap-first
 downgrade evidence.
 
+`route_telemetry_triage` converts the operations summary checks into prioritized
+maintainer actions so cheap-first drift is visible as a queue rather than just
+aggregate ratios.
+
 ## Endpoint
 
 ```http
 GET /api/v1/aihub/models
 ```
 
-The response includes `route_telemetry`, `route_telemetry_repository`, and
-`route_telemetry_ops_summary` next to:
+The response includes `route_telemetry`, `route_telemetry_repository`,
+`route_telemetry_ops_summary`, and `route_telemetry_triage` next to:
 
 - `runtime_router`
 - `route_guardrails`
@@ -45,7 +49,8 @@ The response includes `route_telemetry`, `route_telemetry_repository`, and
 
 The frontend `/model-ops` page shows route telemetry summary cards, a per-task
 telemetry table, local repository daily buckets, route telemetry operations
-summary checks, and route guardrail pass/warn/fail checks.
+summary checks, route telemetry triage actions, and route guardrail
+pass/warn/fail checks.
 
 `route_guardrails` uses the same aggregate telemetry snapshot to evaluate route failure rate, over-budget ratio, downgrade ratio, operator-review ratio, unknown-price models, and allowed over-budget requests. Empty telemetry is treated as no data rather than a release blocker.
 
@@ -61,12 +66,14 @@ user identifiers, request bodies, response bodies, or raw model output.
 - `app/backend/services/model_route_telemetry.py`
 - `app/backend/services/route_telemetry_repository.py`
 - `app/backend/services/route_telemetry_ops_summary.py`
+- `app/backend/services/route_telemetry_triage_queue.py`
 - `app/backend/services/model_route_guardrails.py`
 - `app/backend/services/aihub.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_route_telemetry.py`
 - `app/backend/tests/test_route_telemetry_repository.py`
 - `app/backend/tests/test_route_telemetry_ops_summary.py`
+- `app/backend/tests/test_route_telemetry_triage_queue.py`
 - `app/backend/tests/test_model_route_guardrails.py`
 - `app/backend/tests/test_aihub_runtime_routing.py`
 - `app/frontend/src/lib/modelOpsApi.ts`

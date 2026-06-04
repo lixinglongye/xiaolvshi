@@ -25,9 +25,10 @@ snapshots, price refresh monitoring, cost regression snapshots, and route
 telemetry persistence planning. Model-cost evidence now also includes a
 privacy-safe route telemetry repository and operations summary for persisted
 route failure, premium-model, over-budget, operator-review, unknown-model, and
-downgrade review. The latest UI evidence adds runtime router discovery smoke,
-the case workbench runtime state/event panel, the metadata-only legal RAG
-research panel, and the global billing usage badge.
+downgrade review, plus a triage queue that turns those checks into maintainer
+actions. The latest UI evidence adds runtime router discovery smoke, the case
+workbench runtime state/event panel, the metadata-only legal RAG research panel,
+and the global billing usage badge.
 The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
 and a best-effort document-generation quota consumption attempt. The newest
@@ -71,6 +72,11 @@ repository-backed operations review over sanitized daily aggregates. It is
 release evidence for cheap-first drift and route health checks, but it must not
 be described as storing prompts, legal text, raw payloads, raw model outputs,
 credentials, emails, or production health proof when no route events exist.
+`docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md` scopes the implemented
+`GET /api/v1/maintenance/route-telemetry-triage` endpoint as a maintainer
+action queue over those operations checks. It still cannot prove production
+health when no route events exist, and it must not include raw route events or
+model payloads.
 These are reviewable product slices, not proof that the full case workbench,
 delivery portal, live deadline engine, durable model telemetry store, payment
 provider settlement/webhook verification, automatic deep-review report binding

@@ -817,6 +817,49 @@ export type ModelRouteTelemetryOpsSummary = {
   validation_commands: string[];
 };
 
+export type ModelRouteTelemetryTriageItem = {
+  id: string;
+  title: string;
+  severity: string;
+  priority: number;
+  check_id: string;
+  metric: string;
+  value: number | string | boolean | null;
+  threshold: number | string | boolean | null;
+  reason: string;
+  action: string;
+  owner: string;
+  release_gate_links: string[];
+  evidence_paths: string[];
+  validation_commands: string[];
+};
+
+export type ModelRouteTelemetryTriage = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    triage_item_count: number;
+    blocking_item_count: number;
+    warning_item_count: number;
+    info_item_count: number;
+    cheap_first_action_count: number;
+    highest_priority: number;
+    source_status: string;
+    source_request_count: number;
+    empty_repository: boolean;
+  };
+  triage_items: ModelRouteTelemetryTriageItem[];
+  blocking_item_ids: string[];
+  warning_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  release_guardrails: string[];
+  validation_commands: string[];
+};
+
 export type ModelRouteGuardrailCheck = {
   id: string;
   status: string;
@@ -1119,6 +1162,7 @@ export type ModelOpsResponse = {
   route_telemetry?: ModelRouteTelemetry;
   route_telemetry_repository?: ModelRouteTelemetryRepository;
   route_telemetry_ops_summary?: ModelRouteTelemetryOpsSummary;
+  route_telemetry_triage?: ModelRouteTelemetryTriage;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;

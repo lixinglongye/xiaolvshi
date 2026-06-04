@@ -29,6 +29,12 @@ over-budget, operator-review, unknown-model, and downgrade review, while
 excluding prompts, legal text, credentials, raw payloads, emails, and raw model
 outputs.
 
+`docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md` documents the implemented
+`GET /api/v1/maintenance/route-telemetry-triage` endpoint. It turns those
+summary checks into maintainer actions for cheap-first drift, daily hotspots,
+unknown models, and missing staging telemetry, without storing raw route events
+or model payloads.
+
 `docs/CONTINUOUS_SESSION_EVIDENCE.md` documents the backend validator and
 reviewer contract for continuous 24-hour session validation. Support forms
 should distinguish the already reviewable 100+ update evidence from the

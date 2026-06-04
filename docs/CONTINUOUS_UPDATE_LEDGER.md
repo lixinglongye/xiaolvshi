@@ -46,6 +46,9 @@ The latest model-ops batch adds a route telemetry operations summary that turns
 sanitized persisted route aggregates into release-review checks for failures,
 premium-model drift, over-budget pressure, operator-review load, unknown
 models, and cheap-first downgrade evidence.
+The follow-up triage queue converts those checks into prioritized maintainer
+actions, including daily hotspots and missing staging telemetry, without
+copying raw route events or model payloads.
 This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy

@@ -42,6 +42,9 @@ The AIHub model-ops payload includes `route_telemetry_ops_summary`, and
 The frontend `/model-ops` page renders the summary cards and daily table next
 to the route telemetry repository panel.
 
+`RouteTelemetryTriageQueueService` consumes this summary to create prioritized
+maintainer actions for release review.
+
 ## Release Checks
 
 `route-telemetry-ops-summary` is a required `model_ops` release-readiness gate.
