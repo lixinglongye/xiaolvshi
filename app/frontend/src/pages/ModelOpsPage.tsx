@@ -79,6 +79,7 @@ function Inner() {
     setLoading(true);
     setError('');
     setCheapFirstError('');
+    setCheapFirstCalibration(null);
     try {
       const [modelOpsResult, calibrationResult] = await Promise.allSettled([
         getModelOps(),
