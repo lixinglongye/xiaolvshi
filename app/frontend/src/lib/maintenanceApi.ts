@@ -2255,6 +2255,84 @@ type MaintenanceContinuousSessionTimelineResponse = {
   data: MaintenanceContinuousSessionTimeline;
 };
 
+export type MaintenanceContinuousSessionRunMonitorRequiredEvidence = {
+  event_type: string;
+  status: string;
+  description: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceContinuousSessionRunMonitorBlocker = {
+  id: string;
+  severity?: string;
+  detail?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceContinuousSessionRunMonitorAction = {
+  id: string;
+  priority?: string;
+  detail?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceContinuousSessionRunMonitor = {
+  status: string;
+  summary: {
+    target_continuous_hours: number;
+    target_medium_large_update_count: number;
+    completed_medium_large_update_count: number;
+    update_count_ready: boolean;
+    event_count: number;
+    submitted_event_count: number;
+    valid_event_count: number;
+    invalid_event_count: number;
+    verified_continuous_hours: number;
+    continuous_hours_remaining: number;
+    elapsed_hours_since_start: number;
+    max_allowed_gap_hours: number;
+    current_gap_hours: number | null;
+    checkpoint_interval_hours: number;
+    next_checkpoint_due_at: string | null;
+    next_checkpoint_due_in_hours: number;
+    required_evidence_ready_count: number;
+    required_evidence_count: number;
+    blocker_count: number;
+    raw_payload_echoed: boolean;
+    newapi_called: boolean;
+    completion_ready: boolean;
+    [key: string]: unknown;
+  };
+  run_window: {
+    start_timestamp: string | null;
+    latest_event_timestamp: string | null;
+    current_timestamp: string | null;
+    best_window: Record<string, unknown>;
+  };
+  required_evidence: MaintenanceContinuousSessionRunMonitorRequiredEvidence[];
+  blockers: MaintenanceContinuousSessionRunMonitorBlocker[];
+  next_actions: MaintenanceContinuousSessionRunMonitorAction[];
+  checkpoint_policy: {
+    checkpoint_interval_hours: number;
+    max_allowed_gap_hours: number;
+    required_event_types: string[];
+    rule: string;
+    [key: string]: unknown;
+  };
+  source_summaries: {
+    ledger: Record<string, unknown>;
+    timeline: Record<string, unknown>;
+    review_packet: Record<string, unknown>;
+  };
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceContinuousSessionRunMonitorResponse = {
+  success: boolean;
+  data: MaintenanceContinuousSessionRunMonitor;
+};
+
 export type MaintenanceGitHistoryEvidenceCommitEvent = {
   commit_hash: string;
   timestamp?: string | null;
@@ -2684,6 +2762,25 @@ export async function getMaintenanceContinuousSessionTimeline(): Promise<Mainten
     method: 'GET',
   });
   return unwrapMaintenanceData<MaintenanceContinuousSessionTimelineResponse['data']>(resp);
+}
+
+export async function getMaintenanceContinuousSessionRunMonitor(): Promise<MaintenanceContinuousSessionRunMonitor> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-run-monitor',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionRunMonitorResponse['data']>(resp);
+}
+
+export async function postMaintenanceContinuousSessionRunMonitor(
+  payload: Record<string, unknown> = {},
+): Promise<MaintenanceContinuousSessionRunMonitor> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-session-run-monitor',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceContinuousSessionRunMonitorResponse['data']>(resp);
 }
 
 export async function getMaintenanceGitHistoryEvidence(): Promise<MaintenanceGitHistoryEvidence> {

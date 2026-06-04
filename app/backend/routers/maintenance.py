@@ -19,6 +19,7 @@ from services.client_delivery_transparency_policy import ClientDeliveryTranspare
 from services.client_delivery_risk_checklist import ClientDeliveryRiskChecklistService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
 from services.continuous_session_evidence import ContinuousSessionEvidenceService
+from services.continuous_session_run_monitor import ContinuousSessionRunMonitorService
 from services.continuous_session_review_packet import ContinuousSessionReviewPacketService
 from services.continuous_session_timeline import ContinuousSessionTimelineService
 from services.contract_clause_extraction_schema import ContractClauseExtractionSchemaService
@@ -721,6 +722,24 @@ async def build_continuous_session_timeline(payload: Any = Body(default=None)):
     return {
         "success": True,
         "data": ContinuousSessionTimelineService().build_timeline(payload),
+    }
+
+
+@router.get("/continuous-session-run-monitor")
+async def get_continuous_session_run_monitor_template():
+    """Return active-run monitoring metadata for the 24-hour maintenance goal."""
+    return {
+        "success": True,
+        "data": ContinuousSessionRunMonitorService().build_monitor(),
+    }
+
+
+@router.post("/continuous-session-run-monitor")
+async def build_continuous_session_run_monitor(payload: Any = Body(default=None)):
+    """Build a metadata-only active-run monitor without echoing raw logs or legal text."""
+    return {
+        "success": True,
+        "data": ContinuousSessionRunMonitorService().build_monitor(payload),
     }
 
 

@@ -175,6 +175,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "admin-audit-policy": "python -m pytest tests/test_admin_audit_policy.py -q",
         "continuous-session-evidence": "python -m pytest tests/test_continuous_session_evidence.py -q",
         "continuous-session-timeline": "python -m pytest tests/test_continuous_session_timeline.py -q",
+        "continuous-session-run-monitor": "python -m pytest tests/test_continuous_session_run_monitor.py tests/test_continuous_session_timeline.py tests/test_continuous_session_review_packet.py -q",
         "continuous-session-review-packet": "python -m pytest tests/test_continuous_session_review_packet.py tests/test_continuous_session_timeline.py tests/test_validation_event_evidence.py -q",
         "git-history-evidence": "python -m pytest tests/test_git_history_evidence.py -q",
         "validation-event-evidence": "python -m pytest tests/test_validation_event_evidence.py tests/test_continuous_session_timeline.py -q",
@@ -207,6 +208,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "repeated user feedback" in checks["feedback-issue-cluster"]["manual_note"]
     assert "missing proof purposes" in checks["evidence-bundle-integrity"]["manual_note"]
     assert "retention and deletion review rules" in checks["privacy-retention-rules"]["manual_note"]
+    assert "not proof that the 24-hour session is complete" in checks["continuous-session-run-monitor"]["manual_note"]
     assert "unsupported public claims" in checks["release-claim-compliance"]["manual_note"]
     assert "selected-source validation before case export" in checks["case-export-readiness"]["manual_note"]
     assert "sensitive admin actions" in checks["admin-audit-policy"]["manual_note"]

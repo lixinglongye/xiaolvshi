@@ -876,6 +876,20 @@ class ReleaseReadinessService:
                 manual_note="This joins ledger, session-validator, heartbeat, and low-resource legal fixture metadata into a reviewer timeline, while keeping 24-hour completion blocked until real events prove it.",
             ),
             ReleaseCheck(
+                id="continuous-session-run-monitor",
+                title="Continuous session run monitor",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_run_monitor.py",
+                    "app/backend/tests/test_continuous_session_run_monitor.py",
+                    "docs/CONTINUOUS_SESSION_RUN_MONITOR.md",
+                ),
+                validation_command="python -m pytest tests/test_continuous_session_run_monitor.py tests/test_continuous_session_timeline.py tests/test_continuous_session_review_packet.py -q",
+                manual_note="This monitors active-run elapsed hours, current gaps, checkpoints, missing evidence, blockers, and next actions; it is not proof that the 24-hour session is complete.",
+            ),
+            ReleaseCheck(
                 id="continuous-session-review-packet",
                 title="Continuous session review packet",
                 category="maintenance",

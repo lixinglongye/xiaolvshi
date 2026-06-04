@@ -50,6 +50,7 @@ import {
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
   getMaintenanceGitHistoryEvidence,
+  getMaintenanceContinuousSessionRunMonitor,
   getMaintenanceValidationEventEvidence,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
@@ -91,6 +92,7 @@ import {
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
   type MaintenanceContinuousSessionTimeline,
+  type MaintenanceContinuousSessionRunMonitor,
   type MaintenanceContinuousSessionReviewPacket,
   type MaintenanceGateSnapshot,
   type MaintenanceGitHistoryEvidence,
@@ -130,14 +132,18 @@ const priorityClass: Record<string, string> = {
 const statusClass: Record<string, string> = {
   pass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  ready_for_review: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
+  not_started: 'border-stone-200 bg-stone-50 text-stone-700',
   template: 'border-stone-200 bg-stone-50 text-stone-700',
   uploaded: 'border-stone-200 bg-stone-50 text-stone-700',
   preflight: 'border-sky-200 bg-sky-50 text-sky-800',
   collecting: 'border-sky-200 bg-sky-50 text-sky-800',
+  running: 'border-sky-200 bg-sky-50 text-sky-800',
   warn: 'border-amber-200 bg-amber-50 text-amber-900',
+  at_risk: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_review: 'border-amber-200 bg-amber-50 text-amber-900',
   review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_attention: 'border-amber-200 bg-amber-50 text-amber-900',
@@ -217,6 +223,14 @@ function blockerSummary(blocker: MaintenanceContinuousSessionTimeline['blockers'
   return blocker.title ?? blocker.detail ?? blocker.required_action ?? blocker.code ?? blocker.id ?? 'review required';
 }
 
+function runMonitorBlockerSummary(blocker: MaintenanceContinuousSessionRunMonitor['blockers'][number]) {
+  return blocker.detail || blocker.id || blocker.severity || 'review required';
+}
+
+function runMonitorActionSummary(action: MaintenanceContinuousSessionRunMonitor['next_actions'][number]) {
+  return action.detail || action.id || 'record next checkpoint';
+}
+
 const validationEventTypes = ['test', 'credential_scan', 'push', 'review', 'legal_fixture'] as const;
 
 function validationEventCount(data: MaintenanceValidationEventEvidence | null, eventType: string) {
@@ -258,6 +272,8 @@ function Inner() {
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
     useState<MaintenanceContinuousSessionTimeline | null>(null);
+  const [continuousSessionRunMonitor, setContinuousSessionRunMonitor] =
+    useState<MaintenanceContinuousSessionRunMonitor | null>(null);
   const [continuousSessionReviewPacket, setContinuousSessionReviewPacket] =
     useState<MaintenanceContinuousSessionReviewPacket | null>(null);
   const [gitHistoryEvidence, setGitHistoryEvidence] = useState<MaintenanceGitHistoryEvidence | null>(null);
@@ -328,6 +344,7 @@ function Inner() {
         feedbackMap,
         continuousLedgerData,
         continuousSessionTimelineData,
+        continuousSessionRunMonitorData,
         continuousSessionReviewPacketData,
         gitHistoryEvidenceData,
         validationEventEvidenceData,
@@ -369,6 +386,7 @@ function Inner() {
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
         getMaintenanceContinuousSessionTimeline(),
+        getMaintenanceContinuousSessionRunMonitor(),
         getMaintenanceContinuousSessionReviewPacket(),
         getMaintenanceGitHistoryEvidence(),
         getMaintenanceValidationEventEvidence(),
@@ -411,6 +429,7 @@ function Inner() {
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
       setContinuousSessionTimeline(continuousSessionTimelineData);
+      setContinuousSessionRunMonitor(continuousSessionRunMonitorData);
       setContinuousSessionReviewPacket(continuousSessionReviewPacketData);
       setGitHistoryEvidence(gitHistoryEvidenceData);
       setValidationEventEvidence(validationEventEvidenceData);
@@ -566,6 +585,21 @@ function Inner() {
         { label: 'validation', value: continuousSessionReviewPacket.summary.validation_events_ready },
       ]
     : [];
+  const runMonitorReadyEvidenceCount =
+    continuousSessionRunMonitor?.summary.required_evidence_ready_count ??
+    continuousSessionRunMonitor?.required_evidence.filter((item) => item.status === 'ready').length ??
+    0;
+  const runMonitorRequiredEvidenceCount =
+    continuousSessionRunMonitor?.summary.required_evidence_count ??
+    continuousSessionRunMonitor?.required_evidence.length ??
+    0;
+  const runMonitorCurrentGapHours = continuousSessionRunMonitor?.summary.current_gap_hours;
+  const runMonitorMaxGapHours =
+    continuousSessionRunMonitor?.summary.max_allowed_gap_hours ??
+    continuousSessionRunMonitor?.checkpoint_policy.max_allowed_gap_hours ??
+    '-';
+  const runMonitorNextCheckpointDueAt = continuousSessionRunMonitor?.summary.next_checkpoint_due_at ?? null;
+  const runMonitorNextCheckpointDueIn = continuousSessionRunMonitor?.summary.next_checkpoint_due_in_hours;
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -935,6 +969,145 @@ function Inner() {
                   <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
                   <div className="space-y-1 text-xs leading-5 text-stone-600">
                     {privacyBoundarySummary(continuousSessionTimeline.privacy_boundary)
+                      .slice(0, 4)
+                      .map((item) => (
+                        <div key={item} className="break-words">
+                          {item}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {continuousSessionRunMonitor && (
+          <section className="mb-8">
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black text-stone-950">Continuous session run monitor</h2>
+                  <div className="mt-1 text-sm text-stone-600">
+                    Active-run checkpoint monitor; metadata-only status, readiness, blockers, and next actions.
+                  </div>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={statusClass[continuousSessionRunMonitor.status] ?? statusClass.in_progress}
+                >
+                  {displayToken(continuousSessionRunMonitor.status)}
+                </Badge>
+              </div>
+
+              <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(continuousSessionRunMonitor.summary.elapsed_hours_since_start)} /{' '}
+                    {formatInline(continuousSessionRunMonitor.summary.continuous_hours_remaining)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">elapsed / remaining hours</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(continuousSessionRunMonitor.summary.verified_continuous_hours)} /{' '}
+                    {formatInline(continuousSessionRunMonitor.summary.target_continuous_hours)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">verified / target hours</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(runMonitorCurrentGapHours)} / {formatInline(runMonitorMaxGapHours)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">current / max gap hours</div>
+                </div>
+                <div>
+                  <div className="break-all text-sm font-semibold text-stone-950">
+                    {runMonitorNextCheckpointDueAt ?? 'not scheduled'}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">
+                    next checkpoint
+                    {typeof runMonitorNextCheckpointDueIn === 'number'
+                      ? ` / ${runMonitorNextCheckpointDueIn}h`
+                      : ''}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {runMonitorReadyEvidenceCount}/{runMonitorRequiredEvidenceCount}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">required evidence ready</div>
+                </div>
+              </div>
+
+              <div className="mb-3 flex flex-wrap gap-2">
+                {continuousSessionRunMonitor.required_evidence.map((item) => (
+                  <Badge
+                    key={item.event_type}
+                    variant="outline"
+                    className={statusClass[item.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(item.event_type)} {displayToken(item.status)}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-3">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Top blockers</h3>
+                  {continuousSessionRunMonitor.blockers.length > 0 ? (
+                    <div className="space-y-2">
+                      {continuousSessionRunMonitor.blockers.slice(0, 3).map((blocker, index) => (
+                        <div key={`${blocker.id}-${index}`} className="text-xs leading-5 text-stone-600">
+                          <div className="mb-1 flex flex-wrap items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className={blocker.severity === 'hard' ? statusClass.blocked : statusClass.review_required}
+                            >
+                              {displayToken(blocker.severity ?? 'review')}
+                            </Badge>
+                            <span className="font-mono text-[11px] font-semibold text-stone-950">
+                              {blocker.id || 'blocker'}
+                            </span>
+                          </div>
+                          <div>{runMonitorBlockerSummary(blocker)}</div>
+                        </div>
+                      ))}
+                      {continuousSessionRunMonitor.blockers.length > 3 && (
+                        <Badge variant="outline" className="bg-[#fbfaf6]">
+                          +{continuousSessionRunMonitor.blockers.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-stone-600">No active monitor blockers reported.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Top actions</h3>
+                  <div className="space-y-2">
+                    {continuousSessionRunMonitor.next_actions.slice(0, 3).map((action) => (
+                      <div key={action.id} className="text-xs leading-5 text-stone-600">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className={priorityClass[action.priority ?? 'medium'] ?? priorityClass.medium}>
+                            {displayToken(action.priority ?? 'medium')}
+                          </Badge>
+                          <span className="font-mono text-[11px] font-semibold text-stone-950">{action.id}</span>
+                        </div>
+                        <div>{runMonitorActionSummary(action)}</div>
+                      </div>
+                    ))}
+                    {continuousSessionRunMonitor.next_actions.length === 0 && (
+                      <div className="text-sm text-stone-600">No monitor actions reported.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {privacyBoundarySummary(continuousSessionRunMonitor.privacy_boundary)
                       .slice(0, 4)
                       .map((item) => (
                         <div key={item} className="break-words">

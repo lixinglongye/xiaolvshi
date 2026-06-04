@@ -109,6 +109,16 @@ or emails. It is an evidence index only and must not claim the 24-hour target is
 ready unless real timestamped events and the 100+ update evidence both pass the
 joined gate.
 
+`docs/CONTINUOUS_SESSION_RUN_MONITOR.md` defines the implemented
+`GET`/`POST` `/api/v1/maintenance/continuous-session-run-monitor` endpoint.
+That endpoint monitors an active maintenance run by joining ledger, timeline,
+and review-packet metadata into elapsed-hour, current-gap, checkpoint,
+required-evidence, blocker, and next-action fields. It is metadata-only and
+does not prove 24h completion by itself. The ledger must treat it as an
+operational monitor until real timestamped events pass the joined evidence
+gate. It must not store raw logs, legal text, model outputs, credentials, or
+emails.
+
 `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` defines the metadata-only
 `GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` endpoint. It
 indexes Gemini/NewAPI model id normalization, task labels, cost tiers, candidate
@@ -158,11 +168,13 @@ replace the fixture record itself.
 
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/continuous_session_evidence.py`
+- `app/backend/services/continuous_session_run_monitor.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_session_evidence.py`
 - `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/VALIDATION_EVENT_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_REVIEW_PACKET.md`
+- `docs/CONTINUOUS_SESSION_RUN_MONITOR.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`

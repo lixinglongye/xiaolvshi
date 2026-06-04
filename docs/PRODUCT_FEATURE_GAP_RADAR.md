@@ -100,6 +100,13 @@ workflow binding:
   excluding raw logs/stdout/stderr, complete legal text, raw model output,
   credentials, and emails. It is a review index only and cannot by itself
   claim the 24-hour session is complete.
+- `docs/CONTINUOUS_SESSION_RUN_MONITOR.md` scopes the implemented `GET`/`POST`
+  `/api/v1/maintenance/continuous-session-run-monitor` endpoint as a
+  metadata-only active-run monitor over ledger, timeline, and review-packet
+  metadata. It tracks elapsed hours, current gaps, next checkpoints, missing
+  required evidence, blockers, and next actions, but it does not prove 24h
+  completion. Real timestamped events remain required, and the monitor must not
+  store raw logs, legal text, model outputs, credentials, or emails.
 
 ## Scope
 
@@ -180,6 +187,8 @@ show:
 - metadata-only validation event evidence for input validation tests,
   credential scans, pushes, review/release-review actions, and legal fixture
   events,
+- active-run monitor metadata for elapsed hours, current checkpoint gaps,
+  required evidence readiness, blockers, and next actions,
 - links back to shipped update evidence,
 - laptop-safe legal fixture runs for small machines, and
 - explicit blockers when the 24-hour window is not proven, and

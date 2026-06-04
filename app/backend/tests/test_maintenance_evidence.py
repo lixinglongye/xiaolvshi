@@ -40,6 +40,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
+    assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]
     assert "Git history cadence evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Validation event evidence normalizer" in profile["release_management"]["release_readiness_controls"]
@@ -66,6 +67,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_continuous_session_evidence.py" in evidence_paths
     assert "app/backend/services/continuous_session_timeline.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_timeline.py" in evidence_paths
+    assert "app/backend/services/continuous_session_run_monitor.py" in evidence_paths
+    assert "app/backend/tests/test_continuous_session_run_monitor.py" in evidence_paths
+    assert "docs/CONTINUOUS_SESSION_RUN_MONITOR.md" in evidence_paths
     assert "app/backend/services/continuous_session_review_packet.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_review_packet.py" in evidence_paths
     assert "app/backend/services/git_history_evidence.py" in evidence_paths
@@ -77,6 +81,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("automatic deep-review report binding" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove completion" in guardrail for guardrail in profile["application_guardrails"])
     assert any("support claims must remain blocked" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("active-run gaps" in guardrail for guardrail in profile["application_guardrails"])
     assert any("not a substitute for real timestamped 24-hour evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove tests" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Validation event evidence accepts only sanitized" in guardrail for guardrail in profile["application_guardrails"])

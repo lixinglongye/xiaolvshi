@@ -111,7 +111,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
 
-Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, and the continuous update ledger, are tracked but do not block releases.
+Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases.
 
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
@@ -147,8 +147,15 @@ explicit premium blocking or warning. It stores only scenario ids, task labels,
 model ids, canonical ids, cost tiers, decisions, checks, warnings, and evidence
 paths; submitted rationale is not echoed and the check must not imply that
 NewAPI was called or that 24-hour maintenance completion is proven.
-These checks are required release controls, but they still do not claim real
-payment provider settlement or webhook verification, automatic deep-review
+The continuous session run monitor check verifies metadata-only active-run
+monitoring for elapsed hours, current gaps, next checkpoints, missing required
+evidence, blockers, and next actions. It must not imply that 24h maintenance
+completion is proven. Release claims still require real timestamped events
+joined through the timeline and review packet, and the monitor must not store
+raw logs, legal text, model outputs, credentials, or emails.
+The Gemini/NewAPI selector checks are required release controls. The continuous
+session run monitor is optional release evidence. None of these checks claim
+real payment provider settlement or webhook verification, automatic deep-review
 report binding for selected-source validation, public benchmark scores, or
 external adoption.
 
@@ -169,6 +176,7 @@ external adoption.
 - `app/backend/models/case_workbench_state_events.py`
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/continuous_session_run_monitor.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/routers/billing_usage.py`
 - `app/backend/services/billing_quota_migration_plan.py`
@@ -262,6 +270,7 @@ external adoption.
 - `app/backend/tests/test_legal_fixture_result_archive.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/CONTINUOUS_SESSION_RUN_MONITOR.md`
 - `app/frontend/src/lib/billingUsageApi.ts`
 - `app/frontend/src/lib/legalRagApi.ts`
 - `app/frontend/src/lib/workbenchRuntimeApi.ts`
