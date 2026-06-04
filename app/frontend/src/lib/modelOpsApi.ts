@@ -536,9 +536,15 @@ export type ModelOpsReadiness = {
   };
   summary: {
     component_count: number;
+    required_component_count: number;
+    optional_component_count: number;
     pass_count: number;
     warn_count: number;
     fail_count: number;
+    required_warning_count: number;
+    optional_review_count: number;
+    required_failure_count: number;
+    optional_failure_count: number;
     blocking_count: number;
     warning_count: number;
   };

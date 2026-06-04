@@ -23,9 +23,15 @@ The response includes:
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
       "component_count": 27,
+      "required_component_count": 26,
+      "optional_component_count": 1,
       "pass_count": 27,
       "warn_count": 0,
       "fail_count": 0,
+      "required_warning_count": 0,
+      "optional_review_count": 0,
+      "required_failure_count": 0,
+      "optional_failure_count": 0,
       "blocking_count": 0,
       "warning_count": 0
     }
@@ -67,7 +73,7 @@ The readiness service checks:
 - Gemini/NewAPI cheap-first calibration,
 - Gemini/NewAPI price refresh monitor.
 
-Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs.
+Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. The summary separates `required_warning_count`, `required_failure_count`, and `optional_review_count` so manual evidence does not look like a required gate failure. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs.
 
 ## Release Readiness
 

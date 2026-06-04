@@ -86,6 +86,8 @@ class ModelOpsReadinessService:
     def evaluate(self, signals: dict[str, Any]) -> dict[str, Any]:
         checks = [self._evaluate_component(component, signals.get(component.source_key)) for component in MODEL_OPS_COMPONENTS]
         status = self._status(checks)
+        required_checks = [check for check in checks if check["required"]]
+        optional_checks = [check for check in checks if not check["required"]]
         blocking = [check for check in checks if check["status"] == "fail" and check["required"]]
         warnings = [check for check in checks if check["status"] == "warn" or (check["status"] == "fail" and not check["required"])]
         return {
@@ -101,9 +103,15 @@ class ModelOpsReadinessService:
             },
             "summary": {
                 "component_count": len(checks),
+                "required_component_count": len(required_checks),
+                "optional_component_count": len(optional_checks),
                 "pass_count": sum(1 for check in checks if check["status"] == "pass"),
                 "warn_count": len(warnings),
                 "fail_count": sum(1 for check in checks if check["status"] == "fail"),
+                "required_warning_count": sum(1 for check in required_checks if check["status"] == "warn"),
+                "optional_review_count": sum(1 for check in optional_checks if check["status"] != "pass"),
+                "required_failure_count": sum(1 for check in required_checks if check["status"] == "fail"),
+                "optional_failure_count": sum(1 for check in optional_checks if check["status"] == "fail"),
                 "blocking_count": len(blocking),
                 "warning_count": len(warnings),
             },

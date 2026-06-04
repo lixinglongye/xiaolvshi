@@ -22,6 +22,12 @@ def test_model_ops_readiness_passes_when_all_components_are_ready():
     assert result["status"] == "pass"
     assert result["release_recommendation"] == "ready_for_model_ops_release"
     assert result["summary"]["component_count"] == len(MODEL_OPS_COMPONENTS)
+    assert result["summary"]["required_component_count"] == len([component for component in MODEL_OPS_COMPONENTS if component.required])
+    assert result["summary"]["optional_component_count"] == 1
+    assert result["summary"]["required_warning_count"] == 0
+    assert result["summary"]["optional_review_count"] == 0
+    assert result["summary"]["required_failure_count"] == 0
+    assert result["summary"]["optional_failure_count"] == 0
     assert result["blocking_check_ids"] == []
     assert "sk-" not in str(result)
 
@@ -40,6 +46,8 @@ def test_model_ops_readiness_warns_on_warning_component():
     assert result["status"] == "warn"
     assert result["release_recommendation"] == "maintainer_review_required"
     assert "route-guardrails" in result["warning_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["summary"]["optional_review_count"] == 0
 
 
 def test_model_ops_readiness_fails_on_blocking_component():
@@ -56,6 +64,8 @@ def test_model_ops_readiness_fails_on_blocking_component():
     assert result["status"] == "fail"
     assert result["release_recommendation"] == "blocked"
     assert "cost-guardrails" in result["blocking_check_ids"]
+    assert result["summary"]["required_failure_count"] == 1
+    assert result["summary"]["optional_failure_count"] == 0
 
 
 def test_model_ops_readiness_fails_when_required_signal_is_missing():
@@ -77,6 +87,9 @@ def test_model_ops_readiness_warns_when_optional_probe_evaluation_is_missing():
     assert result["status"] == "warn"
     assert "gateway-probe-evaluation" in result["warning_check_ids"]
     assert "gateway-probe-evaluation" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 0
+    assert result["summary"]["optional_review_count"] == 1
+    assert result["summary"]["optional_failure_count"] == 0
     probe_check = next(check for check in result["checks"] if check["id"] == "gateway-probe-evaluation")
     assert probe_check["required"] is False
 
@@ -95,6 +108,9 @@ def test_model_ops_readiness_warns_on_failed_optional_probe_when_supplied():
     assert result["status"] == "warn"
     assert "gateway-probe-evaluation" in result["warning_check_ids"]
     assert "gateway-probe-evaluation" not in result["blocking_check_ids"]
+    assert result["summary"]["required_failure_count"] == 0
+    assert result["summary"]["optional_review_count"] == 1
+    assert result["summary"]["optional_failure_count"] == 1
     assert any("Gateway probe evaluation" in action for action in result["recommended_actions"])
 
 
@@ -114,6 +130,8 @@ def test_model_ops_route_includes_readiness():
     payload = response.json()
     assert payload["success"] is True
     assert payload["model_ops_readiness"]["status"] in {"pass", "warn", "fail"}
+    assert payload["model_ops_readiness"]["summary"]["optional_component_count"] >= 1
+    assert payload["model_ops_readiness"]["summary"]["optional_review_count"] >= 1
     assert payload["model_ops_readiness"]["checks"]
     assert "price_refresh_monitor" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]

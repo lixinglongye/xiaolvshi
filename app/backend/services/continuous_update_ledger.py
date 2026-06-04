@@ -203,6 +203,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("safe-ai-ops", "low-cost-routing", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="model-ops-readiness-required-optional-summary",
+                title="ModelOps required and optional readiness summary",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact="Separates required gate warnings/failures from optional manual evidence review in model-ops readiness and the ModelOps UI.",
+                evidence_paths=(
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "docs/MODEL_OPS_READINESS.md",
+                ),
+                release_gate_links=("model-ops-readiness", "frontend-typecheck"),
+                user_need_ids=("safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="model-gateway-health-plan",
                 title="Gateway health planning before live requests",
                 category="model_ops",

@@ -281,7 +281,8 @@ function Inner() {
               <div>
                 <h2 className="text-xl font-black text-stone-950">Model ops readiness</h2>
                 <div className="mt-1 text-sm text-stone-600">
-                  {data.model_ops_readiness.summary.component_count} components /{' '}
+                  {data.model_ops_readiness.summary.required_component_count} required /{' '}
+                  {data.model_ops_readiness.summary.optional_component_count} optional /{' '}
                   {data.model_ops_readiness.summary.blocking_count} blocking /{' '}
                   {data.model_ops_readiness.summary.warning_count} warning
                 </div>
@@ -299,18 +300,22 @@ function Inner() {
                 {data.model_ops_readiness.release_recommendation.replace(/_/g, ' ')}
               </Badge>
             </div>
-            <div className="mb-3 grid gap-3 md:grid-cols-4">
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.pass_count}</div>
                 <div className="mt-1 text-sm text-stone-600">passing</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
-                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.warn_count}</div>
-                <div className="mt-1 text-sm text-stone-600">warnings</div>
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.required_warning_count}</div>
+                <div className="mt-1 text-sm text-stone-600">required warnings</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
-                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.fail_count}</div>
-                <div className="mt-1 text-sm text-stone-600">failures</div>
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.optional_review_count}</div>
+                <div className="mt-1 text-sm text-stone-600">optional review</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.summary.required_failure_count}</div>
+                <div className="mt-1 text-sm text-stone-600">required failures</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.blocking_check_ids.length}</div>
@@ -333,6 +338,9 @@ function Inner() {
                       <TableCell>
                         <div className="font-semibold text-stone-950">{check.label}</div>
                         <div className="mt-1 font-mono text-[11px] text-stone-500">{check.source_key}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {check.required ? 'required gate' : 'optional evidence'}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge
