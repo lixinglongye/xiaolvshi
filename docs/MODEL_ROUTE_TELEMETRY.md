@@ -1,6 +1,7 @@
 # Model Route Telemetry
 
-The project now records aggregate runtime route telemetry for `POST /api/v1/aihub/gentxt`.
+The project now records aggregate runtime route telemetry for `POST /api/v1/aihub/gentxt`
+and writes sanitized route-decision events to a local telemetry repository.
 
 ## Purpose
 
@@ -16,13 +17,18 @@ Route telemetry records:
 - unknown-price gateway model usage,
 - route success and failure counts.
 
+The local `route_telemetry_repository` stores only allowed metadata fields after
+the persistence plan passes. It rejects prompts, raw legal text, client contact
+details, credentials, headers, request bodies, response bodies, and raw model
+outputs, then rebuilds daily task/model aggregate counters.
+
 ## Endpoint
 
 ```http
 GET /api/v1/aihub/models
 ```
 
-The response includes `route_telemetry` next to:
+The response includes `route_telemetry` and `route_telemetry_repository` next to:
 
 - `runtime_router`
 - `route_guardrails`
@@ -31,21 +37,28 @@ The response includes `route_telemetry` next to:
 - `cost_guardrails`
 - `usage`
 
-The frontend `/model-ops` page shows route telemetry summary cards, a per-task telemetry table, and route guardrail pass/warn/fail checks.
+The frontend `/model-ops` page shows route telemetry summary cards, a per-task
+telemetry table, local repository daily buckets, and route guardrail
+pass/warn/fail checks.
 
 `route_guardrails` uses the same aggregate telemetry snapshot to evaluate route failure rate, over-budget ratio, downgrade ratio, operator-review ratio, unknown-price models, and allowed over-budget requests. Empty telemetry is treated as no data rather than a release blocker.
 
 ## Safety
 
-Route telemetry stores aggregate routing metadata only. It does not store prompts, uploaded documents, file names, API keys, passwords, emails, user identifiers, or raw model output.
+Route telemetry stores aggregate routing metadata only. The local repository
+stores sanitized event fields and aggregate counters only. Neither surface
+stores prompts, uploaded documents, file names, API keys, passwords, emails,
+user identifiers, request bodies, response bodies, or raw model output.
 
 ## Related files
 
 - `app/backend/services/model_route_telemetry.py`
+- `app/backend/services/route_telemetry_repository.py`
 - `app/backend/services/model_route_guardrails.py`
 - `app/backend/services/aihub.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_route_telemetry.py`
+- `app/backend/tests/test_route_telemetry_repository.py`
 - `app/backend/tests/test_model_route_guardrails.py`
 - `app/backend/tests/test_aihub_runtime_routing.py`
 - `app/frontend/src/lib/modelOpsApi.ts`

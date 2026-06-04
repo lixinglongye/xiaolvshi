@@ -40,6 +40,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI cheap-first calibration" in profile["release_management"]["release_readiness_controls"]
+    assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
@@ -71,6 +72,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/gemini_newapi_cheap_first_calibration.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md" in evidence_paths
+    assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
+    assert "app/backend/tests/test_route_telemetry_repository.py" in evidence_paths
     assert "app/backend/services/continuous_session_evidence.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_evidence.py" in evidence_paths
     assert "app/backend/services/continuous_session_timeline.py" in evidence_paths

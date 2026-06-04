@@ -209,6 +209,7 @@ external adoption.
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
+- `app/backend/services/route_telemetry_repository.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
@@ -259,6 +260,7 @@ external adoption.
 - `app/backend/tests/test_feedback_lifecycle_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_policy.py`
 - `app/backend/tests/test_gemini_newapi_cheap_first_calibration.py`
+- `app/backend/tests/test_route_telemetry_repository.py`
 - `app/backend/tests/test_legal_document_benchmark_fixtures.py`
 - `app/backend/tests/test_legal_rag_failure_fixtures.py`
 - `app/backend/tests/test_legal_source_ingestion_metadata.py`

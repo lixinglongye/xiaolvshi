@@ -1,8 +1,10 @@
 import pytest
 
 from schemas.aihub import ChatMessage, GenTxtRequest
+from services import route_telemetry_repository
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
+from services.route_telemetry_repository import RouteTelemetryRepositoryService
 
 pytest.importorskip("httpx")
 from services.aihub import AIHubService
@@ -36,14 +38,34 @@ class _FakeCompletions:
         return _FakeResponse()
 
 
+class _FailingCompletions:
+    async def create(self, **params):
+        raise RuntimeError("provider timeout")
+
+
 class _FakeChat:
     def __init__(self) -> None:
         self.completions = _FakeCompletions()
 
 
+class _FailingChat:
+    def __init__(self) -> None:
+        self.completions = _FailingCompletions()
+
+
 class _FakeClient:
     def __init__(self) -> None:
         self.chat = _FakeChat()
+
+
+class _FailingClient:
+    def __init__(self) -> None:
+        self.chat = _FailingChat()
+
+
+@pytest.fixture(autouse=True)
+def _isolated_route_telemetry_storage(tmp_path, monkeypatch):
+    monkeypatch.setattr(route_telemetry_repository.settings, "local_storage_dir", str(tmp_path))
 
 
 @pytest.mark.asyncio
@@ -78,6 +100,11 @@ async def test_gentxt_uses_declared_review_task_default_model():
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["summary"]["request_count"] == 1
     assert route_snapshot["by_task"]["review"]["explicit_task"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["summary"]["stored_event_count"] == 1
+    assert repository["totals"]["request_count"] == 1
+    assert repository["daily_buckets"][0]["task"] == "review"
+    assert "review this clause" not in str(repository)
 
 
 @pytest.mark.asyncio
@@ -108,6 +135,9 @@ async def test_gentxt_auto_infers_legal_review_task():
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["summary"]["auto_inferred_ratio"] == 1.0
     assert route_snapshot["by_inference_source"]["auto"]["models"] == {"gemini-2.5-flash": 1}
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["daily_buckets"][0]["inference_source"] == "auto"
+    assert "Review this contract clause" not in str(repository)
 
 
 @pytest.mark.asyncio
@@ -139,3 +169,35 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["summary"]["downgrade_ratio"] == 1.0
     assert route_snapshot["summary"]["operator_review_request_count"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["totals"]["downgrade_count"] == 1
+    assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash-lite"
+    assert repository["daily_buckets"][0]["routed_to_recommended_model"] is True
+
+
+@pytest.mark.asyncio
+async def test_gentxt_persists_sanitized_route_failure_without_prompt_text():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    service.client = _FailingClient()
+
+    with pytest.raises(RuntimeError):
+        await service.gentxt(
+            GenTxtRequest(
+                messages=[ChatMessage(role="user", content="PRIVATE CLIENT PROMPT SHOULD NOT PERSIST")],
+                task="fast",
+                model="gemini-2.5-pro",
+            )
+        )
+
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["request_count"] == 1
+    assert route_snapshot["summary"]["failure_rate"] == 1.0
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["totals"]["request_count"] == 1
+    assert repository["totals"]["failure_count"] == 1
+    assert repository["daily_buckets"][0]["success"] is False
+    assert "PRIVATE CLIENT PROMPT" not in rendered
+    assert "provider timeout" not in rendered

@@ -2,6 +2,11 @@
 
 This plan defines a local, privacy-minimized contract for persisting model route telemetry. It does not require a database migration, network access, or credentials. Integration code can call `RouteTelemetryPersistencePlanService.build_plan(events)` before enabling any durable route telemetry sink.
 
+`RouteTelemetryRepositoryService` now implements the first local sink: it writes
+only sanitized allowed fields to `local_storage/model_ops/route_telemetry/events.jsonl`,
+rejects duplicates or sensitive payloads, and rebuilds daily aggregate counters
+in `daily_aggregates.json`.
+
 ## Event Schema
 
 The only supported event type is `model_route_decision`.
@@ -49,6 +54,27 @@ Durable reporting should prefer aggregate counters:
 - estimated cost sum
 - latency p50 and p95
 
+## Local Repository
+
+The maintenance API exposes the local repository:
+
+```http
+GET /api/v1/maintenance/route-telemetry-repository
+POST /api/v1/maintenance/route-telemetry-repository
+```
+
+`GET` returns current local JSONL storage metadata, aggregate totals, daily
+buckets, privacy boundary, and validation commands.
+
+`POST` accepts a list of sanitized telemetry candidate events. The repository
+first runs the persistence plan. Failing events are rejected without echoing raw
+secret, prompt, legal text, email, request body, response body, or model output
+values. Passing and warning events are normalized to allowed fields only.
+
+The AIHub model-ops payload also includes `route_telemetry_repository`, and the
+ModelOps page renders the persisted request count, daily bucket count, rejected
+latest event count, storage mode, and daily aggregate table.
+
 ## Pre-Persistence Checks
 
 Before writing route telemetry to a durable sink:
@@ -71,5 +97,7 @@ Run:
 ```powershell
 cd D:\小律师\app\backend
 python -m pytest tests/test_route_telemetry_persistence_plan.py -q
+python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q
 python -m compileall services/route_telemetry_persistence_plan.py
+python -m compileall services/route_telemetry_repository.py
 ```

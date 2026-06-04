@@ -689,6 +689,71 @@ export type ModelRouteTelemetry = {
   by_inference_source: Record<string, ModelRouteTelemetryBucket>;
 };
 
+export type ModelRouteTelemetryRepository = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    stored_event_count: number;
+    accepted_event_count: number;
+    rejected_event_count: number;
+    daily_bucket_count: number;
+    raw_payload_storage_allowed: boolean;
+    credentials_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    storage_mode: string;
+  };
+  storage: {
+    events_path: string;
+    aggregates_path: string;
+    retention: Record<string, unknown>;
+  };
+  accepted_events: Array<Record<string, unknown>>;
+  rejected_events: Array<{
+    event_index?: number | null;
+    event_id?: string;
+    status: string;
+    reason_codes: string[];
+  }>;
+  daily_buckets: Array<{
+    day: string;
+    task: string;
+    resolved_model: string;
+    inference_source: string;
+    routed_to_recommended_model: boolean;
+    is_over_budget: boolean;
+    requires_operator_review: boolean;
+    success: boolean;
+    request_count: number;
+    success_count: number;
+    failure_count: number;
+    estimated_cost_usd_sum: number;
+  }>;
+  totals: {
+    request_count: number;
+    success_count: number;
+    failure_count: number;
+    downgrade_count: number;
+    over_budget_count: number;
+    operator_review_count: number;
+    unknown_model_count: number;
+    estimated_cost_usd_sum: number;
+  };
+  persistence_plan_status: string;
+  recommended_actions: string[];
+  privacy_boundary: {
+    allowed_fields: string[];
+    raw_payload_storage_allowed: boolean;
+    duplicate_event_policy: string;
+    forbidden_content: string[];
+  };
+  validation_commands: string[];
+};
+
 export type ModelRouteGuardrailCheck = {
   id: string;
   status: string;
@@ -989,6 +1054,7 @@ export type ModelOpsResponse = {
   request_cost_bounds?: ModelRequestCostBounds;
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
+  route_telemetry_repository?: ModelRouteTelemetryRepository;
   route_guardrails?: ModelRouteGuardrails;
   callsite_audit?: ModelCallsiteAudit;
   budget_policy: ModelBudgetPolicy;

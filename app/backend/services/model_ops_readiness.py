@@ -28,6 +28,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("cache-policy", "Cache policy", "routing", "cache_policy"),
     ReadinessComponent("callsite-audit", "Callsite audit", "code_audit", "callsite_audit"),
     ReadinessComponent("route-telemetry", "Route telemetry", "runtime_evidence", "route_telemetry"),
+    ReadinessComponent(
+        "route-telemetry-repository",
+        "Route telemetry repository",
+        "runtime_evidence",
+        "route_telemetry_repository",
+    ),
     ReadinessComponent("route-guardrails", "Route guardrails", "runtime_evidence", "route_guardrails"),
     ReadinessComponent("routing-replay", "Routing replay", "simulation", "routing_replay"),
     ReadinessComponent("fallback-chains", "Fallback chains", "resilience", "fallback_chains"),

@@ -61,3 +61,5 @@ def test_model_ops_route_includes_route_telemetry():
     assert payload["success"] is True
     assert payload["route_telemetry"]["status"] == "ready"
     assert payload["route_telemetry"]["summary"]["request_count"] == 0
+    assert payload["route_telemetry_repository"]["status"] == "ready"
+    assert payload["route_telemetry_repository"]["summary"]["raw_payload_storage_allowed"] is False

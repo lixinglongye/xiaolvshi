@@ -166,6 +166,7 @@ function Inner() {
   const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
+  const routeTelemetryRepositoryRows = data?.route_telemetry_repository?.daily_buckets ?? [];
   const routeGuardrailRows = data?.route_guardrails?.checks ?? [];
   const callsiteRows = data?.callsite_audit?.callsites ?? [];
   const budgetRows = data?.budget_policy.task_decisions ?? [];
@@ -1803,6 +1804,107 @@ function Inner() {
                         <TableCell>{formatNumber(bucket.failures)}</TableCell>
                         <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
                           {Object.entries(bucket.models).map(([model, count]) => `${model}:${count}`).join(', ')}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.route_telemetry_repository && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry repository</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_telemetry_repository.summary.stored_event_count} stored events /{' '}
+                  {data.route_telemetry_repository.summary.daily_bucket_count} daily buckets
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.route_telemetry_repository.status)}>
+                {data.route_telemetry_repository.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_repository.totals.request_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">persisted requests</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_repository.totals.downgrade_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap downgrades</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_repository.summary.rejected_event_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">rejected latest</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_telemetry_repository.summary.raw_payload_storage_allowed ? 'on' : 'off'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">raw payload storage</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Storage mode</div>
+                  <div className="font-mono text-xs">{data.route_telemetry_repository.summary.storage_mode}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Next action</div>
+                  <div>{data.route_telemetry_repository.recommended_actions[0]}</div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Route</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead>Success</TableHead>
+                    <TableHead>Cost</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryRepositoryRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                        No persisted route telemetry events yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryRepositoryRows.map((row) => (
+                      <TableRow key={`${row.day}-${row.task}-${row.resolved_model}-${row.inference_source}`}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">{row.day}</TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">{row.task}</TableCell>
+                        <TableCell className="max-w-[260px] font-mono text-xs text-stone-700">{row.resolved_model}</TableCell>
+                        <TableCell className="text-xs leading-5 text-stone-600">
+                          {row.inference_source}
+                          <br />
+                          {row.routed_to_recommended_model ? 'cheap-first downgrade' : 'direct'}
+                          <br />
+                          {row.requires_operator_review ? 'review gated' : 'no review gate'}
+                        </TableCell>
+                        <TableCell>{formatNumber(row.request_count)}</TableCell>
+                        <TableCell>
+                          {formatNumber(row.success_count)}/{formatNumber(row.failure_count)}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">
+                          {formatUsd(row.estimated_cost_usd_sum)}
                         </TableCell>
                       </TableRow>
                     ))

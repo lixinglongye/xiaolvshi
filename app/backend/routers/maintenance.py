@@ -76,6 +76,7 @@ from services.quota_delivery_decision import QuotaDeliveryDecisionService
 from services.release_claim_compliance import ReleaseClaimComplianceService
 from services.release_readiness import ReleaseReadinessService
 from services.route_telemetry_persistence_plan import RouteTelemetryPersistencePlanService
+from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.admin_audit_policy import AdminAuditPolicyService
@@ -900,6 +901,24 @@ async def evaluate_route_telemetry_persistence_plan(events: list[dict[str, Any]]
     return {
         "success": True,
         "data": RouteTelemetryPersistencePlanService().build_plan(events),
+    }
+
+
+@router.get("/route-telemetry-repository")
+async def get_route_telemetry_repository():
+    """Return local privacy-safe route telemetry repository aggregates."""
+    return {
+        "success": True,
+        "data": RouteTelemetryRepositoryService().build_repository(),
+    }
+
+
+@router.post("/route-telemetry-repository")
+async def append_route_telemetry_repository_events(events: list[dict[str, Any]]):
+    """Append sanitized route telemetry events and rebuild daily aggregates."""
+    return {
+        "success": True,
+        "data": RouteTelemetryRepositoryService().append_events(events),
     }
 
 

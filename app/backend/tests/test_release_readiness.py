@@ -172,6 +172,29 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "gateway credentials" in checks["gemini-newapi-model-selector"]["manual_note"]
 
 
+def test_route_telemetry_repository_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = {
+        item["check_id"]: item["command"]
+        for item in service.default_validation_commands()
+        if item["check_id"] in {"route-telemetry-repository", "route-telemetry-persistence-plan"}
+    }
+    result = service.evaluate({"route-telemetry-repository": "not_run", "route-telemetry-persistence-plan": "not_run"})
+    checks = {check["id"]: check for check in result["checks"]}
+
+    assert commands == {
+        "route-telemetry-persistence-plan": "python -m pytest tests/test_route_telemetry_persistence_plan.py -q",
+        "route-telemetry-repository": "python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q",
+    }
+    assert checks["route-telemetry-persistence-plan"]["required"] is False
+    assert checks["route-telemetry-repository"]["required"] is True
+    assert checks["route-telemetry-persistence-plan"]["blocks_release"] is False
+    assert checks["route-telemetry-repository"]["blocks_release"] is True
+    assert "durable storage and migrations remain separate" in checks["route-telemetry-persistence-plan"]["manual_note"]
+    assert "persists sanitized route telemetry events locally" in checks["route-telemetry-repository"]["manual_note"]
+    assert "raw model outputs" in checks["route-telemetry-repository"]["manual_note"]
+
+
 def test_recent_backend_product_slices_are_optional_release_evidence():
     service = ReleaseReadinessService()
     expected_commands = {

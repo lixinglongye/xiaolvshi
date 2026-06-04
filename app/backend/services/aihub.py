@@ -37,8 +37,9 @@ from services.model_catalog import resolve_model
 from services.model_request_policy import resolve_generation_request_policy
 from services.model_reasoning_policy import resolve_reasoning_effort
 from services.model_route_telemetry import model_route_telemetry_registry
-from services.model_task_inference import infer_gentxt_task
-from services.model_runtime_router import resolve_runtime_model
+from services.route_telemetry_repository import RouteTelemetryRepositoryService
+from services.model_task_inference import TaskInference, infer_gentxt_task
+from services.model_runtime_router import RuntimeModelRoute, resolve_runtime_model
 from services.model_usage import model_usage_registry
 
 logger = logging.getLogger(__name__)
@@ -154,6 +155,30 @@ class AIHubService:
             latency_ms=int((time.time() - started_at) * 1000),
         )
 
+    @staticmethod
+    def _record_route_telemetry_repository(
+        *,
+        route: RuntimeModelRoute,
+        task_inference: TaskInference,
+        success: bool,
+        stream: bool = False,
+        usage: dict[str, int] | None = None,
+        latency_ms: int | None = None,
+        error_category: str = "",
+    ) -> None:
+        try:
+            RouteTelemetryRepositoryService().append_route_decision(
+                route=route,
+                task_inference=task_inference,
+                success=success,
+                stream=stream,
+                usage=usage,
+                latency_ms=latency_ms,
+                error_category=error_category,
+            )
+        except Exception as exc:  # pragma: no cover - persistence must not break generation
+            logger.warning("Route telemetry repository write failed: %s", exc)
+
     async def gentxt(self, request: GenTxtRequest) -> GenTxtResponse:
         """
         Generate Text API (non-streaming), supports text and image input.
@@ -213,6 +238,13 @@ class AIHubService:
                 task_inference=task_inference,
                 success=True,
             )
+            self._record_route_telemetry_repository(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                usage=usage,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
 
             return GenTxtResponse(
                 content=content,
@@ -231,6 +263,13 @@ class AIHubService:
                 route=route,
                 task_inference=task_inference,
                 success=False,
+            )
+            self._record_route_telemetry_repository(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
             )
             logger.error(f"gentxt error: {e}")
             raise
@@ -296,6 +335,13 @@ class AIHubService:
                 stream=True,
                 success=True,
             )
+            self._record_route_telemetry_repository(
+                route=route,
+                task_inference=task_inference,
+                stream=True,
+                success=True,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
 
         except Exception as e:
             self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=False)
@@ -304,6 +350,14 @@ class AIHubService:
                 task_inference=task_inference,
                 stream=True,
                 success=False,
+            )
+            self._record_route_telemetry_repository(
+                route=route,
+                task_inference=task_inference,
+                stream=True,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
             )
             logger.error(f"gentxt_stream error: {e}")
             raise
