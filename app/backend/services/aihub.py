@@ -179,6 +179,50 @@ class AIHubService:
         except Exception as exc:  # pragma: no cover - persistence must not break generation
             logger.warning("Route telemetry repository write failed: %s", exc)
 
+    @staticmethod
+    def _endpoint_task_inference(
+        *,
+        requested_task: str,
+        task: str,
+        endpoint: str,
+        signals: tuple[str, ...] = (),
+    ) -> TaskInference:
+        return TaskInference(
+            requested_task=requested_task,
+            task=task,
+            source="explicit",
+            confidence=1.0,
+            signals=(f"endpoint:{endpoint}", *signals),
+            reason="Endpoint provided an explicit routing task.",
+        )
+
+    def _record_route_telemetry(
+        self,
+        *,
+        route: RuntimeModelRoute,
+        task_inference: TaskInference,
+        success: bool,
+        stream: bool = False,
+        usage: dict[str, int] | None = None,
+        latency_ms: int | None = None,
+        error_category: str = "",
+    ) -> None:
+        model_route_telemetry_registry.record(
+            route=route,
+            task_inference=task_inference,
+            stream=stream,
+            success=success,
+        )
+        self._record_route_telemetry_repository(
+            route=route,
+            task_inference=task_inference,
+            stream=stream,
+            success=success,
+            usage=usage,
+            latency_ms=latency_ms,
+            error_category=error_category,
+        )
+
     async def gentxt(self, request: GenTxtRequest) -> GenTxtResponse:
         """
         Generate Text API (non-streaming), supports text and image input.
@@ -743,62 +787,90 @@ User instruction:
         if not request.instruction or not request.instruction.strip():
             raise InvalidPdfInputError("instruction is required for PDF analysis.")
 
-        client = self._require_ai_client()
-        model = resolve_model(settings.app_ai_pdf_model, task="pdf")
-        started_at = time.time()
-        pdf_bytes, pdf_name = await self._pdf_source_to_bytes(request.pdf)
-        pdf_b64, start, end, total_pages = self._prepare_pdf_attachment(
-            pdf_bytes=pdf_bytes,
-            page_start=request.page_start,
-            page_end=request.page_end,
-        )
-        user_prompt = self._build_pdf_user_prompt(request.instruction, request.mode)
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": PDF_SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": user_prompt},
-                        {
-                            "type": "document",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "application/pdf",
-                                "data": pdf_b64,
-                            },
-                            "citations": {"enabled": True},
-                        },
-                    ],
-                },
-            ],
-            temperature=0.0,
-            max_tokens=8192,
-            stream=False,
-        )
-        result = self._extract_completion_text(response)
-        if not result:
-            raise RuntimeError("PDF analysis returned an empty result.")
-        self._record_model_usage(
-            model=model,
+        task_inference = self._endpoint_task_inference(
+            requested_task="pdf",
             task="pdf",
-            started_at=started_at,
-            success=True,
-            usage=self._usage_from_response(response),
+            endpoint="analyzepdf",
+            signals=(f"mode:{request.mode}",),
         )
+        route = resolve_runtime_model(settings.app_ai_pdf_model, task=task_inference.task)
+        model = route.resolved_model
+        started_at = time.time()
+        try:
+            client = self._require_ai_client()
+            pdf_bytes, pdf_name = await self._pdf_source_to_bytes(request.pdf)
+            pdf_b64, start, end, total_pages = self._prepare_pdf_attachment(
+                pdf_bytes=pdf_bytes,
+                page_start=request.page_start,
+                page_end=request.page_end,
+            )
+            user_prompt = self._build_pdf_user_prompt(request.instruction, request.mode)
+            response = await client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": PDF_SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_prompt},
+                            {
+                                "type": "document",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "application/pdf",
+                                    "data": pdf_b64,
+                                },
+                                "citations": {"enabled": True},
+                            },
+                        ],
+                    },
+                ],
+                temperature=0.0,
+                max_tokens=8192,
+                stream=False,
+            )
+            result = self._extract_completion_text(response)
+            if not result:
+                raise RuntimeError("PDF analysis returned an empty result.")
+            usage = self._usage_from_response(response)
+            latency_ms = int((time.time() - started_at) * 1000)
+            self._record_model_usage(
+                model=model,
+                task=route.task,
+                started_at=started_at,
+                success=True,
+                usage=usage,
+            )
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                usage=usage,
+                latency_ms=latency_ms,
+            )
 
-        return AnalyzePdfResponse(
-            status="success",
-            result=result,
-            message=self._build_pdf_success_message(start, end, total_pages),
-            pdf_name=pdf_name,
-            mode=request.mode,
-            model=model,
-            page_start=start,
-            page_end=end,
-            total_pages=total_pages,
-        )
+            return AnalyzePdfResponse(
+                status="success",
+                result=result,
+                message=self._build_pdf_success_message(start, end, total_pages),
+                pdf_name=pdf_name,
+                mode=request.mode,
+                model=model,
+                page_start=start,
+                page_end=end,
+                total_pages=total_pages,
+            )
+        except Exception as e:
+            self._record_model_usage(model=model, task=route.task, started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
+            logger.error(f"analyze_pdf error: {e}")
+            raise
 
     async def genimg(self, request: GenImgRequest) -> GenImgResponse:
         """
@@ -810,7 +882,14 @@ User instruction:
         Returns:
             GenImgResponse: generated image response, where `images` is a list of image refs (URL preferred; fallback to base64 data URI).
         """
-        model = resolve_model(request.model, task="image")
+        task_inference = self._endpoint_task_inference(
+            requested_task="image",
+            task="image",
+            endpoint="genimg",
+            signals=("mode:edit" if request.image else "mode:generate",),
+        )
+        route = resolve_runtime_model(request.model, task=task_inference.task)
+        model = route.resolved_model
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -841,7 +920,14 @@ User instruction:
 
             # Prefer URL to avoid huge response bodies; fallback to base64 data URI.
             images = [self._extract_image_ref(item) for item in response.data]
-            self._record_model_usage(model=model, task="image", started_at=started_at, success=True)
+            latency_ms = int((time.time() - started_at) * 1000)
+            self._record_model_usage(model=model, task=route.task, started_at=started_at, success=True)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                latency_ms=latency_ms,
+            )
 
             return GenImgResponse(
                 images=images,
@@ -850,7 +936,14 @@ User instruction:
             )
 
         except Exception as e:
-            self._record_model_usage(model=model, task="image", started_at=started_at, success=False)
+            self._record_model_usage(model=model, task=route.task, started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
             logger.error(f"genimg error: {e}")
             raise
 

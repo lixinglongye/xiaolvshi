@@ -1,7 +1,8 @@
 # Model Route Telemetry
 
-The project now records aggregate runtime route telemetry for `POST /api/v1/aihub/gentxt`
-and writes sanitized route-decision events to a local telemetry repository.
+The project now records aggregate runtime route telemetry for `POST /api/v1/aihub/gentxt`,
+`POST /api/v1/aihub/analyzepdf`, and `POST /api/v1/aihub/genimg`, then writes sanitized
+route-decision events to a local telemetry repository.
 
 ## Purpose
 
@@ -16,6 +17,10 @@ Route telemetry records:
 - allowed over-budget requests,
 - unknown-price gateway model usage,
 - route success and failure counts.
+
+Text, PDF, and image route decisions all use the same telemetry shape. PDF and
+image responses stay unchanged; operators inspect their routing evidence through
+model-ops snapshots and the local repository aggregates.
 
 The local `route_telemetry_repository` stores only allowed metadata fields after
 the persistence plan passes. It rejects prompts, raw legal text, client contact
@@ -64,8 +69,9 @@ suggestions when telemetry drift needs operator review.
 
 Route telemetry stores aggregate routing metadata only. The local repository
 stores sanitized event fields and aggregate counters only. Neither surface
-stores prompts, uploaded documents, file names, API keys, passwords, emails,
-user identifiers, request bodies, response bodies, or raw model output.
+stores prompts, uploaded documents, PDF bytes, uploaded images, generated image
+URLs, revised prompts, file names, API keys, passwords, emails, user identifiers,
+request bodies, response bodies, or raw model output.
 
 ## Related files
 

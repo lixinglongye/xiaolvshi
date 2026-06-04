@@ -73,6 +73,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-session-review-packet" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
+    assert "pdf-image-route-telemetry" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -144,6 +145,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
+    assert "pdf-image-route-telemetry" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
@@ -191,6 +193,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_aihub_runtime_routing.py tests/test_model_runtime_router.py "
+        "tests/test_model_route_telemetry.py tests/test_route_telemetry_repository.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_ops_summary.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_triage_queue.py -q" in ledger["validation_commands"]

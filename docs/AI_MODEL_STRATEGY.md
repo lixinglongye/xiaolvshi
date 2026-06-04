@@ -158,6 +158,14 @@ models, and missing price metadata stay visible as drift signals. The monitor is
 local metadata only: it does not call NewAPI/Gemini and does not return API
 keys, prompts, legal text, client data, or raw model output.
 
+## PDF and Image Route Evidence
+
+`POST /api/v1/aihub/analyzepdf` and `POST /api/v1/aihub/genimg` now use the same
+runtime route telemetry path as text generation. This keeps expensive PDF and
+image exception paths visible to model ops without storing prompts, PDF bytes,
+uploaded images, generated output URLs, revised prompts, file names, API keys,
+client data, or raw model output.
+
 ## Sources
 
 - Google Gemini OpenAI compatibility: https://ai.google.dev/gemini-api/docs/openai
