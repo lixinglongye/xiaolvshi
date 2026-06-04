@@ -8,6 +8,7 @@ from services.model_catalog import (
     balanced_text_model,
     canonical_model_id,
     cheap_text_model,
+    image_model,
     model_profile,
     premium_text_model,
     task_default_model,
@@ -84,6 +85,7 @@ class ModelGatewayCompatibilityService:
             ),
             GatewayModelRole("review-model", "Review route model", task_default_model("review"), "APP_AI_REVIEW_MODEL", "medium"),
             GatewayModelRole("pdf-model", "PDF route model", task_default_model("pdf"), "APP_AI_PDF_MODEL", "premium"),
+            GatewayModelRole("image-model", "Image route model", image_model(), "APP_AI_IMAGE_MODEL", "premium"),
             GatewayModelRole("balanced-model", "Balanced text model", balanced_text_model(), "APP_AI_BALANCED_MODEL", "medium"),
             GatewayModelRole("premium-model", "Premium text model", premium_text_model(), "APP_AI_PREMIUM_MODEL", "premium"),
         )

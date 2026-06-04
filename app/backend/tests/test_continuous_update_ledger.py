@@ -74,6 +74,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
+    assert "image-auto-route-default" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -146,6 +147,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
+    assert "image-auto-route-default" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
@@ -196,6 +198,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_aihub_runtime_routing.py tests/test_model_runtime_router.py "
         "tests/test_model_route_telemetry.py tests/test_route_telemetry_repository.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_runtime_router.py "
+        "tests/test_aihub_runtime_routing.py tests/test_model_configuration_audit.py tests/test_model_gateway_compatibility.py -q"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]

@@ -305,6 +305,30 @@ async def test_genimg_records_sanitized_image_route_telemetry():
 
 
 @pytest.mark.asyncio
+async def test_genimg_auto_model_uses_gemini_image_default():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.genimg(
+        GenImgRequest(
+            prompt="PRIVATE AUTO IMAGE PROMPT SHOULD NOT PERSIST",
+            model="auto",
+        )
+    )
+
+    assert fake_client.images.generate_calls[0]["model"] == "gemini-2.5-flash-image"
+    assert response.model == "gemini-2.5-flash-image"
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["daily_buckets"][0]["task"] == "image"
+    assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash-image"
+    assert "PRIVATE AUTO IMAGE PROMPT" not in rendered
+
+
+@pytest.mark.asyncio
 async def test_genimg_persists_sanitized_route_failure_without_prompt_or_provider_text():
     model_usage_registry.reset()
     model_route_telemetry_registry.reset()

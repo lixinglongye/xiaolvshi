@@ -189,6 +189,10 @@ def premium_text_model() -> str:
     return _configured_model(getattr(settings, "app_ai_premium_model", None), "gemini-2.5-pro")
 
 
+def image_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_image_model", None), "gemini-2.5-flash-image")
+
+
 def task_default_model(task: str) -> str:
     """Return the configured model for a known task, preferring low-cost defaults."""
     task = (task or "fast").strip().lower()
@@ -204,6 +208,8 @@ def task_default_model(task: str) -> str:
         return _configured_model(getattr(settings, "app_ai_review_model", None), balanced_text_model())
     if task in {"pdf", "large-pdf", "final-review", "complex"}:
         return _configured_model(getattr(settings, "app_ai_pdf_model", None), premium_text_model())
+    if task in {"image", "genimg", "visual", "image-edit"}:
+        return image_model()
     return balanced_text_model()
 
 
@@ -225,6 +231,7 @@ def resolve_model(model: str | None, *, task: str = "fast") -> str:
         "auto-ocr": task_default_model("ocr"),
         "auto-review": task_default_model("review"),
         "auto-pdf": task_default_model("pdf"),
+        "auto-image": task_default_model("image"),
         "cheap": cheap_text_model(),
         "balanced": balanced_text_model(),
         "premium": premium_text_model(),
@@ -265,6 +272,7 @@ def catalog_for_api() -> list[dict[str, object]]:
         "ocr": task_default_model("ocr"),
         "review": task_default_model("review"),
         "pdf": task_default_model("pdf"),
+        "image": task_default_model("image"),
     }
     return [
         {

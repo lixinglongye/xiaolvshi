@@ -17,6 +17,7 @@ APP_AI_FAST_MODEL=gemini-2.5-flash-lite
 APP_AI_CLASSIFIER_MODEL=gemini-2.5-flash-lite
 APP_AI_REVIEW_MODEL=gemini-2.5-flash
 APP_AI_PDF_MODEL=gemini-2.5-pro
+APP_AI_IMAGE_MODEL=gemini-2.5-flash-image
 APP_AI_PREMIUM_REQUIRES_REVIEW=true
 ```
 
@@ -32,6 +33,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 | `auto-ocr` | `APP_OCR_MODEL` | 扫描 PDF 页 OCR、图片文字转写 |
 | `auto-review` | `APP_AI_REVIEW_MODEL` | 合同审查、案件问答、结构化法律分析 |
 | `auto-pdf` | `APP_AI_PDF_MODEL` | 大 PDF、复杂推理、最终复核 |
+| `auto-image` | `APP_AI_IMAGE_MODEL` | 图片生成、图片编辑、视觉证据草图 |
 
 显式模型名会原样透传给网关，因此新 Gemini 模型发布后，可以先通过 `.env` 或请求参数接入，不需要立刻改代码。
 
@@ -165,6 +167,12 @@ runtime route telemetry path as text generation. This keeps expensive PDF and
 image exception paths visible to model ops without storing prompts, PDF bytes,
 uploaded images, generated output URLs, revised prompts, file names, API keys,
 client data, or raw model output.
+
+`APP_AI_IMAGE_MODEL` pins the image task default separately from text defaults.
+`model=auto` on `POST /api/v1/aihub/genimg` now resolves through `task=image` to
+the configured Gemini image model instead of falling back to a balanced text
+model. Use `auto-image` when a caller wants an explicit stable alias for the
+same route.
 
 ## Sources
 

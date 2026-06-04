@@ -19,6 +19,8 @@ This helps keep high-volume legal workflows on cheaper Gemini models while still
 `POST /api/v1/aihub/analyzepdf` uses the configured PDF route with `task=pdf`.
 
 `POST /api/v1/aihub/genimg` uses the requested or default image model with `task=image`.
+`model=auto` and `model=auto-image` resolve to `APP_AI_IMAGE_MODEL`, which
+defaults to `gemini-2.5-flash-image`.
 
 ## Runtime Behavior
 
@@ -26,6 +28,7 @@ This helps keep high-volume legal workflows on cheaper Gemini models while still
 - Omitted model + `task=fast` -> `gemini-2.5-flash-lite`.
 - Omitted model + `task=review` -> `gemini-2.5-flash`.
 - Explicit premium model + `task=fast` -> downgraded to `gemini-2.5-flash-lite` unless `allow_over_budget_model=true`.
+- `model=auto` + `task=image` -> `gemini-2.5-flash-image` unless `APP_AI_IMAGE_MODEL` is configured.
 - Gateway-specific model names still pass through, but the route metadata marks pricing as unverified.
 - Usage counters record the normalized task, not prompts or document content.
 - PDF and image routes write the same aggregate routing evidence as text routes. Their API responses are unchanged; route metadata stays in model-ops telemetry surfaces.

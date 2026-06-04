@@ -22,6 +22,10 @@ Text, PDF, and image route decisions all use the same telemetry shape. PDF and
 image responses stay unchanged; operators inspect their routing evidence through
 model-ops snapshots and the local repository aggregates.
 
+Image generation `model=auto` decisions are recorded after resolving to the
+configured image task default, so telemetry can prove image calls stayed on the
+Gemini image route instead of drifting to a text model.
+
 The local `route_telemetry_repository` stores only allowed metadata fields after
 the persistence plan passes. It rejects prompts, raw legal text, client contact
 details, credentials, headers, request bodies, response bodies, and raw model

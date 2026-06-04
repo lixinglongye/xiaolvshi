@@ -149,6 +149,17 @@ class ModelConfigurationAuditService:
                 preferred_capabilities=("long-context", "complex-reasoning"),
                 rationale="PDF route may use premium context, but missing long-context capability should be visible.",
             ),
+            ConfiguredModelRole(
+                id="image-route-model",
+                label="Image task default",
+                model=task_default_model("image"),
+                env_var="APP_AI_IMAGE_MODEL",
+                max_cost_tier="premium",
+                preferred_cost_tier="low",
+                required_capabilities=("image",),
+                preferred_capabilities=("image-edit",),
+                rationale="Image generation should default to the lowest priced capable Gemini image model unless an operator explicitly chooses a premium media model.",
+            ),
         ]
 
     def _audit_role(self, role: ConfiguredModelRole) -> dict[str, Any]:

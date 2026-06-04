@@ -36,6 +36,19 @@ def test_budget_policy_allows_pdf_premium_exception(monkeypatch):
     assert not decision.requires_operator_review
 
 
+def test_budget_policy_uses_gemini_image_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_image_model", "gemini-2.5-flash-image", raising=False)
+
+    decision = model_budget.model_budget_decision("auto", task="image")
+
+    assert decision.task == "image"
+    assert decision.budget_mode == "explicit-media"
+    assert decision.resolved_model == "gemini-2.5-flash-image"
+    assert decision.recommended_model == "gemini-2.5-flash-image"
+    assert decision.cost_tier == "low"
+    assert not decision.is_over_budget
+
+
 def test_budget_policy_for_api_lists_all_core_tasks():
     payload = model_budget.budget_policy_for_api()
     tasks = {item["task"] for item in payload["task_decisions"]}

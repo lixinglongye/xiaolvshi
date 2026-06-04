@@ -14,6 +14,7 @@ def _reset_default_models(monkeypatch):
             "classification": "gemini-2.5-flash-lite",
             "review": "gemini-2.5-flash",
             "pdf": "gemini-2.5-pro",
+            "image": "gemini-2.5-flash-image",
         }.get(task, "gemini-2.5-flash")
 
     monkeypatch.setattr(model_configuration_audit, "task_default_model", task_default)
@@ -27,6 +28,7 @@ def test_model_configuration_audit_passes_default_roles(monkeypatch):
     assert result["status"] == "pass"
     assert result["blocking_check_ids"] == []
     assert result["summary"]["unknown_model_count"] == 0
+    assert any(check["id"] == "image-route-model" for check in result["checks"])
     assert "sk-" not in str(result)
 
 
@@ -70,3 +72,8 @@ def test_model_ops_route_includes_model_configuration_audit():
     assert payload["success"] is True
     assert payload["model_configuration_audit"]["status"] in {"pass", "warn", "fail"}
     assert payload["model_configuration_audit"]["checks"]
+    assert payload["routing_aliases"]["auto-image"] == "gemini-2.5-flash-image"
+    assert any(
+        check["id"] == "image-route-model"
+        for check in payload["model_configuration_audit"]["checks"]
+    )

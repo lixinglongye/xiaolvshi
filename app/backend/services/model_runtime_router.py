@@ -130,6 +130,5 @@ def runtime_router_policy_for_api() -> dict[str, Any]:
         "task_defaults": [
             model_budget_decision(None, task=task).to_api()
             for task in TASK_GROUPS
-            if task != "image"
         ],
     }

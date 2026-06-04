@@ -229,6 +229,7 @@ async def list_models():
             "auto-ocr": task_default_model("ocr"),
             "auto-review": task_default_model("review"),
             "auto-pdf": task_default_model("pdf"),
+            "auto-image": task_default_model("image"),
         },
         "model_ops_readiness": ModelOpsReadinessService().evaluate(model_ops_signals),
         "runtime_router": runtime_router,

@@ -40,11 +40,25 @@ def test_runtime_router_passes_through_unknown_gateway_model_with_warning():
     assert "sk-" not in str(route.to_api())
 
 
+def test_runtime_router_uses_image_default_for_auto_image_task():
+    route = resolve_runtime_model("auto", task="image")
+
+    assert route.task == "image"
+    assert route.requested_resolved_model == "gemini-2.5-flash-image"
+    assert route.resolved_model == "gemini-2.5-flash-image"
+    assert route.budget_mode == "explicit-media"
+    assert route.cost_tier == "low"
+    assert route.is_known_model is True
+    assert route.routed_to_recommended_model is False
+
+
 def test_runtime_router_policy_lists_task_defaults_without_secrets():
     policy = runtime_router_policy_for_api()
 
     assert policy["status"] == "ready"
     assert "task" in policy["request_fields"]
     assert policy["auto_task_inference"]["default_task"] == "auto"
-    assert {item["task"] for item in policy["task_defaults"]} >= {"fast", "classification", "review", "pdf"}
+    assert {item["task"] for item in policy["task_defaults"]} >= {"fast", "classification", "review", "pdf", "image"}
+    image_default = next(item for item in policy["task_defaults"] if item["task"] == "image")
+    assert image_default["resolved_model"] == "gemini-2.5-flash-image"
     assert "sk-" not in str(policy)
