@@ -37,6 +37,11 @@ maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
 benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to local
 low-resource validation, and a maintenance UI section for that registry.
+The latest product-research slice adds a metadata-only legal adoption research
+bridge that maps LegalBench, FrugalGPT, RAGAS, CRAG, and professional AI
+governance/adoption signals into existing user needs, product gaps,
+cheap-first validation commands, release gates, survey intake questions, and a
+maintenance UI review panel.
 The latest maintenance batch adds deep-review selected-source binding, quota
 delivery decisions, deterministic feedback issue clustering, metadata-only
 evidence bundle integrity checks, privacy retention rules, release-claim
@@ -107,6 +112,11 @@ workflow binding:
   required evidence, blockers, and next actions, but it does not prove 24h
   completion. Real timestamped events remain required, and the monitor must not
   store raw logs, legal text, model outputs, credentials, or emails.
+- `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md` scopes the implemented
+  `GET /api/v1/maintenance/legal-review-benchmark/adoption-research-bridge`
+  endpoint as metadata-only planning evidence. It cannot prove law-firm
+  adoption, public benchmark scores, live NewAPI calls, survey results,
+  productivity gains, or external ecosystem importance.
 
 ## Scope
 
@@ -210,6 +220,7 @@ Run the focused test from `app/backend`:
 
 ```powershell
 python -m pytest tests/test_product_feature_gap_radar.py -q
+python -m pytest tests/test_legal_adoption_research_bridge.py -q
 ```
 
 The model-cost and legal-quality evidence referenced by the radar also has

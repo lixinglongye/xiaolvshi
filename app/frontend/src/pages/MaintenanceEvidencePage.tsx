@@ -36,6 +36,7 @@ import {
   getLegalFixtureResultArchive,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
+  getLegalAdoptionResearchBridge,
   getLegalBenchmarkResearchRegistry,
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
@@ -84,6 +85,7 @@ import {
   type LegalFixtureResultArchive,
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
+  type LegalAdoptionResearchBridge,
   type LegalBenchmarkResearchRegistry,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
@@ -297,6 +299,7 @@ function Inner() {
   const [caseWorkbenchPayload, setCaseWorkbenchPayload] = useState<CaseWorkbenchPayload | null>(null);
   const [benchmark, setBenchmark] = useState<LegalReviewBenchmark | null>(null);
   const [researchBacklog, setResearchBacklog] = useState<LegalResearchBacklog | null>(null);
+  const [adoptionResearchBridge, setAdoptionResearchBridge] = useState<LegalAdoptionResearchBridge | null>(null);
   const [benchmarkResearchRegistry, setBenchmarkResearchRegistry] =
     useState<LegalBenchmarkResearchRegistry | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -362,6 +365,7 @@ function Inner() {
         caseWorkbenchPayloadData,
         benchmarkData,
         researchBacklogData,
+        adoptionResearchBridgeData,
         benchmarkResearchRegistryData,
         publicBenchmarkSamplerData,
         fixtureEvidenceBundleData,
@@ -404,6 +408,7 @@ function Inner() {
         getCaseWorkbenchPayload(),
         getLegalReviewBenchmark(),
         getLegalResearchBacklog(),
+        getLegalAdoptionResearchBridge(),
         getLegalBenchmarkResearchRegistry(),
         getLegalPublicBenchmarkSampler(),
         getLegalFixtureEvidenceBundle(),
@@ -447,6 +452,7 @@ function Inner() {
       setCaseWorkbenchPayload(caseWorkbenchPayloadData);
       setBenchmark(benchmarkData);
       setResearchBacklog(researchBacklogData);
+      setAdoptionResearchBridge(adoptionResearchBridgeData);
       setBenchmarkResearchRegistry(benchmarkResearchRegistryData);
       setPublicBenchmarkSampler(publicBenchmarkSamplerData);
       setFixtureEvidenceBundle(fixtureEvidenceBundleData);
@@ -2924,6 +2930,195 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{researchBacklog.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {adoptionResearchBridge && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Adoption research bridge</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {adoptionResearchBridge.summary.action_count} actions /{' '}
+                      {adoptionResearchBridge.summary.source_count} sources /{' '}
+                      {adoptionResearchBridge.summary.cheap_first_action_count} cheap-first
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[adoptionResearchBridge.status] ?? statusClass.ready}>
+                    {adoptionResearchBridge.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {adoptionResearchBridge.summary.high_priority_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high priority</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {adoptionResearchBridge.summary.governance_action_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">governance actions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {adoptionResearchBridge.summary.research_digest_signal_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">digest signals</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {adoptionResearchBridge.summary.unmapped_need_ids.length +
+                        adoptionResearchBridge.summary.unmapped_gap_ids.length}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unmapped refs</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Implementation queue</h3>
+                    <div className="space-y-3">
+                      {adoptionResearchBridge.implementation_queue.map((item) => (
+                        <div key={item.action_id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="bg-stone-950 text-white">
+                              {item.priority_score}
+                            </Badge>
+                            <span className="font-mono text-xs text-stone-500">{item.action_id}</span>
+                          </div>
+                          <div className="text-sm font-semibold text-stone-950">{item.title}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.first_action}</div>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {item.release_gate_links.map((gate) => (
+                              <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                {gate}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Research and adoption sources</h3>
+                    <div className="space-y-3">
+                      {adoptionResearchBridge.method.input_sources.map((source) => (
+                        <div key={source.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-sm font-semibold text-stone-950 hover:underline"
+                            >
+                              {source.title}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            <Badge variant="outline" className="bg-white">
+                              {source.source_type.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="text-xs leading-5 text-stone-600">{source.signal}</div>
+                          <div className="mt-2 text-xs leading-5 text-stone-500">{source.local_interpretation}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Action</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Research</TableHead>
+                        <TableHead>Needs and gaps</TableHead>
+                        <TableHead>Validation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {adoptionResearchBridge.actions.map((action) => (
+                        <TableRow key={action.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{action.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{action.id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge
+                                variant="outline"
+                                className={categoryClass[action.product_area] ?? categoryClass.user_research}
+                              >
+                                {action.product_area.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={priorityClass[action.priority_band] ?? priorityClass.medium}
+                            >
+                              {action.priority_band} / {action.priority_score}
+                            </Badge>
+                            <div className="mt-2 text-[11px] leading-5 text-stone-500">
+                              low cost {action.low_cost_fit} / effort {action.effort}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            {action.source_ids.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            <div>{action.user_need_ids.join(', ')}</div>
+                            <div className="mt-2 text-stone-500">{action.product_gap_ids.join(', ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <div className="mb-2 flex flex-wrap gap-1">
+                              {action.release_gate_links.map((gate) => (
+                                <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {gate}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div>{action.validation_commands[0] || '-'}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Survey intake</h3>
+                    <div className="space-y-3">
+                      {adoptionResearchBridge.survey_intake_questions.map((question) => (
+                        <div key={question.id} className="rounded-[8px] border border-stone-950/15 bg-white p-3">
+                          <div className="font-mono text-[11px] text-stone-500">{question.id}</div>
+                          <div className="mt-1 text-sm font-semibold text-stone-950">{question.prompt}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{question.privacy_rule}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release guardrails</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {adoptionResearchBridge.release_guardrails.map((guardrail) => (
+                        <li key={guardrail} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{guardrail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">
+                      {adoptionResearchBridge.privacy_note}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

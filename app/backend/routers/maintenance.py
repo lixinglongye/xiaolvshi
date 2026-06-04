@@ -54,6 +54,7 @@ from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_export_readiness import LegalDocumentExportReadinessService
 from services.legal_document_template_matrix import LegalDocumentTemplateMatrixService
 from services.lawyer_review_workflow_policy import LawyerReviewWorkflowPolicyService
+from services.legal_adoption_research_bridge import LegalAdoptionResearchBridgeService
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
@@ -937,6 +938,15 @@ async def get_legal_external_research_digest():
     return {
         "success": True,
         "data": LegalExternalResearchDigestService().build_digest(),
+    }
+
+
+@router.get("/legal-review-benchmark/adoption-research-bridge")
+async def get_legal_adoption_research_bridge():
+    """Return public adoption and research signals mapped to local product work."""
+    return {
+        "success": True,
+        "data": LegalAdoptionResearchBridgeService().build_bridge(),
     }
 
 

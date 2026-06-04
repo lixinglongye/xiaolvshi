@@ -130,7 +130,10 @@ selected-source citation validation, a metadata-only selected-source validation
 maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
 benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to
-low-resource local validation, and a maintenance UI section for that registry.
+low-resource local validation, a maintenance UI section for that registry, and
+a metadata-only legal adoption research bridge that maps public research and
+professional AI governance/adoption signals to existing user needs, product
+gaps, cheap-first validation commands, and release evidence.
 New optional checks also cover deep-review selected-source report binding,
 quota delivery decisions, deterministic feedback issue clustering, evidence
 bundle integrity, privacy retention rules, release-claim compliance, case export
@@ -153,8 +156,12 @@ evidence, blockers, and next actions. It must not imply that 24h maintenance
 completion is proven. Release claims still require real timestamped events
 joined through the timeline and review packet, and the monitor must not store
 raw logs, legal text, model outputs, credentials, or emails.
+The legal adoption research bridge is optional user-research evidence. It must
+not imply law-firm adoption, survey results, productivity gains, public
+benchmark scores, live NewAPI calls, or external ecosystem importance.
 The Gemini/NewAPI selector checks are required release controls. The continuous
-session run monitor is optional release evidence. None of these checks claim
+session run monitor and adoption research bridge are optional release evidence.
+None of these checks claim
 real payment provider settlement or webhook verification, automatic deep-review
 report binding for selected-source validation, public benchmark scores, or
 external adoption.
@@ -177,6 +184,7 @@ external adoption.
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/continuous_session_run_monitor.py`
+- `app/backend/services/legal_adoption_research_bridge.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/routers/billing_usage.py`
 - `app/backend/services/billing_quota_migration_plan.py`

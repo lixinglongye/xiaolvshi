@@ -243,6 +243,83 @@ type LegalResearchBacklogResponse = {
   data: LegalResearchBacklog;
 };
 
+export type LegalAdoptionResearchSource = {
+  id: string;
+  title: string;
+  url: string;
+  source_type: string;
+  signal: string;
+  local_interpretation: string;
+};
+
+export type LegalAdoptionResearchBridgeAction = {
+  id: string;
+  title: string;
+  product_area: string;
+  source_ids: string[];
+  user_need_ids: string[];
+  product_gap_ids: string[];
+  release_gate_links: string[];
+  evidence_paths: string[];
+  impact: number;
+  urgency: number;
+  effort: number;
+  confidence: number;
+  low_cost_fit: number;
+  next_actions: string[];
+  validation_commands: string[];
+  priority_score: number;
+  priority_band: string;
+};
+
+export type LegalAdoptionResearchBridge = {
+  status: string;
+  method: {
+    type: string;
+    scoring: string;
+    input_sources: LegalAdoptionResearchSource[];
+    limitations: string[];
+  };
+  summary: {
+    source_count: number;
+    action_count: number;
+    high_priority_count: number;
+    cheap_first_action_count: number;
+    governance_action_count: number;
+    legal_benchmark_action_count: number;
+    product_area_counts: Record<string, number>;
+    research_digest_signal_count: number;
+    known_need_count: number;
+    known_gap_count: number;
+    source_coverage: Record<string, number>;
+    unmapped_need_ids: string[];
+    unmapped_gap_ids: string[];
+  };
+  implementation_queue: Array<{
+    action_id: string;
+    title: string;
+    priority_score: number;
+    first_action: string;
+    release_gate_links: string[];
+    validation_commands: string[];
+  }>;
+  actions: LegalAdoptionResearchBridgeAction[];
+  survey_intake_questions: Array<{
+    id: string;
+    prompt: string;
+    privacy_rule: string;
+    maps_to_need_ids: string[];
+  }>;
+  release_guardrails: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type LegalAdoptionResearchBridgeResponse = {
+  success: boolean;
+  data: LegalAdoptionResearchBridge;
+};
+
 export type FeedbackRoadmapRule = {
   id: string;
   need_id: string;
@@ -2995,6 +3072,14 @@ export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {
     return payload.data;
   }
   return payload as LegalResearchBacklog;
+}
+
+export async function getLegalAdoptionResearchBridge(): Promise<LegalAdoptionResearchBridge> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/adoption-research-bridge',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalAdoptionResearchBridgeResponse['data']>(resp);
 }
 
 export async function getLegalBenchmarkResearchRegistry(): Promise<LegalBenchmarkResearchRegistry> {

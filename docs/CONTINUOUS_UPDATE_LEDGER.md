@@ -37,7 +37,11 @@ route for selected-source validation, a local-only billing payment
 reconciliation policy, task runtime notification summaries, a deterministic
 laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/COLIEE
 research registry mapped to low-resource local tests, and a maintenance UI
-section for that registry.
+section for that registry. The latest adoption-research bridge joins public
+legal-AI research, professional AI governance/adoption signals, existing user
+needs, product feature gaps, cheap-first validation commands, and release gates
+without storing survey free text, raw benchmark samples, legal text, model
+outputs, or secrets.
 This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy
@@ -177,6 +181,7 @@ replace the fixture record itself.
 - `docs/CONTINUOUS_SESSION_RUN_MONITOR.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
+- `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

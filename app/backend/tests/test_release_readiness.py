@@ -184,6 +184,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-suite": "python -m pytest tests/test_legal_document_benchmark_suite.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
+        "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
     }
     commands = {
         item["check_id"]: item["command"]
@@ -221,3 +222,4 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "does not verify real payment provider settlement" in checks["billing-payment-reconciliation-policy"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
+    assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

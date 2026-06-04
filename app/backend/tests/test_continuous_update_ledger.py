@@ -115,6 +115,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
+    assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
     assert "quota-delivery-decision" in completed_ids
     assert "feedback-issue-cluster" in completed_ids
@@ -150,6 +151,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
+    assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
     assert "quota-delivery-decision" not in queue_ids
     assert "feedback-issue-cluster" not in queue_ids
@@ -168,6 +170,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

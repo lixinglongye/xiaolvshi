@@ -84,6 +84,14 @@ high-frequency premium-block scenarios. It does not call NewAPI, store
 credentials, prompts, raw legal text, raw model outputs, or emails, and does
 not prove the 24-hour maintenance window.
 
+`docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md` documents the metadata-only
+`GET /api/v1/maintenance/legal-review-benchmark/adoption-research-bridge`
+endpoint. Support applications may cite it only as a repository-backed mapping
+from public research/adoption signals to local user needs, product gaps,
+cheap-first validation commands, and release checks. It must not be described
+as proof of law-firm adoption, survey results, productivity gains, public
+benchmark scores, live NewAPI calls, or external ecosystem importance.
+
 ## Why this exists
 
 Support applications often ask for proof of active maintenance, review duties, release management, and ecosystem importance. The service intentionally ties each claim to repository artifacts so the maintainer can avoid unverifiable statements.
@@ -103,7 +111,11 @@ selected-source validation maintenance route, a local-only billing payment
 reconciliation policy, task runtime notification summaries, a deterministic
 laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/COLIEE
 research registry mapped to local low-resource validation, and a maintenance UI
-section for that registry. The latest safety and reviewer-readiness evidence adds deep-review
+section for that registry. The latest product-research evidence adds a legal
+adoption research bridge that maps public legal-AI papers and professional AI
+governance/adoption signals to local user needs, product gaps, cheap-first
+validation commands, and release checks without storing raw survey or benchmark
+content. The latest safety and reviewer-readiness evidence adds deep-review
 selected-source report binding, quota delivery decisions, feedback issue
 clustering, evidence bundle integrity checks, privacy retention rules,
 release-claim compliance checks, case export readiness, and admin audit policy.
@@ -115,13 +127,13 @@ still stay out of support applications until matching merged evidence exists.
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, Gemini/NewAPI model selector evidence, Gemini/NewAPI selector replay evidence, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, case export readiness checks, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, LegalBench/LexGLUE/COLIEE research registry mapping and UI evidence, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, citation validation, deep-review binding, and maintenance self-checks, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, case export readiness checks, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, LegalBench/LexGLUE/COLIEE research registry mapping and UI evidence, legal adoption research bridge evidence, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, citation validation, deep-review binding, and maintenance self-checks, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
 - Review operations: citation, evidence, source freshness, evidence exhibit packages, evidence bundle integrity, legal grounding quick audits, selected-source request metadata, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding and routes, privacy-safe case edit runtime events, task runtime notification summaries, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, quota delivery decisions, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.
 - Release management: risk scoring and unified release decision.
 - Product visibility: frontend report page, case detail page, report mapping, legal RAG research panel, and API types.
-- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, continuous session review packet, continuous session run monitor, validation-event metadata evidence, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
+- Maintenance planning: user research, maintenance notes, feedback lifecycle policy, adoption research bridge evidence, heartbeat evidence, continuous session evidence validator, continuous session timeline contract, continuous session review packet, continuous session run monitor, validation-event metadata evidence, git-history commit-cadence evidence, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, billing report preflight route, generated_documents CRUD quota guards, case generation quota guards, deep-review document generation quota guards, local payment reconciliation policy, document-generation quota consumption attempt, typed runtime API clients, runtime router discovery smoke, case workbench state event UI, legal RAG research UI, legal benchmark registry UI, billing usage workspace badge, product feature gap radar, and the continuous update ledger.
 
 ## Related files
 
@@ -166,6 +178,7 @@ still stay out of support applications until matching merged evidence exists.
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_document_benchmark_suite.py`
+- `app/backend/services/legal_adoption_research_bridge.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`
 - `app/backend/services/legal_source_ingestion_metadata.py`
 - `app/backend/services/legal_source_freshness_policy.py`

@@ -1759,6 +1759,23 @@ class ReleaseReadinessService:
                 manual_note="This exposes the metadata-only LegalBench/LexGLUE/COLIEE registry on the maintenance evidence page without claiming benchmark downloads, runs, scores, or leaderboard status.",
             ),
             ReleaseCheck(
+                id="legal-adoption-research-bridge",
+                title="Legal adoption research bridge",
+                category="user_research",
+                required=False,
+                owner="product_research",
+                evidence_paths=(
+                    "app/backend/services/legal_adoption_research_bridge.py",
+                    "app/backend/tests/test_legal_adoption_research_bridge.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
+                manual_note="This is a metadata-only bridge from public research and adoption signals to local roadmap work; it does not claim law-firm adoption, benchmark scores, survey results, or live model performance.",
+            ),
+            ReleaseCheck(
                 id="oss-maintenance-evidence",
                 title="OSS maintenance evidence",
                 category="maintenance",
