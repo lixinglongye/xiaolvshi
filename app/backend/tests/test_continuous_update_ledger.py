@@ -143,6 +143,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "release-claim-compliance" in completed_ids
     assert "case-export-readiness" in completed_ids
     assert "admin-audit-policy" in completed_ids
+    assert "legal-fixture-regression-comparison" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -197,6 +198,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "release-claim-compliance" not in queue_ids
     assert "case-export-readiness" not in queue_ids
     assert "admin-audit-policy" not in queue_ids
+    assert "legal-fixture-regression-comparison" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert "python -m pytest tests/test_continuous_session_evidence.py -q" in ledger["validation_commands"]

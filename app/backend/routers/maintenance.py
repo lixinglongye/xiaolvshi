@@ -51,6 +51,7 @@ from services.legal_fixture_prompt_pack import LegalFixturePromptPackService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_response_normalizer import LegalFixtureResponseNormalizerService
 from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
+from services.legal_fixture_regression import LegalFixtureRegressionService
 from services.legal_fixture_run_plan import LegalFixtureRunPlanService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_export_readiness import LegalDocumentExportReadinessService
@@ -1420,6 +1421,24 @@ async def build_legal_review_fixture_result_archive(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalFixtureResultArchiveService().build_archive(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-regression")
+async def get_legal_review_fixture_regression_template():
+    """Return a metadata-only baseline/current fixture regression comparison template."""
+    return {
+        "success": True,
+        "data": LegalFixtureRegressionService().build_comparison(),
+    }
+
+
+@router.post("/legal-review-benchmark/fixture-regression")
+async def compare_legal_review_fixture_regression(payload: dict[str, Any]):
+    """Compare baseline and current cheap-first fixture runs without raw output echo."""
+    return {
+        "success": True,
+        "data": LegalFixtureRegressionService().build_comparison(payload),
     }
 
 

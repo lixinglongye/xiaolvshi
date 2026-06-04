@@ -464,6 +464,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("reviewer-visibility", "grounded-legal-output"),
             ),
             LedgerEntry(
+                id="legal-fixture-regression-comparison",
+                title="Legal fixture regression comparison",
+                category="release_evidence",
+                size="medium",
+                status="shipped",
+                impact="Compares baseline and current cheap-first fixture runs for score, status, escalation, and cost regressions without returning raw model outputs.",
+                evidence_paths=(
+                    "app/backend/services/legal_fixture_regression.py",
+                    "app/backend/tests/test_legal_fixture_regression.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/LEGAL_FIXTURE_REGRESSION.md",
+                    "docs/LEGAL_REVIEW_BENCHMARK.md",
+                ),
+                release_gate_links=("legal-review-benchmark", "legal-fixture-run-report"),
+                user_need_ids=("low-resource-testing", "low-cost-routing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="user-needs-radar",
                 title="User needs radar",
                 category="user_research",

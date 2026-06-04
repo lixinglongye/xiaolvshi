@@ -110,6 +110,7 @@ function Inner() {
         setData(null);
       } else {
         setData(modelOpsResult.value);
+        setProbeEvaluation(null);
         setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration ?? null);
       }
       if (calibrationResult.status === 'rejected') {
