@@ -160,6 +160,10 @@ models, and missing price metadata stay visible as drift signals. The monitor is
 local metadata only: it does not call NewAPI/Gemini and does not return API
 keys, prompts, legal text, client data, or raw model output.
 
+The monitor also checks the image default as media pricing metadata. `APP_AI_IMAGE_MODEL`
+must stay on a known, stable, per-image-priced Gemini image model before image
+usage is scaled beyond explicit local testing.
+
 ## PDF and Image Route Evidence
 
 `POST /api/v1/aihub/analyzepdf` and `POST /api/v1/aihub/genimg` now use the same

@@ -6,6 +6,8 @@
 Gemini and OpenAI-compatible gateway model pricing drift. It checks whether the
 high-volume defaults still point at the lowest priced capable Gemini model and
 whether observed gateway models need a catalog refresh before becoming defaults.
+It also checks media defaults such as image generation, where per-image pricing
+matters more than token pricing.
 
 The monitor does not call Gemini, NewAPI, OpenAI, or any external network. It
 only reads local metadata from:
@@ -64,6 +66,22 @@ Known forecast models must have local price metadata. Missing or unknown pricing
 returns `warn` so maintainers refresh the local catalog before using the row for
 budget decisions.
 
+### Media Defaults
+
+The monitor checks media task defaults separately from high-volume text tasks.
+The current media task is:
+
+- `image`
+
+`APP_AI_IMAGE_MODEL` must resolve to a known, stable Gemini image model with
+`output_usd_per_image` metadata. The expected default is:
+
+- `gemini-2.5-flash-image`
+
+If the image default points to an unknown, preview, Pro, premium, unpriced, or
+non-image model, the monitor returns `fail` so maintainers refresh pricing or
+restore the lower-cost media default before increasing image usage.
+
 ### Observed Gateway Models
 
 `observed_models` can contain model ids from a gateway model list, request log,
@@ -112,9 +130,11 @@ The frontend `/model-ops` page shows:
 
 - monitor status, blocking count, warning count, drift signal count, and the
   high-frequency cheap-first tasks
+- media tasks covered by per-image price checks
 - each monitor check summary and recommended action
 - observed drift signals such as unknown Gemini-like ids, preview or premium
   model usage, and missing price metadata
+- model catalog token prices and per-image prices for Gemini image models
 
 This integration remains metadata-only. It does not call the gateway and does
 not expose credentials, prompts, legal text, client identifiers, or raw model

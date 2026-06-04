@@ -26,8 +26,14 @@ def test_price_refresh_monitor_passes_for_current_cheap_defaults():
     assert defaults["fast"]["default_model"] == "gemini-2.5-flash-lite"
     assert defaults["classification"]["cost_tier"] == "lowest"
     assert defaults["ocr"]["has_price_metadata"] is True
+    media_check = checks["media-default-price-metadata"]
+    image_default = {row["task"]: row for row in media_check["rows"]}["image"]
+    assert media_check["status"] == "pass"
+    assert image_default["default_model"] == "gemini-2.5-flash-image"
+    assert image_default["output_usd_per_image"] == 0.039
     assert checks["cost-forecast-price-metadata"]["status"] == "pass"
     assert payload["summary"]["blocking_count"] == 0
+    assert payload["summary"]["media_tasks"] == ["image"]
 
 
 def test_price_refresh_monitor_warns_for_unknown_preview_or_premium_observed_models():
@@ -67,6 +73,24 @@ def test_price_refresh_monitor_fails_when_fast_default_is_no_longer_low_price(mo
     assert fast["cost_tier"] == "premium"
     assert fast["recommended_model"] == "gemini-2.5-flash-lite"
     assert any(signal["severity"] == "fail" for signal in payload["drift_signals"])
+
+
+def test_price_refresh_monitor_fails_when_image_default_lacks_price_metadata(monkeypatch):
+    monkeypatch.setattr(model_catalog.settings, "app_ai_image_model", "gemini-3-pro-image", raising=False)
+
+    payload = _monitor()
+    media_check = {item["id"]: item for item in payload["checks"]}["media-default-price-metadata"]
+    image = {row["task"]: row for row in media_check["rows"]}["image"]
+
+    assert payload["status"] == "fail"
+    assert media_check["status"] == "fail"
+    assert image["default_model"] == "gemini-3-pro-image"
+    assert image["has_price_metadata"] is False
+    assert image["recommended_model"] == "gemini-2.5-flash-image"
+    assert any(
+        signal["id"] == "media-default-image" and signal["signal_type"] == "missing_price_metadata"
+        for signal in payload["drift_signals"]
+    )
 
 
 def test_price_refresh_monitor_detects_missing_forecast_price_metadata():
@@ -157,6 +181,11 @@ def test_model_ops_route_includes_price_refresh_monitor_readiness_signal():
         "classification",
         "ocr",
     ]
+    assert payload["price_refresh_monitor"]["summary"]["media_tasks"] == ["image"]
+    assert any(
+        check["id"] == "media-default-price-metadata"
+        for check in payload["price_refresh_monitor"]["checks"]
+    )
     assert any(
         check["source_key"] == "price_refresh_monitor"
         for check in payload["model_ops_readiness"]["checks"]

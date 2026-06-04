@@ -430,6 +430,7 @@ export type ModelPriceRefreshMonitor = {
     refresh_needed_count: number;
     missing_price_metadata_count: number;
     high_frequency_tasks: string[];
+    media_tasks: string[];
     forecast_profile_count: number;
     observed_model_count: number;
   };

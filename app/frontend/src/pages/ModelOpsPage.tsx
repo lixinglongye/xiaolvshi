@@ -45,6 +45,17 @@ function roleText(model: ModelCatalogItem) {
   return model.configured_roles.length ? model.configured_roles.join(', ') : '-';
 }
 
+function pricingText(model: ModelCatalogItem) {
+  const parts = [
+    `in ${formatUsd(model.pricing.input_usd_per_million_tokens)}`,
+    `out ${formatUsd(model.pricing.output_usd_per_million_tokens)}`,
+  ];
+  if (model.pricing.output_usd_per_image != null) {
+    parts.push(`image ${formatUsd(model.pricing.output_usd_per_image)}`);
+  }
+  return parts.join(' / ');
+}
+
 function statusClass(status?: string) {
   return status === 'pass'
     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -363,7 +374,7 @@ function Inner() {
                 {data.default_optimization.status}
               </Badge>
             </div>
-            <div className="mb-3 grid gap-3 md:grid-cols-4">
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
                   {data.default_optimization.summary.task_count}
@@ -1077,6 +1088,12 @@ function Inner() {
                   {data.price_refresh_monitor.summary.high_frequency_tasks.join(', ')}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">cheap-first tasks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="break-words text-lg font-black text-stone-950">
+                  {data.price_refresh_monitor.summary.media_tasks.join(', ') || '-'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">media tasks</div>
               </div>
             </div>
             <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
@@ -3057,8 +3074,7 @@ function Inner() {
                     <TableCell>{model.status}</TableCell>
                     <TableCell>{model.context_window_tokens ? formatNumber(model.context_window_tokens) : '-'}</TableCell>
                     <TableCell className="text-xs text-stone-600">
-                      in {formatUsd(model.pricing.input_usd_per_million_tokens)} / out{' '}
-                      {formatUsd(model.pricing.output_usd_per_million_tokens)}
+                      {pricingText(model)}
                     </TableCell>
                     <TableCell>{roleText(model)}</TableCell>
                     <TableCell className="max-w-[320px] text-stone-600">{model.best_for.join(', ')}</TableCell>

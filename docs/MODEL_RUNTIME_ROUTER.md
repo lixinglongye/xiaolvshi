@@ -32,6 +32,7 @@ defaults to `gemini-2.5-flash-image`.
 - Gateway-specific model names still pass through, but the route metadata marks pricing as unverified.
 - Usage counters record the normalized task, not prompts or document content.
 - PDF and image routes write the same aggregate routing evidence as text routes. Their API responses are unchanged; route metadata stays in model-ops telemetry surfaces.
+- Image defaults are also checked by the price refresh monitor for per-image cost metadata.
 
 ## Endpoint Visibility
 
