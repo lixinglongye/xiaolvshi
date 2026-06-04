@@ -152,6 +152,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "admin-audit-policy": "python -m pytest tests/test_admin_audit_policy.py -q",
         "continuous-session-evidence": "python -m pytest tests/test_continuous_session_evidence.py -q",
         "continuous-session-timeline": "python -m pytest tests/test_continuous_session_timeline.py -q",
+        "git-history-evidence": "python -m pytest tests/test_git_history_evidence.py -q",
         "billing-payment-reconciliation-policy": "python -m pytest tests/test_billing_payment_reconciliation.py -q",
         "case-task-runtime-notification-summary": "python -m pytest tests/test_case_task_notification_policy.py -q",
         "legal-document-benchmark-suite": "python -m pytest tests/test_legal_document_benchmark_suite.py -q",
@@ -186,6 +187,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "sensitive admin actions" in checks["admin-audit-policy"]["manual_note"]
     assert "does not create proof by itself" in checks["continuous-session-evidence"]["manual_note"]
     assert "keeping 24-hour completion blocked" in checks["continuous-session-timeline"]["manual_note"]
+    assert "does not prove tests" in checks["git-history-evidence"]["manual_note"]
     assert "does not verify real payment provider settlement" in checks["billing-payment-reconciliation-policy"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]

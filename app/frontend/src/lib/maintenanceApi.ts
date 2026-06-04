@@ -2156,6 +2156,65 @@ type MaintenanceContinuousSessionTimelineResponse = {
   data: MaintenanceContinuousSessionTimeline;
 };
 
+export type MaintenanceGitHistoryEvidenceCommitEvent = {
+  commit_hash: string;
+  timestamp?: string | null;
+  committed_at?: string;
+  title?: string;
+  subject?: string;
+  status?: string;
+  missing_fields?: string[];
+  author?: string;
+  evidence_paths?: string[];
+  [key: string]: unknown;
+};
+
+export type MaintenanceGitHistoryEvidenceGap = {
+  id?: string;
+  start?: string | null;
+  end?: string | null;
+  gap_hours?: number;
+  status?: string;
+  detail?: string;
+  [key: string]: unknown;
+};
+
+export type MaintenanceGitHistoryEvidence = {
+  status: string;
+  summary: {
+    commit_count?: number;
+    longest_window_hours?: number;
+    max_observed_gap_hours?: number;
+    max_gap_hours?: number;
+    start_timestamp?: string | null;
+    end_timestamp?: string | null;
+    commit_cadence_ready?: boolean;
+    ready_for_goal_claim?: boolean;
+    completion_claim_ready?: boolean;
+    completion_claim_blocked?: boolean;
+    [key: string]: unknown;
+  };
+  longest_window: {
+    start_timestamp?: string | null;
+    end_timestamp?: string | null;
+    verified_hours?: number;
+    duration_hours?: number;
+    commit_count?: number;
+    max_observed_gap_hours?: number;
+    max_gap_hours?: number;
+    [key: string]: unknown;
+  };
+  commit_events: MaintenanceGitHistoryEvidenceCommitEvent[];
+  gap_analysis: MaintenanceGitHistoryEvidenceGap[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceGitHistoryEvidenceResponse = {
+  success: boolean;
+  data: MaintenanceGitHistoryEvidence;
+};
+
 export type MaintenanceContinuousSessionEvidence = {
   status: string;
   summary: {
@@ -2444,6 +2503,14 @@ export async function getMaintenanceContinuousSessionTimeline(): Promise<Mainten
     method: 'GET',
   });
   return unwrapMaintenanceData<MaintenanceContinuousSessionTimelineResponse['data']>(resp);
+}
+
+export async function getMaintenanceGitHistoryEvidence(): Promise<MaintenanceGitHistoryEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/git-history-evidence',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceGitHistoryEvidenceResponse['data']>(resp);
 }
 
 export async function getCaseIntakeCompleteness(): Promise<CaseIntakeCompleteness> {

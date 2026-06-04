@@ -99,13 +99,16 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in gaps["model-cost-ops"]["evidence_paths"]
     assert "app/backend/services/continuous_session_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "app/backend/services/continuous_session_timeline.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
+    assert "app/backend/services/git_history_evidence.py" in gaps["continuous-maintenance-evidence"]["evidence_paths"]
     assert "metadata-only continuous session timeline" in gaps["continuous-maintenance-evidence"]["current_state"]
-    assert "max-gap, credential-scan, low-resource legal fixture" in gaps["continuous-maintenance-evidence"]["current_state"]
+    assert "git history cadence evidence" in gaps["continuous-maintenance-evidence"]["current_state"]
+    assert "max-gap, commit-window, credential-scan" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert any("live risk-state" in action for action in gaps["case-workbench"]["next_actions"])
     assert any("live deep-review persistence" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
     assert any("account plan review" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("maintenance page" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
+    assert any("git cadence evidence" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
 
 
 def test_product_feature_gap_radar_has_no_secret_material():

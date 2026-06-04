@@ -30,6 +30,7 @@ from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
@@ -716,6 +717,24 @@ async def build_continuous_session_timeline(payload: Any = Body(default=None)):
     return {
         "success": True,
         "data": ContinuousSessionTimelineService().build_timeline(payload),
+    }
+
+
+@router.get("/git-history-evidence")
+async def get_git_history_evidence():
+    """Return metadata-only git commit cadence evidence for maintenance review."""
+    return {
+        "success": True,
+        "data": GitHistoryEvidenceService().build_evidence(),
+    }
+
+
+@router.post("/git-history-evidence")
+async def build_git_history_evidence(payload: Any = Body(default=None)):
+    """Evaluate submitted git commit metadata without reading raw diffs."""
+    return {
+        "success": True,
+        "data": GitHistoryEvidenceService().build_evidence(payload),
     }
 
 

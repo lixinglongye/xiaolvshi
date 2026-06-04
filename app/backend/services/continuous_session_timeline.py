@@ -6,6 +6,7 @@ from typing import Any
 
 from services.continuous_session_evidence import ContinuousSessionEvidenceService
 from services.continuous_update_ledger import ContinuousUpdateLedgerService
+from services.git_history_evidence import GitHistoryEvidenceService
 from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
 
 
@@ -31,10 +32,12 @@ class ContinuousSessionTimelineService:
         ledger_service: ContinuousUpdateLedgerService | None = None,
         session_service: ContinuousSessionEvidenceService | None = None,
         heartbeat_service: MaintenanceHeartbeatEvidenceService | None = None,
+        git_history_service: GitHistoryEvidenceService | None = None,
     ) -> None:
         self.ledger_service = ledger_service or ContinuousUpdateLedgerService()
         self.session_service = session_service or ContinuousSessionEvidenceService()
         self.heartbeat_service = heartbeat_service or MaintenanceHeartbeatEvidenceService()
+        self.git_history_service = git_history_service or GitHistoryEvidenceService()
 
     def build_timeline(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -59,8 +62,11 @@ class ContinuousSessionTimelineService:
             }
         )
         heartbeat_report = self.heartbeat_service.build_evidence(heartbeat_events)
-        timeline_events = self._timeline_events(session_report, ledger_summary)
-        blockers = self._blockers(session_report, heartbeat_report, completed_updates, timeline_events)
+        git_history_report = self.git_history_service.build_evidence(
+            data.get("git_history") if isinstance(data.get("git_history"), (dict, list)) else {"git_since": data.get("git_since")}
+        )
+        timeline_events = self._timeline_events(session_report, ledger_summary, git_history_report)
+        blockers = self._blockers(session_report, heartbeat_report, git_history_report, completed_updates, timeline_events)
         completion_ready = not blockers and session_report["summary"]["ready_for_goal_claim"] is True
         status = "ready_for_review" if completion_ready else ("blocked" if self._has_hard_blocker(blockers) else "collecting")
 
@@ -93,6 +99,7 @@ class ContinuousSessionTimelineService:
                 },
                 "session_validator": session_report["summary"],
                 "heartbeat": heartbeat_report["summary"],
+                "git_history": git_history_report["summary"],
             },
             "low_resource_evidence_routes": list(LOW_RESOURCE_ROUTE_REFS),
             "reviewer_notes": self._reviewer_notes(blockers, completion_ready),
@@ -106,12 +113,18 @@ class ContinuousSessionTimelineService:
             },
             "validation_commands": [
                 "python -m pytest tests/test_continuous_session_timeline.py -q",
+                "python -m pytest tests/test_git_history_evidence.py -q",
                 "python -m pytest tests/test_continuous_session_evidence.py tests/test_maintenance_heartbeat_evidence.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_document_benchmark_suite.py -q",
             ],
         }
 
-    def _timeline_events(self, session_report: dict[str, Any], ledger_summary: dict[str, Any]) -> list[dict[str, Any]]:
+    def _timeline_events(
+        self,
+        session_report: dict[str, Any],
+        ledger_summary: dict[str, Any],
+        git_history_report: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         best_window_ids = set(session_report["best_window"].get("record_ids") or [])
         events = [
             {
@@ -128,6 +141,28 @@ class ContinuousSessionTimelineService:
                 "in_best_window": False,
             }
         ]
+        git_window = git_history_report.get("longest_window") or {}
+        if git_window.get("commit_count", 0) > 0:
+            events.append(
+                {
+                    "id": "git-history-cadence-window",
+                    "source": "git_history_evidence",
+                    "event_type": "commit_cadence",
+                    "timestamp": git_window.get("start_timestamp"),
+                    "status": "pass" if git_history_report["summary"].get("commit_cadence_ready") else "review",
+                    "labels": ["commit-cadence", "metadata-only"],
+                    "evidence_paths": ["app/backend/services/git_history_evidence.py", "docs/GIT_HISTORY_EVIDENCE.md"],
+                    "commit_hash": "",
+                    "validation_id": "git-history-evidence",
+                    "low_resource": False,
+                    "in_best_window": False,
+                    "cadence_summary": {
+                        "verified_hours": git_window.get("verified_hours"),
+                        "commit_count": git_window.get("commit_count"),
+                        "max_observed_gap_hours": git_window.get("max_observed_gap_hours"),
+                    },
+                }
+            )
 
         for record in session_report.get("session_records", []):
             labels = list(record.get("labels") or [])
@@ -155,6 +190,7 @@ class ContinuousSessionTimelineService:
         self,
         session_report: dict[str, Any],
         heartbeat_report: dict[str, Any],
+        git_history_report: dict[str, Any],
         completed_updates: int,
         timeline_events: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
@@ -185,12 +221,20 @@ class ContinuousSessionTimelineService:
                     "detail": ",".join(self._safe_token(item) for item in heartbeat_missing if self._safe_token(item)),
                 }
             )
-        if len(timeline_events) <= 1:
+        if session_report["summary"].get("event_count", 0) == 0:
             blockers.append(
                 {
                     "id": "timeline-events-missing",
                     "severity": "review",
-                    "detail": "No timestamped maintenance events were submitted for the 24-hour timeline.",
+                    "detail": "No non-git timestamped maintenance events were submitted for the 24-hour timeline.",
+                }
+            )
+        if git_history_report["summary"].get("invalid_commit_count", 0) > 0:
+            blockers.append(
+                {
+                    "id": "invalid-git-history-records",
+                    "severity": "hard",
+                    "detail": f"{git_history_report['summary']['invalid_commit_count']} git history record(s) are invalid.",
                 }
             )
         return blockers

@@ -80,6 +80,14 @@ must not store secrets, account data, emails, raw legal text, raw gateway
 payloads, or model original outputs, and it must keep `completion_ready` blocked
 until the 24-hour window is actually proven.
 
+`docs/GIT_HISTORY_EVIDENCE.md` defines the implemented reviewer contract for
+`GET /api/v1/maintenance/git-history-evidence`. That endpoint computes real
+commit cadence from Git commit metadata, including commit count, longest
+cadence window, and maximum adjacent-commit gap. The ledger cites those metrics
+as cadence evidence only. It must not treat commit metadata as automatic proof
+that tests ran, commits were pushed, credential scans passed, or low-resource
+legal fixtures executed.
+
 ## Low-Resource Test Path
 
 For small machines, use the existing quick suite first:
@@ -105,6 +113,8 @@ For 24-hour evidence, each small legal-document run should add only a compact
 metadata record: fixture IDs, route labels, coverage score, command label,
 timestamp, and repository evidence paths. This lets the same low-resource tests
 support both product quality checks and the continuous maintenance timeline.
+Commit metadata can sit beside those records to show cadence, but it cannot
+replace the fixture record itself.
 
 ## Related Files
 
@@ -112,6 +122,7 @@ support both product quality checks and the continuous maintenance timeline.
 - `app/backend/services/continuous_session_evidence.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_continuous_session_evidence.py`
+- `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

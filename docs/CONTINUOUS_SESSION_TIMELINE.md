@@ -6,12 +6,15 @@ timeline endpoint:
 ```http
 GET /api/v1/maintenance/continuous-session-timeline
 POST /api/v1/maintenance/continuous-session-timeline
+GET /api/v1/maintenance/git-history-evidence
 ```
 
 The timeline is a reviewer-facing evidence join. It must not be treated as a
 new source of completion claims. The repository already has reviewable evidence
 for 100+ medium/large maintenance updates, but the continuous 24-hour window is
-still unproven until timestamped metadata records demonstrate it.
+still unproven until timestamped metadata records demonstrate it. Git-history
+evidence can help prove commit cadence, but commit cadence alone does not prove
+tests, pushes, credential scans, legal fixture runs, or release readiness.
 
 ## Purpose
 
@@ -21,6 +24,7 @@ reviewer surfaces:
 - the continuous update ledger,
 - the continuous session validator,
 - heartbeat records,
+- git commit metadata,
 - low-resource legal fixture events, and
 - release review or OSS support evidence.
 
@@ -35,10 +39,12 @@ the 24-hour gate remains blocked when the records do not prove a full window.
 include:
 
 - `event_type`: `commit`, `test`, `push`, `review`, `credential_scan`,
-  `benchmark`, `legal_fixture`, `doc_update`, or `heartbeat`.
+  `benchmark`, `legal_fixture`, `doc_update`, `heartbeat`, or
+  `commit_cadence`.
 - `timestamp`: ISO-8601 timestamp with timezone.
 - `source`: `continuous_update_ledger`, `continuous_session_evidence`,
-  `maintenance_heartbeat_evidence`, `legal_fixture`, or `release_review`.
+  `maintenance_heartbeat_evidence`, `git_history_evidence`,
+  `legal_fixture`, or `release_review`.
 - `evidence_paths`: repository paths for code, tests, docs, screenshots, or
   release notes.
 - `validation_id`: short command or review label, such as `pytest`,
@@ -53,9 +59,16 @@ The timeline derives aggregate fields such as `completed_update_count`,
 from metadata and must keep the 100+ update count separate from the 24-hour
 time-window proof.
 
+`GET /api/v1/maintenance/git-history-evidence` contributes only git-derived
+cadence fields such as `commit_count`, `longest_window_hours`,
+`max_observed_gap_hours`, `max_allowed_gap_hours`, `commit_cadence_ready`, and
+`ready_for_goal_claim=false`. The timeline displays these beside validator
+records, but it must not convert a commit cadence row into a test, push, scan,
+or fixture claim.
+
 ## Evidence Merge Rules
 
-The timeline should normalize records into one ordered event stream:
+The timeline normalizes records into one ordered event stream:
 
 - Ledger events prove update volume and shipped evidence. They do not prove
   continuous time coverage by themselves.
@@ -63,16 +76,18 @@ The timeline should normalize records into one ordered event stream:
   valid 24-hour maintenance window.
 - Heartbeat events provide raw timestamp markers for commits, tests, pushes,
   and reviews.
+- Git-history events compute real commit cadence from commit metadata,
+  including longest window, maximum adjacent-commit gap, and included commit
+  count.
 - Low-resource legal fixture events provide laptop-safe legal quality checks
   using fixture IDs, route labels, coverage scores, and validation command
   labels.
 - Release review evidence records release readiness, OSS support wording, and
   public-claim guardrails.
 
-If two sources describe the same event, the timeline should de-duplicate by
-opaque id, timestamp, source, validation label, and evidence paths. It should
-prefer the most restrictive status when records disagree, so an unproven
-24-hour window stays blocked even when the 100+ update target is satisfied.
+When sources disagree, reviewer status stays restrictive, so an unproven
+24-hour window remains blocked even when the 100+ update target or git cadence
+evidence is satisfied.
 
 ## Privacy Boundary
 
@@ -83,14 +98,16 @@ Timeline storage and responses must not contain:
   provider customer data.
 - Raw client documents, raw legal matter text, copied public benchmark samples,
   or original legal-source passages.
+- Raw patches, full diffs, copied hunks, or file contents.
 - Raw prompts, raw model requests, raw gateway responses, or model original
   outputs.
 - Private comments that identify a client, matter, account, attorney, reviewer,
   or vendor beyond repository-safe opaque ids.
 
 Allowed evidence is limited to timestamps, event types, opaque ids, commit
-hashes, route labels, fixture ids, coverage scores, command labels, reviewer
-status, and repository evidence paths.
+hashes, aggregate path counts, cadence metrics, route labels, fixture ids,
+coverage scores, command labels, reviewer status, and repository evidence
+paths.
 
 ## Reviewer Gate
 
@@ -102,6 +119,8 @@ The reviewer-safe completion gate remains:
 4. Legal fixture records are metadata-only and low-resource by default.
 5. Release review evidence does not claim completion before the timeline proves
    both update volume and continuous time coverage.
+6. Git-history evidence is labeled as commit cadence only and does not fill in
+   missing test, push, credential-scan, or legal-fixture evidence.
 
 Current state: the 100+ update target is satisfied by repository evidence, but
 the 24-hour continuous session is still not proven. The timeline should make
@@ -111,6 +130,7 @@ that distinction explicit in `summary`, `gap_analysis`, and any reviewer text.
 
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `docs/GIT_HISTORY_EVIDENCE.md`
 - `docs/MAINTENANCE_HEARTBEAT_EVIDENCE.md`
 - `docs/LEGAL_FIXTURE_EVIDENCE_BUNDLE.md`
 - `docs/PRODUCT_FEATURE_GAP_RADAR.md`
@@ -121,6 +141,6 @@ that distinction explicit in `summary`, `gap_analysis`, and any reviewer text.
 Run these repository-root checks after documentation or endpoint updates:
 
 ```powershell
-rg -n "Continuous Session Timeline|continuous-session-timeline|100\\+|24-hour|metadata-only|raw model outputs|raw legal" docs
+rg -n "Continuous Session Timeline|continuous-session-timeline|git-history-evidence|commit cadence|100\\+|24-hour|metadata-only|raw model outputs|raw legal" docs
 git diff --check
 ```

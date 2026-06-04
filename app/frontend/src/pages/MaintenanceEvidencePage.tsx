@@ -47,6 +47,7 @@ import {
   getMaintenanceContinuousSessionTimeline,
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
+  getMaintenanceGitHistoryEvidence,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
@@ -85,6 +86,7 @@ import {
   type LegalRagEvaluationPolicy,
   type MaintenanceContinuousSessionTimeline,
   type MaintenanceGateSnapshot,
+  type MaintenanceGitHistoryEvidence,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
@@ -132,6 +134,7 @@ const statusClass: Record<string, string> = {
   review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_attention: 'border-amber-200 bg-amber-50 text-amber-900',
   manual_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  cadence_reviewable: 'border-amber-200 bg-amber-50 text-amber-900',
   ocr_needed: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
   pass_with_warnings: 'border-amber-200 bg-amber-50 text-amber-900',
@@ -210,6 +213,7 @@ function Inner() {
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
     useState<MaintenanceContinuousSessionTimeline | null>(null);
+  const [gitHistoryEvidence, setGitHistoryEvidence] = useState<MaintenanceGitHistoryEvidence | null>(null);
   const [caseIntakeCompleteness, setCaseIntakeCompleteness] = useState<CaseIntakeCompleteness | null>(null);
   const [caseTeamAccessPolicy, setCaseTeamAccessPolicy] = useState<CaseTeamAccessPolicy | null>(null);
   const [clientDeliveryRiskChecklist, setClientDeliveryRiskChecklist] = useState<ClientDeliveryRiskChecklist | null>(null);
@@ -271,6 +275,7 @@ function Inner() {
         feedbackMap,
         continuousLedgerData,
         continuousSessionTimelineData,
+        gitHistoryEvidenceData,
         caseIntakeCompletenessData,
         caseTeamAccessPolicyData,
         clientDeliveryRiskChecklistData,
@@ -307,6 +312,7 @@ function Inner() {
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
         getMaintenanceContinuousSessionTimeline(),
+        getMaintenanceGitHistoryEvidence(),
         getCaseIntakeCompleteness(),
         getCaseTeamAccessPolicy(),
         getClientDeliveryRiskChecklist(),
@@ -344,6 +350,7 @@ function Inner() {
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
       setContinuousSessionTimeline(continuousSessionTimelineData);
+      setGitHistoryEvidence(gitHistoryEvidenceData);
       setCaseIntakeCompleteness(caseIntakeCompletenessData);
       setCaseTeamAccessPolicy(caseTeamAccessPolicyData);
       setClientDeliveryRiskChecklist(clientDeliveryRiskChecklistData);
@@ -459,6 +466,28 @@ function Inner() {
     ledgerEntries.length;
   const timelineEventCount =
     continuousSessionTimeline?.summary.event_count ?? continuousSessionTimeline?.timeline_events.length ?? 0;
+  const gitHistoryCommitCount = gitHistoryEvidence?.summary.commit_count ?? gitHistoryEvidence?.commit_events.length ?? 0;
+  const gitHistoryLongestWindowHours =
+    gitHistoryEvidence?.summary.longest_window_hours ??
+    gitHistoryEvidence?.longest_window.verified_hours ??
+    gitHistoryEvidence?.longest_window.duration_hours ??
+    '-';
+  const gitHistoryMaxGapHours =
+    gitHistoryEvidence?.summary.max_observed_gap_hours ??
+    gitHistoryEvidence?.summary.max_gap_hours ??
+    gitHistoryEvidence?.longest_window.max_observed_gap_hours ??
+    gitHistoryEvidence?.longest_window.max_gap_hours ??
+    gitHistoryEvidence?.gap_analysis.reduce((maxGap, gap) => Math.max(maxGap, gap.gap_hours ?? 0), 0) ??
+    '-';
+  const gitHistoryStart =
+    gitHistoryEvidence?.summary.start_timestamp ?? gitHistoryEvidence?.longest_window.start_timestamp ?? '-';
+  const gitHistoryEnd =
+    gitHistoryEvidence?.summary.end_timestamp ?? gitHistoryEvidence?.longest_window.end_timestamp ?? '-';
+  const gitHistoryCompletionClaimState =
+    gitHistoryEvidence?.summary.ready_for_goal_claim === true ||
+    gitHistoryEvidence?.summary.completion_claim_ready === true
+      ? 'ready'
+      : 'blocked';
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -828,6 +857,94 @@ function Inner() {
                   <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
                   <div className="space-y-1 text-xs leading-5 text-stone-600">
                     {privacyBoundarySummary(continuousSessionTimeline.privacy_boundary)
+                      .slice(0, 4)
+                      .map((item) => (
+                        <div key={item} className="break-words">
+                          {item}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {gitHistoryEvidence && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Git history evidence</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Reviewer view of git commit cadence evidence; no 24h completion claim is made here.
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass[gitHistoryEvidence.status] ?? statusClass.in_progress}>
+                {displayToken(gitHistoryEvidence.status)}
+              </Badge>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(gitHistoryCommitCount)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">commit count</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {formatInline(gitHistoryLongestWindowHours)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">longest window hours</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">{formatInline(gitHistoryMaxGapHours)}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">max gap hours</div>
+                </div>
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <div className="break-all font-mono text-xs font-semibold leading-5 text-stone-950">
+                    {formatInline(gitHistoryStart)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">start</div>
+                </div>
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <div className="break-all font-mono text-xs font-semibold leading-5 text-stone-950">
+                    {formatInline(gitHistoryEnd)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">end</div>
+                </div>
+                <div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[gitHistoryCompletionClaimState] ?? statusClass.warn}
+                  >
+                    completion claim {gitHistoryCompletionClaimState}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Recent commit events</h3>
+                  {gitHistoryEvidence.commit_events.length > 0 ? (
+                    <div className="space-y-2">
+                      {gitHistoryEvidence.commit_events.slice(0, 3).map((event) => (
+                        <div key={event.commit_hash} className="text-xs leading-5 text-stone-600">
+                          <div className="font-semibold text-stone-950">{event.title ?? event.subject ?? 'commit metadata'}</div>
+                          <div className="font-mono text-[11px] text-stone-500">
+                            {event.commit_hash} / {event.timestamp ?? event.committed_at ?? '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-stone-600">No commit events returned by the evidence endpoint.</div>
+                  )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {privacyBoundarySummary(gitHistoryEvidence.privacy_boundary)
                       .slice(0, 4)
                       .map((item) => (
                         <div key={item} className="break-words">

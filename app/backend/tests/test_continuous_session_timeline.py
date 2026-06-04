@@ -67,7 +67,9 @@ def test_continuous_session_timeline_defaults_to_blocked_without_claiming_24h():
     assert timeline["summary"]["continuous_hours_remaining"] == 24
     assert timeline["summary"]["completion_ready"] is False
     assert timeline["summary"]["raw_payload_echoed"] is False
-    assert timeline["timeline_events"][0]["id"] == "ledger-100-plus-checkpoint"
+    assert any(event["id"] == "ledger-100-plus-checkpoint" for event in timeline["timeline_events"])
+    assert "git_history" in timeline["source_summaries"]
+    assert "python -m pytest tests/test_git_history_evidence.py -q" in timeline["validation_commands"]
     assert any(blocker["id"] == "timeline-events-missing" for blocker in timeline["blockers"])
 
 
@@ -91,6 +93,7 @@ def test_continuous_session_timeline_accepts_reviewable_metadata_window():
         "review",
         "push",
         "ledger_checkpoint",
+        "commit_cadence",
     }
     assert any(route.endswith("quick-suite?fixture_limit=2") for route in timeline["low_resource_evidence_routes"])
 

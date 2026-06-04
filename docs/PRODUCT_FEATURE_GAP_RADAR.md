@@ -56,13 +56,19 @@ workflow binding:
 - Quota summaries should bind into reviewer-visible export, delivery, and account-plan decisions.
 - Local payment reconciliation policy should connect to reviewed provider webhook signatures, invoice states, and plan-change workflows before any real settlement claim.
 - Continuous 24-hour maintenance evidence now binds the 100+ update ledger,
-  heartbeat records, push/test validation, and low-resource legal fixture runs
-  into one reviewer timeline, while still blocking support-application
-  completion claims until real timestamped records prove the window.
+  heartbeat records, git-history commit cadence, push/test validation, and
+  low-resource legal fixture runs into one reviewer timeline, while still
+  blocking support-application completion claims until real timestamped records
+  prove the window.
   `docs/CONTINUOUS_SESSION_TIMELINE.md` scopes the implemented
   `GET`/`POST` `/api/v1/maintenance/continuous-session-timeline` endpoint as
   metadata-only and keeps the 24-hour proof separate from the satisfied 100+
   update count.
+  `docs/GIT_HISTORY_EVIDENCE.md` scopes the implemented
+  `GET /api/v1/maintenance/git-history-evidence` endpoint as commit-cadence
+  evidence only: commit count, longest cadence window, and maximum
+  adjacent-commit gap from Git metadata, without inferring tests, pushes,
+  credential scans, or legal fixture runs.
 
 ## Scope
 
@@ -138,6 +144,7 @@ validator should not be treated as a backend-only metric. It should continue to
 show:
 
 - the longest verified maintenance window,
+- the longest git-derived cadence window and maximum adjacent-commit gap,
 - timestamped commits, test runs, pushes, and review actions,
 - links back to shipped update evidence,
 - laptop-safe legal fixture runs for small machines, and
@@ -150,7 +157,7 @@ fixture IDs and coverage metadata, not a large public benchmark download.
 The continuous-session timeline also joins release review evidence and
 public-claim guardrails, but it must not persist secrets, account
 data, emails, raw legal texts, copied benchmark samples, raw prompts, gateway
-payloads, or model original outputs.
+payloads, raw patches, or model original outputs.
 
 ## Validation
 

@@ -848,6 +848,20 @@ class ReleaseReadinessService:
                 manual_note="This joins ledger, session-validator, heartbeat, and low-resource legal fixture metadata into a reviewer timeline, while keeping 24-hour completion blocked until real events prove it.",
             ),
             ReleaseCheck(
+                id="git-history-evidence",
+                title="Git history cadence evidence",
+                category="maintenance",
+                required=False,
+                owner="project_maintainer",
+                evidence_paths=(
+                    "app/backend/services/git_history_evidence.py",
+                    "app/backend/tests/test_git_history_evidence.py",
+                    "docs/GIT_HISTORY_EVIDENCE.md",
+                ),
+                validation_command="python -m pytest tests/test_git_history_evidence.py -q",
+                manual_note="This evaluates commit cadence from metadata-only git history, but it does not prove tests, credential scans, pushes, low-resource fixtures, or release review by itself.",
+            ),
+            ReleaseCheck(
                 id="product-feature-gap-radar",
                 title="Product feature gap radar",
                 category="maintenance",
