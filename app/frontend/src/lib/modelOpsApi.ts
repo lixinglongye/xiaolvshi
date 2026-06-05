@@ -959,6 +959,63 @@ export type ModelOpsCheapFirstCanaryObservation = {
   privacy_boundary: Record<string, boolean | string>;
   claim_boundary: Record<string, boolean | string>;
   validation_commands: string[];
+  promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
+};
+
+export type ModelOpsCheapFirstCanaryPromotionDecision = {
+  status: string;
+  decision: {
+    status: string;
+    label: string;
+    default_action: string;
+    configuration_change_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    requires_maintainer_approval: boolean;
+  };
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    decision_item_count: number;
+    advance_decision_count: number;
+    hold_decision_count: number;
+    rollback_decision_count: number;
+    monitor_only_count: number;
+    not_ready_count: number;
+    source_plan_status: string;
+    source_observation_status: string;
+    observation_count: number;
+    failing_observation_count: number;
+    warning_observation_count: number;
+    rollback_trigger_breach_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+  };
+  promotion_items: Array<{
+    id: string;
+    source_step_id: string;
+    task: string;
+    phase: string;
+    step_status: string;
+    promotion_status: string;
+    observation_statuses: string[];
+    matched_observation_count: number;
+    batch_percentage: number;
+    holdout_percentage: number;
+    reason_codes: string[];
+    configuration_change_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    action: string;
+  }>;
+  advance_item_ids: string[];
+  hold_item_ids: string[];
+  rollback_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
 };
 
 export type ModelOpsPerformanceBudget = {
@@ -1816,6 +1873,7 @@ export type ModelOpsResponse = {
   default_change_queue?: ModelOpsDefaultChangeQueue;
   cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
   cheap_first_canary_observation?: ModelOpsCheapFirstCanaryObservation;
+  cheap_first_canary_promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1856,6 +1914,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     queue_items?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
+    promotion_items?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -1866,7 +1925,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -2048,6 +2108,13 @@ export async function evaluateModelOpsCheapFirstCanaryObservation(
     url: '/api/v1/aihub/models/cheap-first-canary-observation',
     method: 'POST',
     data: payload,
+  });
+}
+
+export async function getModelOpsCheapFirstCanaryPromotionDecision(): Promise<ModelOpsCheapFirstCanaryPromotionDecision> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryPromotionDecision>({
+    url: '/api/v1/aihub/models/cheap-first-canary-promotion-decision',
+    method: 'GET',
   });
 }
 

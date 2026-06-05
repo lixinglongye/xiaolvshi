@@ -54,6 +54,7 @@ from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirstCanaryObservationService
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
+from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsCheapFirstCanaryPromotionDecisionService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
@@ -269,8 +270,8 @@ async def list_models():
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
     }
-    model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
-    model_ops_signals["model_ops_readiness"] = model_ops_readiness
+    base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
+    model_ops_signals["model_ops_readiness"] = base_model_ops_readiness
     cheap_first_release_decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(model_ops_signals)
     model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
     default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
@@ -278,6 +279,10 @@ async def list_models():
     cheap_first_canary_plan = ModelOpsCheapFirstCanaryPlanService().build_plan(model_ops_signals)
     model_ops_signals["cheap_first_canary_plan"] = cheap_first_canary_plan
     cheap_first_canary_observation = ModelOpsCheapFirstCanaryObservationService().build_review(None, model_ops_signals)
+    model_ops_signals["cheap_first_canary_observation"] = cheap_first_canary_observation
+    cheap_first_canary_promotion_decision = ModelOpsCheapFirstCanaryPromotionDecisionService().build_decision(model_ops_signals)
+    model_ops_signals["cheap_first_canary_promotion_decision"] = cheap_first_canary_promotion_decision
+    model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     payload = {
         "success": True,
         "routing_aliases": {
@@ -325,6 +330,7 @@ async def list_models():
         "default_change_queue": default_change_queue,
         "cheap_first_canary_plan": cheap_first_canary_plan,
         "cheap_first_canary_observation": cheap_first_canary_observation,
+        "cheap_first_canary_promotion_decision": cheap_first_canary_promotion_decision,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -452,12 +458,32 @@ async def model_ops_cheap_first_canary_observation():
 async def evaluate_model_ops_cheap_first_canary_observation(payload: dict[str, Any]):
     """Evaluate sanitized aggregate canary observations without executing rollout."""
     models_payload = await list_models()
+    observation = ModelOpsCheapFirstCanaryObservationService().build_review(
+        payload,
+        {"cheap_first_canary_plan": models_payload["cheap_first_canary_plan"]},
+    )
+    promotion_decision = ModelOpsCheapFirstCanaryPromotionDecisionService().build_decision(
+        {
+            "cheap_first_canary_plan": models_payload["cheap_first_canary_plan"],
+            "cheap_first_canary_observation": observation,
+        }
+    )
     return {
         "success": True,
-        "data": ModelOpsCheapFirstCanaryObservationService().build_review(
-            payload,
-            {"cheap_first_canary_plan": models_payload["cheap_first_canary_plan"]},
-        ),
+        "data": {
+            **observation,
+            "promotion_decision": promotion_decision,
+        },
+    }
+
+
+@router.get("/models/cheap-first-canary-promotion-decision")
+async def model_ops_cheap_first_canary_promotion_decision():
+    """Return metadata-only canary promotion decision evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_canary_promotion_decision"],
     }
 
 

@@ -91,6 +91,36 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "runtime_evidence",
         "model_ops_performance_budget",
     ),
+    ReadinessComponent(
+        "cheap-first-release-decision",
+        "Cheap-first release decision",
+        "release_evidence",
+        "cheap_first_release_decision",
+    ),
+    ReadinessComponent(
+        "default-change-queue",
+        "Default change queue",
+        "release_evidence",
+        "default_change_queue",
+    ),
+    ReadinessComponent(
+        "cheap-first-canary-plan",
+        "Cheap-first canary plan",
+        "release_evidence",
+        "cheap_first_canary_plan",
+    ),
+    ReadinessComponent(
+        "cheap-first-canary-observation",
+        "Cheap-first canary observation review",
+        "release_evidence",
+        "cheap_first_canary_observation",
+    ),
+    ReadinessComponent(
+        "cheap-first-canary-promotion-decision",
+        "Cheap-first canary promotion decision",
+        "release_evidence",
+        "cheap_first_canary_promotion_decision",
+    ),
 )
 
 
@@ -152,17 +182,30 @@ class ModelOpsReadinessService:
 
     def _component_status(self, component: ReadinessComponent, data: dict[str, Any]) -> str:
         if not data:
+            if component.category == "release_evidence":
+                return "warn"
             return "fail" if component.required else "warn"
         if component.source_key == "budget_policy":
             return "pass" if _list(data.get("task_decisions")) else "fail"
         value = str(data.get("status") or "").strip().lower()
         if value in {"pass", "ready", "ok", "success"}:
             return "pass"
-        if value in {"warn", "warning", "manual_review", "review_required", "needs_review"}:
+        if value in {"advance_next_batch", "monitor_only"}:
+            return "pass"
+        if value in {
+            "warn",
+            "warning",
+            "manual_review",
+            "review_required",
+            "needs_review",
+            "hold_for_review",
+            "not_ready",
+            "not_supplied",
+        }:
             return "warn"
         if value == "not_run" and not component.required:
             return "warn"
-        if value in {"fail", "failed", "blocked", "error"}:
+        if value in {"fail", "failed", "blocked", "error", "rollback_required"}:
             return "fail"
         return "fail" if component.required else "warn"
 

@@ -29,6 +29,7 @@ import {
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryObservation,
+  type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -228,6 +229,7 @@ function Inner() {
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
   const [performanceError, setPerformanceError] = useState('');
   const [canaryObservation, setCanaryObservation] = useState<ModelOpsCheapFirstCanaryObservation | null>(null);
+  const [canaryPromotionDecision, setCanaryPromotionDecision] = useState<ModelOpsCheapFirstCanaryPromotionDecision | null>(null);
   const [canaryObservationPayloadText, setCanaryObservationPayloadText] = useState('');
   const [canaryObservationLoading, setCanaryObservationLoading] = useState(false);
   const [canaryObservationError, setCanaryObservationError] = useState('');
@@ -243,6 +245,7 @@ function Inner() {
     setPerformanceBudget(null);
     setCanaryObservationError('');
     setCanaryObservation(null);
+    setCanaryPromotionDecision(null);
     try {
       const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
@@ -254,6 +257,7 @@ function Inner() {
         setProbeEvaluation(null);
         setPerformanceBudget(null);
         setCanaryObservation(null);
+        setCanaryPromotionDecision(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
@@ -427,7 +431,9 @@ function Inner() {
         setCanaryObservationError('Canary observation payload must be a JSON object.');
         return;
       }
-      setCanaryObservation(await evaluateModelOpsCheapFirstCanaryObservation(payload as Record<string, unknown>));
+      const result = await evaluateModelOpsCheapFirstCanaryObservation(payload as Record<string, unknown>);
+      setCanaryObservation(result);
+      setCanaryPromotionDecision(result.promotion_decision ?? null);
     } catch (err) {
       console.error(err);
       setCanaryObservationError(
@@ -447,6 +453,12 @@ function Inner() {
   const cheapFirstCanaryTriggers = data?.cheap_first_canary_plan?.rollback_triggers ?? [];
   const activeCanaryObservation = canaryObservation ?? data?.cheap_first_canary_observation ?? null;
   const canaryObservationRows = activeCanaryObservation?.observation_rows ?? [];
+  const activeCanaryPromotionDecision =
+    canaryPromotionDecision
+    ?? activeCanaryObservation?.promotion_decision
+    ?? data?.cheap_first_canary_promotion_decision
+    ?? null;
+  const canaryPromotionRows = activeCanaryPromotionDecision?.promotion_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -1173,6 +1185,157 @@ function Inner() {
                         <br />
                         premium {Math.round(row.premium_request_ratio * 100)}% / review{' '}
                         {Math.round(row.operator_review_route_ratio * 100)}%
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.reason_codes.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeCanaryPromotionDecision && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first canary promotion decision</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCanaryPromotionDecision.summary.advance_decision_count} advance /{' '}
+                  {activeCanaryPromotionDecision.summary.hold_decision_count} hold /{' '}
+                  {activeCanaryPromotionDecision.summary.rollback_decision_count} rollback
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCanaryPromotionDecision.status)}>
+                {activeCanaryPromotionDecision.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryPromotionDecision.summary.decision_item_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">promotion items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryPromotionDecision.summary.monitor_only_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">monitor only</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryPromotionDecision.summary.not_ready_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">not ready</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryPromotionDecision.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryPromotionDecision.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryPromotionDecision.summary.traffic_shifted)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">traffic shifted</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Decision policy</div>
+                <div className="mt-3 text-lg font-black text-stone-950">{activeCanaryPromotionDecision.decision.label}</div>
+                <div className="mt-2 font-mono text-xs text-stone-600">
+                  default_action: {activeCanaryPromotionDecision.decision.default_action}
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">configuration_change_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryPromotionDecision.decision.configuration_change_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">traffic_shift_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryPromotionDecision.decision.traffic_shift_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">maintainer review</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryPromotionDecision.decision.requires_maintainer_approval)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Promotion summary</div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  source plan: {activeCanaryPromotionDecision.summary.source_plan_status} / source observation:{' '}
+                  {activeCanaryPromotionDecision.summary.source_observation_status} / observations:{' '}
+                  {formatNumber(activeCanaryPromotionDecision.summary.observation_count)}
+                </div>
+                <div className="mt-2 font-mono text-[11px] leading-5 text-stone-500">
+                  statuses: advance_next_batch / hold_for_review / rollback_required
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeCanaryPromotionDecision.recommended_actions.slice(0, 3).join(' ')}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  production traffic shifted:{' '}
+                  {String(activeCanaryPromotionDecision.claim_boundary.production_traffic_shifted)} / automatic rollout:{' '}
+                  {String(activeCanaryPromotionDecision.claim_boundary.automatic_canary_rollout_claimed)} / public benchmark scores:{' '}
+                  {String(activeCanaryPromotionDecision.claim_boundary.public_benchmark_scores_included)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Decision</TableHead>
+                    <TableHead>Batch</TableHead>
+                    <TableHead>Observations</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {canaryPromotionRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_step_id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.promotion_status)}>
+                          {row.promotion_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">step: {row.step_status.replace(/_/g, ' ')}</div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        batch {row.batch_percentage}% / holdout {row.holdout_percentage}%
+                        <br />
+                        phase {row.phase}
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        {formatNumber(row.matched_observation_count)} matched
+                        <br />
+                        {row.observation_statuses.join(', ') || 'none'}
                       </TableCell>
                       <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
                         {row.reason_codes.join(', ') || '-'}

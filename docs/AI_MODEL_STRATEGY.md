@@ -164,6 +164,11 @@ for those steps. It checks failure, over-budget, premium/unknown-price, and
 operator-review ratios against rollout thresholds, rejects sensitive field names
 without echoing values, and never persists observations or advances traffic.
 
+`cheap_first_canary_promotion_decision` consumes the canary plan and observation
+review. It returns advance-next-batch, hold-for-review, rollback-required,
+monitor-only, or not-ready decisions for maintainers, while keeping
+configuration writes, gateway calls, and traffic shifts disabled.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in

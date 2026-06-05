@@ -19,6 +19,11 @@ It compares those counts with the canary thresholds from the plan and returns
 pass, review-required, fail, or not-supplied. It does not need prompts, headers,
 gateway responses, legal text, model output, or user data.
 
+`cheap_first_canary_promotion_decision` consumes this review downstream. The
+POST response includes `data.promotion_decision` so reviewers can see whether
+the submitted aggregate observations produce advance, hold, rollback, or
+monitor-only decisions without changing configuration or traffic.
+
 ## Endpoints
 
 ```http
@@ -92,3 +97,4 @@ Related files:
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_PROMOTION_DECISION.md`

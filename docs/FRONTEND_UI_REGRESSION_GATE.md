@@ -39,6 +39,7 @@ The `/model-ops` page carries evidence for:
 - Default change queue
 - Cheap-first canary plan
 - Cheap-first canary observation review
+- Cheap-first canary promotion decision
 - Cheap-first quality budget
 - selector replay
 - route telemetry

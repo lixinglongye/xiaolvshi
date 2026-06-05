@@ -170,6 +170,12 @@ def test_model_ops_route_includes_readiness():
     assert "route_quality_budget" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "cheap_first_canary_promotion_decision" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert "cheap_first_canary_observation" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
