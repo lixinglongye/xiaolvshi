@@ -195,6 +195,11 @@ def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/api/v1/health")
+def api_health_check():
+    return health_check()
+
+
 @app.get("/api/config")
 def runtime_config():
     return {"API_BASE_URL": settings.backend_url}

@@ -9,13 +9,29 @@ GET /api/v1/aihub/models/gemini-variant-matrix
 POST /api/v1/aihub/models/gemini-variant-matrix
 ```
 
-`GET` returns the catalog-based matrix. `POST` accepts optional sanitized `observed_models` so maintainers can review gateway model IDs without calling the gateway:
+`GET` returns the catalog-based matrix. `POST` accepts optional sanitized model IDs so maintainers can review gateway model IDs without calling the gateway. It supports the old compact list:
 
 ```json
 {
   "observed_models": ["models/gemini-2.5-flash-lite", "google/gemini-3.2-flash-lite"]
 }
 ```
+
+It also accepts OpenAI-compatible `/v1/models` style responses copied from a NewAPI or Gemini gateway:
+
+```json
+{
+  "models_response": {
+    "object": "list",
+    "data": [
+      {"id": "models/gemini-2.5-flash-lite", "object": "model"},
+      {"id": "google/gemini-3.2-flash-lite", "object": "model"}
+    ]
+  }
+}
+```
+
+Other accepted metadata-only sources are `model_ids`, `gateway_models`, `models`, `gateway_models_response.data`, `model_list.data`, and top-level `data` arrays.
 
 ## What It Proves
 
@@ -28,7 +44,8 @@ POST /api/v1/aihub/models/gemini-variant-matrix
 
 ## What It Returns
 
-- `summary`: catalog model count, family count, high-frequency default count, explicit-only count, preview count, unpriced count, observed model review count, catalog-review count, and cheap-first default model.
+- `summary`: catalog model count, family count, high-frequency default count, explicit-only count, preview count, unpriced count, observed model review count, catalog-review count, model-list extraction counts, and cheap-first default model.
+- `source_summaries.observed_model_extraction`: source field names, candidate count, accepted count, dropped count, limits, and `raw_payload_echoed: false`.
 - `family_rows`: Gemini family posture and allowed default use.
 - `model_rows`: model ID, family, catalog status, cost tier, route role, pricing status, configured roles, supported request shapes, and review note.
 - `observed_model_reviews`: sanitized model-ID review rows for optional submitted observed model names.
@@ -37,15 +54,20 @@ POST /api/v1/aihub/models/gemini-variant-matrix
 
 ## ModelOps Review Form
 
-The ModelOps page includes an observed-model review form for this endpoint. It accepts only a JSON object with model IDs, for example:
+The ModelOps page includes an observed-model review form for this endpoint. It accepts only a JSON object with model IDs or a model-list response, for example:
 
 ```json
 {
-  "observed_models": ["models/gemini-2.5-flash-lite", "google/gemini-3.2-flash-lite"]
+  "models_response": {
+    "data": [
+      {"id": "models/gemini-2.5-flash-lite"},
+      {"id": "google/gemini-3.2-flash-lite"}
+    ]
+  }
 }
 ```
 
-The frontend blocks obvious secrets, authorization headers, prompts, emails, raw model output fields, and password-like fields before calling the endpoint. The submitted values are not stored by the UI; the response replaces the current matrix panel so maintainers can inspect catalog-known, catalog-review, and external-model statuses.
+The frontend blocks obvious secrets, authorization headers, prompts, emails, raw model output fields, and password-like fields before calling the endpoint. The submitted values are not stored by the UI; the response replaces the current matrix panel so maintainers can inspect catalog-known, catalog-review, and external-model statuses plus extraction source names.
 
 ## Safety
 

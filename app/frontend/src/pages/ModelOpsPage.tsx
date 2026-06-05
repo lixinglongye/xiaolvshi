@@ -120,11 +120,14 @@ function defaultCheapFirstCalibrationPayload() {
 
 function defaultGeminiVariantMatrixPayload() {
   return {
-    observed_models: [
-      'models/gemini-2.5-flash-lite',
-      'google/gemini-2.5-flash',
-      'google/gemini-3.2-flash-lite',
-    ],
+    models_response: {
+      object: 'list',
+      data: [
+        { id: 'models/gemini-2.5-flash-lite', object: 'model' },
+        { id: 'google/gemini-2.5-flash', object: 'model' },
+        { id: 'google/gemini-3.2-flash-lite', object: 'model' },
+      ],
+    },
   };
 }
 
@@ -180,10 +183,7 @@ function Inner() {
     setGeminiVariantError('');
     setGeminiVariantMatrix(null);
     try {
-      const [modelOpsResult, calibrationResult] = await Promise.allSettled([
-        getModelOps(),
-        getCheapFirstCalibration(),
-      ]);
+      const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
         setError('Model telemetry failed to load.');
@@ -191,14 +191,17 @@ function Inner() {
       } else {
         setData(modelOpsResult.value);
         setProbeEvaluation(null);
-        setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration ?? null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
-      }
-      if (calibrationResult.status === 'rejected') {
-        console.error(calibrationResult.reason);
-        setCheapFirstError('Cheap-first calibration failed to load.');
-      } else {
-        setCheapFirstCalibration(calibrationResult.value);
+        if (modelOpsResult.value.cheap_first_calibration) {
+          setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
+        } else {
+          try {
+            setCheapFirstCalibration(await getCheapFirstCalibration());
+          } catch (calibrationError) {
+            console.error(calibrationError);
+            setCheapFirstError('Cheap-first calibration failed to load.');
+          }
+        }
       }
     } catch (err) {
       console.error(err);
@@ -323,6 +326,7 @@ function Inner() {
   const geminiVariantRows = activeGeminiVariantMatrix?.model_rows ?? [];
   const geminiVariantFamilyRows = activeGeminiVariantMatrix?.family_rows ?? [];
   const geminiVariantObservedRows = activeGeminiVariantMatrix?.observed_model_reviews ?? [];
+  const geminiVariantExtraction = activeGeminiVariantMatrix?.source_summaries?.observed_model_extraction;
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -892,10 +896,26 @@ function Inner() {
                     {geminiVariantError}
                   </div>
                 )}
+                {geminiVariantExtraction && (
+                  <div className="mb-3 rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
+                    <div>
+                      source fields:{' '}
+                      <span className="font-mono text-stone-950">
+                        {geminiVariantExtraction.source_fields.join(', ') || '-'}
+                      </span>
+                    </div>
+                    <div>
+                      candidates: {geminiVariantExtraction.candidate_count} / accepted:{' '}
+                      {geminiVariantExtraction.accepted_model_count} / dropped:{' '}
+                      {geminiVariantExtraction.dropped_model_count}
+                    </div>
+                    <div>raw payload echoed: {String(geminiVariantExtraction.raw_payload_echoed)}</div>
+                  </div>
+                )}
                 <Textarea
                   value={geminiVariantPayloadText}
                   onChange={(event) => setGeminiVariantPayloadText(event.target.value)}
-                  placeholder='{"observed_models":["models/gemini-2.5-flash-lite","google/gemini-3.2-flash-lite"]}'
+                  placeholder='{"models_response":{"data":[{"id":"models/gemini-2.5-flash-lite"},{"id":"google/gemini-3.2-flash-lite"}]}}'
                   className="min-h-[150px] font-mono text-xs"
                 />
                 <div className="mt-3 flex flex-wrap gap-2">

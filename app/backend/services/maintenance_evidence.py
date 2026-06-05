@@ -64,6 +64,7 @@ class MaintenanceEvidenceService:
                     "Gemini/NewAPI cheap-first calibration",
                     "Gemini model variant matrix",
                     "ModelOps Gemini variant review form",
+                    "Gemini model-list ingestion",
                     "Gemini and gateway price refresh monitor",
                     "Model cost regression snapshots",
                     "Model gateway compatibility",
@@ -211,8 +212,8 @@ class MaintenanceEvidenceService:
                 id="model-routing-cost-control",
                 category="model_ops",
                 title="Cost-aware Gemini/NewAPI routing",
-                description="OpenAI-compatible gateway routing prefers cheaper Gemini models for routine tasks and keeps defaults pinned to stable lifecycle-safe models with safe gateway health planning, model selector audits, selector replay evidence, cheap-first calibration, Gemini variant matrix review, sanitized ModelOps Gemini variant review, sanitized ModelOps calibration review, public benchmark research mappings, default recommendation snapshots, price-refresh monitoring, cost regression snapshots, route telemetry persistence planning, privacy-safe route telemetry repository evidence, route telemetry operations summary checks, route telemetry triage actions, route telemetry remediation plans, and sanitized probe evaluation.",
-                responsibility="Model catalog maintenance, budget policy review, task-level selector review, selector replay review, cheap-first calibration and sanitized review-form upkeep, Gemini variant matrix review and observed-model form upkeep, public benchmark mapping review, default recommendation review, price-refresh review, cost regression review, route telemetry privacy review, route telemetry repository review, route telemetry operations summary review, route telemetry triage review, route telemetry remediation review, gateway compatibility updates, gateway health-plan review, sanitized probe evaluation, and Gemini lifecycle policy review.",
+                description="OpenAI-compatible gateway routing prefers cheaper Gemini models for routine tasks and keeps defaults pinned to stable lifecycle-safe models with safe gateway health planning, model selector audits, selector replay evidence, cheap-first calibration, Gemini variant matrix review, sanitized ModelOps Gemini variant review, sanitized gateway model-list ingestion, sanitized ModelOps calibration review, public benchmark research mappings, default recommendation snapshots, price-refresh monitoring, cost regression snapshots, route telemetry persistence planning, privacy-safe route telemetry repository evidence, route telemetry operations summary checks, route telemetry triage actions, route telemetry remediation plans, and sanitized probe evaluation.",
+                responsibility="Model catalog maintenance, budget policy review, task-level selector review, selector replay review, cheap-first calibration and sanitized review-form upkeep, Gemini variant matrix review, gateway model-list ingestion review, observed-model form upkeep, public benchmark mapping review, default recommendation review, price-refresh review, cost regression review, route telemetry privacy review, route telemetry repository review, route telemetry operations summary review, route telemetry triage review, route telemetry remediation review, gateway compatibility updates, gateway health-plan review, sanitized probe evaluation, and Gemini lifecycle policy review.",
                 cadence="Review when gateway model names, pricing, or task defaults change.",
                 evidence_paths=(
                     "app/backend/services/model_catalog.py",

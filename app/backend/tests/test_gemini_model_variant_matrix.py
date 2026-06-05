@@ -53,6 +53,9 @@ def test_gemini_model_variant_matrix_reviews_unknown_observed_models_without_ech
     assert matrix["status"] == "review_required"
     assert matrix["summary"]["observed_model_count"] == 3
     assert matrix["summary"]["catalog_review_count"] == 1
+    assert matrix["summary"]["accepted_observed_model_count"] == 3
+    assert matrix["source_summaries"]["observed_model_extraction"]["source_fields"] == ["observed_models"]
+    assert matrix["source_summaries"]["observed_model_extraction"]["raw_payload_echoed"] is False
     assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
     assert reviews["models/gemini-2.5-flash-lite"]["default_allowed_for_high_frequency"] is True
     assert reviews["google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
@@ -62,6 +65,54 @@ def test_gemini_model_variant_matrix_reviews_unknown_observed_models_without_ech
     assert secret not in serialized
     assert "client@example.com" not in serialized
     assert not SENSITIVE_PATTERN.search(serialized)
+
+
+def test_gemini_model_variant_matrix_extracts_openai_compatible_model_list_without_echoing_payload():
+    secret = "s" + "k-" + ("M" * 24)
+    matrix = GeminiModelVariantMatrixService().build_matrix(
+        {
+            "models_response": {
+                "object": "list",
+                "data": [
+                    {"id": "models/gemini-2.5-flash-lite", "object": "model"},
+                    {"id": "google/gemini-3.2-flash-lite", "created": 0},
+                    {"id": "vendor/not-gemini"},
+                    {"id": secret},
+                    {"name": "client@example.com"},
+                ],
+            },
+            "model_ids": ["models/gemini-2.5-flash-lite"],
+            "gateway_models": [{"model_id": "google/gemini-2.5-flash"}],
+        }
+    )
+    serialized = json.dumps(matrix, ensure_ascii=False)
+    reviews = {row["raw_model"]: row for row in matrix["observed_model_reviews"]}
+    extraction = matrix["source_summaries"]["observed_model_extraction"]
+
+    assert matrix["summary"]["observed_model_count"] == 4
+    assert matrix["summary"]["catalog_review_count"] == 1
+    assert matrix["summary"]["observed_model_candidate_count"] == 7
+    assert matrix["summary"]["dropped_observed_model_count"] == 3
+    assert extraction["source_fields"] == ["model_ids", "gateway_models", "models_response.data"]
+    assert extraction["raw_payload_echoed"] is False
+    assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
+    assert reviews["google/gemini-2.5-flash"]["status"] == "catalog_known"
+    assert reviews["google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
+    assert reviews["vendor/not-gemini"]["status"] == "external_model"
+    assert secret not in serialized
+    assert "client@example.com" not in serialized
+    assert "object" not in serialized
+    assert not SENSITIVE_PATTERN.search(serialized)
+
+
+def test_gemini_model_variant_matrix_accepts_direct_data_model_list_shape():
+    matrix = GeminiModelVariantMatrixService().build_matrix(
+        {"data": [{"id": "models/gemini-2.5-flash-lite"}, {"id": "google/gemini-3.2-flash-lite"}]}
+    )
+
+    assert matrix["summary"]["observed_model_count"] == 2
+    assert matrix["summary"]["catalog_review_count"] == 1
+    assert matrix["source_summaries"]["observed_model_extraction"]["source_fields"] == ["data"]
 
 
 def test_gemini_model_variant_matrix_route_returns_metadata_only_payload():
@@ -81,10 +132,13 @@ def test_gemini_model_variant_matrix_route_returns_metadata_only_payload():
 
     post_response = client.post(
         "/api/v1/aihub/models/gemini-variant-matrix",
-        json={"observed_models": ["google/gemini-3.2-flash-lite"]},
+        json={"models_response": {"data": [{"id": "google/gemini-3.2-flash-lite"}]}},
     )
     assert post_response.status_code == 200
     assert post_response.json()["data"]["summary"]["catalog_review_count"] == 1
+    assert post_response.json()["data"]["source_summaries"]["observed_model_extraction"]["source_fields"] == [
+        "models_response.data"
+    ]
 
 
 def test_model_ops_route_includes_gemini_variant_matrix_readiness_signal():

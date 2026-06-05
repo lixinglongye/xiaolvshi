@@ -5,8 +5,10 @@ and speech transcription API endpoints.
 """
 
 import ast
+from copy import deepcopy
 import json
 import logging
+from time import monotonic
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
@@ -64,6 +66,16 @@ from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
 logger = logging.getLogger(__name__)
+
+MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS = 10.0
+_model_ops_payload_cache: dict[str, Any] | None = None
+_model_ops_payload_cache_at = 0.0
+
+
+def _clear_model_ops_payload_cache() -> None:
+    global _model_ops_payload_cache, _model_ops_payload_cache_at
+    _model_ops_payload_cache = None
+    _model_ops_payload_cache_at = 0.0
 
 
 def _try_extract_message_from_dict(data: dict) -> str | None:
@@ -154,6 +166,12 @@ async def list_models():
     NewAPI and Gemini OpenAI-compatible gateways may expose additional model
     names; those can still be sent directly in request payloads.
     """
+    global _model_ops_payload_cache, _model_ops_payload_cache_at
+
+    now = monotonic()
+    if _model_ops_payload_cache is not None and now - _model_ops_payload_cache_at <= MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS:
+        return deepcopy(_model_ops_payload_cache)
+
     usage = model_usage_registry.snapshot()
     forecast = ModelCostForecastService().build_forecast()
     route_telemetry = model_route_telemetry_registry.snapshot()
@@ -228,7 +246,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
     }
-    return {
+    payload = {
         "success": True,
         "routing_aliases": {
             "auto-fast": task_default_model("fast"),
@@ -271,6 +289,9 @@ async def list_models():
         "models": catalog_for_api(),
         "usage": usage,
     }
+    _model_ops_payload_cache = deepcopy(payload)
+    _model_ops_payload_cache_at = monotonic()
+    return payload
 
 
 @router.get("/models/usage")
@@ -296,6 +317,7 @@ async def evaluate_gateway_probe(payload: dict[str, Any]):
     """Evaluate sanitized gateway model-list, tiny chat, and image smoke probe results."""
     result = ModelGatewayProbeEvaluationService().evaluate(payload)
     model_gateway_probe_evaluation_registry.record(result)
+    _clear_model_ops_payload_cache()
     return {
         "success": True,
         "data": result,

@@ -250,6 +250,16 @@ export type GeminiVariantMatrixObservedReview = {
   warnings: string[];
 };
 
+export type GeminiVariantMatrixObservedModelExtraction = {
+  candidate_count: number;
+  accepted_model_count: number;
+  dropped_model_count: number;
+  source_fields: string[];
+  max_candidate_count: number;
+  max_accepted_model_count: number;
+  raw_payload_echoed: boolean;
+};
+
 export type GeminiVariantMatrix = {
   status: string;
   method: {
@@ -265,8 +275,15 @@ export type GeminiVariantMatrix = {
     unpriced_model_count: number;
     observed_model_count: number;
     catalog_review_count: number;
+    observed_model_candidate_count: number;
+    accepted_observed_model_count: number;
+    dropped_observed_model_count: number;
+    observed_model_source_count: number;
     cheap_first_default_model: string;
     raw_payload_echoed: boolean;
+  };
+  source_summaries?: {
+    observed_model_extraction?: GeminiVariantMatrixObservedModelExtraction;
   };
   family_rows: GeminiVariantMatrixFamilyRow[];
   model_rows: GeminiVariantMatrixModelRow[];

@@ -70,7 +70,24 @@ class ModelCallsiteAuditService:
                 continue
             rel_path = _relative(path, self.backend_root)
             try:
-                tree = ast.parse(path.read_text(encoding="utf-8-sig"), filename=str(path))
+                source = path.read_text(encoding="utf-8-sig")
+            except (OSError, UnicodeError) as exc:
+                callsites.append(
+                    GenTxtCallsite(
+                        file=rel_path,
+                        line=0,
+                        function="<parse>",
+                        has_task=False,
+                        has_model=False,
+                        status="fail",
+                        reason=f"Could not read file for GenTxtRequest audit: {exc}.",
+                    )
+                )
+                continue
+            if "GenTxtRequest" not in source:
+                continue
+            try:
+                tree = ast.parse(source, filename=str(path))
             except SyntaxError as exc:
                 callsites.append(
                     GenTxtCallsite(
