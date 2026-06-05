@@ -164,6 +164,10 @@ def test_model_ops_route_includes_readiness():
     assert "model_ops_performance_budget" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "route_quality_budget" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
+    assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6

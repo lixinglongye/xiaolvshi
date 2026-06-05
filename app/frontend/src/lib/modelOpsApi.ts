@@ -722,6 +722,61 @@ export type ModelOpsPerformanceBudget = {
   validation_commands: string[];
 };
 
+export type ModelRouteQualityBudget = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    cheap_start_task_count: number;
+    premium_exception_task_count: number;
+    runtime_default_gap_count: number;
+    quality_gate_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    raw_payload_echoed: boolean;
+  };
+  task_quality_budgets: Array<{
+    task: string;
+    display_name: string;
+    recommended_model: string;
+    runtime_default_model: string;
+    cheap_start_model: string;
+    recommended_model_cost_tier: string;
+    runtime_default_cost_tier: string;
+    max_cost_tier: string;
+    candidate_count: number;
+    quality_score: number;
+    quality_floor: number;
+    quality_gate_ids: string[];
+    quality_gate_count: number;
+    runtime_default_has_required_capabilities: boolean;
+    runtime_default_over_budget: boolean;
+    premium_exception_allowed: boolean;
+    review_action: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    raw_payload_echoed: boolean;
+    credentials_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    emails_included: boolean;
+    output_scope: string;
+  };
+  validation_commands: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -1465,6 +1520,7 @@ export type ModelOpsResponse = {
   cost_guardrails?: ModelCostGuardrails;
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
+  route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
@@ -1644,6 +1700,13 @@ export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
 export async function getModelOpsPerformanceBudget(): Promise<ModelOpsPerformanceBudget> {
   return invokeModelOpsApi<ModelOpsPerformanceBudget>({
     url: '/api/v1/aihub/models/performance-budget',
+    method: 'GET',
+  });
+}
+
+export async function getModelRouteQualityBudget(): Promise<ModelRouteQualityBudget> {
+  return invokeModelOpsApi<ModelRouteQualityBudget>({
+    url: '/api/v1/aihub/models/route-quality-budget',
     method: 'GET',
   });
 }

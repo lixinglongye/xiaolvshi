@@ -33,6 +33,7 @@ The `/model-ops` page carries evidence for:
 
 - cheap-first calibration
 - ModelOps load guard
+- Cheap-first quality budget
 - selector replay
 - route telemetry
 - route telemetry remediation

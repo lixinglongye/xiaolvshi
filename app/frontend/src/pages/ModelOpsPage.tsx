@@ -317,6 +317,7 @@ function Inner() {
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
   const modelOpsPerformanceRows = data?.model_ops_performance_budget?.checks ?? [];
+  const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
@@ -600,6 +601,99 @@ function Inner() {
             <div className="mt-3 text-xs leading-5 text-stone-500">
               raw payload echoed: {String(data.model_ops_performance_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
               {String(data.model_ops_performance_budget.privacy_boundary.raw_model_output_included)}
+            </div>
+          </section>
+        )}
+
+        {data?.route_quality_budget && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first quality budget</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.route_quality_budget.summary.cheap_start_task_count} cheap-start tasks /{' '}
+                  {data.route_quality_budget.summary.quality_gate_count} quality gates /{' '}
+                  {data.route_quality_budget.summary.runtime_default_gap_count} default gaps
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.route_quality_budget.status)}>
+                {data.route_quality_budget.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_quality_budget.summary.task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">task budgets</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_quality_budget.summary.premium_exception_task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_quality_budget.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">quality warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.route_quality_budget.summary.blocking_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">quality blockers</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Cheap start</TableHead>
+                    <TableHead>Runtime default</TableHead>
+                    <TableHead>Quality gates</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeQualityRows.map((row) => (
+                    <TableRow key={row.task}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.display_name}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{row.cheap_start_model}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">max {row.max_cost_tier}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-mono text-xs text-stone-700">{row.runtime_default_model}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.runtime_default_has_required_capabilities ? 'capable' : 'capability review'} /{' '}
+                          {row.runtime_default_cost_tier}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-semibold text-stone-950">
+                          {row.quality_score}/{row.quality_floor}
+                        </div>
+                        <div className="mt-1 max-w-[260px] text-[11px] leading-4 text-stone-500">
+                          {row.quality_gate_ids.join(', ')}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        {row.review_action.replace(/_/g, ' ')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 text-xs leading-5 text-stone-500">
+              raw payload echoed: {String(data.route_quality_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
+              {String(data.route_quality_budget.privacy_boundary.raw_model_output_included)}
             </div>
           </section>
         )}

@@ -58,6 +58,7 @@ from services.model_runtime_router import runtime_router_policy_for_api
 from services.model_reasoning_policy import reasoning_policy_for_api
 from services.model_request_policy import generation_request_policy_for_api
 from services.model_route_guardrails import ModelRouteGuardrailService
+from services.model_route_quality_budget import ModelRouteQualityBudgetService
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
@@ -216,6 +217,7 @@ async def list_models():
         observed_gateway_models,
         forecast,
     )
+    route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
         {
             "models_payload_cache_enabled": True,
@@ -256,6 +258,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
+        "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
     }
     payload = {
@@ -298,6 +301,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
+        "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
         "models": catalog_for_api(),
         "usage": usage,
@@ -388,6 +392,15 @@ async def model_ops_performance_budget():
             },
             cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
         ),
+    }
+
+
+@router.get("/models/route-quality-budget")
+async def model_route_quality_budget():
+    """Return metadata-only cheap-first route quality gate evidence."""
+    return {
+        "success": True,
+        "data": ModelRouteQualityBudgetService().build_budget(),
     }
 
 
