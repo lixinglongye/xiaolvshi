@@ -68,6 +68,7 @@ import {
   getProductFeatureGapRadar,
   getReleaseReadiness,
   getUserNeedBenchmarkCoverage,
+  getUserNeedImplementationPriorityQueue,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
   postMaintenanceContinuousSessionRunMonitor,
@@ -128,6 +129,7 @@ import {
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
   type UserNeedBenchmarkCoverage,
+  type UserNeedImplementationPriorityQueue,
   type UserNeedsRadar,
 } from '@/lib/maintenanceApi';
 
@@ -362,6 +364,8 @@ function Inner() {
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
+  const [userNeedImplementationQueue, setUserNeedImplementationQueue] =
+    useState<UserNeedImplementationPriorityQueue | null>(null);
   const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
@@ -462,6 +466,11 @@ function Inner() {
           label: 'User need benchmark coverage',
           run: getUserNeedBenchmarkCoverage,
           apply: (value) => setUserNeedBenchmarkCoverage(value as UserNeedBenchmarkCoverage),
+        },
+        {
+          label: 'User need implementation priority queue',
+          run: getUserNeedImplementationPriorityQueue,
+          apply: (value) => setUserNeedImplementationQueue(value as UserNeedImplementationPriorityQueue),
         },
         {
           label: 'Frontend UI regression gate',
@@ -3462,6 +3471,188 @@ function Inner() {
                   <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                   <div className="grid gap-2 md:grid-cols-2">
                     {userNeedBenchmarkCoverage.validation_commands.map((command) => (
+                      <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600">
+                        {command}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {userNeedImplementationQueue && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {userNeedImplementationQueue.summary.queue_item_count} items /{' '}
+                      {userNeedImplementationQueue.summary.review_required_action_count} reviews /{' '}
+                      {userNeedImplementationQueue.summary.blocked_action_count} blocked
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[userNeedImplementationQueue.status] ?? statusClass.warn}
+                  >
+                    {displayToken(userNeedImplementationQueue.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  {[
+                    { label: 'blocked', value: userNeedImplementationQueue.summary.blocked_action_count },
+                    { label: 'review required', value: userNeedImplementationQueue.summary.review_required_action_count },
+                    { label: 'ready', value: userNeedImplementationQueue.summary.ready_action_count },
+                    { label: 'high priority', value: userNeedImplementationQueue.summary.high_priority_item_count },
+                    {
+                      label: 'public review',
+                      value: userNeedImplementationQueue.summary.public_benchmark_review_item_count,
+                    },
+                    {
+                      label: 'calibration attention',
+                      value: userNeedImplementationQueue.summary.calibration_attention_item_count,
+                    },
+                    {
+                      label: 'source gaps',
+                      value: userNeedImplementationQueue.summary.source_high_priority_gap_count,
+                    },
+                    {
+                      label: 'raw text returned',
+                      value: String(userNeedImplementationQueue.summary.raw_text_returned),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Need</TableHead>
+                          <TableHead>Priority</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Tracks</TableHead>
+                          <TableHead>Links</TableHead>
+                          <TableHead>Next action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {userNeedImplementationQueue.queue_items.slice(0, 8).map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="max-w-[320px]">
+                              <div className="font-semibold text-stone-950">{item.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{item.need_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">{displayToken(item.category)}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={priorityClass[item.priority_band] ?? priorityClass.medium}
+                              >
+                                {item.priority_band} / {item.queue_priority_score}
+                              </Badge>
+                              <div className="mt-2 text-[11px] text-stone-500">
+                                need score {item.user_need_priority_score}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[item.action_status] ?? statusClass.warn}
+                              >
+                                {displayToken(item.action_status)}
+                              </Badge>
+                              <div className="mt-2">coverage: {displayToken(item.coverage_status)}</div>
+                              <div>public: {displayToken(item.public_benchmark_status)}</div>
+                              <div>calibration: {displayToken(item.calibration_status)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <div>{item.implementation_tracks.join(', ') || '-'}</div>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                blockers: {item.blocker_codes.join(', ') || 'none'}
+                              </div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                review: {item.review_reason_codes.join(', ') || 'none'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>cases: {item.linked_benchmark_case_ids.join(', ') || '-'}</div>
+                              <div>fixtures: {item.linked_fixture_ids.join(', ') || '-'}</div>
+                              <div>public: {item.linked_public_source_ids.join(', ') || '-'}</div>
+                              <div>calibration: {item.linked_calibration_task_ids.join(', ') || '-'}</div>
+                              <div>backlog: {item.linked_backlog_item_ids.join(', ') || '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                              {item.next_actions[0] || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Queue boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>coverage endpoint: {userNeedImplementationQueue.source_boundary.coverage_endpoint}</div>
+                      <div>public sampler: {userNeedImplementationQueue.source_boundary.public_sampler_endpoint}</div>
+                      <div>
+                        imports public samples:{' '}
+                        {String(userNeedImplementationQueue.source_boundary.imports_public_benchmark_samples)}
+                      </div>
+                      <div>uses raw legal text: {String(userNeedImplementationQueue.source_boundary.uses_raw_legal_text)}</div>
+                      <div>uses model outputs: {String(userNeedImplementationQueue.source_boundary.uses_model_outputs)}</div>
+                      <div>uses credentials: {String(userNeedImplementationQueue.source_boundary.uses_credentials)}</div>
+                      <div>model calls: {userNeedImplementationQueue.summary.model_calls}</div>
+                      <div>network: {userNeedImplementationQueue.summary.network_access}</div>
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Blocked needs</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {userNeedImplementationQueue.blocked_need_ids.length === 0 ? (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                          none
+                        </Badge>
+                      ) : (
+                        userNeedImplementationQueue.blocked_need_ids.map((needId) => (
+                          <Badge key={needId} variant="outline" className="bg-red-50 font-mono text-[11px] text-red-800">
+                            {needId}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Review needs</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {userNeedImplementationQueue.review_need_ids.slice(0, 8).map((needId) => (
+                        <Badge key={needId} variant="outline" className="bg-amber-50 font-mono text-[11px] text-amber-900">
+                          {needId}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {userNeedImplementationQueue.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {userNeedImplementationQueue.validation_commands.map((command) => (
                       <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600">
                         {command}
                       </div>

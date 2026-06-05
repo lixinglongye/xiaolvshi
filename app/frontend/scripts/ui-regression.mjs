@@ -88,6 +88,13 @@ const checks = [
   () => assertIncludes(maintenancePage, 'Calibration attention gaps', 'user need benchmark calibration attention panel'),
   () => assertIncludes(maintenancePage, 'cheap-first calibration', 'user need benchmark calibration summary'),
   () => assertIncludes(maintenancePage, 'linked_calibration_task_ids', 'user need benchmark calibration task binding'),
+  () => assertIncludes(maintenancePage, 'User need implementation priority queue', 'user need implementation priority queue panel'),
+  () => assertIncludes(maintenancePage, 'userNeedImplementationQueue', 'user need implementation queue state binding'),
+  () => assertIncludes(maintenancePage, 'getUserNeedImplementationPriorityQueue', 'user need implementation queue API binding'),
+  () => assertIncludes(maintenancePage, 'implementation_tracks', 'user need implementation queue track binding'),
+  () => assertIncludes(maintenancePage, 'queue_priority_score', 'user need implementation queue priority binding'),
+  () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
+  () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
   () => assertIncludes(maintenancePage, 'Legal document benchmark coverage', 'legal document benchmark coverage panel'),
   () => assertIncludes(maintenancePage, 'returns_raw_model_output', 'maintenance privacy boundary'),
   () => assertIncludes(maintenancePage, 'Legal benchmark research refresh', 'legal benchmark research refresh panel'),
@@ -179,6 +186,11 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'linked_calibration_task_ids', 'user need benchmark calibration task type'),
   () => assertIncludes(maintenanceApi, 'returns_calibration_payloads', 'user need benchmark calibration payload boundary type'),
   () => assertIncludes(maintenanceApi, 'cheap_first_calibration_mapped_need_count', 'user need benchmark calibration summary type'),
+  () => assertIncludes(maintenanceApi, 'UserNeedImplementationPriorityQueue', 'user need implementation queue type'),
+  () => assertIncludes(maintenanceApi, 'getUserNeedImplementationPriorityQueue', 'user need implementation queue API'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/user-needs/implementation-priority-queue', 'user need implementation queue endpoint'),
+  () => assertIncludes(maintenanceApi, 'queue_items', 'user need implementation queue item list type'),
+  () => assertIncludes(maintenanceApi, 'imports_public_benchmark_samples', 'user need implementation queue public sample boundary type'),
   () => assertIncludes(maintenanceApi, 'low_resource_fixture_review_status', 'maintenance review packet fixture status type'),
   () => assertIncludes(maintenanceApi, 'raw_gateway_response_included', 'maintenance fixture raw gateway boundary type'),
   () => assertIncludes(maintenanceApi, 'reviewLegalFixtureLocalRun', 'maintenance local run review API binding'),
@@ -519,6 +531,12 @@ const geminiDefaultCostImpactPanel = sourceSection(
   'Cheap-first canary plan',
   'model-ops Gemini default cost impact section',
 );
+const userNeedImplementationQueuePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
+  'Product feature gap radar',
+  'maintenance user need implementation priority queue section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -553,6 +571,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default cost impact no secret or raw prompt/payload field names',
 );
+assertNotMatches(
+  userNeedImplementationQueuePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text)\b/i,
+  'maintenance user need implementation priority queue no secret or raw prompt/payload/legal text field names',
+);
 
 console.log(
   JSON.stringify(
@@ -560,7 +583,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 9,
+      assertions: checks.length + 10,
     },
     null,
     2,

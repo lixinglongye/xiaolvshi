@@ -491,6 +491,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -562,6 +563,33 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
     assert "app/backend/tests/test_model_route_legal_benchmark_risk_queue.py" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
     assert "docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
+    assert "metadata-only user-need implementation priority queue evidence" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "high-priority user needs" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "legal benchmark coverage gaps" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "cheap-first calibration/model routing risk" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "product execution actions" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "download public datasets" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "call NewAPI" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "Gemini" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "OpenAI" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "Google" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "gateways" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "network" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "real env values" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "raw legal text" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "prompts" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "payloads" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "model outputs" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "credentials" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "app/backend/services/release_readiness.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
+    assert "docs/USER_NEEDS_RADAR.md" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
     assert "metadata-only Gemini/NewAPI cheap-first coverage-gate evidence" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]
     assert "Gemini-like defaults" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]
     assert "cheap-first alignment" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]

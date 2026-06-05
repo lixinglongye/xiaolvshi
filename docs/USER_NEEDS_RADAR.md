@@ -25,6 +25,14 @@ The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `mai
 
 `GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public benchmark sampler source IDs, sampling batch IDs, cheap-first Gemini/NewAPI calibration task IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence. Public benchmark mappings report sampler readiness and license-review status only; they do not download LegalBench, CUAD, LexGLUE, Pile of Law, or other external examples. Calibration mappings report task IDs, status, release gates, and decisions only; they do not echo prompts, payloads, gateway responses, or model output.
 
+`user-need-implementation-priority-queue` is the metadata-only evidence id for
+turning high-priority user needs, legal benchmark coverage gaps, cheap-first
+calibration/model routing risk, and product execution actions into a reviewable
+implementation queue. It is release/ledger/maintenance evidence only: it does
+not download public datasets, call NewAPI, Gemini, OpenAI, Google, gateways, or
+the network, write real env values, or include raw legal text, prompts,
+payloads, model outputs, or credentials.
+
 Related legal-AI research planning is exposed at:
 
 ```http

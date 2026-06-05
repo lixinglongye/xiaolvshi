@@ -29,6 +29,19 @@ The endpoint also reads the Gemini/NewAPI cheap-first calibration service. Calib
 
 The map reports planning coverage only. It does not claim production legal accuracy, public benchmark scores, external dataset runs, or real client-document validation.
 
+## Implementation Priority Queue
+
+`user-need-implementation-priority-queue` is the release/ledger/maintenance
+evidence id for turning the coverage map into an execution queue. It joins
+high-priority user needs, legal benchmark coverage gaps, cheap-first
+calibration/model routing risk, and product execution actions for maintainer
+review.
+
+This queue is metadata-only. It does not download public datasets, call NewAPI,
+Gemini, OpenAI, Google, gateways, or the network, write real env values, or
+include raw legal text, prompts, payloads, model outputs, credentials, or public
+benchmark samples.
+
 ## Safety
 
 The service does not call NewAPI, Gemini, OpenAI, public benchmark sources, or a gateway. It does not return fixture snippets, raw benchmark samples, public benchmark text, calibration payloads, raw model output, user feedback text, credentials, emails, phone numbers, identity numbers, prompts, or client documents. It returns IDs, counts, release-gate links, decisions, and metadata-only status fields.

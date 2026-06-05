@@ -250,6 +250,88 @@ type UserNeedBenchmarkCoverageResponse = {
   data: UserNeedBenchmarkCoverage;
 };
 
+export type UserNeedImplementationPriorityQueueItem = {
+  id: string;
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  user_need_priority_score: number;
+  queue_priority_score: number;
+  coverage_status: string;
+  public_benchmark_status: string;
+  calibration_status: string;
+  action_status: string;
+  implementation_tracks: string[];
+  blocker_codes: string[];
+  review_reason_codes: string[];
+  linked_benchmark_case_ids: string[];
+  linked_fixture_ids: string[];
+  linked_public_source_ids: string[];
+  linked_calibration_task_ids: string[];
+  linked_backlog_item_ids: string[];
+  next_actions: string[];
+  release_gate_links: string[];
+};
+
+export type UserNeedImplementationPriorityQueue = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    queue_item_count: number;
+    ready_action_count: number;
+    review_required_action_count: number;
+    blocked_action_count: number;
+    high_priority_item_count: number;
+    public_benchmark_review_item_count: number;
+    calibration_attention_item_count: number;
+    source_coverage_status: string;
+    source_high_priority_gap_count: number;
+    source_public_benchmark_license_review_required_need_count: number;
+    source_cheap_first_calibration_attention_need_count: number;
+    local_run_only: boolean;
+    network_access: string;
+    model_calls: string;
+    external_dataset_downloads: boolean;
+    raw_text_returned: boolean;
+  };
+  queue_items: UserNeedImplementationPriorityQueueItem[];
+  blocked_need_ids: string[];
+  review_need_ids: string[];
+  ready_need_ids: string[];
+  recommended_actions: string[];
+  source_boundary: {
+    coverage_endpoint: string;
+    public_sampler_endpoint: string;
+    uses_public_benchmark_metadata: boolean;
+    imports_public_benchmark_samples: boolean;
+    uses_raw_user_feedback: boolean;
+    uses_raw_legal_text: boolean;
+    uses_model_outputs: boolean;
+    uses_credentials: boolean;
+  };
+  privacy_boundary: {
+    returns_raw_benchmark_samples: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_fixture_snippets: boolean;
+    returns_calibration_payloads: boolean;
+    returns_raw_model_output: boolean;
+    returns_user_feedback_text: boolean;
+    external_dataset_downloads: boolean;
+    model_calls: boolean;
+    network_access: boolean;
+  };
+  validation_commands: string[];
+};
+
+type UserNeedImplementationPriorityQueueResponse = {
+  success: boolean;
+  data: UserNeedImplementationPriorityQueue;
+};
+
 export type FrontendUiRegressionCommandGate = {
   id: string;
   command: string;
@@ -4042,6 +4124,20 @@ export async function getUserNeedBenchmarkCoverage(): Promise<UserNeedBenchmarkC
     return payload.data;
   }
   return payload as UserNeedBenchmarkCoverage;
+}
+
+export async function getUserNeedImplementationPriorityQueue(): Promise<UserNeedImplementationPriorityQueue> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs/implementation-priority-queue',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | UserNeedImplementationPriorityQueueResponse
+    | UserNeedImplementationPriorityQueue;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as UserNeedImplementationPriorityQueue;
 }
 
 export async function getFrontendUiRegressionGate(): Promise<FrontendUiRegressionGate> {

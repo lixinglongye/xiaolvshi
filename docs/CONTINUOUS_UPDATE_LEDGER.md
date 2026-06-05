@@ -19,6 +19,14 @@ legal benchmark refresh mappings, and user-need coverage. It does not call
 gateways, write model routes, download datasets, claim public benchmark scores,
 store raw legal text, or handle credentials.
 
+Current user-need priority slice: `user-need-implementation-priority-queue`
+adds metadata-only evidence that joins high-priority user needs, legal benchmark
+coverage gaps, cheap-first calibration/model routing risk, and product
+execution actions into a reviewable implementation queue. It does not download
+public datasets, call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
+write real env values, or include raw legal text, prompts, payloads, model
+outputs, or credentials.
+
 Current Legal RAG authority slice: `legal-rag-authority-citation-gate` adds a
 metadata-only authority and citation gate for selected-source ids, authority
 tiers, jurisdiction/date/freshness metadata, and citation-map source ids. It

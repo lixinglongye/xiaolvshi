@@ -43,6 +43,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
+    assert "User need implementation priority queue" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
@@ -143,6 +144,23 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     quality_signal = next(signal for signal in profile["signals"] if signal["id"] == "deep-review-quality-gates")
+    priority_signal = next(
+        signal for signal in profile["signals"] if signal["id"] == "user-need-implementation-priority-queue"
+    )
+    assert "high-priority user needs" in priority_signal["description"]
+    assert "legal benchmark coverage gaps" in priority_signal["description"]
+    assert "cheap-first calibration/model routing risk" in priority_signal["description"]
+    assert "product execution actions" in priority_signal["description"]
+    assert "priority queue" in priority_signal["responsibility"]
+    assert "app/backend/services/release_readiness.py" in priority_signal["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in priority_signal["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in priority_signal["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in priority_signal["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in priority_signal["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in priority_signal["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in priority_signal["evidence_paths"]
+    assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in priority_signal["evidence_paths"]
+    assert "docs/USER_NEEDS_RADAR.md" in priority_signal["evidence_paths"]
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
     assert "metadata-only authority/citation gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval diagnostics gate evidence" in quality_signal["description"]
@@ -265,6 +283,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("user-need implementation priority queue is metadata-only planning evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("high-priority user needs, legal benchmark coverage gaps, cheap-first calibration/model routing risk, and product execution actions" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])

@@ -277,6 +277,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-fixture-regression-comparison" in completed_ids
     assert "user-need-benchmark-coverage" in completed_ids
     assert "user-need-public-benchmark-mapping" in completed_ids
+    assert "user-need-implementation-priority-queue" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -361,6 +362,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-fixture-regression-comparison" not in queue_ids
     assert "user-need-benchmark-coverage" not in queue_ids
     assert "user-need-public-benchmark-mapping" not in queue_ids
+    assert "user-need-implementation-priority-queue" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
@@ -687,6 +689,45 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "public benchmark scores" in route_queue_entry["impact"]
     assert "raw legal text" in route_queue_entry["impact"]
     assert "credentials" in route_queue_entry["impact"]
+    priority_queue_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "user-need-implementation-priority-queue"
+    )
+    assert priority_queue_entry["size"] == "medium"
+    assert priority_queue_entry["status"] == "shipped"
+    assert "metadata-only review evidence" in priority_queue_entry["impact"]
+    assert "high-priority user needs" in priority_queue_entry["impact"]
+    assert "legal benchmark coverage gaps" in priority_queue_entry["impact"]
+    assert "cheap-first calibration/model routing risk" in priority_queue_entry["impact"]
+    assert "product execution actions" in priority_queue_entry["impact"]
+    assert "without public dataset downloads" in priority_queue_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in priority_queue_entry["impact"]
+    assert "real env writes" in priority_queue_entry["impact"]
+    assert "raw legal text" in priority_queue_entry["impact"]
+    assert "prompts" in priority_queue_entry["impact"]
+    assert "payloads" in priority_queue_entry["impact"]
+    assert "model outputs" in priority_queue_entry["impact"]
+    assert "credentials" in priority_queue_entry["impact"]
+    assert "app/backend/services/release_readiness.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in priority_queue_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in priority_queue_entry["evidence_paths"]
+    assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in priority_queue_entry["evidence_paths"]
+    assert "docs/USER_NEEDS_RADAR.md" in priority_queue_entry["evidence_paths"]
+    assert "user-need-implementation-priority-queue" in priority_queue_entry["release_gate_links"]
+    assert "user-needs-radar" in priority_queue_entry["release_gate_links"]
+    assert "user-need-benchmark-coverage" in priority_queue_entry["release_gate_links"]
+    assert "model-route-legal-benchmark-risk-queue" in priority_queue_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-calibration" in priority_queue_entry["release_gate_links"]
+    assert "legal-benchmark-research-refresh" in priority_queue_entry["release_gate_links"]
+    assert "product-feature-gap-radar" in priority_queue_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py -q"
+        in ledger["validation_commands"]
+    )
     authority_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-authority-citation-gate"
     )
