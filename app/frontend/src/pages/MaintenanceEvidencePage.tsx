@@ -60,6 +60,7 @@ import {
   getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
   getReleaseReadiness,
+  getUserNeedBenchmarkCoverage,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
   type CaseIntakeCompleteness,
@@ -108,6 +109,7 @@ import {
   type ProductFeatureGapRadar,
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
+  type UserNeedBenchmarkCoverage,
   type UserNeedsRadar,
 } from '@/lib/maintenanceApi';
 
@@ -138,6 +140,7 @@ const statusClass: Record<string, string> = {
   ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready_for_review: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  covered: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
   not_started: 'border-stone-200 bg-stone-50 text-stone-700',
@@ -157,7 +160,10 @@ const statusClass: Record<string, string> = {
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
   pass_with_warnings: 'border-amber-200 bg-amber-50 text-amber-900',
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
+  ready_with_gaps: 'border-amber-200 bg-amber-50 text-amber-900',
+  partial: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
+  gap: 'border-red-200 bg-red-50 text-red-800',
   missing: 'border-red-200 bg-red-50 text-red-800',
   ocr_failed: 'border-red-200 bg-red-50 text-red-800',
   sampling_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -271,6 +277,7 @@ function Inner() {
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
+  const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
@@ -347,6 +354,7 @@ function Inner() {
         evidence,
         readiness,
         needsRadar,
+        userNeedBenchmarkCoverageData,
         productFeatureGapData,
         feedbackMap,
         continuousLedgerData,
@@ -391,6 +399,7 @@ function Inner() {
         getMaintenanceEvidence(nextLanguage),
         getReleaseReadiness(),
         getUserNeedsRadar(),
+        getUserNeedBenchmarkCoverage(),
         getProductFeatureGapRadar(),
         getFeedbackRoadmapCatalog(),
         getContinuousUpdateLedger(),
@@ -436,6 +445,7 @@ function Inner() {
       setReleaseReadiness(readiness.data);
       setValidationCommands(readiness.validation_commands);
       setUserNeeds(needsRadar);
+      setUserNeedBenchmarkCoverage(userNeedBenchmarkCoverageData);
       setProductFeatureGaps(productFeatureGapData);
       setFeedbackRoadmap(feedbackMap);
       setContinuousLedger(continuousLedgerData);
@@ -2644,6 +2654,143 @@ function Inner() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </section>
+            )}
+
+            {userNeedBenchmarkCoverage && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User need benchmark coverage</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {userNeedBenchmarkCoverage.summary.covered_need_count} covered /{' '}
+                      {userNeedBenchmarkCoverage.summary.partial_need_count} partial /{' '}
+                      {userNeedBenchmarkCoverage.summary.gap_need_count} gaps
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[userNeedBenchmarkCoverage.status] ?? statusClass.warn}
+                  >
+                    {displayToken(userNeedBenchmarkCoverage.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    { label: 'high-priority gaps', value: userNeedBenchmarkCoverage.summary.high_priority_gap_count },
+                    { label: 'covered needs', value: userNeedBenchmarkCoverage.summary.covered_need_count },
+                    { label: 'synthetic fixtures', value: userNeedBenchmarkCoverage.summary.synthetic_fixture_count },
+                    { label: 'benchmark cases', value: userNeedBenchmarkCoverage.summary.benchmark_case_count },
+                    { label: 'backlog items', value: userNeedBenchmarkCoverage.summary.research_backlog_item_count },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Need</TableHead>
+                          <TableHead>Coverage</TableHead>
+                          <TableHead>Benchmark links</TableHead>
+                          <TableHead>Gap / next action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {userNeedBenchmarkCoverage.coverage_rows.slice(0, 8).map((row) => (
+                          <TableRow key={row.need_id}>
+                            <TableCell className="max-w-[340px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">{displayToken(row.category)}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.coverage_status] ?? statusClass.warn}
+                              >
+                                {displayToken(row.coverage_status)}
+                              </Badge>
+                              <div className="mt-2">
+                                <Badge
+                                  variant="outline"
+                                  className={priorityClass[row.priority_band] ?? priorityClass.medium}
+                                >
+                                  {row.priority_band} / {row.priority_score}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <div>cases: {row.linked_benchmark_case_ids.join(', ') || '-'}</div>
+                              <div>fixtures: {row.linked_fixture_ids.join(', ') || '-'}</div>
+                              <div>docs: {row.linked_document_fixture_ids.join(', ') || '-'}</div>
+                              <div>backlog: {row.linked_backlog_item_ids.join(', ') || '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-500">
+                                {row.gap_reasons.join(', ') || 'metadata_coverage_present'}
+                              </div>
+                              <div className="mt-2">{row.next_actions[0] || '-'}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Coverage boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>local only: {String(userNeedBenchmarkCoverage.summary.local_run_only)}</div>
+                      <div>model calls: {userNeedBenchmarkCoverage.summary.model_calls}</div>
+                      <div>network: {userNeedBenchmarkCoverage.summary.network_access}</div>
+                      <div>source: {userNeedBenchmarkCoverage.privacy_boundary.source}</div>
+                      <div>raw output: {String(userNeedBenchmarkCoverage.privacy_boundary.returns_raw_model_output)}</div>
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">High-priority gaps</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {userNeedBenchmarkCoverage.high_priority_gap_need_ids.length === 0 ? (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                          none
+                        </Badge>
+                      ) : (
+                        userNeedBenchmarkCoverage.high_priority_gap_need_ids.map((needId) => (
+                          <Badge key={needId} variant="outline" className="bg-red-50 font-mono text-[11px] text-red-800">
+                            {needId}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {userNeedBenchmarkCoverage.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {userNeedBenchmarkCoverage.validation_commands.map((command) => (
+                      <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600">
+                        {command}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             )}

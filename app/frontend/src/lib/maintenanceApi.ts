@@ -127,6 +127,64 @@ type UserNeedsRadarResponse = {
   data: UserNeedsRadar;
 };
 
+export type UserNeedBenchmarkCoverageRow = {
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  priority_score: number;
+  linked_benchmark_case_ids: string[];
+  linked_fixture_ids: string[];
+  linked_document_fixture_ids: string[];
+  linked_backlog_item_ids: string[];
+  linked_release_gates: string[];
+  coverage_status: string;
+  gap_reasons: string[];
+  next_actions: string[];
+};
+
+export type UserNeedBenchmarkCoverage = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    need_count: number;
+    high_priority_need_count: number;
+    covered_need_count: number;
+    partial_need_count: number;
+    gap_need_count: number;
+    high_priority_gap_count: number;
+    benchmark_case_count: number;
+    synthetic_fixture_count: number;
+    document_fixture_count: number;
+    research_backlog_item_count: number;
+    local_run_only: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  coverage_rows: UserNeedBenchmarkCoverageRow[];
+  gap_need_ids: string[];
+  high_priority_gap_need_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    returns_fixture_snippets: boolean;
+    returns_raw_benchmark_samples: boolean;
+    returns_raw_model_output: boolean;
+    returns_user_feedback_text: boolean;
+    external_dataset_downloads: boolean;
+    model_calls: boolean;
+    source: string;
+  };
+  validation_commands: string[];
+};
+
+type UserNeedBenchmarkCoverageResponse = {
+  success: boolean;
+  data: UserNeedBenchmarkCoverage;
+};
+
 export type ProductFeatureGap = {
   id: string;
   title: string;
@@ -2902,6 +2960,18 @@ export async function getUserNeedsRadar(): Promise<UserNeedsRadar> {
     return payload.data;
   }
   return payload as UserNeedsRadar;
+}
+
+export async function getUserNeedBenchmarkCoverage(): Promise<UserNeedBenchmarkCoverage> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs/benchmark-coverage',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as UserNeedBenchmarkCoverageResponse | UserNeedBenchmarkCoverage;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as UserNeedBenchmarkCoverage;
 }
 
 export async function getProductFeatureGapRadar(): Promise<ProductFeatureGapRadar> {
