@@ -38,6 +38,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal document benchmark gap fixtures" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
+    assert "User need public benchmark mapping" in profile["release_management"]["release_readiness_controls"]
+    assert "User need cheap-first calibration mapping" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -131,6 +133,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("deep-review first-principles generation are quota guarded" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal document coverage claim policy" in guardrail for guardrail in profile["application_guardrails"])
     assert any("repository-backed synthetic fixture wording" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("public benchmark mapping reports sampler" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

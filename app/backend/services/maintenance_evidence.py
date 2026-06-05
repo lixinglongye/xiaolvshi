@@ -148,6 +148,8 @@ class MaintenanceEvidenceService:
                 "Legal document benchmark gap fixtures",
                 "Legal document benchmark coverage matrix",
                 "Legal document coverage claim policy",
+                "User need public benchmark mapping",
+                "User need cheap-first calibration mapping",
                 "Legal benchmark research registry UI",
                 "Legal adoption research bridge",
                 "Feedback lifecycle policy",
@@ -170,6 +172,8 @@ class MaintenanceEvidenceService:
                 "Validation event evidence accepts only sanitized test, credential-scan, push, release-review, and legal fixture metadata; raw logs, legal text, model output, credentials, and emails stay out of the support claim.",
                 "Generated document CRUD, case generation, and deep-review first-principles generation are quota guarded; quota delivery decisions exist as metadata evidence but do not prove real payment provider settlement or universal cross-endpoint quota coverage.",
                 "The legal document coverage claim policy allows only repository-backed synthetic fixture wording and blocks broad, real-client, public-benchmark, unsupported-document, or sensitive-material claims.",
+                "The user-need public benchmark mapping reports sampler and license-review metadata only; it does not claim public benchmark scores, dataset downloads, or external legal text validation.",
+                "The user-need cheap-first calibration mapping reports task IDs, status, release gates, and decisions only; it does not claim live NewAPI execution or echo calibration payloads.",
                 "Human maintainer must confirm ownership and final form attestations before submission.",
             ],
         }

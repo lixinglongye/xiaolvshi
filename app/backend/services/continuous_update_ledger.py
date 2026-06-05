@@ -146,6 +146,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_adoption_research_bridge.py -q",
                 "python -m pytest tests/test_runtime_router_discovery.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q",
+                "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py tests/test_gemini_newapi_cheap_first_calibration.py -q",
             ],
         }
 
@@ -693,6 +694,33 @@ class ContinuousUpdateLedgerService:
                     "docs/USER_NEEDS_RADAR.md",
                 ),
                 release_gate_links=("user-needs-radar", "legal-review-benchmark", "oss-maintenance-evidence"),
+                user_need_ids=("reviewer-visibility", "grounded-legal-output", "low-resource-testing"),
+            ),
+            LedgerEntry(
+                id="user-need-public-benchmark-mapping",
+                title="User need public benchmark and calibration mapping",
+                category="user_research",
+                size="medium",
+                status="shipped",
+                impact="Joins user-need benchmark coverage to metadata-only public sampler and cheap-first Gemini/NewAPI calibration evidence so source readiness and model-routing coverage are visible without dataset downloads or model calls.",
+                evidence_paths=(
+                    "app/backend/services/user_need_benchmark_coverage.py",
+                    "app/backend/tests/test_user_need_benchmark_coverage.py",
+                    "app/backend/services/legal_public_benchmark_sampler.py",
+                    "app/backend/services/gemini_newapi_cheap_first_calibration.py",
+                    "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/USER_NEED_BENCHMARK_COVERAGE.md",
+                    "docs/USER_NEEDS_RADAR.md",
+                ),
+                release_gate_links=(
+                    "user-needs-radar",
+                    "legal-review-benchmark",
+                    "legal-public-benchmark-sampler",
+                    "frontend-ui-regression-gate",
+                ),
                 user_need_ids=("reviewer-visibility", "grounded-legal-output", "low-resource-testing"),
             ),
             LedgerEntry(

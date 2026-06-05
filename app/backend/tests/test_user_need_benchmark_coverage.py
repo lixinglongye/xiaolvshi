@@ -10,12 +10,30 @@ def test_user_need_benchmark_coverage_maps_high_priority_needs_to_fixtures():
     assert coverage["summary"]["need_count"] >= 6
     assert coverage["summary"]["high_priority_gap_count"] == 0
     assert coverage["summary"]["covered_need_count"] >= coverage["summary"]["high_priority_need_count"]
+    assert coverage["summary"]["public_benchmark_source_count"] >= 4
+    assert coverage["summary"]["public_benchmark_mapped_need_count"] >= coverage["summary"]["high_priority_need_count"]
+    assert coverage["summary"]["public_benchmark_license_review_required_need_count"] >= 1
+    assert coverage["summary"]["public_sampler_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/public-sampler"
+    assert coverage["summary"]["cheap_first_calibration_status"] == "pass"
+    assert coverage["summary"]["cheap_first_calibration_task_count"] >= 6
+    assert coverage["summary"]["cheap_first_calibration_mapped_need_count"] >= coverage["summary"]["high_priority_need_count"]
+    assert coverage["summary"]["cheap_first_calibration_attention_need_count"] == 0
+    assert coverage["source_summaries"]["public_sampler"]["source_count"] >= 4
+    assert coverage["source_summaries"]["cheap_first_calibration"]["newapi_called"] is False
     assert coverage["summary"]["local_run_only"] is True
     rows = {row["need_id"]: row for row in coverage["coverage_rows"]}
     assert "service-contract-risk" in rows["cheap-first-review-routing"]["linked_benchmark_case_ids"]
     assert "fixture-service-agreement-small" in rows["traceable-legal-review"]["linked_fixture_ids"]
     assert rows["privacy-safe-upload"]["linked_document_fixture_ids"]
     assert rows["robust-extraction-quality"]["coverage_status"] == "covered"
+    assert "fast-intake-preflight" in rows["cheap-first-review-routing"]["linked_calibration_task_ids"]
+    assert "legal-review-balanced" in rows["cheap-first-review-routing"]["linked_calibration_task_ids"]
+    assert rows["cheap-first-review-routing"]["calibration_status"] == "pass"
+    assert rows["cheap-first-review-routing"]["calibration_decisions"]["fast-intake-preflight"] == "keep_cheap_first_default"
+    assert "legalbench" in rows["traceable-legal-review"]["linked_public_source_ids"]
+    assert rows["traceable-legal-review"]["public_sampling_states"]["legalbench"] == "license_review_required"
+    assert rows["traceable-legal-review"]["public_benchmark_status"] == "license_review_required"
+    assert "legal_reasoning_smoke" in rows["traceable-legal-review"]["linked_public_sampling_batch_ids"]
 
 
 def test_user_need_benchmark_coverage_surfaces_planning_gaps_without_blocking_high_priority():
@@ -37,6 +55,9 @@ def test_user_need_benchmark_coverage_is_metadata_only():
     assert coverage["privacy_boundary"]["returns_fixture_snippets"] is False
     assert coverage["privacy_boundary"]["external_dataset_downloads"] is False
     assert coverage["privacy_boundary"]["model_calls"] is False
+    assert coverage["privacy_boundary"]["returns_public_benchmark_text"] is False
+    assert coverage["privacy_boundary"]["returns_calibration_payloads"] is False
+    assert coverage["source_summaries"]["public_sampler_resource_policy"]["network_access"] == "disabled_by_default"
     assert "service agreement. alpha service provider" not in payload_text
     assert "borrower id number" not in payload_text
     assert re.search(r"\bsk-[A-Za-z0-9]{20,}\b", payload_text) is None

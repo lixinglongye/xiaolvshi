@@ -23,7 +23,7 @@ GET /api/v1/maintenance/user-needs/benchmark-coverage
 
 The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `maintenance_actions`.
 
-`GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence.
+`GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public benchmark sampler source IDs, sampling batch IDs, cheap-first Gemini/NewAPI calibration task IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence. Public benchmark mappings report sampler readiness and license-review status only; they do not download LegalBench, CUAD, LexGLUE, Pile of Law, or other external examples. Calibration mappings report task IDs, status, release gates, and decisions only; they do not echo prompts, payloads, gateway responses, or model output.
 
 Related legal-AI research planning is exposed at:
 

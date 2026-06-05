@@ -252,6 +252,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "admin-audit-policy" in completed_ids
     assert "legal-fixture-regression-comparison" in completed_ids
     assert "user-need-benchmark-coverage" in completed_ids
+    assert "user-need-public-benchmark-mapping" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -311,6 +312,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "admin-audit-policy" not in queue_ids
     assert "legal-fixture-regression-comparison" not in queue_ids
     assert "user-need-benchmark-coverage" not in queue_ids
+    assert "user-need-public-benchmark-mapping" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
@@ -369,6 +371,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py "
+        "tests/test_gemini_newapi_cheap_first_calibration.py -q"
+        in ledger["validation_commands"]
+    )
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

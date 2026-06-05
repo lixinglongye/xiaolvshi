@@ -3185,13 +3185,26 @@ function Inner() {
                   </Badge>
                 </div>
 
-                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-9">
                   {[
                     { label: 'high-priority gaps', value: userNeedBenchmarkCoverage.summary.high_priority_gap_count },
                     { label: 'covered needs', value: userNeedBenchmarkCoverage.summary.covered_need_count },
                     { label: 'synthetic fixtures', value: userNeedBenchmarkCoverage.summary.synthetic_fixture_count },
                     { label: 'benchmark cases', value: userNeedBenchmarkCoverage.summary.benchmark_case_count },
                     { label: 'backlog items', value: userNeedBenchmarkCoverage.summary.research_backlog_item_count },
+                    { label: 'public sources', value: userNeedBenchmarkCoverage.summary.public_benchmark_source_count },
+                    {
+                      label: 'public review needs',
+                      value: userNeedBenchmarkCoverage.summary.public_benchmark_license_review_required_need_count,
+                    },
+                    {
+                      label: 'calibrated needs',
+                      value: userNeedBenchmarkCoverage.summary.cheap_first_calibration_mapped_need_count,
+                    },
+                    {
+                      label: 'calibration attention',
+                      value: userNeedBenchmarkCoverage.summary.cheap_first_calibration_attention_need_count,
+                    },
                   ].map((metric) => (
                     <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                       <div className="text-2xl font-black text-stone-950">{metric.value}</div>
@@ -3208,6 +3221,8 @@ function Inner() {
                           <TableHead>Need</TableHead>
                           <TableHead>Coverage</TableHead>
                           <TableHead>Benchmark links</TableHead>
+                          <TableHead>Public benchmark</TableHead>
+                          <TableHead>Calibration</TableHead>
                           <TableHead>Gap / next action</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -3241,6 +3256,38 @@ function Inner() {
                               <div>docs: {row.linked_document_fixture_ids.join(', ') || '-'}</div>
                               <div>backlog: {row.linked_backlog_item_ids.join(', ') || '-'}</div>
                             </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.public_benchmark_status] ?? statusClass.warn}
+                              >
+                                {displayToken(row.public_benchmark_status)}
+                              </Badge>
+                              <div className="mt-2">sources: {row.linked_public_source_ids.join(', ') || '-'}</div>
+                              <div>batches: {row.linked_public_sampling_batch_ids.join(', ') || '-'}</div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                states:{' '}
+                                {Object.entries(row.public_sampling_states)
+                                  .map(([sourceId, state]) => `${sourceId}:${displayToken(state)}`)
+                                  .join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.calibration_status] ?? statusClass.warn}
+                              >
+                                {displayToken(row.calibration_status)}
+                              </Badge>
+                              <div className="mt-2">tasks: {row.linked_calibration_task_ids.join(', ') || '-'}</div>
+                              <div>gates: {row.linked_calibration_release_gates.join(', ') || '-'}</div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                decisions:{' '}
+                                {Object.entries(row.calibration_decisions)
+                                  .map(([taskId, decision]) => `${taskId}:${displayToken(decision)}`)
+                                  .join(', ') || '-'}
+                              </div>
+                            </TableCell>
                             <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
                               <div className="font-mono text-[11px] text-stone-500">
                                 {row.gap_reasons.join(', ') || 'metadata_coverage_present'}
@@ -3259,7 +3306,21 @@ function Inner() {
                       <div>local only: {String(userNeedBenchmarkCoverage.summary.local_run_only)}</div>
                       <div>model calls: {userNeedBenchmarkCoverage.summary.model_calls}</div>
                       <div>network: {userNeedBenchmarkCoverage.summary.network_access}</div>
+                      <div>public sampler: {userNeedBenchmarkCoverage.summary.public_sampler_endpoint}</div>
+                      <div>public sampler network: {userNeedBenchmarkCoverage.summary.public_sampler_network_access}</div>
+                      <div>cheap-first calibration: {userNeedBenchmarkCoverage.summary.cheap_first_calibration_status}</div>
+                      <div>
+                        calibration newapi called:{' '}
+                        {String(userNeedBenchmarkCoverage.source_summaries.cheap_first_calibration.newapi_called)}
+                      </div>
                       <div>source: {userNeedBenchmarkCoverage.privacy_boundary.source}</div>
+                      <div>
+                        public benchmark text:{' '}
+                        {String(userNeedBenchmarkCoverage.privacy_boundary.returns_public_benchmark_text)}
+                      </div>
+                      <div>
+                        calibration payloads: {String(userNeedBenchmarkCoverage.privacy_boundary.returns_calibration_payloads)}
+                      </div>
                       <div>raw output: {String(userNeedBenchmarkCoverage.privacy_boundary.returns_raw_model_output)}</div>
                     </div>
 
@@ -3271,6 +3332,36 @@ function Inner() {
                         </Badge>
                       ) : (
                         userNeedBenchmarkCoverage.high_priority_gap_need_ids.map((needId) => (
+                          <Badge key={needId} variant="outline" className="bg-red-50 font-mono text-[11px] text-red-800">
+                            {needId}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Public benchmark review gaps</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {userNeedBenchmarkCoverage.public_benchmark_gap_need_ids.length === 0 ? (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                          none
+                        </Badge>
+                      ) : (
+                        userNeedBenchmarkCoverage.public_benchmark_gap_need_ids.map((needId) => (
+                          <Badge key={needId} variant="outline" className="bg-amber-50 font-mono text-[11px] text-amber-900">
+                            {needId}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Calibration attention gaps</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {userNeedBenchmarkCoverage.calibration_attention_need_ids.length === 0 ? (
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                          none
+                        </Badge>
+                      ) : (
+                        userNeedBenchmarkCoverage.calibration_attention_need_ids.map((needId) => (
                           <Badge key={needId} variant="outline" className="bg-red-50 font-mono text-[11px] text-red-800">
                             {needId}
                           </Badge>
