@@ -259,6 +259,25 @@ function validationEventCount(data: MaintenanceValidationEventEvidence | null, e
 
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
+type MaintenanceLoadFailure = {
+  label: string;
+  message: string;
+};
+type MaintenanceLoadTask = {
+  label: string;
+  run: () => Promise<unknown>;
+  apply: (value: unknown) => void;
+};
+
+function maintenanceLoadFailureMessage(reason: unknown) {
+  const status =
+    (reason as { response?: { status?: number } })?.response?.status ??
+    (reason as { status?: number })?.status ??
+    null;
+  if (status) return `HTTP ${status}`;
+  if (reason instanceof Error && reason.message) return reason.message.slice(0, 180);
+  return 'request failed';
+}
 
 export default function MaintenanceEvidencePage() {
   return (
@@ -344,148 +363,249 @@ function Inner() {
   const [fixtureImprovement, setFixtureImprovement] = useState<LegalFixtureImprovementPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [loadFailures, setLoadFailures] = useState<MaintenanceLoadFailure[]>([]);
   const [copied, setCopied] = useState(false);
 
   const load = async (nextLanguage = language) => {
     setLoading(true);
     setError('');
+    setLoadFailures([]);
     try {
-      const [
-        evidence,
-        readiness,
-        needsRadar,
-        userNeedBenchmarkCoverageData,
-        productFeatureGapData,
-        feedbackMap,
-        continuousLedgerData,
-        continuousSessionTimelineData,
-        continuousSessionRunMonitorData,
-        continuousSessionReviewPacketData,
-        gitHistoryEvidenceData,
-        validationEventEvidenceData,
-        caseIntakeCompletenessData,
-        caseTeamAccessPolicyData,
-        clientDeliveryRiskChecklistData,
-        legalDocumentTemplateMatrixData,
-        legalDocumentExportReadinessData,
-        ocrImportReadinessPolicyData,
-        caseTimelineDeadlineRiskData,
-        matterAuditRetentionPolicyData,
-        lawyerReviewWorkflowPolicyData,
-        evidenceExhibitPackagePolicyData,
-        caseTaskNotificationPolicyData,
-        caseWorkbenchPayloadData,
-        benchmarkData,
-        legalDocumentBenchmarkCoverageData,
-        researchBacklogData,
-        adoptionResearchBridgeData,
-        benchmarkResearchRegistryData,
-        publicBenchmarkSamplerData,
-        fixtureEvidenceBundleData,
-        fixtureModelMatrixData,
-        geminiNewApiModelSelectorData,
-        geminiNewApiSelectorReplayData,
-        fixturePromptPackData,
-        fixtureLocalRunPackageData,
-        fixtureRunPlanData,
-        fixtureRunReportData,
-        fixtureResultArchiveData,
-        fixtureSmokeData,
-        fixtureImprovementData,
-        legalKnowledge,
-        ragEvaluation,
-        maintenanceGateSnapshotData,
-      ] = await Promise.all([
-        getMaintenanceEvidence(nextLanguage),
-        getReleaseReadiness(),
-        getUserNeedsRadar(),
-        getUserNeedBenchmarkCoverage(),
-        getProductFeatureGapRadar(),
-        getFeedbackRoadmapCatalog(),
-        getContinuousUpdateLedger(),
-        getMaintenanceContinuousSessionTimeline(),
-        getMaintenanceContinuousSessionRunMonitor(),
-        getMaintenanceContinuousSessionReviewPacket(),
-        getMaintenanceGitHistoryEvidence(),
-        getMaintenanceValidationEventEvidence(),
-        getCaseIntakeCompleteness(),
-        getCaseTeamAccessPolicy(),
-        getClientDeliveryRiskChecklist(),
-        getLegalDocumentTemplateMatrix(),
-        getLegalDocumentExportReadiness(),
-        getOcrImportReadinessPolicy(),
-        getCaseTimelineDeadlineRisk(),
-        getMatterAuditRetentionPolicy(),
-        getLawyerReviewWorkflowPolicy(),
-        getEvidenceExhibitPackagePolicy(),
-        getCaseTaskNotificationPolicy(),
-        getCaseWorkbenchPayload(),
-        getLegalReviewBenchmark(),
-        getLegalDocumentBenchmarkCoverage(),
-        getLegalResearchBacklog(),
-        getLegalAdoptionResearchBridge(),
-        getLegalBenchmarkResearchRegistry(),
-        getLegalPublicBenchmarkSampler(),
-        getLegalFixtureEvidenceBundle(),
-        getLegalFixtureModelMatrix(),
-        getGeminiNewApiModelSelectorEvidence(),
-        getGeminiNewApiSelectorReplayEvidence(),
-        getLegalFixturePromptPack(),
-        getLegalFixtureLocalRunPackage(),
-        getLegalFixtureRunPlan(),
-        getLegalFixtureRunReport(),
-        getLegalFixtureResultArchive(),
-        getLegalReviewFixtureSmoke(),
-        getLegalFixtureImprovementPlan(),
-        getLegalKnowledgeAudit(),
-        getLegalRagEvaluationPolicy(),
-        getMaintenanceGateSnapshot(),
-      ]);
-      setData(evidence);
-      setReleaseReadiness(readiness.data);
-      setValidationCommands(readiness.validation_commands);
-      setUserNeeds(needsRadar);
-      setUserNeedBenchmarkCoverage(userNeedBenchmarkCoverageData);
-      setProductFeatureGaps(productFeatureGapData);
-      setFeedbackRoadmap(feedbackMap);
-      setContinuousLedger(continuousLedgerData);
-      setContinuousSessionTimeline(continuousSessionTimelineData);
-      setContinuousSessionRunMonitor(continuousSessionRunMonitorData);
-      setContinuousSessionReviewPacket(continuousSessionReviewPacketData);
-      setGitHistoryEvidence(gitHistoryEvidenceData);
-      setValidationEventEvidence(validationEventEvidenceData);
-      setCaseIntakeCompleteness(caseIntakeCompletenessData);
-      setCaseTeamAccessPolicy(caseTeamAccessPolicyData);
-      setClientDeliveryRiskChecklist(clientDeliveryRiskChecklistData);
-      setLegalDocumentTemplateMatrix(legalDocumentTemplateMatrixData);
-      setLegalDocumentExportReadiness(legalDocumentExportReadinessData);
-      setOcrImportReadinessPolicy(ocrImportReadinessPolicyData);
-      setCaseTimelineDeadlineRisk(caseTimelineDeadlineRiskData);
-      setMatterAuditRetentionPolicy(matterAuditRetentionPolicyData);
-      setLawyerReviewWorkflowPolicy(lawyerReviewWorkflowPolicyData);
-      setEvidenceExhibitPackagePolicy(evidenceExhibitPackagePolicyData);
-      setCaseTaskNotificationPolicy(caseTaskNotificationPolicyData);
-      setCaseWorkbenchPayload(caseWorkbenchPayloadData);
-      setBenchmark(benchmarkData);
-      setLegalDocumentBenchmarkCoverage(legalDocumentBenchmarkCoverageData);
-      setResearchBacklog(researchBacklogData);
-      setAdoptionResearchBridge(adoptionResearchBridgeData);
-      setBenchmarkResearchRegistry(benchmarkResearchRegistryData);
-      setPublicBenchmarkSampler(publicBenchmarkSamplerData);
-      setFixtureEvidenceBundle(fixtureEvidenceBundleData);
-      setFixtureModelMatrix(fixtureModelMatrixData);
-      setGeminiNewApiModelSelector(geminiNewApiModelSelectorData);
-      setGeminiNewApiSelectorReplay(geminiNewApiSelectorReplayData);
-      setFixturePromptPack(fixturePromptPackData);
-      setFixtureLocalRunPackage(fixtureLocalRunPackageData);
-      setFixtureRunPlan(fixtureRunPlanData);
-      setFixtureRunReport(fixtureRunReportData);
-      setFixtureResultArchive(fixtureResultArchiveData);
-      setFixtureSmoke(fixtureSmokeData);
-      setFixtureImprovement(fixtureImprovementData);
-      setLegalAudit(legalKnowledge);
-      setRagPolicy(ragEvaluation);
-      setMaintenanceGateSnapshot(maintenanceGateSnapshotData);
+      const tasks: MaintenanceLoadTask[] = [
+        {
+          label: 'OSS evidence',
+          run: () => getMaintenanceEvidence(nextLanguage),
+          apply: (value) => setData(value as MaintenanceEvidenceProfile),
+        },
+        {
+          label: 'Release readiness',
+          run: getReleaseReadiness,
+          apply: (value) => {
+            const readiness = value as { data: ReleaseReadinessResult; validation_commands: ReleaseValidationCommand[] };
+            setReleaseReadiness(readiness.data);
+            setValidationCommands(readiness.validation_commands);
+          },
+        },
+        { label: 'User needs radar', run: getUserNeedsRadar, apply: (value) => setUserNeeds(value as UserNeedsRadar) },
+        {
+          label: 'User need benchmark coverage',
+          run: getUserNeedBenchmarkCoverage,
+          apply: (value) => setUserNeedBenchmarkCoverage(value as UserNeedBenchmarkCoverage),
+        },
+        {
+          label: 'Product feature gap radar',
+          run: getProductFeatureGapRadar,
+          apply: (value) => setProductFeatureGaps(value as ProductFeatureGapRadar),
+        },
+        {
+          label: 'Feedback roadmap',
+          run: getFeedbackRoadmapCatalog,
+          apply: (value) => setFeedbackRoadmap(value as FeedbackRoadmapCatalog),
+        },
+        {
+          label: 'Continuous update ledger',
+          run: getContinuousUpdateLedger,
+          apply: (value) => setContinuousLedger(value as ContinuousUpdateLedger),
+        },
+        {
+          label: 'Continuous session timeline',
+          run: getMaintenanceContinuousSessionTimeline,
+          apply: (value) => setContinuousSessionTimeline(value as MaintenanceContinuousSessionTimeline),
+        },
+        {
+          label: 'Continuous session run monitor',
+          run: getMaintenanceContinuousSessionRunMonitor,
+          apply: (value) => setContinuousSessionRunMonitor(value as MaintenanceContinuousSessionRunMonitor),
+        },
+        {
+          label: 'Continuous session review packet',
+          run: getMaintenanceContinuousSessionReviewPacket,
+          apply: (value) => setContinuousSessionReviewPacket(value as MaintenanceContinuousSessionReviewPacket),
+        },
+        {
+          label: 'Git history evidence',
+          run: getMaintenanceGitHistoryEvidence,
+          apply: (value) => setGitHistoryEvidence(value as MaintenanceGitHistoryEvidence),
+        },
+        {
+          label: 'Validation event evidence',
+          run: getMaintenanceValidationEventEvidence,
+          apply: (value) => setValidationEventEvidence(value as MaintenanceValidationEventEvidence),
+        },
+        {
+          label: 'Case intake completeness',
+          run: getCaseIntakeCompleteness,
+          apply: (value) => setCaseIntakeCompleteness(value as CaseIntakeCompleteness),
+        },
+        {
+          label: 'Case team access policy',
+          run: getCaseTeamAccessPolicy,
+          apply: (value) => setCaseTeamAccessPolicy(value as CaseTeamAccessPolicy),
+        },
+        {
+          label: 'Client delivery risk checklist',
+          run: getClientDeliveryRiskChecklist,
+          apply: (value) => setClientDeliveryRiskChecklist(value as ClientDeliveryRiskChecklist),
+        },
+        {
+          label: 'Legal document template matrix',
+          run: getLegalDocumentTemplateMatrix,
+          apply: (value) => setLegalDocumentTemplateMatrix(value as LegalDocumentTemplateMatrix),
+        },
+        {
+          label: 'Legal document export readiness',
+          run: getLegalDocumentExportReadiness,
+          apply: (value) => setLegalDocumentExportReadiness(value as LegalDocumentExportReadiness),
+        },
+        {
+          label: 'OCR import readiness policy',
+          run: getOcrImportReadinessPolicy,
+          apply: (value) => setOcrImportReadinessPolicy(value as OcrImportReadinessPolicy),
+        },
+        {
+          label: 'Case timeline deadline risk',
+          run: getCaseTimelineDeadlineRisk,
+          apply: (value) => setCaseTimelineDeadlineRisk(value as CaseTimelineDeadlineRisk),
+        },
+        {
+          label: 'Matter audit retention policy',
+          run: getMatterAuditRetentionPolicy,
+          apply: (value) => setMatterAuditRetentionPolicy(value as MatterAuditRetentionPolicy),
+        },
+        {
+          label: 'Lawyer review workflow policy',
+          run: getLawyerReviewWorkflowPolicy,
+          apply: (value) => setLawyerReviewWorkflowPolicy(value as LawyerReviewWorkflowPolicy),
+        },
+        {
+          label: 'Evidence exhibit package policy',
+          run: getEvidenceExhibitPackagePolicy,
+          apply: (value) => setEvidenceExhibitPackagePolicy(value as EvidenceExhibitPackagePolicy),
+        },
+        {
+          label: 'Case task notification policy',
+          run: getCaseTaskNotificationPolicy,
+          apply: (value) => setCaseTaskNotificationPolicy(value as CaseTaskNotificationPolicy),
+        },
+        {
+          label: 'Case workbench payload',
+          run: getCaseWorkbenchPayload,
+          apply: (value) => setCaseWorkbenchPayload(value as CaseWorkbenchPayload),
+        },
+        {
+          label: 'Legal review benchmark',
+          run: getLegalReviewBenchmark,
+          apply: (value) => setBenchmark(value as LegalReviewBenchmark),
+        },
+        {
+          label: 'Legal document benchmark coverage',
+          run: getLegalDocumentBenchmarkCoverage,
+          apply: (value) => setLegalDocumentBenchmarkCoverage(value as LegalDocumentBenchmarkCoverage),
+        },
+        {
+          label: 'Legal research backlog',
+          run: getLegalResearchBacklog,
+          apply: (value) => setResearchBacklog(value as LegalResearchBacklog),
+        },
+        {
+          label: 'Legal adoption research bridge',
+          run: getLegalAdoptionResearchBridge,
+          apply: (value) => setAdoptionResearchBridge(value as LegalAdoptionResearchBridge),
+        },
+        {
+          label: 'Legal benchmark research registry',
+          run: getLegalBenchmarkResearchRegistry,
+          apply: (value) => setBenchmarkResearchRegistry(value as LegalBenchmarkResearchRegistry),
+        },
+        {
+          label: 'Legal public benchmark sampler',
+          run: getLegalPublicBenchmarkSampler,
+          apply: (value) => setPublicBenchmarkSampler(value as LegalPublicBenchmarkSampler),
+        },
+        {
+          label: 'Legal fixture evidence bundle',
+          run: getLegalFixtureEvidenceBundle,
+          apply: (value) => setFixtureEvidenceBundle(value as LegalFixtureEvidenceBundle),
+        },
+        {
+          label: 'Legal fixture model matrix',
+          run: getLegalFixtureModelMatrix,
+          apply: (value) => setFixtureModelMatrix(value as LegalFixtureModelMatrix),
+        },
+        {
+          label: 'Gemini/NewAPI model selector',
+          run: getGeminiNewApiModelSelectorEvidence,
+          apply: (value) => setGeminiNewApiModelSelector(value as GeminiNewApiModelSelectorEvidence),
+        },
+        {
+          label: 'Gemini/NewAPI selector replay',
+          run: getGeminiNewApiSelectorReplayEvidence,
+          apply: (value) => setGeminiNewApiSelectorReplay(value as GeminiNewApiSelectorReplayEvidence),
+        },
+        {
+          label: 'Legal fixture prompt pack',
+          run: getLegalFixturePromptPack,
+          apply: (value) => setFixturePromptPack(value as LegalFixturePromptPack),
+        },
+        {
+          label: 'Legal fixture local run package',
+          run: getLegalFixtureLocalRunPackage,
+          apply: (value) => setFixtureLocalRunPackage(value as LegalFixtureLocalRunPackage),
+        },
+        {
+          label: 'Legal fixture run plan',
+          run: getLegalFixtureRunPlan,
+          apply: (value) => setFixtureRunPlan(value as LegalFixtureRunPlan),
+        },
+        {
+          label: 'Legal fixture run report',
+          run: getLegalFixtureRunReport,
+          apply: (value) => setFixtureRunReport(value as LegalFixtureRunReport),
+        },
+        {
+          label: 'Legal fixture result archive',
+          run: getLegalFixtureResultArchive,
+          apply: (value) => setFixtureResultArchive(value as LegalFixtureResultArchive),
+        },
+        {
+          label: 'Legal review fixture smoke',
+          run: getLegalReviewFixtureSmoke,
+          apply: (value) => setFixtureSmoke(value as LegalReviewFixtureSmoke),
+        },
+        {
+          label: 'Legal fixture improvement plan',
+          run: getLegalFixtureImprovementPlan,
+          apply: (value) => setFixtureImprovement(value as LegalFixtureImprovementPlan),
+        },
+        {
+          label: 'Legal knowledge audit',
+          run: getLegalKnowledgeAudit,
+          apply: (value) => setLegalAudit(value as LegalKnowledgeAudit),
+        },
+        {
+          label: 'Legal RAG evaluation policy',
+          run: getLegalRagEvaluationPolicy,
+          apply: (value) => setRagPolicy(value as LegalRagEvaluationPolicy),
+        },
+        {
+          label: 'Maintenance gate snapshot',
+          run: getMaintenanceGateSnapshot,
+          apply: (value) => setMaintenanceGateSnapshot(value as MaintenanceGateSnapshot),
+        },
+      ];
+
+      const results = await Promise.allSettled(tasks.map((task) => task.run()));
+      const failures: MaintenanceLoadFailure[] = [];
+      results.forEach((result, index) => {
+        const task = tasks[index];
+        if (result.status === 'fulfilled') {
+          task.apply(result.value);
+          return;
+        }
+        console.error(`Maintenance evidence failed: ${task.label}`, result.reason);
+        failures.push({ label: task.label, message: maintenanceLoadFailureMessage(result.reason) });
+      });
+      setLoadFailures(failures);
     } catch (err) {
       console.error(err);
       setError('Maintenance evidence failed to load.');
@@ -760,6 +880,26 @@ function Inner() {
           <div className="mb-6 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             <AlertTriangle className="h-4 w-4" />
             {error}
+          </div>
+        )}
+
+        {loadFailures.length > 0 && (
+          <div className="mb-6 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="h-4 w-4" />
+              Partial maintenance evidence loaded
+            </div>
+            <div className="mt-1 text-xs leading-5 text-amber-900/80">
+              {loadFailures.length} endpoint{loadFailures.length === 1 ? '' : 's'} failed. Available evidence remains
+              visible so a single 500 or 404 does not hide the rest of the page.
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {loadFailures.map((failure) => (
+                <Badge key={`${failure.label}-${failure.message}`} variant="outline" className="border-amber-200 bg-white">
+                  {failure.label}: {failure.message}
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
 

@@ -430,9 +430,9 @@ function Inner() {
   const [partyDialog, setPartyDialog] = useState(false);
   const [docDialog, setDocDialog] = useState(false);
   const [viewDoc, setViewDoc] = useState<GeneratedCaseDocument | null>(null);
-  const [researchQuery, setResearchQuery] = useState('');
-  const [researchResults, setResearchResults] = useState<string[]>([]);
-  const [researchLoading, setResearchLoading] = useState(false);
+  const [researchQuery] = useState('');
+  const [, setResearchResults] = useState<string[]>([]);
+  const [, setResearchLoading] = useState(false);
   const [legalRagMetadata, setLegalRagMetadata] = useState<LegalRagResearchSafeMetadata | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const runtimeStateVersionRef = useRef(0);
@@ -1683,7 +1683,7 @@ function TimelineTab({ facts }: { facts: CaseFactRecord[] }) {
   );
 }
 
-function ResearchTab({ query, setQuery, results, onRun, loading }: { query: string; setQuery: (v: string) => void; results: string[]; onRun: () => void; loading: boolean }) {
+function _ResearchTab({ query, setQuery, results, onRun, loading }: { query: string; setQuery: (v: string) => void; results: string[]; onRun: () => void; loading: boolean }) {
   return (
     <Card>
       <CardHeader><CardTitle className="text-base">法律研究</CardTitle></CardHeader>
