@@ -122,9 +122,9 @@ class ModelCapabilityMatrixService:
                 display_name="Grounded legal research",
                 required_capabilities=("text", "grounding"),
                 preferred_capabilities=("json", "complex-reasoning"),
-                max_cost_tier="medium",
+                max_cost_tier="low",
                 preferred_latency_tier="fast",
-                default_alias="explicit",
+                default_alias="auto-grounded-research",
                 reason="Legal RAG and source lookup need grounding support before premium reasoning is considered.",
             ),
             ModelTaskRequirement(
@@ -134,7 +134,7 @@ class ModelCapabilityMatrixService:
                 preferred_capabilities=("json", "grounding"),
                 max_cost_tier="low",
                 preferred_latency_tier="fast",
-                default_alias="explicit",
+                default_alias="auto-agentic",
                 reason="Agentic planning should start with low-cost Gemini 3 Flash-Lite style models.",
             ),
             ModelTaskRequirement(

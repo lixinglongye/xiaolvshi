@@ -34,6 +34,8 @@ ROLE_TARGETS: tuple[DefaultRoleTarget, ...] = (
     DefaultRoleTarget("classification", "classification", "APP_AI_CLASSIFIER_MODEL", ("text", "json", "classification"), "lowest", True, False),
     DefaultRoleTarget("ocr", "ocr", "APP_OCR_MODEL", ("text", "vision", "ocr"), "lowest", True, False),
     DefaultRoleTarget("review", "review", "APP_AI_REVIEW_MODEL", ("text", "json", "review"), "low", False, False),
+    DefaultRoleTarget("grounded-research", "grounded-research", "APP_AI_GROUNDED_RESEARCH_MODEL", ("text", "grounding"), "low", True, False),
+    DefaultRoleTarget("agentic", "agentic", "APP_AI_AGENTIC_MODEL", ("text", "agentic"), "low", True, False),
     DefaultRoleTarget("pdf", "pdf", "APP_AI_PDF_MODEL", ("text", "vision", "long-context"), "premium", False, True),
 )
 
@@ -113,7 +115,9 @@ class ModelDefaultRecommendationSnapshotService:
         missing_capabilities = self._missing_capabilities(profile, target.required_capabilities)
         over_budget = _tier_rank(current_cost_tier) > _tier_rank(target.max_cost_tier)
         high_volume_bad_default = target.high_volume and (
-            current_cost_tier != "lowest" or current_status != "stable" or self._looks_premium_or_preview(current_model)
+            _tier_rank(current_cost_tier) > _tier_rank(target.max_cost_tier)
+            or current_status != "stable"
+            or self._looks_premium_or_preview(current_model)
         )
         status = "pass"
         if profile is None or missing_capabilities:

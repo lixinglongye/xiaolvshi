@@ -14,12 +14,12 @@ def test_gemini_cheap_first_coverage_gate_builds_metadata_only_rows():
     rows = {row["task"]: row for row in gate["coverage_rows"]}
 
     assert gate["id"] == "modelops-gemini-cheap-first-coverage-gate"
-    assert gate["status"] == "blocked"
+    assert gate["status"] == "review_required"
     assert gate["summary"]["coverage_row_count"] == 8
-    assert gate["summary"]["ready_row_count"] >= 5
-    assert gate["summary"]["review_row_count"] >= 2
-    assert gate["summary"]["blocked_row_count"] >= 1
-    assert gate["summary"]["cheap_first_ready_count"] >= 5
+    assert gate["summary"]["ready_row_count"] == 6
+    assert gate["summary"]["review_row_count"] == 2
+    assert gate["summary"]["blocked_row_count"] == 0
+    assert gate["summary"]["cheap_first_ready_count"] == 6
     assert gate["summary"]["premium_exception_count"] == 2
     assert gate["summary"]["unknown_model_count"] == 0
     assert gate["summary"]["non_gemini_default_count"] == 0
@@ -37,8 +37,13 @@ def test_gemini_cheap_first_coverage_gate_builds_metadata_only_rows():
     assert rows["pdf"]["premium_exception"] is True
     assert rows["pdf"]["release_action"] == "require_operator_premium_exception"
     assert rows["image"]["model_family"] == "media"
-    assert rows["agentic"]["coverage_status"] == "blocked"
-    assert "cheap_first_not_aligned" in rows["agentic"]["reason_codes"]
+    assert rows["agentic"]["runtime_default_model"] == "gemini-3.1-flash-lite"
+    assert rows["agentic"]["coverage_status"] == "ready"
+    assert rows["agentic"]["cheap_first_aligned"] is True
+    assert "cheap_first_not_aligned" not in rows["agentic"]["reason_codes"]
+    assert rows["grounded-research"]["runtime_default_model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["coverage_status"] == "ready"
+    assert rows["grounded-research"]["cheap_first_aligned"] is True
 
 
 def test_gemini_cheap_first_coverage_gate_links_existing_modelops_signals():

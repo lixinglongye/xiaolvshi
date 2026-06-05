@@ -23,6 +23,8 @@ REQUEST_COST_BOUNDS: dict[str, RequestCostBound] = {
     "classification": RequestCostBound("classification", 1_600, 0.002, 0.005, 0.004, 0.01),
     "ocr": RequestCostBound("ocr", 1_800, 0.003, 0.008, 0.006, 0.015),
     "review": RequestCostBound("review", 22_000, 0.05, 0.12, 0.10, 0.25),
+    "grounded-research": RequestCostBound("grounded-research", 18_000, 0.04, 0.10, 0.08, 0.18),
+    "agentic": RequestCostBound("agentic", 8_000, 0.02, 0.05, 0.04, 0.10),
     "pdf": RequestCostBound("pdf", 110_000, 0.40, 0.90, 0.60, 1.20),
 }
 
@@ -100,6 +102,8 @@ class ModelRequestCostBoundsService:
         if default_cost >= bound.warn_default_cost_usd or ceiling_cost >= bound.warn_ceiling_cost_usd:
             return "warn"
         if bound.task in {"fast", "classification", "ocr"} and COST_TIER_RANK.get(profile.cost_tier, 99) > COST_TIER_RANK["lowest"]:
+            return "fail"
+        if bound.task in {"grounded-research", "agentic"} and COST_TIER_RANK.get(profile.cost_tier, 99) > COST_TIER_RANK["low"]:
             return "fail"
         return "pass"
 

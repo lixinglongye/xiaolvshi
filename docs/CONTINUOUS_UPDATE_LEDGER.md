@@ -51,6 +51,13 @@ operator steps only; it does not write configuration, write env files, store
 secret values, call gateways, record approver identity, apply changes, or shift
 traffic.
 
+Current agentic/grounded defaults evidence: `modelops-agentic-grounded-defaults`
+adds shipped metadata-only/default routing evidence for `APP_AI_AGENTIC_MODEL`
+(`gemini-3.1-flash-lite`) and `APP_AI_GROUNDED_RESEARCH_MODEL`
+(`gemini-3.1-flash-lite`) so ModelOps can review the agentic and grounded-research
+defaults without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real
+environment writes, raw prompts, payloads, model outputs, or credentials.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

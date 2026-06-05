@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     app_ai_review_model: str = "gemini-2.5-flash"
     app_ai_pdf_model: str = "gemini-2.5-pro"
     app_ai_image_model: str = "gemini-2.5-flash-image"
+    app_ai_agentic_model: str = "gemini-3.1-flash-lite"
+    app_ai_grounded_research_model: str = "gemini-3.1-flash-lite"
     app_ai_request_timeout: int = 360
     app_ai_premium_requires_review: bool = True
     case_import_ai_classifier_enabled: bool = True

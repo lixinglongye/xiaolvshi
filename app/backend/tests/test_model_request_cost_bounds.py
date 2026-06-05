@@ -9,6 +9,10 @@ def test_request_cost_bounds_pass_for_default_cheap_first_tasks():
     assert result["status"] == "pass"
     assert rows["fast"]["model"] == "gemini-2.5-flash-lite"
     assert rows["classification"]["model"] == "gemini-2.5-flash-lite"
+    assert rows["agentic"]["model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["model"] == "gemini-3.1-flash-lite"
+    assert rows["agentic"]["status"] == "pass"
+    assert rows["grounded-research"]["status"] == "pass"
     assert rows["fast"]["default_request_cost_usd"] < rows["fast"]["fail_default_cost_usd"]
     assert result["summary"]["priced_task_count"] == result["summary"]["task_count"]
     assert "sk-" not in str(result)

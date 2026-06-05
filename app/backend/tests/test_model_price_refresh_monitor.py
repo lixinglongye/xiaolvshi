@@ -26,6 +26,13 @@ def test_price_refresh_monitor_passes_for_current_cheap_defaults():
     assert defaults["fast"]["default_model"] == "gemini-2.5-flash-lite"
     assert defaults["classification"]["cost_tier"] == "lowest"
     assert defaults["ocr"]["has_price_metadata"] is True
+    specialized_check = checks["specialized-text-default-price-tier"]
+    specialized_defaults = {row["task"]: row for row in specialized_check["rows"]}
+    assert specialized_check["status"] == "pass"
+    assert specialized_defaults["agentic"]["default_model"] == "gemini-3.1-flash-lite"
+    assert specialized_defaults["agentic"]["has_required_capability"] is True
+    assert specialized_defaults["grounded-research"]["default_model"] == "gemini-3.1-flash-lite"
+    assert specialized_defaults["grounded-research"]["has_required_capability"] is True
     media_check = checks["media-default-price-metadata"]
     image_default = {row["task"]: row for row in media_check["rows"]}["image"]
     assert media_check["status"] == "pass"
@@ -181,7 +188,15 @@ def test_model_ops_route_includes_price_refresh_monitor_readiness_signal():
         "classification",
         "ocr",
     ]
+    assert payload["price_refresh_monitor"]["summary"]["specialized_text_tasks"] == [
+        "grounded-research",
+        "agentic",
+    ]
     assert payload["price_refresh_monitor"]["summary"]["media_tasks"] == ["image"]
+    assert any(
+        check["id"] == "specialized-text-default-price-tier"
+        for check in payload["price_refresh_monitor"]["checks"]
+    )
     assert any(
         check["id"] == "media-default-price-metadata"
         for check in payload["price_refresh_monitor"]["checks"]

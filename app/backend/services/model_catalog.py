@@ -193,6 +193,14 @@ def image_model() -> str:
     return _configured_model(getattr(settings, "app_ai_image_model", None), "gemini-2.5-flash-image")
 
 
+def agentic_text_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_agentic_model", None), "gemini-3.1-flash-lite")
+
+
+def grounded_research_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_grounded_research_model", None), "gemini-3.1-flash-lite")
+
+
 def task_default_model(task: str) -> str:
     """Return the configured model for a known task, preferring low-cost defaults."""
     task = (task or "fast").strip().lower()
@@ -206,6 +214,10 @@ def task_default_model(task: str) -> str:
         return _configured_model(getattr(settings, "app_ai_classifier_model", None), cheap_text_model())
     if task in {"review", "legal-review", "analysis", "chat", "document-generation"}:
         return _configured_model(getattr(settings, "app_ai_review_model", None), balanced_text_model())
+    if task in {"grounded-research", "grounded_research", "research", "rag-research"}:
+        return grounded_research_model()
+    if task in {"agentic", "agentic-routing", "workflow-planning"}:
+        return agentic_text_model()
     if task in {"pdf", "large-pdf", "final-review", "complex"}:
         return _configured_model(getattr(settings, "app_ai_pdf_model", None), premium_text_model())
     if task in {"image", "genimg", "visual", "image-edit"}:
@@ -232,6 +244,8 @@ def resolve_model(model: str | None, *, task: str = "fast") -> str:
         "auto-review": task_default_model("review"),
         "auto-pdf": task_default_model("pdf"),
         "auto-image": task_default_model("image"),
+        "auto-agentic": task_default_model("agentic"),
+        "auto-grounded-research": task_default_model("grounded-research"),
         "cheap": cheap_text_model(),
         "balanced": balanced_text_model(),
         "premium": premium_text_model(),
@@ -273,6 +287,8 @@ def catalog_for_api() -> list[dict[str, object]]:
         "review": task_default_model("review"),
         "pdf": task_default_model("pdf"),
         "image": task_default_model("image"),
+        "agentic": task_default_model("agentic"),
+        "grounded-research": task_default_model("grounded-research"),
     }
     return [
         {

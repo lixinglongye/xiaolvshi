@@ -53,12 +53,29 @@ def test_request_policy_lowers_json_temperature_ceiling_for_review():
     assert decision.response_format_mode == "json"
 
 
+def test_request_policy_has_specialized_agentic_and_grounded_defaults():
+    agentic = resolve_generation_request_policy(task="agentic-routing", requested_temperature=0.8, requested_max_tokens=6000)
+    grounded = resolve_generation_request_policy(task="grounded_research", response_format={"type": "json_object"})
+
+    assert agentic.task == "agentic"
+    assert agentic.effective_temperature == 0.4
+    assert agentic.effective_max_tokens == 4096
+    assert agentic.temperature_adjusted is True
+    assert agentic.max_tokens_adjusted is True
+    assert grounded.task == "grounded-research"
+    assert grounded.effective_temperature == 0.1
+    assert grounded.effective_max_tokens == 4096
+    assert grounded.response_format_mode == "json"
+
+
 def test_generation_request_policy_for_api_is_safe():
     payload = generation_request_policy_for_api()
 
     assert payload["status"] == "ready"
     assert len(payload["task_defaults"]) >= 5
     assert any(item["task"] == "classification" for item in payload["task_policies"])
+    assert any(item["task"] == "agentic" for item in payload["task_policies"])
+    assert any(item["task"] == "grounded-research" for item in payload["task_policies"])
     assert "sk-" not in str(payload)
 
 

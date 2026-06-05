@@ -22,6 +22,7 @@ def test_gateway_probe_evaluation_recommends_cheap_first_models():
                 "data": [
                     {"id": "models/gemini-2.5-flash-lite"},
                     {"id": "gemini-2.5-flash"},
+                    {"id": "gemini-3.1-flash-lite"},
                     {"id": "gemini-2.5-pro"},
                     {"id": "gemini-2.5-flash-image"},
                 ]
@@ -29,6 +30,7 @@ def test_gateway_probe_evaluation_recommends_cheap_first_models():
             "chat_probe_results": {
                 "models/gemini-2.5-flash-lite": {"status": "pass", "http_status": 200, "json_ok": True, "latency_ms": 900},
                 "gemini-2.5-flash": {"status": "pass", "http_status": 200, "json_ok": True, "latency_ms": 1200},
+                "gemini-3.1-flash-lite": {"status": "pass", "http_status": 200, "json_ok": True, "latency_ms": 1000},
             },
             "image_probe_results": {
                 "gemini-2.5-flash-image": {"status": "pass", "http_status": 200, "image_count": 1, "latency_ms": 2400}
@@ -41,8 +43,11 @@ def test_gateway_probe_evaluation_recommends_cheap_first_models():
     assert result["summary"]["probed_cheap_candidate_count"] >= 1
     assert result["summary"]["image_candidate_count"] == 1
     assert result["summary"]["probed_image_candidate_count"] == 1
-    assert {row["env_var"]: row["recommended_value"] for row in result["recommended_env"]}["APP_AI_CHEAP_MODEL"] == "models/gemini-2.5-flash-lite"
-    assert {row["env_var"]: row["recommended_value"] for row in result["recommended_env"]}["APP_AI_IMAGE_MODEL"] == "gemini-2.5-flash-image"
+    recommended_env = {row["env_var"]: row["recommended_value"] for row in result["recommended_env"]}
+    assert recommended_env["APP_AI_CHEAP_MODEL"] == "models/gemini-2.5-flash-lite"
+    assert recommended_env["APP_AI_GROUNDED_RESEARCH_MODEL"] == "gemini-3.1-flash-lite"
+    assert recommended_env["APP_AI_AGENTIC_MODEL"] == "gemini-3.1-flash-lite"
+    assert recommended_env["APP_AI_IMAGE_MODEL"] == "gemini-2.5-flash-image"
     image_row = next(row for row in result["model_rows"] if row["canonical_model"] == "gemini-2.5-flash-image")
     assert image_row["image_probe_status"] == "pass"
     assert image_row["image_count"] == 1

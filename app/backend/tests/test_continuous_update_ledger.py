@@ -182,6 +182,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" in completed_ids
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
+    assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -301,6 +302,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" not in queue_ids
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
+    assert "modelops-agentic-grounded-defaults" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -498,6 +500,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py -q"
+        in ledger["validation_commands"]
+    )
     coverage_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-coverage-gate"
     )
@@ -527,6 +534,34 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "payloads" in coverage_gate_entry["impact"]
     assert "model outputs" in coverage_gate_entry["impact"]
     assert "credentials" in coverage_gate_entry["impact"]
+    agentic_defaults_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-agentic-grounded-defaults"
+    )
+    assert agentic_defaults_entry["size"] == "medium"
+    assert agentic_defaults_entry["status"] == "shipped"
+    assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in agentic_defaults_entry["impact"]
+    assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in agentic_defaults_entry["impact"]
+    assert "agentic and grounded-research task defaults" in agentic_defaults_entry["impact"]
+    assert "ready instead of blocked" in agentic_defaults_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in agentic_defaults_entry["impact"]
+    assert "real environment writes" in agentic_defaults_entry["impact"]
+    assert "raw prompts" in agentic_defaults_entry["impact"]
+    assert "payloads" in agentic_defaults_entry["impact"]
+    assert "model outputs" in agentic_defaults_entry["impact"]
+    assert "credentials" in agentic_defaults_entry["impact"]
+    assert "app/backend/core/config.py" in agentic_defaults_entry["evidence_paths"]
+    assert "app/backend/services/model_catalog.py" in agentic_defaults_entry["evidence_paths"]
+    assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in agentic_defaults_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in agentic_defaults_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in agentic_defaults_entry["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in agentic_defaults_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in agentic_defaults_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in agentic_defaults_entry["evidence_paths"]
+    assert "modelops-agentic-grounded-defaults" in agentic_defaults_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in agentic_defaults_entry["release_gate_links"]
+    assert "model-default-recommendation-snapshot" in agentic_defaults_entry["release_gate_links"]
+    assert "model-gateway-compatibility" in agentic_defaults_entry["release_gate_links"]
+    assert "model-lifecycle-policy" in agentic_defaults_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

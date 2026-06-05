@@ -17,6 +17,8 @@ def test_lifecycle_policy_passes_stable_cheap_first_defaults(monkeypatch):
             "ocr": "gemini-2.5-flash-lite",
             "classification": "gemini-2.5-flash-lite",
             "review": "gemini-2.5-flash",
+            "grounded-research": "gemini-3.1-flash-lite",
+            "agentic": "gemini-3.1-flash-lite",
             "pdf": "gemini-2.5-pro",
         }.get(task, "gemini-2.5-flash"),
     )
@@ -27,6 +29,8 @@ def test_lifecycle_policy_passes_stable_cheap_first_defaults(monkeypatch):
     assert plan["summary"]["deprecated_default_count"] == 0
     assert plan["summary"]["latest_alias_default_count"] == 0
     assert _role(plan, "fast")["cheap_first_aligned"] is True
+    assert _role(plan, "agentic")["model"] == "gemini-3.1-flash-lite"
+    assert _role(plan, "grounded-research")["model"] == "gemini-3.1-flash-lite"
     assert "sk-" not in str(plan)
 
 
@@ -40,6 +44,8 @@ def test_lifecycle_policy_warns_on_preview_and_latest_defaults(monkeypatch):
             "ocr": "gemini-2.5-flash-lite",
             "classification": "gemini-2.5-flash-lite",
             "review": "gemini-3.1-pro-preview",
+            "grounded-research": "gemini-3.1-flash-lite",
+            "agentic": "gemini-3.1-flash-lite",
             "pdf": "gemini-2.5-pro-latest",
         }.get(task, "gemini-2.5-flash"),
     )

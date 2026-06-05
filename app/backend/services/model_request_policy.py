@@ -69,6 +69,22 @@ TASK_PARAMETER_POLICIES: dict[str, GenerationTaskPolicy] = {
         max_max_tokens=10000,
         rationale="Legal review needs enough space for structured analysis while avoiding premium-style verbosity by default.",
     ),
+    "grounded-research": GenerationTaskPolicy(
+        task="grounded-research",
+        default_temperature=0.1,
+        max_temperature=0.5,
+        default_max_tokens=4096,
+        max_max_tokens=8000,
+        rationale="Grounded research needs enough room for source-aware answers while keeping the low-cost default bounded.",
+    ),
+    "agentic": GenerationTaskPolicy(
+        task="agentic",
+        default_temperature=0.0,
+        max_temperature=0.4,
+        default_max_tokens=2048,
+        max_max_tokens=4096,
+        rationale="Agentic planning should stay deterministic and compact before any tool or workflow execution.",
+    ),
     "pdf": GenerationTaskPolicy(
         task="pdf",
         default_temperature=0.0,

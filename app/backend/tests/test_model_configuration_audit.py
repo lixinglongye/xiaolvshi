@@ -13,6 +13,8 @@ def _reset_default_models(monkeypatch):
             "ocr": "gemini-2.5-flash-lite",
             "classification": "gemini-2.5-flash-lite",
             "review": "gemini-2.5-flash",
+            "grounded-research": "gemini-3.1-flash-lite",
+            "agentic": "gemini-3.1-flash-lite",
             "pdf": "gemini-2.5-pro",
             "image": "gemini-2.5-flash-image",
         }.get(task, "gemini-2.5-flash")
@@ -28,6 +30,8 @@ def test_model_configuration_audit_passes_default_roles(monkeypatch):
     assert result["status"] == "pass"
     assert result["blocking_check_ids"] == []
     assert result["summary"]["unknown_model_count"] == 0
+    assert any(check["id"] == "agentic-route-model" for check in result["checks"])
+    assert any(check["id"] == "grounded-research-route-model" for check in result["checks"])
     assert any(check["id"] == "image-route-model" for check in result["checks"])
     assert "sk-" not in str(result)
 

@@ -48,6 +48,17 @@ def test_reasoning_policy_coerces_medium_for_gemini_3_pro_preview():
     assert decision.supported_efforts == ("low", "high")
 
 
+def test_reasoning_policy_uses_low_for_agentic_and_grounded_gemini_3_defaults():
+    agentic = resolve_reasoning_effort(model="gemini-3.1-flash-lite", task="agentic")
+    grounded = resolve_reasoning_effort(model="gemini-3.1-flash-lite", task="grounded_research")
+
+    assert agentic.effective_effort == "low"
+    assert agentic.gateway_parameter == "low"
+    assert grounded.task == "grounded-research"
+    assert grounded.effective_effort == "low"
+    assert grounded.gateway_parameter == "low"
+
+
 def test_reasoning_policy_omits_unknown_gateway_models():
     decision = resolve_reasoning_effort(
         model="gateway-private-gemini",

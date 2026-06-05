@@ -10,8 +10,8 @@ from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_reasoning_policy import resolve_reasoning_effort
 
 
-CHEAP_FIRST_TASKS = {"fast", "ocr", "classification", "agentic"}
-BALANCED_TASKS = {"review", "grounded-research"}
+CHEAP_FIRST_TASKS = {"fast", "ocr", "classification", "agentic", "grounded-research"}
+BALANCED_TASKS = {"review"}
 PREMIUM_EXCEPTION_TASKS = {"pdf", "image"}
 
 

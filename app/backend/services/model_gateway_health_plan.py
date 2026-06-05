@@ -89,6 +89,8 @@ class ModelGatewayHealthPlanService:
             ("ocr", task_default_model("ocr")),
             ("classification", task_default_model("classification")),
             ("review", task_default_model("review")),
+            ("grounded-research", task_default_model("grounded-research")),
+            ("agentic", task_default_model("agentic")),
             ("pdf", task_default_model("pdf")),
             ("image", image_model()),
         )

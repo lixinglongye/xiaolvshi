@@ -36,6 +36,16 @@ TASK_GROUPS: dict[str, dict[str, Any]] = {
         "max_cost_tier": "low",
         "reason": "Legal review needs better reasoning than triage but should still avoid premium defaults.",
     },
+    "grounded-research": {
+        "budget_mode": "cheap-first-grounded",
+        "max_cost_tier": "low",
+        "reason": "Grounded legal research should start on the cheapest Gemini model with grounding capability before escalating.",
+    },
+    "agentic": {
+        "budget_mode": "cheap-first-agentic",
+        "max_cost_tier": "low",
+        "reason": "Agentic workflow planning should start on a low-cost Gemini model with agentic capability.",
+    },
     "pdf": {
         "budget_mode": "premium-exception",
         "max_cost_tier": "premium",
@@ -93,6 +103,10 @@ def normalize_budget_task(task: str | None) -> str:
         return "pdf"
     if value in {"genimg", "visual", "image-edit"}:
         return "image"
+    if value in {"grounded_research", "research", "rag-research"}:
+        return "grounded-research"
+    if value in {"agentic-routing", "workflow-planning"}:
+        return "agentic"
     return value if value in TASK_GROUPS else "review"
 
 
@@ -137,7 +151,7 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
 def budget_policy_for_api() -> dict[str, Any]:
     decisions = [
         model_budget_decision(None, task=task).to_api()
-        for task in ("fast", "ocr", "classification", "review", "pdf", "image")
+        for task in ("fast", "ocr", "classification", "review", "grounded-research", "agentic", "pdf", "image")
     ]
     return {
         "premium_requires_review": bool(getattr(settings, "app_ai_premium_requires_review", True)),

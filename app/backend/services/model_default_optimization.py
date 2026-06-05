@@ -22,8 +22,8 @@ DEFAULT_TARGETS: dict[str, DefaultOptimizationTarget] = {
     "ocr": DefaultOptimizationTarget("ocr", "APP_OCR_MODEL", "configured_default"),
     "review": DefaultOptimizationTarget("review", "APP_AI_REVIEW_MODEL", "configured_default"),
     "pdf": DefaultOptimizationTarget("pdf", "APP_AI_PDF_MODEL", "configured_default"),
-    "grounded-research": DefaultOptimizationTarget("grounded-research", None, "explicit_request_model"),
-    "agentic": DefaultOptimizationTarget("agentic", None, "explicit_request_model"),
+    "grounded-research": DefaultOptimizationTarget("grounded-research", "APP_AI_GROUNDED_RESEARCH_MODEL", "configured_default"),
+    "agentic": DefaultOptimizationTarget("agentic", "APP_AI_AGENTIC_MODEL", "configured_default"),
     "image": DefaultOptimizationTarget("image", None, "explicit_media_model"),
 }
 

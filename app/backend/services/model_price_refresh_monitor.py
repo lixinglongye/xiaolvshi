@@ -19,6 +19,20 @@ DEFAULT_ENV_VARS = {
     "classification": "APP_AI_CLASSIFIER_MODEL",
     "ocr": "APP_OCR_MODEL",
 }
+SPECIALIZED_TEXT_DEFAULTS = {
+    "grounded-research": {
+        "env_var": "APP_AI_GROUNDED_RESEARCH_MODEL",
+        "recommended_model": "gemini-3.1-flash-lite",
+        "max_allowed_cost_tier": "low",
+        "required_capability": "grounding",
+    },
+    "agentic": {
+        "env_var": "APP_AI_AGENTIC_MODEL",
+        "recommended_model": "gemini-3.1-flash-lite",
+        "max_allowed_cost_tier": "low",
+        "required_capability": "agentic",
+    },
+}
 MEDIA_DEFAULTS = {
     "image": {
         "env_var": "APP_AI_IMAGE_MODEL",
@@ -51,6 +65,10 @@ class ModelPriceRefreshMonitorService:
         high_frequency_check, high_frequency_signals = self._check_high_frequency_defaults()
         checks.append(high_frequency_check)
         drift_signals.extend(high_frequency_signals)
+
+        specialized_text_check, specialized_text_signals = self._check_specialized_text_defaults()
+        checks.append(specialized_text_check)
+        drift_signals.extend(specialized_text_signals)
 
         media_check, media_signals = self._check_media_defaults()
         checks.append(media_check)
@@ -92,6 +110,7 @@ class ModelPriceRefreshMonitorService:
                 "refresh_needed_count": refresh_needed_count,
                 "missing_price_metadata_count": missing_price_count,
                 "high_frequency_tasks": list(HIGH_FREQUENCY_TASKS),
+                "specialized_text_tasks": list(SPECIALIZED_TEXT_DEFAULTS),
                 "media_tasks": list(MEDIA_DEFAULTS),
                 "forecast_profile_count": len(_list(forecast.get("profiles"))),
                 "observed_model_count": observed_check["summary"]["observed_model_count"],
@@ -181,6 +200,93 @@ class ModelPriceRefreshMonitorService:
                     "Keep fast, classification, and OCR defaults on gemini-2.5-flash-lite."
                     if status == "pass"
                     else "Restore high-frequency defaults to gemini-2.5-flash-lite before increasing traffic."
+                ),
+            },
+            signals,
+        )
+
+    def _check_specialized_text_defaults(self) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        rows: list[dict[str, Any]] = []
+        signals: list[dict[str, Any]] = []
+
+        for task, policy in SPECIALIZED_TEXT_DEFAULTS.items():
+            model_id = task_default_model(task)
+            profile = model_profile(model_id)
+            cost_tier = profile.cost_tier if profile else None
+            stable = bool(profile and profile.status == "stable")
+            priced = _has_text_price_metadata(profile)
+            has_required_capability = bool(profile and policy["required_capability"] in profile.capabilities)
+            within_cost = (
+                _tier_rank(cost_tier) <= _tier_rank(str(policy["max_allowed_cost_tier"]))
+                if cost_tier
+                else False
+            )
+            blocked_marker = _has_premium_or_preview_marker(model_id)
+            status = "pass"
+            reason = f"{task} default remains on a stable low-cost Gemini text model with required capability."
+            signal_type = "specialized_text_default_drift"
+
+            if profile is None:
+                status = "fail"
+                reason = "Specialized text default is not in the local catalog, so price and stability are unverified."
+                signal_type = "unknown_price_metadata"
+            elif not priced:
+                status = "fail"
+                reason = "Specialized text default lacks token price metadata."
+                signal_type = "missing_price_metadata"
+            elif not stable:
+                status = "fail"
+                reason = "Specialized text default is not marked stable."
+            elif not has_required_capability:
+                status = "fail"
+                reason = f"Specialized text default is missing required {policy['required_capability']} capability."
+            elif not within_cost or blocked_marker:
+                status = "fail"
+                reason = f"Specialized text default exceeds max {policy['max_allowed_cost_tier']} or looks premium/preview."
+
+            row = {
+                "task": task,
+                "env_var": policy["env_var"],
+                "default_model": model_id,
+                "normalized_model": canonical_model_id(model_id),
+                "status": status,
+                "cost_tier": cost_tier,
+                "max_allowed_cost_tier": policy["max_allowed_cost_tier"],
+                "stable": stable,
+                "has_required_capability": has_required_capability,
+                "has_price_metadata": priced,
+                "requires_price_refresh": status != "pass",
+                "recommended_model": policy["recommended_model"],
+                "reason": reason,
+            }
+            rows.append(row)
+            if status != "pass":
+                signals.append(
+                    self._signal(
+                        signal_id=f"specialized-text-default-{task}",
+                        severity="fail",
+                        signal_type=signal_type,
+                        model=model_id,
+                        reason=reason,
+                        action=f"Reset {policy['env_var']} to {policy['recommended_model']} or refresh catalog pricing before using this default.",
+                    )
+                )
+
+        status = "fail" if any(row["status"] == "fail" for row in rows) else "pass"
+        return (
+            {
+                "id": "specialized-text-default-price-tier",
+                "status": status,
+                "summary": {
+                    "task_count": len(rows),
+                    "aligned_count": sum(1 for row in rows if row["status"] == "pass"),
+                    "blocking_count": sum(1 for row in rows if row["status"] == "fail"),
+                },
+                "rows": rows,
+                "recommended_action": (
+                    "Keep agentic and grounded research defaults on stable low-cost Gemini 3 Flash-Lite."
+                    if status == "pass"
+                    else "Restore specialized text defaults to low-cost capable Gemini models before increasing traffic."
                 ),
             },
             signals,

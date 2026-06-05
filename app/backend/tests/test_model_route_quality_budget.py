@@ -11,16 +11,19 @@ def test_route_quality_budget_exposes_cheap_first_quality_gates():
     budget = ModelRouteQualityBudgetService().build_budget()
     rows = {row["task"]: row for row in budget["task_quality_budgets"]}
 
-    assert budget["status"] == "warn"
+    assert budget["status"] == "pass"
     assert budget["summary"]["task_count"] >= 8
     assert budget["summary"]["cheap_start_task_count"] >= 6
     assert budget["summary"]["quality_gate_count"] >= 20
     assert budget["summary"]["raw_payload_echoed"] is False
-    assert "runtime-default-capability-review" in budget["warning_check_ids"]
+    assert budget["warning_check_ids"] == []
     assert rows["fast"]["cheap_start_model"] == "gemini-2.5-flash-lite"
     assert rows["fast"]["review_action"] == "cheap_first_with_quality_gate"
     assert rows["review"]["quality_gate_count"] >= 3
-    assert rows["grounded-research"]["runtime_default_has_required_capabilities"] is False
+    assert rows["grounded-research"]["runtime_default_model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["runtime_default_has_required_capabilities"] is True
+    assert rows["agentic"]["runtime_default_model"] == "gemini-3.1-flash-lite"
+    assert rows["agentic"]["runtime_default_has_required_capabilities"] is True
     assert budget["privacy_boundary"]["raw_model_output_included"] is False
 
 

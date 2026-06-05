@@ -11,6 +11,12 @@ def test_default_optimization_passes_for_current_cheap_first_defaults():
     assert rows["classification"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["ocr"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["review"]["recommended_model"] == "gemini-2.5-flash"
+    assert rows["agentic"]["status"] == "pass"
+    assert rows["agentic"]["env_var"] == "APP_AI_AGENTIC_MODEL"
+    assert rows["agentic"]["recommended_model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["status"] == "pass"
+    assert rows["grounded-research"]["env_var"] == "APP_AI_GROUNDED_RESEARCH_MODEL"
+    assert rows["grounded-research"]["recommended_model"] == "gemini-3.1-flash-lite"
     assert rows["pdf"]["requires_operator_review"] is True
     assert "sk-" not in str(plan)
 

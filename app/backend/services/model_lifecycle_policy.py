@@ -99,6 +99,8 @@ class ModelLifecyclePolicyService:
             ("ocr", "ocr"),
             ("classification", "classification"),
             ("review", "review"),
+            ("grounded-research", "grounded-research"),
+            ("agentic", "agentic"),
             ("pdf", "pdf"),
         )
 
@@ -153,7 +155,9 @@ class ModelLifecyclePolicyService:
         return COST_TIER_RANK.get(cost_tier or "unknown", 99) <= COST_TIER_RANK.get(max_cost_tier, 99)
 
     def _cheap_first_aligned(self, role: str, cost_tier: str | None, task: str) -> bool:
-        if role in {"cheap", "fast", "ocr", "classification"}:
+        if role in {"cheap", "fast", "ocr", "classification", "agentic"}:
+            return cost_tier in {"lowest", "low"}
+        if role == "grounded-research":
             return cost_tier in {"lowest", "low"}
         if task == "review":
             return cost_tier in {"lowest", "low", "medium"}
@@ -190,7 +194,7 @@ class ModelLifecyclePolicyService:
         cheap_drift = [
             role.role
             for role in roles
-            if role.role in {"cheap", "fast", "ocr", "classification"}
+            if role.role in {"cheap", "fast", "ocr", "classification", "grounded-research", "agentic"}
             and role.cost_tier is not None
             and not role.cheap_first_aligned
         ]

@@ -16,6 +16,10 @@ def test_model_default_recommendation_snapshot_passes_for_current_defaults():
     assert rows["classification"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["ocr"]["recommended_model"] == "gemini-2.5-flash-lite"
     assert rows["review"]["recommended_model"] == "gemini-2.5-flash"
+    assert rows["agentic"]["recommended_model"] == "gemini-3.1-flash-lite"
+    assert rows["agentic"]["status"] == "pass"
+    assert rows["grounded-research"]["recommended_model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["status"] == "pass"
     assert rows["pdf"]["operator_review_required"] is True
     assert not SECRET_PATTERN.search(str(snapshot))
 
@@ -50,6 +54,8 @@ def test_model_default_recommendation_snapshot_prefix_examples_are_supported():
     assert "models/gemini-2.5-flash-lite" in snapshot["newapi_prefix_compatibility"]
     assert "openrouter/google/gemini-2.5-flash-lite" in snapshot["newapi_prefix_compatibility"]
     assert any(row["env_var"] == "APP_AI_FAST_MODEL" for row in snapshot["recommended_env"])
+    assert any(row["env_var"] == "APP_AI_AGENTIC_MODEL" for row in snapshot["recommended_env"])
+    assert any(row["env_var"] == "APP_AI_GROUNDED_RESEARCH_MODEL" for row in snapshot["recommended_env"])
 
 
 def test_model_ops_route_includes_default_recommendation_snapshot():

@@ -49,9 +49,30 @@ def test_budget_policy_uses_gemini_image_default(monkeypatch):
     assert not decision.is_over_budget
 
 
+def test_budget_policy_uses_low_cost_agentic_and_grounded_defaults(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_agentic_model", "gemini-3.1-flash-lite", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_grounded_research_model", "gemini-3.1-flash-lite", raising=False)
+
+    agentic = model_budget.model_budget_decision(None, task="agentic-routing")
+    grounded = model_budget.model_budget_decision(None, task="grounded_research")
+
+    assert agentic.task == "agentic"
+    assert agentic.resolved_model == "gemini-3.1-flash-lite"
+    assert agentic.budget_mode == "cheap-first-agentic"
+    assert agentic.cost_tier == "low"
+    assert agentic.max_cost_tier == "low"
+    assert not agentic.is_over_budget
+    assert grounded.task == "grounded-research"
+    assert grounded.resolved_model == "gemini-3.1-flash-lite"
+    assert grounded.budget_mode == "cheap-first-grounded"
+    assert grounded.cost_tier == "low"
+    assert grounded.max_cost_tier == "low"
+    assert not grounded.is_over_budget
+
+
 def test_budget_policy_for_api_lists_all_core_tasks():
     payload = model_budget.budget_policy_for_api()
     tasks = {item["task"] for item in payload["task_decisions"]}
 
-    assert tasks == {"fast", "ocr", "classification", "review", "pdf", "image"}
+    assert tasks == {"fast", "ocr", "classification", "review", "grounded-research", "agentic", "pdf", "image"}
     assert payload["premium_requires_review"] in {True, False}

@@ -27,7 +27,9 @@ def test_capability_matrix_supports_gemini_3_agentic_and_grounding_tasks():
     rows = {row["task"]: row for row in matrix["tasks"]}
 
     assert rows["agentic"]["recommended_model"] == "gemini-3.1-flash-lite"
-    assert rows["grounded-research"]["recommended_model"] in {"gemini-3.1-flash-lite", "gemini-3.5-flash"}
+    assert rows["agentic"]["runtime_default_is_recommended"] is True
+    assert rows["grounded-research"]["recommended_model"] == "gemini-3.1-flash-lite"
+    assert rows["grounded-research"]["runtime_default_is_recommended"] is True
     assert "gemini-3.1-flash-lite" in matrix["coverage"]["recommended_models"]
     assert "sk-" not in str(matrix)
 

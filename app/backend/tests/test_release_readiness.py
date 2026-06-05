@@ -492,6 +492,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -581,6 +582,27 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
+    assert "metadata-only/default routing change evidence" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "agentic and grounded-research task defaults" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "ready rather than blocked" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "Gemini" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "OpenAI" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "Google" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "gateways" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "network" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "real environment values" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "raw prompts" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "payloads" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "model outputs" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "credentials" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
+    assert "app/backend/core/config.py" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
+    assert "app/backend/services/model_catalog.py" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
+    assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
     assert "metadata-only Legal RAG authority and citation gate evidence" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "Gemini" in checks["legal-rag-authority-citation-gate"]["manual_note"]

@@ -100,6 +100,8 @@ APP_AI_PREMIUM_MODEL=gemini-2.5-pro
 APP_OCR_MODEL=gemini-2.5-flash-lite
 APP_AI_FAST_MODEL=gemini-2.5-flash-lite
 APP_AI_CLASSIFIER_MODEL=gemini-2.5-flash-lite
+APP_AI_AGENTIC_MODEL=gemini-3.1-flash-lite
+APP_AI_GROUNDED_RESEARCH_MODEL=gemini-3.1-flash-lite
 APP_AI_REVIEW_MODEL=gemini-2.5-flash
 APP_AI_PDF_MODEL=gemini-2.5-pro
 ```

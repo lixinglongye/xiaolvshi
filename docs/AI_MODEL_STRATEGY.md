@@ -15,6 +15,8 @@ APP_AI_PREMIUM_MODEL=gemini-2.5-pro
 APP_OCR_MODEL=gemini-2.5-flash-lite
 APP_AI_FAST_MODEL=gemini-2.5-flash-lite
 APP_AI_CLASSIFIER_MODEL=gemini-2.5-flash-lite
+APP_AI_AGENTIC_MODEL=gemini-3.1-flash-lite
+APP_AI_GROUNDED_RESEARCH_MODEL=gemini-3.1-flash-lite
 APP_AI_REVIEW_MODEL=gemini-2.5-flash
 APP_AI_PDF_MODEL=gemini-2.5-pro
 APP_AI_IMAGE_MODEL=gemini-2.5-flash-image
@@ -32,6 +34,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 | `auto-fast` / `auto-cheap` | `APP_AI_CHEAP_MODEL` | 路由、分类、轻量总结、低风险结构化提取 |
 | `auto-ocr` | `APP_OCR_MODEL` | 扫描 PDF 页 OCR、图片文字转写 |
 | `auto-review` | `APP_AI_REVIEW_MODEL` | 合同审查、案件问答、结构化法律分析 |
+| `auto-agentic` | `APP_AI_AGENTIC_MODEL` | Agentic planning, tool orchestration, and low-risk multi-step routing. |
+| `auto-grounded-research` | `APP_AI_GROUNDED_RESEARCH_MODEL` | Grounded research, source-backed synthesis, and citation-oriented review. |
 | `auto-pdf` | `APP_AI_PDF_MODEL` | 大 PDF、复杂推理、最终复核 |
 | `auto-image` | `APP_AI_IMAGE_MODEL` | 图片生成、图片编辑、视觉证据草图 |
 
@@ -86,6 +90,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 - Gemini 3 系列用于显式能力升级：`gemini-3.1-flash-lite` 适合低成本 agentic/grounding 任务，`gemini-3.5-flash` 适合更强的 grounded research，`gemini-3.1-pro-preview` 只作为预览 premium 复核候选。
 
 这样做的依据是 Gemini 官方价格页将 `gemini-2.5-flash-lite` 描述为面向规模化使用的最小、最具成本效益模型，并给出低于 Flash/Pro 的输入输出价格。官方模型页也标注 `gemini-2.5-flash` 适合低延迟、高吞吐且需要推理的任务，`gemini-2.5-pro` 用于复杂任务和深度推理。
+
+`APP_AI_AGENTIC_MODEL` and `APP_AI_GROUNDED_RESEARCH_MODEL` pin the agentic and grounded-research task defaults to `gemini-3.1-flash-lite`. This is a metadata-only/default routing change: the ModelOps coverage evidence should treat these defaults as ready items, including the previously missing agentic default row, and it must not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write real environment values, or include raw prompts, payloads, model outputs, or credentials.
 
 ## Current Gemini Coverage
 

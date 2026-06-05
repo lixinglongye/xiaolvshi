@@ -351,6 +351,8 @@ class ModelGatewayProbeEvaluationService:
     ) -> list[dict[str, Any]]:
         cheapest = self._cheapest(cheap_candidates)
         review = self._best_review(rows) or cheapest
+        grounded_research = self._best_capable(rows, required_capability="grounding", max_cost_tier="low") or cheapest
+        agentic = self._best_capable(rows, required_capability="agentic", max_cost_tier="low") or cheapest
         pdf = self._best_pdf(rows)
         image = self._cheapest_image(image_candidates)
         targets = [
@@ -359,6 +361,8 @@ class ModelGatewayProbeEvaluationService:
             ("APP_OCR_MODEL", "ocr", cheapest),
             ("APP_AI_CLASSIFIER_MODEL", "classification", cheapest),
             ("APP_AI_REVIEW_MODEL", "review", review),
+            ("APP_AI_GROUNDED_RESEARCH_MODEL", "grounded-research", grounded_research),
+            ("APP_AI_AGENTIC_MODEL", "agentic", agentic),
             ("APP_AI_PDF_MODEL", "pdf", pdf),
             ("APP_AI_IMAGE_MODEL", "image", image),
         ]
@@ -407,6 +411,24 @@ class ModelGatewayProbeEvaluationService:
             and "review" in row["capabilities"]
             and row["chat_probe_status"] != "fail"
             and COST_TIER_RANK.get(row["cost_tier"] or "unknown", 99) <= COST_TIER_RANK.get("medium", 99)
+        ]
+        return self._cheapest(candidates)
+
+    def _best_capable(
+        self,
+        rows: list[dict[str, Any]],
+        *,
+        required_capability: str,
+        max_cost_tier: str,
+    ) -> dict[str, Any] | None:
+        candidates = [
+            row
+            for row in rows
+            if row["is_known_model"]
+            and row["model_status"] == "stable"
+            and required_capability in row["capabilities"]
+            and row["chat_probe_status"] != "fail"
+            and COST_TIER_RANK.get(row["cost_tier"] or "unknown", 99) <= COST_TIER_RANK.get(max_cost_tier, 99)
         ]
         return self._cheapest(candidates)
 
