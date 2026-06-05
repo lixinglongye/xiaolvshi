@@ -1517,6 +1517,14 @@ export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
   });
 }
 
+export async function evaluateGeminiVariantMatrix(payload: Record<string, unknown>): Promise<GeminiVariantMatrix> {
+  return invokeModelOpsApi<GeminiVariantMatrix>({
+    url: '/api/v1/aihub/models/gemini-variant-matrix',
+    method: 'POST',
+    data: payload,
+  });
+}
+
 export async function evaluateCheapFirstCalibration(
   payload: Record<string, unknown>,
 ): Promise<ModelCheapFirstCalibration> {

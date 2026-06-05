@@ -16,12 +16,14 @@ import {
 import { AlertTriangle, ClipboardList, Gauge, Loader2, PlayCircle, RefreshCw, Route, Zap } from 'lucide-react';
 import {
   evaluateCheapFirstCalibration,
+  evaluateGeminiVariantMatrix,
   evaluateModelGatewayProbe,
   getCheapFirstCalibration,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
+  type GeminiVariantMatrix,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsResponse,
@@ -116,7 +118,26 @@ function defaultCheapFirstCalibrationPayload() {
   };
 }
 
+function defaultGeminiVariantMatrixPayload() {
+  return {
+    observed_models: [
+      'models/gemini-2.5-flash-lite',
+      'google/gemini-2.5-flash',
+      'google/gemini-3.2-flash-lite',
+    ],
+  };
+}
+
 function hasForbiddenCheapFirstPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email)\b/i.test(
+      value,
+    )
+  );
+}
+
+function hasForbiddenGeminiVariantPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
     /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email)\b/i.test(
@@ -146,12 +167,18 @@ function Inner() {
   const [cheapFirstPayloadText, setCheapFirstPayloadText] = useState('');
   const [cheapFirstEvaluateLoading, setCheapFirstEvaluateLoading] = useState(false);
   const [cheapFirstError, setCheapFirstError] = useState('');
+  const [geminiVariantMatrix, setGeminiVariantMatrix] = useState<GeminiVariantMatrix | null>(null);
+  const [geminiVariantPayloadText, setGeminiVariantPayloadText] = useState('');
+  const [geminiVariantEvaluateLoading, setGeminiVariantEvaluateLoading] = useState(false);
+  const [geminiVariantError, setGeminiVariantError] = useState('');
 
   const load = async () => {
     setLoading(true);
     setError('');
     setCheapFirstError('');
     setCheapFirstCalibration(null);
+    setGeminiVariantError('');
+    setGeminiVariantMatrix(null);
     try {
       const [modelOpsResult, calibrationResult] = await Promise.allSettled([
         getModelOps(),
@@ -165,6 +192,7 @@ function Inner() {
         setData(modelOpsResult.value);
         setProbeEvaluation(null);
         setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration ?? null);
+        setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
       }
       if (calibrationResult.status === 'rejected') {
         console.error(calibrationResult.reason);
@@ -250,6 +278,38 @@ function Inner() {
     }
   };
 
+  const loadGeminiVariantTemplate = () => {
+    setGeminiVariantError('');
+    setGeminiVariantPayloadText(JSON.stringify(defaultGeminiVariantMatrixPayload(), null, 2));
+  };
+
+  const evaluateGeminiVariantPayload = async () => {
+    setGeminiVariantEvaluateLoading(true);
+    setGeminiVariantError('');
+    try {
+      const text = geminiVariantPayloadText.trim();
+      if (!text) {
+        setGeminiVariantError('Observed model payload is empty.');
+        return;
+      }
+      if (hasForbiddenGeminiVariantPayloadText(text)) {
+        setGeminiVariantError('Observed model payload must not include secrets, headers, prompts, emails, passwords, or raw model output.');
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setGeminiVariantError('Observed model payload must be a JSON object.');
+        return;
+      }
+      setGeminiVariantMatrix(await evaluateGeminiVariantMatrix(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setGeminiVariantError(err instanceof SyntaxError ? 'Observed model payload is not valid JSON.' : 'Gemini variant review failed.');
+    } finally {
+      setGeminiVariantEvaluateLoading(false);
+    }
+  };
+
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
@@ -259,9 +319,10 @@ function Inner() {
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
-  const geminiVariantRows = data?.gemini_variant_matrix?.model_rows ?? [];
-  const geminiVariantFamilyRows = data?.gemini_variant_matrix?.family_rows ?? [];
-  const geminiVariantObservedRows = data?.gemini_variant_matrix?.observed_model_reviews ?? [];
+  const activeGeminiVariantMatrix = geminiVariantMatrix ?? data?.gemini_variant_matrix ?? null;
+  const geminiVariantRows = activeGeminiVariantMatrix?.model_rows ?? [];
+  const geminiVariantFamilyRows = activeGeminiVariantMatrix?.family_rows ?? [];
+  const geminiVariantObservedRows = activeGeminiVariantMatrix?.observed_model_reviews ?? [];
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -704,50 +765,50 @@ function Inner() {
           </section>
         )}
 
-        {data?.gemini_variant_matrix && (
+        {activeGeminiVariantMatrix && (
           <section className="mb-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-stone-950">Gemini variant matrix</h2>
                 <div className="mt-1 text-sm text-stone-600">
-                  {data.gemini_variant_matrix.summary.catalog_model_count} variants /{' '}
-                  {data.gemini_variant_matrix.summary.high_frequency_default_allowed_count} high-frequency defaults /{' '}
-                  {data.gemini_variant_matrix.summary.catalog_review_count} catalog reviews
+                  {activeGeminiVariantMatrix.summary.catalog_model_count} variants /{' '}
+                  {activeGeminiVariantMatrix.summary.high_frequency_default_allowed_count} high-frequency defaults /{' '}
+                  {activeGeminiVariantMatrix.summary.catalog_review_count} catalog reviews
                 </div>
               </div>
-              <Badge variant="outline" className={statusClass(data.gemini_variant_matrix.status)}>
-                {data.gemini_variant_matrix.status.replace(/_/g, ' ')}
+              <Badge variant="outline" className={statusClass(activeGeminiVariantMatrix.status)}>
+                {activeGeminiVariantMatrix.status.replace(/_/g, ' ')}
               </Badge>
             </div>
 
             <div className="mb-3 grid gap-3 md:grid-cols-5">
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="font-mono text-sm font-black text-stone-950">
-                  {data.gemini_variant_matrix.summary.cheap_first_default_model}
+                  {activeGeminiVariantMatrix.summary.cheap_first_default_model}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">cheap-first default</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.gemini_variant_matrix.summary.explicit_only_model_count}
+                  {activeGeminiVariantMatrix.summary.explicit_only_model_count}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">explicit / escalation models</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.gemini_variant_matrix.summary.preview_model_count}
+                  {activeGeminiVariantMatrix.summary.preview_model_count}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">preview variants</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.gemini_variant_matrix.summary.unpriced_model_count}
+                  {activeGeminiVariantMatrix.summary.unpriced_model_count}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">unpriced variants</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.gemini_variant_matrix.warning_check_ids.length}
+                  {activeGeminiVariantMatrix.warning_check_ids.length}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">warning checks</div>
               </div>
@@ -794,7 +855,7 @@ function Inner() {
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Prefix compatibility</h3>
                 <div className="space-y-2 text-xs leading-5 text-stone-600">
-                  {data.gemini_variant_matrix.prefix_compatibility.accepted_prefix_examples.map((item) => (
+                  {activeGeminiVariantMatrix.prefix_compatibility.accepted_prefix_examples.map((item) => (
                     <div key={item.example} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
                       <div className="font-mono text-stone-950">{item.example}</div>
                       <div>{item.normalization}</div>
@@ -803,9 +864,80 @@ function Inner() {
                 </div>
                 <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Boundary</h3>
                 <div className="space-y-1 text-xs leading-5 text-stone-600">
-                  <div>gateway called: {String(data.gemini_variant_matrix.privacy_boundary.gateway_called)}</div>
-                  <div>raw payload echoed: {String(data.gemini_variant_matrix.privacy_boundary.raw_payload_echoed)}</div>
-                  <div>raw model output: {String(data.gemini_variant_matrix.privacy_boundary.raw_model_output_included)}</div>
+                  <div>gateway called: {String(activeGeminiVariantMatrix.privacy_boundary.gateway_called)}</div>
+                  <div>raw payload echoed: {String(activeGeminiVariantMatrix.privacy_boundary.raw_payload_echoed)}</div>
+                  <div>raw model output: {String(activeGeminiVariantMatrix.privacy_boundary.raw_model_output_included)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-stone-500">Observed model review</h3>
+                    <div className="mt-1 text-xs text-stone-600">
+                      {activeGeminiVariantMatrix.summary.observed_model_count} observed /{' '}
+                      {activeGeminiVariantMatrix.summary.catalog_review_count} catalog review
+                    </div>
+                  </div>
+                  <Button variant="outline" className="soft-button" onClick={loadGeminiVariantTemplate}>
+                    <ClipboardList className="h-4 w-4" />
+                    Template
+                  </Button>
+                </div>
+                {geminiVariantError && (
+                  <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                    <AlertTriangle className="h-4 w-4" />
+                    {geminiVariantError}
+                  </div>
+                )}
+                <Textarea
+                  value={geminiVariantPayloadText}
+                  onChange={(event) => setGeminiVariantPayloadText(event.target.value)}
+                  placeholder='{"observed_models":["models/gemini-2.5-flash-lite","google/gemini-3.2-flash-lite"]}'
+                  className="min-h-[150px] font-mono text-xs"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    className="law-button"
+                    onClick={evaluateGeminiVariantPayload}
+                    disabled={geminiVariantEvaluateLoading}
+                  >
+                    {geminiVariantEvaluateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                    Review models
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="soft-button"
+                    onClick={() => {
+                      setGeminiVariantPayloadText('');
+                      setGeminiVariantError('');
+                      setGeminiVariantMatrix(data?.gemini_variant_matrix ?? null);
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Review actions</h3>
+                <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                  {activeGeminiVariantMatrix.recommended_actions.map((action) => (
+                    <li key={action} className="flex gap-2">
+                      <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                      <span>{action}</span>
+                    </li>
+                  ))}
+                </ul>
+                <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Validation</h3>
+                <div className="space-y-2">
+                  {activeGeminiVariantMatrix.validation_commands.slice(0, 3).map((command) => (
+                    <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600">
+                      {command}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

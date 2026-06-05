@@ -35,6 +35,18 @@ POST /api/v1/aihub/models/gemini-variant-matrix
 - `prefix_compatibility` and `unknown_model_policy`.
 - `privacy_boundary` and `validation_commands`.
 
+## ModelOps Review Form
+
+The ModelOps page includes an observed-model review form for this endpoint. It accepts only a JSON object with model IDs, for example:
+
+```json
+{
+  "observed_models": ["models/gemini-2.5-flash-lite", "google/gemini-3.2-flash-lite"]
+}
+```
+
+The frontend blocks obvious secrets, authorization headers, prompts, emails, raw model output fields, and password-like fields before calling the endpoint. The submitted values are not stored by the UI; the response replaces the current matrix panel so maintainers can inspect catalog-known, catalog-review, and external-model statuses.
+
 ## Safety
 
 The matrix does not call Gemini, NewAPI, OpenAI, or the gateway. It does not echo raw payloads, prompts, legal text, model output, credentials, emails, or client documents. It stores and returns model IDs, families, costs, route roles, and review statuses only.
@@ -45,6 +57,7 @@ The matrix does not call Gemini, NewAPI, OpenAI, or the gateway. It does not ech
 python -m pytest tests/test_gemini_model_variant_matrix.py -q
 python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_gemini_newapi_model_selector.py -q
 npm run typecheck
+npm run ui:regression
 ```
 
 ## Related Files
