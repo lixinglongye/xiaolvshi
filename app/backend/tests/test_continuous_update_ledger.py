@@ -183,6 +183,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-agentic-grounded-defaults" in completed_ids
+    assert "modelops-default-template-alignment" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -303,6 +304,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
     assert "modelops-agentic-grounded-defaults" not in queue_ids
+    assert "modelops-default-template-alignment" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -562,6 +564,35 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-default-recommendation-snapshot" in agentic_defaults_entry["release_gate_links"]
     assert "model-gateway-compatibility" in agentic_defaults_entry["release_gate_links"]
     assert "model-lifecycle-policy" in agentic_defaults_entry["release_gate_links"]
+    default_template_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-default-template-alignment"
+    )
+    assert default_template_entry["size"] == "medium"
+    assert default_template_entry["status"] == "shipped"
+    assert "env/template alignment audit evidence" in default_template_entry["impact"]
+    assert "Settings defaults" in default_template_entry["impact"]
+    assert "app/backend/.env.example" in default_template_entry["impact"]
+    assert "README env block" in default_template_entry["impact"]
+    assert "docs/AI_MODEL_STRATEGY" in default_template_entry["impact"]
+    assert "Gemini cheap-first defaults" in default_template_entry["impact"]
+    assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in default_template_entry["impact"]
+    assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in default_template_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in default_template_entry["impact"]
+    assert "real environment writes" in default_template_entry["impact"]
+    assert "raw prompts" in default_template_entry["impact"]
+    assert "payloads" in default_template_entry["impact"]
+    assert "model outputs" in default_template_entry["impact"]
+    assert "credentials" in default_template_entry["impact"]
+    assert "app/backend/core/config.py" in default_template_entry["evidence_paths"]
+    assert "app/backend/.env.example" in default_template_entry["evidence_paths"]
+    assert "README.md" in default_template_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in default_template_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in default_template_entry["evidence_paths"]
+    assert "modelops-default-template-alignment" in default_template_entry["release_gate_links"]
+    assert "modelops-agentic-grounded-defaults" in default_template_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in default_template_entry["release_gate_links"]
+    assert "model-configuration-audit" in default_template_entry["release_gate_links"]
+    assert "model-default-recommendation-snapshot" in default_template_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

@@ -1,6 +1,6 @@
 # ModelOps Gemini Cheap-First Coverage Gate
 
-This gate is planned as the backend metadata endpoint:
+This gate is implemented as the backend metadata endpoint:
 
 `GET /api/v1/aihub/models/gemini-cheap-first-coverage-gate`
 
@@ -10,7 +10,7 @@ configuration writer.
 
 ## Coverage Dimensions
 
-The gate should keep these dimensions reviewable:
+The gate keeps these dimensions reviewable:
 
 - Gemini-like defaults: routine Gemini-compatible model ids should map to
   cheap-first defaults before balanced or premium options are considered.
@@ -33,6 +33,13 @@ The gate should keep these dimensions reviewable:
 - Claim/privacy boundary: rows should state that the gate is metadata-only and
   cannot support claims about live model quality, public benchmark scores, or
   production routing health.
+- Agentic and grounded-research defaults: `auto-agentic` and
+  `auto-grounded-research` should stay visible as cheap-first Gemini routes via
+  `APP_AI_AGENTIC_MODEL` and `APP_AI_GROUNDED_RESEARCH_MODEL`, currently pinned
+  to `gemini-3.1-flash-lite`.
+- Template alignment: Settings defaults, `app/backend/.env.example`, the README
+  env block, and `docs/AI_MODEL_STRATEGY.md` should remain aligned before
+  maintainers change Gemini default models.
 
 ## Privacy Boundary
 
@@ -42,15 +49,23 @@ credentials, headers, or account identifiers. Safe evidence is limited to model
 ids, route labels, coverage status, warning ids, release-gate links, and
 validation commands.
 
+The companion default-template audit is exposed at:
+
+`GET /api/v1/aihub/models/default-template-audit`
+
+It compares checked-in templates and docs with Settings defaults only. It does
+not read `.env`, process environment variables, gateway responses, prompts,
+legal documents, or account data.
+
 ## Validation
 
-Primary validation once the backend service lands:
+Primary validation:
 
 ```bash
-python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q
+python -m pytest tests/test_model_default_template_audit.py tests/test_model_ops_readiness.py tests/test_model_catalog.py tests/test_modelops_gemini_cheap_first_coverage_gate.py -q
 ```
 
-If the main service test has not landed yet, validate the supporting evidence:
+Supporting evidence validation:
 
 ```bash
 python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q

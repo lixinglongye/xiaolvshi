@@ -93,6 +93,14 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `APP_AI_AGENTIC_MODEL` and `APP_AI_GROUNDED_RESEARCH_MODEL` pin the agentic and grounded-research task defaults to `gemini-3.1-flash-lite`. This is a metadata-only/default routing change: the ModelOps coverage evidence should treat these defaults as ready items, including the previously missing agentic default row, and it must not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write real environment values, or include raw prompts, payloads, model outputs, or credentials.
 
+`modelops-default-template-alignment` is the shipped metadata-only alignment audit
+for this default set. It keeps the Settings defaults in `app/backend/core/config.py`,
+`app/backend/.env.example`, the README env block, and this strategy document aligned
+for the Gemini cheap-first defaults, including `APP_AI_AGENTIC_MODEL` and
+`APP_AI_GROUNDED_RESEARCH_MODEL`. The audit evidence does not call NewAPI, Gemini,
+OpenAI, Google, gateways, or the network, does not write real environment values,
+and does not include raw prompts, payloads, model outputs, or credentials.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

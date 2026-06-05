@@ -542,6 +542,7 @@ function Inner() {
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
+  const defaultTemplateRows = data?.default_template_audit?.rows ?? [];
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
@@ -4135,6 +4136,109 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.default_template_audit && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Default template alignment</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.default_template_audit.summary.default_count} defaults /{' '}
+                  {data.default_template_audit.summary.source_count} checked-in templates /{' '}
+                  {data.default_template_audit.summary.drift_count} drift items
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.default_template_audit.status)}>
+                {data.default_template_audit.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-500">Gemini cheap-first visibility</div>
+                <div className="mt-2 text-sm font-semibold text-stone-950">
+                  APP_AI_AGENTIC_MODEL / APP_AI_GROUNDED_RESEARCH_MODEL
+                </div>
+                <div className="mt-1 text-xs leading-5 text-stone-600">
+                  visible: {String(data.default_template_audit.summary.agentic_grounded_defaults_visible)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-500">Routing aliases covered</div>
+                <div className="mt-2 font-mono text-sm font-semibold text-stone-950">auto-agentic / auto-grounded-research</div>
+                <div className="mt-1 text-xs leading-5 text-stone-600">
+                  {data.default_template_audit.summary.aligned_count} aligned,{' '}
+                  {data.default_template_audit.summary.missing_value_count} missing,{' '}
+                  {data.default_template_audit.summary.mismatched_value_count} mismatched
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-500">Privacy boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {boundaryDisplayEntries(data.default_template_audit.privacy_boundary)
+                    .map(([key, value]) => `${key}: ${String(value)}`)
+                    .join(' / ')}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Env var</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Expected</TableHead>
+                    <TableHead>Templates</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {defaultTemplateRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.env_var}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.required_for}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.status)}>
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.expected_default}</TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {Object.entries(row.source_values)
+                          .map(([source, value]) => `${source}: ${value ?? 'missing'}`)
+                          .join(' / ')}
+                      </TableCell>
+                      <TableCell className="max-w-[460px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-2 font-semibold text-stone-950">Checked sources</div>
+                <div className="grid gap-2">
+                  {data.default_template_audit.source_files.map((source) => (
+                    <div key={source.id} className="rounded-[6px] border border-stone-950/10 bg-white px-3 py-2 text-xs leading-5 text-stone-600">
+                      <span className="font-mono font-semibold text-stone-950">{source.id}</span>: {source.path}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-2 font-semibold text-stone-950">Validation commands</div>
+                <div className="grid gap-2">
+                  {data.default_template_audit.validation_commands.map((command) => (
+                    <div key={command} className="rounded-[6px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs leading-5 text-stone-600">
+                      {command}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         )}

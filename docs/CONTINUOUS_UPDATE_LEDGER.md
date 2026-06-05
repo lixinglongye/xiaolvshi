@@ -58,6 +58,15 @@ adds shipped metadata-only/default routing evidence for `APP_AI_AGENTIC_MODEL`
 defaults without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real
 environment writes, raw prompts, payloads, model outputs, or credentials.
 
+Current env/template alignment evidence: `modelops-default-template-alignment`
+adds shipped metadata-only audit evidence that keeps Settings defaults,
+`app/backend/.env.example`, the README env block, and `docs/AI_MODEL_STRATEGY`
+aligned for Gemini cheap-first defaults, including `APP_AI_AGENTIC_MODEL` and
+`APP_AI_GROUNDED_RESEARCH_MODEL` pinned to `gemini-3.1-flash-lite`. It does not
+call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write real
+environment values, or include raw prompts, payloads, model outputs, or
+credentials.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

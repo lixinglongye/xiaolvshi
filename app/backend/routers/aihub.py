@@ -44,6 +44,7 @@ from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
 from services.model_default_optimization import ModelDefaultOptimizationService
 from services.model_default_recommendation_snapshot import ModelDefaultRecommendationSnapshotService
+from services.model_default_template_audit import ModelDefaultTemplateAuditService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
@@ -192,6 +193,7 @@ async def list_models():
     route_telemetry_triage = RouteTelemetryTriageQueueService().build_queue(route_telemetry_ops_summary)
     runtime_router = runtime_router_policy_for_api()
     model_configuration_audit = ModelConfigurationAuditService().audit()
+    default_template_audit = ModelDefaultTemplateAuditService().build_audit()
     reasoning_policy = reasoning_policy_for_api()
     request_policy = generation_request_policy_for_api()
     route_guardrails = ModelRouteGuardrailService().evaluate(route_telemetry)
@@ -250,6 +252,7 @@ async def list_models():
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
+        "default_template_audit": default_template_audit,
         "default_optimization": default_optimization,
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
@@ -310,10 +313,13 @@ async def list_models():
             "auto-review": task_default_model("review"),
             "auto-pdf": task_default_model("pdf"),
             "auto-image": task_default_model("image"),
+            "auto-agentic": task_default_model("agentic"),
+            "auto-grounded-research": task_default_model("grounded-research"),
         },
         "model_ops_readiness": model_ops_readiness,
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
+        "default_template_audit": default_template_audit,
         "default_optimization": default_optimization,
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
@@ -605,6 +611,15 @@ async def evaluate_model_ops_performance_budget(payload: dict[str, Any]):
             },
             cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
         ),
+    }
+
+
+@router.get("/models/default-template-audit")
+async def model_default_template_audit():
+    """Return metadata-only audit for checked-in model default templates."""
+    return {
+        "success": True,
+        "data": ModelDefaultTemplateAuditService().build_audit(),
     }
 
 

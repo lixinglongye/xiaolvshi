@@ -433,6 +433,17 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'coverage_rows', 'model-ops Gemini cheap-first coverage payload guard'),
   () => assertIncludes(modelOpsApi, 'getGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-cheap-first-coverage-gate', 'model-ops Gemini cheap-first coverage endpoint'),
+  () => assertIncludes(modelOpsPage, 'Default template alignment', 'model-ops default template alignment panel'),
+  () => assertIncludes(modelOpsPage, 'defaultTemplateRows', 'model-ops default template row binding'),
+  () => assertIncludes(modelOpsPage, 'APP_AI_AGENTIC_MODEL / APP_AI_GROUNDED_RESEARCH_MODEL', 'model-ops agentic grounded template visibility'),
+  () => assertIncludes(modelOpsPage, 'auto-agentic / auto-grounded-research', 'model-ops agentic grounded alias visibility'),
+  () => assertIncludes(modelOpsPage, 'agentic_grounded_defaults_visible', 'model-ops agentic grounded default summary binding'),
+  () => assertIncludes(modelOpsPage, 'data.default_template_audit.validation_commands', 'model-ops default template validation binding'),
+  () => assertIncludes(modelOpsApi, 'ModelDefaultTemplateAudit', 'model-ops default template audit type'),
+  () => assertIncludes(modelOpsApi, 'default_template_audit', 'model-ops default template audit response binding'),
+  () => assertIncludes(modelOpsApi, 'default_targets', 'model-ops default template target type and payload guard'),
+  () => assertIncludes(modelOpsApi, 'getModelDefaultTemplateAudit', 'model-ops default template audit API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/default-template-audit', 'model-ops default template audit endpoint'),
   () => assertIncludes(modelOpsApi, 'ModelCatalogSourceAudit', 'model-ops Gemini catalog source audit type'),
   () => assertIncludes(modelOpsApi, 'getModelCatalogSourceAudit', 'model-ops Gemini catalog source audit API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/catalog-source-audit', 'model-ops Gemini catalog source audit endpoint'),
@@ -461,6 +472,12 @@ const geminiCheapFirstCoveragePanel = sourceSection(
   'Gemini catalog source audit',
   'model-ops Gemini cheap-first coverage gate section',
 );
+const defaultTemplateAlignmentPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Default template alignment</h2>',
+  'Runtime router',
+  'model-ops default template alignment section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -480,6 +497,11 @@ assertNotMatches(
   /\b(raw prompt|raw_prompt|raw payload|raw_payload|prompt_payload|credential material|credential_value|api_key|authorization|secret_value)\b/i,
   'model-ops Gemini cheap-first coverage no raw prompt/payload/credential material fields',
 );
+assertNotMatches(
+  defaultTemplateAlignmentPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|password|credential_value|api_key|authorization|secret_value|raw prompt|raw_prompt|raw payload|raw_payload|prompt_payload)\b/i,
+  'model-ops default template alignment no secrets or raw prompt/payload fields',
+);
 
 console.log(
   JSON.stringify(
@@ -487,7 +509,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 6,
+      assertions: checks.length + 7,
     },
     null,
     2,

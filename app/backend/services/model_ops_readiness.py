@@ -15,6 +15,12 @@ class ReadinessComponent:
 
 MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("configuration-audit", "Model configuration audit", "configuration", "model_configuration_audit"),
+    ReadinessComponent(
+        "default-template-audit",
+        "Default template alignment",
+        "configuration",
+        "default_template_audit",
+    ),
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),

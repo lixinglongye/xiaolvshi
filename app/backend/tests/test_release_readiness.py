@@ -493,6 +493,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -603,6 +604,30 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-agentic-grounded-defaults"]["evidence_paths"]
+    assert "metadata-only ModelOps env/template alignment audit evidence" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "Settings defaults" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "app/backend/.env.example" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "README env block" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "docs/AI_MODEL_STRATEGY" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "Gemini cheap-first defaults" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "Gemini" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "OpenAI" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "Google" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "gateways" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "network" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "real environment values" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "raw prompts" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "payloads" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "model outputs" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "credentials" in checks["modelops-default-template-alignment"]["manual_note"]
+    assert "app/backend/core/config.py" in checks["modelops-default-template-alignment"]["evidence_paths"]
+    assert "app/backend/.env.example" in checks["modelops-default-template-alignment"]["evidence_paths"]
+    assert "README.md" in checks["modelops-default-template-alignment"]["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-default-template-alignment"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-default-template-alignment"]["evidence_paths"]
     assert "metadata-only Legal RAG authority and citation gate evidence" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "Gemini" in checks["legal-rag-authority-citation-gate"]["manual_note"]

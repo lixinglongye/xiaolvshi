@@ -126,6 +126,45 @@ export type ModelConfigurationAudit = {
   recommended_actions: string[];
 };
 
+export type ModelDefaultTemplateAuditRow = {
+  id: string;
+  env_var: string;
+  settings_attr: string;
+  task: string;
+  required_for: string;
+  expected_default: string;
+  source_values: Record<string, string | null | undefined>;
+  missing_sources: string[];
+  mismatched_sources: string[];
+  status: string;
+  reason: string;
+};
+
+export type ModelDefaultTemplateAudit = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    default_count: number;
+    source_count: number;
+    aligned_count: number;
+    drift_count: number;
+    missing_value_count: number;
+    mismatched_value_count: number;
+    agentic_grounded_defaults_visible: boolean;
+  };
+  source_files: Array<{ id: string; path: string }>;
+  default_targets: Array<{ env_var: string; settings_attr: string; task: string; required_for: string }>;
+  rows: ModelDefaultTemplateAuditRow[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelDefaultOptimizationRecommendation = {
   id: string;
   task: string;
@@ -2092,6 +2131,7 @@ export type ModelOpsResponse = {
   model_ops_readiness?: ModelOpsReadiness;
   runtime_router?: ModelRuntimeRouter;
   model_configuration_audit?: ModelConfigurationAudit;
+  default_template_audit?: ModelDefaultTemplateAudit;
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
   gemini_variant_matrix?: GeminiVariantMatrix;
@@ -2175,6 +2215,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     rollback_drill_items?: unknown;
     change_manifest_items?: unknown;
     coverage_rows?: unknown;
+    rows?: unknown;
+    default_targets?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -2190,7 +2232,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -2333,6 +2376,13 @@ export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
 export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiCheapFirstCoverageGate> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstCoverageGate>({
     url: '/api/v1/aihub/models/gemini-cheap-first-coverage-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelDefaultTemplateAudit(): Promise<ModelDefaultTemplateAudit> {
+  return invokeModelOpsApi<ModelDefaultTemplateAudit>({
+    url: '/api/v1/aihub/models/default-template-audit',
     method: 'GET',
   });
 }
