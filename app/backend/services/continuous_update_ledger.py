@@ -136,6 +136,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_model_gateway_health_plan.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck",
@@ -1296,6 +1297,37 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=(
                     "model-catalog-source-audit",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="modelops-cheap-first-release-decision",
+                title="ModelOps cheap-first release decision",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Aggregates ModelOps readiness, Gemini catalog review, cheap-first calibration, route quality, "
+                    "price refresh, and performance budgets into a metadata-only default-promotion decision so "
+                    "maintainers can keep current cheap defaults while reviewing risky model changes."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_cheap_first_release_decision.py",
+                    "app/backend/tests/test_model_ops_cheap_first_release_decision.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                ),
+                release_gate_links=(
+                    "model-ops-cheap-first-release-decision",
                     "model-ops-readiness",
                     "frontend-ui-regression",
                     "frontend-typecheck",

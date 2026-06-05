@@ -7,6 +7,9 @@ The project now aggregates model-operation checks into one release-oriented read
 Model operations now include configuration audit, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, and ModelOps load performance budgets. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
+`cheap_first_release_decision` consumes this readiness result downstream, along
+with focused Gemini/cheap-first signals, but it is not counted as another
+readiness component.
 
 ## Endpoint
 
@@ -85,6 +88,12 @@ Any required `fail` status blocks model-ops readiness. Any `warn` status require
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
+`cheap_first_release_decision` is a downstream release decision packet that uses
+readiness plus cheap-first calibration, Gemini variant review, catalog source
+audit, route quality, price refresh, and ModelOps performance signals to decide
+whether current cheap-first defaults can remain and whether new default
+promotion requires maintainer review.
+
 ## Release Readiness
 
 `model-ops-readiness` is a required release-readiness check. Maintainers should run:
@@ -100,6 +109,7 @@ The service only aggregates existing status and summary metadata. It does not st
 ## Related files
 
 - `app/backend/services/model_ops_readiness.py`
+- `app/backend/services/model_ops_cheap_first_release_decision.py`
 - `app/backend/services/model_default_optimization.py`
 - `app/backend/services/model_gateway_compatibility.py`
 - `app/backend/services/model_gateway_health_plan.py`
@@ -117,6 +127,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_ops_readiness.py`
+- `app/backend/tests/test_model_ops_cheap_first_release_decision.py`
 - `app/backend/tests/test_model_ops_performance_budget.py`
 - `app/backend/tests/test_model_route_quality_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`

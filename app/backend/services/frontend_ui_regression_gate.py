@@ -75,6 +75,7 @@ PAGE_GATES = (
             "ModelOps load guard",
             "Performance observations",
             "Gemini catalog source audit",
+            "Cheap-first release decision",
             "Cheap-first quality budget",
             "selector replay",
             "route telemetry",

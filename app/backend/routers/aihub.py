@@ -51,6 +51,7 @@ from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
+from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -265,6 +266,9 @@ async def list_models():
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
     }
+    model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
+    model_ops_signals["model_ops_readiness"] = model_ops_readiness
+    cheap_first_release_decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(model_ops_signals)
     payload = {
         "success": True,
         "routing_aliases": {
@@ -275,7 +279,7 @@ async def list_models():
             "auto-pdf": task_default_model("pdf"),
             "auto-image": task_default_model("image"),
         },
-        "model_ops_readiness": ModelOpsReadinessService().evaluate(model_ops_signals),
+        "model_ops_readiness": model_ops_readiness,
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
         "default_optimization": default_optimization,
@@ -308,6 +312,7 @@ async def list_models():
         "price_refresh_monitor": price_refresh_monitor,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
+        "cheap_first_release_decision": cheap_first_release_decision,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -388,6 +393,16 @@ async def model_catalog_source_audit():
     return {
         "success": True,
         "data": ModelCatalogSourceAuditService().build_audit(),
+    }
+
+
+@router.get("/models/cheap-first-release-decision")
+async def model_ops_cheap_first_release_decision():
+    """Return metadata-only cheap-first ModelOps release decision evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_release_decision"],
     }
 
 

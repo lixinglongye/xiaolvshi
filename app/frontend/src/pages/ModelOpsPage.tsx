@@ -371,6 +371,7 @@ function Inner() {
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
+  const cheapFirstDecisionChecks = data?.cheap_first_release_decision?.checks ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -576,6 +577,129 @@ function Inner() {
                         </Badge>
                       </TableCell>
                       <TableCell>{check.category}</TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.cheap_first_release_decision && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.cheap_first_release_decision.release_decision.label} /{' '}
+                  {data.cheap_first_release_decision.summary.attached_signal_count} of{' '}
+                  {data.cheap_first_release_decision.summary.required_signal_count} signals attached
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.cheap_first_release_decision.status)}>
+                {data.cheap_first_release_decision.release_decision.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_release_decision.summary.passing_signal_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">passing signals</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_release_decision.summary.warning_signal_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review signals</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_release_decision.summary.blocking_signal_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking signals</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_release_decision.summary.current_cheap_first_default_allowed ? 'yes' : 'no'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">current default allowed</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_release_decision.summary.default_change_allowed ? 'yes' : 'review'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default change allowed</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_release_decision.summary.raw_payload_echoed)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">raw payload echoed</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Promotion policy</div>
+                <div className="mt-2 text-sm leading-6 text-stone-700">
+                  {data.cheap_first_release_decision.promotion_policy.default_change_policy}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-500">
+                  default_promotion_blocked: {String(data.cheap_first_release_decision.summary.default_promotion_blocked)} /{' '}
+                  maintainer_review_required: {String(data.cheap_first_release_decision.summary.maintainer_review_required)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Privacy boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  gateway called: {String(data.cheap_first_release_decision.privacy_boundary.network_called)} / NewAPI called:{' '}
+                  {String(data.cheap_first_release_decision.summary.newapi_called)} / raw model output:{' '}
+                  {String(data.cheap_first_release_decision.privacy_boundary.raw_model_output_included)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {data.cheap_first_release_decision.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Claim boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  public benchmark scores:{' '}
+                  {String(data.cheap_first_release_decision.claim_boundary.public_benchmark_scores_included)} / 24h
+                  complete:{' '}
+                  {String(data.cheap_first_release_decision.claim_boundary.twenty_four_hour_completion_claimed)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  live gateway:{' '}
+                  {String(data.cheap_first_release_decision.claim_boundary.live_gateway_execution_claimed)} / external
+                  adoption:{' '}
+                  {String(data.cheap_first_release_decision.claim_boundary.external_adoption_included)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Signal</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Decision effect</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cheapFirstDecisionChecks.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{check.id}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{check.source_key}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-stone-700">{check.decision_effect}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
                     </TableRow>
                   ))}
