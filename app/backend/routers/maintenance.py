@@ -705,6 +705,15 @@ async def get_continuous_update_ledger():
     }
 
 
+@router.post("/continuous-update-ledger")
+async def build_continuous_update_ledger_with_fixture_evidence(payload: Any = Body(default=None)):
+    """Return the ledger with archive-safe low-resource fixture evidence summary."""
+    return {
+        "success": True,
+        "data": ContinuousUpdateLedgerService().build_ledger(payload),
+    }
+
+
 @router.get("/maintenance-heartbeat-evidence")
 async def get_maintenance_heartbeat_evidence_template():
     """Return a privacy-safe template for 24-hour maintenance heartbeat evidence."""

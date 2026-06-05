@@ -77,6 +77,7 @@ class MaintenanceEvidenceService:
                 "Model request cost bounds",
                 "Model cache policy",
                 "Continuous update ledger",
+                "Continuous ledger low-resource fixture evidence",
                 "Maintenance heartbeat evidence",
                 "Continuous session evidence validator",
                 "Continuous session timeline",

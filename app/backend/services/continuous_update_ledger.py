@@ -2,11 +2,23 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import asdict, dataclass
+import re
 from typing import Any, Literal
+
+from services.legal_fixture_local_run_review import LegalFixtureLocalRunReviewService
+from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 
 
 TARGET_CONTINUOUS_HOURS = 24
 TARGET_MEDIUM_LARGE_UPDATE_COUNT = 100
+SENSITIVE_PATTERN = re.compile(
+    r"(sk-[A-Za-z0-9]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|password|secret)",
+    re.IGNORECASE,
+)
+INTERNAL_PAYLOAD_FIELD_PATTERN = re.compile(
+    r"(run_report_payload|gateway_response|output_text|raw_output|raw_response|choices)",
+    re.IGNORECASE,
+)
 
 UpdateSize = Literal["medium", "large"]
 UpdateStatus = Literal["shipped", "planned"]
@@ -36,7 +48,15 @@ class LedgerEntry:
 class ContinuousUpdateLedgerService:
     """Track long-running maintenance progress without claiming completion early."""
 
-    def build_ledger(self) -> dict[str, Any]:
+    def __init__(
+        self,
+        fixture_review_service: LegalFixtureLocalRunReviewService | None = None,
+        fixture_archive_service: LegalFixtureResultArchiveService | None = None,
+    ) -> None:
+        self.fixture_review_service = fixture_review_service or LegalFixtureLocalRunReviewService()
+        self.fixture_archive_service = fixture_archive_service or LegalFixtureResultArchiveService()
+
+    def build_ledger(self, payload: Any = None) -> dict[str, Any]:
         entries = self._entries()
         completed = [entry for entry in entries if entry.status == "shipped"]
         planned = [entry for entry in entries if entry.status == "planned"]
@@ -44,6 +64,7 @@ class ContinuousUpdateLedgerService:
         size_counts = Counter(entry.size for entry in completed)
         completed_count = len(completed)
         remaining_count = max(0, TARGET_MEDIUM_LARGE_UPDATE_COUNT - completed_count)
+        low_resource_fixture_evidence = self._low_resource_fixture_evidence(payload)
 
         return {
             "status": "in_progress",
@@ -69,6 +90,7 @@ class ContinuousUpdateLedgerService:
             },
             "completed_updates": [entry.to_api() for entry in completed],
             "next_update_queue": [entry.to_api() for entry in planned[:12]],
+            "low_resource_fixture_evidence": low_resource_fixture_evidence,
             "twenty_four_hour_evidence_requirements": [
                 "Record timestamped commits or CI runs across the full 24-hour window.",
                 "Keep each update reviewable through a code path, test, doc, endpoint, or UI surface.",
@@ -85,6 +107,9 @@ class ContinuousUpdateLedgerService:
                 "network_access": "disabled_by_default",
                 "model_call_policy": "manual_serial_only",
                 "recommended_endpoint": "/api/v1/maintenance/legal-review-benchmark/quick-suite",
+                "review_endpoint": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
+                "archive_endpoint": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+                "ledger_review_endpoint": "/api/v1/maintenance/continuous-update-ledger",
             },
             "release_guardrails": [
                 "The ledger is optional release evidence; it must not unblock a release by itself.",
@@ -98,6 +123,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_continuous_session_run_monitor.py -q",
                 "python -m pytest tests/test_continuous_session_review_packet.py -q",
                 "python -m pytest tests/test_continuous_session_review_packet.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q",
+                "python -m pytest tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py -q",
                 "python -m pytest tests/test_git_history_evidence.py -q",
                 "python -m pytest tests/test_validation_event_evidence.py -q",
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
@@ -121,6 +147,161 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q",
             ],
         }
+
+    def _low_resource_fixture_evidence(self, payload: Any) -> dict[str, Any]:
+        fixture_payload = self._fixture_payload(payload)
+        if fixture_payload is None:
+            return self._empty_low_resource_fixture_evidence()
+
+        review = self.fixture_review_service.review(fixture_payload)
+        archive = self.fixture_archive_service.build_archive(review.get("run_report_payload"))
+        review_summary = review.get("summary", {})
+        archive_summary = archive.get("summary", {})
+        status = self._fixture_evidence_status(review.get("status"), archive.get("status"))
+        blocking_ids = [self._safe_token(item) for item in review.get("blocking_check_ids", []) if self._safe_token(item)]
+        warning_ids = [self._safe_token(item) for item in review.get("warning_check_ids", []) if self._safe_token(item)]
+
+        return {
+            "status": status,
+            "summary": {
+                "review_status": self._safe_status(review.get("status")) or "unknown",
+                "archive_status": self._safe_status(archive.get("status")) or "unknown",
+                "release_decision": self._safe_status(review.get("release_decision")),
+                "archive_release_decision": self._safe_status(archive_summary.get("release_decision")),
+                "observed_fixture_count": self._safe_int(review_summary.get("observed_fixture_count")),
+                "archived_fixture_count": self._safe_int(archive_summary.get("archived_fixture_count")),
+                "not_run_fixture_count": self._safe_int(review_summary.get("not_run_fixture_count")),
+                "redacted_response_count": self._safe_int(review_summary.get("redacted_response_count")),
+                "dropped_raw_field_count": self._safe_int(archive_summary.get("dropped_raw_field_count")),
+                "blocking_check_count": self._safe_int(review_summary.get("blocking_check_count")),
+                "warning_check_count": self._safe_int(review_summary.get("warning_check_count")),
+                "observed_request_count": self._safe_int(review_summary.get("observed_request_count")),
+                "observed_cost_usd": self._safe_float(review_summary.get("observed_cost_usd")),
+                "release_ready": review.get("status") == "ready" and archive.get("status") == "ready",
+                "updates_count_mutated": False,
+                "completion_ready_mutated": False,
+            },
+            "source_endpoints": {
+                "review": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
+                "archive": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+            },
+            "check_ids": {
+                "blocking": blocking_ids[:8],
+                "warning": warning_ids[:8],
+            },
+            "recommended_actions": self._safe_actions(
+                [*review.get("recommended_actions", []), *archive.get("recommended_actions", [])]
+            ),
+            "privacy_boundary": self._low_resource_fixture_privacy_boundary(),
+        }
+
+    def _empty_low_resource_fixture_evidence(self) -> dict[str, Any]:
+        return {
+            "status": "not_supplied",
+            "summary": {
+                "review_status": "not_supplied",
+                "archive_status": "not_supplied",
+                "release_decision": "",
+                "archive_release_decision": "",
+                "observed_fixture_count": 0,
+                "archived_fixture_count": 0,
+                "not_run_fixture_count": 0,
+                "redacted_response_count": 0,
+                "dropped_raw_field_count": 0,
+                "blocking_check_count": 0,
+                "warning_check_count": 0,
+                "observed_request_count": 0,
+                "observed_cost_usd": None,
+                "release_ready": False,
+                "updates_count_mutated": False,
+                "completion_ready_mutated": False,
+            },
+            "source_endpoints": {
+                "review": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
+                "archive": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+            },
+            "check_ids": {"blocking": [], "warning": []},
+            "recommended_actions": [
+                "Run one or two cheap-first local fixtures and POST the same payload to this ledger for archive-safe evidence review."
+            ],
+            "privacy_boundary": self._low_resource_fixture_privacy_boundary(),
+        }
+
+    def _fixture_payload(self, payload: Any) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        for key in ("low_resource_fixture_review", "fixture_review", "local_run_review"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                return value
+        if any(key in payload for key in ("responses", "observations", "run_metadata", "fixture_id", "gateway_response", "content")):
+            return payload
+        return None
+
+    def _fixture_evidence_status(self, review_status: Any, archive_status: Any) -> str:
+        review = self._safe_status(review_status)
+        archive = self._safe_status(archive_status)
+        if review == "fail":
+            return "blocked"
+        if review == "needs_escalation" or archive == "blocked":
+            return "needs_escalation"
+        if review in {"review_recommended", "not_run"} or archive in {"review_recommended", "not_run"}:
+            return "review_recommended"
+        if review == "ready" and archive == "ready":
+            return "ready"
+        return "review_recommended"
+
+    def _low_resource_fixture_privacy_boundary(self) -> dict[str, Any]:
+        return {
+            "raw_payload_echoed": False,
+            "raw_gateway_response_included": False,
+            "raw_model_output_included": False,
+            "raw_legal_text_included": False,
+            "credentials_included": False,
+            "emails_included": False,
+            "returns_archive_summaries_only": True,
+        }
+
+    def _safe_actions(self, actions: list[Any]) -> list[str]:
+        safe: list[str] = []
+        seen: set[str] = set()
+        for action in actions:
+            text = str(action or "").strip()
+            if not text or SENSITIVE_PATTERN.search(text) or INTERNAL_PAYLOAD_FIELD_PATTERN.search(text):
+                continue
+            text = re.sub(r"\s+", " ", text)[:220]
+            if text not in seen:
+                safe.append(text)
+                seen.add(text)
+            if len(safe) >= 8:
+                break
+        return safe
+
+    def _safe_token(self, value: Any) -> str:
+        raw = str(value or "").strip().lower().replace(" ", "-")[:90]
+        if not raw or SENSITIVE_PATTERN.search(raw):
+            return ""
+        return re.sub(r"[^a-z0-9_.:-]+", "-", raw).strip("-")
+
+    def _safe_status(self, value: Any) -> str:
+        raw = str(value or "").strip().lower().replace(" ", "_")[:90]
+        if not raw or SENSITIVE_PATTERN.search(raw):
+            return ""
+        return re.sub(r"[^a-z0-9_:-]+", "_", raw).strip("_")
+
+    def _safe_int(self, value: Any) -> int:
+        if isinstance(value, bool):
+            return 0
+        if isinstance(value, int):
+            return max(0, value)
+        return 0
+
+    def _safe_float(self, value: Any) -> float | None:
+        if isinstance(value, bool) or value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return round(max(0.0, float(value)), 8)
+        return None
 
     def _entries(self) -> list[LedgerEntry]:
         return [
@@ -1170,6 +1351,30 @@ class ContinuousUpdateLedgerService:
                 release_gate_links=(
                     "continuous-session-review-packet",
                     "legal-fixture-local-run-review",
+                    "frontend-ui-regression",
+                ),
+                user_need_ids=("reviewer-visibility", "low-resource-testing", "safe-ai-ops"),
+            ),
+            LedgerEntry(
+                id="continuous-ledger-low-resource-fixture-evidence",
+                title="Continuous ledger low-resource fixture evidence",
+                category="maintenance",
+                size="medium",
+                status="shipped",
+                impact="Adds a POSTable low-resource fixture evidence summary to the continuous update ledger, joining local-run-review and result-archive counts without mutating update totals or echoing raw gateway responses.",
+                evidence_paths=(
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "continuous-update-ledger",
+                    "legal-fixture-local-run-review",
+                    "legal-fixture-result-archive",
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("reviewer-visibility", "low-resource-testing", "safe-ai-ops"),

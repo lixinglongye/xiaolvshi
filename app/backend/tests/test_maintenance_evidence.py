@@ -48,6 +48,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Route telemetry triage queue" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry remediation plan" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
+    assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]

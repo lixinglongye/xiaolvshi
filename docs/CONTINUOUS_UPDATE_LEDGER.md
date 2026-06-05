@@ -18,6 +18,7 @@ This ledger records progress toward the long-running maintenance target without 
 
 ```http
 GET /api/v1/maintenance/continuous-update-ledger
+POST /api/v1/maintenance/continuous-update-ledger
 ```
 
 The response includes:
@@ -27,8 +28,27 @@ The response includes:
 - `summary`: completed count, remaining count, category counts, and completion flags.
 - `completed_updates`: shipped updates with code, test, doc, or UI evidence paths.
 - `next_update_queue`: planned medium/large work, prioritized for cheap-first and low-resource validation.
+- `low_resource_fixture_evidence`: archive-safe local fixture evidence status.
 - `low_resource_test_policy`: fixture limits, serial execution policy, and default benchmark endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
+
+`POST` accepts the same compact low-resource fixture payload used by
+`/legal-review-benchmark/local-run-review`, either directly or under
+`low_resource_fixture_review`. The ledger internally builds the local run review
+and result archive, then returns only:
+
+- review/archive status labels,
+- release decision labels,
+- observed, archived, not-run, redacted, dropped-raw-field, blocking, warning,
+  request, and cost counts,
+- safe check ids,
+- source endpoint labels, and
+- an explicit privacy boundary.
+
+It does not return `run_report_payload`, raw gateway responses, `choices`,
+`output_text`, prompts, headers, credentials, emails, legal text, or model
+outputs. Submitted fixture evidence does not mutate
+`completed_medium_large_update_count` and does not change `completion_ready`.
 
 Recent integrated batches moved case workbench persistence planning, legal
 source durable index planning, billing quota migration planning, validated
@@ -189,6 +209,11 @@ timestamp, and repository evidence paths. This lets the same low-resource tests
 support both product quality checks and the continuous maintenance timeline.
 Commit metadata can sit beside those records to show cadence, but it cannot
 replace the fixture record itself.
+
+If a maintainer needs to attach one local fixture result to the ledger, use the
+same pasted payload from the maintenance page local-run-review flow. The ledger
+will show `Ledger fixture evidence` with observed/archived counts and raw-field
+drop counts while keeping update totals and 24-hour readiness unchanged.
 
 ## Related Files
 

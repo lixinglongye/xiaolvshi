@@ -64,6 +64,7 @@ import {
   getUserNeedBenchmarkCoverage,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
+  reviewContinuousUpdateLedger,
   reviewLegalFixtureLocalRun,
   type CaseIntakeCompleteness,
   type CaseTaskNotificationPolicy,
@@ -869,6 +870,7 @@ function Inner() {
       ]);
       setFixtureResponseNormalizer(normalized);
       setFixtureLocalRunReview(review);
+      setContinuousLedger(await reviewContinuousUpdateLedger({ low_resource_fixture_review: payload }));
     } catch (err) {
       console.error(err);
       setFixtureReviewError(err instanceof SyntaxError ? 'Local review payload is not valid JSON.' : 'Local fixture review failed.');
@@ -2602,6 +2604,62 @@ function Inner() {
                   </div>
                   <div className="break-all font-mono text-[11px] text-stone-500">
                     {continuousLedger.low_resource_test_policy.recommended_endpoint}
+                  </div>
+                  <div className="break-all font-mono text-[11px] text-stone-500">
+                    {continuousLedger.low_resource_test_policy.ledger_review_endpoint ??
+                      '/api/v1/maintenance/continuous-update-ledger'}
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-stone-950/10 pt-4">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-xs font-black uppercase text-stone-500">Ledger fixture evidence</h4>
+                    <Badge
+                      variant="outline"
+                      className={
+                        statusClass[continuousLedger.low_resource_fixture_evidence.status] ??
+                        statusClass.review_recommended
+                      }
+                    >
+                      {displayToken(continuousLedger.low_resource_fixture_evidence.status)}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <div className="text-lg font-black text-stone-950">
+                        {continuousLedger.low_resource_fixture_evidence.summary.observed_fixture_count}
+                      </div>
+                      <div className="font-semibold uppercase text-stone-500">observed</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-black text-stone-950">
+                        {continuousLedger.low_resource_fixture_evidence.summary.archived_fixture_count}
+                      </div>
+                      <div className="font-semibold uppercase text-stone-500">archived</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-black text-stone-950">
+                        {continuousLedger.low_resource_fixture_evidence.summary.dropped_raw_field_count}
+                      </div>
+                      <div className="font-semibold uppercase text-stone-500">raw fields dropped</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-black text-stone-950">
+                        {continuousLedger.low_resource_fixture_evidence.summary.blocking_check_count}
+                      </div>
+                      <div className="font-semibold uppercase text-stone-500">blocking checks</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                    <div>
+                      review: {displayToken(continuousLedger.low_resource_fixture_evidence.summary.review_status)}
+                    </div>
+                    <div>
+                      archive: {displayToken(continuousLedger.low_resource_fixture_evidence.summary.archive_status)}
+                    </div>
+                    <div>updates count mutated: false</div>
+                    <div>raw gateway responses included: false</div>
+                    <div>archive summaries only: true</div>
                   </div>
                 </div>
               </div>

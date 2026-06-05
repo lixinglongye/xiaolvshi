@@ -507,6 +507,45 @@ export type ContinuousUpdateLedger = {
   };
   completed_updates: ContinuousUpdateLedgerEntry[];
   next_update_queue: ContinuousUpdateLedgerEntry[];
+  low_resource_fixture_evidence: {
+    status: string;
+    summary: {
+      review_status: string;
+      archive_status: string;
+      release_decision: string;
+      archive_release_decision: string;
+      observed_fixture_count: number;
+      archived_fixture_count: number;
+      not_run_fixture_count: number;
+      redacted_response_count: number;
+      dropped_raw_field_count: number;
+      blocking_check_count: number;
+      warning_check_count: number;
+      observed_request_count: number;
+      observed_cost_usd?: number | null;
+      release_ready: boolean;
+      updates_count_mutated: boolean;
+      completion_ready_mutated: boolean;
+    };
+    source_endpoints: {
+      review: string;
+      archive: string;
+    };
+    check_ids: {
+      blocking: string[];
+      warning: string[];
+    };
+    recommended_actions: string[];
+    privacy_boundary: {
+      raw_payload_echoed: boolean;
+      raw_gateway_response_included: boolean;
+      raw_model_output_included: boolean;
+      raw_legal_text_included: boolean;
+      credentials_included: boolean;
+      emails_included: boolean;
+      returns_archive_summaries_only: boolean;
+    };
+  };
   twenty_four_hour_evidence_requirements: string[];
   hundred_update_evidence_requirements: string[];
   low_resource_test_policy: {
@@ -515,6 +554,9 @@ export type ContinuousUpdateLedger = {
     network_access: string;
     model_call_policy: string;
     recommended_endpoint: string;
+    review_endpoint?: string;
+    archive_endpoint?: string;
+    ledger_review_endpoint?: string;
   };
   release_guardrails: string[];
   validation_commands: string[];
@@ -3156,6 +3198,19 @@ export async function getContinuousUpdateLedger(): Promise<ContinuousUpdateLedge
     return payload.data;
   }
   return payload as ContinuousUpdateLedger;
+}
+
+export async function reviewContinuousUpdateLedger(payload: Record<string, unknown>): Promise<ContinuousUpdateLedger> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/continuous-update-ledger',
+    method: 'POST',
+    data: payload,
+  });
+  const response = (resp?.data ?? resp) as ContinuousUpdateLedgerResponse | ContinuousUpdateLedger;
+  if ('success' in response && 'data' in response) {
+    return response.data;
+  }
+  return response as ContinuousUpdateLedger;
 }
 
 export async function getMaintenanceContinuousSessionTimeline(): Promise<MaintenanceContinuousSessionTimeline> {

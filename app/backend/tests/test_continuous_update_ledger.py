@@ -1,3 +1,4 @@
+import json
 import re
 
 from services.continuous_update_ledger import (
@@ -5,10 +6,53 @@ from services.continuous_update_ledger import (
     TARGET_MEDIUM_LARGE_UPDATE_COUNT,
     ContinuousUpdateLedgerService,
 )
+from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.release_readiness import ReleaseReadinessService
 
 
 SECRET_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}")
+
+
+def _fixture_payload(fixture_id: str, route: str, text: str) -> dict:
+    return {
+        "phase": "cheap_first",
+        "model": "gemini-2.5-flash-lite",
+        "http_status": 200,
+        "latency_ms": 800,
+        "estimated_cost_usd": 0.0002,
+        "gateway_response": {
+            "model": "gemini-2.5-flash-lite",
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "fixture_id": fixture_id,
+                                "route": route,
+                                "output_text": text,
+                                "release_decision": "pass",
+                            },
+                            ensure_ascii=False,
+                        )
+                    }
+                }
+            ],
+        },
+    }
+
+
+def _passing_fixture_review_payload() -> dict:
+    fixtures = LegalReviewBenchmarkService().build_fixture_smoke_template()["fixtures"]
+    return {
+        "responses": {
+            fixture["id"]: _fixture_payload(
+                fixture["id"],
+                fixture["expected_routes"][0],
+                " ".join([*fixture["expected_signals"], *fixture["expected_tasks"]]),
+            )
+            for fixture in fixtures
+        }
+    }
 
 
 def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
@@ -33,6 +77,63 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["summary"]["continuous_hours_verified"] == 0
     assert ledger["summary"]["completion_ready"] is False
     assert not SECRET_PATTERN.search(str(ledger))
+    assert ledger["low_resource_fixture_evidence"]["status"] == "not_supplied"
+    assert ledger["low_resource_fixture_evidence"]["summary"]["observed_fixture_count"] == 0
+    assert ledger["low_resource_fixture_evidence"]["summary"]["updates_count_mutated"] is False
+    assert ledger["low_resource_fixture_evidence"]["privacy_boundary"]["raw_gateway_response_included"] is False
+
+
+def test_continuous_update_ledger_summarizes_low_resource_fixture_evidence_without_mutating_goal():
+    baseline = ContinuousUpdateLedgerService().build_ledger()
+    ledger = ContinuousUpdateLedgerService().build_ledger(
+        {"low_resource_fixture_review": _passing_fixture_review_payload()}
+    )
+    serialized = json.dumps(ledger, ensure_ascii=False)
+    evidence = ledger["low_resource_fixture_evidence"]
+
+    assert evidence["status"] == "ready"
+    assert evidence["summary"]["review_status"] == "ready"
+    assert evidence["summary"]["archive_status"] == "ready"
+    assert evidence["summary"]["release_decision"] == "keep_cheap_first_defaults"
+    assert evidence["summary"]["observed_fixture_count"] == 4
+    assert evidence["summary"]["archived_fixture_count"] == 4
+    assert evidence["summary"]["not_run_fixture_count"] == 0
+    assert evidence["summary"]["redacted_response_count"] == 0
+    assert evidence["summary"]["release_ready"] is True
+    assert evidence["summary"]["updates_count_mutated"] is False
+    assert ledger["summary"]["completed_medium_large_update_count"] == baseline["summary"]["completed_medium_large_update_count"]
+    assert ledger["summary"]["completion_ready"] is False
+    assert evidence["privacy_boundary"]["returns_archive_summaries_only"] is True
+    assert "run_report_payload" not in serialized
+    assert "output_text" not in serialized
+    assert "choices" not in serialized
+
+
+def test_continuous_update_ledger_blocks_failed_fixture_evidence_without_echoing_secret():
+    secret = "s" + "k-" + ("D" * 24)
+    ledger = ContinuousUpdateLedgerService().build_ledger(
+        {
+            "low_resource_fixture_review": {
+                "fixture_id": "fixture-service-agreement-small",
+                "model": "gemini-2.5-flash-lite",
+                "gateway_response": {"choices": [{"message": {}}]},
+                "http_status": 200,
+                "note": f"{secret} raw fixture text should not appear",
+            }
+        }
+    )
+    serialized = json.dumps(ledger, ensure_ascii=False)
+    evidence = ledger["low_resource_fixture_evidence"]
+
+    assert evidence["status"] == "blocked"
+    assert evidence["summary"]["review_status"] == "fail"
+    assert evidence["summary"]["observed_fixture_count"] == 0
+    assert evidence["summary"]["release_ready"] is False
+    assert evidence["summary"]["updates_count_mutated"] is False
+    assert ledger["summary"]["completion_ready"] is False
+    assert secret not in serialized
+    assert "raw fixture text should not appear" not in serialized
+    assert "choices" not in serialized
 
 
 def test_continuous_update_ledger_completed_entries_are_reviewable():
@@ -73,6 +174,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "validation-event-evidence-normalizer" in completed_ids
     assert "continuous-session-review-packet" in completed_ids
     assert "continuous-session-low-resource-fixture-review" in completed_ids
+    assert "continuous-ledger-low-resource-fixture-evidence" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
@@ -154,6 +256,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "validation-event-evidence-normalizer" not in queue_ids
     assert "continuous-session-review-packet" not in queue_ids
     assert "continuous-session-low-resource-fixture-review" not in queue_ids
+    assert "continuous-ledger-low-resource-fixture-evidence" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
@@ -207,6 +310,9 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-benchmark-coverage" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
+    assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
+    assert ledger["low_resource_test_policy"]["archive_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/result-archive"
+    assert ledger["low_resource_test_policy"]["ledger_review_endpoint"] == "/api/v1/maintenance/continuous-update-ledger"
     assert "python -m pytest tests/test_continuous_session_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_continuous_session_timeline.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_continuous_session_run_monitor.py -q" in ledger["validation_commands"]
@@ -214,6 +320,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_continuous_session_review_packet.py "
         "tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py "
+        "tests/test_legal_fixture_result_archive.py -q"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_git_history_evidence.py -q" in ledger["validation_commands"]
@@ -292,3 +403,12 @@ def test_continuous_update_ledger_route_returns_progress_payload():
     assert payload["success"] is True
     assert payload["data"]["status"] == "in_progress"
     assert payload["data"]["summary"]["completion_ready"] is False
+    assert payload["data"]["low_resource_fixture_evidence"]["status"] == "not_supplied"
+
+    reviewed = testclient.TestClient(app).post(
+        "/api/v1/maintenance/continuous-update-ledger",
+        json={"low_resource_fixture_review": _passing_fixture_review_payload()},
+    )
+    assert reviewed.status_code == 200
+    assert reviewed.json()["data"]["low_resource_fixture_evidence"]["status"] == "ready"
+    assert reviewed.json()["data"]["low_resource_fixture_evidence"]["summary"]["observed_fixture_count"] == 4
