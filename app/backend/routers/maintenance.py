@@ -63,6 +63,7 @@ from services.legal_adoption_research_bridge import LegalAdoptionResearchBridgeS
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
+from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
@@ -1167,6 +1168,15 @@ async def validate_legal_rag_selected_source_citations(payload: LegalRagSelected
             citation_map=payload.citation_map,
             generation_plan=payload.generation_plan,
         ),
+    }
+
+
+@router.get("/legal-rag-authority-citation-gate")
+async def get_legal_rag_authority_citation_gate():
+    """Return metadata-only Legal RAG authority and citation gate evidence."""
+    return {
+        "success": True,
+        "data": LegalRagAuthorityCitationGateService().build_gate(),
     }
 
 

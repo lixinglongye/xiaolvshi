@@ -16,6 +16,12 @@ and user-need coverage, but it must not claim gateway calls, model-default
 writes, public benchmark scores, dataset downloads, raw legal text handling, or
 credentials.
 
+Legal RAG authority citation gate evidence is metadata-only. It may describe
+repository-backed authority-tier, jurisdiction, freshness, selected-source, and
+citation-map source-id checks, but it must not claim NewAPI/Gemini/gateway
+calls, dataset validation, live RAG accuracy, raw legal text handling, prompt
+retention, model-output retention, or credentials.
+
 This project includes a small maintenance evidence endpoint for open-source support applications and reviewer-facing project summaries.
 
 ## Endpoint
@@ -153,7 +159,9 @@ validation commands, and release checks without storing raw survey or benchmark
 content. The latest safety and reviewer-readiness evidence adds deep-review
 selected-source report binding, quota delivery decisions, feedback issue
 clustering, evidence bundle integrity checks, privacy retention rules,
-release-claim compliance checks, case export readiness, and admin audit policy.
+release-claim compliance checks, case export readiness, admin audit policy, and
+a metadata-only Legal RAG authority/citation gate for source-id and authority
+metadata review.
 Future claims for real payment provider settlement/webhook
 verification, automatic deep-review report binding for selected-source
 validation, public benchmark scores, and external benchmark adoption should
@@ -162,7 +170,7 @@ still stay out of support applications until matching merged evidence exists.
 ## Evidence categories
 
 - Model operations: model catalog, configuration audit, default optimization, default recommendation snapshots, Gemini/NewAPI cheap-first policy, Gemini/NewAPI model selector evidence, Gemini/NewAPI selector replay evidence, Gemini/NewAPI cheap-first calibration, model route legal benchmark risk queue, price-refresh monitoring, cost regression snapshots, gateway compatibility, gateway health planning, sanitized gateway probe evaluation, Gemini lifecycle policy, model-ops readiness, budget policy, task inference, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry persistence planning, privacy-safe route telemetry repository, route guardrails, callsite audit, fallback chains, routing replay, usage-safe telemetry.
-- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, case export readiness checks, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, LegalBench/LexGLUE/COLIEE research registry mapping and UI evidence, metadata-only legal benchmark research refresh evidence, legal adoption research bridge evidence, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, citation validation, deep-review binding, and maintenance self-checks, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
+- Quality control: deep-review quality gates, legal document template coverage, contract clause extraction schema, legal document export readiness, case export readiness checks, legal-review benchmark cases, legal document benchmark fixtures, deterministic legal document benchmark suite checks, LegalBench/LexGLUE/COLIEE research registry mapping and UI evidence, metadata-only legal benchmark research refresh evidence, legal adoption research bridge evidence, small legal corpus expansion, RAG failure fixtures, durable legal source index planning, metadata-only legal source index persistence, legal RAG index binding and route exposure, metadata-only Legal RAG authority/citation gate evidence, metadata-only Legal RAG research context cache/copy controls, selected-source Legal RAG request metadata, citation validation, deep-review binding, and maintenance self-checks, external legal-AI research digests, research-backed legal AI backlog planning, resource-capped public benchmark samplers, quick laptop-safe legal fixture suites, fixture-level Gemini/NewAPI model matrices, cheap-first legal fixture prompt packs, safe gateway request manifests, laptop-safe fixture run plans, one-at-a-time local run packages, response normalizers, one-step local run reviews, archive-safe fixture result summaries, cheap-first fixture run reports, release evidence bundles, lightweight synthetic legal document fixtures, and fixture-driven prompt/schema improvement planning.
 - Document intake: OCR import readiness states, retry policy, scanned-page detection, and manual-review routing.
 - Review operations: citation, evidence, source freshness, evidence exhibit packages, evidence bundle integrity, legal grounding quick audits, selected-source request metadata, the case evidence graph contract, the case workbench payload contract, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding and routes, privacy-safe case edit runtime events, task runtime notification summaries, the case intake completeness checklist, matter intake readiness, case timeline deadline risk, deadline validation, lawyer review workflow, document delivery package manifests, document version diff checklists, the client delivery risk checklist, quota delivery decisions, and client delivery transparency.
 - Security and collaboration: least-privilege case team roles, case role permission matrices, client-only scopes, sensitive-operation approvals, privacy retention rules, release-claim compliance checks, admin audit policy, privacy-minimized matter audit retention, and access audit requirements.

@@ -2479,6 +2479,93 @@ export type ModelRouteLegalBenchmarkRiskQueue = {
   validation_commands: string[];
 };
 
+export type LegalRagAuthorityCitationGateSourceRow = {
+  id?: string;
+  source_id?: string;
+  title?: string;
+  source_title?: string;
+  source_tier?: string;
+  tier?: string;
+  authority?: string;
+  authority_level?: string;
+  jurisdiction?: string;
+  jurisdiction_status?: string;
+  freshness?: string;
+  freshness_status?: string;
+  last_reviewed_at?: string | null;
+  last_updated_at?: string | null;
+  citation_mismatch_count?: number;
+  citation_mismatches?: number;
+  retrieval_gap_count?: number;
+  retrieval_gaps?: number;
+  claim_boundary_status?: string;
+  privacy_boundary_status?: string;
+  status?: string;
+  reason_codes?: string[];
+  recommended_actions?: string[];
+  validation_command?: string;
+  validation_commands?: string[];
+  [key: string]: unknown;
+};
+
+export type LegalRagAuthorityCitationGate = {
+  status: string;
+  summary: {
+    source_count?: number;
+    source_tier_count?: number;
+    authority_review_count?: number;
+    jurisdiction_count?: number;
+    freshness_gap_count?: number;
+    stale_source_count?: number;
+    citation_mismatch_count?: number;
+    retrieval_gap_count?: number;
+    claim_boundary_gap_count?: number;
+    privacy_boundary_gap_count?: number;
+    recommended_action_count?: number;
+    validation_command_count?: number;
+    metadata_only?: boolean;
+    raw_legal_text_included?: boolean;
+    prompt_included?: boolean;
+    model_output_included?: boolean;
+    credentials_included?: boolean;
+    [key: string]: unknown;
+  };
+  source_rows: LegalRagAuthorityCitationGateSourceRow[];
+  recommended_actions: string[];
+  validation_commands: string[];
+  privacy_boundary: {
+    metadata_only?: boolean;
+    returns_raw_legal_text?: boolean;
+    returns_raw_source_text?: boolean;
+    returns_prompts?: boolean;
+    returns_prompt?: boolean;
+    returns_raw_model_output?: boolean;
+    returns_model_output?: boolean;
+    returns_credentials?: boolean;
+    returns_secrets?: boolean;
+    source?: string;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed?: boolean;
+    unsupported_claims_allowed?: boolean;
+    citation_without_source_allowed?: boolean;
+    jurisdiction_mismatch_allowed?: boolean;
+    freshness_gap_allowed?: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    source?: string;
+    [key: string]: unknown;
+  };
+  source_tiers?: Record<string, string | number>;
+  authority_counts?: Record<string, number>;
+  jurisdiction_counts?: Record<string, number>;
+  freshness_counts?: Record<string, number>;
+  citation_mismatch_rows?: LegalRagAuthorityCitationGateSourceRow[];
+  retrieval_gap_rows?: LegalRagAuthorityCitationGateSourceRow[];
+  claim_boundary_rows?: LegalRagAuthorityCitationGateSourceRow[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2700,6 +2787,15 @@ type LegalBenchmarkResearchRefreshResponse = {
 type ModelRouteLegalBenchmarkRiskQueueResponse = {
   success: boolean;
   data: ModelRouteLegalBenchmarkRiskQueue;
+};
+
+type LegalRagAuthorityCitationGateResponse = {
+  success: boolean;
+  data:
+    | LegalRagAuthorityCitationGate
+    | {
+        legalRagAuthorityCitationGate: LegalRagAuthorityCitationGate;
+      };
 };
 
 export type LegalKnowledgeAudit = {
@@ -3940,6 +4036,18 @@ export async function getModelRouteLegalBenchmarkRiskQueue(): Promise<ModelRoute
     method: 'GET',
   });
   return unwrapMaintenanceData<ModelRouteLegalBenchmarkRiskQueueResponse['data']>(resp);
+}
+
+export async function getLegalRagAuthorityCitationGate(): Promise<LegalRagAuthorityCitationGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-authority-citation-gate',
+    method: 'GET',
+  });
+  const payload = unwrapMaintenanceData<LegalRagAuthorityCitationGateResponse['data']>(resp);
+  if ('legalRagAuthorityCitationGate' in payload) {
+    return payload.legalRagAuthorityCitationGate;
+  }
+  return payload;
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

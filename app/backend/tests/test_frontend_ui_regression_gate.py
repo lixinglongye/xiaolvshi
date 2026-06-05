@@ -26,6 +26,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
+    assert "legal RAG authority citation gate" in rows["/maintenance"]["protected_panels"]
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
@@ -65,6 +66,9 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "model calls" in payload_text
     assert "gateway calls" in payload_text
     assert "routing writes" in payload_text
+    assert "NewAPI/Gemini/gateway calls" in payload_text
+    assert "prompts" in payload_text
+    assert "model output" in payload_text
     assert "credentials" in payload_text
     assert "function Inner()" not in payload_text
     assert "localStorage.getItem" not in payload_text

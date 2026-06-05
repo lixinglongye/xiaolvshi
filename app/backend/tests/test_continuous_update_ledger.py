@@ -511,6 +511,29 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "public benchmark scores" in route_queue_entry["impact"]
     assert "raw legal text" in route_queue_entry["impact"]
     assert "credentials" in route_queue_entry["impact"]
+    authority_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-authority-citation-gate"
+    )
+    assert "app/backend/services/legal_rag_authority_citation_gate.py" in authority_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_authority_citation_gate.py" in authority_gate_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_AUTHORITY_CITATION_GATE.md" in authority_gate_entry["evidence_paths"]
+    assert "legal-rag-authority-citation-gate" in authority_gate_entry["release_gate_links"]
+    assert "selected-source ids" in authority_gate_entry["impact"]
+    assert "authority tiers" in authority_gate_entry["impact"]
+    assert "citation-map source ids" in authority_gate_entry["impact"]
+    assert "without NewAPI/Gemini calls" in authority_gate_entry["impact"]
+    assert "gateway calls" in authority_gate_entry["impact"]
+    assert "dataset downloads" in authority_gate_entry["impact"]
+    assert "raw legal text" in authority_gate_entry["impact"]
+    assert "prompts" in authority_gate_entry["impact"]
+    assert "model outputs" in authority_gate_entry["impact"]
+    assert "credentials" in authority_gate_entry["impact"]
+    assert (
+        "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

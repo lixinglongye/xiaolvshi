@@ -19,6 +19,12 @@ legal benchmark refresh mappings, and user-need coverage. It does not call
 gateways, write model routes, download datasets, claim public benchmark scores,
 store raw legal text, or handle credentials.
 
+Current Legal RAG authority slice: `legal-rag-authority-citation-gate` adds a
+metadata-only authority and citation gate for selected-source ids, authority
+tiers, jurisdiction/date/freshness metadata, and citation-map source ids. It
+does not call NewAPI, Gemini, or gateways, download datasets, store raw legal
+text, prompts, model outputs, or credentials.
+
 Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
 Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
 readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
@@ -106,6 +112,10 @@ legal-AI research, professional AI governance/adoption signals, existing user
 needs, product feature gaps, cheap-first validation commands, and release gates
 without storing survey free text, raw benchmark samples, legal text, model
 outputs, or secrets.
+The current Legal RAG authority/citation gate joins source authority metadata,
+selected-source validation, freshness policy, and frontend regression evidence
+without storing legal snippets, prompts, generated analysis, gateway payloads,
+or credentials.
 The latest model-ops batch adds a route telemetry operations summary that turns
 sanitized persisted route aggregates into release-review checks for failures,
 premium-model drift, over-budget pressure, operator-review load, unknown

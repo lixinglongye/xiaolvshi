@@ -28,6 +28,7 @@ The `/maintenance` page carries evidence for:
 - legal-document benchmark coverage
 - legal benchmark research refresh
 - model route legal benchmark risk queue
+- legal RAG authority citation gate
 - continuous update ledger
 - Gemini/NewAPI selector evidence
 
@@ -80,6 +81,9 @@ This gate does not:
   credentials for legal benchmark research refresh evidence
 - call gateways, write model routes, expose raw route payloads, download datasets,
   or claim benchmark performance for the model route legal benchmark risk queue
+- call NewAPI, Gemini, gateways, download datasets, expose raw legal text,
+  prompts, model outputs, or credentials for the Legal RAG authority citation
+  gate
 - prove production model routing health
 - return source code, raw browser storage, raw model output, credentials, or user
   legal text

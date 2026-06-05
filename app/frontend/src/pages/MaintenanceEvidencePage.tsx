@@ -43,6 +43,7 @@ import {
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
+  getLegalRagAuthorityCitationGate,
   getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -101,6 +102,7 @@ import {
   type LegalDocumentBenchmarkCoverage,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
+  type LegalRagAuthorityCitationGate,
   type LegalResearchBacklog,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -320,6 +322,8 @@ function Inner() {
   const [validationCommands, setValidationCommands] = useState<ReleaseValidationCommand[]>([]);
   const [legalAudit, setLegalAudit] = useState<LegalKnowledgeAudit | null>(null);
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
+  const [legalRagAuthorityCitationGate, setLegalRagAuthorityCitationGate] =
+    useState<LegalRagAuthorityCitationGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -633,6 +637,11 @@ function Inner() {
           label: 'Legal RAG evaluation policy',
           run: getLegalRagEvaluationPolicy,
           apply: (value) => setRagPolicy(value as LegalRagEvaluationPolicy),
+        },
+        {
+          label: 'Legal RAG authority citation gate',
+          run: getLegalRagAuthorityCitationGate,
+          apply: (value) => setLegalRagAuthorityCitationGate(value as LegalRagAuthorityCitationGate),
         },
         {
           label: 'Maintenance gate snapshot',
@@ -6821,6 +6830,211 @@ function Inner() {
                         <Badge key={status} variant="outline" className="bg-white">
                           {status}: {threshold}
                         </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalRagAuthorityCitationGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal RAG authority citation gate</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only authority and citation quality review for retrieved legal sources
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalRagAuthorityCitationGate.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(legalRagAuthorityCitationGate.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  {[
+                    {
+                      label: 'source tiers',
+                      value:
+                        legalRagAuthorityCitationGate.summary.source_tier_count ??
+                        Object.keys(legalRagAuthorityCitationGate.source_tiers ?? {}).length,
+                    },
+                    {
+                      label: 'authority reviewed',
+                      value:
+                        legalRagAuthorityCitationGate.summary.authority_review_count ??
+                        (legalRagAuthorityCitationGate.source_rows ?? []).length,
+                    },
+                    {
+                      label: 'jurisdictions',
+                      value:
+                        legalRagAuthorityCitationGate.summary.jurisdiction_count ??
+                        Object.keys(legalRagAuthorityCitationGate.jurisdiction_counts ?? {}).length,
+                    },
+                    {
+                      label: 'freshness gaps',
+                      value:
+                        legalRagAuthorityCitationGate.summary.freshness_gap_count ??
+                        legalRagAuthorityCitationGate.summary.stale_source_count ??
+                        0,
+                    },
+                    {
+                      label: 'citation mismatches',
+                      value:
+                        legalRagAuthorityCitationGate.summary.citation_mismatch_count ??
+                        (legalRagAuthorityCitationGate.citation_mismatch_rows ?? []).length,
+                    },
+                    {
+                      label: 'retrieval gaps',
+                      value:
+                        legalRagAuthorityCitationGate.summary.retrieval_gap_count ??
+                        (legalRagAuthorityCitationGate.retrieval_gap_rows ?? []).length,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Tier / authority</TableHead>
+                        <TableHead>Jurisdiction / freshness</TableHead>
+                        <TableHead>Citation mismatch</TableHead>
+                        <TableHead>Retrieval gap</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(legalRagAuthorityCitationGate.source_rows ?? []).slice(0, 8).map((row, index) => {
+                        const rowId = row.id ?? row.source_id ?? `authority-row-${index}`;
+                        const sourceTitle = row.title ?? row.source_title ?? row.source_id ?? row.id ?? 'source metadata';
+                        const tier = row.source_tier ?? row.tier ?? '-';
+                        const authority = row.authority ?? row.authority_level ?? '-';
+                        const freshness = row.freshness_status ?? row.freshness ?? '-';
+                        const citationMismatch = row.citation_mismatch_count ?? row.citation_mismatches ?? 0;
+                        const retrievalGap = row.retrieval_gap_count ?? row.retrieval_gaps ?? 0;
+                        return (
+                          <TableRow key={rowId}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{sourceTitle}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_id ?? row.id ?? '-'}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>tier: {formatInline(tier)}</div>
+                              <div>authority: {formatInline(authority)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>jurisdiction: {formatInline(row.jurisdiction ?? row.jurisdiction_status ?? '-')}</div>
+                              <div>freshness: {formatInline(freshness)}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={citationMismatch > 0 ? statusClass.review_required : statusClass.ready}
+                              >
+                                {citationMismatch}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={retrievalGap > 0 ? statusClass.review_required : statusClass.ready}>
+                                {retrievalGap}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[row.status ?? 'ready'] ?? statusClass.not_run}>
+                                {displayToken(row.status ?? 'ready')}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>legal advice claimed: {String(legalRagAuthorityCitationGate.claim_boundary.legal_advice_claimed ?? false)}</div>
+                      <div>
+                        unsupported claims allowed:{' '}
+                        {String(legalRagAuthorityCitationGate.claim_boundary.unsupported_claims_allowed ?? false)}
+                      </div>
+                      <div>
+                        citation without source allowed:{' '}
+                        {String(legalRagAuthorityCitationGate.claim_boundary.citation_without_source_allowed ?? false)}
+                      </div>
+                      <div>
+                        jurisdiction mismatch allowed:{' '}
+                        {String(legalRagAuthorityCitationGate.claim_boundary.jurisdiction_mismatch_allowed ?? false)}
+                      </div>
+                      <div>freshness gap allowed: {String(legalRagAuthorityCitationGate.claim_boundary.freshness_gap_allowed ?? false)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>metadata-only: {String(legalRagAuthorityCitationGate.privacy_boundary.metadata_only ?? true)}</div>
+                      <div>
+                        raw legal text:{' '}
+                        {String(
+                          legalRagAuthorityCitationGate.privacy_boundary.returns_raw_legal_text ??
+                            legalRagAuthorityCitationGate.privacy_boundary.returns_raw_source_text ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        prompt returned:{' '}
+                        {String(
+                          legalRagAuthorityCitationGate.privacy_boundary.returns_prompts ??
+                            legalRagAuthorityCitationGate.privacy_boundary.returns_prompt ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        model output:{' '}
+                        {String(
+                          legalRagAuthorityCitationGate.privacy_boundary.returns_raw_model_output ??
+                            legalRagAuthorityCitationGate.privacy_boundary.returns_model_output ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        credentials:{' '}
+                        {String(
+                          legalRagAuthorityCitationGate.privacy_boundary.returns_credentials ??
+                            legalRagAuthorityCitationGate.privacy_boundary.returns_secrets ??
+                            false,
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {(legalRagAuthorityCitationGate.recommended_actions ?? []).slice(0, 5).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(legalRagAuthorityCitationGate.validation_commands ?? []).slice(0, 4).map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
                       ))}
                     </div>
                   </div>
