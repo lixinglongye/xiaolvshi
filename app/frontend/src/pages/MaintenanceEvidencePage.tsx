@@ -42,6 +42,7 @@ import {
   getLegalBenchmarkResearchRegistry,
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
+  getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getLegalPublicBenchmarkSampler,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -123,6 +124,7 @@ import {
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
+  type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelRouteLegalBenchmarkRiskQueue,
   type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
@@ -181,6 +183,7 @@ const statusClass: Record<string, string> = {
   pass_with_warnings: 'border-amber-200 bg-amber-50 text-amber-900',
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   ready_with_gaps: 'border-amber-200 bg-amber-50 text-amber-900',
+  ready_with_watchlist: 'border-amber-200 bg-amber-50 text-amber-900',
   partial: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
   gap: 'border-red-200 bg-red-50 text-red-800',
@@ -404,6 +407,8 @@ function Inner() {
     useState<LegalBenchmarkResearchRefresh | null>(null);
   const [modelRouteLegalBenchmarkRiskQueue, setModelRouteLegalBenchmarkRiskQueue] =
     useState<ModelRouteLegalBenchmarkRiskQueue | null>(null);
+  const [modelOpsLegalFixtureCheapFirstBenchmarkGate, setModelOpsLegalFixtureCheapFirstBenchmarkGate] =
+    useState<ModelOpsLegalFixtureCheapFirstBenchmarkGate | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -611,6 +616,11 @@ function Inner() {
           label: 'Model route legal benchmark risk queue',
           run: getModelRouteLegalBenchmarkRiskQueue,
           apply: (value) => setModelRouteLegalBenchmarkRiskQueue(value as ModelRouteLegalBenchmarkRiskQueue),
+        },
+        {
+          label: 'ModelOps legal fixture cheap-first benchmark gate',
+          run: getModelOpsLegalFixtureCheapFirstBenchmarkGate,
+          apply: (value) => setModelOpsLegalFixtureCheapFirstBenchmarkGate(value as ModelOpsLegalFixtureCheapFirstBenchmarkGate),
         },
         {
           label: 'Legal public benchmark sampler',
@@ -4646,6 +4656,192 @@ function Inner() {
                         {command}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelOpsLegalFixtureCheapFirstBenchmarkGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal fixture cheap-first benchmark gate
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Small legal-document fixture gate for cheap Gemini default evidence before routing changes.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[modelOpsLegalFixtureCheapFirstBenchmarkGate.status] ?? statusClass.review_required
+                    }
+                  >
+                    {displayToken(modelOpsLegalFixtureCheapFirstBenchmarkGate.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 lg:grid-cols-6">
+                  {[
+                    {
+                      label: 'selected fixtures',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.selected_fixture_count,
+                    },
+                    {
+                      label: 'evaluated',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.evaluated_fixture_count,
+                    },
+                    {
+                      label: 'evidence allowed',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.default_evidence_allowed_count,
+                    },
+                    {
+                      label: 'blocked',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.blocked_count,
+                    },
+                    {
+                      label: 'max parallel',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.max_parallel_requests,
+                    },
+                    {
+                      label: 'cheap cost',
+                      value: formatUsd(modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.estimated_cheap_first_cost_usd),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.3fr_0.7fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Gate</TableHead>
+                          <TableHead>Cheap-first</TableHead>
+                          <TableHead>Evidence signals</TableHead>
+                          <TableHead>Release action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {modelOpsLegalFixtureCheapFirstBenchmarkGate.gate_rows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[280px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">
+                                {displayToken(row.matter_type)} / {displayToken(row.task)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[row.gate_status] ?? statusClass.warn}>
+                                {displayToken(row.gate_status)}
+                              </Badge>
+                              <div className="mt-2 text-xs leading-5 text-stone-600">
+                                run {displayToken(row.run_report_status)} / matrix {displayToken(row.model_matrix_status)}
+                              </div>
+                              <div className="text-xs leading-5 text-stone-500">
+                                default evidence: {String(row.default_change_evidence_allowed)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-950">{row.cheap_first_model ?? '-'}</div>
+                              <div>tier {row.cheap_first_cost_tier ?? '-'}</div>
+                              <div>known {String(row.cheap_first_known_model)}</div>
+                              <div>premium escalation {String(row.premium_escalation_candidate)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              expected signals {row.expected_signal_count} / tasks {row.expected_task_count}
+                              <br />
+                              matched {row.matched_signal_count} / missing signals {row.missing_signal_count} / missing tasks{' '}
+                              {row.missing_task_count}
+                              <br />
+                              sources {row.public_source_ids.join(', ') || '-'}
+                            </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              <div>{row.release_action}</div>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                {row.reason_codes.join(', ') || 'fixture-gate-ready'}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        raw fixture text:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_raw_fixture_text ?? false)}
+                      </div>
+                      <div>
+                        raw model output:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_raw_model_output ?? false)}
+                      </div>
+                      <div>
+                        gateway payloads:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_gateway_payloads ?? false)}
+                      </div>
+                      <div>
+                        credentials:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_credentials ?? false)}
+                      </div>
+                      <div>
+                        NewAPI called:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.newapi_called ?? false)}
+                      </div>
+                      <div>
+                        automatic default change:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.claim_boundary.automatic_default_change_claimed ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        public benchmark scores:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.claim_boundary.public_benchmark_scores_claimed ??
+                            false,
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Routing policy</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>strategy: {displayToken(modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.default_strategy)}</div>
+                      <div>
+                        cheap models:{' '}
+                        {modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.cheap_first_models.join(', ') || '-'}
+                      </div>
+                      <div>
+                        config write allowed:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.configuration_write_allowed)}
+                      </div>
+                      <div>
+                        traffic shift allowed:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.traffic_shift_allowed)}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation</h3>
+                    <div className="grid gap-2">
+                      {modelOpsLegalFixtureCheapFirstBenchmarkGate.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>

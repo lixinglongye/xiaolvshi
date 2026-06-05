@@ -71,6 +71,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps agentic grounded defaults" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default template alignment audit" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini default change proposal review" in profile["release_management"]["release_readiness_controls"]
@@ -134,6 +135,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
+    assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
+    assert "app/backend/routers/maintenance.py" in evidence_paths
+    assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in evidence_paths
+    assert "app/frontend/scripts/ui-regression.mjs" in evidence_paths
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in evidence_paths
     assert "app/backend/.env.example" in evidence_paths
     assert "README.md" in evidence_paths
     assert "app/backend/services/release_readiness.py" in evidence_paths
@@ -182,6 +190,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["description"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["description"]
+    assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["description"]
     assert "ModelOps agentic/grounded default routing evidence" in model_signal["description"]
     assert "ModelOps default template alignment audit evidence" in model_signal["description"]
     assert "ModelOps Gemini default change proposal review evidence" in model_signal["description"]
@@ -206,6 +215,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
+    assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["responsibility"]
     assert "ModelOps agentic/grounded defaults review" in model_signal["responsibility"]
     assert "ModelOps default template alignment audit review" in model_signal["responsibility"]
     assert "ModelOps Gemini default change proposal review" in model_signal["responsibility"]

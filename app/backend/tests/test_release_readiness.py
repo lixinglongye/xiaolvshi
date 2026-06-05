@@ -493,6 +493,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -614,6 +615,37 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
+    assert "metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "redacted fixture ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "expected issue tags" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "cost metadata" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "escalation metadata" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "Gemini" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "OpenAI" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "Google" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "gateways" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "network" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "real legal text" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "prompts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "model outputs" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "credentials" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "emails" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "metadata-only/default routing change evidence" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
     assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
     assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]

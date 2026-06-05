@@ -127,6 +127,14 @@ It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
 not write real environment values, and does not include raw prompts, payloads,
 model outputs, or credentials.
 
+`modelops-legal-fixture-cheap-first-benchmark-gate` is the shipped
+metadata-only small legal-document cheap-first Gemini benchmark/risk gate
+evidence. It uses redacted fixture ids, expected issue tags, cost metadata, and
+escalation metadata to decide whether a cheap-first result remains acceptable or
+needs review/escalation. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, or the network, and it does not include real legal text, prompts,
+model outputs, credentials, or emails.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

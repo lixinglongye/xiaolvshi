@@ -2561,6 +2561,114 @@ export type ModelRouteLegalBenchmarkRiskQueue = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalFixtureCheapFirstBenchmarkGateRow = {
+  id: string;
+  fixture_id: string;
+  title: string;
+  matter_type: string;
+  task: string;
+  cheap_first_model?: string | null;
+  cheap_first_cost_tier?: string | null;
+  cheap_first_known_model: boolean;
+  estimated_request_cost_usd?: number | null;
+  expected_signal_count: number;
+  expected_task_count: number;
+  linked_case_count: number;
+  public_source_ids: string[];
+  public_source_sampling_states: string[];
+  model_matrix_status: string;
+  run_report_status: string;
+  run_report_score?: number | null;
+  matched_signal_count: number;
+  missing_signal_count: number;
+  missing_task_count: number;
+  high_priority_action_count: number;
+  premium_escalation_candidate: boolean;
+  gate_status: string;
+  release_action: string;
+  default_change_evidence_allowed: boolean;
+  reason_codes: string[];
+  validation_targets: string[];
+  raw_fixture_text_returned: boolean;
+  raw_model_output_returned: boolean;
+  gateway_called: boolean;
+};
+
+export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
+  metadata_only: boolean;
+  returns_fixture_ids: boolean;
+  returns_expected_signal_counts: boolean;
+  returns_raw_fixture_text: boolean;
+  returns_fixture_excerpt: boolean;
+  returns_prompt_text: boolean;
+  returns_raw_model_output: boolean;
+  returns_gateway_payloads: boolean;
+  returns_credentials: boolean;
+  network_called: boolean;
+  newapi_called: boolean;
+  output_scope: string;
+};
+
+export type ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary = {
+  automatic_default_change_claimed: boolean;
+  public_benchmark_scores_claimed: boolean;
+  external_dataset_execution_claimed: boolean;
+  live_gateway_quality_claimed: boolean;
+  production_legal_accuracy_claimed: boolean;
+  legal_advice_claimed: boolean;
+};
+
+export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    selected_fixture_count: number;
+    evaluated_fixture_count: number;
+    pass_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    not_run_count: number;
+    default_evidence_allowed_count: number;
+    cheap_first_model_count: number;
+    premium_escalation_candidate_count: number;
+    license_review_source_count: number;
+    quick_suite_status: string;
+    model_matrix_status: string;
+    run_report_status: string;
+    evidence_bundle_status: string;
+    estimated_cheap_first_cost_usd: number;
+    max_parallel_requests: number;
+    raw_input_field_count: number;
+    raw_fixture_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+  };
+  gate_rows: ModelOpsLegalFixtureCheapFirstBenchmarkGateRow[];
+  blocking_fixture_ids: string[];
+  review_fixture_ids: string[];
+  default_evidence_fixture_ids: string[];
+  routing_policy: {
+    default_strategy: string;
+    cheap_first_models: string[];
+    default_evidence_requires: string[];
+    blocked_actions: string[];
+    max_parallel_requests: number;
+    configuration_write_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+  };
+  recommended_actions: string[];
+  privacy_boundary: ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary;
+  claim_boundary: ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary;
+  validation_commands: string[];
+};
+
 export type LegalRagAuthorityCitationGateSourceRow = {
   id?: string;
   source_id?: string;
@@ -4490,6 +4598,14 @@ export async function getModelRouteLegalBenchmarkRiskQueue(): Promise<ModelRoute
     method: 'GET',
   });
   return unwrapMaintenanceData<ModelRouteLegalBenchmarkRiskQueueResponse['data']>(resp);
+}
+
+export async function getModelOpsLegalFixtureCheapFirstBenchmarkGate(): Promise<ModelOpsLegalFixtureCheapFirstBenchmarkGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelOpsLegalFixtureCheapFirstBenchmarkGate>(resp);
 }
 
 export async function getLegalRagAuthorityCitationGate(): Promise<LegalRagAuthorityCitationGate> {

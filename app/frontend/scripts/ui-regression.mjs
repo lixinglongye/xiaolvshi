@@ -217,6 +217,18 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'returns_routing_payloads', 'model route legal benchmark risk queue routing payload boundary'),
   () => assertIncludes(maintenanceApi, 'getModelRouteLegalBenchmarkRiskQueue', 'model route legal benchmark risk queue API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/model-route-legal-benchmark-risk-queue', 'model route legal benchmark risk queue endpoint'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate type'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary', 'legal fixture cheap-first benchmark gate explicit privacy boundary type'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary', 'legal fixture cheap-first benchmark gate explicit claim boundary type'),
+  () => assertIncludes(maintenanceApi, 'gate_rows', 'legal fixture cheap-first benchmark gate rows type'),
+  () => assertIncludes(maintenanceApi, 'default_change_evidence_allowed', 'legal fixture cheap-first benchmark gate evidence decision type'),
+  () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate', 'legal fixture cheap-first benchmark gate endpoint'),
+  () => assertIncludes(maintenancePage, 'Legal fixture cheap-first benchmark gate', 'legal fixture cheap-first benchmark gate panel'),
+  () => assertIncludes(maintenancePage, 'modelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate state binding'),
+  () => assertIncludes(maintenancePage, 'raw fixture text', 'legal fixture cheap-first benchmark gate raw fixture boundary label'),
+  () => assertIncludes(maintenancePage, 'automatic default change', 'legal fixture cheap-first benchmark gate no default-change claim'),
+  () => assertIncludes(maintenancePage, 'configuration_write_allowed', 'legal fixture cheap-first benchmark gate no config write binding'),
   () => assertIncludes(maintenanceApi, 'LegalRagAuthorityCitationGate', 'legal RAG authority citation gate type'),
   () => assertIncludes(maintenanceApi, 'legalRagAuthorityCitationGate', 'legal RAG authority citation gate payload binding'),
   () => assertIncludes(maintenanceApi, 'source_tier', 'legal RAG source tier type'),
@@ -557,6 +569,12 @@ const userNeedImplementationQueuePanel = sourceSection(
   'Product feature gap radar',
   'maintenance user need implementation priority queue section',
 );
+const legalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
+  maintenancePage,
+  'Small legal-document fixture gate for cheap Gemini default evidence before routing changes.',
+  'Model route legal benchmark risk queue',
+  'maintenance legal fixture cheap-first benchmark gate section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -601,6 +619,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text)\b/i,
   'maintenance user need implementation priority queue no secret or raw prompt/payload/legal text field names',
 );
+assertNotMatches(
+  legalFixtureCheapFirstBenchmarkGatePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|raw_prompt|prompt_payload)\b/i,
+  'maintenance legal fixture cheap-first benchmark gate no secrets or raw fixture/output field names',
+);
 
 console.log(
   JSON.stringify(
@@ -608,7 +631,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 11,
+      assertions: checks.length + 12,
     },
     null,
     2,

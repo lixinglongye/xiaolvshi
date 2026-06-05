@@ -77,6 +77,7 @@ from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidence
 from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
 from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
 from services.model_route_legal_benchmark_risk_queue import ModelRouteLegalBenchmarkRiskQueueService
+from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsLegalFixtureCheapFirstBenchmarkGateService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
@@ -1485,6 +1486,24 @@ async def get_legal_review_fixture_model_matrix():
     return {
         "success": True,
         "data": LegalFixtureModelMatrixService().build_matrix(),
+    }
+
+
+@router.get("/legal-review-benchmark/cheap-first-benchmark-gate")
+async def get_legal_review_fixture_cheap_first_benchmark_gate():
+    """Return a metadata-only gate for cheap-first fixture default evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(),
+    }
+
+
+@router.post("/legal-review-benchmark/cheap-first-benchmark-gate")
+async def build_legal_review_fixture_cheap_first_benchmark_gate(payload: dict[str, Any]):
+    """Evaluate normalized fixture observations before default-change evidence is allowed."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(payload),
     }
 
 
