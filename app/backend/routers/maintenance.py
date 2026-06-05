@@ -66,6 +66,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
+from services.legal_rag_retrieval_diagnostics_gate import LegalRagRetrievalDiagnosticsGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
@@ -1197,6 +1198,15 @@ async def get_legal_rag_abstention_escalation_gate():
     return {
         "success": True,
         "data": LegalRagAbstentionEscalationGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-retrieval-diagnostics-gate")
+async def get_legal_rag_retrieval_diagnostics_gate():
+    """Return metadata-only Legal RAG retrieval diagnostic evidence."""
+    return {
+        "success": True,
+        "data": LegalRagRetrievalDiagnosticsGateService().build_gate(),
     }
 
 

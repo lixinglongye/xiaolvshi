@@ -2743,6 +2743,163 @@ export type LegalRagAbstentionEscalationGate = {
   validation_commands: string[];
 };
 
+export type LegalRagRetrievalDiagnosticsGateRow = {
+  id?: string;
+  diagnostic_id?: string;
+  query_intent: string;
+  retrieval_status: string;
+  source_coverage_status: string;
+  source_coverage_score?: number;
+  expected_source_count?: number;
+  selected_source_count?: number;
+  top_k_depth?: number;
+  top_k_depth_status: string;
+  jurisdiction_status: string;
+  freshness_status: string;
+  citation_gap?: boolean;
+  retrieval_gap?: boolean;
+  cheap_first_action: {
+    task?: string;
+    decision?: string;
+    starts_cheap?: boolean;
+    recommended_model_alias?: string;
+    signals?: string[];
+    requires_operator_review?: boolean;
+    model_called?: boolean;
+    gateway_called?: boolean;
+    [key: string]: unknown;
+  };
+  release_action: string;
+  linked_gate_ids: string[];
+  linked_authority_row_ids?: string[];
+  linked_abstention_modes?: string[];
+  authority_coverage_status?: string;
+  retrieval_depth_gap?: boolean;
+  jurisdiction_freshness_gap?: boolean;
+  reason_codes?: string[];
+  validation_commands?: string[];
+  privacy_boundary?: {
+    raw_query_returned?: boolean;
+    retrieved_context_returned?: boolean;
+    raw_legal_text_returned?: boolean;
+    prompt_returned?: boolean;
+    model_output_returned?: boolean;
+    credentials_returned?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagRetrievalDiagnosticsGate = {
+  id: 'legal-rag-retrieval-diagnostics-gate' | string;
+  status: string;
+  title?: string;
+  summary: {
+    diagnostic_row_count?: number;
+    ready_row_count?: number;
+    review_row_count?: number;
+    blocked_row_count?: number;
+    authority_coverage?: number | string;
+    authority_coverage_count?: number;
+    authority_coverage_status?: string;
+    retrieval_depth_gap_count?: number;
+    retrieval_depth_gaps?: number;
+    jurisdiction_freshness_gap_count?: number;
+    jurisdiction_gap_count?: number;
+    freshness_gap_count?: number;
+    cheap_first_retry_count?: number;
+    cheap_first_retry_rows?: number;
+    retrieval_recall_weight?: number;
+    citation_precision_weight?: number;
+    model_called?: boolean;
+    gateway_called?: boolean;
+    newapi_called?: boolean;
+    network_called?: boolean;
+    dataset_downloaded?: boolean;
+    raw_query_included?: boolean;
+    raw_retrieved_context_included?: boolean;
+    raw_legal_text_included?: boolean;
+    prompt_included?: boolean;
+    model_output_included?: boolean;
+    credentials_included?: boolean;
+    [key: string]: unknown;
+  };
+  diagnostic_rows: LegalRagRetrievalDiagnosticsGateRow[];
+  retrieval_status_counts?: Record<string, number>;
+  release_action_counts?: Record<string, number>;
+  linked_gate_summary?: {
+    legal_rag_index_binding?: string;
+    authority_gate_id?: string;
+    abstention_gate_id?: string;
+    authority_review_rows?: number;
+    authority_citation_mismatch_count?: number;
+    authority_retrieval_gap_count?: number;
+    abstention_decision_rows?: number;
+    abstention_blocker_count?: number;
+    [key: string]: unknown;
+  };
+  diagnostic_policy?: {
+    method?: string;
+    minimum_ready_selected_source_count?: number;
+    minimum_top_k_depth?: number;
+    requires_jurisdiction_filter?: boolean;
+    requires_fresh_or_review_due_sources?: boolean;
+    blocks_on_empty_index_coverage?: boolean;
+    blocks_on_forbidden_query_filters?: boolean;
+    premium_exception_default_allowed?: boolean;
+    cheap_first_default?: boolean;
+    [key: string]: unknown;
+  };
+  research_basis?: Array<{
+    id?: string;
+    url?: string;
+    signal?: string;
+    [key: string]: unknown;
+  }>;
+  linkage?: {
+    linked_gate_ids?: string[];
+    gate_statuses?: Record<string, string>;
+    legal_rag_index_binding_status?: string;
+    legal_rag_authority_citation_gate_status?: string;
+    legal_rag_abstention_escalation_gate_status?: string;
+    [key: string]: unknown;
+  };
+  claim_boundary?: {
+    model_claimed?: boolean;
+    gateway_claimed?: boolean;
+    network_claimed?: boolean;
+    raw_query_included?: boolean;
+    raw_context_included?: boolean;
+    raw_legal_text_included?: boolean;
+    prompts_included?: boolean;
+    model_output_included?: boolean;
+    credentials_included?: boolean;
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only?: boolean;
+    model_called?: boolean;
+    model_calls?: boolean;
+    gateway_called?: boolean;
+    network_called?: boolean;
+    network_access?: boolean | string;
+    returns_raw_query?: boolean;
+    returns_query_text?: boolean;
+    returns_raw_context?: boolean;
+    returns_context_text?: boolean;
+    returns_raw_legal_text?: boolean;
+    returns_legal_text?: boolean;
+    returns_prompts?: boolean;
+    returns_model_output?: boolean;
+    returns_raw_model_output?: boolean;
+    returns_credentials?: boolean;
+    credentials_included?: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2992,6 +3149,11 @@ type LegalRagAbstentionEscalationGateResponse = {
         legalRagAbstentionEscalationGate?: LegalRagAbstentionEscalationGate;
         legal_rag_abstention_escalation_gate?: LegalRagAbstentionEscalationGate;
       };
+};
+
+type LegalRagRetrievalDiagnosticsGateResponse = {
+  success: boolean;
+  data: LegalRagRetrievalDiagnosticsGate;
 };
 
 export type LegalKnowledgeAudit = {
@@ -4271,6 +4433,14 @@ export async function getLegalRagAbstentionEscalationGate(): Promise<LegalRagAbs
     return payload.legalRagAbstentionEscalationGate;
   }
   return payload as LegalRagAbstentionEscalationGate;
+}
+
+export async function getLegalRagRetrievalDiagnosticsGate(): Promise<LegalRagRetrievalDiagnosticsGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-retrieval-diagnostics-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagRetrievalDiagnosticsGateResponse['data']>(resp);
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

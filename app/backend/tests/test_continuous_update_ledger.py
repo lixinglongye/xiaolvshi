@@ -259,6 +259,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-route-legal-benchmark-risk-queue" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
+    assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
     assert "quota-delivery-decision" in completed_ids
@@ -337,6 +338,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-route-legal-benchmark-risk-queue" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
+    assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
     assert "quota-delivery-decision" not in queue_ids
@@ -575,6 +577,40 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "credentials" in abstention_gate_entry["impact"]
     assert (
         "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
+    retrieval_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-retrieval-diagnostics-gate"
+    )
+    assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in retrieval_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_retrieval_diagnostics_gate.py" in retrieval_gate_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_RETRIEVAL_DIAGNOSTICS_GATE.md" in retrieval_gate_entry["evidence_paths"]
+    assert "legal-rag-retrieval-diagnostics-gate" in retrieval_gate_entry["release_gate_links"]
+    assert "legal-rag-index-binding" in retrieval_gate_entry["release_gate_links"]
+    assert "legal-rag-authority-citation-gate" in retrieval_gate_entry["release_gate_links"]
+    assert "legal-rag-abstention-escalation-gate" in retrieval_gate_entry["release_gate_links"]
+    assert "model-escalation-policy" in retrieval_gate_entry["release_gate_links"]
+    assert "query-intent labels" in retrieval_gate_entry["impact"]
+    assert "authority coverage" in retrieval_gate_entry["impact"]
+    assert "top-k depth" in retrieval_gate_entry["impact"]
+    assert "jurisdiction/freshness" in retrieval_gate_entry["impact"]
+    assert "citation gaps" in retrieval_gate_entry["impact"]
+    assert "retrieval gaps" in retrieval_gate_entry["impact"]
+    assert "cheap-first defaults" in retrieval_gate_entry["impact"]
+    assert "premium-exception boundaries" in retrieval_gate_entry["impact"]
+    assert "model calls" in retrieval_gate_entry["impact"]
+    assert "gateway calls" in retrieval_gate_entry["impact"]
+    assert "network calls" in retrieval_gate_entry["impact"]
+    assert "raw query" in retrieval_gate_entry["impact"]
+    assert "raw retrieved context" in retrieval_gate_entry["impact"]
+    assert "raw legal text" in retrieval_gate_entry["impact"]
+    assert "prompts" in retrieval_gate_entry["impact"]
+    assert "model outputs" in retrieval_gate_entry["impact"]
+    assert "credentials" in retrieval_gate_entry["impact"]
+    assert (
+        "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]

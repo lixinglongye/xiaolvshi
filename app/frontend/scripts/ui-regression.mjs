@@ -36,6 +36,15 @@ function assertBefore(source, firstNeedle, secondNeedle, label) {
   }
 }
 
+function sourceSection(source, startNeedle, endNeedle, label) {
+  const startIndex = source.indexOf(startNeedle);
+  const endIndex = source.indexOf(endNeedle, Math.max(startIndex, 0));
+  if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
+    throw new Error(`${label}: expected section from "${startNeedle}" to "${endNeedle}"`);
+  }
+  return source.slice(startIndex, endIndex);
+}
+
 const packageJson = JSON.parse(read(files.packageJson));
 const maintenancePage = read(files.maintenancePage);
 const modelOpsPage = read(files.modelOpsPage);
@@ -132,6 +141,38 @@ const checks = [
   () => assertIncludes(maintenancePage, 'raw legal text returned:', 'legal RAG abstention raw legal text privacy boundary'),
   () => assertIncludes(maintenancePage, 'false / not included', 'legal RAG abstention false/not-included boundary copy'),
   () => assertIncludes(maintenancePage, 'gate.validation_commands', 'legal RAG abstention validation binding'),
+  () => assertIncludes(maintenancePage, 'Legal RAG retrieval diagnostics gate', 'legal RAG retrieval diagnostics gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
+  () => assertIncludes(maintenancePage, 'diagnostic rows', 'legal RAG retrieval diagnostics row count summary'),
+  () => assertIncludes(maintenancePage, 'ready rows', 'legal RAG retrieval diagnostics ready summary'),
+  () => assertIncludes(maintenancePage, 'review rows', 'legal RAG retrieval diagnostics review summary'),
+  () => assertIncludes(maintenancePage, 'blocked rows', 'legal RAG retrieval diagnostics blocked summary'),
+  () => assertIncludes(maintenancePage, 'authority coverage', 'legal RAG retrieval diagnostics authority coverage summary'),
+  () => assertIncludes(maintenancePage, 'retrieval depth gaps', 'legal RAG retrieval diagnostics depth gap summary'),
+  () => assertIncludes(maintenancePage, 'jurisdiction/freshness gaps', 'legal RAG retrieval diagnostics jurisdiction/freshness summary'),
+  () => assertIncludes(maintenancePage, 'cheap-first retry count', 'legal RAG retrieval diagnostics cheap-first retry summary'),
+  () => assertIncludes(maintenancePage, 'query_intent', 'legal RAG retrieval diagnostics query intent binding'),
+  () => assertIncludes(maintenancePage, 'retrieval_status', 'legal RAG retrieval diagnostics retrieval status binding'),
+  () => assertIncludes(maintenancePage, 'source_coverage_status', 'legal RAG retrieval diagnostics source coverage binding'),
+  () => assertIncludes(maintenancePage, 'top_k_depth_status', 'legal RAG retrieval diagnostics top-k binding'),
+  () => assertIncludes(maintenancePage, 'jurisdiction_status', 'legal RAG retrieval diagnostics jurisdiction binding'),
+  () => assertIncludes(maintenancePage, 'freshness_status', 'legal RAG retrieval diagnostics freshness binding'),
+  () => assertIncludes(maintenancePage, 'cheap_first_action', 'legal RAG retrieval diagnostics cheap-first action binding'),
+  () => assertIncludes(maintenancePage, 'release_action', 'legal RAG retrieval diagnostics release action binding'),
+  () => assertIncludes(maintenancePage, 'linked_gate_ids', 'legal RAG retrieval diagnostics linked gate ids binding'),
+  () => assertIncludes(maintenancePage, 'legal-rag-index-binding', 'legal RAG retrieval diagnostics index binding linkage'),
+  () => assertIncludes(maintenancePage, 'legal-rag-authority-citation-gate', 'legal RAG retrieval diagnostics authority linkage'),
+  () => assertIncludes(maintenancePage, 'legal-rag-abstention-escalation-gate', 'legal RAG retrieval diagnostics abstention linkage'),
+  () => assertIncludes(maintenancePage, 'Claim/privacy boundary', 'legal RAG retrieval diagnostics boundary panel'),
+  () => assertIncludes(maintenancePage, 'raw query', 'legal RAG retrieval diagnostics raw query false boundary label'),
+  () => assertIncludes(maintenancePage, 'raw context', 'legal RAG retrieval diagnostics raw context false boundary label'),
+  () => assertIncludes(maintenancePage, 'raw legal text', 'legal RAG retrieval diagnostics raw legal text false boundary label'),
+  () => assertIncludes(maintenancePage, 'prompts', 'legal RAG retrieval diagnostics prompt boundary label'),
+  () => assertIncludes(maintenancePage, 'model output', 'legal RAG retrieval diagnostics model output boundary label'),
+  () => assertIncludes(maintenancePage, 'credentials', 'legal RAG retrieval diagnostics credential boundary label'),
+  () => assertIncludes(maintenancePage, 'includedBoundaryLabel(item.value)', 'legal RAG retrieval diagnostics false/not-included boundary binding'),
+  () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate.validation_commands', 'legal RAG retrieval diagnostics validation binding'),
   () => assertIncludes(maintenanceApi, 'linked_public_source_ids', 'user need benchmark public source type'),
   () => assertIncludes(maintenanceApi, 'returns_public_benchmark_text', 'user need benchmark public text boundary type'),
   () => assertIncludes(maintenanceApi, 'public_sampler_network_access', 'user need benchmark public sampler summary type'),
@@ -183,6 +224,18 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'legal_rag_abstention_escalation_gate', 'legal RAG abstention escalation snake_case payload binding'),
   () => assertIncludes(maintenanceApi, 'decision_rows', 'legal RAG abstention decision rows type'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-abstention-escalation-gate', 'legal RAG abstention escalation endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
+  () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
+  () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
+  () => assertIncludes(maintenanceApi, 'source_coverage_status', 'legal RAG retrieval diagnostics source coverage type'),
+  () => assertIncludes(maintenanceApi, 'top_k_depth_status', 'legal RAG retrieval diagnostics top-k depth type'),
+  () => assertIncludes(maintenanceApi, 'cheap_first_retry_count', 'legal RAG retrieval diagnostics cheap-first retry type'),
+  () => assertIncludes(maintenanceApi, 'legal_rag_index_binding_status', 'legal RAG retrieval diagnostics index linkage type'),
+  () => assertIncludes(maintenanceApi, 'legal_rag_authority_citation_gate_status', 'legal RAG retrieval diagnostics authority linkage type'),
+  () => assertIncludes(maintenanceApi, 'legal_rag_abstention_escalation_gate_status', 'legal RAG retrieval diagnostics abstention linkage type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-retrieval-diagnostics-gate', 'legal RAG retrieval diagnostics endpoint'),
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'ModelOps load guard', 'model-ops performance budget panel'),
   () => assertIncludes(modelOpsPage, 'Performance observations', 'model-ops performance observation review form'),
@@ -360,9 +413,21 @@ for (const check of checks) {
   check();
 }
 
+const retrievalDiagnosticsPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'Legal RAG hallucination triage gate',
+  'maintenance Legal RAG retrieval diagnostics section',
+);
+
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /client@example\.com/i, 'frontend UI regression sources');
+assertNotMatches(
+  retrievalDiagnosticsPanel,
+  /\b(raw_query|raw_context|raw_legal_text|unsafe_answer)(_text|_content|s)?\b/i,
+  'maintenance Legal RAG retrieval diagnostics no raw query/context/legal text or unsafe answer fields',
+);
 assertNotMatches(
   maintenancePage,
   /fixture problem|dangerous answer|dangerous_answer|raw_fixture_problem|unsafe_answer_text|raw_unsafe_answer/i,

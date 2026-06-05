@@ -45,6 +45,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
@@ -120,12 +121,17 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_rag_authority_citation_gate.py" in evidence_paths
     assert "app/backend/tests/test_legal_rag_authority_citation_gate.py" in evidence_paths
     assert "docs/LEGAL_RAG_AUTHORITY_CITATION_GATE.md" in evidence_paths
+    assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
+    assert "app/backend/tests/test_legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
+    assert "docs/LEGAL_RAG_RETRIEVAL_DIAGNOSTICS_GATE.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     quality_signal = next(signal for signal in profile["signals"] if signal["id"] == "deep-review-quality-gates")
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
     assert "metadata-only authority/citation gate evidence" in quality_signal["description"]
+    assert "metadata-only retrieval diagnostics gate evidence" in quality_signal["description"]
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
     assert "authority/citation gate review" in quality_signal["responsibility"]
+    assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
@@ -235,6 +241,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG retrieval diagnostics gate is metadata-only retrieval evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("raw query" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw retrieved context" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write model routes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not download datasets" in guardrail for guardrail in profile["application_guardrails"])

@@ -46,6 +46,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagHallucinationTriageGate,
+  getLegalRagRetrievalDiagnosticsGate,
   getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -107,6 +108,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagHallucinationTriageGate,
+  type LegalRagRetrievalDiagnosticsGate,
   type LegalResearchBacklog,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -224,6 +226,28 @@ function readinessStatus(value?: boolean) {
   return value ? 'ready' : 'blocked';
 }
 
+function boundaryValueIncluded(value: unknown) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value > 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase().replace(/[\s-]+/g, '_');
+    if (!normalized || ['false', 'none', 'disabled', 'not_included', 'not_returned', 'metadata_only', 'no'].includes(normalized)) {
+      return false;
+    }
+    return true;
+  }
+  return Boolean(value);
+}
+
+function boundaryFlag(boundary: Record<string, unknown> | undefined, keys: string[]) {
+  if (!boundary) return false;
+  return keys.some((key) => boundaryValueIncluded(boundary[key]));
+}
+
+function includedBoundaryLabel(value: unknown) {
+  return boundaryValueIncluded(value) ? 'true / included' : 'false / not included';
+}
+
 function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][number]['privacy_boundary']) {
   const outputScope = typeof boundary.output_scope === 'string' ? boundary.output_scope : 'metadata-only reviewer output';
   const flags = Object.entries(boundary)
@@ -333,6 +357,8 @@ function Inner() {
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
     useState<LegalRagAbstentionEscalationGate | null>(null);
+  const [legalRagRetrievalDiagnosticsGate, setLegalRagRetrievalDiagnosticsGate] =
+    useState<LegalRagRetrievalDiagnosticsGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -651,6 +677,11 @@ function Inner() {
           label: 'Legal RAG authority citation gate',
           run: getLegalRagAuthorityCitationGate,
           apply: (value) => setLegalRagAuthorityCitationGate(value as LegalRagAuthorityCitationGate),
+        },
+        {
+          label: 'Legal RAG retrieval diagnostics gate',
+          run: getLegalRagRetrievalDiagnosticsGate,
+          apply: (value) => setLegalRagRetrievalDiagnosticsGate(value as LegalRagRetrievalDiagnosticsGate),
         },
         {
           label: 'Legal RAG hallucination triage gate',
@@ -7060,6 +7091,306 @@ function Inner() {
                 </div>
               </section>
             )}
+
+            {legalRagRetrievalDiagnosticsGate &&
+              (() => {
+                const gate = legalRagRetrievalDiagnosticsGate;
+                const rows = gate.diagnostic_rows ?? [];
+                const summary = gate.summary ?? {};
+                const linkage = gate.linkage ?? {};
+                const linkedGateSummary = gate.linked_gate_summary ?? {};
+                const gateStatuses = linkage.gate_statuses ?? {};
+                const cheapFirstDecision = (action: unknown) => {
+                  if (typeof action === 'string') return action;
+                  if (action && typeof action === 'object') {
+                    const record = action as Record<string, unknown>;
+                    return String(record.decision ?? record.task ?? '-');
+                  }
+                  return '-';
+                };
+                const cheapFirstModelAlias = (action: unknown) => {
+                  if (action && typeof action === 'object') {
+                    const record = action as Record<string, unknown>;
+                    return String(record.recommended_model_alias ?? '-');
+                  }
+                  return '-';
+                };
+                const cheapFirstStartsCheap = (action: unknown) =>
+                  action && typeof action === 'object' ? Boolean((action as Record<string, unknown>).starts_cheap) : false;
+                const linkedGates = [
+                  {
+                    id: 'legal-rag-index-binding',
+                    status: String(
+                      gateStatuses['legal-rag-index-binding'] ??
+                        linkage.legal_rag_index_binding_status ??
+                        linkedGateSummary.legal_rag_index_binding ??
+                        'metadata_only',
+                    ),
+                  },
+                  {
+                    id: 'legal-rag-authority-citation-gate',
+                    status: String(
+                      gateStatuses['legal-rag-authority-citation-gate'] ??
+                        linkage.legal_rag_authority_citation_gate_status ??
+                        linkedGateSummary.authority_gate_id ??
+                        legalRagAuthorityCitationGate?.status ??
+                        'not_run',
+                    ),
+                  },
+                  {
+                    id: 'legal-rag-abstention-escalation-gate',
+                    status: String(
+                      gateStatuses['legal-rag-abstention-escalation-gate'] ??
+                        linkage.legal_rag_abstention_escalation_gate_status ??
+                        linkedGateSummary.abstention_gate_id ??
+                        legalRagAbstentionEscalationGate?.status ??
+                        'not_run',
+                    ),
+                  },
+                ];
+                const rowStatusCount = (keys: string[]) =>
+                  rows.filter((row) =>
+                    keys.some((key) =>
+                      [
+                        row.retrieval_status,
+                        row.source_coverage_status,
+                        row.top_k_depth_status,
+                        row.jurisdiction_status,
+                        row.freshness_status,
+                        row.release_action,
+                      ]
+                        .map((value) => String(value ?? '').toLowerCase())
+                        .some((value) => value.includes(key)),
+                    ),
+                  ).length;
+                const jurisdictionFreshnessGaps =
+                  Number(summary.jurisdiction_freshness_gap_count ?? NaN) ||
+                  Number(summary.jurisdiction_gap_count ?? 0) + Number(summary.freshness_gap_count ?? 0) ||
+                  rows.filter((row) =>
+                    [row.jurisdiction_status, row.freshness_status]
+                      .map((value) => String(value ?? '').toLowerCase())
+                      .some((value) => value.includes('gap') || value.includes('stale') || value.includes('mismatch')),
+                  ).length;
+                const summaryCounts = [
+                  { label: 'diagnostic rows', value: summary.diagnostic_row_count ?? rows.length },
+                  { label: 'ready rows', value: summary.ready_row_count ?? rowStatusCount(['ready', 'pass']) },
+                  { label: 'review rows', value: summary.review_row_count ?? rowStatusCount(['review', 'warn']) },
+                  { label: 'blocked rows', value: summary.blocked_row_count ?? rowStatusCount(['block', 'fail']) },
+                  {
+                    label: 'authority coverage',
+                    value: summary.authority_coverage ?? summary.authority_coverage_count ?? summary.authority_coverage_status ?? '-',
+                  },
+                  {
+                    label: 'retrieval depth gaps',
+                    value:
+                      summary.retrieval_depth_gap_count ??
+                      summary.retrieval_depth_gaps ??
+                      rows.filter((row) => String(row.top_k_depth_status ?? '').toLowerCase().includes('gap')).length,
+                  },
+                  { label: 'jurisdiction/freshness gaps', value: jurisdictionFreshnessGaps },
+                  {
+                    label: 'cheap-first retry count',
+                    value:
+                      summary.cheap_first_retry_count ??
+                      summary.cheap_first_retry_rows ??
+                      rows.filter((row) => ['verify', 'escalate'].includes(cheapFirstDecision(row.cheap_first_action).toLowerCase()))
+                        .length,
+                  },
+                ];
+                const privacy = gate.privacy_boundary ?? {};
+                const claim = gate.claim_boundary ?? {};
+                const boundaryRows = [
+                  {
+                    label: 'model',
+                    value: boundaryFlag(privacy, ['model_called', 'model_calls']) || boundaryFlag(claim, ['model_claimed']),
+                  },
+                  {
+                    label: 'gateway',
+                    value: boundaryFlag(privacy, ['gateway_called']) || boundaryFlag(claim, ['gateway_claimed']),
+                  },
+                  {
+                    label: 'network',
+                    value: boundaryFlag(privacy, ['network_called', 'network_access']) || boundaryFlag(claim, ['network_claimed']),
+                  },
+                  {
+                    label: 'raw query',
+                    value:
+                      boundaryFlag(privacy, [['returns', 'raw', 'query'].join('_'), 'returns_query_text']) ||
+                      boundaryFlag(claim, [['raw', 'query', 'included'].join('_')]),
+                  },
+                  {
+                    label: 'raw context',
+                    value:
+                      boundaryFlag(privacy, [['returns', 'raw', 'context'].join('_'), 'returns_context_text']) ||
+                      boundaryFlag(claim, [['raw', 'context', 'included'].join('_')]),
+                  },
+                  {
+                    label: 'raw legal text',
+                    value:
+                      boundaryFlag(privacy, [['returns', 'raw', 'legal', 'text'].join('_'), 'returns_legal_text']) ||
+                      boundaryFlag(claim, [['raw', 'legal', 'text', 'included'].join('_')]),
+                  },
+                  {
+                    label: 'prompts',
+                    value: boundaryFlag(privacy, ['returns_prompts']) || boundaryFlag(claim, ['prompts_included']),
+                  },
+                  {
+                    label: 'model output',
+                    value:
+                      boundaryFlag(privacy, ['returns_model_output', ['returns', 'raw', 'model', 'output'].join('_')]) ||
+                      boundaryFlag(claim, ['model_output_included']),
+                  },
+                  {
+                    label: 'credentials',
+                    value:
+                      boundaryFlag(privacy, ['returns_credentials', 'credentials_included']) ||
+                      boundaryFlag(claim, ['credentials_included']),
+                  },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only retrieval depth, source coverage, jurisdiction, freshness, and cheap-first retry diagnostics
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Query intent</TableHead>
+                            <TableHead>Retrieval status</TableHead>
+                            <TableHead>Source coverage status</TableHead>
+                            <TableHead>Top-k depth status</TableHead>
+                            <TableHead>Jurisdiction / freshness status</TableHead>
+                            <TableHead>Cheap-first action / release action</TableHead>
+                            <TableHead>Linked gate ids</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.slice(0, 8).map((row, index) => {
+                            const rowId = row.id ?? row.diagnostic_id ?? `${gate.id}-row-${index}`;
+                            return (
+                              <TableRow key={rowId}>
+                                <TableCell>
+                                  <div className="font-semibold text-stone-950">{displayToken(row.query_intent ?? 'unclassified')}</div>
+                                  <div className="mt-1 font-mono text-[11px] text-stone-500">{row.diagnostic_id ?? row.id ?? '-'}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={statusClass[row.retrieval_status] ?? statusClass.not_run}>
+                                    {displayToken(row.retrieval_status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={statusClass[row.source_coverage_status] ?? statusClass.not_run}>
+                                    {displayToken(row.source_coverage_status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={statusClass[row.top_k_depth_status] ?? statusClass.not_run}>
+                                    {displayToken(row.top_k_depth_status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs leading-5 text-stone-600">
+                                  <div>jurisdiction status: {displayToken(row.jurisdiction_status)}</div>
+                                  <div>freshness status: {displayToken(row.freshness_status)}</div>
+                                </TableCell>
+                                <TableCell className="text-xs leading-5 text-stone-600">
+                                  <div>cheap-first action: {displayToken(cheapFirstDecision(row.cheap_first_action))}</div>
+                                  <div>starts cheap: {cheapFirstStartsCheap(row.cheap_first_action) ? 'true' : 'false'}</div>
+                                  <div>model alias: {displayToken(cheapFirstModelAlias(row.cheap_first_action))}</div>
+                                  <div>release action: {displayToken(row.release_action)}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                                    {(row.linked_gate_ids ?? []).length ? (
+                                      row.linked_gate_ids.map((gateId) => (
+                                        <Badge key={`${rowId}-${gateId}`} variant="outline" className="bg-white">
+                                          {gateId}
+                                        </Badge>
+                                      ))
+                                    ) : (
+                                      <span className="text-xs text-stone-500">-</span>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linkage</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {linkedGates.map((linkedGate) => (
+                            <Badge
+                              key={linkedGate.id}
+                              variant="outline"
+                              className={statusClass[linkedGate.status] ?? statusClass.not_run}
+                            >
+                              {linkedGate.id}: {displayToken(linkedGate.status)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).slice(0, 5).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(legalRagRetrievalDiagnosticsGate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
 
             {legalRagHallucinationTriageGate && (
               <section className="mb-8">

@@ -29,6 +29,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "legal RAG authority citation gate" in rows["/maintenance"]["protected_panels"]
     assert "legal RAG hallucination triage gate" in rows["/maintenance"]["protected_panels"]
     assert "legal RAG abstention escalation gate" in rows["/maintenance"]["protected_panels"]
+    assert "legal RAG retrieval diagnostics gate" in rows["/maintenance"]["protected_panels"]
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
@@ -55,6 +56,8 @@ def test_frontend_ui_regression_gate_is_metadata_only():
 
     assert gate["privacy_boundary"]["returns_source_code"] is False
     assert gate["privacy_boundary"]["returns_raw_browser_storage"] is False
+    assert gate["privacy_boundary"]["returns_raw_query"] is False
+    assert gate["privacy_boundary"]["returns_raw_retrieved_context"] is False
     assert gate["privacy_boundary"]["returns_raw_model_output"] is False
     assert gate["privacy_boundary"]["returns_external_legal_text"] is False
     assert gate["privacy_boundary"]["downloads_benchmark_datasets"] is False
@@ -73,6 +76,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "model/gateway/network calls" in payload_text
     assert "fixture questions" in payload_text
     assert "dangerous answers" in payload_text
+    assert "raw query" in payload_text
     assert "raw retrieved context" in payload_text
     assert "prompts" in payload_text
     assert "model output" in payload_text
