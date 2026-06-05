@@ -374,6 +374,8 @@ export type ModelCheapFirstCalibration = {
     estimated_savings_ratio: number | null;
     external_research_source_count: number;
     research_mapped_task_count: number;
+    forbidden_payload_field_count: number;
+    secret_like_value_count: number;
     newapi_called: boolean;
     raw_payload_echoed: boolean;
   };

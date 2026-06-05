@@ -22,6 +22,8 @@ def test_cheap_first_calibration_keeps_low_cost_defaults_without_newapi_calls():
     assert result["summary"]["cost_guardrail_status"] == "pass"
     assert result["summary"]["external_research_source_count"] >= 5
     assert result["summary"]["research_mapped_task_count"] == result["summary"]["task_count"]
+    assert result["summary"]["forbidden_payload_field_count"] == 0
+    assert result["summary"]["secret_like_value_count"] == 0
     assert result["summary"]["newapi_called"] is False
     assert result["summary"]["raw_payload_echoed"] is False
     assert rows["fast-intake-preflight"]["calibration_decision"] == "keep_cheap_first_default"
@@ -52,6 +54,33 @@ def test_cheap_first_calibration_research_mappings_are_metadata_only():
         assert "prompt" not in mapping
         assert "output" not in mapping
         assert mapping["url"].startswith("https://")
+
+
+def test_cheap_first_calibration_blocks_forbidden_payload_metadata_without_echoing_values():
+    result = GeminiNewapiCheapFirstCalibrationService().build_calibration(
+        {
+            "fixture_report": {
+                "headers": {"authorization": "Bearer redacted"},
+                "observations": {
+                    "fixture-service-agreement-small": {
+                        "route": "review",
+                        "output_text": "liability_cap risk_matrix cost_route",
+                    }
+                },
+            },
+            "prompt": "redacted placeholder",
+            "metadata": {"token": "sk-" + ("x" * 24)},
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert result["summary"]["forbidden_payload_field_count"] >= 2
+    assert result["summary"]["secret_like_value_count"] == 1
+    assert result["privacy_boundary"]["forbidden_payload_detected"] is True
+    assert result["source_summaries"]["payload_safety"]["raw_values_echoed"] is False
+    assert "Remove forbidden payload fields" in result["recommended_actions"][0]
+    assert "redacted placeholder" not in str(result)
+    assert not SECRET_PATTERN.search(str(result))
 
 
 def test_cheap_first_calibration_holds_defaults_when_fixture_quality_fails():

@@ -61,9 +61,13 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
+  () => assertIncludes(modelOpsPage, 'Calibration payload', 'model-ops cheap-first payload evaluator'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenCheapFirstPayloadText', 'model-ops cheap-first payload guard'),
+  () => assertIncludes(modelOpsPage, 'blocked payload fields', 'model-ops cheap-first backend payload safety summary'),
   () => assertIncludes(modelOpsPage, 'research sources', 'model-ops cheap-first research source summary'),
   () => assertIncludes(modelOpsPage, 'external_research_mappings', 'model-ops cheap-first research mapping binding'),
   () => assertIncludes(modelOpsPage, 'route_telemetry_remediation', 'model-ops route remediation binding'),
+  () => assertIncludes(modelOpsApi, 'evaluateCheapFirstCalibration', 'model-ops cheap-first evaluation API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-calibration', 'model-ops cheap-first calibration endpoint'),
   () => assertIncludes(modelOpsApi, 'external_research_mappings', 'model-ops cheap-first research mapping type'),
 ];

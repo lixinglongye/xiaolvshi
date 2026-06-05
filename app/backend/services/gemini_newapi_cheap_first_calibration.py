@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -11,6 +12,11 @@ from services.model_cost_guardrails import ModelCostGuardrailService
 COST_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3, "unverified": 99, "unknown": 99}
 PASSING_STATUSES = {"pass", "ready"}
 WARNING_STATUSES = {"warn", "review_recommended", "needs_catalog_review"}
+FORBIDDEN_PAYLOAD_KEY_RE = re.compile(
+    r"(api[_-]?key|authorization|password|secret|raw[_-]?model[_-]?output|raw[_-]?prompt|prompt|headers|email)",
+    re.IGNORECASE,
+)
+SECRET_VALUE_RE = re.compile(r"\bsk-[A-Za-z0-9]{20,}\b")
 
 
 @dataclass(frozen=True)
@@ -79,6 +85,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             self._usage_snapshot(fixture_report, selector_replay),
             cost_forecast,
         )
+        payload_safety = self._payload_safety(data)
 
         selector_by_task = self._selector_by_task(selector_replay)
         fixture_by_id = {row["fixture_id"]: row for row in fixture_report["fixture_reports"]}
@@ -98,7 +105,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             )
             for task in self._tasks()
         ]
-        status = self._status(rows, cost_guardrails)
+        status = self._status(rows, cost_guardrails, payload_safety)
         fail_rows = [row for row in rows if row["status"] == "fail"]
         warn_rows = [row for row in rows if row["status"] == "warn"]
 
@@ -134,6 +141,8 @@ class GeminiNewapiCheapFirstCalibrationService:
                 "estimated_savings_ratio": cost_forecast["summary"]["estimated_savings_ratio"],
                 "external_research_source_count": len(research_mappings),
                 "research_mapped_task_count": sum(1 for row in rows if row["research_source_ids"]),
+                "forbidden_payload_field_count": payload_safety["summary"]["forbidden_field_count"],
+                "secret_like_value_count": payload_safety["summary"]["secret_like_value_count"],
                 "newapi_called": False,
                 "raw_payload_echoed": False,
             },
@@ -145,8 +154,9 @@ class GeminiNewapiCheapFirstCalibrationService:
                 "fixture_report": fixture_report["summary"],
                 "cost_forecast": cost_forecast["summary"],
                 "cost_guardrails": cost_guardrails["summary"],
+                "payload_safety": payload_safety["summary"],
             },
-            "recommended_actions": self._recommended_actions(status, rows, cost_guardrails),
+            "recommended_actions": self._recommended_actions(status, rows, cost_guardrails, payload_safety),
             "release_guardrails": [
                 "Do not use calibration as proof of live NewAPI execution or public benchmark performance.",
                 "Do not promote premium models to defaults when only selected fixtures need escalation.",
@@ -161,6 +171,8 @@ class GeminiNewapiCheapFirstCalibrationService:
                 "raw_legal_text_included": False,
                 "raw_model_output_included": False,
                 "emails_included": False,
+                "forbidden_payload_detected": payload_safety["summary"]["forbidden_field_count"] > 0
+                or payload_safety["summary"]["secret_like_value_count"] > 0,
                 "output_scope": "metadata-only task ids, fixture ids, model ids, cost tiers, scores, reason codes, and validation paths",
             },
             "validation_commands": [
@@ -405,6 +417,43 @@ class GeminiNewapiCheapFirstCalibrationService:
                 mapping[task] = result
         return mapping
 
+    def _payload_safety(self, payload: dict[str, Any]) -> dict[str, Any]:
+        forbidden_paths: list[str] = []
+        secret_like_paths: list[str] = []
+        self._scan_payload(payload, "$", forbidden_paths, secret_like_paths)
+        return {
+            "status": "fail" if forbidden_paths or secret_like_paths else "pass",
+            "summary": {
+                "forbidden_field_count": len(forbidden_paths),
+                "secret_like_value_count": len(secret_like_paths),
+                "forbidden_paths": forbidden_paths[:20],
+                "secret_like_paths": secret_like_paths[:20],
+                "raw_values_echoed": False,
+            },
+        }
+
+    def _scan_payload(
+        self,
+        value: Any,
+        path: str,
+        forbidden_paths: list[str],
+        secret_like_paths: list[str],
+    ) -> None:
+        if isinstance(value, dict):
+            for raw_key, item in value.items():
+                key = str(raw_key)
+                next_path = f"{path}.{key}"
+                if FORBIDDEN_PAYLOAD_KEY_RE.search(key):
+                    forbidden_paths.append(next_path)
+                self._scan_payload(item, next_path, forbidden_paths, secret_like_paths)
+            return
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                self._scan_payload(item, f"{path}[{index}]", forbidden_paths, secret_like_paths)
+            return
+        if isinstance(value, str) and SECRET_VALUE_RE.search(value):
+            secret_like_paths.append(path)
+
     def _research_by_task(
         self,
         mappings: tuple[CalibrationResearchMapping, ...],
@@ -539,7 +588,14 @@ class GeminiNewapiCheapFirstCalibrationService:
             ),
         )
 
-    def _status(self, rows: list[dict[str, Any]], cost_guardrails: dict[str, Any]) -> str:
+    def _status(
+        self,
+        rows: list[dict[str, Any]],
+        cost_guardrails: dict[str, Any],
+        payload_safety: dict[str, Any],
+    ) -> str:
+        if payload_safety["status"] == "fail":
+            return "fail"
         if any(row["status"] == "fail" for row in rows) or cost_guardrails["status"] == "fail":
             return "fail"
         if any(row["status"] == "warn" for row in rows) or cost_guardrails["status"] == "warn":
@@ -551,7 +607,13 @@ class GeminiNewapiCheapFirstCalibrationService:
         status: str,
         rows: list[dict[str, Any]],
         cost_guardrails: dict[str, Any],
+        payload_safety: dict[str, Any],
     ) -> list[str]:
+        if payload_safety["status"] == "fail":
+            return [
+                "Remove forbidden payload fields or secret-like values before evaluating cheap-first calibration metadata.",
+                "Submit only fixture ids, task labels, route labels, model ids, cost estimates, and synthetic signal labels.",
+            ]
         if status == "pass":
             return [
                 "Keep cheap-first Gemini/NewAPI defaults for calibrated high-volume tasks.",

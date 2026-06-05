@@ -42,6 +42,16 @@ whether high-volume routes remain cheap-first, whether legal review stays
 balanced-after-precheck, and which large-document paths remain premium
 exceptions.
 
+The same page includes a local evaluation form for sanitized calibration
+payloads. The form posts only JSON metadata to
+`POST /api/v1/aihub/models/cheap-first-calibration` and updates the on-page
+result. It rejects obvious secrets, headers, prompts, emails, passwords, and
+raw model output before submitting.
+
+The backend repeats the safety check and returns only counts and field paths for
+forbidden fields or secret-like values. It never echoes the raw value back to the
+page.
+
 ## Calibration Decisions
 
 The service emits one row for each calibrated task family:
@@ -60,6 +70,10 @@ Each row also carries `research_source_ids`, and the top-level payload includes
 `external_research_mappings`. Those mappings contain only source IDs, public
 links, task signals, local fixture IDs, policy impact, and import policy.
 
+The ModelOps form template uses synthetic fixture labels and run metadata only.
+It is intended for quick maintainer review of cheap-first decisions after a
+small local fixture run, not for raw gateway responses.
+
 ## Release Use
 
 Calibration can support these release decisions:
@@ -73,6 +87,7 @@ Calibration can support these release decisions:
 Calibration must not be used as proof of:
 
 - live NewAPI execution,
+- configuration writes,
 - model quality on public benchmarks,
 - account billing status,
 - production traffic coverage, or
@@ -98,6 +113,11 @@ It must not include:
 - raw gateway responses, or
 - client-identifying matter facts.
 - copied public benchmark samples, labels, prompts, or outputs.
+
+If a submitted payload contains forbidden field names such as headers,
+authorization, password, prompt, email, secret, or a secret-like `sk-...` value,
+the calibration status becomes `fail` and the summary records the blocked field
+count without returning raw values.
 
 ## Validation
 

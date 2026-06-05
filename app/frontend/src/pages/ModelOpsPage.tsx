@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, ClipboardList, Gauge, Loader2, PlayCircle, RefreshCw, Route, Zap } from 'lucide-react';
 import {
+  evaluateCheapFirstCalibration,
   evaluateModelGatewayProbe,
   getCheapFirstCalibration,
   getModelGatewayProbeTemplate,
@@ -74,6 +75,56 @@ function statusClass(status?: string) {
         : 'border-amber-200 bg-amber-50 text-amber-900';
 }
 
+function defaultCheapFirstCalibrationPayload() {
+  return {
+    fixture_report: {
+      observations: {
+        'fixture-service-agreement-small': {
+          route: 'review',
+          output_text:
+            'liability_cap missing_sla termination_cure_period confidentiality_carveout_gap risk_matrix missing_facts replacement_clause cost_route',
+        },
+        'fixture-lease-dispute-notice-small': {
+          route: 'review',
+          output_text:
+            'deposit_amount repair_notice_dates missing_invoice missing_handover_checklist evidence_tasks pending_facts citations release_decision',
+        },
+        'fixture-low-text-pdf-page-small': {
+          route: 'ocr',
+          output_text:
+            'low_text_page ocr_confidence_gap version_conflict appendix_reference extraction_quality ocr_pages low_text_pages route_reason',
+        },
+      },
+      run_metadata: {
+        'fixture-service-agreement-small': {
+          phase: 'cheap_first',
+          model: 'gemini-2.5-flash-lite',
+          estimated_cost_usd: 0.00009,
+        },
+        'fixture-lease-dispute-notice-small': {
+          phase: 'cheap_first',
+          model: 'gemini-2.5-flash-lite',
+          estimated_cost_usd: 0.0001,
+        },
+        'fixture-low-text-pdf-page-small': {
+          phase: 'cheap_first',
+          model: 'gemini-2.5-flash-lite',
+          estimated_cost_usd: 0.00011,
+        },
+      },
+    },
+  };
+}
+
+function hasForbiddenCheapFirstPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email)\b/i.test(
+      value,
+    )
+  );
+}
+
 export default function ModelOpsPage() {
   return (
     <AuthGuard>
@@ -92,6 +143,8 @@ function Inner() {
   const [probeTemplateLoading, setProbeTemplateLoading] = useState(false);
   const [probeError, setProbeError] = useState('');
   const [cheapFirstCalibration, setCheapFirstCalibration] = useState<ModelCheapFirstCalibration | null>(null);
+  const [cheapFirstPayloadText, setCheapFirstPayloadText] = useState('');
+  const [cheapFirstEvaluateLoading, setCheapFirstEvaluateLoading] = useState(false);
   const [cheapFirstError, setCheapFirstError] = useState('');
 
   const load = async () => {
@@ -162,6 +215,38 @@ function Inner() {
       setProbeError(err instanceof SyntaxError ? 'Probe payload is not valid JSON.' : 'Gateway probe evaluation failed.');
     } finally {
       setProbeLoading(false);
+    }
+  };
+
+  const loadCheapFirstTemplate = () => {
+    setCheapFirstError('');
+    setCheapFirstPayloadText(JSON.stringify(defaultCheapFirstCalibrationPayload(), null, 2));
+  };
+
+  const evaluateCheapFirstPayload = async () => {
+    setCheapFirstEvaluateLoading(true);
+    setCheapFirstError('');
+    try {
+      const text = cheapFirstPayloadText.trim();
+      if (!text) {
+        setCheapFirstError('Calibration payload is empty.');
+        return;
+      }
+      if (hasForbiddenCheapFirstPayloadText(text)) {
+        setCheapFirstError('Calibration payload must not include secrets, headers, prompts, emails, passwords, or raw model output.');
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setCheapFirstError('Calibration payload must be a JSON object.');
+        return;
+      }
+      setCheapFirstCalibration(await evaluateCheapFirstCalibration(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setCheapFirstError(err instanceof SyntaxError ? 'Calibration payload is not valid JSON.' : 'Cheap-first calibration evaluation failed.');
+    } finally {
+      setCheapFirstEvaluateLoading(false);
     }
   };
 
@@ -1000,6 +1085,63 @@ function Inner() {
               </div>
             )}
 
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-stone-950">Calibration payload</div>
+                    <div className="mt-1 text-xs text-stone-500">
+                      Synthetic fixture labels and run metadata only; no prompts, headers, raw output, or credentials.
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" className="soft-button" onClick={loadCheapFirstTemplate}>
+                      <ClipboardList className="h-4 w-4" />
+                      Template
+                    </Button>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={evaluateCheapFirstPayload}
+                      disabled={cheapFirstEvaluateLoading}
+                    >
+                      {cheapFirstEvaluateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                      Evaluate
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  value={cheapFirstPayloadText}
+                  onChange={(event) => setCheapFirstPayloadText(event.target.value)}
+                  className="min-h-[220px] resize-y rounded-[8px] bg-white font-mono text-xs leading-5"
+                  spellCheck={false}
+                  placeholder='{"fixture_report":{"observations":{"fixture-service-agreement-small":{"route":"review","output_text":"liability_cap risk_matrix cost_route"}}}}'
+                />
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 font-semibold text-stone-950">Evaluation guardrails</div>
+                <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-2">
+                  <div>
+                    <div className="mb-1 text-xs font-black uppercase text-stone-500">Accepted</div>
+                    <div>Fixture ids, task labels, route labels, model ids, cost estimates, and synthetic signal labels.</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs font-black uppercase text-stone-500">Blocked</div>
+                    <div>Secrets, headers, emails, prompts, raw legal text, gateway responses, and raw model output.</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs font-black uppercase text-stone-500">Effect</div>
+                    <div>Updates this page result only; it does not write config or call NewAPI/Gemini.</div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs font-black uppercase text-stone-500">Review</div>
+                    <div>Use failing rows to hold defaults or keep premium exceptions operator-reviewed.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {activeCheapFirstCalibration && (
               <>
                 <div className="mb-3 grid gap-3 md:grid-cols-4">
@@ -1038,6 +1180,12 @@ function Inner() {
                       {activeCheapFirstCalibration.summary.research_mapped_task_count}
                     </div>
                     <div className="mt-1 text-sm text-stone-600">mapped tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.forbidden_payload_field_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked payload fields</div>
                   </div>
                 </div>
 

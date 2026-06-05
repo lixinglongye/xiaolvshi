@@ -61,6 +61,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-model-selector" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
+    assert "modelops-cheap-first-calibration-review-form" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -154,6 +155,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
+    assert "modelops-cheap-first-calibration-review-form" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids

@@ -888,6 +888,27 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="modelops-cheap-first-calibration-review-form",
+                title="ModelOps cheap-first calibration review form",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact="Adds a ModelOps form for evaluating sanitized cheap-first calibration fixture metadata, with frontend and backend payload guards that block secrets, headers, prompts, emails, passwords, and raw model output without echoing values.",
+                evidence_paths=(
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md",
+                ),
+                release_gate_links=(
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                    "frontend-build",
+                    "gemini-newapi-cheap-first-calibration",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="legal-document-benchmark-fixtures",
                 title="Small legal document benchmark fixtures",
                 category="benchmark",

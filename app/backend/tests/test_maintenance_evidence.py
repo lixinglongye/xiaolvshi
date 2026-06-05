@@ -86,6 +86,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     assert "public benchmark research mappings" in model_signal["description"]
+    assert "sanitized ModelOps calibration review" in model_signal["description"]
+    assert "sanitized review-form upkeep" in model_signal["responsibility"]
     assert "public benchmark mapping review" in model_signal["responsibility"]
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
     assert "app/backend/tests/test_route_telemetry_repository.py" in evidence_paths
