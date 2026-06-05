@@ -41,6 +41,7 @@ from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFix
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
+from services.legal_benchmark_research_refresh import LegalBenchmarkResearchRefreshService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
 from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleService
 from services.legal_fixture_gateway_manifest import LegalFixtureGatewayManifestService
@@ -1044,6 +1045,25 @@ async def get_legal_benchmark_research_registry():
         "success": True,
         "data": LegalBenchmarkResearchRegistryService().build_registry(),
     }
+
+
+def _build_legal_benchmark_research_refresh_response() -> dict[str, Any]:
+    return {
+        "success": True,
+        "data": LegalBenchmarkResearchRefreshService().build_refresh(),
+    }
+
+
+@router.get("/legal-benchmark-research-refresh")
+async def get_legal_benchmark_research_refresh():
+    """Return refreshed legal benchmark research mapped to local validation."""
+    return _build_legal_benchmark_research_refresh_response()
+
+
+@router.get("/legal-review-benchmark/research-refresh")
+async def get_legal_review_benchmark_research_refresh():
+    """Return refreshed legal benchmark research under the benchmark namespace."""
+    return _build_legal_benchmark_research_refresh_response()
 
 
 @router.get("/legal-review-benchmark/public-sampler")

@@ -2100,6 +2100,22 @@ class ReleaseReadinessService:
                 manual_note="This maps LegalBench, LexGLUE, and COLIEE lessons to local synthetic validation; it does not claim public benchmark scores or external adoption.",
             ),
             ReleaseCheck(
+                id="legal-benchmark-research-refresh",
+                title="Legal benchmark research refresh",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_benchmark_research_refresh.py",
+                    "app/backend/tests/test_legal_benchmark_research_refresh.py",
+                    "app/backend/services/legal_benchmark_research_registry.py",
+                    "app/backend/services/legal_adoption_research_bridge.py",
+                    "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
+                manual_note="This is metadata-only research refresh evidence for local benchmark planning; it does not download datasets, claim public benchmark scores, store external legal text, call models, or handle credentials.",
+            ),
+            ReleaseCheck(
                 id="legal-benchmark-research-registry-ui",
                 title="Legal benchmark research registry UI",
                 category="frontend_ui",

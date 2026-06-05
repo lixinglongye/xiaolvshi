@@ -4,6 +4,11 @@ Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-b
 
 Additional optional evidence: `legal-document-benchmark-gap-fixtures` validates the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures against the same low-resource benchmark suite.
 
+Additional optional evidence: `legal-benchmark-research-refresh` records
+metadata-only refresh evidence for LegalBench, LexGLUE, COLIEE, and adoption
+bridge mappings. It does not download datasets, claim public benchmark scores,
+store external legal text, call models, or handle credentials.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -155,8 +160,9 @@ selected-source citation validation, a metadata-only selected-source validation
 maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
 benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to
-low-resource local validation, a maintenance UI section for that registry, and
-a metadata-only legal adoption research bridge that maps public research and
+low-resource local validation, a metadata-only legal benchmark research refresh
+check, a maintenance UI section for that registry, and a metadata-only legal
+adoption research bridge that maps public research and
 professional AI governance/adoption signals to existing user needs, product
 gaps, cheap-first validation commands, and release evidence.
 New optional checks also cover deep-review selected-source report binding,
@@ -184,6 +190,9 @@ raw logs, legal text, model outputs, credentials, or emails.
 The legal adoption research bridge is optional user-research evidence. It must
 not imply law-firm adoption, survey results, productivity gains, public
 benchmark scores, live NewAPI calls, or external ecosystem importance.
+The legal benchmark research refresh is optional quality evidence. It must not
+imply dataset downloads, external legal text validation, public benchmark
+scores, model calls, credentials, or external adoption.
 The Gemini/NewAPI selector checks are required release controls. The continuous
 session run monitor and adoption research bridge are optional release evidence.
 None of these checks claim
@@ -219,6 +228,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/continuous_session_run_monitor.py`
+- `app/backend/services/legal_benchmark_research_refresh.py`
 - `app/backend/services/legal_adoption_research_bridge.py`
 - `app/backend/services/billing_entitlement_gap.py`
 - `app/backend/routers/billing_usage.py`
@@ -277,6 +287,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_legal_benchmark_research_refresh.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_billing_usage_router.py`
 - `app/backend/tests/test_billing_quota_migration_plan.py`
@@ -350,6 +361,7 @@ approver identity, apply the change, or shift traffic.
 - `docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
+- `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LEGAL_SOURCE_INGESTION_METADATA.md`

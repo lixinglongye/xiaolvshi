@@ -6,6 +6,13 @@ Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence
 
 Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
 
+Current research refresh slice: `legal-benchmark-research-refresh` adds
+metadata-only maintenance evidence for refreshing LegalBench, LexGLUE, COLIEE,
+and adoption-bridge mappings. It records expected backend service/test evidence
+paths and release links only; it does not download datasets, claim public
+benchmark scores, store external legal text, call models, or handle
+credentials.
+
 Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
 Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
 readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
@@ -86,8 +93,9 @@ selected-source citation validation, a metadata-only maintenance self-check
 route for selected-source validation, a local-only billing payment
 reconciliation policy, task runtime notification summaries, a deterministic
 laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/COLIEE
-research registry mapped to low-resource local tests, and a maintenance UI
-section for that registry. The latest adoption-research bridge joins public
+research registry mapped to low-resource local tests, a metadata-only research
+refresh slice for that registry, and a maintenance UI section for that
+registry. The latest adoption-research bridge joins public
 legal-AI research, professional AI governance/adoption signals, existing user
 needs, product feature gaps, cheap-first validation commands, and release gates
 without storing survey free text, raw benchmark samples, legal text, model
@@ -248,6 +256,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
+- `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`

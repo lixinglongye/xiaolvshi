@@ -489,6 +489,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
+        "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
     }
@@ -534,5 +535,13 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
     assert "browser-level network-mocking automation gaps" in checks["frontend-ui-regression-gate"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
+    assert "does not download datasets" in checks["legal-benchmark-research-refresh"]["manual_note"]
+    assert "public benchmark scores" in checks["legal-benchmark-research-refresh"]["manual_note"]
+    assert "store external legal text" in checks["legal-benchmark-research-refresh"]["manual_note"]
+    assert "call models" in checks["legal-benchmark-research-refresh"]["manual_note"]
+    assert "handle credentials" in checks["legal-benchmark-research-refresh"]["manual_note"]
+    assert "app/backend/services/legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
+    assert "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

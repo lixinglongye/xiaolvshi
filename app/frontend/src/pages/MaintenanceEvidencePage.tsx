@@ -46,6 +46,7 @@ import {
   getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
+  getLegalBenchmarkResearchRefresh,
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
   getMaintenanceContinuousSessionTimeline,
@@ -95,6 +96,7 @@ import {
   type LegalFixtureRunReport,
   type LegalAdoptionResearchBridge,
   type LegalBenchmarkResearchRegistry,
+  type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
@@ -353,6 +355,8 @@ function Inner() {
   const [adoptionResearchBridge, setAdoptionResearchBridge] = useState<LegalAdoptionResearchBridge | null>(null);
   const [benchmarkResearchRegistry, setBenchmarkResearchRegistry] =
     useState<LegalBenchmarkResearchRegistry | null>(null);
+  const [legalBenchmarkResearchRefresh, setLegalBenchmarkResearchRefresh] =
+    useState<LegalBenchmarkResearchRefresh | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -545,6 +549,11 @@ function Inner() {
           label: 'Legal benchmark research registry',
           run: getLegalBenchmarkResearchRegistry,
           apply: (value) => setBenchmarkResearchRegistry(value as LegalBenchmarkResearchRegistry),
+        },
+        {
+          label: 'Legal benchmark research refresh',
+          run: getLegalBenchmarkResearchRefresh,
+          apply: (value) => setLegalBenchmarkResearchRefresh(value as LegalBenchmarkResearchRefresh),
         },
         {
           label: 'Legal public benchmark sampler',
@@ -4021,6 +4030,363 @@ function Inner() {
                       ))}
                     </ul>
                     <div className="mt-3 text-xs leading-5 text-stone-500">{benchmarkResearchRegistry.privacy_note}</div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalBenchmarkResearchRefresh && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal benchmark research refresh</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only refresh for legal benchmark research sources / no benchmark score claims.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalBenchmarkResearchRefresh.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(legalBenchmarkResearchRefresh.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                  This reviewer panel is metadata-only: source names, review freshness, user-need mappings, and local
+                  validation commands are reviewable. It makes no benchmark score claims, no external benchmark run
+                  claims, and no dataset download claims.
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    {
+                      label: 'research sources',
+                      value:
+                        legalBenchmarkResearchRefresh.summary.source_count ??
+                        (legalBenchmarkResearchRefresh.research_sources ?? []).length,
+                    },
+                    {
+                      label: 'refresh rows',
+                      value:
+                        legalBenchmarkResearchRefresh.summary.refresh_row_count ??
+                        (legalBenchmarkResearchRefresh.refresh_rows ?? []).length,
+                    },
+                    {
+                      label: 'user need rows',
+                      value:
+                        legalBenchmarkResearchRefresh.summary.user_need_row_count ??
+                        (legalBenchmarkResearchRefresh.user_need_rows ?? []).length,
+                    },
+                    {
+                      label: 'cheap-first signals',
+                      value: legalBenchmarkResearchRefresh.summary.cheap_first_signal_count ?? 0,
+                    },
+                    {
+                      label: 'local commands',
+                      value:
+                        legalBenchmarkResearchRefresh.summary.local_validation_command_count ??
+                        (legalBenchmarkResearchRefresh.validation_commands ?? []).length,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Refresh target</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Metadata fields</TableHead>
+                          <TableHead>User needs</TableHead>
+                          <TableHead>cheap-first/local validation</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(legalBenchmarkResearchRefresh.refresh_rows ?? []).slice(0, 6).map((row, index) => {
+                          const rowKey = row.id ?? row.source_id ?? row.source_name ?? row.title ?? `refresh-${index}`;
+                          const reviewedFields =
+                            row.refreshed_metadata_fields ??
+                            row.fields_reviewed ??
+                            row.changed_fields ??
+                            row.stale_fields ??
+                            [row.product_area, row.local_validation_target].filter(Boolean) ??
+                            [];
+                          const refreshStatus =
+                            row.refresh_status ??
+                            (row.dataset_download_required || row.public_score_claimed ? 'review_required' : 'ready');
+                          return (
+                            <TableRow key={rowKey}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  {row.source_name ?? row.title ?? row.source_id ?? row.id ?? '-'}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                  {row.source_id ?? row.id ?? '-'}
+                                </div>
+                                <div className="mt-2 text-xs leading-5 text-stone-600">
+                                  {row.benchmark_signal ?? row.recommended_action ?? '-'}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[refreshStatus] ?? statusClass.warn}
+                                >
+                                  {displayToken(refreshStatus)}
+                                </Badge>
+                                <div className="mt-2 text-[11px] leading-5 text-stone-500">
+                                  metadata only: {String(row.metadata_only ?? true)}
+                                </div>
+                                <div className="text-[11px] leading-5 text-stone-500">
+                                  benchmark score claimed:{' '}
+                                  {String(row.benchmark_score_claimed ?? row.public_score_claimed ?? false)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                                <div>{reviewedFields.join(', ') || '-'}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                  evidence: {(row.local_evidence_paths ?? []).slice(0, 2).join(', ') || 'metadata only'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                                {(row.user_need_ids ?? []).join(', ') || '-'}
+                              </TableCell>
+                              <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                <div>
+                                  {row.cheap_first_local_validation ??
+                                    row.cheap_first_policy ??
+                                    row.validation_command ??
+                                    row.validation_commands?.[0] ??
+                                    '-'}
+                                </div>
+                                <div className="mt-1 text-stone-500">
+                                  dataset download {String(row.dataset_download_required ?? false)} / model call{' '}
+                                  {String(row.model_call_required ?? false)}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">
+                      Metadata-only/no benchmark score claims boundary
+                    </h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        metadata-only refresh:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.metadata_only ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.metadata_only ??
+                            true,
+                        )}
+                      </div>
+                      <div>
+                        raw benchmark text:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.privacy_boundary?.returns_raw_benchmark_text ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.returns_public_benchmark_text ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.returns_dataset_samples ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        raw model output:{' '}
+                        {String(legalBenchmarkResearchRefresh.privacy_boundary?.returns_raw_model_output ?? false)}
+                      </div>
+                      <div>
+                        external dataset download:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.dataset_downloaded ??
+                          legalBenchmarkResearchRefresh.summary.external_dataset_downloads ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.external_dataset_downloads ??
+                            legalBenchmarkResearchRefresh.claim_boundary?.external_dataset_download_claimed ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        benchmark score claims:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.public_benchmark_score_claimed ??
+                          legalBenchmarkResearchRefresh.summary.benchmark_score_claims ??
+                            legalBenchmarkResearchRefresh.claim_boundary?.public_benchmark_scores_claimed ??
+                            legalBenchmarkResearchRefresh.claim_boundary?.benchmark_score_claims ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        external benchmark run claimed:{' '}
+                        {String(legalBenchmarkResearchRefresh.claim_boundary?.external_benchmark_run_claimed ?? false)}
+                      </div>
+                      <div>
+                        cheap-first local validation:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.cheap_first_local_validation_status ??
+                            'local metadata checks first',
+                        )}
+                      </div>
+                      <div>
+                        network:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.network_called ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.network_called ??
+                            legalBenchmarkResearchRefresh.summary.network_access ??
+                            'local_only',
+                        )}
+                      </div>
+                      <div>
+                        model calls:{' '}
+                        {String(
+                          legalBenchmarkResearchRefresh.summary.model_called ??
+                            legalBenchmarkResearchRefresh.privacy_boundary?.model_called ??
+                            legalBenchmarkResearchRefresh.summary.model_calls ??
+                            'none',
+                        )}
+                      </div>
+                      <div>source: {String(legalBenchmarkResearchRefresh.privacy_boundary?.source ?? 'metadata only')}</div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {(legalBenchmarkResearchRefresh.recommended_actions ?? []).slice(0, 4).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Research sources</h3>
+                    <div className="space-y-3">
+                      {(legalBenchmarkResearchRefresh.research_sources ?? []).slice(0, 5).map((source, index) => {
+                        const sourceTitle = source.title ?? source.public_name ?? source.source_id ?? source.id ?? '-';
+                        const sourceUrl = source.url ?? source.public_link ?? '#';
+                        return (
+                          <div
+                            key={source.id ?? source.source_id ?? sourceTitle ?? `source-${index}`}
+                            className="rounded-[8px] border border-stone-950/15 bg-white p-3"
+                          >
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <a
+                                href={sourceUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-sm font-semibold text-stone-950 hover:underline"
+                              >
+                                {sourceTitle}
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                              <Badge variant="outline" className="bg-white">
+                                {displayToken(source.source_type ?? 'public_metadata')}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[source.refresh_status ?? source.metadata_status ?? 'review_required'] ?? statusClass.warn}
+                              >
+                                {displayToken(source.refresh_status ?? source.metadata_status ?? 'review_required')}
+                              </Badge>
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              license {displayToken(source.license_status ?? 'review_required')} / cheap-first{' '}
+                              {displayToken(source.cheap_first_fit ?? 'local_metadata_only')}
+                            </div>
+                            <div className="mt-1 text-xs leading-5 text-stone-500">
+                              {source.local_validation ??
+                                source.local_interpretation ??
+                                source.import_policy ??
+                                source.notes?.[0] ??
+                                'Review metadata locally before any network sampling.'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">User need refresh mapping</h3>
+                    <div className="space-y-3">
+                      {(legalBenchmarkResearchRefresh.user_need_rows ?? []).slice(0, 5).map((row, index) => {
+                        const coverageStatus = row.coverage_status ?? row.local_coverage_status ?? 'review_required';
+                        const sourceIds = row.linked_source_ids ?? row.source_ids ?? [];
+                        const refreshRowIds = row.linked_refresh_row_ids ?? row.refresh_row_ids ?? [];
+                        return (
+                          <div
+                            key={row.need_id ?? row.title ?? `need-${index}`}
+                            className="rounded-[8px] border border-stone-950/15 bg-white p-3"
+                          >
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[coverageStatus] ?? statusClass.warn}
+                              >
+                                {displayToken(coverageStatus)}
+                              </Badge>
+                              {row.priority_band && (
+                                <Badge
+                                  variant="outline"
+                                  className={priorityClass[row.priority_band] ?? priorityClass.medium}
+                                >
+                                  {row.priority_band}
+                                  {row.priority_score !== undefined ? ` / ${row.priority_score}` : ''}
+                                </Badge>
+                              )}
+                              {row.cheap_first_relevant && (
+                                <Badge variant="outline" className="bg-white">
+                                  cheap-first relevant
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm font-semibold text-stone-950">{row.title ?? row.need_id ?? '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id ?? '-'}</div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">
+                              sources: {sourceIds.join(', ') || '-'}
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              refresh rows: {refreshRowIds.join(', ') || '-'}
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              public {displayToken(row.public_benchmark_status ?? 'not_mapped')} / calibration{' '}
+                              {displayToken(row.calibration_status ?? 'not_mapped')}
+                            </div>
+                            <div className="mt-1 text-xs leading-5 text-stone-500">
+                              {row.cheap_first_local_validation ??
+                                row.next_action ??
+                                row.next_actions?.[0] ??
+                                'Keep validation cheap-first and local.'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {(legalBenchmarkResearchRefresh.validation_commands ?? []).map((command) => (
+                      <div
+                        key={command}
+                        className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                      >
+                        {command}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </section>

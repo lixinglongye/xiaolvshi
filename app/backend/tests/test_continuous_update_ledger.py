@@ -255,6 +255,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage-ui" in completed_ids
     assert "legal-document-coverage-claim-policy" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
+    assert "legal-benchmark-research-refresh" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
@@ -330,6 +331,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage-ui" not in queue_ids
     assert "legal-document-coverage-claim-policy" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
+    assert "legal-benchmark-research-refresh" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
@@ -411,6 +413,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_legal_benchmark_research_refresh.py "
+        "tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
     assert (
         "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py "
@@ -471,6 +478,16 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_ops_cheap_first_canary_rollback_drill.py -q"
         in ledger["validation_commands"]
     )
+    refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
+    assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
+    assert "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md" in refresh_entry["evidence_paths"]
+    assert "legal-benchmark-research-refresh" in refresh_entry["release_gate_links"]
+    assert "without dataset downloads" in refresh_entry["impact"]
+    assert "public scores" in refresh_entry["impact"]
+    assert "external legal text" in refresh_entry["impact"]
+    assert "model calls" in refresh_entry["impact"]
+    assert "credentials" in refresh_entry["impact"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

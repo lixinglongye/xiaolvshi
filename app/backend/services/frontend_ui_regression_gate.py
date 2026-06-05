@@ -51,6 +51,7 @@ PAGE_GATES = (
             "partial evidence failure banner",
             "user need benchmark coverage",
             "legal document benchmark coverage",
+            "legal benchmark research refresh",
             "continuous update ledger",
             "Gemini/NewAPI selector evidence",
         ),
@@ -127,6 +128,7 @@ class FrontendUiRegressionGateService:
                 "notes": [
                     "Reads package script names and known page paths only; it does not run commands or inspect browser storage.",
                     "Tracks release gate coverage for /maintenance and /model-ops, where benchmark and cheap-first evidence is displayed.",
+                    "Legal benchmark research refresh evidence is treated as metadata only: no datasets, public scores, external legal text, model calls, or credentials.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
                 ],
             },
@@ -171,6 +173,9 @@ class FrontendUiRegressionGateService:
                 "returns_source_code": False,
                 "returns_raw_browser_storage": False,
                 "returns_raw_model_output": False,
+                "returns_external_legal_text": False,
+                "downloads_benchmark_datasets": False,
+                "calls_models": False,
                 "returns_credentials": False,
             },
             "validation_commands": [

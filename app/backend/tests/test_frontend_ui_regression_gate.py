@@ -24,6 +24,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert rows["/maintenance"]["source_exists"] is True
     assert rows["/model-ops"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
+    assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
@@ -51,7 +52,15 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert gate["privacy_boundary"]["returns_source_code"] is False
     assert gate["privacy_boundary"]["returns_raw_browser_storage"] is False
     assert gate["privacy_boundary"]["returns_raw_model_output"] is False
+    assert gate["privacy_boundary"]["returns_external_legal_text"] is False
+    assert gate["privacy_boundary"]["downloads_benchmark_datasets"] is False
+    assert gate["privacy_boundary"]["calls_models"] is False
     assert gate["privacy_boundary"]["returns_credentials"] is False
+    assert "no datasets" in payload_text
+    assert "public scores" in payload_text
+    assert "external legal text" in payload_text
+    assert "model calls" in payload_text
+    assert "credentials" in payload_text
     assert "function Inner()" not in payload_text
     assert "localStorage.getItem" not in payload_text
     assert re.search(r"\bsk-[A-Za-z0-9]{20,}\b", payload_text) is None

@@ -41,6 +41,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "User need public benchmark mapping" in profile["release_management"]["release_readiness_controls"]
     assert "User need cheap-first calibration mapping" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
@@ -93,6 +94,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_COVERAGE_CLAIM_POLICY.md" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
+    assert "app/backend/services/legal_benchmark_research_refresh.py" in evidence_paths
+    assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in evidence_paths
+    assert "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md" in evidence_paths
     assert "app/backend/services/legal_adoption_research_bridge.py" in evidence_paths
     assert "app/backend/tests/test_legal_adoption_research_bridge.py" in evidence_paths
     assert "docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md" in evidence_paths
@@ -108,6 +112,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_gemini_model_variant_matrix.py" in evidence_paths
     assert "docs/GEMINI_MODEL_VARIANT_MATRIX.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
+    quality_signal = next(signal for signal in profile["signals"] if signal["id"] == "deep-review-quality-gates")
+    assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
+    assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
@@ -210,6 +217,11 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("repository-backed synthetic fixture wording" in guardrail for guardrail in profile["application_guardrails"])
     assert any("public benchmark mapping reports sampler" in guardrail for guardrail in profile["application_guardrails"])
     assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("does not download datasets" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("store external legal text" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("call models" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("handle credentials" in guardrail for guardrail in profile["application_guardrails"])
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
 

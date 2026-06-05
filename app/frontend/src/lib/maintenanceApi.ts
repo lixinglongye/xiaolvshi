@@ -2146,6 +2146,154 @@ export type LegalBenchmarkResearchRegistry = {
   privacy_note: string;
 };
 
+export type LegalBenchmarkResearchRefreshSource = {
+  id?: string;
+  source_id?: string;
+  title?: string;
+  public_name?: string;
+  url?: string;
+  public_link?: string;
+  source_type?: string;
+  benchmark_family?: string;
+  benchmark_signal?: string;
+  local_interpretation?: string;
+  import_policy?: string;
+  license_status?: string;
+  metadata_status?: string;
+  refresh_status?: string;
+  last_reviewed_at?: string | null;
+  next_refresh_due?: string | null;
+  cheap_first_fit?: string;
+  local_validation?: string;
+  notes?: string[];
+  [key: string]: unknown;
+};
+
+export type LegalBenchmarkResearchRefreshRow = {
+  id?: string;
+  source_id?: string;
+  source_name?: string;
+  title?: string;
+  product_area?: string;
+  benchmark_signal?: string;
+  local_validation_target?: string;
+  local_evidence_paths?: string[];
+  refresh_status?: string;
+  fields_reviewed?: string[];
+  refreshed_metadata_fields?: string[];
+  stale_fields?: string[];
+  changed_fields?: string[];
+  user_need_ids?: string[];
+  validation_command?: string;
+  validation_commands?: string[];
+  recommended_action?: string;
+  cheap_first_local_validation?: string;
+  cheap_first_policy?: string;
+  next_actions?: string[];
+  release_gate_links?: string[];
+  priority?: number;
+  cheap_first_relevant?: boolean;
+  network_access?: string;
+  model_calls?: string;
+  metadata_only?: boolean;
+  benchmark_score_claimed?: boolean;
+  dataset_download_required?: boolean;
+  model_call_required?: boolean;
+  public_score_claimed?: boolean;
+  external_legal_text_included?: boolean;
+  [key: string]: unknown;
+};
+
+export type LegalBenchmarkResearchRefreshUserNeedRow = {
+  need_id?: string;
+  title?: string;
+  category?: string;
+  priority_band?: string;
+  priority_score?: number;
+  linked_source_ids?: string[];
+  linked_refresh_row_ids?: string[];
+  source_ids?: string[];
+  refresh_row_ids?: string[];
+  product_areas?: string[];
+  coverage_status?: string;
+  local_coverage_status?: string;
+  public_benchmark_status?: string;
+  calibration_status?: string;
+  cheap_first_local_validation?: string;
+  cheap_first_relevant?: boolean;
+  validation_commands?: string[];
+  gap_reasons?: string[];
+  next_action?: string;
+  next_actions?: string[];
+  [key: string]: unknown;
+};
+
+export type LegalBenchmarkResearchRefresh = {
+  status: string;
+  summary: {
+    source_count?: number;
+    refresh_row_count?: number;
+    user_need_row_count?: number;
+    stale_source_count?: number;
+    refreshed_source_count?: number;
+    recommended_action_count?: number;
+    cheap_first_signal_count?: number;
+    retrieval_or_entailment_signal_count?: number;
+    cheap_first_local_validation_status?: string;
+    local_validation_command_count?: number;
+    metadata_only?: boolean;
+    network_access?: string;
+    model_calls?: string;
+    external_dataset_downloads?: boolean;
+    benchmark_score_claims?: boolean;
+    dataset_downloaded?: boolean;
+    network_called?: boolean;
+    model_called?: boolean;
+    public_benchmark_score_claimed?: boolean;
+    external_legal_text_included?: boolean;
+    secret_value_included?: boolean;
+    [key: string]: unknown;
+  };
+  research_sources: LegalBenchmarkResearchRefreshSource[];
+  refresh_rows: LegalBenchmarkResearchRefreshRow[];
+  user_need_rows: LegalBenchmarkResearchRefreshUserNeedRow[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    metadata_only?: boolean;
+    returns_raw_benchmark_text?: boolean;
+    returns_public_benchmark_text?: boolean;
+    returns_dataset_samples?: boolean;
+    returns_raw_legal_text?: boolean;
+    returns_raw_model_output?: boolean;
+    returns_user_feedback_text?: boolean;
+    returns_credentials?: boolean;
+    external_dataset_downloads?: boolean;
+    model_calls?: boolean;
+    network_called?: boolean;
+    model_called?: boolean;
+    network_access?: string;
+    source?: string;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    benchmark_score_claims?: boolean;
+    public_benchmark_scores_claimed?: boolean;
+    leaderboard_claims?: boolean;
+    leaderboard_rank_claimed?: boolean;
+    external_benchmark_run_claimed?: boolean;
+    dataset_download_claimed?: boolean;
+    external_dataset_download_claimed?: boolean;
+    production_accuracy_claimed?: boolean;
+    real_client_document_coverage_claimed?: boolean;
+    automatic_model_improvement_claimed?: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    source?: string;
+    [key: string]: unknown;
+  };
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2357,6 +2505,11 @@ type LegalPublicBenchmarkSamplerResponse = {
 type LegalBenchmarkResearchRegistryResponse = {
   success: boolean;
   data: LegalBenchmarkResearchRegistry;
+};
+
+type LegalBenchmarkResearchRefreshResponse = {
+  success: boolean;
+  data: LegalBenchmarkResearchRefresh;
 };
 
 export type LegalKnowledgeAudit = {
@@ -3581,6 +3734,14 @@ export async function getLegalBenchmarkResearchRegistry(): Promise<LegalBenchmar
     return payload.data;
   }
   return payload as LegalBenchmarkResearchRegistry;
+}
+
+export async function getLegalBenchmarkResearchRefresh(): Promise<LegalBenchmarkResearchRefresh> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-benchmark-research-refresh',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalBenchmarkResearchRefreshResponse['data']>(resp);
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

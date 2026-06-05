@@ -26,6 +26,7 @@ The `/maintenance` page carries evidence for:
 - partial evidence failure handling
 - user-need benchmark coverage
 - legal-document benchmark coverage
+- legal benchmark research refresh
 - continuous update ledger
 - Gemini/NewAPI selector evidence
 
@@ -74,6 +75,8 @@ This gate does not:
 - run a live browser by itself
 - replace future browser-level network-mocked regression tests
 - prove public benchmark scores
+- download benchmark datasets, import external legal text, call models, or expose
+  credentials for legal benchmark research refresh evidence
 - prove production model routing health
 - return source code, raw browser storage, raw model output, credentials, or user
   legal text
