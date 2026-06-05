@@ -372,6 +372,8 @@ export type ModelCheapFirstCalibration = {
     selector_scenario_count: number;
     cost_guardrail_status: string;
     estimated_savings_ratio: number | null;
+    external_research_source_count: number;
+    research_mapped_task_count: number;
     newapi_called: boolean;
     raw_payload_echoed: boolean;
   };
@@ -399,6 +401,7 @@ export type ModelCheapFirstCalibration = {
     fixture_score: number;
     quality_floor: number;
     estimated_savings_ratio?: number | null;
+    research_source_ids: string[];
     calibration_decision: string;
     reason_codes: string[];
     checks: Array<{
@@ -410,6 +413,16 @@ export type ModelCheapFirstCalibration = {
     }>;
     release_gate_links: string[];
     next_action: string;
+  }>;
+  external_research_mappings: Array<{
+    source_id: string;
+    title: string;
+    url: string;
+    task_signal: string;
+    calibration_task_ids: string[];
+    local_fixture_ids: string[];
+    policy_impact: string;
+    import_policy: string;
   }>;
   source_summaries: Record<string, Record<string, unknown>>;
   recommended_actions: string[];

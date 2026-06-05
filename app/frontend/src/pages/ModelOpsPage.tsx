@@ -182,6 +182,7 @@ function Inner() {
   const probeModelRows = activeProbeEvaluation?.model_rows ?? [];
   const activeCheapFirstCalibration = cheapFirstCalibration ?? data?.cheap_first_calibration ?? null;
   const cheapFirstRows = activeCheapFirstCalibration?.calibration_rows ?? [];
+  const cheapFirstResearchRows = activeCheapFirstCalibration?.external_research_mappings ?? [];
   const priceRefreshChecks = data?.price_refresh_monitor?.checks ?? [];
   const priceRefreshSignals = data?.price_refresh_monitor?.drift_signals ?? [];
   const lifecycleRows = data?.lifecycle_policy?.configured_roles ?? [];
@@ -1026,6 +1027,18 @@ function Inner() {
                     </div>
                     <div className="mt-1 text-sm text-stone-600">gateway mode</div>
                   </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.external_research_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">research sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeCheapFirstCalibration.summary.research_mapped_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">mapped tasks</div>
+                  </div>
                 </div>
 
                 <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
@@ -1044,7 +1057,7 @@ function Inner() {
                   </div>
                 </div>
 
-                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1086,8 +1099,56 @@ function Inner() {
                           </TableCell>
                           <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
                             {row.release_gate_links.join(', ')}
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              research: {row.research_source_ids.join(', ') || 'unmapped'}
+                            </div>
                           </TableCell>
                           <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">{row.next_action}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Research source</TableHead>
+                        <TableHead>Calibration tasks</TableHead>
+                        <TableHead>Local fixtures</TableHead>
+                        <TableHead>Policy impact</TableHead>
+                        <TableHead>Import policy</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cheapFirstResearchRows.map((row) => (
+                        <TableRow key={row.source_id}>
+                          <TableCell className="max-w-[260px]">
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_id}</div>
+                            <a
+                              href={row.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-1 block break-all text-[11px] text-blue-700 hover:underline"
+                            >
+                              {row.url}
+                            </a>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.calibration_task_ids.join(', ')}
+                            <div className="mt-1 text-[11px] text-stone-500">{row.task_signal}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] font-mono text-xs text-stone-700">
+                            {row.local_fixture_ids.join(', ') || 'metadata only'}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.policy_impact}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.import_policy}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

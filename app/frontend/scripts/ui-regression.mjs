@@ -61,8 +61,11 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
+  () => assertIncludes(modelOpsPage, 'research sources', 'model-ops cheap-first research source summary'),
+  () => assertIncludes(modelOpsPage, 'external_research_mappings', 'model-ops cheap-first research mapping binding'),
   () => assertIncludes(modelOpsPage, 'route_telemetry_remediation', 'model-ops route remediation binding'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-calibration', 'model-ops cheap-first calibration endpoint'),
+  () => assertIncludes(modelOpsApi, 'external_research_mappings', 'model-ops cheap-first research mapping type'),
 ];
 
 for (const check of checks) {

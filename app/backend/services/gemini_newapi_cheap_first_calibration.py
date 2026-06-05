@@ -33,6 +33,24 @@ class CalibrationTask:
         return data
 
 
+@dataclass(frozen=True)
+class CalibrationResearchMapping:
+    source_id: str
+    title: str
+    url: str
+    task_signal: str
+    calibration_task_ids: tuple[str, ...]
+    local_fixture_ids: tuple[str, ...]
+    policy_impact: str
+    import_policy: str
+
+    def to_api(self) -> dict[str, Any]:
+        data = asdict(self)
+        data["calibration_task_ids"] = list(self.calibration_task_ids)
+        data["local_fixture_ids"] = list(self.local_fixture_ids)
+        return data
+
+
 class GeminiNewapiCheapFirstCalibrationService:
     """Join selector, fixture, and cost evidence into cheap-first calibration decisions."""
 
@@ -65,6 +83,8 @@ class GeminiNewapiCheapFirstCalibrationService:
         selector_by_task = self._selector_by_task(selector_replay)
         fixture_by_id = {row["fixture_id"]: row for row in fixture_report["fixture_reports"]}
         forecast_by_task = {row["task"]: row for row in cost_forecast["profiles"]}
+        research_mappings = self._research_mappings()
+        research_by_task = self._research_by_task(research_mappings)
         rows = [
             self._calibration_row(
                 task,
@@ -74,6 +94,7 @@ class GeminiNewapiCheapFirstCalibrationService:
                 fixture_report,
                 selector_replay,
                 cost_guardrails,
+                research_by_task.get(task.id, ()),
             )
             for task in self._tasks()
         ]
@@ -87,6 +108,7 @@ class GeminiNewapiCheapFirstCalibrationService:
                 "type": "gemini-newapi-cheap-first-cost-quality-calibration",
                 "notes": [
                     "Joins selector replay, synthetic legal fixture smoke, cost forecast, and cost guardrail metadata.",
+                    "Maps public legal benchmark and research sources to local task families without downloading or storing public samples.",
                     "Default calibration uses tiny local synthetic fixtures and does not call NewAPI or any model.",
                     "Calibration can keep cheap-first defaults, hold default changes, or require fixture-scoped escalation.",
                 ],
@@ -110,11 +132,14 @@ class GeminiNewapiCheapFirstCalibrationService:
                 "selector_scenario_count": selector_replay["summary"]["scenario_count"],
                 "cost_guardrail_status": cost_guardrails["status"],
                 "estimated_savings_ratio": cost_forecast["summary"]["estimated_savings_ratio"],
+                "external_research_source_count": len(research_mappings),
+                "research_mapped_task_count": sum(1 for row in rows if row["research_source_ids"]),
                 "newapi_called": False,
                 "raw_payload_echoed": False,
             },
             "calibration_tasks": [task.to_api() for task in self._tasks()],
             "calibration_rows": rows,
+            "external_research_mappings": [mapping.to_api() for mapping in research_mappings],
             "source_summaries": {
                 "selector_replay": selector_replay["summary"],
                 "fixture_report": fixture_report["summary"],
@@ -125,6 +150,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             "release_guardrails": [
                 "Do not use calibration as proof of live NewAPI execution or public benchmark performance.",
                 "Do not promote premium models to defaults when only selected fixtures need escalation.",
+                "Do not import LegalBench, CUAD, LexGLUE, COLIEE, DocLayNet, or other public benchmark samples into default local tests.",
                 "Keep raw model output, prompts, legal text, gateway payloads, emails, and credentials out of calibration evidence.",
             ],
             "privacy_boundary": {
@@ -153,6 +179,7 @@ class GeminiNewapiCheapFirstCalibrationService:
         fixture_report: dict[str, Any],
         selector_replay: dict[str, Any],
         cost_guardrails: dict[str, Any],
+        research_mappings: tuple[CalibrationResearchMapping, ...],
     ) -> dict[str, Any]:
         actual = selector_result.get("actual") if isinstance(selector_result, dict) else {}
         cost_tier = str(actual.get("cost_tier") or "unverified")
@@ -164,6 +191,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             self._check_cost_tier(cost_tier, task.max_cost_tier),
             self._check_fixture_quality(fixture_score, task.quality_floor, fixture_report["status"], bool(task.fixture_ids)),
             self._check_guardrails(cost_guardrails),
+            self._check_research_mapping(research_mappings),
         ]
         failed = [check for check in checks if check["status"] == "fail"]
         warnings = [check for check in checks if check["status"] == "warn"]
@@ -181,6 +209,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             "fixture_score": fixture_score,
             "quality_floor": task.quality_floor,
             "estimated_savings_ratio": forecast_row.get("estimated_savings_ratio") if forecast_row else None,
+            "research_source_ids": [mapping.source_id for mapping in research_mappings],
             "calibration_decision": self._decision(task, selector_result, status, cost_tier, fixture_report),
             "reason_codes": self._reason_codes(checks, fixture_report, selector_replay, cost_guardrails),
             "checks": checks,
@@ -255,6 +284,18 @@ class GeminiNewapiCheapFirstCalibrationService:
             "reason": "Model cost guardrails support cheap-first defaults."
             if status == "pass"
             else "Cost guardrails require review before route defaults change.",
+        }
+
+    def _check_research_mapping(self, mappings: tuple[CalibrationResearchMapping, ...]) -> dict[str, Any]:
+        status = "pass" if mappings else "warn"
+        return {
+            "id": "external-research-mapping",
+            "status": status,
+            "expected": ">= 1 metadata source",
+            "actual": len(mappings),
+            "reason": "Task family is mapped to public benchmark/research metadata without importing samples."
+            if status == "pass"
+            else "Attach at least one public benchmark or research source before widening calibration claims.",
         }
 
     def _decision(
@@ -363,6 +404,70 @@ class GeminiNewapiCheapFirstCalibrationService:
             if task and task not in mapping:
                 mapping[task] = result
         return mapping
+
+    def _research_by_task(
+        self,
+        mappings: tuple[CalibrationResearchMapping, ...],
+    ) -> dict[str, tuple[CalibrationResearchMapping, ...]]:
+        by_task: dict[str, list[CalibrationResearchMapping]] = {}
+        for mapping in mappings:
+            for task_id in mapping.calibration_task_ids:
+                by_task.setdefault(task_id, []).append(mapping)
+        return {task_id: tuple(items) for task_id, items in by_task.items()}
+
+    def _research_mappings(self) -> tuple[CalibrationResearchMapping, ...]:
+        return (
+            CalibrationResearchMapping(
+                source_id="legalbench",
+                title="LegalBench legal reasoning benchmark",
+                url="https://arxiv.org/abs/2308.11462",
+                task_signal="Multi-task legal reasoning, issue spotting, and rule application coverage.",
+                calibration_task_ids=("legal-review-balanced", "document-generation-balanced"),
+                local_fixture_ids=("fixture-service-agreement-small", "fixture-lease-dispute-notice-small"),
+                policy_impact="Keep legal review and document generation on balanced-after-cheap-precheck until local fixture quality and citation checks pass.",
+                import_policy="Metadata only; do not download task text or copy public benchmark examples into default local tests.",
+            ),
+            CalibrationResearchMapping(
+                source_id="cuad",
+                title="CUAD contract review dataset",
+                url="https://www.atticusprojectai.org/cuad",
+                task_signal="Contract clause extraction and obligation/risk classification sampling.",
+                calibration_task_ids=("legal-review-balanced", "document-generation-balanced"),
+                local_fixture_ids=("fixture-service-agreement-small",),
+                policy_impact="Require contract-specific fixture evidence before promoting review or drafting routes beyond cheap precheck.",
+                import_policy="Metadata only unless license and attribution review explicitly approves capped snippets.",
+            ),
+            CalibrationResearchMapping(
+                source_id="lexglue",
+                title="LexGLUE legal language understanding benchmark",
+                url="https://huggingface.co/datasets/coastalcph/lex_glue",
+                task_signal="Legal text classification, case holding, and low-resource task transfer signals.",
+                calibration_task_ids=("fast-intake-preflight", "classification-routing"),
+                local_fixture_ids=(),
+                policy_impact="Keep intake and classification on lowest-tier Gemini defaults while monitoring schema and route drift.",
+                import_policy="Metadata only; use local synthetic classification checks by default.",
+            ),
+            CalibrationResearchMapping(
+                source_id="coliee",
+                title="COLIEE legal information retrieval and entailment competition",
+                url="https://sites.ualberta.ca/~rabelo/COLIEE2024/",
+                task_signal="Legal retrieval, entailment, and cited-support evaluation signals.",
+                calibration_task_ids=("legal-review-balanced", "large-pdf-premium-exception"),
+                local_fixture_ids=("fixture-lease-dispute-notice-small", "fixture-low-text-pdf-page-small"),
+                policy_impact="Keep large-document paths operator-reviewed and require grounded retrieval evidence before premium escalation claims.",
+                import_policy="Metadata only; do not import competition corpora into default local tests.",
+            ),
+            CalibrationResearchMapping(
+                source_id="doclaynet",
+                title="DocLayNet document-layout analysis dataset",
+                url="https://arxiv.org/abs/2206.01062",
+                task_signal="Document layout segmentation and low-text page structure signals for OCR/PDF prechecks.",
+                calibration_task_ids=("ocr-assist",),
+                local_fixture_ids=("fixture-low-text-pdf-page-small",),
+                policy_impact="Keep OCR assist on cheap-first routing for small pages, but require layout/OCR fixture evidence before broad scanned-PDF claims.",
+                import_policy="Metadata only; do not import page images, annotations, or OCR text into default local tests.",
+            ),
+        )
 
     def _tasks(self) -> tuple[CalibrationTask, ...]:
         return (

@@ -269,7 +269,7 @@ class ReleaseReadinessService:
                     "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md",
                 ),
                 validation_command="python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
-                manual_note="This is metadata-only cheap-first calibration evidence; it does not call NewAPI or store gateway credentials, prompts, legal text, or raw model outputs.",
+                manual_note="This is metadata-only cheap-first calibration evidence with public benchmark research mappings; it does not call NewAPI or store gateway credentials, prompts, legal text, copied benchmark samples, or raw model outputs.",
             ),
             ReleaseCheck(
                 id="model-price-refresh-monitor",

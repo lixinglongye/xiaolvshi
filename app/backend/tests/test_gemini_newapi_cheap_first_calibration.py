@@ -12,6 +12,7 @@ SECRET_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}")
 def test_cheap_first_calibration_keeps_low_cost_defaults_without_newapi_calls():
     result = GeminiNewapiCheapFirstCalibrationService().build_calibration()
     rows = {row["id"]: row for row in result["calibration_rows"]}
+    mappings = {row["source_id"]: row for row in result["external_research_mappings"]}
 
     assert result["status"] == "pass"
     assert result["summary"]["task_count"] >= 6
@@ -19,13 +20,38 @@ def test_cheap_first_calibration_keeps_low_cost_defaults_without_newapi_calls():
     assert result["summary"]["balanced_precheck_count"] >= 2
     assert result["summary"]["premium_exception_count"] == 1
     assert result["summary"]["cost_guardrail_status"] == "pass"
+    assert result["summary"]["external_research_source_count"] >= 5
+    assert result["summary"]["research_mapped_task_count"] == result["summary"]["task_count"]
     assert result["summary"]["newapi_called"] is False
     assert result["summary"]["raw_payload_echoed"] is False
     assert rows["fast-intake-preflight"]["calibration_decision"] == "keep_cheap_first_default"
     assert rows["legal-review-balanced"]["calibration_decision"] == "keep_balanced_after_precheck"
     assert rows["large-pdf-premium-exception"]["calibration_decision"] == "require_operator_premium_exception"
+    assert "lexglue" in rows["classification-routing"]["research_source_ids"]
+    assert "doclaynet" in rows["ocr-assist"]["research_source_ids"]
+    assert "legalbench" in rows["legal-review-balanced"]["research_source_ids"]
+    assert "coliee" in rows["large-pdf-premium-exception"]["research_source_ids"]
+    assert mappings["cuad"]["import_policy"].startswith("Metadata only")
     assert "calibration-pass" in rows["ocr-assist"]["reason_codes"]
     assert not SECRET_PATTERN.search(str(result))
+
+
+def test_cheap_first_calibration_research_mappings_are_metadata_only():
+    result = GeminiNewapiCheapFirstCalibrationService().build_calibration()
+
+    assert result["privacy_boundary"]["raw_legal_text_included"] is False
+    assert result["privacy_boundary"]["raw_model_output_included"] is False
+    assert any(
+        guardrail.startswith("Do not import LegalBench")
+        for guardrail in result["release_guardrails"]
+    )
+    assert "DocLayNet" in " ".join(result["release_guardrails"])
+    for mapping in result["external_research_mappings"]:
+        assert mapping["import_policy"].lower().startswith("metadata only")
+        assert "sample" not in mapping
+        assert "prompt" not in mapping
+        assert "output" not in mapping
+        assert mapping["url"].startswith("https://")
 
 
 def test_cheap_first_calibration_holds_defaults_when_fixture_quality_fails():

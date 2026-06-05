@@ -869,7 +869,7 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="large",
                 status="shipped",
-                impact="Joins selector replay, local legal fixture smoke, cost forecast, and guardrail evidence into metadata-only cheap-first calibration rows exposed in AIHub and ModelOps.",
+                impact="Joins selector replay, local legal fixture smoke, cost forecast, guardrail evidence, and public benchmark research mappings into metadata-only cheap-first calibration rows exposed in AIHub and ModelOps.",
                 evidence_paths=(
                     "app/backend/services/gemini_newapi_cheap_first_calibration.py",
                     "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py",
@@ -881,6 +881,7 @@ class ContinuousUpdateLedgerService:
                 release_gate_links=(
                     "gemini-newapi-cheap-first-calibration",
                     "gemini-newapi-selector-replay",
+                    "legal-benchmark-research-registry",
                     "model-cost-guardrails",
                     "frontend-typecheck",
                 ),

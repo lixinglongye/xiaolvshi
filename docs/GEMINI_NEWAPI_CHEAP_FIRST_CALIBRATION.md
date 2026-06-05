@@ -8,6 +8,20 @@ result.
 It is not a live gateway probe, public benchmark score, billing report, or
 proof of NewAPI account access.
 
+The calibration also maps public legal benchmark and research experience to
+local task families without importing any public dataset rows. Current
+metadata-only mappings include:
+
+- LegalBench for multi-task legal reasoning coverage.
+- CUAD for contract clause extraction and contract review sampling.
+- LexGLUE for legal classification and CaseHOLD-style routing signals.
+- COLIEE for legal retrieval, entailment, and cited-support evaluation signals.
+- DocLayNet for document layout and OCR/PDF precheck signals.
+
+These mappings only influence local calibration policy: which task families
+stay cheap-first, which require balanced-after-cheap-precheck, and which remain
+operator-reviewed premium exceptions.
+
 ## Endpoints
 
 ```http
@@ -42,6 +56,10 @@ The service emits one row for each calibrated task family:
 Each row includes the selected model metadata, cost tier, fixture score,
 quality floor, release-gate links, reason codes, and a next action.
 
+Each row also carries `research_source_ids`, and the top-level payload includes
+`external_research_mappings`. Those mappings contain only source IDs, public
+links, task signals, local fixture IDs, policy impact, and import policy.
+
 ## Release Use
 
 Calibration can support these release decisions:
@@ -60,6 +78,9 @@ Calibration must not be used as proof of:
 - production traffic coverage, or
 - legal correctness for client matters.
 
+It also must not be used as proof that LegalBench, CUAD, LexGLUE, COLIEE,
+DocLayNet, or any other public benchmark was downloaded or scored.
+
 ## Privacy Boundary
 
 The calibration payload may include only task ids, fixture ids, model ids,
@@ -76,6 +97,7 @@ It must not include:
 - raw model outputs,
 - raw gateway responses, or
 - client-identifying matter facts.
+- copied public benchmark samples, labels, prompts, or outputs.
 
 ## Validation
 

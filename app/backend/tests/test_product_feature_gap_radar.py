@@ -98,6 +98,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "task-level model selector audits" in gaps["model-cost-ops"]["current_state"]
     assert "deterministic selector replay evidence" in gaps["model-cost-ops"]["current_state"]
     assert "metadata-only cheap-first calibration" in gaps["model-cost-ops"]["current_state"]
+    assert "public benchmark research mappings" in gaps["model-cost-ops"]["current_state"]
     assert "privacy-safe route telemetry repository aggregates" in gaps["model-cost-ops"]["current_state"]
     assert "persisted route telemetry operations summary checks" in gaps["model-cost-ops"]["current_state"]
     assert "route telemetry triage actions" in gaps["model-cost-ops"]["current_state"]
@@ -155,6 +156,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("model selector audits" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("Replay selector scenarios" in action for action in gaps["model-cost-ops"]["next_actions"])
+    assert any("public benchmark research mappings" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("operations summary" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("triage actions" in action for action in gaps["model-cost-ops"]["next_actions"])
     assert any("remediation-plan env suggestions" in action for action in gaps["model-cost-ops"]["next_actions"])
