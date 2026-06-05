@@ -185,6 +185,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
+    assert "modelops-gemini-default-cost-impact" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -307,6 +308,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-agentic-grounded-defaults" not in queue_ids
     assert "modelops-default-template-alignment" not in queue_ids
     assert "modelops-gemini-default-change-review" not in queue_ids
+    assert "modelops-gemini-default-cost-impact" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -628,6 +630,38 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-capability-matrix" in default_change_review_entry["release_gate_links"]
     assert "model-gateway-compatibility" in default_change_review_entry["release_gate_links"]
     assert "model-lifecycle-policy" in default_change_review_entry["release_gate_links"]
+    cost_impact_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-default-cost-impact"
+    )
+    assert cost_impact_entry["size"] == "medium"
+    assert cost_impact_entry["status"] == "shipped"
+    assert "metadata-only Gemini default change cost impact forecast evidence" in cost_impact_entry["impact"]
+    assert "estimated monthly cost delta" in cost_impact_entry["impact"]
+    assert "cheap-first savings or regression" in cost_impact_entry["impact"]
+    assert "unknown pricing" in cost_impact_entry["impact"]
+    assert "premium exception/manual review boundary" in cost_impact_entry["impact"]
+    assert "new Gemini variant" in cost_impact_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in cost_impact_entry["impact"]
+    assert "real environment writes" in cost_impact_entry["impact"]
+    assert "raw prompts" in cost_impact_entry["impact"]
+    assert "payloads" in cost_impact_entry["impact"]
+    assert "model outputs" in cost_impact_entry["impact"]
+    assert "credentials" in cost_impact_entry["impact"]
+    assert "app/backend/services/release_readiness.py" in cost_impact_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in cost_impact_entry["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in cost_impact_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in cost_impact_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in cost_impact_entry["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in cost_impact_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in cost_impact_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in cost_impact_entry["evidence_paths"]
+    assert "modelops-gemini-default-cost-impact" in cost_impact_entry["release_gate_links"]
+    assert "modelops-gemini-default-change-review" in cost_impact_entry["release_gate_links"]
+    assert "modelops-default-template-alignment" in cost_impact_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in cost_impact_entry["release_gate_links"]
+    assert "model-cost-forecast" in cost_impact_entry["release_gate_links"]
+    assert "model-cost-guardrails" in cost_impact_entry["release_gate_links"]
+    assert "model-default-recommendation-snapshot" in cost_impact_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

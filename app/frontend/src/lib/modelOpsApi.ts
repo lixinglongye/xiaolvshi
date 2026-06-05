@@ -992,6 +992,67 @@ export type ModelOpsGeminiDefaultChangeReview = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiDefaultCostImpactRow = {
+  id: string;
+  task: string;
+  env_var: string;
+  current_model: string;
+  proposed_model: string;
+  profile: {
+    task: string;
+    display_name: string;
+    monthly_units: number;
+    prompt_tokens_per_unit: number;
+    completion_tokens_per_unit: number;
+    max_cost_tier: string;
+    rationale: string;
+  };
+  current_cost_tier: string;
+  proposed_cost_tier: string;
+  current_unit_cost_usd?: number | null;
+  proposed_unit_cost_usd?: number | null;
+  current_monthly_cost_usd?: number | null;
+  proposed_monthly_cost_usd?: number | null;
+  monthly_delta_usd?: number | null;
+  estimated_savings_delta_usd?: number | null;
+  cost_regression: boolean;
+  premium_exception: boolean;
+  impact_status: string;
+  release_action: string;
+  reason_codes: string[];
+};
+
+export type ModelOpsGeminiDefaultCostImpact = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    proposal_count: number;
+    priced_proposal_count: number;
+    ready_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    cost_increase_count: number;
+    cost_decrease_count: number;
+    unknown_price_count: number;
+    premium_exception_count: number;
+    estimated_monthly_delta_usd: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  impact_rows: ModelOpsGeminiDefaultCostImpactRow[];
+  blocking_impact_ids: string[];
+  review_impact_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsCheapFirstCanaryPlan = {
   status: string;
   method: {
@@ -2219,6 +2280,7 @@ export type ModelOpsResponse = {
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
   gemini_default_change_review?: ModelOpsGeminiDefaultChangeReview;
+  gemini_default_cost_impact?: ModelOpsGeminiDefaultCostImpact;
   cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
   cheap_first_canary_observation?: ModelOpsCheapFirstCanaryObservation;
   cheap_first_canary_promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
@@ -2264,6 +2326,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     validation_commands?: unknown;
     queue_items?: unknown;
     proposal_rows?: unknown;
+    impact_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
     promotion_items?: unknown;
@@ -2283,6 +2346,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.proposal_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.impact_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
@@ -2477,6 +2541,23 @@ export async function evaluateModelOpsGeminiDefaultChangeReview(
 ): Promise<ModelOpsGeminiDefaultChangeReview> {
   return invokeModelOpsApi<ModelOpsGeminiDefaultChangeReview>({
     url: '/api/v1/aihub/models/gemini-default-change-review',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsGeminiDefaultCostImpact(): Promise<ModelOpsGeminiDefaultCostImpact> {
+  return invokeModelOpsApi<ModelOpsGeminiDefaultCostImpact>({
+    url: '/api/v1/aihub/models/gemini-default-cost-impact',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsGeminiDefaultCostImpact(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsGeminiDefaultCostImpact> {
+  return invokeModelOpsApi<ModelOpsGeminiDefaultCostImpact>({
+    url: '/api/v1/aihub/models/gemini-default-cost-impact',
     method: 'POST',
     data: payload,
   });

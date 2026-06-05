@@ -122,6 +122,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "gemini_default_change_review",
     ),
     ReadinessComponent(
+        "gemini-default-cost-impact",
+        "Gemini default cost impact",
+        "release_evidence",
+        "gemini_default_cost_impact",
+    ),
+    ReadinessComponent(
         "cheap-first-canary-plan",
         "Cheap-first canary plan",
         "release_evidence",

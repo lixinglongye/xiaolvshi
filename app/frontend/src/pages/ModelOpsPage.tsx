@@ -20,6 +20,7 @@ import {
   evaluateModelGatewayProbe,
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsGeminiDefaultChangeReview,
+  evaluateModelOpsGeminiDefaultCostImpact,
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
@@ -37,6 +38,7 @@ import {
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsCheapFirstCanaryRollbackDrill,
   type ModelOpsGeminiDefaultChangeReview,
+  type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -182,6 +184,25 @@ function defaultGeminiDefaultChangeReviewPayload() {
   };
 }
 
+function defaultGeminiDefaultCostImpactPayload() {
+  return {
+    proposed_changes: [
+      {
+        task: 'agentic',
+        env_var: 'APP_AI_AGENTIC_MODEL',
+        current_model: 'gemini-3.1-flash-lite',
+        proposed_model: 'gemini-3.1-flash-lite',
+      },
+      {
+        task: 'grounded-research',
+        env_var: 'APP_AI_GROUNDED_RESEARCH_MODEL',
+        current_model: 'gemini-3.1-flash-lite',
+        proposed_model: 'gemini-3.1-pro-preview',
+      },
+    ],
+  };
+}
+
 function defaultPerformanceObservationPayload() {
   return {
     observations: [
@@ -254,6 +275,15 @@ function hasForbiddenGeminiDefaultChangePayloadText(value: string) {
   );
 }
 
+function hasForbiddenGeminiDefaultCostPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers?|email|legal[_ -]?text|payload)\b/i.test(
+      value,
+    )
+  );
+}
+
 export default function ModelOpsPage() {
   return (
     <AuthGuard>
@@ -290,6 +320,10 @@ function Inner() {
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
   const [geminiDefaultChangeError, setGeminiDefaultChangeError] = useState('');
+  const [geminiDefaultCostImpact, setGeminiDefaultCostImpact] = useState<ModelOpsGeminiDefaultCostImpact | null>(null);
+  const [geminiDefaultCostPayloadText, setGeminiDefaultCostPayloadText] = useState('');
+  const [geminiDefaultCostLoading, setGeminiDefaultCostLoading] = useState(false);
+  const [geminiDefaultCostError, setGeminiDefaultCostError] = useState('');
   const [canaryObservation, setCanaryObservation] = useState<ModelOpsCheapFirstCanaryObservation | null>(null);
   const [canaryPromotionDecision, setCanaryPromotionDecision] = useState<ModelOpsCheapFirstCanaryPromotionDecision | null>(null);
   const [canaryApprovalPacket, setCanaryApprovalPacket] = useState<ModelOpsCheapFirstCanaryApprovalPacket | null>(null);
@@ -312,6 +346,8 @@ function Inner() {
     setPerformanceBudget(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
+    setGeminiDefaultCostError('');
+    setGeminiDefaultCostImpact(null);
     setCanaryObservationError('');
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
@@ -337,6 +373,7 @@ function Inner() {
         setCanaryRollbackDrill(null);
         setCanaryChangeManifest(null);
         setGeminiDefaultChangeReview(modelOpsResult.value.gemini_default_change_review ?? null);
+        setGeminiDefaultCostImpact(modelOpsResult.value.gemini_default_cost_impact ?? null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
           setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
@@ -537,6 +574,40 @@ function Inner() {
     }
   };
 
+  const loadGeminiDefaultCostTemplate = () => {
+    setGeminiDefaultCostPayloadText(JSON.stringify(defaultGeminiDefaultCostImpactPayload(), null, 2));
+    setGeminiDefaultCostError('');
+  };
+
+  const evaluateGeminiDefaultCostPayload = async () => {
+    setGeminiDefaultCostLoading(true);
+    setGeminiDefaultCostError('');
+    try {
+      const text = geminiDefaultCostPayloadText.trim();
+      if (!text) {
+        setGeminiDefaultCostError('Default cost impact payload is empty.');
+        return;
+      }
+      if (hasForbiddenGeminiDefaultCostPayloadText(text)) {
+        setGeminiDefaultCostError('Default cost impact payload must not include keys, headers, prompts, raw payloads, emails, raw output, or legal text.');
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setGeminiDefaultCostError('Default cost impact payload must be a JSON object.');
+        return;
+      }
+      setGeminiDefaultCostImpact(await evaluateModelOpsGeminiDefaultCostImpact(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setGeminiDefaultCostError(
+        err instanceof SyntaxError ? 'Default cost impact payload is not valid JSON.' : 'Gemini default cost impact failed.',
+      );
+    } finally {
+      setGeminiDefaultCostLoading(false);
+    }
+  };
+
   const loadCanaryObservationTemplate = () => {
     setCanaryObservationPayloadText(JSON.stringify(defaultCanaryObservationPayload(), null, 2));
     setCanaryObservationError('');
@@ -583,6 +654,8 @@ function Inner() {
   const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
   const activeGeminiDefaultChangeReview = geminiDefaultChangeReview ?? data?.gemini_default_change_review ?? null;
   const geminiDefaultChangeRows = activeGeminiDefaultChangeReview?.proposal_rows ?? [];
+  const activeGeminiDefaultCostImpact = geminiDefaultCostImpact ?? data?.gemini_default_cost_impact ?? null;
+  const geminiDefaultCostRows = activeGeminiDefaultCostImpact?.impact_rows ?? [];
   const cheapFirstCanarySteps = data?.cheap_first_canary_plan?.canary_steps ?? [];
   const cheapFirstCanaryTriggers = data?.cheap_first_canary_plan?.rollback_triggers ?? [];
   const activeCanaryObservation = canaryObservation ?? data?.cheap_first_canary_observation ?? null;
@@ -1225,6 +1298,175 @@ function Inner() {
                         {row.missing_required_capabilities.length
                           ? `missing ${row.missing_required_capabilities.join(', ')}`
                           : row.required_capabilities.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        {row.reason_codes.join(', ') || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeGeminiDefaultCostImpact && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini default cost impact</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiDefaultCostImpact.summary.proposal_count} proposals /{' '}
+                  {activeGeminiDefaultCostImpact.summary.review_required_count} reviews /{' '}
+                  {activeGeminiDefaultCostImpact.summary.blocked_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiDefaultCostImpact.status)}>
+                {activeGeminiDefaultCostImpact.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(activeGeminiDefaultCostImpact.summary.estimated_monthly_delta_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">monthly delta</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGeminiDefaultCostImpact.summary.cost_increase_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cost increases</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGeminiDefaultCostImpact.summary.cost_decrease_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cost decreases</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGeminiDefaultCostImpact.summary.unknown_price_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown prices</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeGeminiDefaultCostImpact.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeGeminiDefaultCostImpact.summary.raw_payload_echoed)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">raw payload echoed</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-stone-950">Sanitized cost impact evaluator</div>
+                    <div className="mt-1 text-xs leading-5 text-stone-600">
+                      Estimates default-change monthly cost before promotion; no gateway call and no configuration write.
+                    </div>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={loadGeminiDefaultCostTemplate}>
+                    <ClipboardList className="mr-2 h-4 w-4" /> Template
+                  </Button>
+                </div>
+                <Textarea
+                  value={geminiDefaultCostPayloadText}
+                  onChange={(event) => setGeminiDefaultCostPayloadText(event.target.value)}
+                  placeholder='{"proposed_changes":[{"task":"grounded-research","env_var":"APP_AI_GROUNDED_RESEARCH_MODEL","current_model":"gemini-3.1-flash-lite","proposed_model":"gemini-3.1-pro-preview"}]}'
+                  className="min-h-[180px] border-stone-950/15 bg-white font-mono text-xs"
+                />
+                {geminiDefaultCostError && (
+                  <div className="mt-2 rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                    {geminiDefaultCostError}
+                  </div>
+                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={evaluateGeminiDefaultCostPayload}
+                    disabled={geminiDefaultCostLoading}
+                  >
+                    {geminiDefaultCostLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
+                    Evaluate cost impact
+                  </Button>
+                  <div className="text-xs text-stone-600">
+                    blocked fields: prompt, payload, key, authorization, email, legal text, raw output
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Cost boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  billing_accuracy_claimed:{' '}
+                  {String(activeGeminiDefaultCostImpact.claim_boundary.billing_accuracy_claimed)} / production savings:{' '}
+                  {String(activeGeminiDefaultCostImpact.claim_boundary.production_savings_claimed)} / network:{' '}
+                  {String(activeGeminiDefaultCostImpact.privacy_boundary.network_called)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {activeGeminiDefaultCostImpact.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {activeGeminiDefaultCostImpact.validation_commands.slice(0, 2).map((command) => (
+                    <div key={command} className="rounded-[6px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs leading-5 text-stone-600">
+                      {command}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Models</TableHead>
+                    <TableHead>Unit cost</TableHead>
+                    <TableHead>monthly delta</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {geminiDefaultCostRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.env_var}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.impact_status)}>
+                          {row.impact_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.release_action}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        current {row.current_model || '-'}
+                        <br />
+                        proposed {row.proposed_model || '-'}
+                        <br />
+                        units {formatNumber(row.profile.monthly_units)}
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        current {formatUsd(row.current_unit_cost_usd)}
+                        <br />
+                        proposed {formatUsd(row.proposed_unit_cost_usd)}
+                        <br />
+                        tier {row.current_cost_tier} -&gt; {row.proposed_cost_tier}
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        monthly delta {formatUsd(row.monthly_delta_usd)}
+                        <br />
+                        estimated savings delta {formatUsd(row.estimated_savings_delta_usd)}
+                        <br />
+                        premium: {String(row.premium_exception)}
                       </TableCell>
                       <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
                         {row.reason_codes.join(', ') || '-'}

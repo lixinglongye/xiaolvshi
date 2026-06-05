@@ -495,6 +495,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-gemini-default-cost-impact": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -655,6 +656,31 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/tests/test_maintenance_evidence.py" in checks["modelops-gemini-default-change-review"]["evidence_paths"]
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-gemini-default-change-review"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-gemini-default-change-review"]["evidence_paths"]
+    assert "metadata-only Gemini default change cost impact forecast evidence" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "estimated monthly cost delta" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "cheap-first savings or regression" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "unknown pricing" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "premium exception/manual review boundary" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "new Gemini variant" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "Gemini" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "OpenAI" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "Google" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "gateways" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "network" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "real environment values" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "raw prompts" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "payloads" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "model outputs" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "credentials" in checks["modelops-gemini-default-cost-impact"]["manual_note"]
+    assert "app/backend/services/release_readiness.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-gemini-default-cost-impact"]["evidence_paths"]
     assert "metadata-only Legal RAG authority and citation gate evidence" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "Gemini" in checks["legal-rag-authority-citation-gate"]["manual_note"]

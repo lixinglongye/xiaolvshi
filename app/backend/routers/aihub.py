@@ -62,6 +62,7 @@ from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsChe
 from services.model_ops_cheap_first_canary_rollback_drill import ModelOpsCheapFirstCanaryRollbackDrillService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
+from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -294,6 +295,8 @@ async def list_models():
     model_ops_signals["default_change_queue"] = default_change_queue
     gemini_default_change_review = ModelOpsGeminiDefaultChangeReviewService().build_review()
     model_ops_signals["gemini_default_change_review"] = gemini_default_change_review
+    gemini_default_cost_impact = ModelOpsGeminiDefaultCostImpactService().build_impact()
+    model_ops_signals["gemini_default_cost_impact"] = gemini_default_cost_impact
     cheap_first_canary_plan = ModelOpsCheapFirstCanaryPlanService().build_plan(model_ops_signals)
     model_ops_signals["cheap_first_canary_plan"] = cheap_first_canary_plan
     cheap_first_canary_observation = ModelOpsCheapFirstCanaryObservationService().build_review(None, model_ops_signals)
@@ -357,6 +360,7 @@ async def list_models():
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "gemini_default_change_review": gemini_default_change_review,
+        "gemini_default_cost_impact": gemini_default_cost_impact,
         "cheap_first_canary_plan": cheap_first_canary_plan,
         "cheap_first_canary_observation": cheap_first_canary_observation,
         "cheap_first_canary_promotion_decision": cheap_first_canary_promotion_decision,
@@ -491,6 +495,25 @@ async def evaluate_model_ops_gemini_default_change_review(payload: dict[str, Any
     return {
         "success": True,
         "data": ModelOpsGeminiDefaultChangeReviewService().build_review(payload),
+    }
+
+
+@router.get("/models/gemini-default-cost-impact")
+async def model_ops_gemini_default_cost_impact():
+    """Return metadata-only cost impact for proposed Gemini default changes."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_default_cost_impact"],
+    }
+
+
+@router.post("/models/gemini-default-cost-impact")
+async def evaluate_model_ops_gemini_default_cost_impact(payload: dict[str, Any]):
+    """Evaluate default-change cost impact without writing configuration."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiDefaultCostImpactService().build_impact(payload),
     }
 
 

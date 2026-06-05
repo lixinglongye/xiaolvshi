@@ -109,6 +109,15 @@ and premium/manual review boundary. It does not call NewAPI, Gemini, OpenAI,
 Google, gateways, or the network, does not write real environment values, and
 does not include raw prompts, payloads, model outputs, or credentials.
 
+`modelops-gemini-default-cost-impact` is the shipped metadata-only cost impact
+forecast evidence for a future task-default change to a new Gemini variant.
+Before maintainers apply such a default, the evidence scope requires checking
+estimated monthly cost delta, cheap-first savings or regression, unknown
+pricing, and the premium exception/manual review boundary. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, or the network, does not write real
+environment values, and does not include raw prompts, payloads, model outputs,
+or credentials.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

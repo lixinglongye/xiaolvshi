@@ -73,6 +73,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps agentic grounded defaults" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default template alignment audit" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini default change proposal review" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps Gemini default cost impact forecast" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
@@ -165,6 +166,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps agentic/grounded default routing evidence" in model_signal["description"]
     assert "ModelOps default template alignment audit evidence" in model_signal["description"]
     assert "ModelOps Gemini default change proposal review evidence" in model_signal["description"]
+    assert "ModelOps Gemini default cost impact forecast evidence" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
@@ -187,6 +189,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps agentic/grounded defaults review" in model_signal["responsibility"]
     assert "ModelOps default template alignment audit review" in model_signal["responsibility"]
     assert "ModelOps Gemini default change proposal review" in model_signal["responsibility"]
+    assert "ModelOps Gemini default cost impact forecast review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "legal benchmark route risk queue review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
@@ -279,7 +282,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("agentic grounded defaults evidence is metadata-only/default routing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("default template alignment audit is metadata-only env/template evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini default change proposal review is metadata-only proposal evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini default cost impact forecast is metadata-only cost evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("cost tier, lifecycle, capabilities, gateway compatibility, and premium/manual review boundary" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("estimated monthly cost delta, cheap-first savings or regression, unknown pricing, and premium exception/manual review boundary" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Settings defaults, app/backend/.env.example, the README env block, and docs/AI_MODEL_STRATEGY" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write real environment values" in guardrail for guardrail in profile["application_guardrails"])

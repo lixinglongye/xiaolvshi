@@ -295,6 +295,15 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Evaluate proposal', 'model-ops Gemini default change submit button'),
   () => assertIncludes(modelOpsPage, 'cheap-first regressions', 'model-ops Gemini default change cheap-first regression summary'),
   () => assertIncludes(modelOpsPage, 'raw payload echoed', 'model-ops Gemini default change raw payload boundary'),
+  () => assertIncludes(modelOpsPage, 'Gemini default cost impact', 'model-ops Gemini default cost impact panel'),
+  () => assertIncludes(modelOpsPage, 'activeGeminiDefaultCostImpact', 'model-ops Gemini default cost impact active binding'),
+  () => assertIncludes(modelOpsPage, 'geminiDefaultCostRows', 'model-ops Gemini default cost impact row binding'),
+  () => assertIncludes(modelOpsPage, 'defaultGeminiDefaultCostImpactPayload', 'model-ops Gemini default cost impact template payload'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenGeminiDefaultCostPayloadText', 'model-ops Gemini default cost impact payload guard'),
+  () => assertIncludes(modelOpsPage, 'Evaluate cost impact', 'model-ops Gemini default cost impact submit button'),
+  () => assertIncludes(modelOpsPage, 'monthly delta', 'model-ops Gemini default cost impact monthly delta'),
+  () => assertIncludes(modelOpsPage, 'estimated savings delta', 'model-ops Gemini default cost impact savings delta'),
+  () => assertIncludes(modelOpsPage, 'billing_accuracy_claimed', 'model-ops Gemini default cost impact billing non-claim'),
   () => assertIncludes(modelOpsPage, 'Cheap-first canary plan', 'model-ops cheap-first canary plan panel'),
   () => assertIncludes(modelOpsPage, 'cheapFirstCanarySteps', 'model-ops cheap-first canary step binding'),
   () => assertIncludes(modelOpsPage, 'rollback_trigger_ids', 'model-ops cheap-first canary rollback binding'),
@@ -399,6 +408,12 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-default-change-review', 'model-ops Gemini default change review endpoint'),
   () => assertIncludes(modelOpsApi, 'gemini_default_change_review', 'model-ops Gemini default change response binding'),
   () => assertIncludes(modelOpsApi, 'proposal_rows', 'model-ops Gemini default change payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiDefaultCostImpact', 'model-ops Gemini default cost impact type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiDefaultCostImpact', 'model-ops Gemini default cost impact API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsGeminiDefaultCostImpact', 'model-ops Gemini default cost impact evaluation API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-default-cost-impact', 'model-ops Gemini default cost impact endpoint'),
+  () => assertIncludes(modelOpsApi, 'gemini_default_cost_impact', 'model-ops Gemini default cost impact response binding'),
+  () => assertIncludes(modelOpsApi, 'impact_rows', 'model-ops Gemini default cost impact payload guard'),
   () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstCanaryPlan', 'model-ops cheap-first canary plan type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstCanaryPlan', 'model-ops cheap-first canary plan API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-canary-plan', 'model-ops cheap-first canary plan endpoint'),
@@ -495,8 +510,14 @@ const defaultTemplateAlignmentPanel = sourceSection(
 const geminiDefaultChangeReviewPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini default change review</h2>',
-  'Cheap-first canary plan',
+  'Gemini default cost impact',
   'model-ops Gemini default change review section',
+);
+const geminiDefaultCostImpactPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini default cost impact</h2>',
+  'Cheap-first canary plan',
+  'model-ops Gemini default cost impact section',
 );
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
@@ -527,6 +548,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default change review no secret or raw prompt/payload field names',
 );
+assertNotMatches(
+  geminiDefaultCostImpactPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
+  'model-ops Gemini default cost impact no secret or raw prompt/payload field names',
+);
 
 console.log(
   JSON.stringify(
@@ -534,7 +560,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 8,
+      assertions: checks.length + 9,
     },
     null,
     2,
