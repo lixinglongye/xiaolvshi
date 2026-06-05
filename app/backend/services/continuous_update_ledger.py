@@ -496,6 +496,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("reviewer-visibility", "grounded-legal-output", "safe-ai-ops"),
             ),
             LedgerEntry(
+                id="user-need-benchmark-coverage",
+                title="User need benchmark coverage map",
+                category="user_research",
+                size="medium",
+                status="shipped",
+                impact="Links high-priority user needs to local benchmark cases, synthetic fixtures, document fixtures, research backlog items, and release gates without returning snippets or raw outputs.",
+                evidence_paths=(
+                    "app/backend/services/user_need_benchmark_coverage.py",
+                    "app/backend/tests/test_user_need_benchmark_coverage.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/USER_NEED_BENCHMARK_COVERAGE.md",
+                    "docs/USER_NEEDS_RADAR.md",
+                ),
+                release_gate_links=("user-needs-radar", "legal-review-benchmark", "oss-maintenance-evidence"),
+                user_need_ids=("reviewer-visibility", "grounded-legal-output", "low-resource-testing"),
+            ),
+            LedgerEntry(
                 id="feedback-roadmap-alignment",
                 title="Feedback-to-roadmap alignment",
                 category="maintenance",

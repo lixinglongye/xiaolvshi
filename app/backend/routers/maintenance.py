@@ -85,6 +85,7 @@ from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueServi
 from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
+from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
 from services.admin_audit_policy import AdminAuditPolicyService
 from services.validation_event_evidence import ValidationEventEvidenceService
 
@@ -163,6 +164,15 @@ async def get_user_needs_radar():
     return {
         "success": True,
         "data": UserNeedsRadarService().build_radar(),
+    }
+
+
+@router.get("/user-needs/benchmark-coverage")
+async def get_user_need_benchmark_coverage():
+    """Return metadata-only coverage between user needs and local benchmark evidence."""
+    return {
+        "success": True,
+        "data": UserNeedBenchmarkCoverageService().build_coverage(),
     }
 
 

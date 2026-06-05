@@ -18,9 +18,12 @@ Legal AI improvements can easily become scattered feature work. The user-needs r
 
 ```http
 GET /api/v1/maintenance/user-needs
+GET /api/v1/maintenance/user-needs/benchmark-coverage
 ```
 
 The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `maintenance_actions`.
+
+`GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence.
 
 Related legal-AI research planning is exposed at:
 
@@ -65,9 +68,12 @@ The score is a planning signal, not product analytics. It does not use private u
 ## Related files
 
 - `app/backend/services/user_needs_radar.py`
+- `app/backend/services/user_need_benchmark_coverage.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_user_needs_radar.py`
+- `app/backend/tests/test_user_need_benchmark_coverage.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`
+- `docs/USER_NEED_BENCHMARK_COVERAGE.md`
