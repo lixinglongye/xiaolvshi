@@ -373,6 +373,8 @@ function Inner() {
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
   const cheapFirstDecisionChecks = data?.cheap_first_release_decision?.checks ?? [];
   const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
+  const cheapFirstCanarySteps = data?.cheap_first_canary_plan?.canary_steps ?? [];
+  const cheapFirstCanaryTriggers = data?.cheap_first_canary_plan?.rollback_triggers ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -820,6 +822,141 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.cheap_first_canary_plan && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first canary plan</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.cheap_first_canary_plan.summary.canary_required_count} queued canaries /{' '}
+                  {data.cheap_first_canary_plan.summary.review_required_step_count} review steps /{' '}
+                  {data.cheap_first_canary_plan.summary.blocked_step_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.cheap_first_canary_plan.status)}>
+                {data.cheap_first_canary_plan.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_canary_plan.summary.canary_step_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">canary steps</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_canary_plan.rollout_policy.batch_percentages.join('% / ')}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">batch plan</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_canary_plan.summary.rollback_trigger_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">rollback triggers</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_canary_plan.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_canary_plan.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_canary_plan.summary.traffic_shifted)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">traffic shifted</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-2">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Rollout policy</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  observation window: {data.cheap_first_canary_plan.rollout_policy.minimum_observation_window_hours}h /
+                  holdout required: {String(data.cheap_first_canary_plan.rollout_policy.holdout_required_until_final_review)} /
+                  operator approval: {String(data.cheap_first_canary_plan.rollout_policy.operator_approval_required)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {data.cheap_first_canary_plan.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Rollback triggers</div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {cheapFirstCanaryTriggers.map((trigger) => (
+                    <div key={trigger.id} className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                      <div className="font-mono text-[11px] text-stone-500">{trigger.metric}</div>
+                      <div className="text-sm font-black text-stone-950">{trigger.threshold}</div>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">{trigger.action}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Phase</TableHead>
+                    <TableHead>Batch</TableHead>
+                    <TableHead>Models</TableHead>
+                    <TableHead>Rollback</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cheapFirstCanarySteps.map((step) => (
+                    <TableRow key={step.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{step.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{step.env_var ?? 'explicit'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(step.step_status)}>
+                          {step.step_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{step.phase}</div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        batch {step.batch_percentage}% / holdout {step.holdout_percentage}%
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          observe {step.observation_window_hours}h / config change:{' '}
+                          {String(step.requires_configuration_change)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        current {step.current_model || '-'}
+                        <br />
+                        recommended {step.recommended_model || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                        {step.rollback_trigger_ids.join(', ')}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {step.action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 text-xs leading-5 text-stone-500">
+              production traffic shifted:{' '}
+              {String(data.cheap_first_canary_plan.claim_boundary.production_traffic_shifted)} / automatic canary rollout:{' '}
+              {String(data.cheap_first_canary_plan.claim_boundary.automatic_canary_rollout_claimed)} / raw model output:{' '}
+              {String(data.cheap_first_canary_plan.privacy_boundary.raw_model_output_included)}
             </div>
           </section>
         )}

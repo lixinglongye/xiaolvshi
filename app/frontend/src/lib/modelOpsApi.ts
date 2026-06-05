@@ -839,6 +839,70 @@ export type ModelOpsDefaultChangeQueue = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstCanaryPlan = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    queue_item_count: number;
+    canary_step_count: number;
+    canary_required_count: number;
+    ready_step_count: number;
+    review_required_step_count: number;
+    blocked_step_count: number;
+    monitor_only_step_count: number;
+    rollback_trigger_count: number;
+    route_guardrail_status: string;
+    cost_guardrail_status: string;
+    route_telemetry_ops_status: string;
+    release_decision_status: string;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+  };
+  rollout_policy: {
+    batch_percentages: number[];
+    minimum_observation_window_hours: number;
+    holdout_required_until_final_review: boolean;
+    operator_approval_required: boolean;
+    validation_source: string;
+  };
+  success_thresholds: Record<string, number>;
+  rollback_triggers: Array<{
+    id: string;
+    metric: string;
+    threshold: number;
+    action: string;
+  }>;
+  canary_steps: Array<{
+    id: string;
+    source_queue_item_id: string;
+    task: string;
+    env_var?: string | null;
+    current_model: string;
+    recommended_model: string;
+    phase: string;
+    step_status: string;
+    batch_percentage: number;
+    holdout_percentage: number;
+    observation_window_hours: number;
+    requires_configuration_change: boolean;
+    requires_operator_review: boolean;
+    reason_codes: string[];
+    success_thresholds: Record<string, number>;
+    rollback_trigger_ids: string[];
+    action: string;
+  }>;
+  blocking_step_ids: string[];
+  review_step_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsPerformanceBudget = {
   status: string;
   method: {
@@ -1692,6 +1756,7 @@ export type ModelOpsResponse = {
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
+  cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1730,6 +1795,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     family_rows?: unknown;
     validation_commands?: unknown;
     queue_items?: unknown;
+    canary_steps?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -1738,7 +1804,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -1895,6 +1962,13 @@ export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCh
 export async function getModelOpsDefaultChangeQueue(): Promise<ModelOpsDefaultChangeQueue> {
   return invokeModelOpsApi<ModelOpsDefaultChangeQueue>({
     url: '/api/v1/aihub/models/default-change-queue',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstCanaryPlan(): Promise<ModelOpsCheapFirstCanaryPlan> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryPlan>({
+    url: '/api/v1/aihub/models/cheap-first-canary-plan',
     method: 'GET',
   });
 }

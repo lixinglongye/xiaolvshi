@@ -153,6 +153,12 @@ review-required, blocked, or no-action based on the cheap-first release
 decision, gateway probe status, catalog source audit, and price refresh monitor.
 It never writes configuration automatically.
 
+`cheap_first_canary_plan` consumes the default-change queue downstream. It turns
+ready changes into 1%, 10%, and 25% canary review steps with holdouts, rollback
+triggers, and observation windows, while keeping review-required or blocked
+changes at 0% traffic. It is metadata-only and does not write configuration,
+call a gateway, or claim that production traffic shifted.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in

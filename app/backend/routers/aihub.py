@@ -52,6 +52,7 @@ from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationS
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
+from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
@@ -272,6 +273,8 @@ async def list_models():
     cheap_first_release_decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(model_ops_signals)
     model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
     default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
+    model_ops_signals["default_change_queue"] = default_change_queue
+    cheap_first_canary_plan = ModelOpsCheapFirstCanaryPlanService().build_plan(model_ops_signals)
     payload = {
         "success": True,
         "routing_aliases": {
@@ -317,6 +320,7 @@ async def list_models():
         "model_ops_performance_budget": model_ops_performance_budget,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
+        "cheap_first_canary_plan": cheap_first_canary_plan,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -417,6 +421,16 @@ async def model_ops_default_change_queue():
     return {
         "success": True,
         "data": models_payload["default_change_queue"],
+    }
+
+
+@router.get("/models/cheap-first-canary-plan")
+async def model_ops_cheap_first_canary_plan():
+    """Return metadata-only canary plan for queued cheap-first default changes."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_canary_plan"],
     }
 
 

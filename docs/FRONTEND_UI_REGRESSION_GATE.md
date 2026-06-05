@@ -37,6 +37,7 @@ The `/model-ops` page carries evidence for:
 - Gemini catalog source audit
 - Cheap-first release decision
 - Default change queue
+- Cheap-first canary plan
 - Cheap-first quality budget
 - selector replay
 - route telemetry

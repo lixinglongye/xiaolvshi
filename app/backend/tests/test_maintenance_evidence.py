@@ -58,6 +58,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Route telemetry remediation plan" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first release decision" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default change queue" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps cheap-first canary plan" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
@@ -109,6 +110,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini catalog source audit" in model_signal["description"]
     assert "ModelOps cheap-first release decision review" in model_signal["description"]
     assert "ModelOps default change queue review" in model_signal["description"]
+    assert "ModelOps cheap-first canary plan review" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
@@ -120,17 +122,21 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps performance-observation review" in model_signal["responsibility"]
     assert "ModelOps cheap-first release decision review" in model_signal["responsibility"]
     assert "ModelOps default change queue review" in model_signal["responsibility"]
+    assert "ModelOps cheap-first canary plan review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in evidence_paths
     assert "app/backend/services/model_ops_default_change_queue.py" in evidence_paths
+    assert "app/backend/services/model_ops_cheap_first_canary_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_default_change_queue.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_cheap_first_canary_plan.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
     assert "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md" in evidence_paths
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PLAN.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths

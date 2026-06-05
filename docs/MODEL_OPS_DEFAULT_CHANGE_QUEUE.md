@@ -21,6 +21,8 @@ GET /api/v1/aihub/models/default-change-queue
 ```
 
 The full `/api/v1/aihub/models` payload also includes `default_change_queue`.
+`cheap_first_canary_plan` consumes this queue downstream and turns ready,
+review-required, blocked, and no-action rows into staged canary review steps.
 
 ## Inputs
 
@@ -76,3 +78,4 @@ Related files:
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_PLAN.md`
