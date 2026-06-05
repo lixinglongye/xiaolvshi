@@ -752,6 +752,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("reviewer-visibility",),
             ),
             LedgerEntry(
+                id="frontend-ui-regression-script",
+                title="Frontend UI regression script",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact="Adds a dependency-free npm regression command that checks maintenance and model-ops evidence wiring, partial-load controls, cheap-first telemetry panels, and forbidden sensitive examples.",
+                evidence_paths=(
+                    "app/frontend/package.json",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                ),
+                release_gate_links=("frontend-ui-regression", "frontend-ui-regression-gate", "frontend-lint"),
+                user_need_ids=("reviewer-visibility", "low-cost-routing", "legal-review-benchmark"),
+            ),
+            LedgerEntry(
                 id="frontend-ui-regression-gate",
                 title="Frontend UI regression gate",
                 category="frontend_ui",
@@ -761,11 +778,12 @@ class ContinuousUpdateLedgerService:
                 evidence_paths=(
                     "app/backend/services/frontend_ui_regression_gate.py",
                     "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/frontend/src/pages/ModelOpsPage.tsx",
                     "docs/FRONTEND_UI_REGRESSION_GATE.md",
                 ),
-                release_gate_links=("frontend-ui-regression-gate", "frontend-lint", "frontend-typecheck", "frontend-build"),
+                release_gate_links=("frontend-ui-regression-gate", "frontend-ui-regression", "frontend-lint", "frontend-typecheck", "frontend-build"),
                 user_need_ids=("reviewer-visibility", "low-cost-routing", "legal-review-benchmark"),
             ),
             LedgerEntry(

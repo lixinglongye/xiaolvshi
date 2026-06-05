@@ -7,6 +7,7 @@ def test_release_readiness_requires_manual_validation_by_default():
     assert result["status"] == "manual_validation_required"
     assert result["release_allowed"] is False
     assert "backend-tests" in result["blocking_check_ids"]
+    assert "frontend-ui-regression" in result["blocking_check_ids"]
     assert result["required_check_count"] > 0
 
 
@@ -299,7 +300,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "real client-document coverage" in checks["legal-document-benchmark-gap-fixtures"]["manual_note"]
     assert "metadata-only coverage matrix" in checks["legal-document-benchmark-coverage"]["manual_note"]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
-    assert "missing mocked page-regression automation" in checks["frontend-ui-regression-gate"]["manual_note"]
+    assert "browser-level network-mocking automation gaps" in checks["frontend-ui-regression-gate"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

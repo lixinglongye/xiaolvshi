@@ -271,6 +271,8 @@ type MaintenanceLoadTask = {
   apply: (value: unknown) => void;
 };
 
+const MAINTENANCE_TASK_TIMEOUT_MS = 45000;
+
 function maintenanceLoadFailureMessage(reason: unknown) {
   const status =
     (reason as { response?: { status?: number } })?.response?.status ??
@@ -279,6 +281,20 @@ function maintenanceLoadFailureMessage(reason: unknown) {
   if (status) return `HTTP ${status}`;
   if (reason instanceof Error && reason.message) return reason.message.slice(0, 180);
   return 'request failed';
+}
+
+function runMaintenanceLoadTask(task: MaintenanceLoadTask) {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new Error(`request timed out after ${MAINTENANCE_TASK_TIMEOUT_MS / 1000}s`)),
+      MAINTENANCE_TASK_TIMEOUT_MS,
+    );
+  });
+
+  return Promise.race([task.run(), timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
 }
 
 export default function MaintenanceEvidencePage() {
@@ -602,17 +618,19 @@ function Inner() {
         },
       ];
 
-      const results = await Promise.allSettled(tasks.map((task) => task.run()));
       const failures: MaintenanceLoadFailure[] = [];
-      results.forEach((result, index) => {
-        const task = tasks[index];
-        if (result.status === 'fulfilled') {
-          task.apply(result.value);
-          return;
-        }
-        console.error(`Maintenance evidence failed: ${task.label}`, result.reason);
-        failures.push({ label: task.label, message: maintenanceLoadFailureMessage(result.reason) });
-      });
+      await Promise.all(
+        tasks.map(async (task) => {
+          try {
+            task.apply(await runMaintenanceLoadTask(task));
+          } catch (reason) {
+            console.error(`Maintenance evidence failed: ${task.label}`, reason);
+            const failure = { label: task.label, message: maintenanceLoadFailureMessage(reason) };
+            failures.push(failure);
+            setLoadFailures((current) => [...current, failure]);
+          }
+        }),
+      );
       setLoadFailures(failures);
     } catch (err) {
       console.error(err);

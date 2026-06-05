@@ -21,6 +21,7 @@ POST /api/v1/maintenance/release-readiness
   "frontend-lint": "pass",
   "frontend-typecheck": "pass",
   "frontend-build": "pass",
+  "frontend-ui-regression": "pass",
   "secret-scan": "pass",
   "model-capability-matrix": "pass",
   "model-configuration-audit": "pass",
@@ -131,12 +132,12 @@ The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in
 OpenAPI. The related frontend checks use `npm run lint`, `npm run typecheck`,
-and `npm run build` to verify case workbench state event panels,
-metadata-only legal RAG research panels, billing usage badge wiring,
+`npm run build`, and `npm run ui:regression` to verify case workbench state event
+panels, metadata-only legal RAG research panels, billing usage badge wiring,
 maintenance evidence wiring, and model-ops wiring. The optional
 `frontend-ui-regression-gate` records that `/maintenance` and `/model-ops`
-still need mocked page-level regression tests; it is not proof that every
-browser state is automated.
+still need browser-level network-mocked regression tests; it is not proof that
+every browser state is automated.
 
 Additional optional evidence now covers the billing report preflight route,
 privacy-safe case edit runtime event binding, metadata-only legal RAG context

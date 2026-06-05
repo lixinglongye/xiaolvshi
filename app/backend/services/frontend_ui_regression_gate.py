@@ -32,6 +32,13 @@ COMMAND_GATES = (
         "required": True,
         "script": "build",
     },
+    {
+        "id": "frontend-ui-regression",
+        "command": "npm run ui:regression",
+        "purpose": "Check maintenance/model-ops UI evidence wiring, partial-load controls, and privacy-safe source contracts.",
+        "required": True,
+        "script": "ui:regression",
+    },
 )
 
 PAGE_GATES = (
@@ -47,10 +54,15 @@ PAGE_GATES = (
             "continuous update ledger",
             "Gemini/NewAPI selector evidence",
         ),
-        "covered_by": ("frontend-lint", "frontend-typecheck", "frontend-build", "manual-browser-smoke"),
+        "covered_by": (
+            "frontend-lint",
+            "frontend-typecheck",
+            "frontend-build",
+            "frontend-ui-regression",
+            "manual-browser-smoke",
+        ),
         "missing_automation": (
-            "mocked success/failure page regression",
-            "no raw fixture or credential rendering assertion",
+            "network-mocked success/failure browser regression",
         ),
     },
     {
@@ -65,10 +77,15 @@ PAGE_GATES = (
             "route telemetry remediation",
             "gateway probe evaluation",
         ),
-        "covered_by": ("frontend-lint", "frontend-typecheck", "frontend-build", "manual-browser-smoke"),
+        "covered_by": (
+            "frontend-lint",
+            "frontend-typecheck",
+            "frontend-build",
+            "frontend-ui-regression",
+            "manual-browser-smoke",
+        ),
         "missing_automation": (
-            "mocked model-ops API regression",
-            "cheap-first warning badge regression",
+            "network-mocked model-ops API browser regression",
         ),
     },
 )
@@ -98,7 +115,7 @@ class FrontendUiRegressionGateService:
                 "notes": [
                     "Reads package script names and known page paths only; it does not run commands or inspect browser storage.",
                     "Tracks release gate coverage for /maintenance and /model-ops, where benchmark and cheap-first evidence is displayed.",
-                    "Separates current executable gates from missing mocked page-level automation.",
+                    "Separates current executable gates from missing browser-level network mocking automation.",
                 ],
             },
             "summary": {
@@ -119,20 +136,20 @@ class FrontendUiRegressionGateService:
                 {
                     "id": "single-maintenance-endpoint-fails",
                     "page": "/maintenance",
-                    "current_control": "Promise.allSettled keeps successful evidence visible and lists failed modules.",
-                    "regression_target": "Mock one API 500 and assert other evidence panels remain visible.",
+                    "current_control": "Incremental maintenance task rendering and per-request timeouts keep successful evidence visible; npm run ui:regression checks the source contract.",
+                    "regression_target": "Add browser-level network mocking for one API 500 and assert other evidence panels remain visible.",
                 },
                 {
                     "id": "cheap-first-panel-regresses",
                     "page": "/model-ops",
-                    "current_control": "Typecheck/build verifies selector and telemetry prop contracts.",
-                    "regression_target": "Mock selector replay and assert low-cost routing warnings stay visible.",
+                    "current_control": "Typecheck/build plus npm run ui:regression verify selector, calibration, and telemetry source contracts.",
+                    "regression_target": "Add browser-level mocked selector replay and assert low-cost routing warnings stay visible.",
                 },
                 {
                     "id": "raw-private-output-renders",
                     "page": "/maintenance",
-                    "current_control": "Backend services emit metadata-only benchmark evidence.",
-                    "regression_target": "Assert fixture snippets, raw model output, credentials, and user feedback text are absent.",
+                    "current_control": "Backend services emit metadata-only benchmark evidence and npm run ui:regression scans UI sources for forbidden sensitive examples.",
+                    "regression_target": "Add rendered DOM assertions that fixture snippets, raw model output, credentials, and user feedback text are absent.",
                 },
             ],
             "recommended_actions": self._recommended_actions(missing_script_ids, missing_automation),
@@ -148,6 +165,7 @@ class FrontendUiRegressionGateService:
                 "npm run lint",
                 "npm run typecheck",
                 "npm run build",
+                "npm run ui:regression",
                 "python -m pytest tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py -q",
             ],
         }
@@ -204,8 +222,8 @@ class FrontendUiRegressionGateService:
                 "Run lint, typecheck, and build after every maintenance or model-ops UI change.",
             ]
         actions = [
-            "Keep npm run lint, npm run typecheck, and npm run build in the frontend release gate.",
-            "Add mocked /maintenance and /model-ops page regression tests for success, one-endpoint failure, and privacy-safe rendering.",
+            "Keep npm run lint, npm run typecheck, npm run build, and npm run ui:regression in the frontend release gate.",
+            "Add browser-level network mocking for /maintenance and /model-ops success, one-endpoint failure, and privacy-safe rendering.",
         ]
         if missing_automation:
             actions.append("Prioritize the missing UI automation targets before making broad public readiness claims.")

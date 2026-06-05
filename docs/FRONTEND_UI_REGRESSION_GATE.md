@@ -12,6 +12,7 @@ executable frontend commands for:
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run ui:regression`
 
 It also tracks which panels still need mocked page-level regression tests. The
 current gate does not claim that every UI state is automated. It records the gap
@@ -45,6 +46,7 @@ cd app/frontend
 npm run lint
 npm run typecheck
 npm run build
+npm run ui:regression
 ```
 
 Run this backend metadata gate test after changing the evidence contract:
@@ -59,6 +61,7 @@ python -m pytest tests/test_frontend_ui_regression_gate.py -q
 This gate does not:
 
 - run a live browser by itself
+- replace future browser-level network-mocked regression tests
 - prove public benchmark scores
 - prove production model routing health
 - return source code, raw browser storage, raw model output, credentials, or user
@@ -67,7 +70,9 @@ This gate does not:
 
 ## Next Automation Targets
 
-The next frontend testing layer should mock API responses and assert:
+The current `ui:regression` script is a dependency-free source-contract check.
+The next frontend testing layer should mock API responses in a browser and
+assert:
 
 - all evidence panels render on success
 - one failing maintenance endpoint shows the partial-load banner while other

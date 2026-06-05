@@ -124,6 +124,20 @@ class ReleaseReadinessService:
                 validation_command="npm run build",
             ),
             ReleaseCheck(
+                id="frontend-ui-regression",
+                title="Frontend UI regression script",
+                category="tests",
+                required=True,
+                owner="frontend",
+                evidence_paths=(
+                    "app/frontend/package.json",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                ),
+                validation_command="npm run ui:regression",
+            ),
+            ReleaseCheck(
                 id="secret-scan",
                 title="Secret and credential scan",
                 category="security",
@@ -1086,12 +1100,13 @@ class ReleaseReadinessService:
                 evidence_paths=(
                     "app/backend/services/frontend_ui_regression_gate.py",
                     "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/frontend/src/pages/ModelOpsPage.tsx",
                     "docs/FRONTEND_UI_REGRESSION_GATE.md",
                 ),
                 validation_command="python -m pytest tests/test_frontend_ui_regression_gate.py -q",
-                manual_note="This metadata-only gate tracks lint/typecheck/build coverage and missing mocked page-regression automation for /maintenance and /model-ops.",
+                manual_note="This metadata-only gate tracks lint/typecheck/build/static UI regression coverage and remaining browser-level network-mocking automation gaps for /maintenance and /model-ops.",
             ),
             ReleaseCheck(
                 id="case-workbench-persistence-plan",

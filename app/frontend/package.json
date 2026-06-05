@@ -5,6 +5,7 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "ui:regression": "node scripts/ui-regression.mjs",
     "lint": "eslint --quiet ./src",
     "preview": "vite preview",
     "postinstall": "echo 'Dependencies installed successfully'"

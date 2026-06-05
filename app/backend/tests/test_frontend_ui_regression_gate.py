@@ -10,9 +10,10 @@ def test_frontend_ui_regression_gate_detects_current_frontend_scripts():
     assert gate["summary"]["page_count"] == 2
     assert gate["summary"]["ready_command_gate_count"] == gate["summary"]["required_command_gate_count"]
     command_ids = {row["id"] for row in gate["command_gates"]}
-    assert {"frontend-lint", "frontend-typecheck", "frontend-build"}.issubset(command_ids)
+    assert {"frontend-lint", "frontend-typecheck", "frontend-build", "frontend-ui-regression"}.issubset(command_ids)
     assert all(row["script_present"] for row in gate["command_gates"])
     assert "npm run lint" in gate["validation_commands"]
+    assert "npm run ui:regression" in gate["validation_commands"]
 
 
 def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
@@ -26,7 +27,9 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
     assert rows["/maintenance"]["status"] == "ready_with_gaps"
     assert rows["/model-ops"]["status"] == "ready_with_gaps"
-    assert gate["summary"]["missing_page_automation_count"] >= 4
+    assert gate["summary"]["missing_page_automation_count"] == 2
+    assert "frontend-ui-regression" in rows["/maintenance"]["ready_cover"]
+    assert "frontend-ui-regression" in rows["/model-ops"]["ready_cover"]
 
 
 def test_frontend_ui_regression_gate_is_metadata_only():
