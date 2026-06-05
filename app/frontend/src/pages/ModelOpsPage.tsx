@@ -18,6 +18,7 @@ import {
   evaluateCheapFirstCalibration,
   evaluateGeminiVariantMatrix,
   evaluateModelGatewayProbe,
+  evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getModelGatewayProbeTemplate,
   getModelOps,
@@ -26,6 +27,7 @@ import {
   type GeminiVariantMatrix,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
+  type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
 
@@ -131,6 +133,15 @@ function defaultGeminiVariantMatrixPayload() {
   };
 }
 
+function defaultPerformanceObservationPayload() {
+  return {
+    observations: [
+      { metric: 'model-ops-first-load', duration_ms: 1800, budget_ms: 2500 },
+      { metric: 'model-ops-cache-hit', duration_ms: 420, budget_ms: 750 },
+    ],
+  };
+}
+
 function hasForbiddenCheapFirstPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -144,6 +155,15 @@ function hasForbiddenGeminiVariantPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
     /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email)\b/i.test(
+      value,
+    )
+  );
+}
+
+function hasForbiddenPerformancePayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email|legal[_ -]?text)\b/i.test(
       value,
     )
   );
@@ -174,6 +194,10 @@ function Inner() {
   const [geminiVariantPayloadText, setGeminiVariantPayloadText] = useState('');
   const [geminiVariantEvaluateLoading, setGeminiVariantEvaluateLoading] = useState(false);
   const [geminiVariantError, setGeminiVariantError] = useState('');
+  const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
+  const [performancePayloadText, setPerformancePayloadText] = useState('');
+  const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
+  const [performanceError, setPerformanceError] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -182,6 +206,8 @@ function Inner() {
     setCheapFirstCalibration(null);
     setGeminiVariantError('');
     setGeminiVariantMatrix(null);
+    setPerformanceError('');
+    setPerformanceBudget(null);
     try {
       const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
@@ -191,6 +217,7 @@ function Inner() {
       } else {
         setData(modelOpsResult.value);
         setProbeEvaluation(null);
+        setPerformanceBudget(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
@@ -313,10 +340,39 @@ function Inner() {
     }
   };
 
+  const loadPerformanceTemplate = () => {
+    setPerformancePayloadText(JSON.stringify(defaultPerformanceObservationPayload(), null, 2));
+    setPerformanceError('');
+  };
+
+  const evaluatePerformancePayload = async () => {
+    setPerformanceEvaluateLoading(true);
+    setPerformanceError('');
+    try {
+      if (hasForbiddenPerformancePayloadText(performancePayloadText)) {
+        setPerformanceError('Performance payload must not include keys, headers, prompts, emails, raw output, or legal text.');
+        return;
+      }
+      const payload = performancePayloadText.trim() ? JSON.parse(performancePayloadText) : {};
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setPerformanceError('Performance payload must be a JSON object.');
+        return;
+      }
+      const result = await evaluateModelOpsPerformanceBudget(payload as Record<string, unknown>);
+      setPerformanceBudget(result);
+    } catch (err) {
+      console.error(err);
+      setPerformanceError('Performance observations failed to evaluate.');
+    } finally {
+      setPerformanceEvaluateLoading(false);
+    }
+  };
+
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
-  const modelOpsPerformanceRows = data?.model_ops_performance_budget?.checks ?? [];
+  const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
+  const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -526,50 +582,56 @@ function Inner() {
           </section>
         )}
 
-        {data?.model_ops_performance_budget && (
+        {activePerformanceBudget && (
           <section className="mb-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-stone-950">ModelOps load guard</h2>
                 <div className="mt-1 text-sm text-stone-600">
-                  timeout {formatNumber(data.model_ops_performance_budget.summary.frontend_request_timeout_ms)}ms / cache{' '}
-                  {data.model_ops_performance_budget.summary.backend_cache_ttl_seconds}s /{' '}
-                  fetch first {data.model_ops_performance_budget.summary.same_origin_fetch_first ? 'on' : 'off'} /{' '}
-                  {data.model_ops_performance_budget.summary.warning_check_count} warning
+                  timeout {formatNumber(activePerformanceBudget.summary.frontend_total_timeout_ms)}ms / cache{' '}
+                  {activePerformanceBudget.summary.backend_cache_ttl_seconds}s / fetch first{' '}
+                  {activePerformanceBudget.summary.same_origin_fetch_first ? 'on' : 'off'} /{' '}
+                  {activePerformanceBudget.summary.slow_observation_count} slow observations
                 </div>
               </div>
-              <Badge variant="outline" className={statusClass(data.model_ops_performance_budget.status)}>
-                {data.model_ops_performance_budget.status}
+              <Badge variant="outline" className={statusClass(activePerformanceBudget.status)}>
+                {activePerformanceBudget.status}
               </Badge>
             </div>
-            <div className="mb-3 grid gap-3 md:grid-cols-5">
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {formatNumber(data.model_ops_performance_budget.summary.first_load_budget_ms)}ms
+                  {formatNumber(activePerformanceBudget.summary.first_load_budget_ms)}ms
                 </div>
                 <div className="mt-1 text-sm text-stone-600">first load budget</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {formatNumber(data.model_ops_performance_budget.summary.cache_hit_budget_ms)}ms
+                  {formatNumber(activePerformanceBudget.summary.cache_hit_budget_ms)}ms
                 </div>
                 <div className="mt-1 text-sm text-stone-600">cache-hit budget</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.model_ops_performance_budget.summary.models_payload_cache_enabled ? 'on' : 'off'}
+                  {activePerformanceBudget.summary.models_payload_cache_enabled ? 'on' : 'off'}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">backend cache</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.model_ops_performance_budget.summary.same_origin_fetch_first ? 'on' : 'off'}
+                  {activePerformanceBudget.summary.same_origin_fetch_first ? 'on' : 'off'}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">same-origin fetch first</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.model_ops_performance_budget.summary.duplicate_calibration_fetch_removed ? 'removed' : 'review'}
+                  {activePerformanceBudget.summary.fallback_after_timeout_disabled ? 'off' : 'review'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">timeout fallback</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activePerformanceBudget.summary.duplicate_calibration_fetch_removed ? 'removed' : 'review'}
                 </div>
                 <div className="mt-1 text-sm text-stone-600">duplicate calibration fetch</div>
               </div>
@@ -599,8 +661,94 @@ function Inner() {
               </Table>
             </div>
             <div className="mt-3 text-xs leading-5 text-stone-500">
-              raw payload echoed: {String(data.model_ops_performance_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
-              {String(data.model_ops_performance_budget.privacy_boundary.raw_model_output_included)}
+              raw payload echoed: {String(activePerformanceBudget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
+              {String(activePerformanceBudget.privacy_boundary.raw_model_output_included)}
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-stone-500">Performance observations</h3>
+                    <div className="mt-1 text-xs text-stone-600">Numeric timing rows only; no headers, keys, prompts, or legal text.</div>
+                  </div>
+                  <Button variant="outline" className="soft-button" onClick={loadPerformanceTemplate}>
+                    <ClipboardList className="h-4 w-4" />
+                    Template
+                  </Button>
+                </div>
+                {performanceError && (
+                  <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                    <AlertTriangle className="h-4 w-4" />
+                    {performanceError}
+                  </div>
+                )}
+                <Textarea
+                  value={performancePayloadText}
+                  onChange={(event) => setPerformancePayloadText(event.target.value)}
+                  placeholder='{"observations":[{"metric":"model-ops-first-load","duration_ms":1800,"budget_ms":2500}]}'
+                  className="min-h-[130px] font-mono text-xs"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    className="law-button"
+                    onClick={evaluatePerformancePayload}
+                    disabled={performanceEvaluateLoading}
+                  >
+                    {performanceEvaluateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                    Evaluate observations
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="soft-button"
+                    onClick={() => {
+                      setPerformancePayloadText('');
+                      setPerformanceError('');
+                      setPerformanceBudget(null);
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Observation review</h3>
+                <div className="mb-3 grid grid-cols-3 gap-2">
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="text-xl font-black text-stone-950">{activePerformanceBudget.summary.observation_count}</div>
+                    <div className="mt-1 text-[11px] text-stone-500">observations</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="text-xl font-black text-stone-950">{activePerformanceBudget.summary.slow_observation_count}</div>
+                    <div className="mt-1 text-[11px] text-stone-500">slow</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="text-xl font-black text-stone-950">
+                      {activePerformanceBudget.summary.slow_observation_failure_threshold}
+                    </div>
+                    <div className="mt-1 text-[11px] text-stone-500">fail threshold</div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {activePerformanceBudget.observations.map((row) => (
+                    <div key={`${row.metric}-${row.duration_ms}`} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-mono text-xs text-stone-950">{row.metric}</div>
+                        <Badge variant="outline" className={row.within_budget ? statusClass('pass') : statusClass('warn')}>
+                          {row.within_budget ? 'within budget' : 'slow'}
+                        </Badge>
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">
+                        {formatNumber(row.duration_ms)}ms / budget {formatNumber(row.budget_ms ?? 0)}ms
+                      </div>
+                    </div>
+                  ))}
+                  {activePerformanceBudget.observations.length === 0 && (
+                    <div className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs text-stone-600">
+                      Submit a sanitized observation payload to review first-load and cache-hit timings.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         )}

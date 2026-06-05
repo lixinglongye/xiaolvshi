@@ -223,6 +223,7 @@ async def list_models():
             "models_payload_cache_enabled": True,
             "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
             "same_origin_fetch_first": True,
+            "fallback_after_timeout_disabled": True,
             "duplicate_calibration_fetch_removed": True,
             "frontend_abort_controller_required": True,
         },
@@ -387,8 +388,30 @@ async def model_ops_performance_budget():
                 "models_payload_cache_enabled": True,
                 "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
                 "same_origin_fetch_first": True,
+                "fallback_after_timeout_disabled": True,
                 "duplicate_calibration_fetch_removed": True,
                 "frontend_abort_controller_required": True,
+            },
+            cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+        ),
+    }
+
+
+@router.post("/models/performance-budget")
+async def evaluate_model_ops_performance_budget(payload: dict[str, Any]):
+    """Evaluate sanitized ModelOps timing observations without echoing raw payloads."""
+    observations = payload.get("observations") if isinstance(payload, dict) else None
+    return {
+        "success": True,
+        "data": ModelOpsPerformanceBudgetService().build_budget(
+            {
+                "models_payload_cache_enabled": True,
+                "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+                "same_origin_fetch_first": True,
+                "fallback_after_timeout_disabled": True,
+                "duplicate_calibration_fetch_removed": True,
+                "frontend_abort_controller_required": True,
+                "observations": observations,
             },
             cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
         ),

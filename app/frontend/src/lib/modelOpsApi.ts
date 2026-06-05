@@ -3,6 +3,7 @@ import { client } from '@/lib/api';
 export type RoutingAliases = Record<string, string>;
 
 export const MODEL_OPS_API_TIMEOUT_MS = 25_000;
+export const MODEL_OPS_TOTAL_TIMEOUT_MS = 25_000;
 
 export type ModelCatalogItem = {
   id: string;
@@ -686,13 +687,17 @@ export type ModelOpsPerformanceBudget = {
     first_load_budget_ms: number;
     cache_hit_budget_ms: number;
     frontend_request_timeout_ms: number;
+    frontend_total_timeout_ms: number;
     backend_cache_ttl_seconds: number;
     models_payload_cache_enabled: boolean;
     same_origin_fetch_first: boolean;
+    fallback_after_timeout_disabled: boolean;
     duplicate_calibration_fetch_removed: boolean;
     frontend_abort_controller_required: boolean;
+    slow_observation_failure_threshold: number;
     raw_payload_echoed: boolean;
     observation_count: number;
+    slow_observation_count: number;
     blocking_check_count: number;
     warning_check_count: number;
   };
@@ -1571,13 +1576,19 @@ function hasModelOpsPayload(value: unknown): boolean {
 }
 
 function timeoutError(request: ApiRequest): Error {
-  return new Error(`Model ops API request timed out after ${MODEL_OPS_API_TIMEOUT_MS}ms: ${request.url}`);
+  const error = new Error(`Model ops API request timed out after ${MODEL_OPS_TOTAL_TIMEOUT_MS}ms: ${request.url}`);
+  error.name = 'ModelOpsTimeoutError';
+  return error;
+}
+
+function isModelOpsTimeoutError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'ModelOpsTimeoutError';
 }
 
 async function withModelOpsTimeout<T>(promise: Promise<T>, request: ApiRequest): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(timeoutError(request)), MODEL_OPS_API_TIMEOUT_MS);
+    timeoutId = setTimeout(() => reject(timeoutError(request)), MODEL_OPS_TOTAL_TIMEOUT_MS);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -1594,7 +1605,7 @@ async function fetchModelOpsApi<T>(request: ApiRequest): Promise<T> {
   }
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
   const timeoutId = controller
-    ? setTimeout(() => controller.abort(), MODEL_OPS_API_TIMEOUT_MS)
+    ? setTimeout(() => controller.abort(), MODEL_OPS_TOTAL_TIMEOUT_MS)
     : undefined;
   try {
     const response = await globalThis.fetch(request.url, {
@@ -1631,6 +1642,9 @@ async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
       return await fetchModelOpsApi<T>(request);
     } catch (err) {
       fetchError = err;
+      if (isModelOpsTimeoutError(err)) {
+        throw err;
+      }
     }
   }
 
@@ -1701,6 +1715,14 @@ export async function getModelOpsPerformanceBudget(): Promise<ModelOpsPerformanc
   return invokeModelOpsApi<ModelOpsPerformanceBudget>({
     url: '/api/v1/aihub/models/performance-budget',
     method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsPerformanceBudget(payload: Record<string, unknown>): Promise<ModelOpsPerformanceBudget> {
+  return invokeModelOpsApi<ModelOpsPerformanceBudget>({
+    url: '/api/v1/aihub/models/performance-budget',
+    method: 'POST',
+    data: payload,
   });
 }
 

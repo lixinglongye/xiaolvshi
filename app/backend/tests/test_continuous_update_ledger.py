@@ -170,6 +170,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-variant-review-form" in completed_ids
     assert "gemini-variant-model-list-ingestion" in completed_ids
     assert "modelops-load-performance-budget" in completed_ids
+    assert "modelops-performance-observation-review" in completed_ids
     assert "modelops-cheap-first-quality-budget" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
@@ -274,6 +275,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-variant-review-form" not in queue_ids
     assert "gemini-variant-model-list-ingestion" not in queue_ids
     assert "modelops-load-performance-budget" not in queue_ids
+    assert "modelops-performance-observation-review" not in queue_ids
     assert "modelops-cheap-first-quality-budget" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
@@ -359,8 +361,8 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert (
-        "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py -q && "
-        "cd ../frontend && npm run typecheck && npm run ui:regression"
+        "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]

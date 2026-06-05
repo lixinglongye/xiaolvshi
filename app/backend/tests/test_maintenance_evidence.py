@@ -49,6 +49,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini variant review form" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini model-list ingestion" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps load performance budget" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps performance observation review" in profile["release_management"]["release_readiness_controls"]
     assert "Cheap-first route quality budget" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry operations summary" in profile["release_management"]["release_readiness_controls"]
@@ -103,11 +104,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
     assert "sanitized gateway model-list ingestion" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
+    assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
     assert "sanitized ModelOps calibration review" in model_signal["description"]
     assert "sanitized review-form upkeep" in model_signal["responsibility"]
     assert "observed-model form upkeep" in model_signal["responsibility"]
     assert "public benchmark mapping review" in model_signal["responsibility"]
+    assert "ModelOps performance-observation review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths

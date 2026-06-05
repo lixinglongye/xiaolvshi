@@ -73,6 +73,7 @@ PAGE_GATES = (
         "protected_panels": (
             "cheap-first calibration",
             "ModelOps load guard",
+            "Performance observations",
             "Cheap-first quality budget",
             "selector replay",
             "route telemetry",

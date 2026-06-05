@@ -5,9 +5,11 @@ from typing import Any
 
 
 DEFAULT_MODEL_OPS_API_TIMEOUT_MS = 25_000
+DEFAULT_MODEL_OPS_TOTAL_TIMEOUT_MS = 25_000
 DEFAULT_MODEL_OPS_FIRST_LOAD_BUDGET_MS = 2_500
 DEFAULT_MODEL_OPS_CACHE_HIT_BUDGET_MS = 750
 DEFAULT_MODEL_OPS_CACHE_TTL_SECONDS = 10.0
+DEFAULT_SLOW_OBSERVATION_FAILURE_THRESHOLD = 3
 SENSITIVE_PATTERN = re.compile(
     r"(sk-[A-Za-z0-9]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|password|secret|api[_-]?key|token)",
     re.IGNORECASE,
@@ -37,11 +39,20 @@ class ModelOpsPerformanceBudgetService:
                 data.get("frontend_request_timeout_ms"),
                 DEFAULT_MODEL_OPS_API_TIMEOUT_MS,
             ),
+            "frontend_total_timeout_ms": self._safe_int(
+                data.get("frontend_total_timeout_ms"),
+                DEFAULT_MODEL_OPS_TOTAL_TIMEOUT_MS,
+            ),
             "backend_cache_ttl_seconds": self._safe_float(data.get("backend_cache_ttl_seconds"), cache_ttl_seconds),
             "models_payload_cache_enabled": bool(data.get("models_payload_cache_enabled", True)),
             "same_origin_fetch_first": bool(data.get("same_origin_fetch_first", True)),
+            "fallback_after_timeout_disabled": bool(data.get("fallback_after_timeout_disabled", True)),
             "duplicate_calibration_fetch_removed": bool(data.get("duplicate_calibration_fetch_removed", True)),
             "frontend_abort_controller_required": bool(data.get("frontend_abort_controller_required", True)),
+            "slow_observation_failure_threshold": self._safe_int(
+                data.get("slow_observation_failure_threshold"),
+                DEFAULT_SLOW_OBSERVATION_FAILURE_THRESHOLD,
+            ),
             "raw_payload_echoed": False,
         }
         observations = self._observations(data.get("observations"))
@@ -54,13 +65,14 @@ class ModelOpsPerformanceBudgetService:
                 "type": "model-ops-load-performance-budget",
                 "notes": [
                     "Tracks ModelOps page load controls for the heavyweight /api/v1/aihub/models payload.",
-                    "Requires same-origin fetch before SDK fallback, a frontend request timeout, short backend cache, and no duplicate cheap-first calibration fetch.",
+                    "Requires same-origin fetch before SDK fallback, one wall-clock timeout, short backend cache, and no duplicate cheap-first calibration fetch.",
                     "Accepts optional numeric timing observations only; it does not store prompts, documents, users, emails, keys, URLs, raw payloads, or model output.",
                 ],
             },
             "summary": {
                 **summary,
                 "observation_count": len(observations),
+                "slow_observation_count": sum(1 for row in observations if row["within_budget"] is False),
                 "blocking_check_count": len(blocking),
                 "warning_check_count": len(warnings),
             },
@@ -132,6 +144,17 @@ class ModelOpsPerformanceBudgetService:
                 else "Prefer same-origin fetch before SDK fallback so local loads do not wait for SDK timeouts.",
             },
             {
+                "id": "single-wall-clock-timeout",
+                "status": "pass"
+                if summary["frontend_total_timeout_ms"] <= summary["frontend_request_timeout_ms"]
+                and summary["fallback_after_timeout_disabled"]
+                else "warn",
+                "reason": "A fetch timeout ends the request instead of waiting for an additional SDK timeout."
+                if summary["frontend_total_timeout_ms"] <= summary["frontend_request_timeout_ms"]
+                and summary["fallback_after_timeout_disabled"]
+                else "Prevent timeout fallback from turning one slow request into multiple timeout windows.",
+            },
+            {
                 "id": "duplicate-calibration-fetch-removed",
                 "status": "pass" if summary["duplicate_calibration_fetch_removed"] else "warn",
                 "reason": "ModelOps reuses the cheap-first calibration already embedded in /models."
@@ -148,10 +171,15 @@ class ModelOpsPerformanceBudgetService:
         ]
         slow_observations = [row for row in observations if row["within_budget"] is False]
         if observations:
+            slow_status = (
+                "fail"
+                if len(slow_observations) >= summary["slow_observation_failure_threshold"]
+                else ("warn" if slow_observations else "pass")
+            )
             checks.append(
                 {
                     "id": "observed-load-within-budget",
-                    "status": "warn" if slow_observations else "pass",
+                    "status": slow_status,
                     "reason": f"{len(slow_observations)} submitted ModelOps timing observations exceed budget."
                     if slow_observations
                     else "Submitted ModelOps timing observations are within budget.",
