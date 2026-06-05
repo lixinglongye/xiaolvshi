@@ -1590,6 +1590,42 @@ export type LegalFixtureResponseNormalizer = {
   privacy_note: string;
 };
 
+export type LegalFixtureLocalRunReview = {
+  status: string;
+  release_decision: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    response_count: number;
+    normalized_observation_count: number;
+    redacted_response_count: number;
+    smoke_status: string;
+    smoke_score: number;
+    observed_fixture_count: number;
+    not_run_fixture_count: number;
+    escalation_required_count: number;
+    observed_request_count: number;
+    observed_cost_usd?: number | null;
+    evidence_bundle_status: string;
+    evidence_component_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+  };
+  normalizer_summary: LegalFixtureResponseNormalizer['summary'];
+  response_summaries: LegalFixtureResponseNormalizer['response_summaries'];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_note: string;
+};
+
 export type LegalFixtureRunReportRow = {
   fixture_id: string;
   title: string;
@@ -2166,6 +2202,11 @@ type LegalFixtureResponseNormalizerTemplateResponse = {
 type LegalFixtureResponseNormalizerResponse = {
   success: boolean;
   data: LegalFixtureResponseNormalizer;
+};
+
+type LegalFixtureLocalRunReviewResponse = {
+  success: boolean;
+  data: LegalFixtureLocalRunReview;
 };
 
 type LegalFixtureRunReportResponse = {
@@ -2760,10 +2801,36 @@ export type MaintenanceContinuousSessionReviewPacket = {
     timeline_completion_ready?: boolean;
     git_cadence_ready?: boolean;
     validation_events_ready?: boolean;
+    low_resource_fixture_review_status?: string;
+    low_resource_fixture_review_ready?: boolean;
+    low_resource_fixture_review_release_ready?: boolean;
+    low_resource_fixture_review_observed_count?: number;
+    low_resource_fixture_review_not_run_count?: number;
+    low_resource_fixture_review_redacted_count?: number;
+    low_resource_fixture_review_blocking_count?: number;
+    low_resource_fixture_review_warning_count?: number;
+    low_resource_fixture_review_blocked?: boolean;
+    low_resource_fixture_review_raw_payload_echoed?: boolean;
     packet_ready_for_support_claim?: boolean;
     blocker_count?: number;
     packet_hash?: string;
     raw_payload_echoed?: boolean;
+    [key: string]: unknown;
+  };
+  source_summaries?: {
+    low_resource_fixture_review?: {
+      status?: string;
+      release_ready?: boolean;
+      observed_fixture_count?: number;
+      not_run_fixture_count?: number;
+      redacted_response_count?: number;
+      blocking_check_count?: number;
+      warning_check_count?: number;
+      raw_payload_echoed?: boolean;
+      raw_gateway_response_included?: boolean;
+      raw_model_output_included?: boolean;
+      [key: string]: unknown;
+    };
     [key: string]: unknown;
   };
   packet_sections: MaintenanceContinuousSessionReviewPacketSection[];
@@ -3463,6 +3530,19 @@ export async function normalizeLegalFixtureResponse(payload: Record<string, unkn
     return response.data;
   }
   return response as LegalFixtureResponseNormalizer;
+}
+
+export async function reviewLegalFixtureLocalRun(payload: Record<string, unknown>): Promise<LegalFixtureLocalRunReview> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/local-run-review',
+    method: 'POST',
+    data: payload,
+  });
+  const response = (resp?.data ?? resp) as LegalFixtureLocalRunReviewResponse | LegalFixtureLocalRunReview;
+  if ('success' in response && 'data' in response) {
+    return response.data;
+  }
+  return response as LegalFixtureLocalRunReview;
 }
 
 export async function getLegalFixtureRunReport(): Promise<LegalFixtureRunReport> {

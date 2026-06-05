@@ -57,6 +57,11 @@ packet. Valid submitted metadata may include:
 - `blockers`: short reviewer-safe blockers.
 - `review_questions`: short questions that a reviewer still needs answered.
 - `privacy_boundary`: the active metadata-only boundary used for the packet.
+- `low_resource_fixture_review`: optional payload with one or more local
+  gateway fixture responses. The packet runs the same deterministic
+  `/legal-review-benchmark/local-run-review` normalization and keeps only
+  status, counts, check ids, redaction counts, release-decision labels, and
+  safe evidence boundaries.
 
 The endpoint may reference command labels such as `pytest`, `rg`, `npm run
 typecheck`, `git diff --check`, `credential-scan`, or
@@ -74,6 +79,9 @@ The packet should keep source sections separate:
   maximum observed gap, and commit-cadence readiness.
 - `validation_event_evidence`: metadata-only rows for non-git test,
   credential-scan, push, review/release-review, and legal-fixture events.
+- `low_resource_fixture_review`: optional local-run-review status, observed
+  fixture count, not-run count, warning/blocking counts, redaction count, and
+  raw-output exclusion flags.
 - `review_questions`: human-readable questions for support or reviewer follow
   up.
 - `privacy_boundary`: explicit exclusions and the allowed metadata fields.
@@ -99,6 +107,16 @@ The review packet outputs metadata only. Allowed packet fields include:
 - review questions,
 - reviewer-safe summaries, and
 - the privacy boundary.
+
+For `low_resource_fixture_review`, the packet may expose:
+
+- `low_resource_fixture_review_status`,
+- observed and not-run fixture counts,
+- warning and blocking check counts,
+- redacted response count,
+- safe check ids and status counts, and
+- flags proving that raw gateway responses, raw fixture payloads, and raw model
+  outputs were not included.
 
 The packet must not store or return:
 
@@ -135,7 +153,10 @@ The packet may set a ready status only when all of these are true:
 4. The window includes validation evidence for relevant non-commit activity,
    such as tests, credential scans, pushes, review/release-review actions, or
    legal fixture checks.
-5. Privacy screening confirms that the packet contains metadata only.
+5. If `low_resource_fixture_review` is supplied, it has at least one normalized
+   fixture observation and is not failed; one- or two-fixture runs may remain
+   review evidence rather than release-ready evidence.
+6. Privacy screening confirms that the packet contains metadata only.
 
 Current reviewer stance: repository evidence supports the 100+ update volume,
 but the 24-hour continuous session remains unproven unless real timestamped

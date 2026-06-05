@@ -51,6 +51,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]
+    assert "Continuous session low-resource fixture review" in profile["release_management"]["release_readiness_controls"]
     assert "Git history cadence evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Validation event evidence normalizer" in profile["release_management"]["release_readiness_controls"]
     assert "app/backend/routers/generated_documents.py" in evidence_paths
@@ -109,11 +110,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/CONTINUOUS_SESSION_RUN_MONITOR.md" in evidence_paths
     assert "app/backend/services/continuous_session_review_packet.py" in evidence_paths
     assert "app/backend/tests/test_continuous_session_review_packet.py" in evidence_paths
+    assert "app/backend/services/legal_fixture_local_run_review.py" in evidence_paths
     assert "app/backend/services/git_history_evidence.py" in evidence_paths
     assert "app/backend/tests/test_git_history_evidence.py" in evidence_paths
     assert "app/backend/services/validation_event_evidence.py" in evidence_paths
     assert "app/backend/tests/test_validation_event_evidence.py" in evidence_paths
     assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
+    assert "app/frontend/scripts/ui-regression.mjs" in evidence_paths
     assert any("real provider settlement" in guardrail for guardrail in profile["application_guardrails"])
     assert any("automatic deep-review report binding" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove completion" in guardrail for guardrail in profile["application_guardrails"])

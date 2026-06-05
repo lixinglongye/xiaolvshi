@@ -2,6 +2,7 @@ import json
 import re
 
 from services.continuous_session_review_packet import ContinuousSessionReviewPacketService
+from services.legal_review_benchmark import LegalReviewBenchmarkService
 
 
 SENSITIVE_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}|password|secret|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")
@@ -72,6 +73,48 @@ def _reviewable_payload():
     }
 
 
+def _fixture_payload(fixture_id: str, route: str, text: str) -> dict:
+    return {
+        "phase": "cheap_first",
+        "model": "gemini-2.5-flash-lite",
+        "http_status": 200,
+        "latency_ms": 800,
+        "estimated_cost_usd": 0.0002,
+        "gateway_response": {
+            "model": "gemini-2.5-flash-lite",
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "fixture_id": fixture_id,
+                                "route": route,
+                                "output_text": text,
+                                "release_decision": "pass",
+                            },
+                            ensure_ascii=False,
+                        )
+                    }
+                }
+            ],
+        },
+    }
+
+
+def _passing_fixture_review_payload() -> dict:
+    fixtures = LegalReviewBenchmarkService().build_fixture_smoke_template()["fixtures"]
+    return {
+        "responses": {
+            fixture["id"]: _fixture_payload(
+                fixture["id"],
+                fixture["expected_routes"][0],
+                " ".join([*fixture["expected_signals"], *fixture["expected_tasks"]]),
+            )
+            for fixture in fixtures
+        }
+    }
+
+
 def test_review_packet_defaults_to_collecting_without_claiming_completion():
     packet = ContinuousSessionReviewPacketService().build_packet()
 
@@ -105,6 +148,52 @@ def test_review_packet_accepts_complete_metadata_without_raw_payload():
     assert all(section["status"] == "pass" for section in packet["packet_sections"])
     assert packet["blockers"] == []
     assert any("timestamped events" in question for question in packet["reviewer_questions"])
+
+
+def test_review_packet_summarizes_low_resource_fixture_review_without_raw_output():
+    payload = _reviewable_payload()
+    payload["low_resource_fixture_review"] = _passing_fixture_review_payload()
+    packet = ContinuousSessionReviewPacketService().build_packet(payload)
+    serialized = json.dumps(packet, ensure_ascii=False)
+
+    assert packet["status"] == "ready_for_review"
+    assert packet["summary"]["low_resource_fixture_review_status"] == "ready"
+    assert packet["summary"]["low_resource_fixture_review_ready"] is True
+    assert packet["summary"]["low_resource_fixture_review_release_ready"] is True
+    assert packet["summary"]["low_resource_fixture_review_observed_count"] == 4
+    assert packet["summary"]["low_resource_fixture_review_raw_payload_echoed"] is False
+    assert packet["source_summaries"]["low_resource_fixture_review"]["raw_gateway_response_included"] is False
+    assert packet["source_summaries"]["low_resource_fixture_review"]["check_status_counts"]["pass"] >= 5
+    assert packet["privacy_boundary"]["raw_gateway_response_included"] is False
+    assert "run_report_payload" not in serialized
+    assert "output_text" not in serialized
+    assert "choices" not in serialized
+
+
+def test_review_packet_blocks_failed_fixture_review_without_echoing_secret():
+    secret = "s" + "k-" + ("C" * 24)
+    packet = ContinuousSessionReviewPacketService().build_packet(
+        {
+            **_reviewable_payload(),
+            "low_resource_fixture_review": {
+                "fixture_id": "fixture-service-agreement-small",
+                "model": "gemini-2.5-flash-lite",
+                "gateway_response": {"choices": [{"message": {}}]},
+                "http_status": 200,
+                "note": f"{secret} raw fixture output should not appear",
+            },
+        }
+    )
+    serialized = json.dumps(packet, ensure_ascii=False)
+
+    assert packet["status"] == "collecting"
+    assert packet["summary"]["low_resource_fixture_review_status"] == "fail"
+    assert packet["summary"]["low_resource_fixture_review_ready"] is False
+    assert packet["summary"]["low_resource_fixture_review_blocked"] is True
+    assert packet["summary"]["packet_ready_for_support_claim"] is False
+    assert any(blocker["id"] == "low-resource-legal-fixture-not-ready" for blocker in packet["blockers"])
+    assert secret not in serialized
+    assert "raw fixture output should not appear" not in serialized
 
 
 def test_review_packet_keeps_sensitive_payload_out_of_output():
@@ -157,10 +246,11 @@ def test_review_packet_route_returns_template_and_packet():
 
     response = client.post(
         "/api/v1/maintenance/continuous-session-review-packet",
-        json=_reviewable_payload(),
+        json={**_reviewable_payload(), "low_resource_fixture_review": _passing_fixture_review_payload()},
     )
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["status"] == "ready_for_review"
+    assert payload["data"]["summary"]["low_resource_fixture_review_observed_count"] == 4

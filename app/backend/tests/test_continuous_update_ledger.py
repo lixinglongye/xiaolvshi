@@ -72,6 +72,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "git-history-cadence-evidence" in completed_ids
     assert "validation-event-evidence-normalizer" in completed_ids
     assert "continuous-session-review-packet" in completed_ids
+    assert "continuous-session-low-resource-fixture-review" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
@@ -152,6 +153,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "git-history-cadence-evidence" not in queue_ids
     assert "validation-event-evidence-normalizer" not in queue_ids
     assert "continuous-session-review-packet" not in queue_ids
+    assert "continuous-session-low-resource-fixture-review" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
@@ -209,6 +211,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "python -m pytest tests/test_continuous_session_timeline.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_continuous_session_run_monitor.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_continuous_session_review_packet.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_continuous_session_review_packet.py "
+        "tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_git_history_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]
     assert (

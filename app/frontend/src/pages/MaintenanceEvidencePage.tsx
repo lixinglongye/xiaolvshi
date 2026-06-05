@@ -64,6 +64,7 @@ import {
   getUserNeedBenchmarkCoverage,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
+  reviewLegalFixtureLocalRun,
   type CaseIntakeCompleteness,
   type CaseTaskNotificationPolicy,
   type CaseTimelineDeadlineRisk,
@@ -85,6 +86,7 @@ import {
   type LegalFixtureModelMatrix,
   type LegalFixturePromptPack,
   type LegalFixtureLocalRunPackage,
+  type LegalFixtureLocalRunReview,
   type LegalFixtureResponseNormalizer,
   type LegalFixtureResultArchive,
   type LegalFixtureRunPlan,
@@ -361,6 +363,7 @@ function Inner() {
   const [legalDocumentBenchmarkCoverage, setLegalDocumentBenchmarkCoverage] =
     useState<LegalDocumentBenchmarkCoverage | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
+  const [fixtureLocalRunReview, setFixtureLocalRunReview] = useState<LegalFixtureLocalRunReview | null>(null);
   const [normalizerPayloadText, setNormalizerPayloadText] = useState('');
   const [normalizerError, setNormalizerError] = useState('');
   const [normalizerLoading, setNormalizerLoading] = useState(false);
@@ -754,6 +757,24 @@ function Inner() {
         { label: 'validation', value: continuousSessionReviewPacket.summary.validation_events_ready },
       ]
     : [];
+  const lowResourceFixtureReviewSummary =
+    continuousSessionReviewPacket?.source_summaries?.low_resource_fixture_review ?? null;
+  const lowResourceFixtureReviewStatus =
+    continuousSessionReviewPacket?.summary.low_resource_fixture_review_status ??
+    lowResourceFixtureReviewSummary?.status ??
+    'not_supplied';
+  const lowResourceFixtureReviewObserved =
+    continuousSessionReviewPacket?.summary.low_resource_fixture_review_observed_count ??
+    lowResourceFixtureReviewSummary?.observed_fixture_count ??
+    0;
+  const lowResourceFixtureReviewNotRun =
+    continuousSessionReviewPacket?.summary.low_resource_fixture_review_not_run_count ??
+    lowResourceFixtureReviewSummary?.not_run_fixture_count ??
+    0;
+  const lowResourceFixtureReviewRedacted =
+    continuousSessionReviewPacket?.summary.low_resource_fixture_review_redacted_count ??
+    lowResourceFixtureReviewSummary?.redacted_response_count ??
+    0;
   const runMonitorReadyEvidenceCount =
     continuousSessionRunMonitor?.summary.required_evidence_ready_count ??
     continuousSessionRunMonitor?.required_evidence.filter((item) => item.status === 'ready').length ??
@@ -842,7 +863,12 @@ function Inner() {
               },
             };
       setNormalizerPayloadText(JSON.stringify(payload, null, 2));
-      setFixtureResponseNormalizer(await normalizeLegalFixtureResponse(payload));
+      const [normalized, review] = await Promise.all([
+        normalizeLegalFixtureResponse(payload),
+        reviewLegalFixtureLocalRun(payload),
+      ]);
+      setFixtureResponseNormalizer(normalized);
+      setFixtureLocalRunReview(review);
     } catch (err) {
       console.error(err);
       setFixtureReviewError(err instanceof SyntaxError ? 'Local review payload is not valid JSON.' : 'Local fixture review failed.');
@@ -861,6 +887,7 @@ function Inner() {
         return;
       }
       setFixtureResponseNormalizer(await normalizeLegalFixtureResponse(payload as Record<string, unknown>));
+      setFixtureLocalRunReview(null);
     } catch (err) {
       console.error(err);
       setNormalizerError(err instanceof SyntaxError ? 'Normalizer payload is not valid JSON.' : 'Response normalization failed.');
@@ -1366,7 +1393,7 @@ function Inner() {
                 </div>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
                 <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
                   <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Blockers</h3>
                   {continuousSessionReviewPacket.blockers.length > 0 ? (
@@ -1386,6 +1413,49 @@ function Inner() {
                   ) : (
                     <div className="text-sm text-stone-600">No packet blockers reported.</div>
                   )}
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Low-resource fixture review</h3>
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[lowResourceFixtureReviewStatus] ?? statusClass.review_recommended}
+                    >
+                      {displayToken(lowResourceFixtureReviewStatus)}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={
+                        statusClass[
+                          readinessStatus(
+                            continuousSessionReviewPacket.summary.low_resource_fixture_review_blocked === false,
+                          )
+                        ] ?? statusClass.warn
+                      }
+                    >
+                      fixture packet boundary
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <div className="text-lg font-black text-stone-950">{lowResourceFixtureReviewObserved}</div>
+                      <div className="font-semibold uppercase text-stone-500">observed</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-black text-stone-950">{lowResourceFixtureReviewNotRun}</div>
+                      <div className="font-semibold uppercase text-stone-500">not run</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-black text-stone-950">{lowResourceFixtureReviewRedacted}</div>
+                      <div className="font-semibold uppercase text-stone-500">redacted</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                    <div>raw fixture payload echoed: false</div>
+                    <div>raw gateway responses included: false</div>
+                    <div>raw model outputs included: false</div>
+                  </div>
                 </div>
 
                 <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
@@ -5056,6 +5126,67 @@ function Inner() {
                   <div className="mt-2 text-xs leading-5 text-stone-500">
                     Full normalizer payloads with a top-level responses object are accepted as pasted JSON.
                   </div>
+                  {fixtureLocalRunReview && (
+                    <div className="mt-3 rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-black uppercase text-stone-500">Local run review status</h4>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">
+                            Safe summary only; raw gateway responses, prompts, headers, and model outputs are not rendered.
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge
+                            variant="outline"
+                            className={statusClass[fixtureLocalRunReview.status] ?? statusClass.review_recommended}
+                          >
+                            {displayToken(fixtureLocalRunReview.status)}
+                          </Badge>
+                          <Badge variant="outline" className="bg-[#fbfaf6]">
+                            {displayToken(fixtureLocalRunReview.release_decision)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                        <div>
+                          <div className="text-lg font-black text-stone-950">
+                            {fixtureLocalRunReview.summary.normalized_observation_count}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase text-stone-500">observations</div>
+                        </div>
+                        <div>
+                          <div className="text-lg font-black text-stone-950">
+                            {fixtureLocalRunReview.summary.not_run_fixture_count}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase text-stone-500">not run</div>
+                        </div>
+                        <div>
+                          <div className="text-lg font-black text-stone-950">
+                            {fixtureLocalRunReview.summary.redacted_response_count}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase text-stone-500">redacted</div>
+                        </div>
+                        <div>
+                          <div className="text-lg font-black text-stone-950">
+                            {fixtureLocalRunReview.summary.blocking_check_count}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase text-stone-500">blocking checks</div>
+                        </div>
+                        <div>
+                          <div className="text-lg font-black text-stone-950">
+                            {fixtureLocalRunReview.summary.warning_check_count}
+                          </div>
+                          <div className="text-[11px] font-semibold uppercase text-stone-500">warnings</div>
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold uppercase text-stone-500">evidence bundle status</div>
+                          <div className="mt-1 font-mono text-xs text-stone-700">
+                            {fixtureLocalRunReview.summary.evidence_bundle_status}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
