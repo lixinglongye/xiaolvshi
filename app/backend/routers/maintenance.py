@@ -72,6 +72,7 @@ from services.maintenance_evidence import MaintenanceEvidenceService
 from services.maintenance_heartbeat_evidence import MaintenanceHeartbeatEvidenceService
 from services.matter_audit_retention_policy import MatterAuditRetentionPolicyService
 from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
+from services.model_route_legal_benchmark_risk_queue import ModelRouteLegalBenchmarkRiskQueueService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
@@ -1064,6 +1065,15 @@ async def get_legal_benchmark_research_refresh():
 async def get_legal_review_benchmark_research_refresh():
     """Return refreshed legal benchmark research under the benchmark namespace."""
     return _build_legal_benchmark_research_refresh_response()
+
+
+@router.get("/model-route-legal-benchmark-risk-queue")
+async def get_model_route_legal_benchmark_risk_queue():
+    """Return cheap-first model route risks joined to legal benchmark evidence."""
+    return {
+        "success": True,
+        "data": ModelRouteLegalBenchmarkRiskQueueService().build_queue(),
+    }
 
 
 @router.get("/legal-review-benchmark/public-sampler")

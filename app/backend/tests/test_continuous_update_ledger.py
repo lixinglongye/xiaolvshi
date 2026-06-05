@@ -256,6 +256,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-coverage-claim-policy" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-refresh" in completed_ids
+    assert "model-route-legal-benchmark-risk-queue" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
@@ -332,6 +333,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-coverage-claim-policy" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-refresh" not in queue_ids
+    assert "model-route-legal-benchmark-risk-queue" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
@@ -418,6 +420,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py "
+        "tests/test_gemini_newapi_cheap_first_calibration.py tests/test_user_need_benchmark_coverage.py "
+        "tests/test_legal_benchmark_research_refresh.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
     assert (
         "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py "
@@ -488,6 +496,21 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "external legal text" in refresh_entry["impact"]
     assert "model calls" in refresh_entry["impact"]
     assert "credentials" in refresh_entry["impact"]
+    route_queue_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-route-legal-benchmark-risk-queue"
+    )
+    assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in route_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_route_legal_benchmark_risk_queue.py" in route_queue_entry["evidence_paths"]
+    assert "docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md" in route_queue_entry["evidence_paths"]
+    assert "model-route-legal-benchmark-risk-queue" in route_queue_entry["release_gate_links"]
+    assert "cheap-first Gemini/NewAPI calibration" in route_queue_entry["impact"]
+    assert "legal benchmark refresh" in route_queue_entry["impact"]
+    assert "user-need coverage" in route_queue_entry["impact"]
+    assert "without gateway calls" in route_queue_entry["impact"]
+    assert "dataset downloads" in route_queue_entry["impact"]
+    assert "public benchmark scores" in route_queue_entry["impact"]
+    assert "raw legal text" in route_queue_entry["impact"]
+    assert "credentials" in route_queue_entry["impact"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

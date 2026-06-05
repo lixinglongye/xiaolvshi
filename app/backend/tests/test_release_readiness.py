@@ -490,6 +490,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
+        "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
     }
@@ -543,5 +544,14 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
     assert "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
+    assert "metadata-only risk queue evidence" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "does not call gateways" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "download datasets" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "public benchmark scores" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "raw legal text" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "credentials" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
+    assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
+    assert "app/backend/tests/test_model_route_legal_benchmark_risk_queue.py" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
+    assert "docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md" in checks["model-route-legal-benchmark-risk-queue"]["evidence_paths"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

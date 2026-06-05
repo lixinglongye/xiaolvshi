@@ -9,6 +9,12 @@ metadata-only refresh evidence for LegalBench, LexGLUE, COLIEE, and adoption
 bridge mappings. It does not download datasets, claim public benchmark scores,
 store external legal text, call models, or handle credentials.
 
+Additional optional evidence: `model-route-legal-benchmark-risk-queue` records
+metadata-only cheap-first model-route review against legal benchmark refresh and
+user-need coverage. It does not call gateways, write model defaults, download
+datasets, claim public benchmark scores, store raw legal text, or handle
+credentials.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -193,6 +199,9 @@ benchmark scores, live NewAPI calls, or external ecosystem importance.
 The legal benchmark research refresh is optional quality evidence. It must not
 imply dataset downloads, external legal text validation, public benchmark
 scores, model calls, credentials, or external adoption.
+The model route legal benchmark risk queue is optional model-ops evidence. It
+must not imply gateway execution, automatic default changes, public benchmark
+performance, legal advice, raw legal-text handling, or credential handling.
 The Gemini/NewAPI selector checks are required release controls. The continuous
 session run monitor and adoption research bridge are optional release evidence.
 None of these checks claim
@@ -228,6 +237,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/models/legal_source_index_entries.py`
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/continuous_session_run_monitor.py`
+- `app/backend/services/model_route_legal_benchmark_risk_queue.py`
 - `app/backend/services/legal_benchmark_research_refresh.py`
 - `app/backend/services/legal_adoption_research_bridge.py`
 - `app/backend/services/billing_entitlement_gap.py`
@@ -287,6 +297,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
+- `app/backend/tests/test_model_route_legal_benchmark_risk_queue.py`
 - `app/backend/tests/test_legal_benchmark_research_refresh.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
 - `app/backend/tests/test_billing_usage_router.py`
@@ -362,6 +373,7 @@ approver identity, apply the change, or shift traffic.
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
+- `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`
 - `docs/LEGAL_SOURCE_INGESTION_METADATA.md`

@@ -47,6 +47,7 @@ import {
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
   getLegalBenchmarkResearchRefresh,
+  getModelRouteLegalBenchmarkRiskQueue,
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
   getMaintenanceContinuousSessionTimeline,
@@ -113,6 +114,7 @@ import {
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
+  type ModelRouteLegalBenchmarkRiskQueue,
   type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
   type ReleaseReadinessResult,
@@ -357,6 +359,8 @@ function Inner() {
     useState<LegalBenchmarkResearchRegistry | null>(null);
   const [legalBenchmarkResearchRefresh, setLegalBenchmarkResearchRefresh] =
     useState<LegalBenchmarkResearchRefresh | null>(null);
+  const [modelRouteLegalBenchmarkRiskQueue, setModelRouteLegalBenchmarkRiskQueue] =
+    useState<ModelRouteLegalBenchmarkRiskQueue | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -554,6 +558,11 @@ function Inner() {
           label: 'Legal benchmark research refresh',
           run: getLegalBenchmarkResearchRefresh,
           apply: (value) => setLegalBenchmarkResearchRefresh(value as LegalBenchmarkResearchRefresh),
+        },
+        {
+          label: 'Model route legal benchmark risk queue',
+          run: getModelRouteLegalBenchmarkRiskQueue,
+          apply: (value) => setModelRouteLegalBenchmarkRiskQueue(value as ModelRouteLegalBenchmarkRiskQueue),
         },
         {
           label: 'Legal public benchmark sampler',
@@ -4387,6 +4396,365 @@ function Inner() {
                         {command}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelRouteLegalBenchmarkRiskQueue && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Model route legal benchmark risk queue
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Compact cheap-first/legal benchmark/user-need risk queue for reviewer routing decisions.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[modelRouteLegalBenchmarkRiskQueue.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(modelRouteLegalBenchmarkRiskQueue.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    {
+                      label: 'queue rows',
+                      value:
+                        modelRouteLegalBenchmarkRiskQueue.summary.queue_row_count ??
+                        modelRouteLegalBenchmarkRiskQueue.queue_rows.length,
+                    },
+                    {
+                      label: 'high risk',
+                      value:
+                        modelRouteLegalBenchmarkRiskQueue.summary.watch_count ??
+                        modelRouteLegalBenchmarkRiskQueue.summary.high_risk_count ??
+                        0,
+                    },
+                    {
+                      label: 'cheap-first allowed',
+                      value:
+                        modelRouteLegalBenchmarkRiskQueue.summary.cheap_first_allowed_count ??
+                        modelRouteLegalBenchmarkRiskQueue.summary.cheap_first_risk_count ??
+                        0,
+                    },
+                    {
+                      label: 'premium exceptions',
+                      value:
+                        modelRouteLegalBenchmarkRiskQueue.summary.premium_exception_count ??
+                        modelRouteLegalBenchmarkRiskQueue.summary.legal_benchmark_gap_count ??
+                        0,
+                    },
+                    {
+                      label: 'license watches',
+                      value:
+                        modelRouteLegalBenchmarkRiskQueue.summary.benchmark_license_watch_count ??
+                        modelRouteLegalBenchmarkRiskQueue.summary.user_need_gap_count ??
+                        0,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Route</TableHead>
+                          <TableHead>Risk</TableHead>
+                          <TableHead>Legal benchmark</TableHead>
+                          <TableHead>User needs</TableHead>
+                          <TableHead>Reviewer action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {modelRouteLegalBenchmarkRiskQueue.queue_rows.slice(0, 6).map((row, index) => {
+                          const rowKey = row.id ?? row.route_id ?? row.route ?? row.route_name ?? `risk-row-${index}`;
+                          const routeLabel =
+                            row.task ??
+                            row.task_id ??
+                            row.route_name ??
+                            row.route ??
+                            row.route_id ??
+                            row.canonical_model ??
+                            row.selected_model ??
+                            row.model ??
+                            row.model_id ??
+                            '-';
+                          const riskStatus = row.risk_status ?? row.status ?? row.risk_level ?? 'review_required';
+                          const cheapFirstStatus =
+                            row.cheap_first_status ??
+                            row.cheap_first_decision ??
+                            row.cheap_first_gate ??
+                            row.calibration_decision ??
+                            'review_required';
+                          const benchmarkStatus =
+                            row.legal_benchmark_status ??
+                            row.benchmark_status ??
+                            row.public_benchmark_statuses?.[0] ??
+                            'review_required';
+                          const userNeedStatus =
+                            row.user_need_status ??
+                            row.coverage_status ??
+                            row.coverage_statuses?.[0] ??
+                            'review_required';
+                          const benchmarkIds =
+                            row.research_source_ids ??
+                            row.legal_benchmark_case_ids ??
+                            row.benchmark_case_ids ??
+                            row.linked_benchmark_case_ids ??
+                            [];
+                          const userNeedIds = row.user_need_ids ?? row.linked_user_need_ids ?? [];
+                          const reasons = row.reason_codes ?? row.gap_reasons ?? row.risk_reasons ?? [];
+                          const actions =
+                            row.next_actions ??
+                            (row.next_action ? [row.next_action] : row.recommended_action ? [row.recommended_action] : []);
+                          const commands =
+                            row.validation_commands ?? (row.validation_command ? [row.validation_command] : []);
+                          return (
+                            <TableRow key={rowKey}>
+                              <TableCell className="max-w-[280px]">
+                                <div className="font-semibold text-stone-950">{routeLabel}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                  {row.task_id ?? row.route_id ?? row.id ?? '-'}
+                                </div>
+                                <div className="mt-2 text-xs text-stone-600">
+                                  {displayToken(row.task_family ?? row.product_area ?? 'model_route')}
+                                </div>
+                                <div className="mt-1 text-xs text-stone-500">
+                                  model {formatInline(row.canonical_model ?? row.selected_model ?? row.cost_tier ?? '-')}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={statusClass[riskStatus] ?? statusClass.warn}>
+                                  {displayToken(riskStatus)}
+                                </Badge>
+                                <div className="mt-2 text-xs leading-5 text-stone-600">
+                                  cheap-first {displayToken(cheapFirstStatus)}
+                                  {row.priority !== undefined ? ` / priority ${row.priority}` : ''}
+                                </div>
+                                <div className="text-xs leading-5 text-stone-500">
+                                  premium exception {String(row.premium_exception_required ?? false)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[benchmarkStatus] ?? statusClass.review_required}
+                                >
+                                  {displayToken(benchmarkStatus)}
+                                </Badge>
+                                <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                  {benchmarkIds.join(', ') || '-'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[userNeedStatus] ?? statusClass.review_required}
+                                >
+                                  {displayToken(userNeedStatus)}
+                                </Badge>
+                                <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                  {userNeedIds.join(', ') || '-'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                <div>{actions[0] ?? reasons[0] ?? 'Review route against legal benchmark coverage.'}</div>
+                                <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                  {commands[0] ?? 'metadata-only validation'}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Routing policy</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        cheap-first default:{' '}
+                        {formatInline(
+                          modelRouteLegalBenchmarkRiskQueue.routing_policy.cheap_first_default ??
+                            modelRouteLegalBenchmarkRiskQueue.routing_policy.default_route ??
+                            modelRouteLegalBenchmarkRiskQueue.routing_policy.cheap_model_start ??
+                            'review_required',
+                        )}
+                      </div>
+                      <div>
+                        default strategy:{' '}
+                        {formatInline(modelRouteLegalBenchmarkRiskQueue.routing_policy.default_strategy ?? 'cheap_first')}
+                      </div>
+                      <div>
+                        legal benchmark gate:{' '}
+                        {formatInline(
+                          modelRouteLegalBenchmarkRiskQueue.routing_policy.legal_benchmark_gate ??
+                            modelRouteLegalBenchmarkRiskQueue.summary.benchmark_license_watch_count ??
+                            'metadata_required',
+                        )}
+                      </div>
+                      <div>
+                        user-need gate:{' '}
+                        {formatInline(
+                          modelRouteLegalBenchmarkRiskQueue.routing_policy.user_need_gate ??
+                            modelRouteLegalBenchmarkRiskQueue.summary.user_need_gap_count ??
+                            'coverage_required',
+                        )}
+                      </div>
+                      <div>
+                        local validation first:{' '}
+                        {String(modelRouteLegalBenchmarkRiskQueue.routing_policy.local_validation_first ?? true)}
+                      </div>
+                      <div>
+                        network:{' '}
+                        {formatInline(
+                          modelRouteLegalBenchmarkRiskQueue.summary.network_access ??
+                            modelRouteLegalBenchmarkRiskQueue.summary.network_called ??
+                            modelRouteLegalBenchmarkRiskQueue.privacy_boundary.network_called ??
+                            modelRouteLegalBenchmarkRiskQueue.privacy_boundary.network_access ??
+                            'local_only',
+                        )}
+                      </div>
+                      <div>
+                        model calls:{' '}
+                        {formatInline(
+                          modelRouteLegalBenchmarkRiskQueue.summary.model_calls ??
+                            modelRouteLegalBenchmarkRiskQueue.summary.newapi_called ??
+                            modelRouteLegalBenchmarkRiskQueue.privacy_boundary.newapi_called ??
+                            modelRouteLegalBenchmarkRiskQueue.privacy_boundary.model_calls ??
+                            'none',
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        automatic routing change claimed:{' '}
+                        {String(
+                          modelRouteLegalBenchmarkRiskQueue.claim_boundary.automatic_routing_change_claimed ??
+                            modelRouteLegalBenchmarkRiskQueue.claim_boundary.cheap_first_default_change_claimed ??
+                            modelRouteLegalBenchmarkRiskQueue.claim_boundary.default_model_changed ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        public benchmark scores claimed:{' '}
+                        {String(
+                          modelRouteLegalBenchmarkRiskQueue.claim_boundary.public_benchmark_scores_claimed ??
+                            modelRouteLegalBenchmarkRiskQueue.claim_boundary.benchmark_score_claims ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        legal advice claimed:{' '}
+                        {String(modelRouteLegalBenchmarkRiskQueue.claim_boundary.legal_advice_claimed ?? false)}
+                      </div>
+                      <div>
+                        raw model output returned:{' '}
+                        {String(modelRouteLegalBenchmarkRiskQueue.privacy_boundary.returns_raw_model_output ?? false)}
+                      </div>
+                      <div>
+                        routing payloads returned:{' '}
+                        {String(
+                          modelRouteLegalBenchmarkRiskQueue.privacy_boundary.returns_routing_payloads ??
+                            modelRouteLegalBenchmarkRiskQueue.privacy_boundary.returns_gateway_payloads ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        gateway calls allowed:{' '}
+                        {String(modelRouteLegalBenchmarkRiskQueue.routing_policy.gateway_call_allowed ?? false)}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {modelRouteLegalBenchmarkRiskQueue.recommended_actions.slice(0, 3).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">User-need risk mapping</h3>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {modelRouteLegalBenchmarkRiskQueue.user_need_rows.slice(0, 4).map((row, index) => {
+                        const rowKey = row.need_id ?? row.title ?? `route-need-${index}`;
+                        const routeIds = row.task_ids ?? row.linked_route_ids ?? row.route_ids ?? [];
+                        const queueRowIds = row.queue_row_ids ?? row.linked_queue_row_ids ?? [];
+                        const coverageStatus =
+                          row.highest_risk_level ??
+                          row.user_need_status ??
+                          row.coverage_status ??
+                          row.legal_benchmark_status ??
+                          'review_required';
+                        return (
+                          <div key={rowKey} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <Badge variant="outline" className={statusClass[coverageStatus] ?? statusClass.warn}>
+                                {displayToken(coverageStatus)}
+                              </Badge>
+                              {row.priority_band && (
+                                <Badge
+                                  variant="outline"
+                                  className={priorityClass[row.priority_band] ?? priorityClass.medium}
+                                >
+                                  {row.priority_band}
+                                  {row.priority_score !== undefined ? ` / ${row.priority_score}` : ''}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm font-semibold text-stone-950">{row.title ?? row.need_id ?? '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id ?? '-'}</div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">
+                              routes: {routeIds.join(', ') || '-'}
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              queue rows: {queueRowIds.join(', ') || '-'}
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              sources: {(row.research_source_ids ?? []).join(', ') || '-'} / premium{' '}
+                              {row.premium_exception_count ?? 0}
+                            </div>
+                            <div className="mt-1 text-xs leading-5 text-stone-500">
+                              {row.next_action ?? row.next_actions?.[0] ?? row.gap_reasons?.[0] ?? 'Keep user need mapped.'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="grid gap-2 md:grid-cols-2">
+                      {modelRouteLegalBenchmarkRiskQueue.validation_commands.slice(0, 4).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>

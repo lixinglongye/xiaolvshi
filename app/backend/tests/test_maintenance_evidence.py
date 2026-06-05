@@ -42,6 +42,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "User need cheap-first calibration mapping" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
+    assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
@@ -111,6 +112,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/gemini_model_variant_matrix.py" in evidence_paths
     assert "app/backend/tests/test_gemini_model_variant_matrix.py" in evidence_paths
     assert "docs/GEMINI_MODEL_VARIANT_MATRIX.md" in evidence_paths
+    assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in evidence_paths
+    assert "app/backend/tests/test_model_route_legal_benchmark_risk_queue.py" in evidence_paths
+    assert "docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     quality_signal = next(signal for signal in profile["signals"] if signal["id"] == "deep-review-quality-gates")
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
@@ -131,6 +135,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
+    assert "legal benchmark route risk queue review" in model_signal["description"]
     assert "sanitized ModelOps calibration review" in model_signal["description"]
     assert "sanitized review-form upkeep" in model_signal["responsibility"]
     assert "catalog source-audit review" in model_signal["responsibility"]
@@ -146,6 +151,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
+    assert "legal benchmark route risk queue review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in evidence_paths
@@ -218,6 +224,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("public benchmark mapping reports sampler" in guardrail for guardrail in profile["application_guardrails"])
     assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("write model routes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not download datasets" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store external legal text" in guardrail for guardrail in profile["application_guardrails"])
     assert any("call models" in guardrail for guardrail in profile["application_guardrails"])

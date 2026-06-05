@@ -27,6 +27,7 @@ The `/maintenance` page carries evidence for:
 - user-need benchmark coverage
 - legal-document benchmark coverage
 - legal benchmark research refresh
+- model route legal benchmark risk queue
 - continuous update ledger
 - Gemini/NewAPI selector evidence
 
@@ -77,6 +78,8 @@ This gate does not:
 - prove public benchmark scores
 - download benchmark datasets, import external legal text, call models, or expose
   credentials for legal benchmark research refresh evidence
+- call gateways, write model routes, expose raw route payloads, download datasets,
+  or claim benchmark performance for the model route legal benchmark risk queue
 - prove production model routing health
 - return source code, raw browser storage, raw model output, credentials, or user
   legal text

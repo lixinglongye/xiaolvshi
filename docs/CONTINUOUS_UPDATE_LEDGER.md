@@ -13,6 +13,12 @@ paths and release links only; it does not download datasets, claim public
 benchmark scores, store external legal text, call models, or handle
 credentials.
 
+Current routing-risk slice: `model-route-legal-benchmark-risk-queue` adds a
+metadata-only maintainer queue that joins cheap-first Gemini/NewAPI calibration,
+legal benchmark refresh mappings, and user-need coverage. It does not call
+gateways, write model routes, download datasets, claim public benchmark scores,
+store raw legal text, or handle credentials.
+
 Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
 Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
 readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
@@ -257,6 +263,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
+- `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`

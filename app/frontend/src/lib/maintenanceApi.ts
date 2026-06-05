@@ -2294,6 +2294,191 @@ export type LegalBenchmarkResearchRefresh = {
   validation_commands: string[];
 };
 
+export type ModelRouteLegalBenchmarkRiskQueueRow = {
+  id?: string;
+  task_id?: string;
+  task?: string;
+  route_id?: string;
+  route?: string;
+  route_name?: string;
+  model?: string;
+  model_id?: string;
+  selected_model?: string | null;
+  canonical_model?: string | null;
+  task_family?: string;
+  product_area?: string;
+  risk_level?: string;
+  risk_status?: string;
+  status?: string;
+  priority?: string | number;
+  calibration_status?: string;
+  calibration_decision?: string;
+  cheap_first_allowed?: boolean;
+  balanced_precheck_required?: boolean;
+  premium_exception_required?: boolean;
+  cheap_first_status?: string;
+  cheap_first_decision?: string;
+  cheap_first_gate?: string;
+  cost_tier?: string;
+  fixture_ids?: string[];
+  fixture_score?: number | null;
+  quality_floor?: number | null;
+  research_source_ids?: string[];
+  missing_user_need_ids?: string[];
+  coverage_statuses?: string[];
+  public_benchmark_statuses?: string[];
+  calibration_statuses?: string[];
+  linked_refresh_row_ids?: string[];
+  release_gate_links?: string[];
+  reason_codes?: string[];
+  next_action?: string;
+  newapi_called?: boolean;
+  network_called?: boolean;
+  dataset_download_required?: boolean;
+  public_score_claimed?: boolean;
+  raw_legal_text_included?: boolean;
+  secret_value_included?: boolean;
+  legal_benchmark_status?: string;
+  benchmark_status?: string;
+  user_need_status?: string;
+  coverage_status?: string;
+  benchmark_case_ids?: string[];
+  legal_benchmark_case_ids?: string[];
+  linked_benchmark_case_ids?: string[];
+  user_need_ids?: string[];
+  linked_user_need_ids?: string[];
+  gap_reasons?: string[];
+  risk_reasons?: string[];
+  recommended_action?: string;
+  next_actions?: string[];
+  validation_command?: string;
+  validation_commands?: string[];
+  [key: string]: unknown;
+};
+
+export type ModelRouteLegalBenchmarkRiskQueueUserNeedRow = {
+  need_id?: string;
+  title?: string;
+  category?: string;
+  priority_band?: string;
+  priority_score?: number;
+  linked_route_ids?: string[];
+  route_ids?: string[];
+  linked_queue_row_ids?: string[];
+  queue_row_ids?: string[];
+  task_ids?: string[];
+  refresh_row_ids?: string[];
+  research_source_ids?: string[];
+  public_benchmark_status?: string;
+  calibration_status?: string;
+  highest_risk_level?: string;
+  cheap_first_allowed_count?: number;
+  premium_exception_count?: number;
+  cheap_first_status?: string;
+  legal_benchmark_status?: string;
+  user_need_status?: string;
+  coverage_status?: string;
+  gap_reasons?: string[];
+  next_action?: string;
+  next_actions?: string[];
+  validation_commands?: string[];
+  [key: string]: unknown;
+};
+
+export type ModelRouteLegalBenchmarkRiskQueue = {
+  status: string;
+  summary: {
+    queue_row_count?: number;
+    user_need_row_count?: number;
+    high_risk_count?: number;
+    medium_risk_count?: number;
+    cheap_first_risk_count?: number;
+    cheap_first_blocked_count?: number;
+    cheap_first_allowed_count?: number;
+    balanced_precheck_count?: number;
+    premium_exception_count?: number;
+    watch_count?: number;
+    block_count?: number;
+    benchmark_license_watch_count?: number;
+    need_gap_watch_count?: number;
+    legal_benchmark_gap_count?: number;
+    user_need_gap_count?: number;
+    recommended_action_count?: number;
+    validation_command_count?: number;
+    calibration_status?: string;
+    benchmark_refresh_status?: string;
+    benchmark_coverage_status?: string;
+    newapi_called?: boolean;
+    network_called?: boolean;
+    dataset_downloaded?: boolean;
+    public_benchmark_score_claimed?: boolean;
+    raw_payload_echoed?: boolean;
+    secret_value_included?: boolean;
+    model_calls?: string;
+    network_access?: string;
+    metadata_only?: boolean;
+    [key: string]: unknown;
+  };
+  queue_rows: ModelRouteLegalBenchmarkRiskQueueRow[];
+  user_need_rows: ModelRouteLegalBenchmarkRiskQueueUserNeedRow[];
+  routing_policy: {
+    default_strategy?: string;
+    cheap_model_start?: string;
+    balanced_precheck_requires?: string[];
+    premium_exception_requires?: string[];
+    configuration_write_allowed?: boolean;
+    gateway_call_allowed?: boolean;
+    traffic_shift_allowed?: boolean;
+    cheap_first_default?: string;
+    default_route?: string;
+    escalation_policy?: string;
+    legal_benchmark_gate?: string;
+    user_need_gate?: string;
+    max_cost_tier?: string;
+    local_validation_first?: boolean;
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only?: boolean;
+    returns_raw_benchmark_text?: boolean;
+    returns_public_benchmark_text?: boolean;
+    returns_raw_legal_text?: boolean;
+    returns_raw_model_output?: boolean;
+    returns_routing_payloads?: boolean;
+    returns_prompts?: boolean;
+    returns_gateway_payloads?: boolean;
+    returns_user_feedback_text?: boolean;
+    returns_credentials?: boolean;
+    network_called?: boolean;
+    newapi_called?: boolean;
+    dataset_downloaded?: boolean;
+    external_dataset_downloads?: boolean;
+    model_calls?: boolean | string;
+    network_access?: string;
+    source?: string;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    cheap_first_default_change_claimed?: boolean;
+    public_benchmark_scores_claimed?: boolean;
+    benchmark_score_claims?: boolean;
+    leaderboard_rank_claimed?: boolean;
+    external_dataset_execution_claimed?: boolean;
+    live_gateway_quality_claimed?: boolean;
+    default_model_changed?: boolean;
+    external_benchmark_run_claimed?: boolean;
+    legal_advice_claimed?: boolean;
+    production_accuracy_claimed?: boolean;
+    automatic_routing_change_claimed?: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    source?: string;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2510,6 +2695,11 @@ type LegalBenchmarkResearchRegistryResponse = {
 type LegalBenchmarkResearchRefreshResponse = {
   success: boolean;
   data: LegalBenchmarkResearchRefresh;
+};
+
+type ModelRouteLegalBenchmarkRiskQueueResponse = {
+  success: boolean;
+  data: ModelRouteLegalBenchmarkRiskQueue;
 };
 
 export type LegalKnowledgeAudit = {
@@ -3742,6 +3932,14 @@ export async function getLegalBenchmarkResearchRefresh(): Promise<LegalBenchmark
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalBenchmarkResearchRefreshResponse['data']>(resp);
+}
+
+export async function getModelRouteLegalBenchmarkRiskQueue(): Promise<ModelRouteLegalBenchmarkRiskQueue> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/model-route-legal-benchmark-risk-queue',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelRouteLegalBenchmarkRiskQueueResponse['data']>(resp);
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {
