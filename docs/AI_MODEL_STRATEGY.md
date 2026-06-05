@@ -118,6 +118,15 @@ NewAPI, Gemini, OpenAI, Google, gateways, or the network, does not write real
 environment values, and does not include raw prompts, payloads, model outputs,
 or credentials.
 
+`modelops-observed-gemini-model-intake-queue` is the shipped metadata-only
+intake queue evidence for OpenAI-compatible gateway `/models` or manually
+observed Gemini-like model ids before they enter default candidates. The queue
+scope normalizes ids and records known/unknown status, price, lifecycle, cost
+tier, cheap-first eligibility, and default-promotion block/review/ready state.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
+not write real environment values, and does not include raw prompts, payloads,
+model outputs, or credentials.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

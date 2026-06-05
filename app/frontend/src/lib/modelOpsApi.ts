@@ -357,6 +357,60 @@ export type GeminiVariantMatrix = {
   validation_commands: string[];
 };
 
+export type ModelOpsObservedGeminiModelIntakeQueueItem = {
+  id: string;
+  raw_model: string;
+  canonical_model?: string | null;
+  catalog_status: string;
+  intake_status: string;
+  intake_action: string;
+  release_action: string;
+  known_catalog_model: boolean;
+  gemini_like: boolean;
+  cost_tier: string;
+  model_lifecycle_status: string;
+  default_allowed_for_high_frequency: boolean;
+  cheap_first_default_candidate: boolean;
+  allowed_default_tasks: string[];
+  capabilities: string[];
+  pricing_status: string;
+  reason_codes: string[];
+  warnings: string[];
+};
+
+export type ModelOpsObservedGeminiModelIntakeQueue = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observed_model_count: number;
+    ready_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    cheap_first_candidate_count: number;
+    unknown_gemini_count: number;
+    external_non_gemini_count: number;
+    source_catalog_review_count: number;
+    source_accepted_observed_model_count: number;
+    source_dropped_observed_model_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  queue_items: ModelOpsObservedGeminiModelIntakeQueueItem[];
+  ready_model_ids: string[];
+  review_model_ids: string[];
+  blocked_model_ids: string[];
+  recommended_actions: string[];
+  source_summaries: Record<string, unknown>;
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlanRole = {
   role: string;
   model: string;
@@ -2250,6 +2304,7 @@ export type ModelOpsResponse = {
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
   gemini_variant_matrix?: GeminiVariantMatrix;
+  observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
   lifecycle_policy?: ModelLifecyclePolicy;
@@ -2494,6 +2549,13 @@ export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
   });
 }
 
+export async function getModelOpsObservedGeminiModelIntakeQueue(): Promise<ModelOpsObservedGeminiModelIntakeQueue> {
+  return invokeModelOpsApi<ModelOpsObservedGeminiModelIntakeQueue>({
+    url: '/api/v1/aihub/models/observed-gemini-model-intake-queue',
+    method: 'GET',
+  });
+}
+
 export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiCheapFirstCoverageGate> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstCoverageGate>({
     url: '/api/v1/aihub/models/gemini-cheap-first-coverage-gate',
@@ -2640,6 +2702,16 @@ export async function getModelRouteQualityBudget(): Promise<ModelRouteQualityBud
 export async function evaluateGeminiVariantMatrix(payload: Record<string, unknown>): Promise<GeminiVariantMatrix> {
   return invokeModelOpsApi<GeminiVariantMatrix>({
     url: '/api/v1/aihub/models/gemini-variant-matrix',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function evaluateModelOpsObservedGeminiModelIntakeQueue(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsObservedGeminiModelIntakeQueue> {
+  return invokeModelOpsApi<ModelOpsObservedGeminiModelIntakeQueue>({
+    url: '/api/v1/aihub/models/observed-gemini-model-intake-queue',
     method: 'POST',
     data: payload,
   });

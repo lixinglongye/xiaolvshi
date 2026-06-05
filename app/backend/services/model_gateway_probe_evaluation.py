@@ -624,6 +624,11 @@ class ModelGatewayProbeEvaluationRegistry:
     def __init__(self) -> None:
         self._service = ModelGatewayProbeEvaluationService()
         self._latest: dict[str, Any] | None = None
+        self._version = 0
+
+    @property
+    def version(self) -> int:
+        return self._version
 
     def latest(self) -> dict[str, Any]:
         if self._latest is None:
@@ -636,10 +641,12 @@ class ModelGatewayProbeEvaluationRegistry:
     def record(self, result: dict[str, Any]) -> dict[str, Any]:
         snapshot = self._safe_snapshot(result)
         self._latest = snapshot
+        self._version += 1
         return deepcopy(snapshot)
 
     def clear(self) -> None:
         self._latest = None
+        self._version += 1
 
     def _safe_snapshot(self, result: dict[str, Any]) -> dict[str, Any]:
         snapshot = deepcopy(result)

@@ -93,6 +93,16 @@ exception/manual review boundary only; it does not call NewAPI, Gemini, OpenAI,
 Google, gateways, or the network, write real environment values, or include raw
 prompts, payloads, model outputs, or credentials.
 
+Current observed Gemini model intake evidence:
+`modelops-observed-gemini-model-intake-queue` adds shipped metadata-only intake
+queue evidence for OpenAI-compatible gateway `/models` or manually observed
+Gemini-like model ids before they enter default candidates. It records
+normalization scope, known/unknown status, price, lifecycle, cost tier,
+cheap-first eligibility, and default-promotion block/review/ready state only;
+it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
+write real environment values, or include raw prompts, payloads, model outputs,
+or credentials.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

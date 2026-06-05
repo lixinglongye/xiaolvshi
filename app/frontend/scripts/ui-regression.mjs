@@ -262,6 +262,15 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
   () => assertIncludes(modelOpsPage, 'Gemini variant matrix', 'model-ops Gemini variant matrix panel'),
+  () => assertIncludes(modelOpsPage, 'Observed Gemini model intake queue', 'model-ops observed Gemini intake queue panel'),
+  () => assertIncludes(modelOpsPage, 'activeObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake active binding'),
+  () => assertIncludes(modelOpsPage, 'observedGeminiModelIntakeRows', 'model-ops observed Gemini intake row binding'),
+  () => assertIncludes(modelOpsPage, 'defaultObservedGeminiModelIntakePayload', 'model-ops observed Gemini intake template payload'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenObservedGeminiModelIntakePayloadText', 'model-ops observed Gemini intake payload guard'),
+  () => assertIncludes(modelOpsPage, 'Evaluate intake queue', 'model-ops observed Gemini intake submit button'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_default_candidate', 'model-ops observed Gemini intake cheap-first candidate binding'),
+  () => assertIncludes(modelOpsPage, 'automatic_default_change_claimed', 'model-ops observed Gemini intake no automatic default change claim'),
+  () => assertIncludes(modelOpsPage, 'raw payload echoed', 'model-ops observed Gemini intake raw payload boundary'),
   () => assertIncludes(modelOpsPage, 'Gemini cheap-first coverage gate', 'model-ops Gemini cheap-first coverage gate panel'),
   () => assertIncludes(modelOpsPage, 'getGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate API binding'),
   () => assertIncludes(modelOpsPage, 'geminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate state binding'),
@@ -468,6 +477,11 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'ModelRouteQualityBudget', 'model-ops route quality budget type'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/route-quality-budget', 'model-ops route quality budget endpoint'),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue evaluation API'),
+  () => assertIncludes(modelOpsApi, 'observed_gemini_model_intake_queue', 'model-ops observed Gemini intake queue response binding'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/observed-gemini-model-intake-queue', 'model-ops observed Gemini intake queue endpoint'),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate type'),
   () => assertIncludes(modelOpsApi, "id: 'modelops-gemini-cheap-first-coverage-gate' | string", 'model-ops Gemini cheap-first coverage gate typed id'),
   () => assertIncludes(modelOpsApi, 'gemini_cheap_first_coverage_gate', 'model-ops Gemini cheap-first coverage response binding'),
@@ -519,6 +533,12 @@ const defaultTemplateAlignmentPanel = sourceSection(
   'Runtime router',
   'model-ops default template alignment section',
 );
+const observedGeminiModelIntakePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini model intake queue</h2>',
+  'Gemini variant matrix',
+  'model-ops observed Gemini intake queue section',
+);
 const geminiDefaultChangeReviewPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini default change review</h2>',
@@ -562,6 +582,11 @@ assertNotMatches(
   'model-ops default template alignment no secrets or raw prompt/payload fields',
 );
 assertNotMatches(
+  observedGeminiModelIntakePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text)\b/i,
+  'model-ops observed Gemini intake queue no secret or raw prompt/payload/legal text field names',
+);
+assertNotMatches(
   geminiDefaultChangeReviewPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default change review no secret or raw prompt/payload field names',
@@ -583,7 +608,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 10,
+      assertions: checks.length + 11,
     },
     null,
     2,

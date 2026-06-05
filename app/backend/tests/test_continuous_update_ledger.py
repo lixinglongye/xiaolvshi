@@ -186,6 +186,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
     assert "modelops-gemini-default-cost-impact" in completed_ids
+    assert "modelops-observed-gemini-model-intake-queue" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -310,6 +311,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-default-template-alignment" not in queue_ids
     assert "modelops-gemini-default-change-review" not in queue_ids
     assert "modelops-gemini-default-cost-impact" not in queue_ids
+    assert "modelops-observed-gemini-model-intake-queue" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -664,6 +666,43 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-cost-forecast" in cost_impact_entry["release_gate_links"]
     assert "model-cost-guardrails" in cost_impact_entry["release_gate_links"]
     assert "model-default-recommendation-snapshot" in cost_impact_entry["release_gate_links"]
+    intake_queue_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-observed-gemini-model-intake-queue"
+    )
+    assert intake_queue_entry["size"] == "medium"
+    assert intake_queue_entry["status"] == "shipped"
+    assert "metadata-only observed Gemini model intake queue evidence" in intake_queue_entry["impact"]
+    assert "OpenAI-compatible gateway /models" in intake_queue_entry["impact"]
+    assert "manually observed Gemini-like model ids" in intake_queue_entry["impact"]
+    assert "normalized" in intake_queue_entry["impact"]
+    assert "known or unknown status" in intake_queue_entry["impact"]
+    assert "price" in intake_queue_entry["impact"]
+    assert "lifecycle" in intake_queue_entry["impact"]
+    assert "cost tier" in intake_queue_entry["impact"]
+    assert "cheap-first eligibility" in intake_queue_entry["impact"]
+    assert "default-promotion block/review/ready state" in intake_queue_entry["impact"]
+    assert "before they enter default candidates" in intake_queue_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in intake_queue_entry["impact"]
+    assert "real environment writes" in intake_queue_entry["impact"]
+    assert "raw prompts" in intake_queue_entry["impact"]
+    assert "payloads" in intake_queue_entry["impact"]
+    assert "model outputs" in intake_queue_entry["impact"]
+    assert "credentials" in intake_queue_entry["impact"]
+    assert "app/backend/services/release_readiness.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_maintenance_evidence.py" in intake_queue_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in intake_queue_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in intake_queue_entry["evidence_paths"]
+    assert "modelops-observed-gemini-model-intake-queue" in intake_queue_entry["release_gate_links"]
+    assert "modelops-gemini-default-change-review" in intake_queue_entry["release_gate_links"]
+    assert "modelops-gemini-default-cost-impact" in intake_queue_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in intake_queue_entry["release_gate_links"]
+    assert "model-catalog-source-audit" in intake_queue_entry["release_gate_links"]
+    assert "model-gateway-compatibility" in intake_queue_entry["release_gate_links"]
+    assert "model-lifecycle-policy" in intake_queue_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

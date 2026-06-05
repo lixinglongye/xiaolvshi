@@ -63,6 +63,7 @@ from services.model_ops_cheap_first_canary_rollback_drill import ModelOpsCheapFi
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
+from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -85,12 +86,14 @@ logger = logging.getLogger(__name__)
 MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS = 10.0
 _model_ops_payload_cache: dict[str, Any] | None = None
 _model_ops_payload_cache_at = 0.0
+_model_ops_payload_cache_probe_version = -1
 
 
 def _clear_model_ops_payload_cache() -> None:
-    global _model_ops_payload_cache, _model_ops_payload_cache_at
+    global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
     _model_ops_payload_cache = None
     _model_ops_payload_cache_at = 0.0
+    _model_ops_payload_cache_probe_version = -1
 
 
 def _try_extract_message_from_dict(data: dict) -> str | None:
@@ -181,10 +184,15 @@ async def list_models():
     NewAPI and Gemini OpenAI-compatible gateways may expose additional model
     names; those can still be sent directly in request payloads.
     """
-    global _model_ops_payload_cache, _model_ops_payload_cache_at
+    global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
 
     now = monotonic()
-    if _model_ops_payload_cache is not None and now - _model_ops_payload_cache_at <= MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS:
+    gateway_probe_version = model_gateway_probe_evaluation_registry.version
+    if (
+        _model_ops_payload_cache is not None
+        and _model_ops_payload_cache_probe_version == gateway_probe_version
+        and now - _model_ops_payload_cache_at <= MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS
+    ):
         return deepcopy(_model_ops_payload_cache)
 
     usage = model_usage_registry.snapshot()
@@ -231,6 +239,9 @@ async def list_models():
     price_refresh_monitor = ModelPriceRefreshMonitorService().build_monitor(
         observed_gateway_models,
         forecast,
+    )
+    observed_gemini_model_intake_queue = ModelOpsObservedGeminiModelIntakeQueueService().build_queue(
+        {"observed_models": observed_gateway_models}
     )
     gemini_cheap_first_coverage_gate = ModelOpsGeminiCheapFirstCoverageGateService().build_gate(
         {
@@ -283,6 +294,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
+        "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -354,6 +366,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
+        "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -372,6 +385,7 @@ async def list_models():
     }
     _model_ops_payload_cache = deepcopy(payload)
     _model_ops_payload_cache_at = monotonic()
+    _model_ops_payload_cache_probe_version = gateway_probe_version
     return payload
 
 
@@ -438,6 +452,25 @@ async def evaluate_gemini_variant_matrix(payload: dict[str, Any]):
     return {
         "success": True,
         "data": GeminiModelVariantMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/models/observed-gemini-model-intake-queue")
+async def model_ops_observed_gemini_model_intake_queue():
+    """Return metadata-only intake queue for observed Gemini-like model ids."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["observed_gemini_model_intake_queue"],
+    }
+
+
+@router.post("/models/observed-gemini-model-intake-queue")
+async def evaluate_model_ops_observed_gemini_model_intake_queue(payload: dict[str, Any]):
+    """Evaluate observed Gemini-like model ids before default promotion."""
+    return {
+        "success": True,
+        "data": ModelOpsObservedGeminiModelIntakeQueueService().build_queue(payload),
     }
 
 

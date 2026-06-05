@@ -25,6 +25,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
     ReadinessComponent("gemini-variant-matrix", "Gemini variant matrix", "configuration", "gemini_variant_matrix"),
+    ReadinessComponent(
+        "observed-gemini-model-intake-queue",
+        "Observed Gemini model intake queue",
+        "configuration",
+        "observed_gemini_model_intake_queue",
+    ),
     ReadinessComponent("catalog-source-audit", "Gemini catalog source audit", "configuration", "catalog_source_audit"),
     ReadinessComponent(
         "gateway-probe-evaluation",

@@ -21,6 +21,7 @@ import {
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
+  evaluateModelOpsObservedGeminiModelIntakeQueue,
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
@@ -39,6 +40,7 @@ import {
   type ModelOpsCheapFirstCanaryRollbackDrill,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
+  type ModelOpsObservedGeminiModelIntakeQueue,
   type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -163,6 +165,20 @@ function defaultGeminiVariantMatrixPayload() {
   };
 }
 
+function defaultObservedGeminiModelIntakePayload() {
+  return {
+    models_response: {
+      object: 'list',
+      data: [
+        { id: 'models/gemini-2.5-flash-lite', object: 'model' },
+        { id: 'google/gemini-3.5-flash', object: 'model' },
+        { id: 'newapi/gemini-4.0-flash-lite-preview', object: 'model' },
+        { id: 'gemini-3.1-pro-preview', object: 'model' },
+      ],
+    },
+  };
+}
+
 function defaultGeminiDefaultChangeReviewPayload() {
   return {
     proposed_changes: [
@@ -248,6 +264,15 @@ function hasForbiddenGeminiVariantPayloadText(value: string) {
   );
 }
 
+function hasForbiddenObservedGeminiModelIntakePayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers?|email|legal[_ -]?text|payload)\b/i.test(
+      value,
+    )
+  );
+}
+
 function hasForbiddenPerformancePayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -309,6 +334,11 @@ function Inner() {
   const [geminiVariantPayloadText, setGeminiVariantPayloadText] = useState('');
   const [geminiVariantEvaluateLoading, setGeminiVariantEvaluateLoading] = useState(false);
   const [geminiVariantError, setGeminiVariantError] = useState('');
+  const [observedGeminiModelIntakeQueue, setObservedGeminiModelIntakeQueue] =
+    useState<ModelOpsObservedGeminiModelIntakeQueue | null>(null);
+  const [observedGeminiModelIntakePayloadText, setObservedGeminiModelIntakePayloadText] = useState('');
+  const [observedGeminiModelIntakeLoading, setObservedGeminiModelIntakeLoading] = useState(false);
+  const [observedGeminiModelIntakeError, setObservedGeminiModelIntakeError] = useState('');
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
@@ -340,6 +370,8 @@ function Inner() {
     setCheapFirstCalibration(null);
     setGeminiVariantError('');
     setGeminiVariantMatrix(null);
+    setObservedGeminiModelIntakeError('');
+    setObservedGeminiModelIntakeQueue(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
     setPerformanceError('');
@@ -375,6 +407,7 @@ function Inner() {
         setGeminiDefaultChangeReview(modelOpsResult.value.gemini_default_change_review ?? null);
         setGeminiDefaultCostImpact(modelOpsResult.value.gemini_default_cost_impact ?? null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
+        setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
         if (geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
           setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
         } else {
@@ -509,6 +542,46 @@ function Inner() {
       setGeminiVariantError(err instanceof SyntaxError ? 'Observed model payload is not valid JSON.' : 'Gemini variant review failed.');
     } finally {
       setGeminiVariantEvaluateLoading(false);
+    }
+  };
+
+  const loadObservedGeminiModelIntakeTemplate = () => {
+    setObservedGeminiModelIntakeError('');
+    setObservedGeminiModelIntakePayloadText(JSON.stringify(defaultObservedGeminiModelIntakePayload(), null, 2));
+  };
+
+  const evaluateObservedGeminiModelIntakePayload = async () => {
+    setObservedGeminiModelIntakeLoading(true);
+    setObservedGeminiModelIntakeError('');
+    try {
+      const text = observedGeminiModelIntakePayloadText.trim();
+      if (!text) {
+        setObservedGeminiModelIntakeError('Observed Gemini intake payload is empty.');
+        return;
+      }
+      if (hasForbiddenObservedGeminiModelIntakePayloadText(text)) {
+        setObservedGeminiModelIntakeError(
+          'Observed Gemini intake payload must not include keys, headers, prompts, raw payloads, emails, raw output, or legal text.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setObservedGeminiModelIntakeError('Observed Gemini intake payload must be a JSON object.');
+        return;
+      }
+      setObservedGeminiModelIntakeQueue(
+        await evaluateModelOpsObservedGeminiModelIntakeQueue(payload as Record<string, unknown>),
+      );
+    } catch (err) {
+      console.error(err);
+      setObservedGeminiModelIntakeError(
+        err instanceof SyntaxError
+          ? 'Observed Gemini intake payload is not valid JSON.'
+          : 'Observed Gemini model intake review failed.',
+      );
+    } finally {
+      setObservedGeminiModelIntakeLoading(false);
     }
   };
 
@@ -699,6 +772,9 @@ function Inner() {
   const geminiVariantFamilyRows = activeGeminiVariantMatrix?.family_rows ?? [];
   const geminiVariantObservedRows = activeGeminiVariantMatrix?.observed_model_reviews ?? [];
   const geminiVariantExtraction = activeGeminiVariantMatrix?.source_summaries?.observed_model_extraction;
+  const activeObservedGeminiModelIntakeQueue =
+    observedGeminiModelIntakeQueue ?? data?.observed_gemini_model_intake_queue ?? null;
+  const observedGeminiModelIntakeRows = activeObservedGeminiModelIntakeQueue?.queue_items ?? [];
   const activeGeminiCheapFirstCoverageGate =
     geminiCheapFirstCoverageGate ?? data?.gemini_cheap_first_coverage_gate ?? null;
   const geminiCheapFirstCoverageRows = activeGeminiCheapFirstCoverageGate?.coverage_rows ?? [];
@@ -2914,6 +2990,180 @@ function Inner() {
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeObservedGeminiModelIntakeQueue && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Observed Gemini model intake queue</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeObservedGeminiModelIntakeQueue.summary.observed_model_count} observed /{' '}
+                  {activeObservedGeminiModelIntakeQueue.summary.ready_count} ready /{' '}
+                  {activeObservedGeminiModelIntakeQueue.summary.review_required_count} reviews /{' '}
+                  {activeObservedGeminiModelIntakeQueue.summary.blocked_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeObservedGeminiModelIntakeQueue.status)}>
+                {activeObservedGeminiModelIntakeQueue.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeObservedGeminiModelIntakeQueue.summary.cheap_first_candidate_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first candidates</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeObservedGeminiModelIntakeQueue.summary.unknown_gemini_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unknown Gemini ids</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeObservedGeminiModelIntakeQueue.summary.external_non_gemini_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">external non-Gemini</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeObservedGeminiModelIntakeQueue.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeObservedGeminiModelIntakeQueue.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeObservedGeminiModelIntakeQueue.summary.raw_payload_echoed)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">raw payload echoed</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-stone-950">Sanitized observed model evaluator</div>
+                    <div className="mt-1 text-xs leading-5 text-stone-600">
+                      Converts gateway model ids into an intake queue before any default model promotion.
+                    </div>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={loadObservedGeminiModelIntakeTemplate}>
+                    <ClipboardList className="mr-2 h-4 w-4" /> Template
+                  </Button>
+                </div>
+                <Textarea
+                  value={observedGeminiModelIntakePayloadText}
+                  onChange={(event) => setObservedGeminiModelIntakePayloadText(event.target.value)}
+                  placeholder='{"models_response":{"data":[{"id":"models/gemini-2.5-flash-lite"},{"id":"newapi/gemini-4.0-flash-lite-preview"}]}}'
+                  className="min-h-[160px] border-stone-950/15 bg-white font-mono text-xs"
+                />
+                {observedGeminiModelIntakeError && (
+                  <div className="mt-2 rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                    {observedGeminiModelIntakeError}
+                  </div>
+                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={evaluateObservedGeminiModelIntakePayload}
+                    disabled={observedGeminiModelIntakeLoading}
+                  >
+                    {observedGeminiModelIntakeLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
+                    Evaluate intake queue
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setObservedGeminiModelIntakePayloadText('');
+                      setObservedGeminiModelIntakeError('');
+                      setObservedGeminiModelIntakeQueue(data?.observed_gemini_model_intake_queue ?? null);
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Intake boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  automatic_default_change_claimed:{' '}
+                  {String(activeObservedGeminiModelIntakeQueue.claim_boundary.automatic_default_change_claimed)} / network:{' '}
+                  {String(activeObservedGeminiModelIntakeQueue.privacy_boundary.network_called)} / raw output:{' '}
+                  {String(activeObservedGeminiModelIntakeQueue.privacy_boundary.raw_model_output_included)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {activeObservedGeminiModelIntakeQueue.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {activeObservedGeminiModelIntakeQueue.validation_commands.slice(0, 2).map((command) => (
+                    <div key={command} className="rounded-[6px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs leading-5 text-stone-600">
+                      {command}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Observed model</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Release action</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {observedGeminiModelIntakeRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.raw_model}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.canonical_model ?? '-'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.intake_status)}>
+                          {row.intake_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.intake_action}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                          {row.cost_tier}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          cheap_first_default_candidate: {String(row.cheap_first_default_candidate)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.release_action}
+                        <br />
+                        tasks {row.allowed_default_tasks.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                        {row.reason_codes.join(', ') || '-'}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
