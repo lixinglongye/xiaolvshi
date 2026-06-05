@@ -18,6 +18,10 @@ It is metadata-only. It does not store approver identity, record approval,
 write configuration, call a model gateway, persist rollout state, or shift
 traffic.
 
+`cheap_first_canary_rollback_drill` consumes this packet downstream and is a
+required release gate before any human-owned default movement can claim rollback
+rehearsal evidence.
+
 ## Endpoint
 
 ```http
@@ -77,3 +81,4 @@ Related files:
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_PROMOTION_DECISION.md`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`

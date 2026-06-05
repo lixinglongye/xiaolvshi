@@ -81,6 +81,7 @@ PAGE_GATES = (
             "Cheap-first canary observation review",
             "Cheap-first canary promotion decision",
             "Cheap-first canary approval packet",
+            "Cheap-first canary rollback drill",
             "Cheap-first quality budget",
             "selector replay",
             "route telemetry",

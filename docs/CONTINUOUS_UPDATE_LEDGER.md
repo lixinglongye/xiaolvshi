@@ -12,6 +12,12 @@ readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
 unpriced gateway models now surface as release-review evidence before they can
 be treated as cheap-first defaults.
 
+Newest model-ops release evidence: `modelops-cheap-first-canary-rollback-drill`
+adds a shipped metadata-only rollback rehearsal packet downstream of canary
+approval evidence. It records trigger review, holdout confirmation, role, and
+checklist labels only; it does not execute rollback, write configuration,
+persist drill state, call gateways, or shift production traffic.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint
@@ -232,6 +238,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/CONTINUOUS_SESSION_RUN_MONITOR.md`
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`

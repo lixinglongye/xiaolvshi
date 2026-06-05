@@ -125,6 +125,9 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Legal knowledge seed audit coverage.
 - Legal source freshness and jurisdiction policy coverage.
 - Legal RAG evaluation and grounding quick-audit coverage.
+- ModelOps cheap-first canary rollback drill coverage, requiring reviewable
+  rehearsal metadata before any cheap-first default movement can claim rollback
+  preparedness.
 
 Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases. The route telemetry repository, operations summary, triage queue, and remediation plan are required because they provide the reviewable runtime evidence, maintainer actions, and operator-reviewed repair plan needed before model-routing release claims.
 
@@ -184,6 +187,11 @@ None of these checks claim
 real payment provider settlement or webhook verification, automatic deep-review
 report binding for selected-source validation, public benchmark scores, or
 external adoption.
+The ModelOps cheap-first canary rollback drill is also a required model-ops
+release control. It consumes approval packet metadata and exposes trigger
+review, holdout confirmation, role, and rehearsal checklist evidence only; it
+does not execute rollback, write configuration, call gateways, persist drill
+state, or shift production traffic.
 
 ## Status values
 
@@ -246,6 +254,9 @@ external adoption.
 - `app/backend/services/matter_intake_readiness_policy.py`
 - `app/backend/services/model_default_recommendation_snapshot.py`
 - `app/backend/services/model_price_refresh_monitor.py`
+- `app/backend/services/model_ops_cheap_first_canary_rollback_drill.py`
+- `app/backend/tests/test_model_ops_cheap_first_canary_rollback_drill.py`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`

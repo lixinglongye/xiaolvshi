@@ -345,6 +345,36 @@ def test_model_ops_cheap_first_canary_approval_packet_is_required_model_ops_gate
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md" in check["evidence_paths"]
 
 
+def test_model_ops_cheap_first_canary_rollback_drill_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-canary-rollback-drill"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-canary-rollback-drill": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-canary-rollback-drill")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-canary-rollback-drill",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_canary_rollback_drill.py "
+                "tests/test_model_ops_cheap_first_canary_approval_packet.py "
+                "tests/test_model_ops_cheap_first_canary_promotion_decision.py -q"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only rollback rehearsal packet" in check["manual_note"]
+    assert "never executes rollback" in check["manual_note"]
+    assert "persists drill state" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md" in check["evidence_paths"]
+
+
 def test_route_telemetry_repository_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = {

@@ -127,6 +127,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "release_evidence",
         "cheap_first_canary_approval_packet",
     ),
+    ReadinessComponent(
+        "cheap-first-canary-rollback-drill",
+        "Cheap-first canary rollback drill",
+        "release_evidence",
+        "cheap_first_canary_rollback_drill",
+    ),
 )
 
 
@@ -196,7 +202,7 @@ class ModelOpsReadinessService:
         value = str(data.get("status") or "").strip().lower()
         if value in {"pass", "ready", "ok", "success"}:
             return "pass"
-        if value in {"advance_next_batch", "approval_ready", "monitor_only"}:
+        if value in {"advance_next_batch", "approval_ready", "drill_ready", "monitor_only"}:
             return "pass"
         if value in {
             "warn",
@@ -206,6 +212,7 @@ class ModelOpsReadinessService:
             "needs_review",
             "hold_for_review",
             "approval_blocked",
+            "drill_blocked",
             "not_ready",
             "not_supplied",
         }:

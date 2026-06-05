@@ -961,6 +961,7 @@ export type ModelOpsCheapFirstCanaryObservation = {
   validation_commands: string[];
   promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
   approval_packet?: ModelOpsCheapFirstCanaryApprovalPacket;
+  rollback_drill?: ModelOpsCheapFirstCanaryRollbackDrill;
 };
 
 export type ModelOpsCheapFirstCanaryPromotionDecision = {
@@ -1070,6 +1071,64 @@ export type ModelOpsCheapFirstCanaryApprovalPacket = {
   ready_item_ids: string[];
   blocked_item_ids: string[];
   rollback_review_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
+export type ModelOpsCheapFirstCanaryRollbackDrill = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    drill_item_count: number;
+    ready_drill_count: number;
+    blocked_drill_count: number;
+    rollback_required_count: number;
+    monitor_only_count: number;
+    source_approval_status: string;
+    source_promotion_status: string;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    rollback_executed: boolean;
+    drill_record_written: boolean;
+  };
+  rollback_drill_policy: {
+    drill_required_before_approval: boolean;
+    rollback_execution_allowed: boolean;
+    configuration_change_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    requires_trigger_review: boolean;
+    requires_holdout_confirmation: boolean;
+  };
+  rollback_drill_items: Array<{
+    id: string;
+    source_approval_item_id: string;
+    source_step_id: string;
+    task: string;
+    phase: string;
+    approval_status: string;
+    promotion_status: string;
+    drill_status: string;
+    trigger_review_status: string;
+    rollback_trigger_ids: string[];
+    reason_codes: string[];
+    required_roles: string[];
+    rehearsal_steps: string[];
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    rollback_executed: boolean;
+    drill_record_written: boolean;
+    action: string;
+  }>;
+  ready_drill_item_ids: string[];
+  blocked_drill_item_ids: string[];
+  rollback_required_item_ids: string[];
   recommended_actions: string[];
   privacy_boundary: Record<string, boolean | string>;
   claim_boundary: Record<string, boolean | string>;
@@ -1933,6 +1992,7 @@ export type ModelOpsResponse = {
   cheap_first_canary_observation?: ModelOpsCheapFirstCanaryObservation;
   cheap_first_canary_promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
   cheap_first_canary_approval_packet?: ModelOpsCheapFirstCanaryApprovalPacket;
+  cheap_first_canary_rollback_drill?: ModelOpsCheapFirstCanaryRollbackDrill;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1975,6 +2035,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     observation_rows?: unknown;
     promotion_items?: unknown;
     approval_items?: unknown;
+    rollback_drill_items?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -1987,7 +2048,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -2182,6 +2244,13 @@ export async function getModelOpsCheapFirstCanaryPromotionDecision(): Promise<Mo
 export async function getModelOpsCheapFirstCanaryApprovalPacket(): Promise<ModelOpsCheapFirstCanaryApprovalPacket> {
   return invokeModelOpsApi<ModelOpsCheapFirstCanaryApprovalPacket>({
     url: '/api/v1/aihub/models/cheap-first-canary-approval-packet',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstCanaryRollbackDrill(): Promise<ModelOpsCheapFirstCanaryRollbackDrill> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryRollbackDrill>({
+    url: '/api/v1/aihub/models/cheap-first-canary-rollback-drill',
     method: 'GET',
   });
 }

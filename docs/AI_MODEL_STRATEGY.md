@@ -174,6 +174,12 @@ maintainer signoff requirements and pre-approval checks. It does not record
 approval identity, approve automatic rollout, write configuration, call a
 gateway, or shift traffic.
 
+`cheap_first_canary_rollback_drill` consumes the approval packet downstream and
+returns rollback rehearsal tasks, trigger-review status, holdout confirmation
+requirements, and role labels. It is metadata-only: it does not execute
+rollback, persist drill state, write configuration, call a gateway, or shift
+traffic.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in

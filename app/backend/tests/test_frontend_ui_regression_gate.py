@@ -34,6 +34,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Cheap-first canary observation review" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary promotion decision" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary approval packet" in rows["/model-ops"]["protected_panels"]
+    assert "Cheap-first canary rollback drill" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert rows["/maintenance"]["status"] == "ready_with_gaps"
     assert rows["/model-ops"]["status"] == "ready_with_gaps"
