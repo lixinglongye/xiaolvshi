@@ -18,6 +18,7 @@ import {
   evaluateCheapFirstCalibration,
   evaluateGeminiVariantMatrix,
   evaluateModelGatewayProbe,
+  evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getModelGatewayProbeTemplate,
@@ -27,6 +28,7 @@ import {
   type GeminiVariantMatrix,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
+  type ModelOpsCheapFirstCanaryObservation,
   type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
 } from '@/lib/modelOpsApi';
@@ -142,6 +144,24 @@ function defaultPerformanceObservationPayload() {
   };
 }
 
+function defaultCanaryObservationPayload() {
+  return {
+    observations: [
+      {
+        step_id: 'monitor_existing_default-fast',
+        task: 'fast',
+        phase: 'monitor_existing_default',
+        request_count: 25,
+        failure_count: 0,
+        over_budget_count: 0,
+        premium_request_count: 0,
+        unknown_price_model_count: 0,
+        operator_review_count: 1,
+      },
+    ],
+  };
+}
+
 function hasForbiddenCheapFirstPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -164,6 +184,15 @@ function hasForbiddenPerformancePayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
     /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email|legal[_ -]?text)\b/i.test(
+      value,
+    )
+  );
+}
+
+function hasForbiddenCanaryObservationPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers?|email|legal[_ -]?text|client[_ -]?email)\b/i.test(
       value,
     )
   );
@@ -198,6 +227,10 @@ function Inner() {
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
   const [performanceError, setPerformanceError] = useState('');
+  const [canaryObservation, setCanaryObservation] = useState<ModelOpsCheapFirstCanaryObservation | null>(null);
+  const [canaryObservationPayloadText, setCanaryObservationPayloadText] = useState('');
+  const [canaryObservationLoading, setCanaryObservationLoading] = useState(false);
+  const [canaryObservationError, setCanaryObservationError] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -208,6 +241,8 @@ function Inner() {
     setGeminiVariantMatrix(null);
     setPerformanceError('');
     setPerformanceBudget(null);
+    setCanaryObservationError('');
+    setCanaryObservation(null);
     try {
       const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
@@ -218,6 +253,7 @@ function Inner() {
         setData(modelOpsResult.value);
         setProbeEvaluation(null);
         setPerformanceBudget(null);
+        setCanaryObservation(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
@@ -368,6 +404,40 @@ function Inner() {
     }
   };
 
+  const loadCanaryObservationTemplate = () => {
+    setCanaryObservationPayloadText(JSON.stringify(defaultCanaryObservationPayload(), null, 2));
+    setCanaryObservationError('');
+  };
+
+  const evaluateCanaryObservationPayload = async () => {
+    setCanaryObservationLoading(true);
+    setCanaryObservationError('');
+    try {
+      const text = canaryObservationPayloadText.trim();
+      if (!text) {
+        setCanaryObservationError('Canary observation payload is empty.');
+        return;
+      }
+      if (hasForbiddenCanaryObservationPayloadText(text)) {
+        setCanaryObservationError('Canary observation payload must not include keys, headers, prompts, emails, raw output, or legal text.');
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setCanaryObservationError('Canary observation payload must be a JSON object.');
+        return;
+      }
+      setCanaryObservation(await evaluateModelOpsCheapFirstCanaryObservation(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setCanaryObservationError(
+        err instanceof SyntaxError ? 'Canary observation payload is not valid JSON.' : 'Canary observation review failed.',
+      );
+    } finally {
+      setCanaryObservationLoading(false);
+    }
+  };
+
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
@@ -375,6 +445,8 @@ function Inner() {
   const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
   const cheapFirstCanarySteps = data?.cheap_first_canary_plan?.canary_steps ?? [];
   const cheapFirstCanaryTriggers = data?.cheap_first_canary_plan?.rollback_triggers ?? [];
+  const activeCanaryObservation = canaryObservation ?? data?.cheap_first_canary_observation ?? null;
+  const canaryObservationRows = activeCanaryObservation?.observation_rows ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -957,6 +1029,161 @@ function Inner() {
               {String(data.cheap_first_canary_plan.claim_boundary.production_traffic_shifted)} / automatic canary rollout:{' '}
               {String(data.cheap_first_canary_plan.claim_boundary.automatic_canary_rollout_claimed)} / raw model output:{' '}
               {String(data.cheap_first_canary_plan.privacy_boundary.raw_model_output_included)}
+            </div>
+          </section>
+        )}
+
+        {activeCanaryObservation && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first canary observation review</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCanaryObservation.summary.observation_count} observations /{' '}
+                  {activeCanaryObservation.summary.failing_observation_count} failing /{' '}
+                  {activeCanaryObservation.summary.warning_observation_count} review
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCanaryObservation.status)}>
+                {activeCanaryObservation.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryObservation.summary.total_request_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">observed requests</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCanaryObservation.summary.matched_step_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">matched steps</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCanaryObservation.summary.forbidden_payload_field_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocked payload fields</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryObservation.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryObservation.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryObservation.summary.traffic_shifted)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">traffic shifted</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-stone-500">Canary observations</h3>
+                    <div className="mt-1 text-xs text-stone-600">Aggregate counts only; no headers, keys, prompts, raw output, or legal text.</div>
+                  </div>
+                  <Button variant="outline" className="soft-button" onClick={loadCanaryObservationTemplate}>
+                    <ClipboardList className="h-4 w-4" />
+                    Template
+                  </Button>
+                </div>
+                <Textarea
+                  value={canaryObservationPayloadText}
+                  onChange={(event) => setCanaryObservationPayloadText(event.target.value)}
+                  className="min-h-[180px] font-mono text-xs"
+                  placeholder='{"observations":[{"step_id":"monitor_existing_default-fast","request_count":25}]}'
+                />
+                {canaryObservationError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">{canaryObservationError}</div>
+                )}
+                <Button
+                  className="mt-3 soft-button"
+                  onClick={evaluateCanaryObservationPayload}
+                  disabled={canaryObservationLoading}
+                >
+                  {canaryObservationLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                  Evaluate canary observations
+                </Button>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Thresholds</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {Object.entries(activeCanaryObservation.thresholds).map(([key, value]) => (
+                    <div key={key} className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                      <div className="font-mono text-[11px] text-stone-500">{key}</div>
+                      <div className="text-sm font-black text-stone-950">{value}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeCanaryObservation.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  production traffic shifted:{' '}
+                  {String(activeCanaryObservation.claim_boundary.production_traffic_shifted)} / automatic rollout:{' '}
+                  {String(activeCanaryObservation.claim_boundary.automatic_canary_rollout_claimed)} / raw payload echoed:{' '}
+                  {String(activeCanaryObservation.summary.raw_payload_echoed)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Step</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Volume</TableHead>
+                    <TableHead>Rates</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {canaryObservationRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.step_id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.status)}>
+                          {row.status}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">mapped: {String(row.source_step_found)}</div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        requests {formatNumber(row.request_count)}
+                        <br />
+                        failures {formatNumber(row.failure_count)} / review {formatNumber(row.operator_review_count)}
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        fail {Math.round(row.failure_rate * 100)}% / over budget{' '}
+                        {Math.round(row.over_budget_route_ratio * 100)}%
+                        <br />
+                        premium {Math.round(row.premium_request_ratio * 100)}% / review{' '}
+                        {Math.round(row.operator_review_route_ratio * 100)}%
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.reason_codes.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </section>
         )}

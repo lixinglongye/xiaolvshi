@@ -52,6 +52,7 @@ from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationS
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
+from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirstCanaryObservationService
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
@@ -275,6 +276,8 @@ async def list_models():
     default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
     model_ops_signals["default_change_queue"] = default_change_queue
     cheap_first_canary_plan = ModelOpsCheapFirstCanaryPlanService().build_plan(model_ops_signals)
+    model_ops_signals["cheap_first_canary_plan"] = cheap_first_canary_plan
+    cheap_first_canary_observation = ModelOpsCheapFirstCanaryObservationService().build_review(None, model_ops_signals)
     payload = {
         "success": True,
         "routing_aliases": {
@@ -321,6 +324,7 @@ async def list_models():
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "cheap_first_canary_plan": cheap_first_canary_plan,
+        "cheap_first_canary_observation": cheap_first_canary_observation,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -431,6 +435,29 @@ async def model_ops_cheap_first_canary_plan():
     return {
         "success": True,
         "data": models_payload["cheap_first_canary_plan"],
+    }
+
+
+@router.get("/models/cheap-first-canary-observation")
+async def model_ops_cheap_first_canary_observation():
+    """Return metadata-only canary observation review template evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_canary_observation"],
+    }
+
+
+@router.post("/models/cheap-first-canary-observation")
+async def evaluate_model_ops_cheap_first_canary_observation(payload: dict[str, Any]):
+    """Evaluate sanitized aggregate canary observations without executing rollout."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": ModelOpsCheapFirstCanaryObservationService().build_review(
+            payload,
+            {"cheap_first_canary_plan": models_payload["cheap_first_canary_plan"]},
+        ),
     }
 
 

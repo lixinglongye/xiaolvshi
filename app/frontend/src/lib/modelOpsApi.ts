@@ -903,6 +903,64 @@ export type ModelOpsCheapFirstCanaryPlan = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstCanaryObservation = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observation_count: number;
+    matched_step_count: number;
+    unmatched_step_count: number;
+    passing_observation_count: number;
+    warning_observation_count: number;
+    failing_observation_count: number;
+    rollback_trigger_breach_count: number;
+    total_request_count: number;
+    forbidden_payload_field_count: number;
+    secret_like_value_count: number;
+    source_plan_status: string;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    raw_payload_echoed: boolean;
+  };
+  thresholds: Record<string, number>;
+  observation_rows: Array<{
+    id: string;
+    step_id: string;
+    task: string;
+    phase: string;
+    status: string;
+    source_step_found: boolean;
+    request_count: number;
+    failure_count: number;
+    over_budget_count: number;
+    premium_request_count: number;
+    operator_review_count: number;
+    failure_rate: number;
+    over_budget_route_ratio: number;
+    premium_request_ratio: number;
+    operator_review_route_ratio: number;
+    checks: Array<{
+      id: string;
+      status: string;
+      value: number;
+      threshold: number;
+      reason: string;
+    }>;
+    reason_codes: string[];
+    action: string;
+  }>;
+  blocking_observation_ids: string[];
+  warning_observation_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsPerformanceBudget = {
   status: string;
   method: {
@@ -1757,6 +1815,7 @@ export type ModelOpsResponse = {
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
   cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
+  cheap_first_canary_observation?: ModelOpsCheapFirstCanaryObservation;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1796,6 +1855,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     validation_commands?: unknown;
     queue_items?: unknown;
     canary_steps?: unknown;
+    observation_rows?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -1805,7 +1865,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -1970,6 +2031,23 @@ export async function getModelOpsCheapFirstCanaryPlan(): Promise<ModelOpsCheapFi
   return invokeModelOpsApi<ModelOpsCheapFirstCanaryPlan>({
     url: '/api/v1/aihub/models/cheap-first-canary-plan',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstCanaryObservation(): Promise<ModelOpsCheapFirstCanaryObservation> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryObservation>({
+    url: '/api/v1/aihub/models/cheap-first-canary-observation',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsCheapFirstCanaryObservation(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsCheapFirstCanaryObservation> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryObservation>({
+    url: '/api/v1/aihub/models/cheap-first-canary-observation',
+    method: 'POST',
+    data: payload,
   });
 }
 

@@ -15,6 +15,8 @@ edited. It separates:
 
 The plan is intentionally metadata-only. It never writes `.env` files, changes
 traffic routing, calls a gateway, or starts a canary by itself.
+`cheap_first_canary_observation` consumes aggregate canary metrics downstream
+and checks whether each staged step passes, needs review, or should roll back.
 
 ## Endpoint
 
@@ -92,3 +94,4 @@ Related files:
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_OBSERVATION.md`

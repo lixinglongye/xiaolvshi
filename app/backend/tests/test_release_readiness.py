@@ -261,6 +261,34 @@ def test_model_ops_cheap_first_canary_plan_is_required_model_ops_gate():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PLAN.md" in check["evidence_paths"]
 
 
+def test_model_ops_cheap_first_canary_observation_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-canary-observation"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-canary-observation": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-canary-observation")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-canary-observation",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py "
+                "tests/test_model_ops_cheap_first_canary_plan.py "
+                "tests/test_model_ops_default_change_queue.py -q"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only canary observation review" in check["manual_note"]
+    assert "never stores raw payloads" in check["manual_note"]
+    assert "shifts production traffic" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_canary_observation.py" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_OBSERVATION.md" in check["evidence_paths"]
+
+
 def test_route_telemetry_repository_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = {

@@ -159,6 +159,11 @@ triggers, and observation windows, while keeping review-required or blocked
 changes at 0% traffic. It is metadata-only and does not write configuration,
 call a gateway, or claim that production traffic shifted.
 
+`cheap_first_canary_observation` consumes sanitized aggregate observation counts
+for those steps. It checks failure, over-budget, premium/unknown-price, and
+operator-review ratios against rollout thresholds, rejects sensitive field names
+without echoing values, and never persists observations or advances traffic.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in
