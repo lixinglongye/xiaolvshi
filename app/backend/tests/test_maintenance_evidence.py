@@ -45,6 +45,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI cheap-first calibration" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini model variant matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry operations summary" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry triage queue" in profile["release_management"]["release_readiness_controls"]
@@ -89,10 +90,15 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/gemini_newapi_cheap_first_calibration.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md" in evidence_paths
+    assert "app/backend/services/gemini_model_variant_matrix.py" in evidence_paths
+    assert "app/backend/tests/test_gemini_model_variant_matrix.py" in evidence_paths
+    assert "docs/GEMINI_MODEL_VARIANT_MATRIX.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     assert "public benchmark research mappings" in model_signal["description"]
+    assert "Gemini variant matrix review" in model_signal["description"]
     assert "sanitized ModelOps calibration review" in model_signal["description"]
     assert "sanitized review-form upkeep" in model_signal["responsibility"]
+    assert "Gemini variant matrix review" in model_signal["responsibility"]
     assert "public benchmark mapping review" in model_signal["responsibility"]
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
     assert "app/backend/tests/test_route_telemetry_repository.py" in evidence_paths

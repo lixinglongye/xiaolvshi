@@ -30,6 +30,7 @@ from services.aihub import (
     InvalidPdfInputError,
 )
 from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
+from services.gemini_model_variant_matrix import GeminiModelVariantMatrixService
 from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
@@ -189,6 +190,9 @@ async def list_models():
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
     cheap_first_calibration = GeminiNewapiCheapFirstCalibrationService().build_calibration()
+    gemini_variant_matrix = GeminiModelVariantMatrixService().build_matrix(
+        {"observed_models": observed_gateway_models}
+    )
     price_refresh_monitor = ModelPriceRefreshMonitorService().build_monitor(
         observed_gateway_models,
         forecast,
@@ -221,6 +225,7 @@ async def list_models():
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
+        "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
     }
     return {
@@ -261,6 +266,7 @@ async def list_models():
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
+        "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
         "models": catalog_for_api(),
         "usage": usage,
@@ -311,6 +317,24 @@ async def evaluate_cheap_first_calibration(payload: dict[str, Any]):
     return {
         "success": True,
         "data": GeminiNewapiCheapFirstCalibrationService().build_calibration(payload),
+    }
+
+
+@router.get("/models/gemini-variant-matrix")
+async def gemini_variant_matrix():
+    """Return metadata-only Gemini/NewAPI variant routing matrix evidence."""
+    return {
+        "success": True,
+        "data": GeminiModelVariantMatrixService().build_matrix(),
+    }
+
+
+@router.post("/models/gemini-variant-matrix")
+async def evaluate_gemini_variant_matrix(payload: dict[str, Any]):
+    """Evaluate observed Gemini-like model ids without calling NewAPI."""
+    return {
+        "success": True,
+        "data": GeminiModelVariantMatrixService().build_matrix(payload),
     }
 
 

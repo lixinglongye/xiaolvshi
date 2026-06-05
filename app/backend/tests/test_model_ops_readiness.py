@@ -51,6 +51,23 @@ def test_model_ops_readiness_warns_on_warning_component():
     assert result["summary"]["optional_review_count"] == 0
 
 
+def test_model_ops_readiness_warns_on_review_required_gemini_variant_matrix():
+    signals = _signals("pass")
+    signals["gemini_variant_matrix"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 0, "fail_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["catalog-unpriced-models"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gemini-variant-matrix" in result["warning_check_ids"]
+    assert "gemini-variant-matrix" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+
+
 def test_model_ops_readiness_fails_on_blocking_component():
     signals = _signals("pass")
     signals["cost_guardrails"] = {
@@ -141,4 +158,8 @@ def test_model_ops_route_includes_readiness():
     assert "gateway_probe_evaluation" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_variant_matrix" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"

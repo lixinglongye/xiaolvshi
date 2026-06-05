@@ -92,6 +92,10 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
+  () => assertIncludes(modelOpsPage, 'Gemini variant matrix', 'model-ops Gemini variant matrix panel'),
+  () => assertIncludes(modelOpsPage, 'Prefix compatibility', 'model-ops Gemini prefix compatibility panel'),
+  () => assertIncludes(modelOpsPage, 'gateway called: {String(data.gemini_variant_matrix.privacy_boundary.gateway_called)}', 'model-ops Gemini variant privacy boundary'),
+  () => assertIncludes(modelOpsPage, 'geminiVariantRows', 'model-ops Gemini variant row binding'),
   () => assertIncludes(modelOpsPage, 'Calibration payload', 'model-ops cheap-first payload evaluator'),
   () => assertIncludes(modelOpsPage, 'hasForbiddenCheapFirstPayloadText', 'model-ops cheap-first payload guard'),
   () => assertIncludes(modelOpsPage, 'blocked payload fields', 'model-ops cheap-first backend payload safety summary'),
@@ -100,6 +104,9 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'route_telemetry_remediation', 'model-ops route remediation binding'),
   () => assertIncludes(modelOpsApi, 'evaluateCheapFirstCalibration', 'model-ops cheap-first evaluation API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-calibration', 'model-ops cheap-first calibration endpoint'),
+  () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
+  () => assertIncludes(modelOpsApi, 'gemini_variant_matrix', 'model-ops Gemini variant matrix response binding'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-variant-matrix', 'model-ops Gemini variant matrix endpoint'),
   () => assertIncludes(modelOpsApi, 'external_research_mappings', 'model-ops cheap-first research mapping type'),
 ];
 

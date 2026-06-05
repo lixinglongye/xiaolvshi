@@ -212,6 +212,92 @@ export type ModelGatewayCompatibility = {
   recommended_actions: string[];
 };
 
+export type GeminiVariantMatrixFamilyRow = {
+  family: string;
+  catalog_model_count: number;
+  cost_posture: string;
+  default_use: string;
+  high_frequency_default_allowed: boolean;
+  catalog_patterns: string[];
+  catalog_models: string[];
+};
+
+export type GeminiVariantMatrixModelRow = {
+  model_id: string;
+  family: string;
+  catalog_status: string;
+  cost_tier: string;
+  latency_tier: string;
+  route_role: string;
+  high_frequency_default_allowed: boolean;
+  balanced_retry_allowed: boolean;
+  premium_exception_required: boolean;
+  media_route_only: boolean;
+  pricing_status: string;
+  configured_roles: string[];
+  capabilities: string[];
+  supported_request_shapes: string[];
+  review_note: string;
+};
+
+export type GeminiVariantMatrixObservedReview = {
+  raw_model: string;
+  canonical_model?: string | null;
+  status: string;
+  action: string;
+  cost_tier?: string | null;
+  default_allowed_for_high_frequency: boolean;
+  warnings: string[];
+};
+
+export type GeminiVariantMatrix = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    catalog_model_count: number;
+    family_count: number;
+    high_frequency_default_allowed_count: number;
+    explicit_only_model_count: number;
+    preview_model_count: number;
+    unpriced_model_count: number;
+    observed_model_count: number;
+    catalog_review_count: number;
+    cheap_first_default_model: string;
+    raw_payload_echoed: boolean;
+  };
+  family_rows: GeminiVariantMatrixFamilyRow[];
+  model_rows: GeminiVariantMatrixModelRow[];
+  observed_model_reviews: GeminiVariantMatrixObservedReview[];
+  prefix_compatibility: {
+    gateway: string;
+    request_shape: string;
+    openai_compatible: boolean;
+    accepted_prefix_examples: Array<{
+      shape: string;
+      example: string;
+      normalization: string;
+    }>;
+    pass_through_rule: string;
+  };
+  unknown_model_policy: Record<string, unknown>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    raw_payload_echoed: boolean;
+    credentials_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    gateway_called: boolean;
+    output_scope: string;
+  };
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlanRole = {
   role: string;
   model: string;
@@ -1290,6 +1376,7 @@ export type ModelOpsResponse = {
   model_configuration_audit?: ModelConfigurationAudit;
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
+  gemini_variant_matrix?: GeminiVariantMatrix;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
   lifecycle_policy?: ModelLifecyclePolicy;
@@ -1347,12 +1434,15 @@ function hasModelOpsPayload(value: unknown): boolean {
     recommended_actions?: unknown;
     calibration_tasks?: unknown;
     calibration_rows?: unknown;
+    model_rows?: unknown;
+    family_rows?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
       || (Boolean(payload.method) && Boolean(payload.payload_shape))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
-      || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows)),
+      || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
+      || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows)),
   );
 }
 
@@ -1416,6 +1506,13 @@ export async function evaluateModelGatewayProbe(payload: Record<string, unknown>
 export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibration> {
   return invokeModelOpsApi<ModelCheapFirstCalibration>({
     url: '/api/v1/aihub/models/cheap-first-calibration',
+    method: 'GET',
+  });
+}
+
+export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
+  return invokeModelOpsApi<GeminiVariantMatrix>({
+    url: '/api/v1/aihub/models/gemini-variant-matrix',
     method: 'GET',
   });
 }

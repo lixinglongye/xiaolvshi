@@ -259,6 +259,9 @@ function Inner() {
   const defaultOptimizationRows = data?.default_optimization?.recommendations ?? [];
   const gatewayCompatibilityRows = data?.gateway_compatibility?.configured_roles ?? [];
   const gatewayExampleRows = data?.gateway_compatibility?.gateway_examples ?? [];
+  const geminiVariantRows = data?.gemini_variant_matrix?.model_rows ?? [];
+  const geminiVariantFamilyRows = data?.gemini_variant_matrix?.family_rows ?? [];
+  const geminiVariantObservedRows = data?.gemini_variant_matrix?.observed_model_reviews ?? [];
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -698,6 +701,208 @@ function Inner() {
                 </TableBody>
               </Table>
             </div>
+          </section>
+        )}
+
+        {data?.gemini_variant_matrix && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini variant matrix</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.gemini_variant_matrix.summary.catalog_model_count} variants /{' '}
+                  {data.gemini_variant_matrix.summary.high_frequency_default_allowed_count} high-frequency defaults /{' '}
+                  {data.gemini_variant_matrix.summary.catalog_review_count} catalog reviews
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.gemini_variant_matrix.status)}>
+                {data.gemini_variant_matrix.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {data.gemini_variant_matrix.summary.cheap_first_default_model}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first default</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gemini_variant_matrix.summary.explicit_only_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">explicit / escalation models</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gemini_variant_matrix.summary.preview_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">preview variants</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gemini_variant_matrix.summary.unpriced_model_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">unpriced variants</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.gemini_variant_matrix.warning_check_ids.length}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warning checks</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Family</TableHead>
+                      <TableHead>Models</TableHead>
+                      <TableHead>Default posture</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {geminiVariantFamilyRows.map((row) => (
+                      <TableRow key={row.family}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.family}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {row.catalog_patterns.join(', ')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-2xl font-black text-stone-950">{row.catalog_model_count}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{row.catalog_models.join(', ') || '-'}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[440px] text-xs leading-5 text-stone-600">
+                          <Badge
+                            variant="outline"
+                            className={row.high_frequency_default_allowed ? statusClass('pass') : statusClass('warn')}
+                          >
+                            {row.high_frequency_default_allowed ? 'high-frequency allowed' : 'explicit or escalation'}
+                          </Badge>
+                          <div className="mt-2">{row.default_use}</div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Prefix compatibility</h3>
+                <div className="space-y-2 text-xs leading-5 text-stone-600">
+                  {data.gemini_variant_matrix.prefix_compatibility.accepted_prefix_examples.map((item) => (
+                    <div key={item.example} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="font-mono text-stone-950">{item.example}</div>
+                      <div>{item.normalization}</div>
+                    </div>
+                  ))}
+                </div>
+                <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>gateway called: {String(data.gemini_variant_matrix.privacy_boundary.gateway_called)}</div>
+                  <div>raw payload echoed: {String(data.gemini_variant_matrix.privacy_boundary.raw_payload_echoed)}</div>
+                  <div>raw model output: {String(data.gemini_variant_matrix.privacy_boundary.raw_model_output_included)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Route role</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Request shapes</TableHead>
+                    <TableHead>Review note</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {geminiVariantRows.map((row) => (
+                    <TableRow key={row.model_id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                        <div className="mt-1 text-xs text-stone-600">{row.family}</div>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {row.configured_roles.map((role) => (
+                            <Badge key={role} variant="outline" className="bg-white font-mono text-[10px] text-stone-700">
+                              {role}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            row.route_role === 'cheap_first_default'
+                              ? statusClass('pass')
+                              : row.route_role === 'premium_exception'
+                                ? statusClass('fail')
+                                : statusClass('warn')
+                          }
+                        >
+                          {row.route_role.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          high-frequency: {String(row.high_frequency_default_allowed)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                          {row.cost_tier}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.pricing_status}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[320px] font-mono text-[11px] leading-5 text-stone-600">
+                        {row.supported_request_shapes.join(', ')}
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        {row.review_note}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {geminiVariantObservedRows.length > 0 && (
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Observed model</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Canonical</TableHead>
+                      <TableHead>Warnings</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {geminiVariantObservedRows.map((row) => (
+                      <TableRow key={row.raw_model}>
+                        <TableCell className="font-mono text-xs text-stone-700">{row.raw_model}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={row.status === 'catalog_known' ? statusClass('pass') : statusClass('warn')}
+                          >
+                            {row.status.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</TableCell>
+                        <TableCell className="max-w-[480px] text-xs leading-5 text-stone-600">
+                          {row.warnings.join(', ') || row.action}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </section>
         )}
 

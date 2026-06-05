@@ -18,6 +18,7 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
+    ReadinessComponent("gemini-variant-matrix", "Gemini variant matrix", "configuration", "gemini_variant_matrix"),
     ReadinessComponent(
         "gateway-probe-evaluation",
         "Gateway probe evaluation",
@@ -144,7 +145,7 @@ class ModelOpsReadinessService:
         value = str(data.get("status") or "").strip().lower()
         if value in {"pass", "ready", "ok", "success"}:
             return "pass"
-        if value in {"warn", "warning", "manual_review"}:
+        if value in {"warn", "warning", "manual_review", "review_required", "needs_review"}:
             return "warn"
         if value == "not_run" and not component.required:
             return "warn"
