@@ -31,6 +31,7 @@ from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolic
 from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
 from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplayService
@@ -182,6 +183,15 @@ async def get_feedback_roadmap_mapping():
     return {
         "success": True,
         "data": FeedbackRoadmapAlignmentService().build_mapping_catalog(),
+    }
+
+
+@router.get("/frontend-ui-regression-gate")
+async def get_frontend_ui_regression_gate():
+    """Return metadata-only frontend UI regression gate coverage."""
+    return {
+        "success": True,
+        "data": FrontendUiRegressionGateService().build_gate(),
     }
 
 

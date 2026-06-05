@@ -1,6 +1,6 @@
 # Release Readiness
 
-Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, and `legal-document-coverage-claim-policy` expose the local legal-document fixture coverage matrix in backend release checks, the maintenance UI, and a claim-review route. The checks are metadata-only and do not claim external benchmark scores, model-run accuracy, universal document support, or real client-document testing.
+Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, `frontend-ui-regression-gate`, and `legal-document-coverage-claim-policy` expose the local legal-document fixture coverage matrix in backend release checks, the maintenance UI, reviewer-facing UI regression gates, and a claim-review route. The checks are metadata-only and do not claim external benchmark scores, model-run accuracy, universal document support, or real client-document testing.
 
 Additional optional evidence: `legal-document-benchmark-gap-fixtures` validates the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures against the same low-resource benchmark suite.
 
@@ -18,6 +18,7 @@ POST /api/v1/maintenance/release-readiness
 ```json
 {
   "backend-tests": "pass",
+  "frontend-lint": "pass",
   "frontend-typecheck": "pass",
   "frontend-build": "pass",
   "secret-scan": "pass",
@@ -129,9 +130,13 @@ Optional evidence checks, such as OSS maintenance evidence, product feature gap 
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in
-OpenAPI. The related optional frontend checks use `npm run typecheck` to verify
-the case workbench state event panel, metadata-only legal RAG research panel,
-and billing usage badge wiring.
+OpenAPI. The related frontend checks use `npm run lint`, `npm run typecheck`,
+and `npm run build` to verify case workbench state event panels,
+metadata-only legal RAG research panels, billing usage badge wiring,
+maintenance evidence wiring, and model-ops wiring. The optional
+`frontend-ui-regression-gate` records that `/maintenance` and `/model-ops`
+still need mocked page-level regression tests; it is not proof that every
+browser state is automated.
 
 Additional optional evidence now covers the billing report preflight route,
 privacy-safe case edit runtime event binding, metadata-only legal RAG context

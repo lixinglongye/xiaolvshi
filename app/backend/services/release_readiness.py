@@ -87,6 +87,20 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests -q",
             ),
             ReleaseCheck(
+                id="frontend-lint",
+                title="Frontend lint check",
+                category="tests",
+                required=True,
+                owner="frontend",
+                evidence_paths=(
+                    "app/frontend/package.json",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/src/pages/CaseDetailPage.tsx",
+                ),
+                validation_command="npm run lint",
+            ),
+            ReleaseCheck(
                 id="frontend-typecheck",
                 title="Frontend TypeScript check",
                 category="tests",
@@ -1062,6 +1076,22 @@ class ReleaseReadinessService:
                 ),
                 validation_command="python -m pytest tests/test_case_workbench_payload.py tests/test_matter_intake_readiness_policy.py tests/test_deadline_validation_policy.py tests/test_case_timeline_deadline_risk.py tests/test_case_task_notification_policy.py tests/test_case_evidence_graph.py -q",
                 manual_note="This assembles existing metadata into a dashboard contract; persistent case workspace storage and UI binding remain separate implementation steps.",
+            ),
+            ReleaseCheck(
+                id="frontend-ui-regression-gate",
+                title="Frontend UI regression gate",
+                category="maintenance",
+                required=False,
+                owner="frontend",
+                evidence_paths=(
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                ),
+                validation_command="python -m pytest tests/test_frontend_ui_regression_gate.py -q",
+                manual_note="This metadata-only gate tracks lint/typecheck/build coverage and missing mocked page-regression automation for /maintenance and /model-ops.",
             ),
             ReleaseCheck(
                 id="case-workbench-persistence-plan",

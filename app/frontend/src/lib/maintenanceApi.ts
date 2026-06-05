@@ -185,6 +185,75 @@ type UserNeedBenchmarkCoverageResponse = {
   data: UserNeedBenchmarkCoverage;
 };
 
+export type FrontendUiRegressionCommandGate = {
+  id: string;
+  command: string;
+  purpose: string;
+  required: boolean;
+  script_present: boolean;
+  ready: boolean;
+  gap_reason: string;
+};
+
+export type FrontendUiRegressionPageRow = {
+  route: string;
+  page: string;
+  source_path: string;
+  source_exists: boolean;
+  risk_area: string;
+  protected_panels: string[];
+  covered_by: string[];
+  ready_cover: string[];
+  missing_cover: string[];
+  missing_automation: string[];
+  status: string;
+};
+
+export type FrontendUiRegressionFailureMode = {
+  id: string;
+  page: string;
+  current_control: string;
+  regression_target: string;
+};
+
+export type FrontendUiRegressionGate = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    page_count: number;
+    command_gate_count: number;
+    ready_command_gate_count: number;
+    required_command_gate_count: number;
+    missing_required_command_count: number;
+    protected_panel_count: number;
+    missing_page_automation_count: number;
+    manual_browser_smoke_required: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  command_gates: FrontendUiRegressionCommandGate[];
+  page_rows: FrontendUiRegressionPageRow[];
+  failure_modes: FrontendUiRegressionFailureMode[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    reads_package_script_names: boolean;
+    reads_page_source_paths: boolean;
+    returns_source_code: boolean;
+    returns_raw_browser_storage: boolean;
+    returns_raw_model_output: boolean;
+    returns_credentials: boolean;
+  };
+  validation_commands: string[];
+};
+
+type FrontendUiRegressionGateResponse = {
+  success: boolean;
+  data: FrontendUiRegressionGate;
+};
+
 export type ProductFeatureGap = {
   id: string;
   title: string;
@@ -2972,6 +3041,18 @@ export async function getUserNeedBenchmarkCoverage(): Promise<UserNeedBenchmarkC
     return payload.data;
   }
   return payload as UserNeedBenchmarkCoverage;
+}
+
+export async function getFrontendUiRegressionGate(): Promise<FrontendUiRegressionGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/frontend-ui-regression-gate',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as FrontendUiRegressionGateResponse | FrontendUiRegressionGate;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as FrontendUiRegressionGate;
 }
 
 export async function getProductFeatureGapRadar(): Promise<ProductFeatureGapRadar> {

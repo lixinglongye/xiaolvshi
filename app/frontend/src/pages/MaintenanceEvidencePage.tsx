@@ -25,6 +25,7 @@ import {
   getClientDeliveryRiskChecklist,
   getContinuousUpdateLedger,
   getEvidenceExhibitPackagePolicy,
+  getFrontendUiRegressionGate,
   getLegalFixtureImprovementPlan,
   getLegalFixtureEvidenceBundle,
   getLegalFixtureModelMatrix,
@@ -73,6 +74,7 @@ import {
   type ContinuousUpdateLedgerEntry,
   type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
+  type FrontendUiRegressionGate,
   type GeminiNewApiModelSelectorEvidence,
   type GeminiNewApiSelectorReplayEvidence,
   type LawyerReviewWorkflowPolicy,
@@ -297,6 +299,7 @@ function Inner() {
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
+  const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
@@ -391,6 +394,11 @@ function Inner() {
           label: 'User need benchmark coverage',
           run: getUserNeedBenchmarkCoverage,
           apply: (value) => setUserNeedBenchmarkCoverage(value as UserNeedBenchmarkCoverage),
+        },
+        {
+          label: 'Frontend UI regression gate',
+          run: getFrontendUiRegressionGate,
+          apply: (value) => setFrontendUiRegressionGate(value as FrontendUiRegressionGate),
         },
         {
           label: 'Product feature gap radar',
@@ -2715,6 +2723,144 @@ function Inner() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </section>
+            )}
+
+            {frontendUiRegressionGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Frontend UI regression gate</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {frontendUiRegressionGate.summary.ready_command_gate_count}/
+                      {frontendUiRegressionGate.summary.required_command_gate_count} command gates ready /{' '}
+                      {frontendUiRegressionGate.summary.missing_page_automation_count} automation gaps
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[frontendUiRegressionGate.status] ?? statusClass.warn}
+                  >
+                    {displayToken(frontendUiRegressionGate.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    { label: 'pages', value: frontendUiRegressionGate.summary.page_count },
+                    { label: 'command gates', value: frontendUiRegressionGate.summary.command_gate_count },
+                    { label: 'protected panels', value: frontendUiRegressionGate.summary.protected_panel_count },
+                    { label: 'missing automation', value: frontendUiRegressionGate.summary.missing_page_automation_count },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Gate</TableHead>
+                          <TableHead>Ready</TableHead>
+                          <TableHead>Command</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {frontendUiRegressionGate.command_gates.map((gate) => (
+                          <TableRow key={gate.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{displayToken(gate.id)}</div>
+                              <div className="mt-1 max-w-[340px] text-xs leading-5 text-stone-600">{gate.purpose}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[readinessStatus(gate.ready)] ?? statusClass.warn}
+                              >
+                                {gate.ready ? 'ready' : 'missing'}
+                              </Badge>
+                              {gate.gap_reason && (
+                                <div className="mt-2 font-mono text-[11px] text-stone-500">{gate.gap_reason}</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-600">{gate.command}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Page</TableHead>
+                          <TableHead>Protected panels</TableHead>
+                          <TableHead>Missing automation</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {frontendUiRegressionGate.page_rows.map((row) => (
+                          <TableRow key={row.route}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.route}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_path}</div>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.status] ?? statusClass.warn}
+                              >
+                                {displayToken(row.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {row.protected_panels.join(', ')}
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.missing_automation.join(', ') || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Failure modes</h3>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {frontendUiRegressionGate.failure_modes.map((mode) => (
+                        <div key={mode.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                          <div className="font-semibold text-stone-950">{displayToken(mode.id)}</div>
+                          <div className="mt-1 text-xs text-stone-500">{mode.page}</div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{mode.regression_target}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>source code returned: {String(frontendUiRegressionGate.privacy_boundary.returns_source_code)}</div>
+                      <div>browser storage returned: {String(frontendUiRegressionGate.privacy_boundary.returns_raw_browser_storage)}</div>
+                      <div>raw model output returned: {String(frontendUiRegressionGate.privacy_boundary.returns_raw_model_output)}</div>
+                      <div>credentials returned: {String(frontendUiRegressionGate.privacy_boundary.returns_credentials)}</div>
+                    </div>
+                    <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {frontendUiRegressionGate.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </section>
             )}

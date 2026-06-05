@@ -752,6 +752,23 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("reviewer-visibility",),
             ),
             LedgerEntry(
+                id="frontend-ui-regression-gate",
+                title="Frontend UI regression gate",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact="Adds metadata-only release evidence for /maintenance and /model-ops UI gates, including lint, typecheck, build, manual browser smoke, and missing mocked regression automation.",
+                evidence_paths=(
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                ),
+                release_gate_links=("frontend-ui-regression-gate", "frontend-lint", "frontend-typecheck", "frontend-build"),
+                user_need_ids=("reviewer-visibility", "low-cost-routing", "legal-review-benchmark"),
+            ),
+            LedgerEntry(
                 id="cheap-first-result-archive",
                 title="Cheap-first fixture result archive",
                 category="release_evidence",
