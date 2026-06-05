@@ -64,6 +64,7 @@ from services.legal_external_research_digest import LegalExternalResearchDigestS
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
+from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
@@ -1187,6 +1188,15 @@ async def get_legal_rag_hallucination_triage_gate():
     return {
         "success": True,
         "data": LegalRagHallucinationTriageGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-abstention-escalation-gate")
+async def get_legal_rag_abstention_escalation_gate():
+    """Return metadata-only Legal RAG answer abstention and escalation evidence."""
+    return {
+        "success": True,
+        "data": LegalRagAbstentionEscalationGateService().build_gate(),
     }
 
 

@@ -493,6 +493,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
     }
@@ -580,5 +581,11 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/legal_rag_hallucination_triage_gate.py" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
     assert "app/backend/tests/test_legal_rag_hallucination_triage_gate.py" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_HALLUCINATION_TRIAGE_GATE.md" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG abstention escalation gate evidence" in checks["legal-rag-abstention-escalation-gate"]["manual_note"]
+    assert "raw retrieved context" in checks["legal-rag-abstention-escalation-gate"]["manual_note"]
+    assert "credentials" in checks["legal-rag-abstention-escalation-gate"]["manual_note"]
+    assert "app/backend/services/legal_rag_abstention_escalation_gate.py" in checks["legal-rag-abstention-escalation-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_abstention_escalation_gate.py" in checks["legal-rag-abstention-escalation-gate"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_ABSTENTION_ESCALATION_GATE.md" in checks["legal-rag-abstention-escalation-gate"]["evidence_paths"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

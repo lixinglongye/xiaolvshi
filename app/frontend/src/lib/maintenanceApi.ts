@@ -2657,6 +2657,92 @@ export type LegalRagHallucinationTriageGate = {
   validation_commands: string[];
 };
 
+export type LegalRagAbstentionEscalationDecisionRow = {
+  id?: string;
+  case_id?: string;
+  fixture_id?: string;
+  mode?: string;
+  decision_mode?: string;
+  decision?: string;
+  answer_mode?: string;
+  evidence_sufficiency?: string;
+  evidence_sufficiency_status?: string;
+  block_release?: boolean;
+  blocker_ids?: string[];
+  linked_gate_ids?: string[];
+  [key: string]: unknown;
+};
+
+export type LegalRagAbstentionEscalationGate = {
+  id?: string;
+  status: string;
+  title?: string;
+  summary: {
+    decision_row_count?: number;
+    row_count?: number;
+    answer_count?: number;
+    answer_with_warning_count?: number;
+    abstain_count?: number;
+    ask_clarification_count?: number;
+    lawyer_review_count?: number;
+    premium_exception_count?: number;
+    cheap_first_count?: number;
+    cheap_first_route_count?: number;
+    blocker_count?: number;
+    evidence_sufficient_count?: number;
+    evidence_gap_count?: number;
+    evidence_insufficient_count?: number;
+    authority_gate_status?: string;
+    authority_citation_gate_status?: string;
+    hallucination_gate_status?: string;
+    hallucination_triage_gate_status?: string;
+    decision_counts?: Record<string, number>;
+    evidence_sufficiency_counts?: Record<string, number>;
+    [key: string]: unknown;
+  };
+  decision_rows: LegalRagAbstentionEscalationDecisionRow[];
+  decision_counts?: Record<string, number>;
+  evidence_sufficiency_counts?: Record<string, number>;
+  linkage?: {
+    authority_gate_status?: string;
+    authority_citation_gate_status?: string;
+    hallucination_gate_status?: string;
+    hallucination_triage_gate_status?: string;
+    linked_gate_ids?: string[];
+    [key: string]: unknown;
+  };
+  routing_policy?: {
+    cheap_first_route?: string | boolean;
+    cheap_first_allowed?: boolean;
+    premium_exception_boundary?: string;
+    premium_exception_allowed?: boolean;
+    premium_exception_requires_lawyer_review?: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed?: boolean;
+    legal_answer_accuracy_claimed?: boolean;
+    automatic_escalation_claimed?: boolean;
+    premium_exception_delivery_claimed?: boolean;
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only?: boolean;
+    model_called?: boolean;
+    gateway_called?: boolean;
+    network_called?: boolean;
+    returns_raw_fixture?: boolean;
+    returns_raw_fixture_payload?: boolean;
+    returns_retrieved_context?: boolean;
+    returns_raw_legal_text?: boolean;
+    returns_raw_model_output?: boolean;
+    returns_gateway_payload?: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2895,6 +2981,16 @@ type LegalRagHallucinationTriageGateResponse = {
     | LegalRagHallucinationTriageGate
     | {
         legalRagHallucinationTriageGate: LegalRagHallucinationTriageGate;
+      };
+};
+
+type LegalRagAbstentionEscalationGateResponse = {
+  success: boolean;
+  data:
+    | LegalRagAbstentionEscalationGate
+    | {
+        legalRagAbstentionEscalationGate?: LegalRagAbstentionEscalationGate;
+        legal_rag_abstention_escalation_gate?: LegalRagAbstentionEscalationGate;
       };
 };
 
@@ -4160,6 +4256,21 @@ export async function getLegalRagHallucinationTriageGate(): Promise<LegalRagHall
     return payload.legalRagHallucinationTriageGate;
   }
   return payload;
+}
+
+export async function getLegalRagAbstentionEscalationGate(): Promise<LegalRagAbstentionEscalationGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-abstention-escalation-gate',
+    method: 'GET',
+  });
+  const payload = unwrapMaintenanceData<LegalRagAbstentionEscalationGateResponse['data']>(resp);
+  if ('legal_rag_abstention_escalation_gate' in payload && payload.legal_rag_abstention_escalation_gate) {
+    return payload.legal_rag_abstention_escalation_gate;
+  }
+  if ('legalRagAbstentionEscalationGate' in payload && payload.legalRagAbstentionEscalationGate) {
+    return payload.legalRagAbstentionEscalationGate;
+  }
+  return payload as LegalRagAbstentionEscalationGate;
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

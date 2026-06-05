@@ -44,6 +44,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
@@ -233,6 +234,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("raw retrieved context" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write model routes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not download datasets" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store external legal text" in guardrail for guardrail in profile["application_guardrails"])

@@ -118,6 +118,20 @@ const checks = [
   () => assertIncludes(maintenancePage, 'retrieved context returned', 'legal RAG hallucination retrieval privacy boundary'),
   () => assertIncludes(maintenancePage, 'credential material returned', 'legal RAG hallucination credential privacy boundary'),
   () => assertIncludes(maintenancePage, 'legalRagHallucinationTriageGate.validation_commands', 'legal RAG hallucination validation binding'),
+  () => assertIncludes(maintenancePage, 'Legal RAG abstention escalation gate', 'legal RAG abstention escalation gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagAbstentionEscalationGate', 'legal RAG abstention escalation gate API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagAbstentionEscalationGate', 'legal RAG abstention escalation gate state binding'),
+  () => assertIncludes(maintenancePage, "['answer', 'answer_with_warning', 'abstain', 'ask_clarification', 'lawyer_review', 'premium_exception']", 'legal RAG abstention decision modes'),
+  () => assertIncludes(maintenancePage, 'decision row count', 'legal RAG abstention decision row count summary'),
+  () => assertIncludes(maintenancePage, 'evidence sufficient', 'legal RAG abstention evidence sufficiency summary'),
+  () => assertIncludes(maintenancePage, 'authority citation gate:', 'legal RAG abstention authority linkage'),
+  () => assertIncludes(maintenancePage, 'hallucination triage gate:', 'legal RAG abstention hallucination linkage'),
+  () => assertIncludes(maintenancePage, 'cheap-first route:', 'legal RAG abstention cheap-first boundary'),
+  () => assertIncludes(maintenancePage, 'premium exception boundary:', 'legal RAG abstention premium exception boundary'),
+  () => assertIncludes(maintenancePage, 'raw fixture returned:', 'legal RAG abstention raw fixture privacy boundary'),
+  () => assertIncludes(maintenancePage, 'raw legal text returned:', 'legal RAG abstention raw legal text privacy boundary'),
+  () => assertIncludes(maintenancePage, 'false / not included', 'legal RAG abstention false/not-included boundary copy'),
+  () => assertIncludes(maintenancePage, 'gate.validation_commands', 'legal RAG abstention validation binding'),
   () => assertIncludes(maintenanceApi, 'linked_public_source_ids', 'user need benchmark public source type'),
   () => assertIncludes(maintenanceApi, 'returns_public_benchmark_text', 'user need benchmark public text boundary type'),
   () => assertIncludes(maintenanceApi, 'public_sampler_network_access', 'user need benchmark public sampler summary type'),
@@ -164,6 +178,11 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'returns_retrieved_context', 'legal RAG hallucination retrieved context boundary type'),
   () => assertIncludes(maintenanceApi, 'returns_model_outputs', 'legal RAG hallucination model output boundary type'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-hallucination-triage-gate', 'legal RAG hallucination triage endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagAbstentionEscalationGate', 'legal RAG abstention escalation gate type'),
+  () => assertIncludes(maintenanceApi, 'legalRagAbstentionEscalationGate', 'legal RAG abstention escalation camelCase payload binding'),
+  () => assertIncludes(maintenanceApi, 'legal_rag_abstention_escalation_gate', 'legal RAG abstention escalation snake_case payload binding'),
+  () => assertIncludes(maintenanceApi, 'decision_rows', 'legal RAG abstention decision rows type'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-abstention-escalation-gate', 'legal RAG abstention escalation endpoint'),
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'ModelOps load guard', 'model-ops performance budget panel'),
   () => assertIncludes(modelOpsPage, 'Performance observations', 'model-ops performance observation review form'),
@@ -344,6 +363,11 @@ for (const check of checks) {
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /client@example\.com/i, 'frontend UI regression sources');
+assertNotMatches(
+  maintenancePage,
+  /fixture problem|dangerous answer|dangerous_answer|raw_fixture_problem|unsafe_answer_text|raw_unsafe_answer/i,
+  'maintenance Legal RAG abstention no raw fixture problem or answer text',
+);
 
 console.log(
   JSON.stringify(

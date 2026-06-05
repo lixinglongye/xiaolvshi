@@ -43,6 +43,7 @@ import {
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
+  getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagHallucinationTriageGate,
   getLegalResearchBacklog,
@@ -103,6 +104,7 @@ import {
   type LegalDocumentBenchmarkCoverage,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
+  type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagHallucinationTriageGate,
   type LegalResearchBacklog,
@@ -329,6 +331,8 @@ function Inner() {
     useState<LegalRagAuthorityCitationGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
+  const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
+    useState<LegalRagAbstentionEscalationGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -652,6 +656,11 @@ function Inner() {
           label: 'Legal RAG hallucination triage gate',
           run: getLegalRagHallucinationTriageGate,
           apply: (value) => setLegalRagHallucinationTriageGate(value as LegalRagHallucinationTriageGate),
+        },
+        {
+          label: 'Legal RAG abstention escalation gate',
+          run: getLegalRagAbstentionEscalationGate,
+          apply: (value) => setLegalRagAbstentionEscalationGate(value as LegalRagAbstentionEscalationGate),
         },
         {
           label: 'Maintenance gate snapshot',
@@ -7230,6 +7239,142 @@ function Inner() {
                 </div>
               </section>
             )}
+
+            {legalRagAbstentionEscalationGate &&
+              (() => {
+                const gate = legalRagAbstentionEscalationGate;
+                const rows = gate.decision_rows ?? [];
+                const summary = gate.summary ?? {};
+                const decisionCounts = { ...(summary.decision_counts ?? {}), ...(gate.decision_counts ?? {}) };
+                const evidenceCounts = {
+                  ...(summary.evidence_sufficiency_counts ?? {}),
+                  ...(gate.evidence_sufficiency_counts ?? {}),
+                };
+                const modeOf = (row: (typeof rows)[number]) =>
+                  String(row.answer_mode ?? row.decision_mode ?? row.mode ?? row.decision ?? 'unclassified');
+                const modeCount = (mode: string) =>
+                  Number(
+                    decisionCounts[mode] ??
+                      summary[`${mode}_count`] ??
+                      rows.filter((row) => modeOf(row) === mode).length,
+                  );
+                const privacy = gate.privacy_boundary ?? {};
+                const claim = gate.claim_boundary ?? {};
+                const summaryCounts = [
+                  { label: 'decision row count', value: summary.decision_row_count ?? summary.row_count ?? rows.length },
+                  { label: 'abstain', value: modeCount('abstain') },
+                  { label: 'lawyer review', value: modeCount('lawyer_review') },
+                  { label: 'premium exception', value: modeCount('premium_exception') },
+                  { label: 'cheap-first', value: summary.cheap_first_count ?? summary.cheap_first_route_count ?? 0 },
+                  { label: 'blockers', value: summary.blocker_count ?? 0 },
+                  { label: 'evidence sufficient', value: summary.evidence_sufficient_count ?? evidenceCounts.sufficient ?? 0 },
+                  {
+                    label: 'evidence gaps',
+                    value: summary.evidence_gap_count ?? summary.evidence_insufficient_count ?? evidenceCounts.insufficient ?? 0,
+                  },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG abstention escalation gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only decision routing, abstention, lawyer review, and premium exception boundary checks
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Decision rows</h3>
+                        <div className="space-y-2">
+                          {['answer', 'answer_with_warning', 'abstain', 'ask_clarification', 'lawyer_review', 'premium_exception'].map((mode) => (
+                            <div key={mode} className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-sm">
+                              <span className="font-mono text-xs text-stone-700">{mode}</span>
+                              <Badge variant="outline" className="bg-[#fbfaf6]">
+                                {modeCount(mode)}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linkage and routing</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge
+                            variant="outline"
+                            className={statusClass[String(summary.authority_citation_gate_status ?? summary.authority_gate_status ?? legalRagAuthorityCitationGate?.status ?? 'not_run')] ?? statusClass.not_run}
+                          >
+                            authority citation gate: {displayToken(String(summary.authority_citation_gate_status ?? summary.authority_gate_status ?? legalRagAuthorityCitationGate?.status ?? 'not_run'))}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={statusClass[String(summary.hallucination_triage_gate_status ?? summary.hallucination_gate_status ?? legalRagHallucinationTriageGate?.status ?? 'not_run')] ?? statusClass.not_run}
+                          >
+                            hallucination triage gate: {displayToken(String(summary.hallucination_triage_gate_status ?? summary.hallucination_gate_status ?? legalRagHallucinationTriageGate?.status ?? 'not_run'))}
+                          </Badge>
+                        </div>
+                        <div className="mt-4 space-y-2 text-xs leading-5 text-stone-600">
+                          <div>cheap-first route: {String(gate.routing_policy?.cheap_first_route ?? 'metadata-only')}</div>
+                          <div>premium exception boundary: {String(gate.routing_policy?.premium_exception_boundary ?? 'lawyer review required')}</div>
+                          <div>premium exception allowed: {String(gate.routing_policy?.premium_exception_allowed ?? false)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>legal advice claimed: {claim.legal_advice_claimed ? 'true / included' : 'false / not included'}</div>
+                          <div>accuracy claimed: {claim.legal_answer_accuracy_claimed ? 'true / included' : 'false / not included'}</div>
+                          <div>automatic escalation claimed: {claim.automatic_escalation_claimed ? 'true / included' : 'false / not included'}</div>
+                          <div>model called: {privacy.model_called ? 'true / included' : 'false / not included'}</div>
+                          <div>gateway called: {privacy.gateway_called ? 'true / included' : 'false / not included'}</div>
+                          <div>network called: {privacy.network_called ? 'true / included' : 'false / not included'}</div>
+                          <div>raw fixture returned: {privacy.returns_raw_fixture || privacy.returns_raw_fixture_payload ? 'true / included' : 'false / not included'}</div>
+                          <div>retrieved context returned: {privacy.returns_retrieved_context ? 'true / included' : 'false / not included'}</div>
+                          <div>raw legal text returned: {privacy.returns_raw_legal_text ? 'true / included' : 'false / not included'}</div>
+                          <div>raw model output returned: {privacy.returns_raw_model_output ? 'true / included' : 'false / not included'}</div>
+                          <div>raw gateway payload returned: {privacy.returns_gateway_payload ? 'true / included' : 'false / not included'}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).slice(0, 5).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
 
             <section className="mb-8">
               <h2 className="mb-3 text-xl font-black text-stone-950">Maintenance signals</h2>

@@ -28,6 +28,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
     assert "legal RAG authority citation gate" in rows["/maintenance"]["protected_panels"]
     assert "legal RAG hallucination triage gate" in rows["/maintenance"]["protected_panels"]
+    assert "legal RAG abstention escalation gate" in rows["/maintenance"]["protected_panels"]
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
@@ -69,6 +70,10 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "routing writes" in payload_text
     assert "NewAPI/Gemini/gateway calls" in payload_text
     assert "retrieved snippets" in payload_text
+    assert "model/gateway/network calls" in payload_text
+    assert "fixture questions" in payload_text
+    assert "dangerous answers" in payload_text
+    assert "raw retrieved context" in payload_text
     assert "prompts" in payload_text
     assert "model output" in payload_text
     assert "credentials" in payload_text
