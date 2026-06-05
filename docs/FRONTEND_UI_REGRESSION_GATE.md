@@ -32,6 +32,7 @@ The `/maintenance` page carries evidence for:
 The `/model-ops` page carries evidence for:
 
 - cheap-first calibration
+- ModelOps load guard
 - selector replay
 - route telemetry
 - route telemetry remediation

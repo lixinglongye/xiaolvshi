@@ -2,6 +2,8 @@ import { client } from '@/lib/api';
 
 export type RoutingAliases = Record<string, string>;
 
+export const MODEL_OPS_API_TIMEOUT_MS = 25_000;
+
 export type ModelCatalogItem = {
   id: string;
   provider: string;
@@ -672,6 +674,52 @@ export type ModelOpsReadiness = {
   blocking_check_ids: string[];
   warning_check_ids: string[];
   recommended_actions: string[];
+};
+
+export type ModelOpsPerformanceBudget = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    first_load_budget_ms: number;
+    cache_hit_budget_ms: number;
+    frontend_request_timeout_ms: number;
+    backend_cache_ttl_seconds: number;
+    models_payload_cache_enabled: boolean;
+    same_origin_fetch_first: boolean;
+    duplicate_calibration_fetch_removed: boolean;
+    frontend_abort_controller_required: boolean;
+    raw_payload_echoed: boolean;
+    observation_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+  };
+  observations: Array<{
+    metric: string;
+    duration_ms: number;
+    budget_ms?: number | null;
+    within_budget: boolean;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    raw_payload_echoed: boolean;
+    credentials_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    urls_included: boolean;
+    output_scope: string;
+  };
+  validation_commands: string[];
 };
 
 export type ModelReasoningDecision = {
@@ -1417,6 +1465,7 @@ export type ModelOpsResponse = {
   cost_guardrails?: ModelCostGuardrails;
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
+  model_ops_performance_budget?: ModelOpsPerformanceBudget;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1453,24 +1502,92 @@ function hasModelOpsPayload(value: unknown): boolean {
     calibration_rows?: unknown;
     model_rows?: unknown;
     family_rows?: unknown;
+    validation_commands?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
       || (Boolean(payload.method) && Boolean(payload.payload_shape))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
-      || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows)),
+      || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
+      || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands)),
   );
 }
 
+function timeoutError(request: ApiRequest): Error {
+  return new Error(`Model ops API request timed out after ${MODEL_OPS_API_TIMEOUT_MS}ms: ${request.url}`);
+}
+
+async function withModelOpsTimeout<T>(promise: Promise<T>, request: ApiRequest): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(timeoutError(request)), MODEL_OPS_API_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
+async function fetchModelOpsApi<T>(request: ApiRequest): Promise<T> {
+  if (typeof globalThis.fetch !== 'function') {
+    throw new Error('Model ops same-origin fetch is unavailable.');
+  }
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), MODEL_OPS_API_TIMEOUT_MS)
+    : undefined;
+  try {
+    const response = await globalThis.fetch(request.url, {
+      method: request.method,
+      credentials: 'include',
+      headers: request.data ? { 'Content-Type': 'application/json' } : undefined,
+      body: request.data ? JSON.stringify(request.data) : undefined,
+      signal: controller?.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`Model ops API request failed with HTTP ${response.status}.`);
+    }
+    const payload = unwrapApiPayload(await response.json());
+    if (hasModelOpsPayload(payload)) {
+      return payload as T;
+    }
+    throw new Error('Model ops API response was empty.');
+  } catch (err) {
+    if (typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError') {
+      throw timeoutError(request);
+    }
+    throw err;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
+  let fetchError: unknown = null;
+  if (typeof globalThis.fetch === 'function') {
+    try {
+      return await fetchModelOpsApi<T>(request);
+    } catch (err) {
+      fetchError = err;
+    }
+  }
+
   let sdkError: unknown = null;
   try {
-    const response = await client.apiCall.invoke({
-      url: request.url,
-      method: request.method,
-      data: request.data,
-    });
+    const response = await withModelOpsTimeout(
+      client.apiCall.invoke({
+        url: request.url,
+        method: request.method,
+        data: request.data,
+      }),
+      request,
+    );
     const payload = unwrapApiPayload(response);
     if (hasModelOpsPayload(payload)) {
       return payload as T;
@@ -1479,19 +1596,9 @@ async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
     sdkError = err;
   }
 
-  if (typeof globalThis.fetch === 'function') {
-    const response = await globalThis.fetch(request.url, {
-      method: request.method,
-      credentials: 'include',
-      headers: request.data ? { 'Content-Type': 'application/json' } : undefined,
-      body: request.data ? JSON.stringify(request.data) : undefined,
-    });
-    if (!response.ok) {
-      throw new Error(`Model ops API request failed with HTTP ${response.status}.`);
-    }
-    return unwrapApiPayload(await response.json()) as T;
+  if (fetchError) {
+    throw fetchError;
   }
-
   if (sdkError) {
     throw sdkError;
   }
@@ -1530,6 +1637,13 @@ export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibra
 export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
   return invokeModelOpsApi<GeminiVariantMatrix>({
     url: '/api/v1/aihub/models/gemini-variant-matrix',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsPerformanceBudget(): Promise<ModelOpsPerformanceBudget> {
+  return invokeModelOpsApi<ModelOpsPerformanceBudget>({
+    url: '/api/v1/aihub/models/performance-budget',
     method: 'GET',
   });
 }

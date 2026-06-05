@@ -28,6 +28,14 @@ function assertNotMatches(source, pattern, label) {
   }
 }
 
+function assertBefore(source, firstNeedle, secondNeedle, label) {
+  const firstIndex = source.indexOf(firstNeedle);
+  const secondIndex = source.indexOf(secondNeedle);
+  if (firstIndex === -1 || secondIndex === -1 || firstIndex >= secondIndex) {
+    throw new Error(`${label}: expected "${firstNeedle}" before "${secondNeedle}"`);
+  }
+}
+
 const packageJson = JSON.parse(read(files.packageJson));
 const maintenancePage = read(files.maintenancePage);
 const modelOpsPage = read(files.modelOpsPage);
@@ -90,6 +98,10 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'getFrontendUiRegressionGate', 'frontend UI gate API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/frontend-ui-regression-gate', 'frontend UI gate endpoint'),
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
+  () => assertIncludes(modelOpsPage, 'ModelOps load guard', 'model-ops performance budget panel'),
+  () => assertIncludes(modelOpsPage, 'same-origin fetch first', 'model-ops same-origin fetch budget card'),
+  () => assertIncludes(modelOpsPage, 'duplicate calibration fetch', 'model-ops duplicate calibration fetch summary'),
+  () => assertIncludes(modelOpsPage, 'modelOpsPerformanceRows', 'model-ops performance check row binding'),
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
   () => assertIncludes(modelOpsPage, 'Gemini variant matrix', 'model-ops Gemini variant matrix panel'),
@@ -109,6 +121,13 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'route_telemetry_remediation', 'model-ops route remediation binding'),
   () => assertIncludes(modelOpsApi, 'evaluateCheapFirstCalibration', 'model-ops cheap-first evaluation API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-calibration', 'model-ops cheap-first calibration endpoint'),
+  () => assertIncludes(modelOpsApi, 'MODEL_OPS_API_TIMEOUT_MS', 'model-ops API timeout guard'),
+  () => assertIncludes(modelOpsApi, 'AbortController', 'model-ops fetch abort guard'),
+  () => assertIncludes(modelOpsApi, 'fetchModelOpsApi', 'model-ops same-origin fetch helper'),
+  () => assertIncludes(modelOpsApi, 'same_origin_fetch_first', 'model-ops same-origin fetch budget type'),
+  () => assertBefore(modelOpsApi, 'return await fetchModelOpsApi<T>(request);', 'client.apiCall.invoke', 'model-ops same-origin fetch before SDK fallback'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsPerformanceBudget', 'model-ops performance budget type'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/performance-budget', 'model-ops performance budget endpoint'),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrixObservedModelExtraction', 'model-ops Gemini extraction summary type'),
   () => assertIncludes(modelOpsApi, 'source_summaries', 'model-ops Gemini source summaries binding'),

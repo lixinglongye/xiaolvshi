@@ -50,6 +50,7 @@ from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
+from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_request_cost_bounds import ModelRequestCostBoundsService
@@ -215,6 +216,16 @@ async def list_models():
         observed_gateway_models,
         forecast,
     )
+    model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
+        {
+            "models_payload_cache_enabled": True,
+            "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+            "same_origin_fetch_first": True,
+            "duplicate_calibration_fetch_removed": True,
+            "frontend_abort_controller_required": True,
+        },
+        cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+    )
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -245,6 +256,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
+        "model_ops_performance_budget": model_ops_performance_budget,
     }
     payload = {
         "success": True,
@@ -286,6 +298,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "price_refresh_monitor": price_refresh_monitor,
+        "model_ops_performance_budget": model_ops_performance_budget,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -357,6 +370,24 @@ async def evaluate_gemini_variant_matrix(payload: dict[str, Any]):
     return {
         "success": True,
         "data": GeminiModelVariantMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/models/performance-budget")
+async def model_ops_performance_budget():
+    """Return metadata-only ModelOps page load and timeout budget evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsPerformanceBudgetService().build_budget(
+            {
+                "models_payload_cache_enabled": True,
+                "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+                "same_origin_fetch_first": True,
+                "duplicate_calibration_fetch_removed": True,
+                "frontend_abort_controller_required": True,
+            },
+            cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+        ),
     }
 
 

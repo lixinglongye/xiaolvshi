@@ -316,6 +316,7 @@ function Inner() {
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
+  const modelOpsPerformanceRows = data?.model_ops_performance_budget?.checks ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
   const configurationAuditRows = data?.model_configuration_audit?.checks ?? [];
@@ -520,6 +521,85 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.model_ops_performance_budget && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">ModelOps load guard</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  timeout {formatNumber(data.model_ops_performance_budget.summary.frontend_request_timeout_ms)}ms / cache{' '}
+                  {data.model_ops_performance_budget.summary.backend_cache_ttl_seconds}s /{' '}
+                  fetch first {data.model_ops_performance_budget.summary.same_origin_fetch_first ? 'on' : 'off'} /{' '}
+                  {data.model_ops_performance_budget.summary.warning_check_count} warning
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.model_ops_performance_budget.status)}>
+                {data.model_ops_performance_budget.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(data.model_ops_performance_budget.summary.first_load_budget_ms)}ms
+                </div>
+                <div className="mt-1 text-sm text-stone-600">first load budget</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(data.model_ops_performance_budget.summary.cache_hit_budget_ms)}ms
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cache-hit budget</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.model_ops_performance_budget.summary.models_payload_cache_enabled ? 'on' : 'off'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">backend cache</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.model_ops_performance_budget.summary.same_origin_fetch_first ? 'on' : 'off'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">same-origin fetch first</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.model_ops_performance_budget.summary.duplicate_calibration_fetch_removed ? 'removed' : 'review'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">duplicate calibration fetch</div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {modelOpsPerformanceRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-mono text-xs text-stone-700">{row.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.status)}>
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[620px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 text-xs leading-5 text-stone-500">
+              raw payload echoed: {String(data.model_ops_performance_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
+              {String(data.model_ops_performance_budget.privacy_boundary.raw_model_output_included)}
             </div>
           </section>
         )}

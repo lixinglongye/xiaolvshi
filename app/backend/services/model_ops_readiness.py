@@ -78,6 +78,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "cost",
         "price_refresh_monitor",
     ),
+    ReadinessComponent(
+        "model-ops-performance-budget",
+        "ModelOps performance budget",
+        "runtime_evidence",
+        "model_ops_performance_budget",
+    ),
 )
 
 

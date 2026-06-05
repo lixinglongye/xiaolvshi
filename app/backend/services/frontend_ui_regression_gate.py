@@ -72,6 +72,7 @@ PAGE_GATES = (
         "risk_area": "cheap-first Gemini/NewAPI operations and route telemetry",
         "protected_panels": (
             "cheap-first calibration",
+            "ModelOps load guard",
             "selector replay",
             "route telemetry",
             "route telemetry remediation",

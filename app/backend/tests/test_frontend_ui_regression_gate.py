@@ -25,6 +25,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert rows["/model-ops"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
     assert "cheap-first calibration" in rows["/model-ops"]["protected_panels"]
+    assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert rows["/maintenance"]["status"] == "ready_with_gaps"
     assert rows["/model-ops"]["status"] == "ready_with_gaps"
     assert gate["summary"]["missing_page_automation_count"] == 2
