@@ -181,6 +181,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-approval-packet" in completed_ids
     assert "modelops-cheap-first-canary-rollback-drill" in completed_ids
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
+    assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -299,6 +300,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-approval-packet" not in queue_ids
     assert "modelops-cheap-first-canary-rollback-drill" not in queue_ids
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
+    assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -490,6 +492,41 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_ops_cheap_first_canary_rollback_drill.py -q"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
+    coverage_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-coverage-gate"
+    )
+    assert coverage_gate_entry["size"] == "medium"
+    assert coverage_gate_entry["status"] == "shipped"
+    assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in coverage_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in coverage_gate_entry["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in coverage_gate_entry["evidence_paths"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in coverage_gate_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-calibration" in coverage_gate_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in coverage_gate_entry["release_gate_links"]
+    assert "model-gateway-compatibility" in coverage_gate_entry["release_gate_links"]
+    assert "model-lifecycle-policy" in coverage_gate_entry["release_gate_links"]
+    assert "model-reasoning-policy" in coverage_gate_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in coverage_gate_entry["release_gate_links"]
+    assert "Gemini-like defaults" in coverage_gate_entry["impact"]
+    assert "cheap-first alignment" in coverage_gate_entry["impact"]
+    assert "premium exceptions" in coverage_gate_entry["impact"]
+    assert "unknown model handling" in coverage_gate_entry["impact"]
+    assert "pricing" in coverage_gate_entry["impact"]
+    assert "lifecycle" in coverage_gate_entry["impact"]
+    assert "reasoning" in coverage_gate_entry["impact"]
+    assert "gateway compatibility" in coverage_gate_entry["impact"]
+    assert "claim/privacy boundaries" in coverage_gate_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in coverage_gate_entry["impact"]
+    assert "raw prompts" in coverage_gate_entry["impact"]
+    assert "payloads" in coverage_gate_entry["impact"]
+    assert "model outputs" in coverage_gate_entry["impact"]
+    assert "credentials" in coverage_gate_entry["impact"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

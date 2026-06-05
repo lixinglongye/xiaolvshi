@@ -21,11 +21,13 @@ import {
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
+  getGeminiCheapFirstCoverageGate,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
   type GeminiVariantMatrix,
+  type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryApprovalPacket,
@@ -95,6 +97,12 @@ function statusClass(status?: string) {
       : status === 'not_run' || status === 'not_supplied' || status === 'monitor_only'
         ? 'border-stone-200 bg-white text-stone-700'
         : 'border-amber-200 bg-amber-50 text-amber-900';
+}
+
+function boundaryDisplayEntries(value?: Record<string, unknown>) {
+  return Object.entries(value ?? {})
+    .filter(([key]) => !/(raw|prompt|payload|credential|secret|api[_-]?key|authorization)/i.test(key))
+    .slice(0, 4);
 }
 
 function defaultCheapFirstCalibrationPayload() {
@@ -239,6 +247,9 @@ function Inner() {
   const [geminiVariantPayloadText, setGeminiVariantPayloadText] = useState('');
   const [geminiVariantEvaluateLoading, setGeminiVariantEvaluateLoading] = useState(false);
   const [geminiVariantError, setGeminiVariantError] = useState('');
+  const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
+    useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
+  const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
   const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
@@ -259,6 +270,8 @@ function Inner() {
     setCheapFirstCalibration(null);
     setGeminiVariantError('');
     setGeminiVariantMatrix(null);
+    setGeminiCheapFirstCoverageGateError('');
+    setGeminiCheapFirstCoverageGate(null);
     setPerformanceError('');
     setPerformanceBudget(null);
     setCanaryObservationError('');
@@ -268,7 +281,10 @@ function Inner() {
     setCanaryRollbackDrill(null);
     setCanaryChangeManifest(null);
     try {
-      const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
+      const [modelOpsResult, geminiCheapFirstCoverageGateResult] = await Promise.allSettled([
+        getModelOps(),
+        getGeminiCheapFirstCoverageGate(),
+      ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
         setError('Model telemetry failed to load.');
@@ -283,6 +299,15 @@ function Inner() {
         setCanaryRollbackDrill(null);
         setCanaryChangeManifest(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
+        if (geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
+          setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+        } else {
+          console.error(geminiCheapFirstCoverageGateResult.reason);
+          setGeminiCheapFirstCoverageGate(modelOpsResult.value.gemini_cheap_first_coverage_gate ?? null);
+          if (!modelOpsResult.value.gemini_cheap_first_coverage_gate) {
+            setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
+          }
+        }
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
         } else {
@@ -293,6 +318,13 @@ function Inner() {
             setCheapFirstError('Cheap-first calibration failed to load.');
           }
         }
+      }
+      if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
+        setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
+        console.error(geminiCheapFirstCoverageGateResult.reason);
+        setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
       }
     } catch (err) {
       console.error(err);
@@ -518,6 +550,12 @@ function Inner() {
   const geminiVariantFamilyRows = activeGeminiVariantMatrix?.family_rows ?? [];
   const geminiVariantObservedRows = activeGeminiVariantMatrix?.observed_model_reviews ?? [];
   const geminiVariantExtraction = activeGeminiVariantMatrix?.source_summaries?.observed_model_extraction;
+  const activeGeminiCheapFirstCoverageGate =
+    geminiCheapFirstCoverageGate ?? data?.gemini_cheap_first_coverage_gate ?? null;
+  const geminiCheapFirstCoverageRows = activeGeminiCheapFirstCoverageGate?.coverage_rows ?? [];
+  const geminiCheapFirstCoverageClaimBoundaryEntries = boundaryDisplayEntries(
+    activeGeminiCheapFirstCoverageGate?.claim_boundary,
+  );
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
   const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
@@ -2683,6 +2721,240 @@ function Inner() {
                   </TableBody>
                 </Table>
               </div>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiCheapFirstCoverageGate || geminiCheapFirstCoverageGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiCheapFirstCoverageGate
+                    ? `${activeGeminiCheapFirstCoverageGate.summary.coverage_row_count} coverage rows / ${activeGeminiCheapFirstCoverageGate.summary.ready_row_count} ready / ${activeGeminiCheapFirstCoverageGate.summary.review_row_count} review / ${activeGeminiCheapFirstCoverageGate.summary.blocked_row_count} blocked`
+                    : 'metadata-only Gemini cheap-first coverage review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiCheapFirstCoverageGate?.id ?? 'modelops-gemini-cheap-first-coverage-gate'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiCheapFirstCoverageGate?.status)}>
+                {activeGeminiCheapFirstCoverageGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiCheapFirstCoverageGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiCheapFirstCoverageGateError}
+              </div>
+            )}
+
+            {activeGeminiCheapFirstCoverageGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.coverage_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">coverage rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.ready_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.review_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.blocked_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.cheap_first_ready_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.premium_exception_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.unknown_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.non_gemini_default_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">non-Gemini defaults</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.missing_price_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">missing price</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstCoverageGate.summary.missing_reasoning_policy_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">missing reasoning</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiCheapFirstCoverageGate.summary.model_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">model called</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiCheapFirstCoverageGate.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway called</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiCheapFirstCoverageGate.summary.network_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">network called</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiCheapFirstCoverageGate.summary.credentials_included)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">credentials included</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Models</TableHead>
+                        <TableHead>Cheap-first</TableHead>
+                        <TableHead>Catalog</TableHead>
+                        <TableHead>Policy</TableHead>
+                        <TableHead>Reasons</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiCheapFirstCoverageRows.map((row) => (
+                        <TableRow key={`${row.task}-${row.runtime_default_model}-${row.recommended_model}`}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.task}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.release_action}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.coverage_status)}>
+                              {row.coverage_status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>runtime {row.runtime_default_model || '-'}</div>
+                            <div className="mt-1">recommended {row.recommended_model || '-'}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={row.cheap_first_aligned ? statusClass('pass') : statusClass('warn')}>
+                              {row.cheap_first_aligned ? 'aligned' : 'review'}
+                            </Badge>
+                            {row.premium_exception && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className={statusClass('fail')}>
+                                  premium exception
+                                </Badge>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.model_family}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                            <div className="mt-1">{row.lifecycle_status}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>price_status: {row.price_status}</div>
+                            <div>reasoning_policy_status: {row.reasoning_policy_status}</div>
+                            <div>gateway_compatibility_status: {row.gateway_compatibility_status}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <div>{row.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              linked_gate_ids: {row.linked_gate_ids.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="text-xs leading-5 text-stone-600">
+                      Metadata only; no prompt text, request bodies, secrets, or model/gateway calls are included.
+                    </div>
+                    <div className="mt-2 text-xs leading-5 text-stone-600">
+                      model_called: {String(activeGeminiCheapFirstCoverageGate.summary.model_called)} / gateway_called:{' '}
+                      {String(activeGeminiCheapFirstCoverageGate.summary.gateway_called)} / network_called:{' '}
+                      {String(activeGeminiCheapFirstCoverageGate.summary.network_called)} / credentials_included:{' '}
+                      {String(activeGeminiCheapFirstCoverageGate.summary.credentials_included)}
+                    </div>
+                    <div className="mt-2 text-xs leading-5 text-stone-500">
+                      scope: {String(activeGeminiCheapFirstCoverageGate.privacy_boundary.output_scope ?? 'metadata-only summary')}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiCheapFirstCoverageClaimBoundaryEntries.length > 0 ? (
+                        geminiCheapFirstCoverageClaimBoundaryEntries.map(([key, value]) => (
+                          <div key={key}>
+                            {key}: {value == null ? '-' : String(value)}
+                          </div>
+                        ))
+                      ) : (
+                        <div>No public benchmark, automatic routing, or live execution claims are made by this metadata panel.</div>
+                      )}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeGeminiCheapFirstCoverageGate.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeGeminiCheapFirstCoverageGate.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </section>
         )}

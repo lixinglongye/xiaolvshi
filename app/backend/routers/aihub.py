@@ -50,6 +50,7 @@ from services.model_gateway_compatibility import ModelGatewayCompatibilityServic
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
+from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_cheap_first_canary_approval_packet import ModelOpsCheapFirstCanaryApprovalPacketService
@@ -227,6 +228,13 @@ async def list_models():
         observed_gateway_models,
         forecast,
     )
+    gemini_cheap_first_coverage_gate = ModelOpsGeminiCheapFirstCoverageGateService().build_gate(
+        {
+            "capability_matrix": capability_matrix,
+            "lifecycle_policy": lifecycle_policy,
+            "gateway_compatibility": gateway_compatibility,
+        }
+    )
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
         {
@@ -270,6 +278,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
+        "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
     }
@@ -333,6 +342,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
+        "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
         "cheap_first_release_decision": cheap_first_release_decision,
@@ -423,6 +433,15 @@ async def model_catalog_source_audit():
     return {
         "success": True,
         "data": ModelCatalogSourceAuditService().build_audit(),
+    }
+
+
+@router.get("/models/gemini-cheap-first-coverage-gate")
+async def modelops_gemini_cheap_first_coverage_gate():
+    """Return metadata-only Gemini cheap-first default coverage gate evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiCheapFirstCoverageGateService().build_gate(),
     }
 
 

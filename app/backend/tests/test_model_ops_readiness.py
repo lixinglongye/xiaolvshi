@@ -185,6 +185,10 @@ def test_model_ops_route_includes_readiness():
     assert "cheap_first_canary_observation" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_cheap_first_coverage_gate" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["gemini_cheap_first_coverage_gate"]["summary"]["coverage_row_count"] == 8
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"

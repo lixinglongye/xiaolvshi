@@ -42,6 +42,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Cheap-first canary approval packet" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary rollback drill" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary change manifest" in rows["/model-ops"]["protected_panels"]
+    assert "Gemini cheap-first coverage gate" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert rows["/maintenance"]["status"] == "ready_with_gaps"
     assert rows["/model-ops"]["status"] == "ready_with_gaps"
@@ -56,12 +57,20 @@ def test_frontend_ui_regression_gate_is_metadata_only():
 
     assert gate["privacy_boundary"]["returns_source_code"] is False
     assert gate["privacy_boundary"]["returns_raw_browser_storage"] is False
+    assert gate["privacy_boundary"]["returns_raw_prompts"] is False
+    assert gate["privacy_boundary"]["returns_raw_payloads"] is False
     assert gate["privacy_boundary"]["returns_raw_query"] is False
     assert gate["privacy_boundary"]["returns_raw_retrieved_context"] is False
     assert gate["privacy_boundary"]["returns_raw_model_output"] is False
     assert gate["privacy_boundary"]["returns_external_legal_text"] is False
     assert gate["privacy_boundary"]["downloads_benchmark_datasets"] is False
     assert gate["privacy_boundary"]["calls_models"] is False
+    assert gate["privacy_boundary"]["calls_newapi"] is False
+    assert gate["privacy_boundary"]["calls_gemini"] is False
+    assert gate["privacy_boundary"]["calls_openai"] is False
+    assert gate["privacy_boundary"]["calls_google"] is False
+    assert gate["privacy_boundary"]["calls_gateways"] is False
+    assert gate["privacy_boundary"]["calls_network"] is False
     assert gate["privacy_boundary"]["writes_model_routes"] is False
     assert gate["privacy_boundary"]["returns_gateway_payloads"] is False
     assert gate["privacy_boundary"]["returns_credentials"] is False
@@ -78,8 +87,12 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "dangerous answers" in payload_text
     assert "raw query" in payload_text
     assert "raw retrieved context" in payload_text
+    assert "raw prompts" in payload_text
+    assert "payloads" in payload_text
     assert "prompts" in payload_text
     assert "model output" in payload_text
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
+    assert "gemini-cheap-first-coverage-gate-regresses" in payload_text
     assert "credentials" in payload_text
     assert "function Inner()" not in payload_text
     assert "localStorage.getItem" not in payload_text

@@ -69,6 +69,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary approval packet" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary rollback drill" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
@@ -124,6 +125,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
     assert "app/backend/tests/test_legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
     assert "docs/LEGAL_RAG_RETRIEVAL_DIAGNOSTICS_GATE.md" in evidence_paths
+    assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
+    assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
+    assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
     model_signal = next(signal for signal in profile["signals"] if signal["id"] == "model-routing-cost-control")
     quality_signal = next(signal for signal in profile["signals"] if signal["id"] == "deep-review-quality-gates")
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
@@ -145,6 +149,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary approval packet review" in model_signal["description"]
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["description"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
+    assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
@@ -163,6 +168,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary approval packet review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
+    assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "legal benchmark route risk queue review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
@@ -251,6 +257,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("handle credentials" in guardrail for guardrail in profile["application_guardrails"])
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("raw prompts, payloads, model outputs, or credentials" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

@@ -250,6 +250,36 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'cheap-first', 'model-ops cheap-first copy'),
   () => assertIncludes(modelOpsPage, 'Gemini variant matrix', 'model-ops Gemini variant matrix panel'),
+  () => assertIncludes(modelOpsPage, 'Gemini cheap-first coverage gate', 'model-ops Gemini cheap-first coverage gate panel'),
+  () => assertIncludes(modelOpsPage, 'getGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate API binding'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstCoverageRows', 'model-ops Gemini cheap-first coverage row binding'),
+  () => assertIncludes(modelOpsPage, 'modelops-gemini-cheap-first-coverage-gate', 'model-ops Gemini cheap-first coverage gate id'),
+  () => assertIncludes(modelOpsPage, 'coverage_row_count', 'model-ops Gemini cheap-first coverage row count summary'),
+  () => assertIncludes(modelOpsPage, 'ready_row_count', 'model-ops Gemini cheap-first ready row summary'),
+  () => assertIncludes(modelOpsPage, 'review_row_count', 'model-ops Gemini cheap-first review row summary'),
+  () => assertIncludes(modelOpsPage, 'blocked_row_count', 'model-ops Gemini cheap-first blocked row summary'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_ready_count', 'model-ops Gemini cheap-first ready count summary'),
+  () => assertIncludes(modelOpsPage, 'premium_exception_count', 'model-ops Gemini cheap-first premium exception summary'),
+  () => assertIncludes(modelOpsPage, 'unknown_model_count', 'model-ops Gemini cheap-first unknown model summary'),
+  () => assertIncludes(modelOpsPage, 'non_gemini_default_count', 'model-ops Gemini cheap-first non-Gemini summary'),
+  () => assertIncludes(modelOpsPage, 'missing_price_count', 'model-ops Gemini cheap-first missing price summary'),
+  () => assertIncludes(modelOpsPage, 'missing_reasoning_policy_count', 'model-ops Gemini cheap-first missing reasoning summary'),
+  () => assertIncludes(modelOpsPage, 'model_called', 'model-ops Gemini cheap-first model call boundary'),
+  () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops Gemini cheap-first gateway boundary'),
+  () => assertIncludes(modelOpsPage, 'network_called', 'model-ops Gemini cheap-first network boundary'),
+  () => assertIncludes(modelOpsPage, 'credentials_included', 'model-ops Gemini cheap-first credential boundary'),
+  () => assertIncludes(modelOpsPage, 'coverage_status', 'model-ops Gemini cheap-first coverage status binding'),
+  () => assertIncludes(modelOpsPage, 'release_action', 'model-ops Gemini cheap-first release action binding'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_aligned', 'model-ops Gemini cheap-first alignment binding'),
+  () => assertIncludes(modelOpsPage, 'premium_exception', 'model-ops Gemini cheap-first premium exception binding'),
+  () => assertIncludes(modelOpsPage, 'reasoning_policy_status', 'model-ops Gemini cheap-first reasoning policy binding'),
+  () => assertIncludes(modelOpsPage, 'gateway_compatibility_status', 'model-ops Gemini cheap-first gateway compatibility binding'),
+  () => assertIncludes(modelOpsPage, 'linked_gate_ids', 'model-ops Gemini cheap-first linked gate binding'),
+  () => assertIncludes(modelOpsPage, 'Privacy boundary', 'model-ops Gemini cheap-first privacy boundary panel'),
+  () => assertIncludes(modelOpsPage, 'Claim boundary', 'model-ops Gemini cheap-first claim boundary panel'),
+  () => assertIncludes(modelOpsPage, 'Metadata only; no prompt text, request bodies, secrets, or model/gateway calls are included.', 'model-ops Gemini cheap-first privacy copy'),
+  () => assertIncludes(modelOpsPage, 'Validation commands', 'model-ops Gemini cheap-first validation commands panel'),
   () => assertIncludes(modelOpsPage, 'Gemini catalog source audit', 'model-ops Gemini catalog source audit panel'),
   () => assertIncludes(modelOpsPage, 'Cheap-first release decision', 'model-ops cheap-first release decision panel'),
   () => assertIncludes(modelOpsPage, 'cheapFirstDecisionChecks', 'model-ops cheap-first decision row binding'),
@@ -397,6 +427,12 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'ModelRouteQualityBudget', 'model-ops route quality budget type'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/route-quality-budget', 'model-ops route quality budget endpoint'),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate type'),
+  () => assertIncludes(modelOpsApi, "id: 'modelops-gemini-cheap-first-coverage-gate' | string", 'model-ops Gemini cheap-first coverage gate typed id'),
+  () => assertIncludes(modelOpsApi, 'gemini_cheap_first_coverage_gate', 'model-ops Gemini cheap-first coverage response binding'),
+  () => assertIncludes(modelOpsApi, 'coverage_rows', 'model-ops Gemini cheap-first coverage payload guard'),
+  () => assertIncludes(modelOpsApi, 'getGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-cheap-first-coverage-gate', 'model-ops Gemini cheap-first coverage endpoint'),
   () => assertIncludes(modelOpsApi, 'ModelCatalogSourceAudit', 'model-ops Gemini catalog source audit type'),
   () => assertIncludes(modelOpsApi, 'getModelCatalogSourceAudit', 'model-ops Gemini catalog source audit API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/catalog-source-audit', 'model-ops Gemini catalog source audit endpoint'),
@@ -419,6 +455,12 @@ const retrievalDiagnosticsPanel = sourceSection(
   'Legal RAG hallucination triage gate',
   'maintenance Legal RAG retrieval diagnostics section',
 );
+const geminiCheapFirstCoveragePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+  'Gemini catalog source audit',
+  'model-ops Gemini cheap-first coverage gate section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -433,6 +475,11 @@ assertNotMatches(
   /fixture problem|dangerous answer|dangerous_answer|raw_fixture_problem|unsafe_answer_text|raw_unsafe_answer/i,
   'maintenance Legal RAG abstention no raw fixture problem or answer text',
 );
+assertNotMatches(
+  geminiCheapFirstCoveragePanel,
+  /\b(raw prompt|raw_prompt|raw payload|raw_payload|prompt_payload|credential material|credential_value|api_key|authorization|secret_value)\b/i,
+  'model-ops Gemini cheap-first coverage no raw prompt/payload/credential material fields',
+);
 
 console.log(
   JSON.stringify(
@@ -440,7 +487,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 3,
+      assertions: checks.length + 6,
     },
     null,
     2,

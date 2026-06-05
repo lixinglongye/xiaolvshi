@@ -28,6 +28,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         required=False,
     ),
     ReadinessComponent("lifecycle-policy", "Gemini lifecycle policy", "configuration", "lifecycle_policy"),
+    ReadinessComponent(
+        "gemini-cheap-first-coverage-gate",
+        "Gemini cheap-first coverage gate",
+        "configuration",
+        "gemini_cheap_first_coverage_gate",
+    ),
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),
     ReadinessComponent("runtime-router", "Runtime router", "routing", "runtime_router"),

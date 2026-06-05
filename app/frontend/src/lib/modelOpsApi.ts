@@ -647,6 +647,66 @@ export type ModelCatalogSourceAudit = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiCheapFirstCoverageGateSummary = {
+  coverage_row_count: number;
+  ready_row_count: number;
+  review_row_count: number;
+  blocked_row_count: number;
+  cheap_first_ready_count: number;
+  premium_exception_count: number;
+  unknown_model_count: number;
+  non_gemini_default_count: number;
+  missing_price_count: number;
+  missing_reasoning_policy_count: number;
+  gateway_review_count?: number;
+  lifecycle_review_count?: number;
+  model_called: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  configuration_written?: boolean;
+  credentials_included: boolean;
+};
+
+export type ModelOpsGeminiCheapFirstCoverageRow = {
+  id?: string;
+  task: string;
+  role?: string;
+  runtime_default_model: string;
+  runtime_canonical_model?: string | null;
+  recommended_model: string;
+  recommended_canonical_model?: string | null;
+  coverage_status: string;
+  release_action: string;
+  cheap_first_aligned: boolean;
+  premium_exception: boolean;
+  model_family: string;
+  cost_tier: string;
+  max_cost_tier?: string;
+  lifecycle_status: string;
+  price_status: string;
+  reasoning_policy_status: string;
+  reasoning_effort?: string | null;
+  reasoning_cost_mode?: string;
+  gateway_compatibility_status: string;
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary?: Record<string, unknown>;
+};
+
+export type ModelOpsGeminiCheapFirstCoverageGate = {
+  id: 'modelops-gemini-cheap-first-coverage-gate' | string;
+  status: string;
+  title: string;
+  summary: ModelOpsGeminiCheapFirstCoverageGateSummary;
+  coverage_rows: ModelOpsGeminiCheapFirstCoverageRow[];
+  research_basis?: Array<Record<string, unknown>>;
+  linked_signal_summary?: Record<string, unknown>;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -2059,6 +2119,7 @@ export type ModelOpsResponse = {
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
+  gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
@@ -2113,6 +2174,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     approval_items?: unknown;
     rollback_drill_items?: unknown;
     change_manifest_items?: unknown;
+    coverage_rows?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -2127,7 +2189,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -2263,6 +2326,13 @@ export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibra
 export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
   return invokeModelOpsApi<GeminiVariantMatrix>({
     url: '/api/v1/aihub/models/gemini-variant-matrix',
+    method: 'GET',
+  });
+}
+
+export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiCheapFirstCoverageGate> {
+  return invokeModelOpsApi<ModelOpsGeminiCheapFirstCoverageGate>({
+    url: '/api/v1/aihub/models/gemini-cheap-first-coverage-gate',
     method: 'GET',
   });
 }
