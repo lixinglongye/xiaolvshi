@@ -180,6 +180,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-promotion-decision" in completed_ids
     assert "modelops-cheap-first-canary-approval-packet" in completed_ids
     assert "modelops-cheap-first-canary-rollback-drill" in completed_ids
+    assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -293,6 +294,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-promotion-decision" not in queue_ids
     assert "modelops-cheap-first-canary-approval-packet" not in queue_ids
     assert "modelops-cheap-first-canary-rollback-drill" not in queue_ids
+    assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
@@ -462,6 +464,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_model_ops_cheap_first_canary_rollback_drill.py "
         "tests/test_model_ops_cheap_first_canary_approval_packet.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_cheap_first_canary_change_manifest.py "
+        "tests/test_model_ops_cheap_first_canary_rollback_drill.py -q"
         in ledger["validation_commands"]
     )
 

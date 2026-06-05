@@ -18,6 +18,14 @@ approval evidence. It records trigger review, holdout confirmation, role, and
 checklist labels only; it does not execute rollback, write configuration,
 persist drill state, call gateways, or shift production traffic.
 
+Follow-up model-ops release evidence:
+`modelops-cheap-first-canary-change-manifest` adds a shipped metadata-only
+manifest for proposed cheap-first default edits. It records external change-set
+metadata, prerequisites, rollback-drill status, validation commands, and
+operator steps only; it does not write configuration, write env files, store
+secret values, call gateways, record approver identity, apply changes, or shift
+traffic.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint
@@ -239,6 +247,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md`
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`

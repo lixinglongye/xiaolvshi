@@ -53,6 +53,7 @@ from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_cheap_first_canary_approval_packet import ModelOpsCheapFirstCanaryApprovalPacketService
+from services.model_ops_cheap_first_canary_change_manifest import ModelOpsCheapFirstCanaryChangeManifestService
 from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirstCanaryObservationService
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsCheapFirstCanaryPromotionDecisionService
@@ -288,6 +289,8 @@ async def list_models():
     model_ops_signals["cheap_first_canary_approval_packet"] = cheap_first_canary_approval_packet
     cheap_first_canary_rollback_drill = ModelOpsCheapFirstCanaryRollbackDrillService().build_drill(model_ops_signals)
     model_ops_signals["cheap_first_canary_rollback_drill"] = cheap_first_canary_rollback_drill
+    cheap_first_canary_change_manifest = ModelOpsCheapFirstCanaryChangeManifestService().build_manifest(model_ops_signals)
+    model_ops_signals["cheap_first_canary_change_manifest"] = cheap_first_canary_change_manifest
     model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     payload = {
         "success": True,
@@ -339,6 +342,7 @@ async def list_models():
         "cheap_first_canary_promotion_decision": cheap_first_canary_promotion_decision,
         "cheap_first_canary_approval_packet": cheap_first_canary_approval_packet,
         "cheap_first_canary_rollback_drill": cheap_first_canary_rollback_drill,
+        "cheap_first_canary_change_manifest": cheap_first_canary_change_manifest,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -485,6 +489,14 @@ async def evaluate_model_ops_cheap_first_canary_observation(payload: dict[str, A
             "cheap_first_canary_approval_packet": approval_packet,
         }
     )
+    change_manifest = ModelOpsCheapFirstCanaryChangeManifestService().build_manifest(
+        {
+            "cheap_first_canary_plan": models_payload["cheap_first_canary_plan"],
+            "cheap_first_canary_promotion_decision": promotion_decision,
+            "cheap_first_canary_approval_packet": approval_packet,
+            "cheap_first_canary_rollback_drill": rollback_drill,
+        }
+    )
     return {
         "success": True,
         "data": {
@@ -492,6 +504,7 @@ async def evaluate_model_ops_cheap_first_canary_observation(payload: dict[str, A
             "promotion_decision": promotion_decision,
             "approval_packet": approval_packet,
             "rollback_drill": rollback_drill,
+            "change_manifest": change_manifest,
         },
     }
 
@@ -523,6 +536,16 @@ async def model_ops_cheap_first_canary_rollback_drill():
     return {
         "success": True,
         "data": models_payload["cheap_first_canary_rollback_drill"],
+    }
+
+
+@router.get("/models/cheap-first-canary-change-manifest")
+async def model_ops_cheap_first_canary_change_manifest():
+    """Return metadata-only manual change manifest for canary decisions."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_canary_change_manifest"],
     }
 
 

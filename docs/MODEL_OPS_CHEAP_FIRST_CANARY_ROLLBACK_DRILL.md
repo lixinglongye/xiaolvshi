@@ -54,6 +54,11 @@ The gate is metadata-only. Passing it proves that rollback rehearsal evidence is
 reviewable; it does not prove a rollback was executed or that production traffic
 was shifted.
 
+`cheap_first_canary_change_manifest` consumes rollback-drill evidence
+downstream. It is the required metadata-only release gate for proposed
+maintainer-owned default edits; it must not write configuration or claim that a
+manual default change has happened.
+
 ## Non-Claims
 
 This packet does not:
@@ -75,3 +80,4 @@ This packet does not:
 - `app/backend/services/model_ops_cheap_first_canary_approval_packet.py`
 - `app/backend/tests/test_model_ops_cheap_first_canary_approval_packet.py`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`

@@ -495,6 +495,21 @@ class ReleaseReadinessService:
                 manual_note="This is a metadata-only rollback rehearsal packet; it never executes rollback, writes configuration, calls a gateway, persists drill state, shifts production traffic, or records approver identity.",
             ),
             ReleaseCheck(
+                id="model-ops-cheap-first-canary-change-manifest",
+                title="ModelOps cheap-first canary change manifest",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_ops_cheap_first_canary_change_manifest.py",
+                    "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py",
+                    "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py",
+                    "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md",
+                ),
+                validation_command="python -m pytest tests/test_model_ops_cheap_first_canary_change_manifest.py tests/test_model_ops_cheap_first_canary_rollback_drill.py tests/test_model_ops_cheap_first_canary_approval_packet.py -q",
+                manual_note="This is a metadata-only default-change manifest; it records external change-set metadata, prerequisites, rollback-drill status, and operator steps only, and never writes configuration, writes env files, calls a gateway, shifts production traffic, stores secret values, or records approver identity.",
+            ),
+            ReleaseCheck(
                 id="model-runtime-router",
                 title="Runtime model router coverage",
                 category="model_ops",

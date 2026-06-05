@@ -179,6 +179,9 @@ def test_model_ops_route_includes_readiness():
     assert "cheap_first_canary_rollback_drill" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "cheap_first_canary_change_manifest" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert "cheap_first_canary_observation" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }

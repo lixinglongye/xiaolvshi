@@ -63,6 +63,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary promotion decision" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary approval packet" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary rollback drill" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
@@ -119,6 +120,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary promotion decision review" in model_signal["description"]
     assert "ModelOps cheap-first canary approval packet review" in model_signal["description"]
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["description"]
+    assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
@@ -135,6 +137,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary promotion decision review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary approval packet review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
+    assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
@@ -145,6 +148,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_promotion_decision.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_approval_packet.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
+    assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_default_change_queue.py" in evidence_paths
@@ -153,6 +157,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_promotion_decision.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_approval_packet.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
     assert "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md" in evidence_paths
@@ -161,6 +166,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PROMOTION_DECISION.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md" in evidence_paths
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
@@ -205,6 +211,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("public benchmark mapping reports sampler" in guardrail for guardrail in profile["application_guardrails"])
     assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
 
 
 def test_form_answers_are_application_safe_and_bilingual():

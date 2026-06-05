@@ -962,6 +962,7 @@ export type ModelOpsCheapFirstCanaryObservation = {
   promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
   approval_packet?: ModelOpsCheapFirstCanaryApprovalPacket;
   rollback_drill?: ModelOpsCheapFirstCanaryRollbackDrill;
+  change_manifest?: ModelOpsCheapFirstCanaryChangeManifest;
 };
 
 export type ModelOpsCheapFirstCanaryPromotionDecision = {
@@ -1129,6 +1130,80 @@ export type ModelOpsCheapFirstCanaryRollbackDrill = {
   ready_drill_item_ids: string[];
   blocked_drill_item_ids: string[];
   rollback_required_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
+export type ModelOpsCheapFirstCanaryChangeManifest = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    manifest_item_count: number;
+    ready_change_count: number;
+    blocked_change_count: number;
+    rollback_review_count: number;
+    monitor_only_count: number;
+    source_rollback_drill_status: string;
+    source_approval_status: string;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    change_applied: boolean;
+    manifest_record_written: boolean;
+    secret_value_included: boolean;
+  };
+  change_manifest_policy: {
+    external_execution_required: boolean;
+    configuration_write_allowed: boolean;
+    env_file_write_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    requires_maintainer_approval: boolean;
+    requires_rollback_drill_ready: boolean;
+    includes_secret_values: boolean;
+  };
+  change_manifest_items: Array<{
+    id: string;
+    source_rollback_drill_item_id: string;
+    source_approval_item_id: string;
+    source_step_id: string;
+    task: string;
+    phase: string;
+    approval_status: string;
+    drill_status: string;
+    manifest_status: string;
+    env_var?: string | null;
+    current_model: string;
+    recommended_model: string;
+    batch_percentage: number;
+    holdout_percentage: number;
+    external_change_set: {
+      env_var?: string | null;
+      from_model: string;
+      to_model: string;
+      batch_percentage: number;
+      holdout_percentage: number;
+      apply_mode: string;
+      secret_value_included: boolean;
+    };
+    prerequisites: string[];
+    operator_steps: string[];
+    configuration_written: boolean;
+    env_file_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    change_applied: boolean;
+    manifest_record_written: boolean;
+    action: string;
+  }>;
+  ready_change_item_ids: string[];
+  blocked_change_item_ids: string[];
+  rollback_review_item_ids: string[];
   recommended_actions: string[];
   privacy_boundary: Record<string, boolean | string>;
   claim_boundary: Record<string, boolean | string>;
@@ -1993,6 +2068,7 @@ export type ModelOpsResponse = {
   cheap_first_canary_promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
   cheap_first_canary_approval_packet?: ModelOpsCheapFirstCanaryApprovalPacket;
   cheap_first_canary_rollback_drill?: ModelOpsCheapFirstCanaryRollbackDrill;
+  cheap_first_canary_change_manifest?: ModelOpsCheapFirstCanaryChangeManifest;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -2036,6 +2112,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     promotion_items?: unknown;
     approval_items?: unknown;
     rollback_drill_items?: unknown;
+    change_manifest_items?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -2049,7 +2126,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
-      || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -2251,6 +2329,13 @@ export async function getModelOpsCheapFirstCanaryApprovalPacket(): Promise<Model
 export async function getModelOpsCheapFirstCanaryRollbackDrill(): Promise<ModelOpsCheapFirstCanaryRollbackDrill> {
   return invokeModelOpsApi<ModelOpsCheapFirstCanaryRollbackDrill>({
     url: '/api/v1/aihub/models/cheap-first-canary-rollback-drill',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstCanaryChangeManifest(): Promise<ModelOpsCheapFirstCanaryChangeManifest> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCanaryChangeManifest>({
+    url: '/api/v1/aihub/models/cheap-first-canary-change-manifest',
     method: 'GET',
   });
 }

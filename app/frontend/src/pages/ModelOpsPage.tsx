@@ -29,6 +29,7 @@ import {
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryApprovalPacket,
+  type ModelOpsCheapFirstCanaryChangeManifest,
   type ModelOpsCheapFirstCanaryObservation,
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsCheapFirstCanaryRollbackDrill,
@@ -75,14 +76,21 @@ function gatewayHealthProbeText(row: ModelGatewayHealthPlanRole) {
 }
 
 function statusClass(status?: string) {
-  return status === 'pass' || status === 'ready' || status === 'approval_ready' || status === 'drill_ready' || status === 'advance_next_batch'
+  return status === 'pass'
+    || status === 'ready'
+    || status === 'approval_ready'
+    || status === 'drill_ready'
+    || status === 'manifest_ready'
+    || status === 'advance_next_batch'
     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
     : status === 'fail'
       || status === 'blocked'
       || status === 'approval_blocked'
       || status === 'drill_blocked'
+      || status === 'manifest_blocked'
       || status === 'rollback_required'
       || status === 'rollback_drill_required'
+      || status === 'rollback_review_required'
       ? 'border-red-200 bg-red-50 text-red-800'
       : status === 'not_run' || status === 'not_supplied' || status === 'monitor_only'
         ? 'border-stone-200 bg-white text-stone-700'
@@ -239,6 +247,7 @@ function Inner() {
   const [canaryPromotionDecision, setCanaryPromotionDecision] = useState<ModelOpsCheapFirstCanaryPromotionDecision | null>(null);
   const [canaryApprovalPacket, setCanaryApprovalPacket] = useState<ModelOpsCheapFirstCanaryApprovalPacket | null>(null);
   const [canaryRollbackDrill, setCanaryRollbackDrill] = useState<ModelOpsCheapFirstCanaryRollbackDrill | null>(null);
+  const [canaryChangeManifest, setCanaryChangeManifest] = useState<ModelOpsCheapFirstCanaryChangeManifest | null>(null);
   const [canaryObservationPayloadText, setCanaryObservationPayloadText] = useState('');
   const [canaryObservationLoading, setCanaryObservationLoading] = useState(false);
   const [canaryObservationError, setCanaryObservationError] = useState('');
@@ -257,6 +266,7 @@ function Inner() {
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
     setCanaryRollbackDrill(null);
+    setCanaryChangeManifest(null);
     try {
       const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
@@ -271,6 +281,7 @@ function Inner() {
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
         setCanaryRollbackDrill(null);
+        setCanaryChangeManifest(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
@@ -449,6 +460,7 @@ function Inner() {
       setCanaryPromotionDecision(result.promotion_decision ?? null);
       setCanaryApprovalPacket(result.approval_packet ?? null);
       setCanaryRollbackDrill(result.rollback_drill ?? null);
+      setCanaryChangeManifest(result.change_manifest ?? null);
     } catch (err) {
       console.error(err);
       setCanaryObservationError(
@@ -486,6 +498,12 @@ function Inner() {
     ?? data?.cheap_first_canary_rollback_drill
     ?? null;
   const canaryRollbackDrillRows = activeCanaryRollbackDrill?.rollback_drill_items ?? [];
+  const activeCanaryChangeManifest =
+    canaryChangeManifest
+    ?? activeCanaryObservation?.change_manifest
+    ?? data?.cheap_first_canary_change_manifest
+    ?? null;
+  const canaryChangeManifestRows = activeCanaryChangeManifest?.change_manifest_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -1683,6 +1701,184 @@ function Inner() {
                         <div>{row.action}</div>
                         <div className="mt-2 font-mono text-[11px] text-stone-500">
                           rollback_executed:{String(row.rollback_executed)} / traffic_shifted:{String(row.traffic_shifted)}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeCanaryChangeManifest && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first canary change manifest</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCanaryChangeManifest.summary.ready_change_count} ready /{' '}
+                  {activeCanaryChangeManifest.summary.blocked_change_count} blocked /{' '}
+                  {activeCanaryChangeManifest.summary.rollback_review_count} rollback review
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCanaryChangeManifest.status)}>
+                {activeCanaryChangeManifest.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryChangeManifest.summary.manifest_item_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">change_manifest_items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryChangeManifest.summary.rollback_review_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">rollback review</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryChangeManifest.summary.change_applied)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">change_applied</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryChangeManifest.summary.env_file_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">env_file_written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryChangeManifest.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway_called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryChangeManifest.summary.secret_value_included)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">secret_value_included</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">change_manifest_policy</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">external_execution_required</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.external_execution_required)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">configuration_write_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.configuration_write_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">env_file_write_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.env_file_write_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">traffic_shift_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.traffic_shift_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">requires_maintainer_approval</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.requires_maintainer_approval)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">requires_rollback_drill_ready</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.requires_rollback_drill_ready)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">includes_secret_values</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryChangeManifest.change_manifest_policy.includes_secret_values)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Manifest boundary</div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  source rollback drill: {activeCanaryChangeManifest.summary.source_rollback_drill_status} / source
+                  approval: {activeCanaryChangeManifest.summary.source_approval_status ?? 'not supplied'}
+                </div>
+                <div className="mt-2 font-mono text-[11px] leading-5 text-stone-500">
+                  statuses: manifest_ready / manifest_blocked / rollback_review_required
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeCanaryChangeManifest.recommended_actions.slice(0, 3).join(' ')}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  change_applied: {String(activeCanaryChangeManifest.summary.change_applied)} / secret_value_included:{' '}
+                  {String(activeCanaryChangeManifest.summary.secret_value_included)} / manifest_record_written:{' '}
+                  {String(activeCanaryChangeManifest.summary.manifest_record_written)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Manifest</TableHead>
+                    <TableHead>Change set</TableHead>
+                    <TableHead>Prerequisites</TableHead>
+                    <TableHead>Operator steps</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {canaryChangeManifestRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_step_id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.manifest_status)}>
+                          {row.manifest_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          drill_status: {row.drill_status.replace(/_/g, ' ')}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        <div className="font-mono text-[11px] text-stone-700">{row.env_var ?? 'explicit model request'}</div>
+                        <div className="mt-1">
+                          from {row.external_change_set.from_model || '-'}
+                          <br />
+                          to {row.external_change_set.to_model || '-'}
+                          <br />
+                          apply_mode {row.external_change_set.apply_mode}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.prerequisites.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        {row.operator_steps.slice(0, 3).join(' ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        <div>{row.action}</div>
+                        <div className="mt-2 font-mono text-[11px] text-stone-500">
+                          change_applied:{String(row.change_applied)} / secret_value_included:
+                          {String(row.external_change_set.secret_value_included)}
                         </div>
                       </TableCell>
                     </TableRow>
