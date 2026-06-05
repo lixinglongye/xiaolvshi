@@ -7,6 +7,8 @@ from services.legal_fixture_evidence_bundle import LegalFixtureEvidenceBundleSer
 from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
+from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
 from services.model_budget import COST_TIER_RANK
 
 
@@ -38,17 +40,23 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         model_matrix_service: LegalFixtureModelMatrixService | None = None,
         run_report_service: LegalFixtureRunReportService | None = None,
         evidence_bundle_service: LegalFixtureEvidenceBundleService | None = None,
+        document_benchmark_service: LegalDocumentBenchmarkSuiteService | None = None,
+        document_coverage_service: LegalDocumentBenchmarkCoverageService | None = None,
     ) -> None:
         self.quick_suite_service = quick_suite_service or LegalFixtureQuickSuiteService()
         self.model_matrix_service = model_matrix_service or LegalFixtureModelMatrixService()
         self.run_report_service = run_report_service or LegalFixtureRunReportService()
         self.evidence_bundle_service = evidence_bundle_service or LegalFixtureEvidenceBundleService()
+        self.document_benchmark_service = document_benchmark_service or LegalDocumentBenchmarkSuiteService()
+        self.document_coverage_service = document_coverage_service or LegalDocumentBenchmarkCoverageService()
 
     def build_gate(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         quick_suite = self.quick_suite_service.build_suite()
         model_matrix = self.model_matrix_service.build_matrix()
         run_report = self.run_report_service.build_report(payload)
         evidence_bundle = self.evidence_bundle_service.build_bundle(payload)
+        document_evaluation = self.document_benchmark_service.evaluate_outputs(self._document_outputs(payload))
+        document_coverage = self.document_coverage_service.build_matrix()
         matrix_by_fixture = {
             row["fixture_id"]: row
             for row in model_matrix.get("fixtures", [])
@@ -68,15 +76,32 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         blocking_rows = [row for row in gate_rows if row["gate_status"] == "blocked"]
         warning_rows = [row for row in gate_rows if row["gate_status"] in {"review_required", "not_run"}]
         passing_rows = [row for row in gate_rows if row["gate_status"] == "pass"]
+        document_benchmark_rows = self._document_benchmark_rows(document_evaluation, document_coverage)
+        document_benchmark_status = self._document_benchmark_status(
+            document_evaluation,
+            document_benchmark_rows,
+            document_coverage,
+        )
+        document_blocking_rows = [row for row in document_benchmark_rows if row["gate_status"] == "blocked"]
+        document_warning_rows = [
+            row for row in document_benchmark_rows if row["gate_status"] in {"review_required", "not_run"}
+        ]
+        default_change_evidence_allowed = (
+            bool(gate_rows)
+            and all(row["gate_status"] == "pass" for row in gate_rows)
+            and document_benchmark_status == "pass"
+            and document_coverage["status"] == "ready"
+            and document_coverage["summary"]["missing_document_type_count"] == 0
+        )
         raw_input_field_count = self._raw_input_field_count(payload)
 
         return {
-            "status": self._status(gate_rows, blocking_rows, warning_rows),
+            "status": self._status(gate_rows, blocking_rows, warning_rows, document_benchmark_status),
             "method": {
                 "type": "modelops-legal-fixture-cheap-first-benchmark-gate",
                 "notes": [
-                    "Joins the laptop-safe quick suite, fixture model matrix, run report, and evidence bundle into one default-change gate.",
-                    "Cheap Gemini fixture results can support default retention only after selected fixtures pass smoke checks without high-priority actions.",
+                    "Joins the laptop-safe quick suite, fixture model matrix, run report, evidence bundle, and legal document benchmark suite into one default-change gate.",
+                    "Cheap Gemini fixture results can support default retention only after selected fixtures and document benchmark cases pass without high-priority actions.",
                     "The gate returns metadata only and never calls NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -87,7 +112,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "review_required_count": sum(1 for row in gate_rows if row["gate_status"] == "review_required"),
                 "blocked_count": len(blocking_rows),
                 "not_run_count": sum(1 for row in gate_rows if row["gate_status"] == "not_run"),
-                "default_evidence_allowed_count": sum(1 for row in gate_rows if row["default_change_evidence_allowed"]),
+                "default_evidence_allowed_count": len(passing_rows) if default_change_evidence_allowed else 0,
+                "default_change_evidence_allowed": default_change_evidence_allowed,
                 "cheap_first_model_count": sum(1 for row in gate_rows if row["cheap_first_model"]),
                 "premium_escalation_candidate_count": sum(1 for row in gate_rows if row["premium_escalation_candidate"]),
                 "license_review_source_count": sum(
@@ -100,6 +126,19 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "model_matrix_status": model_matrix["status"],
                 "run_report_status": run_report["status"],
                 "evidence_bundle_status": evidence_bundle["status"],
+                "document_benchmark_status": document_benchmark_status,
+                "document_benchmark_score": document_evaluation["score"],
+                "document_benchmark_case_count": document_evaluation["case_count"],
+                "document_benchmark_passed_case_count": document_evaluation["passed_case_count"],
+                "document_benchmark_warning_case_count": document_evaluation["warning_case_count"],
+                "document_benchmark_failed_case_count": document_evaluation["failed_case_count"],
+                "document_benchmark_not_run_case_count": document_evaluation["not_run_case_count"],
+                "document_benchmark_blocking_case_count": len(document_blocking_rows),
+                "document_benchmark_review_case_count": len(document_warning_rows),
+                "document_coverage_status": document_coverage["status"],
+                "document_coverage_target_type_count": document_coverage["summary"]["target_document_type_count"],
+                "document_coverage_covered_type_count": document_coverage["summary"]["covered_document_type_count"],
+                "document_coverage_missing_type_count": document_coverage["summary"]["missing_document_type_count"],
                 "estimated_cheap_first_cost_usd": quick_suite["summary"]["estimated_cheap_first_cost_usd"],
                 "max_parallel_requests": quick_suite["summary"]["max_parallel_requests"],
                 "raw_input_field_count": raw_input_field_count,
@@ -111,53 +150,97 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "traffic_shifted": False,
             },
             "gate_rows": gate_rows,
+            "document_benchmark_summary": {
+                "status": document_benchmark_status,
+                "score": document_evaluation["score"],
+                "case_count": document_evaluation["case_count"],
+                "passed_case_count": document_evaluation["passed_case_count"],
+                "warning_case_count": document_evaluation["warning_case_count"],
+                "failed_case_count": document_evaluation["failed_case_count"],
+                "not_run_case_count": document_evaluation["not_run_case_count"],
+                "blocking_case_count": len(document_blocking_rows),
+                "review_case_count": len(document_warning_rows),
+                "coverage_status": document_coverage["status"],
+                "covered_document_type_count": document_coverage["summary"]["covered_document_type_count"],
+                "target_document_type_count": document_coverage["summary"]["target_document_type_count"],
+                "missing_document_type_count": document_coverage["summary"]["missing_document_type_count"],
+                "max_local_fixtures_per_run": document_coverage["summary"]["max_local_fixtures_per_run"],
+                "model_calls": "not_required",
+                "network_access": "disabled",
+                "raw_document_snippets_returned": False,
+                "raw_candidate_text_returned": False,
+            },
+            "document_benchmark_rows": document_benchmark_rows,
             "blocking_fixture_ids": [row["fixture_id"] for row in blocking_rows],
             "review_fixture_ids": [row["fixture_id"] for row in warning_rows],
-            "default_evidence_fixture_ids": [row["fixture_id"] for row in passing_rows],
+            "blocking_document_case_ids": [row["case_id"] for row in document_blocking_rows],
+            "review_document_case_ids": [row["case_id"] for row in document_warning_rows],
+            "default_evidence_fixture_ids": [
+                row["fixture_id"] for row in passing_rows
+            ] if default_change_evidence_allowed else [],
+            "default_change_evidence_allowed": default_change_evidence_allowed,
             "routing_policy": {
                 "default_strategy": "cheap_first_gemini_with_fixture_gate",
                 "cheap_first_models": sorted({row["cheap_first_model"] for row in gate_rows if row["cheap_first_model"]}),
                 "default_evidence_requires": [
                     "selected fixture smoke status pass",
                     "no high priority improvement actions",
+                    "legal document benchmark suite status pass",
+                    "no document benchmark PII hard block",
                     "known low-cost cheap-first model ladder",
                     "release evidence bundle reviewed",
                 ],
                 "blocked_actions": [
                     "do not promote a new default from failed or not-run fixture evidence",
+                    "do not promote a new default from failed or not-run legal document benchmark evidence",
                     "do not convert premium escalation candidates into defaults",
                     "do not claim public benchmark scores from metadata-only source mappings",
                 ],
                 "max_parallel_requests": quick_suite["summary"]["max_parallel_requests"],
+                "document_benchmark_required_for_default_change": True,
+                "default_change_evidence_allowed": default_change_evidence_allowed,
                 "configuration_write_allowed": False,
                 "gateway_call_allowed": False,
                 "traffic_shift_allowed": False,
             },
-            "recommended_actions": self._recommended_actions(blocking_rows, warning_rows, passing_rows),
+            "recommended_actions": self._recommended_actions(
+                blocking_rows,
+                warning_rows,
+                passing_rows,
+                document_benchmark_status,
+                document_benchmark_rows,
+            ),
             "privacy_boundary": {
                 "metadata_only": True,
                 "returns_fixture_ids": True,
+                "returns_document_case_ids": True,
                 "returns_expected_signal_counts": True,
                 "returns_raw_fixture_text": False,
                 "returns_fixture_excerpt": False,
+                "returns_document_snippets": False,
+                "returns_candidate_text": False,
+                "returns_document_missing_labels": False,
                 "returns_prompt_text": False,
                 "returns_raw_model_output": False,
                 "returns_gateway_payloads": False,
                 "returns_credentials": False,
+                "external_dataset_downloads": False,
+                "model_calls": False,
                 "network_called": False,
                 "newapi_called": False,
-                "output_scope": "fixture ids, expected signal counts, model ids, cost tiers, gate status, and release actions only",
+                "output_scope": "fixture ids, document case ids, counts, model ids, cost tiers, gate status, and release actions only",
             },
             "claim_boundary": {
                 "automatic_default_change_claimed": False,
                 "public_benchmark_scores_claimed": False,
+                "legal_document_benchmark_scores_claimed": False,
                 "external_dataset_execution_claimed": False,
                 "live_gateway_quality_claimed": False,
                 "production_legal_accuracy_claimed": False,
                 "legal_advice_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py -q",
+                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
                 "npm run typecheck",
                 "npm run ui:regression",
             ],
@@ -212,6 +295,110 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             "raw_model_output_returned": False,
             "gateway_called": False,
         }
+
+    def _document_outputs(self, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        for key in ("document_benchmark_outputs", "legal_document_outputs", "document_outputs"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                return value
+        return None
+
+    def _document_benchmark_rows(
+        self,
+        document_evaluation: dict[str, Any],
+        document_coverage: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        coverage_by_case = {
+            row["case_id"]: row
+            for row in document_coverage.get("case_rows", [])
+            if isinstance(row, dict) and row.get("case_id")
+        }
+        rows: list[dict[str, Any]] = []
+        for result in document_evaluation.get("case_results", []):
+            if not isinstance(result, dict):
+                continue
+            case_id = str(result.get("case_id") or "")
+            coverage_row = coverage_by_case.get(case_id, {})
+            reason_codes = self._document_reason_codes(result)
+            gate_status = self._document_gate_status(result, reason_codes)
+            rows.append(
+                {
+                    "id": f"{case_id}-document-benchmark-gate",
+                    "case_id": case_id,
+                    "title": str(result.get("title") or coverage_row.get("title") or case_id),
+                    "document_type": str(coverage_row.get("document_type") or "unknown"),
+                    "matter_type": str(coverage_row.get("matter_type") or "unknown"),
+                    "benchmark_status": str(result.get("status") or "not_run"),
+                    "gate_status": gate_status,
+                    "score": int(result.get("score") or 0),
+                    "structure_score": int((result.get("metric_scores") or {}).get("document_structure") or 0),
+                    "citation_score": int((result.get("metric_scores") or {}).get("citation_presence") or 0),
+                    "pii_score": int((result.get("metric_scores") or {}).get("pii_exclusion") or 0),
+                    "risk_score": int((result.get("metric_scores") or {}).get("risk_labeling") or 0),
+                    "missing_section_count": len(result.get("missing_sections") or []),
+                    "missing_citation_count": len(result.get("missing_citations") or []),
+                    "missing_risk_label_count": len(result.get("missing_risk_labels") or []),
+                    "pii_finding_count": len(result.get("pii_findings") or []),
+                    "hard_pii_block": bool(result.get("hard_pii_block")),
+                    "default_change_blocker": gate_status in {"blocked", "not_run"},
+                    "reason_codes": reason_codes,
+                    "validation_target": "/api/v1/maintenance/legal-review-benchmark/document-fixtures",
+                    "raw_document_snippet_returned": False,
+                    "raw_candidate_text_returned": False,
+                }
+            )
+        return rows
+
+    def _document_reason_codes(self, result: dict[str, Any]) -> list[str]:
+        codes: list[str] = []
+        status = str(result.get("status") or "not_run")
+        if status == "not_run":
+            codes.append("document-benchmark-not-run")
+        if result.get("hard_pii_block"):
+            codes.append("document-pii-hard-block")
+        if status == "fail":
+            codes.append("document-benchmark-failed")
+        if status == "warn":
+            codes.append("document-benchmark-warning")
+        if result.get("missing_sections"):
+            codes.append("missing-document-sections")
+        if result.get("missing_citations"):
+            codes.append("missing-document-citations")
+        if result.get("missing_risk_labels"):
+            codes.append("missing-document-risk-labels")
+        if status == "pass" and not codes:
+            codes.append("document-benchmark-ready")
+        return _dedupe(codes)
+
+    def _document_gate_status(self, result: dict[str, Any], reason_codes: list[str]) -> str:
+        status = str(result.get("status") or "not_run")
+        if status == "not_run":
+            return "not_run"
+        if "document-pii-hard-block" in reason_codes or status == "fail":
+            return "blocked"
+        if status == "warn" or any(code.startswith("missing-document-") for code in reason_codes):
+            return "review_required"
+        return "pass"
+
+    def _document_benchmark_status(
+        self,
+        document_evaluation: dict[str, Any],
+        document_benchmark_rows: list[dict[str, Any]],
+        document_coverage: dict[str, Any],
+    ) -> str:
+        if document_coverage.get("status") != "ready" or document_coverage.get("summary", {}).get(
+            "missing_document_type_count", 0
+        ):
+            return "blocked"
+        if document_evaluation.get("status") == "not_run":
+            return "not_run"
+        if any(row["gate_status"] == "blocked" for row in document_benchmark_rows):
+            return "blocked"
+        if any(row["gate_status"] in {"review_required", "not_run"} for row in document_benchmark_rows):
+            return "review_required"
+        return "pass"
 
     def _source_by_fixture(self, quick_suite: dict[str, Any]) -> dict[str, list[dict[str, str]]]:
         rows: dict[str, list[dict[str, str]]] = {}
@@ -309,14 +496,15 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         gate_rows: list[dict[str, Any]],
         blocking_rows: list[dict[str, Any]],
         warning_rows: list[dict[str, Any]],
+        document_benchmark_status: str,
     ) -> str:
-        if blocking_rows:
+        if blocking_rows or document_benchmark_status == "blocked":
             return "blocked"
-        if gate_rows and all(row["gate_status"] == "pass" for row in gate_rows):
+        if gate_rows and all(row["gate_status"] == "pass" for row in gate_rows) and document_benchmark_status == "pass":
             return "ready"
-        if gate_rows and all(row["gate_status"] == "not_run" for row in gate_rows):
+        if gate_rows and all(row["gate_status"] == "not_run" for row in gate_rows) and document_benchmark_status == "not_run":
             return "not_run"
-        if warning_rows:
+        if warning_rows or document_benchmark_status in {"review_required", "not_run"}:
             return "ready_with_watchlist"
         return "not_run"
 
@@ -346,20 +534,38 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         blocking_rows: list[dict[str, Any]],
         warning_rows: list[dict[str, Any]],
         passing_rows: list[dict[str, Any]],
+        document_benchmark_status: str,
+        document_benchmark_rows: list[dict[str, Any]],
     ) -> list[str]:
         if blocking_rows:
             return [
                 f"{row['fixture_id']}: fix blocked cheap-first fixture evidence before changing defaults."
                 for row in blocking_rows[:4]
             ]
+        document_blockers = [row for row in document_benchmark_rows if row["gate_status"] == "blocked"]
+        if document_blockers:
+            return [
+                f"{row['case_id']}: clear document benchmark blockers before changing cheap-first defaults."
+                for row in document_blockers[:4]
+            ]
         if warning_rows:
             return [
                 "Run or review selected cheap-first fixtures before treating the result as default-change evidence.",
                 "Keep public benchmark mappings metadata-only until license review passes.",
             ]
+        if document_benchmark_status == "not_run":
+            return [
+                "Run the legal document benchmark suite before using cheap-first fixture evidence for a default change.",
+                "POST document_benchmark_outputs with sections, citations, risk labels, and PII findings only; do not return generated text.",
+            ]
+        if document_benchmark_status == "review_required":
+            return [
+                "Review legal document benchmark warnings before changing cheap-first defaults.",
+                "Fix missing structure, citation, or risk-label counts while keeping benchmark evidence metadata-only.",
+            ]
         if passing_rows:
             return [
-                "Selected legal fixtures passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
+                "Selected legal fixtures and document benchmark cases passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
                 "Do not promote premium escalation candidates into defaults from this gate alone.",
             ]
         return ["Prepare selected fixture observations before evaluating the cheap-first benchmark gate."]

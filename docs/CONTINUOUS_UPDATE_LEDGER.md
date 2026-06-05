@@ -106,10 +106,12 @@ or credentials.
 Current legal fixture cheap-first benchmark gate evidence:
 `modelops-legal-fixture-cheap-first-benchmark-gate` adds shipped metadata-only
 small legal-document cheap-first Gemini benchmark/risk gate evidence. It records
-only redacted fixture ids, expected issue tags, cost metadata, and escalation
+only redacted fixture ids, document case ids, expected issue counts, document
+benchmark pass/fail counts, coverage-gap counts, cost metadata, and escalation
 metadata for reviewer routing; it does not call NewAPI, Gemini, OpenAI, Google,
-gateways, or the network, and it does not include real legal text, prompts,
-model outputs, credentials, or emails.
+gateways, or the network, and it does not include real legal text, fixture
+snippets, candidate generated text, prompts, model outputs, credentials, or
+emails.
 
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 

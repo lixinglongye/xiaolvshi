@@ -2594,16 +2594,68 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGateRow = {
   gateway_called: boolean;
 };
 
+export type ModelOpsLegalFixtureCheapFirstBenchmarkDocumentRow = {
+  id: string;
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  benchmark_status: string;
+  gate_status: string;
+  score: number;
+  structure_score: number;
+  citation_score: number;
+  pii_score: number;
+  risk_score: number;
+  missing_section_count: number;
+  missing_citation_count: number;
+  missing_risk_label_count: number;
+  pii_finding_count: number;
+  hard_pii_block: boolean;
+  default_change_blocker: boolean;
+  reason_codes: string[];
+  validation_target: string;
+  raw_document_snippet_returned: boolean;
+  raw_candidate_text_returned: boolean;
+};
+
+export type ModelOpsLegalFixtureCheapFirstBenchmarkDocumentSummary = {
+  status: string;
+  score: number;
+  case_count: number;
+  passed_case_count: number;
+  warning_case_count: number;
+  failed_case_count: number;
+  not_run_case_count: number;
+  blocking_case_count: number;
+  review_case_count: number;
+  coverage_status: string;
+  covered_document_type_count: number;
+  target_document_type_count: number;
+  missing_document_type_count: number;
+  max_local_fixtures_per_run: number;
+  model_calls: string;
+  network_access: string;
+  raw_document_snippets_returned: boolean;
+  raw_candidate_text_returned: boolean;
+};
+
 export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
   metadata_only: boolean;
   returns_fixture_ids: boolean;
+  returns_document_case_ids?: boolean;
   returns_expected_signal_counts: boolean;
   returns_raw_fixture_text: boolean;
   returns_fixture_excerpt: boolean;
+  returns_document_snippets?: boolean;
+  returns_candidate_text?: boolean;
+  returns_document_missing_labels?: boolean;
   returns_prompt_text: boolean;
   returns_raw_model_output: boolean;
   returns_gateway_payloads: boolean;
   returns_credentials: boolean;
+  external_dataset_downloads?: boolean;
+  model_calls?: boolean;
   network_called: boolean;
   newapi_called: boolean;
   output_scope: string;
@@ -2612,6 +2664,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
 export type ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary = {
   automatic_default_change_claimed: boolean;
   public_benchmark_scores_claimed: boolean;
+  legal_document_benchmark_scores_claimed?: boolean;
   external_dataset_execution_claimed: boolean;
   live_gateway_quality_claimed: boolean;
   production_legal_accuracy_claimed: boolean;
@@ -2632,6 +2685,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     blocked_count: number;
     not_run_count: number;
     default_evidence_allowed_count: number;
+    default_change_evidence_allowed: boolean;
     cheap_first_model_count: number;
     premium_escalation_candidate_count: number;
     license_review_source_count: number;
@@ -2639,6 +2693,19 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     model_matrix_status: string;
     run_report_status: string;
     evidence_bundle_status: string;
+    document_benchmark_status: string;
+    document_benchmark_score: number;
+    document_benchmark_case_count: number;
+    document_benchmark_passed_case_count: number;
+    document_benchmark_warning_case_count: number;
+    document_benchmark_failed_case_count: number;
+    document_benchmark_not_run_case_count: number;
+    document_benchmark_blocking_case_count: number;
+    document_benchmark_review_case_count: number;
+    document_coverage_status: string;
+    document_coverage_target_type_count: number;
+    document_coverage_covered_type_count: number;
+    document_coverage_missing_type_count: number;
     estimated_cheap_first_cost_usd: number;
     max_parallel_requests: number;
     raw_input_field_count: number;
@@ -2650,15 +2717,22 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     traffic_shifted: boolean;
   };
   gate_rows: ModelOpsLegalFixtureCheapFirstBenchmarkGateRow[];
+  document_benchmark_summary?: ModelOpsLegalFixtureCheapFirstBenchmarkDocumentSummary;
+  document_benchmark_rows?: ModelOpsLegalFixtureCheapFirstBenchmarkDocumentRow[];
   blocking_fixture_ids: string[];
   review_fixture_ids: string[];
+  blocking_document_case_ids?: string[];
+  review_document_case_ids?: string[];
   default_evidence_fixture_ids: string[];
+  default_change_evidence_allowed?: boolean;
   routing_policy: {
     default_strategy: string;
     cheap_first_models: string[];
     default_evidence_requires: string[];
     blocked_actions: string[];
     max_parallel_requests: number;
+    document_benchmark_required_for_default_change?: boolean;
+    default_change_evidence_allowed?: boolean;
     configuration_write_allowed: boolean;
     gateway_call_allowed: boolean;
     traffic_shift_allowed: boolean;

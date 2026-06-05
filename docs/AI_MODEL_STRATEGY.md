@@ -129,11 +129,13 @@ model outputs, or credentials.
 
 `modelops-legal-fixture-cheap-first-benchmark-gate` is the shipped
 metadata-only small legal-document cheap-first Gemini benchmark/risk gate
-evidence. It uses redacted fixture ids, expected issue tags, cost metadata, and
-escalation metadata to decide whether a cheap-first result remains acceptable or
-needs review/escalation. It does not call NewAPI, Gemini, OpenAI, Google,
-gateways, or the network, and it does not include real legal text, prompts,
-model outputs, credentials, or emails.
+evidence. It uses redacted fixture ids, document case ids, expected issue
+counts, document benchmark pass/fail counts, coverage-gap counts, cost metadata,
+and escalation metadata to decide whether a cheap-first result remains
+acceptable or needs review/escalation. It does not call NewAPI, Gemini, OpenAI,
+Google, gateways, or the network, and it does not include real legal text,
+fixture snippets, candidate generated text, prompts, model outputs, credentials,
+or emails.
 
 ## Current Gemini Coverage
 

@@ -1,6 +1,7 @@
 import json
 import re
 
+from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import (
     ModelOpsLegalFixtureCheapFirstBenchmarkGateService,
@@ -24,6 +25,19 @@ def _passing_observations() -> dict[str, dict]:
     }
 
 
+def _passing_document_outputs() -> dict[str, dict]:
+    suite = LegalDocumentBenchmarkSuiteService().build_suite()
+    return {
+        case["id"]: {
+            "sections": {section: "present" for section in case["required_sections"]},
+            "citations": case["expected_citations"],
+            "risk_labels": case["expected_risk_labels"],
+            "pii_findings": [],
+        }
+        for case in suite["benchmark_cases"]
+    }
+
+
 def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default():
     gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate()
     serialized = json.dumps(gate, ensure_ascii=False)
@@ -31,22 +45,50 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["status"] == "not_run"
     assert gate["summary"]["selected_fixture_count"] == 3
     assert gate["summary"]["not_run_count"] == 3
+    assert gate["summary"]["document_benchmark_status"] == "not_run"
+    assert gate["summary"]["document_benchmark_case_count"] == 6
+    assert gate["summary"]["document_benchmark_not_run_case_count"] == 6
+    assert gate["summary"]["default_change_evidence_allowed"] is False
+    assert gate["document_benchmark_summary"]["raw_document_snippets_returned"] is False
+    assert gate["document_benchmark_summary"]["raw_candidate_text_returned"] is False
     assert gate["summary"]["raw_fixture_text_returned"] is False
     assert gate["summary"]["raw_model_output_returned"] is False
     assert gate["summary"]["newapi_called"] is False
     assert gate["routing_policy"]["gateway_call_allowed"] is False
+    assert gate["routing_policy"]["document_benchmark_required_for_default_change"] is True
     assert all(row["gate_status"] == "not_run" for row in gate["gate_rows"])
+    assert all(row["gate_status"] == "not_run" for row in gate["document_benchmark_rows"])
     assert all(row["raw_fixture_text_returned"] is False for row in gate["gate_rows"])
+    assert all(row["raw_document_snippet_returned"] is False for row in gate["document_benchmark_rows"])
+    assert all(row["raw_candidate_text_returned"] is False for row in gate["document_benchmark_rows"])
     assert "input_excerpt" not in serialized
     assert "output_text" not in serialized
+    assert "generated_text" not in serialized
     assert "货款32000元" not in serialized
     assert not SENSITIVE_PATTERN.search(serialized)
 
 
-def test_legal_fixture_cheap_first_gate_allows_passing_cheap_first_fixture_evidence():
+def test_legal_fixture_cheap_first_gate_requires_document_benchmark_before_default_evidence():
     gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(
         {
             "observations": _passing_observations(),
+        }
+    )
+
+    assert gate["status"] == "ready_with_watchlist"
+    assert gate["summary"]["pass_count"] == 3
+    assert gate["summary"]["document_benchmark_status"] == "not_run"
+    assert gate["summary"]["default_change_evidence_allowed"] is False
+    assert gate["summary"]["default_evidence_allowed_count"] == 0
+    assert gate["default_evidence_fixture_ids"] == []
+    assert "Run the legal document benchmark suite" in gate["recommended_actions"][0]
+
+
+def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evidence():
+    gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(
+        {
+            "observations": _passing_observations(),
+            "document_benchmark_outputs": _passing_document_outputs(),
             "run_metadata": {
                 "fixture-service-agreement-small": {
                     "phase": "cheap_first",
@@ -61,6 +103,10 @@ def test_legal_fixture_cheap_first_gate_allows_passing_cheap_first_fixture_evide
     assert gate["summary"]["evaluated_fixture_count"] == 3
     assert gate["summary"]["pass_count"] == 3
     assert gate["summary"]["default_evidence_allowed_count"] == 3
+    assert gate["summary"]["default_change_evidence_allowed"] is True
+    assert gate["summary"]["document_benchmark_status"] == "pass"
+    assert gate["summary"]["document_benchmark_score"] == 100
+    assert gate["summary"]["document_benchmark_passed_case_count"] == 6
     assert gate["summary"]["raw_input_field_count"] >= 1
     assert gate["default_evidence_fixture_ids"] == [
         "fixture-service-agreement-small",
@@ -68,6 +114,7 @@ def test_legal_fixture_cheap_first_gate_allows_passing_cheap_first_fixture_evide
         "fixture-low-text-pdf-page-small",
     ]
     assert all(row["default_change_evidence_allowed"] is True for row in gate["gate_rows"])
+    assert all(row["gate_status"] == "pass" for row in gate["document_benchmark_rows"])
     assert all("known-low-cost-gemini-cheap-first" in row["reason_codes"] for row in gate["gate_rows"])
 
 
@@ -93,6 +140,66 @@ def test_legal_fixture_cheap_first_gate_blocks_failed_selected_fixture():
     assert rows["fixture-lease-dispute-notice-small"]["gate_status"] == "not_run"
 
 
+def test_legal_fixture_cheap_first_gate_blocks_failed_document_benchmark_case():
+    document_outputs = _passing_document_outputs()
+    target_case = LegalDocumentBenchmarkSuiteService().build_suite()["benchmark_cases"][0]
+    document_outputs[target_case["id"]]["citations"] = target_case["expected_citations"][:1]
+    document_outputs[target_case["id"]]["generated_text"] = "\u8054\u7cfb 13812345678"
+
+    gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(
+        {
+            "observations": _passing_observations(),
+            "document_benchmark_outputs": document_outputs,
+        }
+    )
+    document_rows = {row["case_id"]: row for row in gate["document_benchmark_rows"]}
+
+    assert gate["status"] == "blocked"
+    assert gate["summary"]["document_benchmark_status"] == "blocked"
+    assert gate["summary"]["document_benchmark_blocking_case_count"] == 1
+    assert gate["summary"]["default_change_evidence_allowed"] is False
+    assert target_case["id"] in gate["blocking_document_case_ids"]
+    assert document_rows[target_case["id"]]["gate_status"] == "blocked"
+    assert document_rows[target_case["id"]]["hard_pii_block"] is True
+    assert document_rows[target_case["id"]]["missing_citation_count"] == 1
+    assert "document-pii-hard-block" in document_rows[target_case["id"]]["reason_codes"]
+    assert "document-benchmark-failed" in document_rows[target_case["id"]]["reason_codes"]
+    serialized = json.dumps(gate, ensure_ascii=False)
+    assert "generated_text" not in serialized
+    assert "13812345678" not in serialized
+
+
+def test_legal_fixture_cheap_first_gate_blocks_document_coverage_gaps():
+    class GapCoverageService:
+        def build_matrix(self):
+            matrix = __import__(
+                "services.legal_document_benchmark_coverage",
+                fromlist=["LegalDocumentBenchmarkCoverageService"],
+            ).LegalDocumentBenchmarkCoverageService().build_matrix()
+            matrix["status"] = "ready_with_gaps"
+            matrix["summary"]["missing_document_type_count"] = 1
+            matrix["summary"]["covered_document_type_count"] = matrix["summary"]["target_document_type_count"] - 1
+            matrix["missing_document_types"] = ["legal_opinion"]
+            return matrix
+
+    gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService(
+        document_coverage_service=GapCoverageService()
+    ).build_gate(
+        {
+            "observations": _passing_observations(),
+            "document_benchmark_outputs": _passing_document_outputs(),
+        }
+    )
+
+    assert gate["status"] == "blocked"
+    assert gate["summary"]["document_benchmark_status"] == "blocked"
+    assert gate["summary"]["document_coverage_status"] == "ready_with_gaps"
+    assert gate["summary"]["document_coverage_missing_type_count"] == 1
+    assert gate["summary"]["default_change_evidence_allowed"] is False
+    assert gate["default_change_evidence_allowed"] is False
+    assert gate["default_evidence_fixture_ids"] == []
+
+
 def test_legal_fixture_cheap_first_gate_route_returns_template_and_review():
     import pytest
 
@@ -113,9 +220,10 @@ def test_legal_fixture_cheap_first_gate_route_returns_template_and_review():
 
     post_response = client.post(
         "/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate",
-        json={"observations": _passing_observations()},
+        json={"observations": _passing_observations(), "document_benchmark_outputs": _passing_document_outputs()},
     )
     assert post_response.status_code == 200
     post_payload = post_response.json()
     assert post_payload["data"]["status"] == "ready"
     assert post_payload["data"]["summary"]["default_evidence_allowed_count"] == 3
+    assert post_payload["data"]["document_benchmark_summary"]["status"] == "pass"

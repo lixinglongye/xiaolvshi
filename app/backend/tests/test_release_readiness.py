@@ -493,7 +493,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
-        "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -617,8 +617,11 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "redacted fixture ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
-    assert "expected issue tags" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "document case ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "expected issue counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "cost metadata" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "document benchmark pass/fail counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "coverage-gap counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "escalation metadata" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "Gemini" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
@@ -627,7 +630,9 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "gateways" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "network" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "real legal text" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "fixture snippets" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "prompts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "generated document text" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "model outputs" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "credentials" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "emails" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]

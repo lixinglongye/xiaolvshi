@@ -2194,8 +2194,8 @@ class ReleaseReadinessService:
                     "docs/CONTINUOUS_UPDATE_LEDGER.md",
                     "docs/AI_MODEL_STRATEGY.md",
                 ),
-                validation_command="python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
-                manual_note="This is metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence using redacted fixture ids, expected issue tags, cost metadata, and escalation metadata only; it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, and it does not include real legal text, prompts, model outputs, credentials, or emails.",
+                validation_command="python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+                manual_note="This is metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence using redacted fixture ids, document case ids, expected issue counts, cost metadata, document benchmark pass/fail counts, coverage-gap counts, and escalation metadata only; it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, and it does not include real legal text, fixture snippets, prompts, generated document text, model outputs, credentials, or emails.",
             ),
             ReleaseCheck(
                 id="modelops-agentic-grounded-defaults",

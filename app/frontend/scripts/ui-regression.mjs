@@ -221,10 +221,20 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary', 'legal fixture cheap-first benchmark gate explicit privacy boundary type'),
   () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary', 'legal fixture cheap-first benchmark gate explicit claim boundary type'),
   () => assertIncludes(maintenanceApi, 'gate_rows', 'legal fixture cheap-first benchmark gate rows type'),
+  () => assertIncludes(maintenanceApi, 'document_benchmark_summary', 'legal fixture cheap-first benchmark document summary type'),
+  () => assertIncludes(maintenanceApi, 'document_benchmark_rows', 'legal fixture cheap-first benchmark document rows type'),
+  () => assertIncludes(maintenanceApi, 'raw_document_snippets_returned', 'legal fixture cheap-first benchmark no raw document snippets type'),
+  () => assertIncludes(maintenanceApi, 'raw_candidate_text_returned', 'legal fixture cheap-first benchmark no raw candidate text type'),
+  () => assertIncludes(maintenanceApi, 'document_benchmark_required_for_default_change', 'legal fixture cheap-first benchmark required routing type'),
+  () => assertIncludes(maintenanceApi, 'legal_document_benchmark_scores_claimed', 'legal fixture cheap-first benchmark no benchmark score claim type'),
   () => assertIncludes(maintenanceApi, 'default_change_evidence_allowed', 'legal fixture cheap-first benchmark gate evidence decision type'),
   () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate', 'legal fixture cheap-first benchmark gate endpoint'),
   () => assertIncludes(maintenancePage, 'Legal fixture cheap-first benchmark gate', 'legal fixture cheap-first benchmark gate panel'),
+  () => assertIncludes(maintenancePage, 'Document benchmark gate', 'legal fixture cheap-first benchmark document panel'),
+  () => assertIncludes(maintenancePage, 'document_benchmark_rows ?? []', 'legal fixture cheap-first benchmark document rows fallback'),
+  () => assertIncludes(maintenancePage, 'raw document snippets', 'legal fixture cheap-first benchmark no raw document snippets label'),
+  () => assertIncludes(maintenancePage, 'raw candidate text', 'legal fixture cheap-first benchmark no raw candidate text label'),
   () => assertIncludes(maintenancePage, 'modelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate state binding'),
   () => assertIncludes(maintenancePage, 'raw fixture text', 'legal fixture cheap-first benchmark gate raw fixture boundary label'),
   () => assertIncludes(maintenancePage, 'automatic default change', 'legal fixture cheap-first benchmark gate no default-change claim'),
@@ -621,7 +631,7 @@ assertNotMatches(
 );
 assertNotMatches(
   legalFixtureCheapFirstBenchmarkGatePanel,
-  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|raw_prompt|prompt_payload)\b/i,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
   'maintenance legal fixture cheap-first benchmark gate no secrets or raw fixture/output field names',
 );
 
@@ -631,7 +641,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 12,
+      assertions: checks.length + 22,
     },
     null,
     2,

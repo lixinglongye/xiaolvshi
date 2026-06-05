@@ -847,6 +847,14 @@ function Inner() {
     validationEventEvidence?.summary.normalized_session_event_count ??
     validationEventEvidence?.normalized_session_events.length ??
     0;
+  const legalFixtureDocumentSummary = modelOpsLegalFixtureCheapFirstBenchmarkGate?.document_benchmark_summary;
+  const legalFixtureDocumentRows = modelOpsLegalFixtureCheapFirstBenchmarkGate?.document_benchmark_rows ?? [];
+  const legalFixtureDocumentAttentionRows = legalFixtureDocumentRows
+    .filter((row) => row.default_change_blocker || row.gate_status !== 'pass')
+    .slice(0, 3);
+  const hasLegalFixtureDocumentBenchmark =
+    Boolean(legalFixtureDocumentSummary) ||
+    (modelOpsLegalFixtureCheapFirstBenchmarkGate?.summary.document_benchmark_case_count ?? 0) > 0;
   const reviewPacketReadinessFlags = continuousSessionReviewPacket
     ? [
         { label: 'updates', value: continuousSessionReviewPacket.summary.update_count_ready },
@@ -4701,6 +4709,18 @@ function Inner() {
                       value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.blocked_count,
                     },
                     {
+                      label: 'document cases',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_case_count,
+                    },
+                    {
+                      label: 'document score',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_score,
+                    },
+                    {
+                      label: 'coverage gaps',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_missing_type_count,
+                    },
+                    {
                       label: 'max parallel',
                       value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.max_parallel_requests,
                     },
@@ -4826,6 +4846,17 @@ function Inner() {
                         {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.configuration_write_allowed)}
                       </div>
                       <div>
+                        document benchmark required:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy
+                            .document_benchmark_required_for_default_change,
+                        )}
+                      </div>
+                      <div>
+                        default change evidence:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.default_change_evidence_allowed)}
+                      </div>
+                      <div>
                         traffic shift allowed:{' '}
                         {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy.traffic_shift_allowed)}
                       </div>
@@ -4844,6 +4875,126 @@ function Inner() {
                     </div>
                   </div>
                 </div>
+
+                {hasLegalFixtureDocumentBenchmark && (
+                  <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black uppercase text-stone-500">Document benchmark gate</h3>
+                        <div className="mt-1 text-xs leading-5 text-stone-600">
+                          score{' '}
+                          {legalFixtureDocumentSummary?.score ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_score}{' '}
+                          / cases{' '}
+                          {legalFixtureDocumentSummary?.case_count ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_case_count}{' '}
+                          / coverage{' '}
+                          {legalFixtureDocumentSummary?.covered_document_type_count ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_covered_type_count}
+                          /
+                          {legalFixtureDocumentSummary?.target_document_type_count ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_target_type_count}
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={
+                          statusClass[
+                            legalFixtureDocumentSummary?.status ??
+                              modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_status ??
+                              'not_run'
+                          ] ?? statusClass.review_required
+                        }
+                      >
+                        {displayToken(
+                          legalFixtureDocumentSummary?.status ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_status ??
+                            'not_run',
+                        )}
+                      </Badge>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="text-xs leading-5 text-stone-600">
+                        passed{' '}
+                        {legalFixtureDocumentSummary?.passed_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_passed_case_count}{' '}
+                        / warn{' '}
+                        {legalFixtureDocumentSummary?.warning_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_warning_case_count}{' '}
+                        / failed{' '}
+                        {legalFixtureDocumentSummary?.failed_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_failed_case_count}
+                        <br />
+                        not run{' '}
+                        {legalFixtureDocumentSummary?.not_run_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_not_run_case_count}{' '}
+                        / blocking{' '}
+                        {legalFixtureDocumentSummary?.blocking_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_blocking_case_count}{' '}
+                        / review{' '}
+                        {legalFixtureDocumentSummary?.review_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_review_case_count}
+                      </div>
+                      <div className="text-xs leading-5 text-stone-600">
+                        coverage{' '}
+                        {displayToken(
+                          legalFixtureDocumentSummary?.coverage_status ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_status,
+                        )}
+                        <br />
+                        missing document types{' '}
+                        {legalFixtureDocumentSummary?.missing_document_type_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_missing_type_count}
+                        <br />
+                        max local fixtures{' '}
+                        {legalFixtureDocumentSummary?.max_local_fixtures_per_run ?? '-'}
+                      </div>
+                      <div className="text-xs leading-5 text-stone-600">
+                        model calls {legalFixtureDocumentSummary?.model_calls ?? 'not_required'}
+                        <br />
+                        network {legalFixtureDocumentSummary?.network_access ?? 'disabled'}
+                        <br />
+                        raw document snippets{' '}
+                        {String(
+                          legalFixtureDocumentSummary?.raw_document_snippets_returned ?? false,
+                        )}{' '}
+                        / raw candidate text{' '}
+                        {String(
+                          legalFixtureDocumentSummary?.raw_candidate_text_returned ?? false,
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 md:grid-cols-3">
+                      {legalFixtureDocumentAttentionRows
+                        .map((row) => (
+                          <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-semibold text-stone-950">{row.title}</div>
+                                <div className="font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                              </div>
+                              <Badge variant="outline" className={statusClass[row.gate_status] ?? statusClass.warn}>
+                                {displayToken(row.gate_status)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">
+                              {displayToken(row.document_type)} / score {row.score}
+                              <br />
+                              missing: sections {row.missing_section_count}, citations {row.missing_citation_count},
+                              risk {row.missing_risk_label_count}
+                              <br />
+                              PII findings {row.pii_finding_count} / hard block {String(row.hard_pii_block)}
+                            </div>
+                            <div className="mt-2 font-mono text-[11px] leading-5 text-stone-500">
+                              {(row.reason_codes ?? []).join(', ') || 'document-benchmark-ready'}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </section>
             )}
 

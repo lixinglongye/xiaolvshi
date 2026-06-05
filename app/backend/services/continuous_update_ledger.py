@@ -1556,7 +1556,7 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence using redacted fixture ids, expected issue tags, cost metadata, and escalation metadata only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real legal text, prompts, model outputs, credentials, or emails.",
+                impact="Adds metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence using redacted fixture ids, document case ids, expected issue counts, cost metadata, document benchmark pass/fail counts, coverage-gap counts, and escalation metadata only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real legal text, fixture snippets, generated document text, prompts, model outputs, credentials, or emails.",
                 evidence_paths=(
                     "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py",
                     "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py",
