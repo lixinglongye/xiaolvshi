@@ -169,6 +169,11 @@ review. It returns advance-next-batch, hold-for-review, rollback-required,
 monitor-only, or not-ready decisions for maintainers, while keeping
 configuration writes, gateway calls, and traffic shifts disabled.
 
+`cheap_first_canary_approval_packet` converts those promotion decisions into
+maintainer signoff requirements and pre-approval checks. It does not record
+approval identity, approve automatic rollout, write configuration, call a
+gateway, or shift traffic.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in

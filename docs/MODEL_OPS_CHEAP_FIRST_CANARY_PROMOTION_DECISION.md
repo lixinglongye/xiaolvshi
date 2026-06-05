@@ -34,6 +34,11 @@ Posting sanitized observations to
 review plus `data.promotion_decision` so the `/model-ops` page can refresh the
 decision immediately after a reviewer evaluates aggregate counts.
 
+`cheap_first_canary_approval_packet` consumes this decision downstream and
+turns ready, blocked, rollback, and monitor-only rows into maintainer signoff
+requirements and pre-approval checks. It still does not record approval, write
+configuration, or shift traffic.
+
 ## Decision Statuses
 
 - `advance_next_batch`: all matched rows for a ready step passed threshold
@@ -80,3 +85,4 @@ Related files:
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_OBSERVATION.md`
+- `docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md`

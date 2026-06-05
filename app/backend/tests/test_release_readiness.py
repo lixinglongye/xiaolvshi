@@ -317,6 +317,34 @@ def test_model_ops_cheap_first_canary_promotion_decision_is_required_model_ops_g
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PROMOTION_DECISION.md" in check["evidence_paths"]
 
 
+def test_model_ops_cheap_first_canary_approval_packet_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-canary-approval-packet"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-canary-approval-packet": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-canary-approval-packet")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-canary-approval-packet",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_canary_approval_packet.py "
+                "tests/test_model_ops_cheap_first_canary_promotion_decision.py "
+                "tests/test_model_ops_cheap_first_canary_observation.py -q"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only maintainer approval packet" in check["manual_note"]
+    assert "never records approval identity" in check["manual_note"]
+    assert "shifts production traffic" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_canary_approval_packet.py" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md" in check["evidence_paths"]
+
+
 def test_route_telemetry_repository_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = {

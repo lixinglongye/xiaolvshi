@@ -52,6 +52,7 @@ from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationS
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
+from services.model_ops_cheap_first_canary_approval_packet import ModelOpsCheapFirstCanaryApprovalPacketService
 from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirstCanaryObservationService
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsCheapFirstCanaryPromotionDecisionService
@@ -282,6 +283,8 @@ async def list_models():
     model_ops_signals["cheap_first_canary_observation"] = cheap_first_canary_observation
     cheap_first_canary_promotion_decision = ModelOpsCheapFirstCanaryPromotionDecisionService().build_decision(model_ops_signals)
     model_ops_signals["cheap_first_canary_promotion_decision"] = cheap_first_canary_promotion_decision
+    cheap_first_canary_approval_packet = ModelOpsCheapFirstCanaryApprovalPacketService().build_packet(model_ops_signals)
+    model_ops_signals["cheap_first_canary_approval_packet"] = cheap_first_canary_approval_packet
     model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     payload = {
         "success": True,
@@ -331,6 +334,7 @@ async def list_models():
         "cheap_first_canary_plan": cheap_first_canary_plan,
         "cheap_first_canary_observation": cheap_first_canary_observation,
         "cheap_first_canary_promotion_decision": cheap_first_canary_promotion_decision,
+        "cheap_first_canary_approval_packet": cheap_first_canary_approval_packet,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -468,11 +472,15 @@ async def evaluate_model_ops_cheap_first_canary_observation(payload: dict[str, A
             "cheap_first_canary_observation": observation,
         }
     )
+    approval_packet = ModelOpsCheapFirstCanaryApprovalPacketService().build_packet(
+        {"cheap_first_canary_promotion_decision": promotion_decision}
+    )
     return {
         "success": True,
         "data": {
             **observation,
             "promotion_decision": promotion_decision,
+            "approval_packet": approval_packet,
         },
     }
 
@@ -484,6 +492,16 @@ async def model_ops_cheap_first_canary_promotion_decision():
     return {
         "success": True,
         "data": models_payload["cheap_first_canary_promotion_decision"],
+    }
+
+
+@router.get("/models/cheap-first-canary-approval-packet")
+async def model_ops_cheap_first_canary_approval_packet():
+    """Return metadata-only maintainer approval packet for canary decisions."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_canary_approval_packet"],
     }
 
 

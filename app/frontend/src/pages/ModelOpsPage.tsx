@@ -28,6 +28,7 @@ import {
   type GeminiVariantMatrix,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
+  type ModelOpsCheapFirstCanaryApprovalPacket,
   type ModelOpsCheapFirstCanaryObservation,
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsPerformanceBudget,
@@ -230,6 +231,7 @@ function Inner() {
   const [performanceError, setPerformanceError] = useState('');
   const [canaryObservation, setCanaryObservation] = useState<ModelOpsCheapFirstCanaryObservation | null>(null);
   const [canaryPromotionDecision, setCanaryPromotionDecision] = useState<ModelOpsCheapFirstCanaryPromotionDecision | null>(null);
+  const [canaryApprovalPacket, setCanaryApprovalPacket] = useState<ModelOpsCheapFirstCanaryApprovalPacket | null>(null);
   const [canaryObservationPayloadText, setCanaryObservationPayloadText] = useState('');
   const [canaryObservationLoading, setCanaryObservationLoading] = useState(false);
   const [canaryObservationError, setCanaryObservationError] = useState('');
@@ -246,6 +248,7 @@ function Inner() {
     setCanaryObservationError('');
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
+    setCanaryApprovalPacket(null);
     try {
       const [modelOpsResult] = await Promise.allSettled([getModelOps()]);
       if (modelOpsResult.status === 'rejected') {
@@ -258,6 +261,7 @@ function Inner() {
         setPerformanceBudget(null);
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
+        setCanaryApprovalPacket(null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
@@ -434,6 +438,7 @@ function Inner() {
       const result = await evaluateModelOpsCheapFirstCanaryObservation(payload as Record<string, unknown>);
       setCanaryObservation(result);
       setCanaryPromotionDecision(result.promotion_decision ?? null);
+      setCanaryApprovalPacket(result.approval_packet ?? null);
     } catch (err) {
       console.error(err);
       setCanaryObservationError(
@@ -459,6 +464,12 @@ function Inner() {
     ?? data?.cheap_first_canary_promotion_decision
     ?? null;
   const canaryPromotionRows = activeCanaryPromotionDecision?.promotion_items ?? [];
+  const activeCanaryApprovalPacket =
+    canaryApprovalPacket
+    ?? activeCanaryObservation?.approval_packet
+    ?? data?.cheap_first_canary_approval_packet
+    ?? null;
+  const canaryApprovalRows = activeCanaryApprovalPacket?.approval_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -1339,6 +1350,157 @@ function Inner() {
                       </TableCell>
                       <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
                         {row.reason_codes.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeCanaryApprovalPacket && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first canary approval packet</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCanaryApprovalPacket.summary.ready_for_approval_count} ready /{' '}
+                  {activeCanaryApprovalPacket.summary.blocked_approval_count} blocked /{' '}
+                  {activeCanaryApprovalPacket.summary.rollback_review_count} rollback review
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCanaryApprovalPacket.status)}>
+                {activeCanaryApprovalPacket.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryApprovalPacket.summary.approval_item_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">approval items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeCanaryApprovalPacket.summary.required_signoff_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">required signoffs</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryApprovalPacket.summary.approved_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">approved count</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryApprovalPacket.summary.approval_record_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">approval record written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryApprovalPacket.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCanaryApprovalPacket.summary.traffic_shifted)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">traffic shifted</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Approval policy</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">approval_required</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryApprovalPacket.approval_policy.approval_required)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">approval_record_written</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryApprovalPacket.approval_policy.approval_record_written)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">configuration_change_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryApprovalPacket.approval_policy.configuration_change_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">traffic_shift_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(activeCanaryApprovalPacket.approval_policy.traffic_shift_allowed)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Approval summary</div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  source promotion: {activeCanaryApprovalPacket.summary.source_promotion_status} / monitor:{' '}
+                  {activeCanaryApprovalPacket.summary.monitor_only_count} / source not ready:{' '}
+                  {activeCanaryApprovalPacket.summary.source_not_ready_count}
+                </div>
+                <div className="mt-2 font-mono text-[11px] leading-5 text-stone-500">
+                  statuses: approval_ready / approval_blocked / rollback_review_required
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeCanaryApprovalPacket.recommended_actions.slice(0, 3).join(' ')}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  maintainer approval claimed:{' '}
+                  {String(activeCanaryApprovalPacket.claim_boundary.maintainer_approval_claimed)} / approver identity:{' '}
+                  {String(activeCanaryApprovalPacket.privacy_boundary.approver_identity_included)} / automatic rollout:{' '}
+                  {String(activeCanaryApprovalPacket.claim_boundary.automatic_canary_rollout_claimed)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Approval</TableHead>
+                    <TableHead>Signoffs</TableHead>
+                    <TableHead>Checks</TableHead>
+                    <TableHead>Blocking reasons</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {canaryApprovalRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_step_id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.approval_status)}>
+                          {row.approval_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          promotion: {row.promotion_status.replace(/_/g, ' ')}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                        {row.required_signoffs.join(', ') || 'none'}
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        {row.pre_approval_checks.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {row.blocking_reason_codes.join(', ') || '-'}
                       </TableCell>
                       <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
                         {row.action}
