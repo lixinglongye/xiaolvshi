@@ -372,6 +372,7 @@ function Inner() {
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
   const cheapFirstDecisionChecks = data?.cheap_first_release_decision?.checks ?? [];
+  const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -701,6 +702,120 @@ function Inner() {
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-700">{check.decision_effect}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.default_change_queue && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Default change queue</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.default_change_queue.summary.change_request_count} changes /{' '}
+                  {data.default_change_queue.summary.review_required_count} reviews /{' '}
+                  {data.default_change_queue.summary.blocked_change_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.default_change_queue.status)}>
+                {data.default_change_queue.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_change_queue.summary.queue_item_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">queue items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_change_queue.summary.ready_change_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">ready changes</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_change_queue.summary.review_required_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review required</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.default_change_queue.summary.blocked_change_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocked changes</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.default_change_queue.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.default_change_queue.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="text-sm font-black uppercase text-stone-500">Queue boundary</div>
+              <div className="mt-2 text-xs leading-5 text-stone-600">
+                automatic default change:{' '}
+                {String(data.default_change_queue.claim_boundary.automatic_default_change_claimed)} / public benchmark
+                scores: {String(data.default_change_queue.claim_boundary.public_benchmark_scores_included)} / raw model
+                output: {String(data.default_change_queue.privacy_boundary.raw_model_output_included)}
+              </div>
+              <div className="mt-2 text-xs leading-5 text-stone-600">
+                {data.default_change_queue.recommended_actions.slice(0, 2).join(' ')}
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Models</TableHead>
+                    <TableHead>Review</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {defaultChangeQueueRows.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{item.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{item.env_var ?? 'explicit'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(item.queue_status)}>
+                          {item.queue_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        current {item.current_model || '-'}
+                        <br />
+                        recommended {item.recommended_model || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {item.requires_change ? 'change' : 'no change'}
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          operator review: {String(item.requires_operator_review)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        {item.reason_codes.join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {item.action}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

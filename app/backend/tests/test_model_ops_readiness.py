@@ -180,3 +180,5 @@ def test_model_ops_route_includes_readiness():
         check["source_key"] == "model_ops_readiness"
         for check in payload["cheap_first_release_decision"]["checks"]
     )
+    assert payload["default_change_queue"]["summary"]["queue_item_count"] >= 6
+    assert payload["default_change_queue"]["summary"]["configuration_written"] is False

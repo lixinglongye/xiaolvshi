@@ -76,6 +76,7 @@ PAGE_GATES = (
             "Performance observations",
             "Gemini catalog source audit",
             "Cheap-first release decision",
+            "Default change queue",
             "Cheap-first quality budget",
             "selector replay",
             "route telemetry",

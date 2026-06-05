@@ -795,6 +795,50 @@ export type ModelOpsCheapFirstReleaseDecision = {
   validation_commands: string[];
 };
 
+export type ModelOpsDefaultChangeQueue = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    queue_item_count: number;
+    change_request_count: number;
+    ready_change_count: number;
+    review_required_count: number;
+    blocked_change_count: number;
+    no_action_count: number;
+    release_decision_status: string;
+    gateway_probe_status: string;
+    price_refresh_status: string;
+    catalog_source_audit_status: string;
+    configuration_written: boolean;
+    gateway_called: boolean;
+  };
+  queue_items: Array<{
+    id: string;
+    task: string;
+    env_var?: string | null;
+    current_model: string;
+    recommended_model: string;
+    requires_change: boolean;
+    requires_operator_review: boolean;
+    queue_status: string;
+    default_optimization_status: string;
+    current_cost_tier?: string | null;
+    recommended_cost_tier?: string | null;
+    estimated_monthly_savings_usd?: number | null;
+    reason_codes: string[];
+    action: string;
+  }>;
+  blocking_item_ids: string[];
+  review_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsPerformanceBudget = {
   status: string;
   method: {
@@ -1647,6 +1691,7 @@ export type ModelOpsResponse = {
   route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
+  default_change_queue?: ModelOpsDefaultChangeQueue;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -1684,6 +1729,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     model_rows?: unknown;
     family_rows?: unknown;
     validation_commands?: unknown;
+    queue_items?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
@@ -1691,7 +1737,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
-      || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands)),
+      || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands)),
   );
 }
 
@@ -1841,6 +1888,13 @@ export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAu
 export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCheapFirstReleaseDecision> {
   return invokeModelOpsApi<ModelOpsCheapFirstReleaseDecision>({
     url: '/api/v1/aihub/models/cheap-first-release-decision',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsDefaultChangeQueue(): Promise<ModelOpsDefaultChangeQueue> {
+  return invokeModelOpsApi<ModelOpsDefaultChangeQueue>({
+    url: '/api/v1/aihub/models/default-change-queue',
     method: 'GET',
   });
 }

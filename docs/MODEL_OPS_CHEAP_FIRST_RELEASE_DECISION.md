@@ -22,6 +22,10 @@ GET /api/v1/aihub/models/cheap-first-release-decision
 The full `/api/v1/aihub/models` payload also includes
 `cheap_first_release_decision`.
 
+`default_change_queue` consumes this packet downstream and turns proposed
+cheap-first default edits into `ready`, `review_required`, `blocked`, or
+`no_action` queue items.
+
 ## Inputs
 
 The service consumes existing signal metadata only:

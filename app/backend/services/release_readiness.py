@@ -386,6 +386,23 @@ class ReleaseReadinessService:
                 manual_note="This is a metadata-only cheap-first release decision packet; it does not call NewAPI, Gemini, OpenAI, Google, any gateway, or claim public benchmark scores.",
             ),
             ReleaseCheck(
+                id="model-ops-default-change-queue",
+                title="ModelOps default change queue",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_ops_default_change_queue.py",
+                    "app/backend/tests/test_model_ops_default_change_queue.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md",
+                ),
+                validation_command="python -m pytest tests/test_model_ops_default_change_queue.py tests/test_model_ops_cheap_first_release_decision.py tests/test_model_default_optimization.py -q",
+                manual_note="This is a metadata-only maintainer queue for default model changes; it never writes configuration, calls a gateway, or proves public benchmark scores.",
+            ),
+            ReleaseCheck(
                 id="model-runtime-router",
                 title="Runtime model router coverage",
                 category="model_ops",

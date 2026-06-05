@@ -147,6 +147,12 @@ steps and optional `.env` suggestions. It never writes configuration and never
 calls NewAPI, Gemini, OpenAI, or another gateway; maintainers must apply changes
 manually and rerun the listed validation commands.
 
+`default_change_queue` turns default-optimization recommendations into
+maintainer queue items. It marks each env-var change as ready,
+review-required, blocked, or no-action based on the cheap-first release
+decision, gateway probe status, catalog source audit, and price refresh monitor.
+It never writes configuration automatically.
+
 ## Price Refresh Monitor Integration
 
 `price_refresh_monitor` is included in `GET /api/v1/aihub/models` and in
