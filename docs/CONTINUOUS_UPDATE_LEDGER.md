@@ -67,6 +67,15 @@ call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write real
 environment values, or include raw prompts, payloads, model outputs, or
 credentials.
 
+Current Gemini default proposal evidence:
+`modelops-gemini-default-change-review` adds shipped metadata-only proposal
+review evidence for maintainers before changing a task default model to a new
+Gemini variant. It records the review scope for cost tier, lifecycle,
+capabilities, gateway compatibility, and the premium/manual review boundary
+only; it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
+write real environment values, or include raw prompts, payloads, model outputs,
+or credentials.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

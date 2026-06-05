@@ -938,6 +938,60 @@ export type ModelOpsDefaultChangeQueue = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiDefaultChangeReviewRow = {
+  id: string;
+  task: string;
+  env_var: string;
+  current_model: string;
+  current_canonical_model?: string | null;
+  proposed_model: string;
+  proposed_canonical_model?: string | null;
+  recommended_model: string;
+  review_status: string;
+  release_action: string;
+  current_cost_tier: string;
+  proposed_cost_tier: string;
+  max_cost_tier: string;
+  proposed_model_known: boolean;
+  proposed_model_status: string;
+  proposed_model_family: string;
+  required_capabilities: string[];
+  missing_required_capabilities: string[];
+  cheap_first_regression: boolean;
+  premium_exception: boolean;
+  reason_codes: string[];
+  review_note: string;
+};
+
+export type ModelOpsGeminiDefaultChangeReview = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    proposal_count: number;
+    ready_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    known_model_count: number;
+    unknown_model_count: number;
+    cheap_first_regression_count: number;
+    premium_exception_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  proposal_rows: ModelOpsGeminiDefaultChangeReviewRow[];
+  blocking_proposal_ids: string[];
+  review_proposal_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsCheapFirstCanaryPlan = {
   status: string;
   method: {
@@ -2164,6 +2218,7 @@ export type ModelOpsResponse = {
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
+  gemini_default_change_review?: ModelOpsGeminiDefaultChangeReview;
   cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
   cheap_first_canary_observation?: ModelOpsCheapFirstCanaryObservation;
   cheap_first_canary_promotion_decision?: ModelOpsCheapFirstCanaryPromotionDecision;
@@ -2208,6 +2263,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     family_rows?: unknown;
     validation_commands?: unknown;
     queue_items?: unknown;
+    proposal_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
     promotion_items?: unknown;
@@ -2226,6 +2282,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.proposal_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
@@ -2405,6 +2462,23 @@ export async function getModelOpsDefaultChangeQueue(): Promise<ModelOpsDefaultCh
   return invokeModelOpsApi<ModelOpsDefaultChangeQueue>({
     url: '/api/v1/aihub/models/default-change-queue',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiDefaultChangeReview(): Promise<ModelOpsGeminiDefaultChangeReview> {
+  return invokeModelOpsApi<ModelOpsGeminiDefaultChangeReview>({
+    url: '/api/v1/aihub/models/gemini-default-change-review',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsGeminiDefaultChangeReview(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsGeminiDefaultChangeReview> {
+  return invokeModelOpsApi<ModelOpsGeminiDefaultChangeReview>({
+    url: '/api/v1/aihub/models/gemini-default-change-review',
+    method: 'POST',
+    data: payload,
   });
 }
 

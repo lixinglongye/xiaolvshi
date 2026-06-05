@@ -287,6 +287,14 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'defaultChangeQueueRows', 'model-ops default change queue row binding'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops default change queue write boundary'),
   () => assertIncludes(modelOpsPage, 'automatic_default_change_claimed', 'model-ops default change queue auto-change non-claim'),
+  () => assertIncludes(modelOpsPage, 'Gemini default change review', 'model-ops Gemini default change review panel'),
+  () => assertIncludes(modelOpsPage, 'activeGeminiDefaultChangeReview', 'model-ops Gemini default change active review binding'),
+  () => assertIncludes(modelOpsPage, 'geminiDefaultChangeRows', 'model-ops Gemini default change proposal row binding'),
+  () => assertIncludes(modelOpsPage, 'defaultGeminiDefaultChangeReviewPayload', 'model-ops Gemini default change template payload'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenGeminiDefaultChangePayloadText', 'model-ops Gemini default change payload guard'),
+  () => assertIncludes(modelOpsPage, 'Evaluate proposal', 'model-ops Gemini default change submit button'),
+  () => assertIncludes(modelOpsPage, 'cheap-first regressions', 'model-ops Gemini default change cheap-first regression summary'),
+  () => assertIncludes(modelOpsPage, 'raw payload echoed', 'model-ops Gemini default change raw payload boundary'),
   () => assertIncludes(modelOpsPage, 'Cheap-first canary plan', 'model-ops cheap-first canary plan panel'),
   () => assertIncludes(modelOpsPage, 'cheapFirstCanarySteps', 'model-ops cheap-first canary step binding'),
   () => assertIncludes(modelOpsPage, 'rollback_trigger_ids', 'model-ops cheap-first canary rollback binding'),
@@ -385,6 +393,12 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/default-change-queue', 'model-ops default change queue endpoint'),
   () => assertIncludes(modelOpsApi, 'default_change_queue', 'model-ops default change queue response binding'),
   () => assertIncludes(modelOpsApi, 'queue_items', 'model-ops default change queue payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change review type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change review API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change evaluation API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-default-change-review', 'model-ops Gemini default change review endpoint'),
+  () => assertIncludes(modelOpsApi, 'gemini_default_change_review', 'model-ops Gemini default change response binding'),
+  () => assertIncludes(modelOpsApi, 'proposal_rows', 'model-ops Gemini default change payload guard'),
   () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstCanaryPlan', 'model-ops cheap-first canary plan type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstCanaryPlan', 'model-ops cheap-first canary plan API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-canary-plan', 'model-ops cheap-first canary plan endpoint'),
@@ -478,6 +492,12 @@ const defaultTemplateAlignmentPanel = sourceSection(
   'Runtime router',
   'model-ops default template alignment section',
 );
+const geminiDefaultChangeReviewPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini default change review</h2>',
+  'Cheap-first canary plan',
+  'model-ops Gemini default change review section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -502,6 +522,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|password|credential_value|api_key|authorization|secret_value|raw prompt|raw_prompt|raw payload|raw_payload|prompt_payload)\b/i,
   'model-ops default template alignment no secrets or raw prompt/payload fields',
 );
+assertNotMatches(
+  geminiDefaultChangeReviewPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
+  'model-ops Gemini default change review no secret or raw prompt/payload field names',
+);
 
 console.log(
   JSON.stringify(
@@ -509,7 +534,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 7,
+      assertions: checks.length + 8,
     },
     null,
     2,
