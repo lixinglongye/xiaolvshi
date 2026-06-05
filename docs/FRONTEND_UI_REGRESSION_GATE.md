@@ -34,6 +34,7 @@ The `/model-ops` page carries evidence for:
 - cheap-first calibration
 - ModelOps load guard
 - Performance observations
+- Gemini catalog source audit
 - Cheap-first quality budget
 - selector replay
 - route telemetry

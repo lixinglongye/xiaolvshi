@@ -74,6 +74,7 @@ PAGE_GATES = (
             "cheap-first calibration",
             "ModelOps load guard",
             "Performance observations",
+            "Gemini catalog source audit",
             "Cheap-first quality budget",
             "selector replay",
             "route telemetry",

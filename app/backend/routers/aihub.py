@@ -37,6 +37,7 @@ from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
 from services.model_cache_policy import ModelCachePolicyService
+from services.model_catalog_source_audit import ModelCatalogSourceAuditService
 from services.model_catalog import catalog_for_api, task_default_model
 from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
@@ -213,6 +214,7 @@ async def list_models():
     gemini_variant_matrix = GeminiModelVariantMatrixService().build_matrix(
         {"observed_models": observed_gateway_models}
     )
+    catalog_source_audit = ModelCatalogSourceAuditService().build_audit()
     price_refresh_monitor = ModelPriceRefreshMonitorService().build_monitor(
         observed_gateway_models,
         forecast,
@@ -258,6 +260,7 @@ async def list_models():
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
+        "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -301,6 +304,7 @@ async def list_models():
         "cost_guardrails": cost_guardrails,
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
+        "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -375,6 +379,15 @@ async def evaluate_gemini_variant_matrix(payload: dict[str, Any]):
     return {
         "success": True,
         "data": GeminiModelVariantMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/models/catalog-source-audit")
+async def model_catalog_source_audit():
+    """Return metadata-only Gemini catalog source and default-role audit evidence."""
+    return {
+        "success": True,
+        "data": ModelCatalogSourceAuditService().build_audit(),
     }
 
 

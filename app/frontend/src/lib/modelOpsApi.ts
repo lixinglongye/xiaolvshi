@@ -578,6 +578,75 @@ export type ModelPriceRefreshMonitor = {
   validation_commands: string[];
 };
 
+export type ModelCatalogSourceAudit = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    catalog_model_count: number;
+    source_reference_count: number;
+    source_url_present_count: number;
+    official_source_url_count: number;
+    priced_model_count: number;
+    missing_pricing_count: number;
+    stable_model_count: number;
+    preview_model_count: number;
+    high_frequency_default_count: number;
+    high_frequency_aligned_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    raw_payload_echoed: boolean;
+  };
+  source_references: Array<{
+    id: string;
+    title: string;
+    url: string;
+    review_purpose: string;
+  }>;
+  high_frequency_defaults: Array<{
+    task: string;
+    default_model: string;
+    canonical_model?: string | null;
+  }>;
+  catalog_rows: Array<{
+    model_id: string;
+    catalog_status: string;
+    cost_tier: string;
+    latency_tier: string;
+    capability_count: number;
+    best_for_count: number;
+    configured_roles: string[];
+    source_url: string;
+    source_url_present: boolean;
+    official_source_url: boolean;
+    pricing_status: string;
+    high_frequency_default_allowed: boolean;
+    default_requires_review: boolean;
+    review_note: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    raw_payload_echoed: boolean;
+    credentials_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    network_called: boolean;
+    output_scope: string;
+  };
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -1525,6 +1594,7 @@ export type ModelOpsResponse = {
   cost_guardrails?: ModelCostGuardrails;
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
+  catalog_source_audit?: ModelCatalogSourceAudit;
   route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   models: ModelCatalogItem[];
@@ -1707,6 +1777,13 @@ export async function getCheapFirstCalibration(): Promise<ModelCheapFirstCalibra
 export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
   return invokeModelOpsApi<GeminiVariantMatrix>({
     url: '/api/v1/aihub/models/gemini-variant-matrix',
+    method: 'GET',
+  });
+}
+
+export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAudit> {
+  return invokeModelOpsApi<ModelCatalogSourceAudit>({
+    url: '/api/v1/aihub/models/catalog-source-audit',
     method: 'GET',
   });
 }

@@ -385,6 +385,9 @@ function Inner() {
   const geminiVariantFamilyRows = activeGeminiVariantMatrix?.family_rows ?? [];
   const geminiVariantObservedRows = activeGeminiVariantMatrix?.observed_model_reviews ?? [];
   const geminiVariantExtraction = activeGeminiVariantMatrix?.source_summaries?.observed_model_extraction;
+  const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
+  const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
+  const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -1377,6 +1380,148 @@ function Inner() {
                 </Table>
               </div>
             )}
+          </section>
+        )}
+
+        {data?.catalog_source_audit && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini catalog source audit</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {data.catalog_source_audit.summary.official_source_url_count} official source URLs /{' '}
+                  {data.catalog_source_audit.summary.priced_model_count} priced models /{' '}
+                  {data.catalog_source_audit.summary.high_frequency_aligned_count} cheap-first defaults aligned
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.catalog_source_audit.status)}>
+                {data.catalog_source_audit.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.catalog_model_count}</div>
+                <div className="mt-1 text-sm text-stone-600">catalog rows</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.source_reference_count}</div>
+                <div className="mt-1 text-sm text-stone-600">source references</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.missing_pricing_count}</div>
+                <div className="mt-1 text-sm text-stone-600">pricing watch rows</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.preview_model_count}</div>
+                <div className="mt-1 text-sm text-stone-600">preview rows</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.warning_check_count}</div>
+                <div className="mt-1 text-sm text-stone-600">warning checks</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.85fr_1.15fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Official source review</h3>
+                <div className="space-y-2">
+                  {data.catalog_source_audit.source_references.map((source) => (
+                    <a
+                      key={source.id}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600 hover:border-stone-950/30"
+                    >
+                      <div className="font-semibold text-stone-950">{source.title}</div>
+                      <div className="font-mono text-[11px] text-stone-500">{source.url}</div>
+                      <div className="mt-1">{source.review_purpose}</div>
+                    </a>
+                  ))}
+                </div>
+                <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Cheap-first defaults</h3>
+                <div className="space-y-2">
+                  {catalogSourceDefaultRows.map((row) => (
+                    <div key={row.task} className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
+                      <div className="font-semibold text-stone-950">{row.task}</div>
+                      <div className="font-mono text-[11px] text-stone-500">{row.default_model}</div>
+                      <div>canonical: {row.canonical_model ?? '-'}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 text-xs leading-5 text-stone-500">
+                  network called: {String(data.catalog_source_audit.privacy_boundary.network_called)} / raw payload echoed:{' '}
+                  {String(data.catalog_source_audit.privacy_boundary.raw_payload_echoed)}
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Check</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {catalogSourceChecks.map((check) => (
+                      <TableRow key={check.id}>
+                        <TableCell className="font-mono text-xs text-stone-700">{check.id}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(check.status)}>
+                            {check.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead>Pricing</TableHead>
+                    <TableHead>Default posture</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {catalogSourceRows.map((row) => (
+                    <TableRow key={row.model_id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                        <div className="mt-1 text-xs text-stone-600">
+                          {row.catalog_status} / {row.cost_tier} / {row.latency_tier}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={row.official_source_url ? statusClass('pass') : statusClass('fail')}>
+                          {row.official_source_url ? 'official source' : 'review source'}
+                        </Badge>
+                        <div className="mt-1 max-w-[280px] break-all font-mono text-[11px] text-stone-500">{row.source_url}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={row.pricing_status === 'missing' ? statusClass('warn') : statusClass('pass')}>
+                          {row.pricing_status.replace(/_/g, ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        <div>{row.review_note}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          roles: {row.configured_roles.join(', ') || '-'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </section>
         )}
 
