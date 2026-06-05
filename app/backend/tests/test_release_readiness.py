@@ -492,6 +492,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
     }
@@ -566,5 +567,18 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/legal_rag_authority_citation_gate.py" in checks["legal-rag-authority-citation-gate"]["evidence_paths"]
     assert "app/backend/tests/test_legal_rag_authority_citation_gate.py" in checks["legal-rag-authority-citation-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_AUTHORITY_CITATION_GATE.md" in checks["legal-rag-authority-citation-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG hallucination triage gate evidence" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "Gemini" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "gateways" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "download datasets" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "raw legal text" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "retrieved snippets" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "prompts" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "model outputs" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "credentials" in checks["legal-rag-hallucination-triage-gate"]["manual_note"]
+    assert "app/backend/services/legal_rag_hallucination_triage_gate.py" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_hallucination_triage_gate.py" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_HALLUCINATION_TRIAGE_GATE.md" in checks["legal-rag-hallucination-triage-gate"]["evidence_paths"]
     assert "maintenance evidence page" in checks["legal-benchmark-research-registry-ui"]["manual_note"]
     assert "does not claim law-firm adoption" in checks["legal-adoption-research-bridge"]["manual_note"]

@@ -2566,6 +2566,97 @@ export type LegalRagAuthorityCitationGate = {
   claim_boundary_rows?: LegalRagAuthorityCitationGateSourceRow[];
 };
 
+export type LegalRagHallucinationTriageGateRow = {
+  case_id: string;
+  title: string;
+  scenario?: string;
+  severity: string;
+  failure_labels: string[];
+  evidence_signals: string[];
+  reviewer_actions: string[];
+  release_action: string;
+  block_release: boolean;
+  linked_authority_row_ids: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    user_question_returned?: boolean;
+    retrieved_context_returned?: boolean;
+    unsafe_answer_returned?: boolean;
+    raw_legal_text_returned?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagHallucinationTriageGate = {
+  id: string;
+  status: string;
+  title: string;
+  summary: {
+    triage_row_count: number;
+    fixture_case_count: number;
+    taxonomy_count: number;
+    blocker_row_count: number;
+    critical_row_count: number;
+    high_row_count: number;
+    medium_row_count: number;
+    failure_label_count: number;
+    authority_gate_status: string;
+    citation_mismatch_count: number;
+    retrieval_gap_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    raw_retrieved_context_included: boolean;
+    raw_legal_text_included: boolean;
+    prompt_included: boolean;
+    model_output_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  triage_rows: LegalRagHallucinationTriageGateRow[];
+  failure_label_counts: Record<string, number>;
+  severity_counts: Record<string, number>;
+  research_basis: Array<{
+    id: string;
+    url: string;
+    signal: string;
+  }>;
+  release_policy: {
+    default_action: string;
+    allowed_without_lawyer_review: string[];
+    requires_lawyer_review: string[];
+    linked_gate_ids: string[];
+  };
+  claim_boundary: {
+    hallucination_free_claimed: boolean;
+    legal_answer_accuracy_claimed: boolean;
+    public_benchmark_score_claimed: boolean;
+    live_gateway_quality_claimed: boolean;
+    automatic_client_delivery_claimed: boolean;
+    allowed_claims: string[];
+    forbidden_claims: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_unsafe_answer: boolean;
+    returns_raw_legal_text: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -2795,6 +2886,15 @@ type LegalRagAuthorityCitationGateResponse = {
     | LegalRagAuthorityCitationGate
     | {
         legalRagAuthorityCitationGate: LegalRagAuthorityCitationGate;
+      };
+};
+
+type LegalRagHallucinationTriageGateResponse = {
+  success: boolean;
+  data:
+    | LegalRagHallucinationTriageGate
+    | {
+        legalRagHallucinationTriageGate: LegalRagHallucinationTriageGate;
       };
 };
 
@@ -4046,6 +4146,18 @@ export async function getLegalRagAuthorityCitationGate(): Promise<LegalRagAuthor
   const payload = unwrapMaintenanceData<LegalRagAuthorityCitationGateResponse['data']>(resp);
   if ('legalRagAuthorityCitationGate' in payload) {
     return payload.legalRagAuthorityCitationGate;
+  }
+  return payload;
+}
+
+export async function getLegalRagHallucinationTriageGate(): Promise<LegalRagHallucinationTriageGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-hallucination-triage-gate',
+    method: 'GET',
+  });
+  const payload = unwrapMaintenanceData<LegalRagHallucinationTriageGateResponse['data']>(resp);
+  if ('legalRagHallucinationTriageGate' in payload) {
+    return payload.legalRagHallucinationTriageGate;
   }
   return payload;
 }

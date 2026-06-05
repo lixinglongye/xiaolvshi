@@ -25,6 +25,12 @@ tiers, jurisdiction/date/freshness metadata, and citation-map source ids. It
 does not call NewAPI, Gemini, or gateways, download datasets, store raw legal
 text, prompts, model outputs, or credentials.
 
+Current Legal RAG hallucination slice: `legal-rag-hallucination-triage-gate`
+adds a metadata-only triage gate for local failure fixture labels, severity,
+reviewer actions, release blockers, and authority-gate rows. It does not call
+NewAPI, Gemini, or gateways, download datasets, store raw legal text, retrieved
+snippets, prompts, model outputs, or credentials.
+
 Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
 Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
 readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or

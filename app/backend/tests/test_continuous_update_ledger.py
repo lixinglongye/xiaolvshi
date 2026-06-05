@@ -534,6 +534,31 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]
     )
+    triage_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-hallucination-triage-gate"
+    )
+    assert "app/backend/services/legal_rag_hallucination_triage_gate.py" in triage_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_hallucination_triage_gate.py" in triage_gate_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_HALLUCINATION_TRIAGE_GATE.md" in triage_gate_entry["evidence_paths"]
+    assert "legal-rag-hallucination-triage-gate" in triage_gate_entry["release_gate_links"]
+    assert "failure fixture labels" in triage_gate_entry["impact"]
+    assert "reviewer actions" in triage_gate_entry["impact"]
+    assert "release blockers" in triage_gate_entry["impact"]
+    assert "authority-gate rows" in triage_gate_entry["impact"]
+    assert "without NewAPI/Gemini calls" in triage_gate_entry["impact"]
+    assert "gateway calls" in triage_gate_entry["impact"]
+    assert "dataset downloads" in triage_gate_entry["impact"]
+    assert "raw legal text" in triage_gate_entry["impact"]
+    assert "retrieved snippets" in triage_gate_entry["impact"]
+    assert "prompts" in triage_gate_entry["impact"]
+    assert "model outputs" in triage_gate_entry["impact"]
+    assert "credentials" in triage_gate_entry["impact"]
+    assert (
+        "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

@@ -232,6 +232,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write model routes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not download datasets" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store external legal text" in guardrail for guardrail in profile["application_guardrails"])

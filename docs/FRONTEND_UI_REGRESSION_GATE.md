@@ -29,6 +29,7 @@ The `/maintenance` page carries evidence for:
 - legal benchmark research refresh
 - model route legal benchmark risk queue
 - legal RAG authority citation gate
+- legal RAG hallucination triage gate
 - continuous update ledger
 - Gemini/NewAPI selector evidence
 

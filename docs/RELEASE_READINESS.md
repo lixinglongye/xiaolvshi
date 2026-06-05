@@ -20,6 +20,11 @@ metadata-only Legal RAG source authority and citation quality checks. It does
 not call NewAPI, Gemini, or gateways, download datasets, store raw legal text,
 prompts, model outputs, or credentials.
 
+Additional optional evidence: `legal-rag-hallucination-triage-gate` records
+metadata-only Legal RAG hallucination triage checks. It does not call NewAPI,
+Gemini, or gateways, download datasets, store raw legal text, retrieved
+snippets, prompts, model outputs, or credentials.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint

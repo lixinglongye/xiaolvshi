@@ -64,6 +64,7 @@ from services.legal_external_research_digest import LegalExternalResearchDigestS
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
+from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
@@ -1177,6 +1178,15 @@ async def get_legal_rag_authority_citation_gate():
     return {
         "success": True,
         "data": LegalRagAuthorityCitationGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-hallucination-triage-gate")
+async def get_legal_rag_hallucination_triage_gate():
+    """Return metadata-only Legal RAG hallucination triage gate evidence."""
+    return {
+        "success": True,
+        "data": LegalRagHallucinationTriageGateService().build_gate(),
     }
 
 

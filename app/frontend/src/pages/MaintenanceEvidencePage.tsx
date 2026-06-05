@@ -44,6 +44,7 @@ import {
   getLegalKnowledgeAudit,
   getLegalPublicBenchmarkSampler,
   getLegalRagAuthorityCitationGate,
+  getLegalRagHallucinationTriageGate,
   getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
@@ -103,6 +104,7 @@ import {
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
   type LegalRagAuthorityCitationGate,
+  type LegalRagHallucinationTriageGate,
   type LegalResearchBacklog,
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
@@ -184,6 +186,7 @@ const statusClass: Record<string, string> = {
   needs_improvement: 'border-red-200 bg-red-50 text-red-800',
   fail: 'border-red-200 bg-red-50 text-red-800',
   incomplete: 'border-red-200 bg-red-50 text-red-800',
+  ready_with_blockers: 'border-red-200 bg-red-50 text-red-800',
   in_progress: 'border-sky-200 bg-sky-50 text-sky-800',
   planned: 'border-stone-200 bg-stone-50 text-stone-700',
   shipped: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -324,6 +327,8 @@ function Inner() {
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [legalRagAuthorityCitationGate, setLegalRagAuthorityCitationGate] =
     useState<LegalRagAuthorityCitationGate | null>(null);
+  const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
+    useState<LegalRagHallucinationTriageGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -642,6 +647,11 @@ function Inner() {
           label: 'Legal RAG authority citation gate',
           run: getLegalRagAuthorityCitationGate,
           apply: (value) => setLegalRagAuthorityCitationGate(value as LegalRagAuthorityCitationGate),
+        },
+        {
+          label: 'Legal RAG hallucination triage gate',
+          run: getLegalRagHallucinationTriageGate,
+          apply: (value) => setLegalRagHallucinationTriageGate(value as LegalRagHallucinationTriageGate),
         },
         {
           label: 'Maintenance gate snapshot',
@@ -7032,6 +7042,185 @@ function Inner() {
                     <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                     <div className="space-y-2">
                       {(legalRagAuthorityCitationGate.validation_commands ?? []).slice(0, 4).map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalRagHallucinationTriageGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only fixture taxonomy, blocker status, and release actions for Legal RAG hallucination risks
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalRagHallucinationTriageGate.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(legalRagHallucinationTriageGate.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  {[
+                    { label: 'fixture cases', value: legalRagHallucinationTriageGate.summary.fixture_case_count },
+                    { label: 'taxonomy labels', value: legalRagHallucinationTriageGate.summary.taxonomy_count },
+                    { label: 'triage rows', value: legalRagHallucinationTriageGate.summary.triage_row_count },
+                    { label: 'blocking rows', value: legalRagHallucinationTriageGate.summary.blocker_row_count },
+                    { label: 'citation mismatches', value: legalRagHallucinationTriageGate.summary.citation_mismatch_count },
+                    { label: 'retrieval gaps', value: legalRagHallucinationTriageGate.summary.retrieval_gap_count },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Fixture/failure taxonomy counts</h3>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {Object.entries(legalRagHallucinationTriageGate.failure_label_counts ?? {}).map(([label, count]) => (
+                        <div key={label} className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-sm">
+                          <span className="font-mono text-xs text-stone-700">{displayToken(label)}</span>
+                          <Badge variant="outline" className="bg-[#fbfaf6]">
+                            {count}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {['missing_citation', 'stale_regulation', 'jurisdiction_mismatch', 'unsupported_conclusion', 'hallucinated_article', 'conflicting_facts'].map((label) => (
+                        <Badge key={label} variant="outline" className="bg-white">
+                          {displayToken(label)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Severity/block status</h3>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {Object.entries(legalRagHallucinationTriageGate.severity_counts ?? {}).map(([severity, count]) => (
+                        <div key={severity} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <Badge variant="outline" className={priorityClass[severity] ?? statusClass.not_run}>
+                            {displayToken(severity)}
+                          </Badge>
+                          <div className="mt-2 text-xl font-black text-stone-950">{count}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Badge variant="outline" className={statusClass[legalRagHallucinationTriageGate.summary.authority_gate_status] ?? statusClass.not_run}>
+                        authority gate: {displayToken(legalRagHallucinationTriageGate.summary.authority_gate_status)}
+                      </Badge>
+                      <Badge variant="outline" className={legalRagHallucinationTriageGate.summary.blocker_row_count > 0 ? statusClass.blocked : statusClass.ready}>
+                        release blockers: {legalRagHallucinationTriageGate.summary.blocker_row_count}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Failure taxonomy</TableHead>
+                        <TableHead>Severity / block</TableHead>
+                        <TableHead>Release action</TableHead>
+                        <TableHead>Evidence signals</TableHead>
+                        <TableHead>Recommended actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(legalRagHallucinationTriageGate.triage_rows ?? []).map((row) => (
+                        <TableRow key={row.case_id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                              {row.failure_labels.map((label) => (
+                                <Badge key={`${row.case_id}-${label}`} variant="outline" className="bg-white">
+                                  {displayToken(label)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={priorityClass[row.severity] ?? statusClass.not_run}>
+                              {displayToken(row.severity)}
+                            </Badge>
+                            <div className="mt-2">blocks release: {String(row.block_release)}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={row.block_release ? statusClass.blocked : statusClass.review_required}>
+                              {displayToken(row.release_action)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {(row.evidence_signals ?? []).slice(0, 4).map((signal) => (
+                              <div key={`${row.case_id}-${signal}`}>{displayToken(signal)}</div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {(row.reviewer_actions ?? []).slice(0, 3).map((action) => (
+                              <div key={`${row.case_id}-${action}`}>{action}</div>
+                            ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>hallucination-free claimed: {String(legalRagHallucinationTriageGate.claim_boundary.hallucination_free_claimed)}</div>
+                      <div>legal answer accuracy claimed: {String(legalRagHallucinationTriageGate.claim_boundary.legal_answer_accuracy_claimed)}</div>
+                      <div>public benchmark score claimed: {String(legalRagHallucinationTriageGate.claim_boundary.public_benchmark_score_claimed)}</div>
+                      <div>live gateway quality claimed: {String(legalRagHallucinationTriageGate.claim_boundary.live_gateway_quality_claimed)}</div>
+                      <div>automatic client delivery claimed: {String(legalRagHallucinationTriageGate.claim_boundary.automatic_client_delivery_claimed)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>metadata-only: {String(legalRagHallucinationTriageGate.privacy_boundary.metadata_only)}</div>
+                      <div>user question returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_user_question)}</div>
+                      <div>retrieved context returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_retrieved_context)}</div>
+                      <div>unsafe answer returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_unsafe_answer)}</div>
+                      <div>legal text returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_raw_legal_text)}</div>
+                      <div>prompt content returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_prompts)}</div>
+                      <div>model output content returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_model_outputs)}</div>
+                      <div>credential material returned: {String(legalRagHallucinationTriageGate.privacy_boundary.returns_credentials)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {(legalRagHallucinationTriageGate.recommended_actions ?? []).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(legalRagHallucinationTriageGate.validation_commands ?? []).slice(0, 4).map((command) => (
                         <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
                           {command}
                         </div>

@@ -22,6 +22,12 @@ citation-map source-id checks, but it must not claim NewAPI/Gemini/gateway
 calls, dataset validation, live RAG accuracy, raw legal text handling, prompt
 retention, model-output retention, or credentials.
 
+Legal RAG hallucination triage gate evidence is metadata-only. It may describe
+repository-backed failure-label severity, reviewer actions, release blockers,
+and authority-gate links, but it must not claim NewAPI/Gemini/gateway calls,
+dataset validation, live RAG accuracy, raw legal text handling, retrieved
+snippet retention, prompt retention, model-output retention, or credentials.
+
 This project includes a small maintenance evidence endpoint for open-source support applications and reviewer-facing project summaries.
 
 ## Endpoint
@@ -42,7 +48,7 @@ The response includes:
 - `application_guardrails`: claims that must be manually verified before submitting a support form.
 - `form_answer`: a concise English or Chinese paragraph suitable for support application fields.
 
-The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets and `/api/v1/maintenance/product-feature-gaps` as the incomplete product capability register.
+The frontend `/maintenance` page renders the OSS evidence, release readiness, user needs radar, research backlog, legal benchmark fixtures, Legal RAG hallucination triage metadata, and model-routing evidence in one reviewer-facing surface. The backend also exposes `/api/v1/maintenance/continuous-update-ledger` as progress evidence for long-running maintenance targets and `/api/v1/maintenance/product-feature-gaps` as the incomplete product capability register.
 
 `docs/ROUTE_TELEMETRY_OPS_SUMMARY.md` documents the implemented
 `GET /api/v1/maintenance/route-telemetry-ops-summary` endpoint. It summarizes
