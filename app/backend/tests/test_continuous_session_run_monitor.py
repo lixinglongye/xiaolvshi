@@ -2,9 +2,52 @@ import json
 import re
 
 from services.continuous_session_run_monitor import ContinuousSessionRunMonitorService
+from services.legal_review_benchmark import LegalReviewBenchmarkService
 
 
 SENSITIVE_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}|password|secret|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")
+
+
+def _fixture_payload(fixture_id: str, route: str, text: str) -> dict:
+    return {
+        "phase": "cheap_first",
+        "model": "gemini-2.5-flash-lite",
+        "http_status": 200,
+        "latency_ms": 800,
+        "estimated_cost_usd": 0.0002,
+        "gateway_response": {
+            "model": "gemini-2.5-flash-lite",
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "fixture_id": fixture_id,
+                                "route": route,
+                                "output_text": text,
+                                "release_decision": "pass",
+                            },
+                            ensure_ascii=False,
+                        )
+                    }
+                }
+            ],
+        },
+    }
+
+
+def _passing_fixture_review_payload() -> dict:
+    fixtures = LegalReviewBenchmarkService().build_fixture_smoke_template()["fixtures"]
+    return {
+        "responses": {
+            fixture["id"]: _fixture_payload(
+                fixture["id"],
+                fixture["expected_routes"][0],
+                " ".join([*fixture["expected_signals"], *fixture["expected_tasks"]]),
+            )
+            for fixture in fixtures
+        }
+    }
 
 
 def _full_window_events():
@@ -112,6 +155,69 @@ def test_run_monitor_tracks_active_window_and_next_checkpoint():
     assert monitor["summary"]["next_checkpoint_due_in_hours"] == 1
     assert monitor["summary"]["required_evidence_ready_count"] >= 3
     assert any(item["event_type"] == "push" and item["status"] == "missing" for item in monitor["required_evidence"])
+
+
+def test_run_monitor_accepts_archive_safe_fixture_evidence_without_claiming_completion():
+    monitor = ContinuousSessionRunMonitorService().build_monitor(
+        {
+            "current_timestamp": "2026-06-04T01:00:00Z",
+            "low_resource_fixture_review": _passing_fixture_review_payload(),
+        }
+    )
+    serialized = json.dumps(monitor, ensure_ascii=False)
+    low_resource_required = next(
+        item for item in monitor["required_evidence"] if item["event_type"] == "low_resource_legal_fixture"
+    )
+
+    assert monitor["status"] == "not_started"
+    assert monitor["summary"]["completion_ready"] is False
+    assert monitor["summary"]["low_resource_fixture_evidence_status"] == "ready"
+    assert monitor["summary"]["low_resource_fixture_evidence_ready"] is True
+    assert monitor["summary"]["low_resource_fixture_evidence_release_ready"] is True
+    assert monitor["summary"]["low_resource_fixture_evidence_observed_count"] == 4
+    assert monitor["summary"]["low_resource_fixture_evidence_archived_count"] == 4
+    assert monitor["low_resource_fixture_evidence"]["summary"]["updates_count_mutated"] is False
+    assert monitor["low_resource_fixture_evidence"]["summary"]["completion_ready_mutated"] is False
+    assert low_resource_required["status"] == "ready"
+    assert low_resource_required["fixture_evidence_status"] == "ready"
+    assert low_resource_required["observed_fixture_count"] == 4
+    assert monitor["source_summaries"]["low_resource_fixture_evidence"]["raw_gateway_response_included"] is False
+    assert monitor["privacy_boundary"]["returns_archive_summaries_only"] is True
+    assert "run_report_payload" not in serialized
+    assert "output_text" not in serialized
+    assert "choices" not in serialized
+
+
+def test_run_monitor_blocks_failed_fixture_evidence_without_echoing_secret():
+    secret = "s" + "k-" + ("E" * 24)
+    monitor = ContinuousSessionRunMonitorService().build_monitor(
+        {
+            "current_timestamp": "2026-06-05T00:45:00Z",
+            "max_allowed_gap_hours": 5,
+            "events": _full_window_events(),
+            "low_resource_fixture_review": {
+                "fixture_id": "fixture-service-agreement-small",
+                "model": "gemini-2.5-flash-lite",
+                "gateway_response": {"choices": [{"message": {}}]},
+                "http_status": 200,
+                "note": f"{secret} raw fixture output should not appear",
+            },
+        }
+    )
+    serialized = json.dumps(monitor, ensure_ascii=False)
+    low_resource_required = next(
+        item for item in monitor["required_evidence"] if item["event_type"] == "low_resource_legal_fixture"
+    )
+
+    assert monitor["summary"]["completion_ready"] is False
+    assert monitor["summary"]["low_resource_fixture_evidence_status"] == "blocked"
+    assert monitor["summary"]["low_resource_fixture_evidence_ready"] is False
+    assert low_resource_required["status"] == "blocked"
+    assert any(blocker["id"] == "low-resource-fixture-evidence-blocked" for blocker in monitor["blockers"])
+    assert any(action["id"] == "review-low-resource-fixture-evidence" for action in monitor["next_actions"])
+    assert secret not in serialized
+    assert "raw fixture output should not appear" not in serialized
+    assert "choices" not in serialized
 
 
 def test_run_monitor_blocks_when_current_gap_exceeds_policy():

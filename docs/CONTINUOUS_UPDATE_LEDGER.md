@@ -29,7 +29,7 @@ The response includes:
 - `completed_updates`: shipped updates with code, test, doc, or UI evidence paths.
 - `next_update_queue`: planned medium/large work, prioritized for cheap-first and low-resource validation.
 - `low_resource_fixture_evidence`: archive-safe local fixture evidence status.
-- `low_resource_test_policy`: fixture limits, serial execution policy, and default benchmark endpoint.
+- `low_resource_test_policy`: fixture limits, serial execution policy, default benchmark endpoint, ledger review endpoint, and run-monitor review endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
 
 `POST` accepts the same compact low-resource fixture payload used by
@@ -49,6 +49,10 @@ It does not return `run_report_payload`, raw gateway responses, `choices`,
 `output_text`, prompts, headers, credentials, emails, legal text, or model
 outputs. Submitted fixture evidence does not mutate
 `completed_medium_large_update_count` and does not change `completion_ready`.
+The same `low_resource_fixture_review` wrapper can also be POSTed to
+`/api/v1/maintenance/continuous-session-run-monitor` so the active-run monitor
+can show the archive-safe fixture evidence status without claiming 24-hour
+completion.
 
 Recent integrated batches moved case workbench persistence planning, legal
 source durable index planning, billing quota migration planning, validated

@@ -110,6 +110,7 @@ class ContinuousUpdateLedgerService:
                 "review_endpoint": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
                 "archive_endpoint": "/api/v1/maintenance/legal-review-benchmark/result-archive",
                 "ledger_review_endpoint": "/api/v1/maintenance/continuous-update-ledger",
+                "run_monitor_review_endpoint": "/api/v1/maintenance/continuous-session-run-monitor",
             },
             "release_guardrails": [
                 "The ledger is optional release evidence; it must not unblock a release by itself.",
@@ -1394,6 +1395,30 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("continuous-session-run-monitor", "continuous-session-timeline", "continuous-session-review-packet"),
                 user_need_ids=("reviewer-visibility", "low-resource-testing", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="continuous-run-monitor-fixture-evidence",
+                title="Continuous run monitor fixture evidence",
+                category="maintenance",
+                size="medium",
+                status="shipped",
+                impact="Lets the active 24-hour run monitor accept the same low-resource fixture review payload as the ledger, expose archive-safe fixture evidence status, and keep completion/update counts non-mutating.",
+                evidence_paths=(
+                    "app/backend/services/continuous_session_run_monitor.py",
+                    "app/backend/tests/test_continuous_session_run_monitor.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/CONTINUOUS_SESSION_RUN_MONITOR.md",
+                ),
+                release_gate_links=(
+                    "continuous-session-run-monitor",
+                    "continuous-update-ledger",
+                    "legal-fixture-local-run-review",
+                    "legal-fixture-result-archive",
+                    "frontend-ui-regression",
+                ),
+                user_need_ids=("reviewer-visibility", "low-resource-testing", "safe-ai-ops"),
             ),
             LedgerEntry(
                 id="frontend-local-run-review-form",

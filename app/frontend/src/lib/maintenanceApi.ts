@@ -487,6 +487,46 @@ export type ContinuousUpdateLedgerEntry = {
   commit_hint?: string | null;
 };
 
+export type MaintenanceLowResourceFixtureEvidence = {
+  status: string;
+  summary: {
+    review_status: string;
+    archive_status: string;
+    release_decision: string;
+    archive_release_decision: string;
+    observed_fixture_count: number;
+    archived_fixture_count: number;
+    not_run_fixture_count: number;
+    redacted_response_count: number;
+    dropped_raw_field_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    observed_request_count: number;
+    observed_cost_usd?: number | null;
+    release_ready: boolean;
+    updates_count_mutated: boolean;
+    completion_ready_mutated: boolean;
+  };
+  source_endpoints: {
+    review: string;
+    archive: string;
+  };
+  check_ids: {
+    blocking: string[];
+    warning: string[];
+  };
+  recommended_actions: string[];
+  privacy_boundary: {
+    raw_payload_echoed: boolean;
+    raw_gateway_response_included: boolean;
+    raw_model_output_included: boolean;
+    raw_legal_text_included: boolean;
+    credentials_included: boolean;
+    emails_included: boolean;
+    returns_archive_summaries_only: boolean;
+  };
+};
+
 export type ContinuousUpdateLedger = {
   status: string;
   goal: {
@@ -507,45 +547,7 @@ export type ContinuousUpdateLedger = {
   };
   completed_updates: ContinuousUpdateLedgerEntry[];
   next_update_queue: ContinuousUpdateLedgerEntry[];
-  low_resource_fixture_evidence: {
-    status: string;
-    summary: {
-      review_status: string;
-      archive_status: string;
-      release_decision: string;
-      archive_release_decision: string;
-      observed_fixture_count: number;
-      archived_fixture_count: number;
-      not_run_fixture_count: number;
-      redacted_response_count: number;
-      dropped_raw_field_count: number;
-      blocking_check_count: number;
-      warning_check_count: number;
-      observed_request_count: number;
-      observed_cost_usd?: number | null;
-      release_ready: boolean;
-      updates_count_mutated: boolean;
-      completion_ready_mutated: boolean;
-    };
-    source_endpoints: {
-      review: string;
-      archive: string;
-    };
-    check_ids: {
-      blocking: string[];
-      warning: string[];
-    };
-    recommended_actions: string[];
-    privacy_boundary: {
-      raw_payload_echoed: boolean;
-      raw_gateway_response_included: boolean;
-      raw_model_output_included: boolean;
-      raw_legal_text_included: boolean;
-      credentials_included: boolean;
-      emails_included: boolean;
-      returns_archive_summaries_only: boolean;
-    };
-  };
+  low_resource_fixture_evidence: MaintenanceLowResourceFixtureEvidence;
   twenty_four_hour_evidence_requirements: string[];
   hundred_update_evidence_requirements: string[];
   low_resource_test_policy: {
@@ -557,6 +559,7 @@ export type ContinuousUpdateLedger = {
     review_endpoint?: string;
     archive_endpoint?: string;
     ledger_review_endpoint?: string;
+    run_monitor_review_endpoint?: string;
   };
   release_guardrails: string[];
   validation_commands: string[];
@@ -2646,6 +2649,11 @@ export type MaintenanceContinuousSessionRunMonitorRequiredEvidence = {
   event_type: string;
   status: string;
   description: string;
+  fixture_evidence_status?: string;
+  observed_fixture_count?: number;
+  archived_fixture_count?: number;
+  release_ready?: boolean;
+  source_endpoints?: Record<string, string>;
   [key: string]: unknown;
 };
 
@@ -2685,6 +2693,13 @@ export type MaintenanceContinuousSessionRunMonitor = {
     required_evidence_ready_count: number;
     required_evidence_count: number;
     blocker_count: number;
+    low_resource_fixture_evidence_status?: string;
+    low_resource_fixture_evidence_ready?: boolean;
+    low_resource_fixture_evidence_release_ready?: boolean;
+    low_resource_fixture_evidence_observed_count?: number;
+    low_resource_fixture_evidence_archived_count?: number;
+    low_resource_fixture_evidence_blocking_count?: number;
+    low_resource_fixture_evidence_raw_payload_echoed?: boolean;
     raw_payload_echoed: boolean;
     newapi_called: boolean;
     completion_ready: boolean;
@@ -2696,6 +2711,7 @@ export type MaintenanceContinuousSessionRunMonitor = {
     current_timestamp: string | null;
     best_window: Record<string, unknown>;
   };
+  low_resource_fixture_evidence?: MaintenanceLowResourceFixtureEvidence;
   required_evidence: MaintenanceContinuousSessionRunMonitorRequiredEvidence[];
   blockers: MaintenanceContinuousSessionRunMonitorBlocker[];
   next_actions: MaintenanceContinuousSessionRunMonitorAction[];
@@ -2710,6 +2726,20 @@ export type MaintenanceContinuousSessionRunMonitor = {
     ledger: Record<string, unknown>;
     timeline: Record<string, unknown>;
     review_packet: Record<string, unknown>;
+    low_resource_fixture_evidence?: {
+      status?: string;
+      review_status?: string;
+      archive_status?: string;
+      observed_fixture_count?: number;
+      archived_fixture_count?: number;
+      blocking_check_count?: number;
+      warning_check_count?: number;
+      release_ready?: boolean;
+      raw_payload_echoed?: boolean;
+      raw_gateway_response_included?: boolean;
+      raw_model_output_included?: boolean;
+      [key: string]: unknown;
+    };
   };
   privacy_boundary: MaintenancePrivacyBoundary;
   validation_commands: string[];

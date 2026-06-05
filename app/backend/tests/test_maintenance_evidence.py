@@ -51,6 +51,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session run monitor" in profile["release_management"]["release_readiness_controls"]
+    assert "Continuous run monitor fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session review packet" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session low-resource fixture review" in profile["release_management"]["release_readiness_controls"]
     assert "Git history cadence evidence" in profile["release_management"]["release_readiness_controls"]
@@ -123,6 +124,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("does not prove completion" in guardrail for guardrail in profile["application_guardrails"])
     assert any("support claims must remain blocked" in guardrail for guardrail in profile["application_guardrails"])
     assert any("active-run gaps" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("archive-safe and non-mutating" in guardrail for guardrail in profile["application_guardrails"])
     assert any("not a substitute for real timestamped 24-hour evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not prove tests" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Validation event evidence accepts only sanitized" in guardrail for guardrail in profile["application_guardrails"])

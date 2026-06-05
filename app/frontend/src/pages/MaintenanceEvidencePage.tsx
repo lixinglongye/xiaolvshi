@@ -64,6 +64,7 @@ import {
   getUserNeedBenchmarkCoverage,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
+  postMaintenanceContinuousSessionRunMonitor,
   reviewContinuousUpdateLedger,
   reviewLegalFixtureLocalRun,
   type CaseIntakeCompleteness,
@@ -791,6 +792,30 @@ function Inner() {
     '-';
   const runMonitorNextCheckpointDueAt = continuousSessionRunMonitor?.summary.next_checkpoint_due_at ?? null;
   const runMonitorNextCheckpointDueIn = continuousSessionRunMonitor?.summary.next_checkpoint_due_in_hours;
+  const runMonitorLowResourceFixtureEvidence =
+    continuousSessionRunMonitor?.low_resource_fixture_evidence ?? null;
+  const runMonitorLowResourceFixtureSummary =
+    continuousSessionRunMonitor?.source_summaries.low_resource_fixture_evidence ?? null;
+  const runMonitorLowResourceFixtureStatus =
+    continuousSessionRunMonitor?.summary.low_resource_fixture_evidence_status ??
+    runMonitorLowResourceFixtureEvidence?.status ??
+    runMonitorLowResourceFixtureSummary?.status ??
+    'not_supplied';
+  const runMonitorLowResourceFixtureObserved =
+    continuousSessionRunMonitor?.summary.low_resource_fixture_evidence_observed_count ??
+    runMonitorLowResourceFixtureEvidence?.summary.observed_fixture_count ??
+    runMonitorLowResourceFixtureSummary?.observed_fixture_count ??
+    0;
+  const runMonitorLowResourceFixtureArchived =
+    continuousSessionRunMonitor?.summary.low_resource_fixture_evidence_archived_count ??
+    runMonitorLowResourceFixtureEvidence?.summary.archived_fixture_count ??
+    runMonitorLowResourceFixtureSummary?.archived_fixture_count ??
+    0;
+  const runMonitorLowResourceFixtureBlocking =
+    continuousSessionRunMonitor?.summary.low_resource_fixture_evidence_blocking_count ??
+    runMonitorLowResourceFixtureEvidence?.summary.blocking_check_count ??
+    runMonitorLowResourceFixtureSummary?.blocking_check_count ??
+    0;
 
   const copyAnswer = async () => {
     if (!data?.form_answer) return;
@@ -870,7 +895,13 @@ function Inner() {
       ]);
       setFixtureResponseNormalizer(normalized);
       setFixtureLocalRunReview(review);
-      setContinuousLedger(await reviewContinuousUpdateLedger({ low_resource_fixture_review: payload }));
+      const fixtureReviewPayload = { low_resource_fixture_review: payload };
+      const [ledgerWithFixtureEvidence, runMonitorWithFixtureEvidence] = await Promise.all([
+        reviewContinuousUpdateLedger(fixtureReviewPayload),
+        postMaintenanceContinuousSessionRunMonitor(fixtureReviewPayload),
+      ]);
+      setContinuousLedger(ledgerWithFixtureEvidence);
+      setContinuousSessionRunMonitor(runMonitorWithFixtureEvidence);
     } catch (err) {
       console.error(err);
       setFixtureReviewError(err instanceof SyntaxError ? 'Local review payload is not valid JSON.' : 'Local fixture review failed.');
@@ -1268,6 +1299,47 @@ function Inner() {
                     {displayToken(item.event_type)} {displayToken(item.status)}
                   </Badge>
                 ))}
+              </div>
+
+              <div className="mb-3 rounded-[8px] border border-stone-950/10 bg-white p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-xs font-black uppercase text-stone-500">Run monitor fixture evidence</h3>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[runMonitorLowResourceFixtureStatus] ?? statusClass.review_recommended}
+                  >
+                    {displayToken(runMonitorLowResourceFixtureStatus)}
+                  </Badge>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-4">
+                  <div>
+                    <div className="text-lg font-black text-stone-950">{runMonitorLowResourceFixtureObserved}</div>
+                    <div className="text-xs font-semibold uppercase text-stone-500">observed fixtures</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-stone-950">{runMonitorLowResourceFixtureArchived}</div>
+                    <div className="text-xs font-semibold uppercase text-stone-500">archived fixtures</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-stone-950">{runMonitorLowResourceFixtureBlocking}</div>
+                    <div className="text-xs font-semibold uppercase text-stone-500">blocking checks</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-black text-stone-950">
+                      {readinessStatus(
+                        continuousSessionRunMonitor.summary.low_resource_fixture_evidence_release_ready === true ||
+                          runMonitorLowResourceFixtureEvidence?.summary.release_ready === true,
+                      )}
+                    </div>
+                    <div className="text-xs font-semibold uppercase text-stone-500">release-ready evidence</div>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-stone-600">
+                  <span>updates count mutated: false</span>
+                  <span>completion ready mutated: false</span>
+                  <span>raw gateway responses included: false</span>
+                  <span>archive summaries only: true</span>
+                </div>
               </div>
 
               <div className="grid gap-3 lg:grid-cols-3">
@@ -2608,6 +2680,10 @@ function Inner() {
                   <div className="break-all font-mono text-[11px] text-stone-500">
                     {continuousLedger.low_resource_test_policy.ledger_review_endpoint ??
                       '/api/v1/maintenance/continuous-update-ledger'}
+                  </div>
+                  <div className="break-all font-mono text-[11px] text-stone-500">
+                    {continuousLedger.low_resource_test_policy.run_monitor_review_endpoint ??
+                      '/api/v1/maintenance/continuous-session-run-monitor'}
                   </div>
                 </div>
 

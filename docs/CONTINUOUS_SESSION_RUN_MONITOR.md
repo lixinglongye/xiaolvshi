@@ -46,6 +46,10 @@ timeline and review packet.
   rows that can be passed into the continuous-session timeline.
 - `git_history` or `git_since`: git-cadence metadata inputs used by the
   timeline, without raw command output.
+- `low_resource_fixture_review`, `fixture_review`, or `local_run_review`:
+  the same low-resource fixture review payload accepted by
+  `continuous-update-ledger`. The monitor reviews and archives it internally,
+  then returns only the archive-safe summary.
 
 Allowed event rows are limited to event type, timestamp, source label,
 repository evidence paths, validation labels, status labels, commit hashes, and
@@ -67,8 +71,14 @@ payloads, terminal transcripts, raw stdout, or raw stderr.
   blocker count, and `completion_ready`.
 - `run_window`: submitted start timestamp, latest event timestamp, current
   timestamp, and the best window reported by the timeline.
+- `low_resource_fixture_evidence`: archive-safe fixture review evidence with
+  review/archive status, fixture counts, check counts, source endpoints,
+  recommended actions, and privacy-boundary flags.
 - `required_evidence`: readiness for commit, test, push, review,
-  credential-scan, and low-resource legal fixture evidence.
+  credential-scan, and low-resource legal fixture evidence. The
+  `low_resource_legal_fixture` item includes `fixture_evidence_status`,
+  observed/archived fixture counts, and release-ready state when a fixture
+  review payload is supplied.
 - `blockers`: hard or review blockers copied only as reviewer-safe metadata.
 - `next_actions`: checkpoint, validation, and missing-evidence actions.
 - `checkpoint_policy`: interval and gap rules for the active run.
@@ -81,6 +91,12 @@ payloads, terminal transcripts, raw stdout, or raw stderr.
 `completion_ready` is a derived review flag, not a public completion claim. A
 support application or release note must still cite the underlying timestamped
 events and repository evidence paths.
+
+Fixture evidence is deliberately non-mutating: it does not change
+`completed_medium_large_update_count`, does not set `completion_ready`, and does
+not convert an otherwise empty active window into 24h proof. It only helps the
+monitor show whether the low-resource legal fixture requirement is ready,
+review-recommended, or blocked.
 
 ## Reviewer Gate
 
@@ -97,7 +113,9 @@ the underlying evidence:
 3. The event stream includes repository-backed work, not only heartbeat or
    status rows.
 4. Required evidence types are present: commit, test, push, review,
-   credential-scan, and low-resource legal fixture evidence.
+   credential-scan, and low-resource legal fixture evidence. The fixture item
+   may be satisfied either by timestamped low-resource fixture events or by a
+   ready archive-safe `low_resource_fixture_evidence` summary.
 5. The continuous update ledger still supports at least 100 medium/large
    repository-backed updates.
 6. The review packet marks the joined evidence ready without crossing the
@@ -143,4 +161,13 @@ Run these repository-root checks after documentation or endpoint updates:
 ```powershell
 rg -n "Continuous Session Run Monitor|continuous-session-run-monitor|metadata-only|timestamped events|raw logs|raw legal text|raw model outputs|credentials|emails|24h" docs
 git diff --check -- docs
+```
+
+Additional fixture-evidence checks:
+
+```powershell
+python -m pytest tests/test_continuous_session_run_monitor.py tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py -q
+cd ../frontend
+npm run typecheck
+npm run ui:regression
 ```

@@ -36,8 +36,9 @@ class ContinuousSessionRunMonitorService:
 
     def build_monitor(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
-        ledger = self.ledger_service.build_ledger()
+        ledger = self.ledger_service.build_ledger(data)
         ledger_summary = ledger["summary"]
+        low_resource_fixture_evidence = ledger.get("low_resource_fixture_evidence") or {}
         timeline_payload = self._timeline_payload(data, ledger_summary)
         timeline = self.timeline_service.build_timeline(timeline_payload)
         review_packet = self.review_packet_service.build_packet(timeline_payload)
@@ -68,11 +69,12 @@ class ContinuousSessionRunMonitorService:
             if next_checkpoint_due_at and next_checkpoint_due_at >= now
             else 0
         )
-        required_evidence = self._required_evidence(timeline)
+        required_evidence = self._required_evidence(timeline, low_resource_fixture_evidence)
         blockers = self._blockers(
             timeline,
             review_packet,
             ledger_summary,
+            low_resource_fixture_evidence,
             elapsed_hours,
             current_gap_hours,
             max_gap_hours,
@@ -109,6 +111,25 @@ class ContinuousSessionRunMonitorService:
                 "required_evidence_ready_count": sum(1 for item in required_evidence if item["status"] == "ready"),
                 "required_evidence_count": len(required_evidence),
                 "blocker_count": len(blockers),
+                "low_resource_fixture_evidence_status": self._fixture_evidence_status(low_resource_fixture_evidence),
+                "low_resource_fixture_evidence_ready": self._fixture_evidence_status(low_resource_fixture_evidence) == "ready",
+                "low_resource_fixture_evidence_release_ready": self._fixture_summary_bool(
+                    low_resource_fixture_evidence,
+                    "release_ready",
+                ),
+                "low_resource_fixture_evidence_observed_count": self._fixture_summary_int(
+                    low_resource_fixture_evidence,
+                    "observed_fixture_count",
+                ),
+                "low_resource_fixture_evidence_archived_count": self._fixture_summary_int(
+                    low_resource_fixture_evidence,
+                    "archived_fixture_count",
+                ),
+                "low_resource_fixture_evidence_blocking_count": self._fixture_summary_int(
+                    low_resource_fixture_evidence,
+                    "blocking_check_count",
+                ),
+                "low_resource_fixture_evidence_raw_payload_echoed": False,
                 "raw_payload_echoed": False,
                 "newapi_called": False,
                 "completion_ready": timeline["summary"]["completion_ready"] is True
@@ -120,6 +141,7 @@ class ContinuousSessionRunMonitorService:
                 "current_timestamp": self._format_timestamp(now),
                 "best_window": timeline["best_window"],
             },
+            "low_resource_fixture_evidence": low_resource_fixture_evidence,
             "required_evidence": required_evidence,
             "blockers": blockers,
             "next_actions": actions,
@@ -133,6 +155,7 @@ class ContinuousSessionRunMonitorService:
                 "ledger": ledger_summary,
                 "timeline": timeline["summary"],
                 "review_packet": review_packet["summary"],
+                "low_resource_fixture_evidence": self._fixture_evidence_source_summary(low_resource_fixture_evidence),
             },
             "privacy_boundary": {
                 "raw_payload_echoed": False,
@@ -141,9 +164,12 @@ class ContinuousSessionRunMonitorService:
                 "raw_stderr_included": False,
                 "raw_legal_text_included": False,
                 "raw_model_output_included": False,
+                "raw_gateway_response_included": False,
+                "low_resource_fixture_evidence_raw_payload_included": False,
                 "credentials_included": False,
                 "emails_included": False,
                 "newapi_called": False,
+                "returns_archive_summaries_only": True,
                 "output_scope": "metadata-only active-session monitor with timestamps, event types, readiness, blockers, and next actions",
             },
             "validation_commands": [
@@ -162,9 +188,16 @@ class ContinuousSessionRunMonitorService:
         for key in ("events", "validation_events", "heartbeat_events", "git_history", "git_since", "max_allowed_gap_hours"):
             if key in data:
                 payload[key] = data[key]
+        for key in ("low_resource_fixture_review", "fixture_review", "local_run_review"):
+            if isinstance(data.get(key), dict):
+                payload[key] = data[key]
         return payload
 
-    def _required_evidence(self, timeline: dict[str, Any]) -> list[dict[str, Any]]:
+    def _required_evidence(
+        self,
+        timeline: dict[str, Any],
+        low_resource_fixture_evidence: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         event_types = {
             item.get("event_type")
             for item in timeline.get("timeline_events", [])
@@ -188,11 +221,33 @@ class ContinuousSessionRunMonitorService:
                 }
             )
         low_resource_ready = timeline["summary"].get("low_resource_event_count", 0) > 0
+        fixture_status = self._fixture_evidence_status(low_resource_fixture_evidence)
+        fixture_ready = fixture_status == "ready"
+        fixture_blocked = fixture_status in {"blocked", "needs_escalation"}
+        if fixture_blocked:
+            low_resource_status = "blocked"
+        elif fixture_ready or low_resource_ready:
+            low_resource_status = "ready"
+        elif fixture_status == "review_recommended":
+            low_resource_status = "review_recommended"
+        else:
+            low_resource_status = "missing"
         evidence.append(
             {
                 "event_type": "low_resource_legal_fixture",
-                "status": "ready" if low_resource_ready else "missing",
+                "status": low_resource_status,
                 "description": "Laptop-safe legal fixture or quick-suite run for the active window.",
+                "fixture_evidence_status": fixture_status,
+                "observed_fixture_count": self._fixture_summary_int(
+                    low_resource_fixture_evidence,
+                    "observed_fixture_count",
+                ),
+                "archived_fixture_count": self._fixture_summary_int(
+                    low_resource_fixture_evidence,
+                    "archived_fixture_count",
+                ),
+                "release_ready": self._fixture_summary_bool(low_resource_fixture_evidence, "release_ready"),
+                "source_endpoints": low_resource_fixture_evidence.get("source_endpoints", {}),
             }
         )
         return evidence
@@ -202,6 +257,7 @@ class ContinuousSessionRunMonitorService:
         timeline: dict[str, Any],
         review_packet: dict[str, Any],
         ledger_summary: dict[str, Any],
+        low_resource_fixture_evidence: dict[str, Any],
         elapsed_hours: int,
         current_gap_hours: int | None,
         max_gap_hours: int,
@@ -240,13 +296,30 @@ class ContinuousSessionRunMonitorService:
                     "detail": f"The current event gap is {current_gap_hours} hour(s), above the {max_gap_hours} hour limit.",
                 }
             )
-        missing = [item["event_type"] for item in required_evidence if item["status"] == "missing"]
+        missing = [item["event_type"] for item in required_evidence if item["status"] != "ready"]
         if missing:
             blockers.append(
                 {
                     "id": "required-evidence-missing",
                     "severity": "review",
                     "detail": ",".join(missing),
+                }
+            )
+        fixture_status = self._fixture_evidence_status(low_resource_fixture_evidence)
+        if fixture_status in {"blocked", "needs_escalation"}:
+            blockers.append(
+                {
+                    "id": "low-resource-fixture-evidence-blocked",
+                    "severity": "review",
+                    "detail": "The supplied low-resource fixture review did not produce archive-safe ready evidence.",
+                }
+            )
+        elif fixture_status == "review_recommended":
+            blockers.append(
+                {
+                    "id": "low-resource-fixture-evidence-review-recommended",
+                    "severity": "review",
+                    "detail": "The low-resource fixture review needs reviewer follow-up before it can support the active run.",
                 }
             )
         for blocker in timeline.get("blockers", [])[:8]:
@@ -306,6 +379,14 @@ class ContinuousSessionRunMonitorService:
                     "id": "fill-required-evidence-types",
                     "priority": "high",
                     "detail": "Add missing required event types: commit, test, push, review, credential_scan, and low_resource_legal_fixture.",
+                }
+            )
+        if any(blocker["id"].startswith("low-resource-fixture-evidence-") for blocker in blockers):
+            actions.append(
+                {
+                    "id": "review-low-resource-fixture-evidence",
+                    "priority": "high",
+                    "detail": "Re-run or review the cheap-first fixture evidence through local-run-review and result-archive before relying on it.",
                 }
             )
         if timeline["summary"].get("continuous_hours_remaining", TARGET_CONTINUOUS_HOURS) > 0:
@@ -404,6 +485,34 @@ class ContinuousSessionRunMonitorService:
         if not raw or SENSITIVE_PATTERN.search(raw):
             return ""
         return re.sub(r"\s+", " ", raw)[:240]
+
+    def _fixture_evidence_status(self, evidence: dict[str, Any]) -> str:
+        return self._safe_token(evidence.get("status")) or "not_supplied"
+
+    def _fixture_summary_int(self, evidence: dict[str, Any], key: str) -> int:
+        summary = evidence.get("summary") if isinstance(evidence.get("summary"), dict) else {}
+        value = summary.get(key)
+        return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+
+    def _fixture_summary_bool(self, evidence: dict[str, Any], key: str) -> bool:
+        summary = evidence.get("summary") if isinstance(evidence.get("summary"), dict) else {}
+        return summary.get(key) is True
+
+    def _fixture_evidence_source_summary(self, evidence: dict[str, Any]) -> dict[str, Any]:
+        summary = evidence.get("summary") if isinstance(evidence.get("summary"), dict) else {}
+        return {
+            "status": self._fixture_evidence_status(evidence),
+            "review_status": self._safe_token(summary.get("review_status")) or "not_supplied",
+            "archive_status": self._safe_token(summary.get("archive_status")) or "not_supplied",
+            "observed_fixture_count": self._fixture_summary_int(evidence, "observed_fixture_count"),
+            "archived_fixture_count": self._fixture_summary_int(evidence, "archived_fixture_count"),
+            "blocking_check_count": self._fixture_summary_int(evidence, "blocking_check_count"),
+            "warning_check_count": self._fixture_summary_int(evidence, "warning_check_count"),
+            "release_ready": self._fixture_summary_bool(evidence, "release_ready"),
+            "raw_payload_echoed": False,
+            "raw_gateway_response_included": False,
+            "raw_model_output_included": False,
+        }
 
     def _bounded_int(self, value: Any, default: int, minimum: int, maximum: int) -> int:
         try:

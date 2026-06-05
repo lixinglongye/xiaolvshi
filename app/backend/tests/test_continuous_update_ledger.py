@@ -81,6 +81,9 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert ledger["low_resource_fixture_evidence"]["summary"]["observed_fixture_count"] == 0
     assert ledger["low_resource_fixture_evidence"]["summary"]["updates_count_mutated"] is False
     assert ledger["low_resource_fixture_evidence"]["privacy_boundary"]["raw_gateway_response_included"] is False
+    assert ledger["low_resource_test_policy"]["run_monitor_review_endpoint"] == (
+        "/api/v1/maintenance/continuous-session-run-monitor"
+    )
 
 
 def test_continuous_update_ledger_summarizes_low_resource_fixture_evidence_without_mutating_goal():
