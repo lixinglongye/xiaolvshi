@@ -553,6 +553,26 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'defaultChangeQueueRows', 'model-ops default change queue row binding'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops default change queue write boundary'),
   () => assertIncludes(modelOpsPage, 'automatic_default_change_claimed', 'model-ops default change queue auto-change non-claim'),
+  () => assertIncludes(modelOpsPage, 'Cheap-first priority queue', 'model-ops cheap-first priority queue panel'),
+  () => assertIncludes(modelOpsPage, 'cheapFirstPriorityRows', 'model-ops cheap-first priority queue row binding'),
+  () => assertIncludes(modelOpsPage, 'priority_score', 'model-ops cheap-first priority score binding'),
+  () => assertIncludes(modelOpsPage, 'priority_label', 'model-ops cheap-first priority label binding'),
+  () => assertIncludes(modelOpsPage, 'hundred_update_completion_claimed', 'model-ops cheap-first priority 100-update non-claim'),
+  () => assertIncludes(modelOpsPage, 'raw_payloads_included', 'model-ops cheap-first priority raw-payload boundary'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>',
+      'model-ops priority queue follows default queue',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini default change review</h2>',
+      'model-ops priority queue precedes default review',
+    ),
   () => assertIncludes(modelOpsPage, 'Gemini default change review', 'model-ops Gemini default change review panel'),
   () => assertIncludes(modelOpsPage, 'activeGeminiDefaultChangeReview', 'model-ops Gemini default change active review binding'),
   () => assertIncludes(modelOpsPage, 'geminiDefaultChangeRows', 'model-ops Gemini default change proposal row binding'),
@@ -669,6 +689,11 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/default-change-queue', 'model-ops default change queue endpoint'),
   () => assertIncludes(modelOpsApi, 'default_change_queue', 'model-ops default change queue response binding'),
   () => assertIncludes(modelOpsApi, 'queue_items', 'model-ops default change queue payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstPriorityQueue', 'model-ops cheap-first priority queue type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstPriorityQueue', 'model-ops cheap-first priority queue API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-priority-queue', 'model-ops cheap-first priority queue endpoint'),
+  () => assertIncludes(modelOpsApi, 'cheap_first_priority_queue', 'model-ops cheap-first priority queue response binding'),
+  () => assertIncludes(modelOpsApi, 'priority_items', 'model-ops cheap-first priority queue payload guard'),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change review type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change review API'),
   () => assertIncludes(modelOpsApi, 'evaluateModelOpsGeminiDefaultChangeReview', 'model-ops Gemini default change evaluation API'),
@@ -791,6 +816,12 @@ const geminiDefaultChangeReviewPanel = sourceSection(
   'Gemini default cost impact',
   'model-ops Gemini default change review section',
 );
+const cheapFirstPriorityQueuePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>',
+  'Gemini default change review',
+  'model-ops cheap-first priority queue section',
+);
 const geminiDefaultCostImpactPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini default cost impact</h2>',
@@ -856,6 +887,11 @@ assertNotMatches(
   'model-ops Gemini default change review no secret or raw prompt/payload field names',
 );
 assertNotMatches(
+  cheapFirstPriorityQueuePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text|authorization)\b/i,
+  'model-ops cheap-first priority queue no secret or raw prompt/payload/output field names',
+);
+assertNotMatches(
   geminiDefaultCostImpactPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default cost impact no secret or raw prompt/payload field names',
@@ -887,7 +923,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 23,
+      assertions: checks.length + 24,
     },
     null,
     2,

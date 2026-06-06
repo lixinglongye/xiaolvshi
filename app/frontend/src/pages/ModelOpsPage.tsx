@@ -52,6 +52,13 @@ const costClass: Record<string, string> = {
   premium: 'bg-red-50 text-red-800 border-red-200',
 };
 
+const priorityClass: Record<string, string> = {
+  P0: 'border-red-200 bg-red-50 text-red-800',
+  P1: 'border-orange-200 bg-orange-50 text-orange-800',
+  P2: 'border-amber-200 bg-amber-50 text-amber-900',
+  P3: 'border-stone-200 bg-white text-stone-700',
+};
+
 function formatNumber(value?: number) {
   return new Intl.NumberFormat('en-US').format(value ?? 0);
 }
@@ -729,6 +736,7 @@ function Inner() {
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
   const cheapFirstDecisionChecks = data?.cheap_first_release_decision?.checks ?? [];
   const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
+  const cheapFirstPriorityRows = data?.cheap_first_priority_queue?.priority_items ?? [];
   const activeGeminiDefaultChangeReview = geminiDefaultChangeReview ?? data?.gemini_default_change_review ?? null;
   const geminiDefaultChangeRows = activeGeminiDefaultChangeReview?.proposal_rows ?? [];
   const activeGeminiDefaultCostImpact = geminiDefaultCostImpact ?? data?.gemini_default_cost_impact ?? null;
@@ -1222,6 +1230,178 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {data?.cheap_first_priority_queue && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  ranked maintainer execution order / {data.cheap_first_priority_queue.summary.change_request_count}{' '}
+                  changes / saves {formatUsd(data.cheap_first_priority_queue.summary.estimated_monthly_savings_usd)}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(data.cheap_first_priority_queue.status)}>
+                {data.cheap_first_priority_queue.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4 lg:grid-cols-7">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_priority_queue.summary.priority_item_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">priority items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_priority_queue.summary.p0_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">P0</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_priority_queue.summary.p1_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">P1</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_priority_queue.summary.blocked_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocked</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {data.cheap_first_priority_queue.summary.review_required_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_priority_queue.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(data.cheap_first_priority_queue.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Signal statuses</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  release: {data.cheap_first_priority_queue.summary.release_gate_status} / default queue:{' '}
+                  {data.cheap_first_priority_queue.summary.default_change_queue_status} / coverage:{' '}
+                  {data.cheap_first_priority_queue.summary.coverage_gate_status}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  route quality: {data.cheap_first_priority_queue.summary.route_quality_status} / price refresh:{' '}
+                  {data.cheap_first_priority_queue.summary.price_refresh_status} / catalog:{' '}
+                  {data.cheap_first_priority_queue.summary.catalog_source_audit_status}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Privacy boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  metadata only: {String(data.cheap_first_priority_queue.privacy_boundary.metadata_only)} / model
+                  called: {String(data.cheap_first_priority_queue.summary.model_called)} / network called:{' '}
+                  {String(data.cheap_first_priority_queue.summary.network_called)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  raw payloads: {String(data.cheap_first_priority_queue.privacy_boundary.raw_payloads_included)} / raw
+                  model output: {String(data.cheap_first_priority_queue.privacy_boundary.raw_model_output_included)} /
+                  credentials: {String(data.cheap_first_priority_queue.summary.credentials_included)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Claim boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  automatic default change:{' '}
+                  {String(data.cheap_first_priority_queue.claim_boundary.automatic_default_change_claimed)} / live
+                  gateway:{' '}
+                  {String(data.cheap_first_priority_queue.claim_boundary.live_gateway_execution_claimed)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  24h complete:{' '}
+                  {String(data.cheap_first_priority_queue.claim_boundary.twenty_four_hour_completion_claimed)} / 100
+                  updates complete:{' '}
+                  {String(data.cheap_first_priority_queue.claim_boundary.hundred_update_completion_claimed)}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rank</TableHead>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Models</TableHead>
+                    <TableHead>Quality / savings</TableHead>
+                    <TableHead>Reason codes</TableHead>
+                    <TableHead>Next action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cheapFirstPriorityRows.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="font-black text-stone-950">#{item.priority_rank}</div>
+                        <Badge variant="outline" className={priorityClass[item.priority_label] ?? priorityClass.P3}>
+                          {item.priority_label}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">score {item.priority_score}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{item.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{item.env_var ?? 'explicit'}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">risk {item.risk_level}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(item.work_status)}>
+                          {item.work_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] leading-4 text-stone-500">
+                          release {item.release_gate_status}
+                          <br />
+                          coverage {item.coverage_status}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        current <span className="font-mono">{item.current_model || '-'}</span>
+                        <br />
+                        recommended <span className="font-mono">{item.recommended_model || '-'}</span>
+                        <br />
+                        cheap start <span className="font-mono">{item.cheap_start_model || '-'}</span>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        <div>
+                          quality {item.quality_score}/{item.quality_floor}
+                        </div>
+                        <div>savings {formatUsd(item.estimated_monthly_savings_usd)}</div>
+                        <div>
+                          change {String(item.requires_change)} / review {String(item.requires_operator_review)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        {item.reason_codes.slice(0, 5).join(', ') || '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {item.next_action}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 text-xs leading-5 text-stone-500">
+              validation: {data.cheap_first_priority_queue.validation_commands.slice(0, 2).join(' | ')}
             </div>
           </section>
         )}

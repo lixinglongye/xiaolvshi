@@ -310,6 +310,34 @@ def test_model_ops_default_change_queue_is_required_model_ops_gate():
     assert "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md" in check["evidence_paths"]
 
 
+def test_model_ops_cheap_first_priority_queue_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-priority-queue"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-priority-queue": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-priority-queue")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-priority-queue",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_priority_queue.py "
+                "tests/test_model_ops_readiness.py tests/test_model_ops_default_change_queue.py "
+                "tests/test_model_route_quality_budget.py -q"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only ranked maintainer queue" in check["manual_note"]
+    assert "never writes configuration" in check["manual_note"]
+    assert "does not claim automatic default changes" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_priority_queue.py" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_PRIORITY_QUEUE.md" in check["evidence_paths"]
+
+
 def test_model_ops_cheap_first_canary_plan_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = [

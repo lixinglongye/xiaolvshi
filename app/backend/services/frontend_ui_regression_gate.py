@@ -84,6 +84,7 @@ PAGE_GATES = (
             "Gemini catalog source audit",
             "Cheap-first release decision",
             "Default change queue",
+            "Cheap-first priority queue",
             "Cheap-first canary plan",
             "Cheap-first canary observation review",
             "Cheap-first canary promotion decision",

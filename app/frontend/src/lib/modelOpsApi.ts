@@ -1073,6 +1073,77 @@ export type ModelOpsDefaultChangeQueue = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstPriorityQueue = {
+  id: 'model-ops-cheap-first-priority-queue' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    priority_item_count: number;
+    p0_count: number;
+    p1_count: number;
+    p2_count: number;
+    p3_count: number;
+    blocked_count: number;
+    review_required_count: number;
+    ready_count: number;
+    monitor_only_count: number;
+    change_request_count: number;
+    estimated_monthly_savings_usd: number;
+    release_gate_status: string;
+    default_change_queue_status: string;
+    coverage_gate_status: string;
+    route_quality_status: string;
+    price_refresh_status: string;
+    catalog_source_audit_status: string;
+    configuration_written: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+  };
+  priority_items: Array<{
+    id: string;
+    task: string;
+    priority_rank: number;
+    priority_score: number;
+    priority_label: string;
+    risk_level: string;
+    work_status: string;
+    release_gate_status: string;
+    default_change_queue_status: string;
+    coverage_status: string;
+    default_optimization_status: string;
+    quality_review_action: string;
+    env_var?: string | null;
+    current_model: string;
+    recommended_model: string;
+    cheap_start_model: string;
+    current_cost_tier?: string | null;
+    recommended_cost_tier?: string | null;
+    requires_change: boolean;
+    requires_operator_review: boolean;
+    runtime_default_has_required_capabilities: boolean;
+    runtime_default_over_budget: boolean;
+    quality_score: number;
+    quality_floor: number;
+    estimated_monthly_savings_usd?: number | null;
+    reason_codes: string[];
+    next_action: string;
+    validation_commands: string[];
+    privacy_boundary: Record<string, boolean | string>;
+  }>;
+  blocking_item_ids: string[];
+  review_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGeminiDefaultChangeReviewRow = {
   id: string;
   task: string;
@@ -2416,6 +2487,7 @@ export type ModelOpsResponse = {
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
+  cheap_first_priority_queue?: ModelOpsCheapFirstPriorityQueue;
   gemini_default_change_review?: ModelOpsGeminiDefaultChangeReview;
   gemini_default_cost_impact?: ModelOpsGeminiDefaultCostImpact;
   cheap_first_canary_plan?: ModelOpsCheapFirstCanaryPlan;
@@ -2471,6 +2543,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     approval_items?: unknown;
     rollback_drill_items?: unknown;
     change_manifest_items?: unknown;
+    priority_items?: unknown;
     coverage_rows?: unknown;
     rows?: unknown;
     default_targets?: unknown;
@@ -2492,6 +2565,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
@@ -2678,6 +2752,13 @@ export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCh
 export async function getModelOpsDefaultChangeQueue(): Promise<ModelOpsDefaultChangeQueue> {
   return invokeModelOpsApi<ModelOpsDefaultChangeQueue>({
     url: '/api/v1/aihub/models/default-change-queue',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstPriorityQueue(): Promise<ModelOpsCheapFirstPriorityQueue> {
+  return invokeModelOpsApi<ModelOpsCheapFirstPriorityQueue>({
+    url: '/api/v1/aihub/models/cheap-first-priority-queue',
     method: 'GET',
   });
 }

@@ -39,6 +39,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first release decision" in rows["/model-ops"]["protected_panels"]
     assert "Default change queue" in rows["/model-ops"]["protected_panels"]
+    assert "Cheap-first priority queue" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary plan" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary observation review" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary promotion decision" in rows["/model-ops"]["protected_panels"]

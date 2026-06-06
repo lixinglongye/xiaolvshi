@@ -128,6 +128,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "default_change_queue",
     ),
     ReadinessComponent(
+        "cheap-first-priority-queue",
+        "Cheap-first priority queue",
+        "release_evidence",
+        "cheap_first_priority_queue",
+    ),
+    ReadinessComponent(
         "gemini-default-change-review",
         "Gemini default change review",
         "release_evidence",

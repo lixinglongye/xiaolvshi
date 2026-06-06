@@ -201,3 +201,8 @@ def test_model_ops_route_includes_readiness():
     )
     assert payload["default_change_queue"]["summary"]["queue_item_count"] >= 6
     assert payload["default_change_queue"]["summary"]["configuration_written"] is False
+    assert "cheap_first_priority_queue" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["cheap_first_priority_queue"]["summary"]["priority_item_count"] >= 6
+    assert payload["cheap_first_priority_queue"]["summary"]["configuration_written"] is False

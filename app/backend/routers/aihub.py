@@ -61,6 +61,7 @@ from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirst
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsCheapFirstCanaryPromotionDecisionService
 from services.model_ops_cheap_first_canary_rollback_drill import ModelOpsCheapFirstCanaryRollbackDrillService
+from services.model_ops_cheap_first_priority_queue import ModelOpsCheapFirstPriorityQueueService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
@@ -319,6 +320,8 @@ async def list_models():
     model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
     default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
     model_ops_signals["default_change_queue"] = default_change_queue
+    cheap_first_priority_queue = ModelOpsCheapFirstPriorityQueueService().build_queue(model_ops_signals)
+    model_ops_signals["cheap_first_priority_queue"] = cheap_first_priority_queue
     gemini_default_change_review = ModelOpsGeminiDefaultChangeReviewService().build_review()
     model_ops_signals["gemini_default_change_review"] = gemini_default_change_review
     gemini_default_cost_impact = ModelOpsGeminiDefaultCostImpactService().build_impact()
@@ -387,6 +390,7 @@ async def list_models():
         "model_ops_performance_budget": model_ops_performance_budget,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
+        "cheap_first_priority_queue": cheap_first_priority_queue,
         "gemini_default_change_review": gemini_default_change_review,
         "gemini_default_cost_impact": gemini_default_cost_impact,
         "cheap_first_canary_plan": cheap_first_canary_plan,
@@ -544,6 +548,16 @@ async def model_ops_default_change_queue():
     return {
         "success": True,
         "data": models_payload["default_change_queue"],
+    }
+
+
+@router.get("/models/cheap-first-priority-queue")
+async def model_ops_cheap_first_priority_queue():
+    """Return ranked cheap-first ModelOps priority work."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_priority_queue"],
     }
 
 
