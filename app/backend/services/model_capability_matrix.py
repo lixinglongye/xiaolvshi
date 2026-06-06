@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import GEMINI_MODEL_CATALOG, ModelProfile, task_default_model
 
 
@@ -30,6 +31,9 @@ class ModelTaskRequirement:
 
 class ModelCapabilityMatrixService:
     """Ranks Gemini models by capability fit, cost, and latency for each project task."""
+
+    def __init__(self, candidate_selector: ModelDefaultCandidateSelectorService | None = None) -> None:
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
 
     def build_matrix(self) -> dict[str, Any]:
         tasks = [self._task_row(requirement) for requirement in self._requirements()]
@@ -158,7 +162,11 @@ class ModelCapabilityMatrixService:
         candidates.sort(key=lambda item: item["sort_key"])
         for item in candidates:
             item.pop("sort_key", None)
-        recommended = candidates[0]["model_id"] if candidates else task_default_model(requirement.task)
+        candidate_fallback = candidates[0]["model_id"] if candidates else task_default_model(requirement.task)
+        recommended = self.candidate_selector.recommended_model_for_task(
+            requirement.task,
+            fallback=candidate_fallback,
+        )
 
         return {
             "task": requirement.task,

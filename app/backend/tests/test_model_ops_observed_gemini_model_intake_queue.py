@@ -19,6 +19,7 @@ def test_observed_gemini_model_intake_queue_ranks_ready_blocked_and_review_model
                 "data": [
                     {"id": "models/gemini-2.5-flash-lite"},
                     {"id": "google/gemini-3.5-flash"},
+                    {"id": "yibu/gemini-3.1-flash-image"},
                     {"id": "newapi/gemini-4.0-flash-lite-preview"},
                     {"id": "gemini-3.1-pro-preview"},
                     {"id": "provider/not-gemini"},
@@ -29,7 +30,7 @@ def test_observed_gemini_model_intake_queue_ranks_ready_blocked_and_review_model
     rows = {row["raw_model"]: row for row in queue["queue_items"]}
 
     assert queue["status"] == "blocked"
-    assert queue["summary"]["observed_model_count"] == 5
+    assert queue["summary"]["observed_model_count"] == 6
     assert queue["summary"]["cheap_first_candidate_count"] == 1
     assert queue["summary"]["unknown_gemini_count"] == 1
     assert rows["models/gemini-2.5-flash-lite"]["intake_status"] == "ready"
@@ -42,6 +43,8 @@ def test_observed_gemini_model_intake_queue_ranks_ready_blocked_and_review_model
     ]
     assert rows["google/gemini-3.5-flash"]["intake_status"] == "review_required"
     assert "not-cheap-first-default" in rows["google/gemini-3.5-flash"]["reason_codes"]
+    assert rows["yibu/gemini-3.1-flash-image"]["intake_action"] == "media_route_review"
+    assert rows["yibu/gemini-3.1-flash-image"]["intake_status"] == "review_required"
     assert rows["newapi/gemini-4.0-flash-lite-preview"]["intake_status"] == "blocked"
     assert "unknown-gemini-catalog-metadata" in rows["newapi/gemini-4.0-flash-lite-preview"]["reason_codes"]
     assert rows["gemini-3.1-pro-preview"]["intake_status"] == "review_required"

@@ -159,6 +159,8 @@ function defaultGeminiVariantMatrixPayload() {
       data: [
         { id: 'models/gemini-2.5-flash-lite', object: 'model' },
         { id: 'google/gemini-2.5-flash', object: 'model' },
+        { id: 'models/gemini-3.1-pro', object: 'model' },
+        { id: 'yibu/gemini-3.1-flash-image', object: 'model' },
         { id: 'google/gemini-3.2-flash-lite', object: 'model' },
       ],
     },
@@ -172,6 +174,8 @@ function defaultObservedGeminiModelIntakePayload() {
       data: [
         { id: 'models/gemini-2.5-flash-lite', object: 'model' },
         { id: 'google/gemini-3.5-flash', object: 'model' },
+        { id: 'models/gemini-3.1-pro', object: 'model' },
+        { id: 'yibu/gemini-3.1-flash-image', object: 'model' },
         { id: 'newapi/gemini-4.0-flash-lite-preview', object: 'model' },
         { id: 'gemini-3.1-pro-preview', object: 'model' },
       ],
@@ -3074,7 +3078,7 @@ function Inner() {
                 <Textarea
                   value={observedGeminiModelIntakePayloadText}
                   onChange={(event) => setObservedGeminiModelIntakePayloadText(event.target.value)}
-                  placeholder='{"models_response":{"data":[{"id":"models/gemini-2.5-flash-lite"},{"id":"newapi/gemini-4.0-flash-lite-preview"}]}}'
+                  placeholder='{"models_response":{"data":[{"id":"models/gemini-2.5-flash-lite"},{"id":"yibu/gemini-3.1-flash-image"},{"id":"newapi/gemini-4.0-flash-lite-preview"}]}}'
                   className="min-h-[160px] border-stone-950/15 bg-white font-mono text-xs"
                 />
                 {observedGeminiModelIntakeError && (

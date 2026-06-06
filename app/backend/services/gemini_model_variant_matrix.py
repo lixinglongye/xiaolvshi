@@ -5,6 +5,7 @@ from typing import Any
 
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import GEMINI_MODEL_CATALOG, catalog_for_api
 
 
@@ -23,9 +24,11 @@ class GeminiModelVariantMatrixService:
         self,
         policy_service: GeminiNewapiCheapFirstPolicyService | None = None,
         selector_service: GeminiNewapiModelSelectorService | None = None,
+        default_candidate_selector: ModelDefaultCandidateSelectorService | None = None,
     ) -> None:
         self.policy_service = policy_service or GeminiNewapiCheapFirstPolicyService()
         self.selector_service = selector_service or GeminiNewapiModelSelectorService()
+        self.default_candidate_selector = default_candidate_selector or ModelDefaultCandidateSelectorService()
 
     def build_matrix(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -67,7 +70,7 @@ class GeminiModelVariantMatrixService:
                 "accepted_observed_model_count": observed_model_extraction["summary"]["accepted_model_count"],
                 "dropped_observed_model_count": observed_model_extraction["summary"]["dropped_model_count"],
                 "observed_model_source_count": len(observed_model_extraction["summary"]["source_fields"]),
-                "cheap_first_default_model": "gemini-2.5-flash-lite",
+                "cheap_first_default_model": self.default_candidate_selector.recommended_model_for_task("fast"),
                 "raw_payload_echoed": False,
             },
             "source_summaries": {

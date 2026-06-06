@@ -171,9 +171,18 @@ approved.
 - `gemini-2.5-pro`
 - `gemini-3.1-flash-lite`
 - `gemini-3.5-flash`
+- `gemini-3.1-pro`
 - `gemini-3.1-pro-preview`
 - `gemini-2.5-flash-image`
+- `gemini-3.1-flash-image`
 - `gemini-3-pro-image`
+
+`model_default_candidate_selector.py` derives cheapest capable Gemini task
+recommendations from local catalog metadata instead of relying only on
+hard-coded model ids. Runtime defaults remain unchanged, but ModelOps evidence
+can promote a future stable, lower-cost Flash-Lite catalog row in review
+metadata while keeping preview, unpriced, premium, and media-route variants
+explicit or review-only. See `docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md`.
 
 `gemini-2.0-flash` 和 `gemini-2.0-flash-lite` 不再作为推荐项，因为 Google 价格页标注它们已经在 2026-06-01 停用。若某个中转网关仍提供兼容别名，仍可通过显式模型名透传，但不应作为默认配置。
 

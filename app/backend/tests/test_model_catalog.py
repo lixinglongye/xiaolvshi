@@ -35,6 +35,8 @@ def test_canonical_model_id_recognizes_gateway_prefixes():
     assert model_catalog.canonical_model_id("models/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
     assert model_catalog.canonical_model_id("google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
     assert model_catalog.canonical_model_id("openrouter/google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
+    assert model_catalog.canonical_model_id("models/gemini-3.1-pro") == "gemini-3.1-pro"
+    assert model_catalog.canonical_model_id("yibu/gemini-3.1-flash-image") == "gemini-3.1-flash-image"
     assert model_catalog.canonical_model_id("provider-custom-model") is None
 
 
@@ -68,7 +70,10 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "grounded-research" in catalog["gemini-3.1-flash-lite"]["configured_roles"]
     assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
     assert catalog["gemini-3.1-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.25
+    assert catalog["gemini-3.1-pro"]["status"] == "stable"
     assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
+    assert catalog["gemini-3.1-flash-image"]["pricing"]["output_usd_per_image"] == 0.067
+    assert "image-edit" in catalog["gemini-3.1-flash-image"]["capabilities"]
     assert catalog["gemini-2.5-flash-lite"]["context_window_tokens"] >= 1_000_000
 
 

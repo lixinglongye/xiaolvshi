@@ -104,6 +104,19 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         context_window_tokens=1_000_000,
     ),
     ModelProfile(
+        id="gemini-3.1-pro",
+        provider="google",
+        family="gemini",
+        cost_tier="premium",
+        latency_tier="slower",
+        capabilities=("text", "vision", "json", "grounding", "long-context", "complex-reasoning", "agentic"),
+        best_for=("complex-legal-reasoning", "grounded-research", "final-review", "hard-benchmark-cases"),
+        notes="Stable Pro option for difficult reasoning; require operator review before making it a default.",
+        input_usd_per_million_tokens=2.00,
+        output_usd_per_million_tokens=12.00,
+        context_window_tokens=1_000_000,
+    ),
+    ModelProfile(
         id="gemini-3.1-pro-preview",
         provider="google",
         family="gemini",
@@ -128,6 +141,24 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         input_usd_per_million_tokens=0.30,
         output_usd_per_image=0.039,
         pricing_note="Google Gemini API paid tier, standard mode. Output image price is approximate per 1024x1024 image.",
+        status="stable",
+    ),
+    ModelProfile(
+        id="gemini-3.1-flash-image",
+        provider="google",
+        family="gemini",
+        cost_tier="medium",
+        latency_tier="medium",
+        capabilities=("image", "image-edit", "text", "json"),
+        best_for=("image-generation", "image-editing", "visual-evidence-illustration"),
+        notes="Newer image route candidate; keep explicit/media-review unless the image default policy changes.",
+        input_usd_per_million_tokens=0.50,
+        output_usd_per_million_tokens=3.00,
+        output_usd_per_image=0.067,
+        pricing_note=(
+            "Google Gemini API paid tier, standard mode. Output image price is approximate for 1K/2K image output; "
+            "gateway billing and resolution settings may differ."
+        ),
         status="stable",
     ),
     ModelProfile(

@@ -226,6 +226,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "billing-usage-quota-policy" in completed_ids
     assert "feedback-lifecycle-policy" in completed_ids
     assert "feedback-capture-plan" in completed_ids
+    assert "model-default-candidate-selector" in completed_ids
     assert "contract-clause-extraction-schema" in completed_ids
     assert "case-workbench-ui-binding" in completed_ids
     assert "legal-source-ingestion-metadata" in completed_ids
@@ -910,6 +911,35 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
     )
+    default_candidate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-candidate-selector"
+    )
+    assert default_candidate_entry["size"] == "medium"
+    assert default_candidate_entry["status"] == "shipped"
+    assert "metadata-only Gemini/NewAPI default candidate selector" in default_candidate_entry["impact"]
+    assert "cheapest capable task recommendations" in default_candidate_entry["impact"]
+    assert "future lower-cost stable Flash-Lite variants" in default_candidate_entry["impact"]
+    assert "without hard-coded default drift" in default_candidate_entry["impact"]
+    assert "real env writes" in default_candidate_entry["impact"]
+    assert "gateway calls" in default_candidate_entry["impact"]
+    assert "network calls" in default_candidate_entry["impact"]
+    assert "prompts" in default_candidate_entry["impact"]
+    assert "raw legal text" in default_candidate_entry["impact"]
+    assert "model outputs" in default_candidate_entry["impact"]
+    assert "credentials" in default_candidate_entry["impact"]
+    assert "app/backend/services/model_default_candidate_selector.py" in default_candidate_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_cheap_first_policy.py" in default_candidate_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_model_selector.py" in default_candidate_entry["evidence_paths"]
+    assert "app/backend/services/model_capability_matrix.py" in default_candidate_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_default_candidate_selector.py" in default_candidate_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_capability_matrix.py" in default_candidate_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in default_candidate_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in default_candidate_entry["evidence_paths"]
+    assert "docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md" in default_candidate_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in default_candidate_entry["evidence_paths"]
+    assert "model-default-candidate-selector" in default_candidate_entry["release_gate_links"]
+    assert "gemini-newapi-model-selector" in default_candidate_entry["release_gate_links"]
+    assert "model-price-refresh-monitor" in default_candidate_entry["release_gate_links"]
     authority_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-authority-citation-gate"
     )

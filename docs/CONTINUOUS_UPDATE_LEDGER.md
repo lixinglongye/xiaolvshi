@@ -45,6 +45,15 @@ readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
 unpriced gateway models now surface as release-review evidence before they can
 be treated as cheap-first defaults.
 
+Current catalog-derived default evidence: `model-default-candidate-selector`
+adds a metadata-only Gemini/NewAPI selector that derives cheapest capable task
+recommendations and ladders from local catalog capability, lifecycle, price,
+cost-tier, and latency metadata. Runtime defaults remain unchanged; the selector
+only gives ModelOps a reviewable signal when a future stable lower-cost
+Flash-Lite catalog row should replace a hard-coded recommendation. It does not
+write env files, call gateways, shift traffic, include raw prompts, legal text,
+model outputs, or credentials.
+
 Newest model-ops release evidence: `modelops-cheap-first-canary-rollback-drill`
 adds a shipped metadata-only rollback rehearsal packet downstream of canary
 approval evidence. It records trigger review, holdout confirmation, role, and
@@ -433,6 +442,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/services/matter_audit_retention_policy.py`
 - `app/backend/services/matter_intake_readiness_policy.py`
 - `app/backend/services/model_default_recommendation_snapshot.py`
+- `app/backend/services/model_default_candidate_selector.py`
 - `app/backend/services/model_price_refresh_monitor.py`
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
@@ -491,6 +501,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/tests/test_matter_audit_retention_policy.py`
 - `app/backend/tests/test_matter_intake_readiness_policy.py`
 - `app/backend/tests/test_model_default_recommendation_snapshot.py`
+- `app/backend/tests/test_model_default_candidate_selector.py`
 - `app/backend/tests/test_model_price_refresh_monitor.py`
 - `app/backend/tests/test_model_cost_regression_snapshots.py`
 - `app/backend/tests/test_route_telemetry_persistence_plan.py`
@@ -543,6 +554,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/MATTER_AUDIT_RETENTION_POLICY.md`
 - `docs/MATTER_INTAKE_READINESS_POLICY.md`
 - `docs/MODEL_DEFAULT_RECOMMENDATION_SNAPSHOT.md`
+- `docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md`
 - `docs/MODEL_PRICE_REFRESH_MONITOR.md`
 - `docs/MODEL_COST_REGRESSION_SNAPSHOTS.md`
 - `docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md`

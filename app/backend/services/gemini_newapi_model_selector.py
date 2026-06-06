@@ -4,9 +4,10 @@ from dataclasses import asdict, dataclass
 import re
 from typing import Any
 
+from services import model_catalog
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import (
-    GEMINI_MODEL_CATALOG,
     canonical_model_id,
     model_profile,
     resolve_model,
@@ -62,8 +63,13 @@ class ObservedModelReview:
 class GeminiNewapiModelSelectorService:
     """Normalize Gemini/NewAPI model ids and produce cheap-first task choices."""
 
-    def __init__(self, policy_service: GeminiNewapiCheapFirstPolicyService | None = None) -> None:
+    def __init__(
+        self,
+        policy_service: GeminiNewapiCheapFirstPolicyService | None = None,
+        candidate_selector: ModelDefaultCandidateSelectorService | None = None,
+    ) -> None:
         self.policy_service = policy_service or GeminiNewapiCheapFirstPolicyService()
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
 
     def build_selector(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -87,7 +93,7 @@ class GeminiNewapiModelSelectorService:
                 "premium_exception_count": sum(1 for item in recommendation_payloads if item["premium_exception"] is True),
                 "catalog_review_count": len(catalog_reviews),
                 "unknown_model_count": len(unknown_models),
-                "known_catalog_model_count": len(GEMINI_MODEL_CATALOG),
+                "known_catalog_model_count": len(model_catalog.GEMINI_MODEL_CATALOG),
                 "raw_payload_echoed": False,
             },
             "task_recommendations": recommendation_payloads,
@@ -232,6 +238,10 @@ class GeminiNewapiModelSelectorService:
         return any(candidate.startswith("gemini-") or "gemini-" in candidate for candidate in candidates)
 
     def _escalation_chain(self, task: str) -> list[str]:
+        ladder = self.candidate_selector.default_ladder_for_task(task)
+        chain = [str(item["model"]) for item in ladder if item.get("model")]
+        if chain:
+            return chain
         if task in PREMIUM_EXCEPTION_TASKS:
             return ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"]
         if task in BALANCED_TASKS:

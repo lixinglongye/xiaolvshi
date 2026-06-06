@@ -11,6 +11,7 @@ from services.model_catalog import (
     task_default_model,
 )
 from services.model_cost_forecast import ModelCostForecastService
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 
 
 HIGH_FREQUENCY_TASKS = ("fast", "classification", "ocr")
@@ -51,6 +52,9 @@ SENSITIVE_VALUE_PATTERNS = (
 
 class ModelPriceRefreshMonitorService:
     """Local monitor for Gemini and gateway price refresh drift."""
+
+    def __init__(self, candidate_selector: ModelDefaultCandidateSelectorService | None = None) -> None:
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
 
     def build_monitor(
         self,
@@ -137,6 +141,7 @@ class ModelPriceRefreshMonitorService:
         for task in HIGH_FREQUENCY_TASKS:
             model_id = task_default_model(task)
             profile = model_profile(model_id)
+            recommended_model = self.candidate_selector.recommended_model_for_task(task, fallback="gemini-2.5-flash-lite")
             cost_tier = profile.cost_tier if profile else None
             stable = bool(profile and profile.status == "stable")
             priced = _has_text_price_metadata(profile)
@@ -169,7 +174,7 @@ class ModelPriceRefreshMonitorService:
                 "stable": stable,
                 "has_price_metadata": priced,
                 "requires_price_refresh": status != "pass",
-                "recommended_model": "gemini-2.5-flash-lite",
+                "recommended_model": recommended_model,
                 "reason": reason,
             }
             rows.append(row)
@@ -181,7 +186,7 @@ class ModelPriceRefreshMonitorService:
                         signal_type="high_frequency_default_drift",
                         model=model_id,
                         reason=reason,
-                        action=f"Reset {DEFAULT_ENV_VARS[task]} to gemini-2.5-flash-lite or refresh catalog pricing before using this default.",
+                        action=f"Reset {DEFAULT_ENV_VARS[task]} to {recommended_model} or refresh catalog pricing before using this default.",
                     )
                 )
 
@@ -212,6 +217,10 @@ class ModelPriceRefreshMonitorService:
         for task, policy in SPECIALIZED_TEXT_DEFAULTS.items():
             model_id = task_default_model(task)
             profile = model_profile(model_id)
+            recommended_model = self.candidate_selector.recommended_model_for_task(
+                task,
+                fallback=str(policy["recommended_model"]),
+            )
             cost_tier = profile.cost_tier if profile else None
             stable = bool(profile and profile.status == "stable")
             priced = _has_text_price_metadata(profile)
@@ -256,7 +265,7 @@ class ModelPriceRefreshMonitorService:
                 "has_required_capability": has_required_capability,
                 "has_price_metadata": priced,
                 "requires_price_refresh": status != "pass",
-                "recommended_model": policy["recommended_model"],
+                "recommended_model": recommended_model,
                 "reason": reason,
             }
             rows.append(row)
@@ -268,7 +277,7 @@ class ModelPriceRefreshMonitorService:
                         signal_type=signal_type,
                         model=model_id,
                         reason=reason,
-                        action=f"Reset {policy['env_var']} to {policy['recommended_model']} or refresh catalog pricing before using this default.",
+                        action=f"Reset {policy['env_var']} to {recommended_model} or refresh catalog pricing before using this default.",
                     )
                 )
 
@@ -299,6 +308,10 @@ class ModelPriceRefreshMonitorService:
         for task, policy in MEDIA_DEFAULTS.items():
             model_id = task_default_model(task)
             profile = model_profile(model_id)
+            recommended_model = self.candidate_selector.recommended_model_for_task(
+                task,
+                fallback=str(policy["recommended_model"]),
+            )
             cost_tier = profile.cost_tier if profile else None
             stable = bool(profile and profile.status == "stable")
             has_required_capability = bool(profile and policy["required_capability"] in profile.capabilities)
@@ -343,7 +356,7 @@ class ModelPriceRefreshMonitorService:
                 "has_price_metadata": has_image_price,
                 "output_usd_per_image": profile.output_usd_per_image if profile else None,
                 "requires_price_refresh": status != "pass",
-                "recommended_model": policy["recommended_model"],
+                "recommended_model": recommended_model,
                 "reason": reason,
             }
             rows.append(row)
@@ -355,7 +368,7 @@ class ModelPriceRefreshMonitorService:
                         signal_type=signal_type,
                         model=model_id,
                         reason=reason,
-                        action=f"Reset {policy['env_var']} to {policy['recommended_model']} or refresh image model pricing before using this default.",
+                        action=f"Reset {policy['env_var']} to {recommended_model} or refresh image model pricing before using this default.",
                     )
                 )
 

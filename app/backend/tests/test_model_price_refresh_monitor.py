@@ -48,12 +48,14 @@ def test_price_refresh_monitor_warns_for_unknown_preview_or_premium_observed_mod
         observed_models=[
             "google/gemini-9-flash-lite",
             "models/gemini-3.1-pro-preview",
+            "yibu/gemini-3.1-flash-image",
             {"id": "gemini-2.5-flash-lite"},
         ]
     )
     observed_check = {item["id"]: item for item in payload["checks"]}[
         "observed-gateway-model-refresh-review"
     ]
+    observed_rows = {item["raw_model"]: item for item in observed_check["rows"]}
     warnings = [item for item in payload["drift_signals"] if item["severity"] == "warn"]
     signal_types = {item["signal_type"] for item in warnings}
 
@@ -63,6 +65,8 @@ def test_price_refresh_monitor_warns_for_unknown_preview_or_premium_observed_mod
     assert "unknown_gateway_model" in signal_types
     assert "premium_or_preview_refresh" in signal_types
     assert any(item["model"] == "google/gemini-9-flash-lite" for item in warnings)
+    assert observed_rows["yibu/gemini-3.1-flash-image"]["status"] == "pass"
+    assert observed_rows["yibu/gemini-3.1-flash-image"]["has_price_metadata"] is True
 
 
 def test_price_refresh_monitor_fails_when_fast_default_is_no_longer_low_price(monkeypatch):

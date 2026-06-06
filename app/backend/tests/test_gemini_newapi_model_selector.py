@@ -64,6 +64,23 @@ def test_model_selector_blocks_premium_high_frequency_explicit_default():
     assert any("High-frequency tasks" in warning for warning in recommendation["warnings"])
 
 
+def test_model_selector_uses_catalog_derived_ladders_for_agentic_and_image_tasks():
+    selector = GeminiNewapiModelSelectorService().build_selector({"tasks": ["agentic", "grounded-research", "image"]})
+    recommendations = {item["task"]: item for item in selector["task_recommendations"]}
+
+    assert recommendations["agentic"]["selected_model"] == "gemini-3.1-flash-lite"
+    assert recommendations["agentic"]["escalation_chain"][:2] == [
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+    ]
+    assert recommendations["grounded-research"]["escalation_chain"][0] == "gemini-3.1-flash-lite"
+    assert recommendations["image"]["selected_model"] == "gemini-2.5-flash-image"
+    assert recommendations["image"]["escalation_chain"][:2] == [
+        "gemini-2.5-flash-image",
+        "gemini-3.1-flash-image",
+    ]
+
+
 def test_model_selector_redacts_sensitive_inputs_from_output():
     selector = GeminiNewapiModelSelectorService().build_selector(
         {

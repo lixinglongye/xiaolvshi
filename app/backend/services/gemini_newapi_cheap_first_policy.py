@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-from services.model_catalog import GEMINI_MODEL_CATALOG, canonical_model_id, model_profile
+from services import model_catalog
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
+from services.model_catalog import canonical_model_id, model_profile
 
 
 HIGH_FREQUENCY_TASKS = (
@@ -92,6 +94,9 @@ class ObservedModelReview:
 class GeminiNewapiCheapFirstPolicyService:
     """Catalog and default-selection policy for Gemini models behind NewAPI."""
 
+    def __init__(self, candidate_selector: ModelDefaultCandidateSelectorService | None = None) -> None:
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
+
     def build_policy(self, observed_models: Iterable[Any] | None = None) -> dict[str, Any]:
         model_reviews = [self._review_observed_model(item).to_api() for item in observed_models or ()]
         defaults = [item.to_api() for item in self._default_recommendations()]
@@ -105,8 +110,8 @@ class GeminiNewapiCheapFirstPolicyService:
             "status": "ready",
             "summary": {
                 "default_posture": "cheap_first",
-                "known_gemini_models": len(GEMINI_MODEL_CATALOG),
-                "high_frequency_default_model": "gemini-2.5-flash-lite",
+                "known_gemini_models": len(model_catalog.GEMINI_MODEL_CATALOG),
+                "high_frequency_default_model": self.candidate_selector.recommended_model_for_task("fast"),
                 "high_frequency_tasks": list(HIGH_FREQUENCY_TASKS),
                 "catalog_review_count": len(review_warnings),
                 "premium_default_blocked_for_high_frequency": True,
@@ -130,7 +135,7 @@ class GeminiNewapiCheapFirstPolicyService:
         }
 
     def _supported_families(self) -> tuple[GeminiModelFamily, ...]:
-        catalog_ids = tuple(item.id for item in GEMINI_MODEL_CATALOG)
+        catalog_ids = tuple(item.id for item in model_catalog.GEMINI_MODEL_CATALOG)
         flash_lite_models = tuple(model for model in catalog_ids if "flash-lite" in model)
         flash_models = tuple(
             model
@@ -214,63 +219,36 @@ class GeminiNewapiCheapFirstPolicyService:
 
     def _default_recommendations(self) -> tuple[TaskDefaultRecommendation, ...]:
         return (
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="fast",
-                recommended_model="gemini-2.5-flash-lite",
-                model_family="gemini-flash-lite",
-                cost_tier="lowest",
-                route_mode="cheap_first",
-                high_frequency=True,
                 escalation_after="schema failure, empty output, or low confidence",
                 rationale="Fast preflight and routing are high-volume, so the default must be Flash-Lite.",
             ),
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="classification",
-                recommended_model="gemini-2.5-flash-lite",
-                model_family="gemini-flash-lite",
-                cost_tier="lowest",
-                route_mode="cheap_first",
-                high_frequency=True,
                 escalation_after="label ambiguity or required field mismatch",
                 rationale="Classification should stay on the lowest capable Gemini family unless quality checks fail.",
             ),
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="ocr",
-                recommended_model="gemini-2.5-flash-lite",
-                model_family="gemini-flash-lite",
-                cost_tier="lowest",
-                route_mode="cheap_first",
-                high_frequency=True,
                 escalation_after="low text confidence, image-only pages, or extraction mismatch",
                 rationale="OCR assist can run across many pages, so default cost must be minimized.",
             ),
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="review",
-                recommended_model="gemini-2.5-flash",
-                model_family="gemini-flash",
-                cost_tier="low",
                 route_mode="balanced_after_preflight",
-                high_frequency=False,
                 escalation_after="citation, evidence, or legal completeness gate failure",
                 rationale="Legal review needs stronger reasoning than preflight but should avoid premium defaults.",
             ),
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="document_generation",
-                recommended_model="gemini-2.5-flash",
-                model_family="gemini-flash",
-                cost_tier="low",
-                route_mode="balanced_after_template_checks",
-                high_frequency=False,
+                selector_task="document-generation",
                 escalation_after="template blocker, missing facts, or lawyer review request",
                 rationale="Drafting should use template gates first, then balanced Flash for structured text.",
             ),
-            TaskDefaultRecommendation(
+            self._task_recommendation(
                 task="large_pdf_final_review",
-                recommended_model="gemini-2.5-pro",
-                model_family="gemini-pro",
-                cost_tier="premium",
-                route_mode="premium_exception",
-                high_frequency=False,
+                selector_task="pdf",
                 escalation_after="not applicable; this route already requires explicit exception handling",
                 rationale="Large PDF and final review may need Pro, but this cannot bleed into high-volume defaults.",
             ),
@@ -281,26 +259,7 @@ class GeminiNewapiCheapFirstPolicyService:
             {
                 "task_group": "high_volume_preflight",
                 "tasks": list(HIGH_FREQUENCY_TASKS),
-                "ladder": [
-                    {
-                        "order": 1,
-                        "model": "gemini-2.5-flash-lite",
-                        "cost_tier": "lowest",
-                        "role": "default",
-                    },
-                    {
-                        "order": 2,
-                        "model": "gemini-2.5-flash",
-                        "cost_tier": "low",
-                        "role": "quality retry",
-                    },
-                    {
-                        "order": 3,
-                        "model": "gemini-2.5-pro",
-                        "cost_tier": "premium",
-                        "role": "operator-approved exception only",
-                    },
-                ],
+                "ladder": self.candidate_selector.default_ladder_for_task("fast"),
                 "escalation_signals": [
                     "json_parse_error",
                     "missing_required_fields",
@@ -312,26 +271,7 @@ class GeminiNewapiCheapFirstPolicyService:
             {
                 "task_group": "legal_review_and_generation",
                 "tasks": ["review", "document_generation", "contract_analysis"],
-                "ladder": [
-                    {
-                        "order": 1,
-                        "model": "gemini-2.5-flash-lite",
-                        "cost_tier": "lowest",
-                        "role": "cheap precheck and issue extraction",
-                    },
-                    {
-                        "order": 2,
-                        "model": "gemini-2.5-flash",
-                        "cost_tier": "low",
-                        "role": "default drafting and review",
-                    },
-                    {
-                        "order": 3,
-                        "model": "gemini-2.5-pro",
-                        "cost_tier": "premium",
-                        "role": "final-review exception",
-                    },
-                ],
+                "ladder": self.candidate_selector.default_ladder_for_task("review"),
                 "escalation_signals": [
                     "weak_citations",
                     "evidence_conflict",
@@ -340,7 +280,40 @@ class GeminiNewapiCheapFirstPolicyService:
                 ],
                 "stop_signals": ["missing_facts", "delivery_blocked", "privacy_high"],
             },
+            {
+                "task_group": "agentic_and_grounded_research",
+                "tasks": ["agentic", "grounded-research", "workflow-planning", "rag-research"],
+                "ladder": self.candidate_selector.default_ladder_for_task("agentic"),
+                "escalation_signals": [
+                    "tool_plan_incomplete",
+                    "grounding_gap",
+                    "source_conflict",
+                    "multi_step_quality_gate_failed",
+                ],
+                "stop_signals": ["missing_authority_source", "privacy_high", "unsafe_instruction"],
+            },
         ]
+
+    def _task_recommendation(
+        self,
+        *,
+        task: str,
+        escalation_after: str,
+        rationale: str,
+        selector_task: str | None = None,
+        route_mode: str | None = None,
+    ) -> TaskDefaultRecommendation:
+        recommendation = self.candidate_selector.recommendation(selector_task or task)
+        return TaskDefaultRecommendation(
+            task=task,
+            recommended_model=str(recommendation["selected_model"]),
+            model_family=str(recommendation["selected_family"]),
+            cost_tier=str(recommendation["selected_cost_tier"]),
+            route_mode=route_mode or str(recommendation["route_mode"]),
+            high_frequency=bool(recommendation["high_frequency"]),
+            escalation_after=escalation_after,
+            rationale=rationale,
+        )
 
     def _unknown_model_policy(self) -> dict[str, Any]:
         return {
