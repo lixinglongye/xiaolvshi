@@ -69,6 +69,32 @@ def test_observed_gemini_model_intake_queue_metadata_only_boundaries():
     assert not SENSITIVE_PATTERN.search(serialized)
 
 
+def test_observed_gemini_model_intake_queue_blocks_rejected_only_payloads_without_echoing_values():
+    secret = "s" + "k-" + ("Q" * 24)
+    invalid_marker = "queue-invalid-marker-999"
+    malformed = {"metadata": {"source": invalid_marker}}
+    queue = ModelOpsObservedGeminiModelIntakeQueueService().build_queue(
+        {"observed_models": [secret, malformed, "client@example.com"]}
+    )
+    serialized = json.dumps(queue, ensure_ascii=False)
+
+    assert queue["status"] == "blocked"
+    assert queue["summary"]["observed_model_count"] == 0
+    assert queue["summary"]["blocked_count"] == 3
+    assert queue["summary"]["source_rejected_sensitive_observed_model_count"] == 2
+    assert queue["summary"]["source_rejected_invalid_observed_model_count"] == 1
+    assert queue["summary"]["source_rejected_observed_model_count"] == 3
+    extraction = queue["source_summaries"]["observed_model_extraction"]
+    assert extraction["rejected_sensitive_count"] == 2
+    assert extraction["rejected_invalid_count"] == 1
+    assert extraction["rejected_model_count"] == 3
+    assert extraction["raw_rejected_values_echoed"] is False
+    assert secret not in serialized
+    assert "client@example.com" not in serialized
+    assert invalid_marker not in serialized
+    assert not SENSITIVE_PATTERN.search(serialized)
+
+
 def test_observed_gemini_model_intake_queue_route_and_models_payload_include_queue():
     import pytest
 

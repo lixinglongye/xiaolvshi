@@ -45,7 +45,7 @@ class ModelCatalogCandidatePatchPlanService:
         status = self._status(
             candidate_patches,
             external_ignores,
-            extraction["rejected_sensitive_count"],
+            extraction["rejected_model_count"],
             forbidden_payload_field_count,
             rows,
         )
@@ -53,7 +53,7 @@ class ModelCatalogCandidatePatchPlanService:
             rows,
             candidate_patches,
             external_ignores,
-            extraction["rejected_sensitive_count"],
+            extraction["rejected_model_count"],
             forbidden_payload_field_count,
         )
         blocking_checks = [check for check in checks if check["status"] == "fail"]
@@ -78,13 +78,15 @@ class ModelCatalogCandidatePatchPlanService:
                 "add_count": len(candidate_patches),
                 "update_count": len(existing_catalog_diffs),
                 "review_required_count": len(candidate_patches) + len(external_ignores),
-                "blocked_count": extraction["rejected_sensitive_count"] + forbidden_payload_field_count,
+                "blocked_count": extraction["rejected_model_count"] + forbidden_payload_field_count,
                 "pricing_watch_count": len(candidate_patches),
                 "existing_catalog_review_count": len(existing_catalog_diffs),
                 "external_ignore_count": len(external_ignores),
                 "cheap_first_candidate_count": len(cheap_first_candidates),
                 "premium_or_preview_candidate_count": len(premium_candidates),
                 "rejected_sensitive_count": extraction["rejected_sensitive_count"],
+                "rejected_invalid_count": extraction["rejected_invalid_count"],
+                "rejected_model_count": extraction["rejected_model_count"],
                 "forbidden_payload_field_count": forbidden_payload_field_count,
                 "candidate_patch_written": False,
                 "configuration_written": False,
@@ -114,7 +116,7 @@ class ModelCatalogCandidatePatchPlanService:
             "recommended_actions": self._recommended_actions(
                 candidate_patches,
                 external_ignores,
-                extraction["rejected_sensitive_count"],
+                extraction["rejected_model_count"],
                 forbidden_payload_field_count,
                 rows,
             ),
@@ -318,6 +320,11 @@ class ModelCatalogCandidatePatchPlanService:
         return {
             "model_ids": extraction["model_ids"],
             "rejected_sensitive_count": extraction["summary"]["rejected_sensitive_count"],
+            "rejected_invalid_count": extraction["summary"].get("rejected_invalid_count", 0),
+            "rejected_model_count": extraction["summary"].get(
+                "rejected_model_count",
+                extraction["summary"]["rejected_sensitive_count"],
+            ),
             "summary": extraction["summary"],
         }
 
@@ -353,11 +360,11 @@ class ModelCatalogCandidatePatchPlanService:
         self,
         candidate_patches: list[dict[str, Any]],
         external_ignores: list[dict[str, Any]],
-        rejected_sensitive_count: int,
+        rejected_model_count: int,
         forbidden_payload_field_count: int,
         rows: list[dict[str, Any]],
     ) -> str:
-        if rejected_sensitive_count or forbidden_payload_field_count:
+        if rejected_model_count or forbidden_payload_field_count:
             return "blocked"
         if candidate_patches:
             return "review_required"
@@ -371,13 +378,13 @@ class ModelCatalogCandidatePatchPlanService:
         self,
         candidate_patches: list[dict[str, Any]],
         external_ignores: list[dict[str, Any]],
-        rejected_sensitive_count: int,
+        rejected_model_count: int,
         forbidden_payload_field_count: int,
         rows: list[dict[str, Any]],
     ) -> list[str]:
-        if rejected_sensitive_count or forbidden_payload_field_count:
+        if rejected_model_count or forbidden_payload_field_count:
             return [
-                "Discard sensitive or raw probe payload values and resubmit sanitized model ids only.",
+                "Discard sensitive, malformed, or raw probe payload values and resubmit sanitized model ids only.",
                 "Do not use this plan to edit the catalog until sanitization passes.",
             ]
         if candidate_patches:
@@ -399,15 +406,15 @@ class ModelCatalogCandidatePatchPlanService:
         rows: list[dict[str, Any]],
         candidate_patches: list[dict[str, Any]],
         external_ignores: list[dict[str, Any]],
-        rejected_sensitive_count: int,
+        rejected_model_count: int,
         forbidden_payload_field_count: int,
     ) -> list[dict[str, str]]:
         return [
             {
                 "id": "sanitized-model-metadata-only",
-                "status": "fail" if rejected_sensitive_count or forbidden_payload_field_count else "pass",
-                "reason": "Sensitive or raw probe payload values were rejected."
-                if rejected_sensitive_count or forbidden_payload_field_count
+                "status": "fail" if rejected_model_count or forbidden_payload_field_count else "pass",
+                "reason": "Sensitive, malformed, or raw probe payload values were rejected."
+                if rejected_model_count or forbidden_payload_field_count
                 else "Payload is limited to sanitized model metadata.",
             },
             {

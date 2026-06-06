@@ -55,7 +55,7 @@ def test_catalog_candidate_patch_plan_blocks_sensitive_or_raw_payloads_without_e
     secret = "s" + "k-" + "a" * 24
     plan = ModelCatalogCandidatePatchPlanService().build_plan(
         {
-            "model_ids": [secret, "gemini-2.5-flash-lite"],
+            "model_ids": [secret, {"not_model": "ignored malformed row"}, "gemini-2.5-flash-lite"],
             "prompt": "client@example.com raw prompt should not be echoed",
         }
     )
@@ -63,10 +63,14 @@ def test_catalog_candidate_patch_plan_blocks_sensitive_or_raw_payloads_without_e
 
     assert plan["status"] == "blocked"
     assert plan["summary"]["rejected_sensitive_count"] == 1
+    assert plan["summary"]["rejected_invalid_count"] == 1
+    assert plan["summary"]["rejected_model_count"] == 2
     assert plan["summary"]["forbidden_payload_field_count"] >= 1
+    assert plan["summary"]["blocked_count"] >= 3
     assert "sanitized-model-metadata-only" in plan["blocking_check_ids"]
     assert not SENSITIVE_PATTERN.search(serialized)
     assert "raw prompt should not be echoed" not in serialized
+    assert "ignored malformed row" not in serialized
     assert plan["privacy_boundary"]["raw_payload_echoed"] is False
     assert plan["privacy_boundary"]["credentials_included"] is False
 

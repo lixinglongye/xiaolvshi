@@ -74,19 +74,30 @@ def test_alias_matrix_redacts_sensitive_observed_model_values():
                 "s" + "k-" + "a" * 24,
                 "client@example.com",
                 {"id": "Bearer " + "b" * 16},
+                {"not_model": "ignored malformed row"},
                 "gemini-2.5-flash-lite",
             ],
         }
     )
     serialized = json.dumps(evidence, ensure_ascii=False)
-    rejected_rows = [row for row in evidence["alias_rows"] if row["alias_status"] == "rejected_sensitive"]
+    rejected_rows = [
+        row for row in evidence["alias_rows"] if row["alias_status"] in {"rejected_sensitive", "rejected_invalid"}
+    ]
 
     assert evidence["status"] == "needs_sanitization"
     assert evidence["summary"]["rejected_sensitive_count"] == 3
-    assert len(rejected_rows) == 3
+    assert evidence["summary"]["rejected_invalid_count"] == 1
+    assert evidence["summary"]["rejected_model_count"] == 4
+    assert len(rejected_rows) == 4
+    invalid_rows = [row for row in rejected_rows if row["alias_status"] == "rejected_invalid"]
+    assert invalid_rows
+    assert invalid_rows[0]["default_class"] == "blocked_invalid_input"
+    assert invalid_rows[0]["reason_codes"] == ["invalid-model-id-rejected"]
     assert not SENSITIVE_PATTERN.search(serialized)
     assert "redacted-sensitive-model-id-1" in serialized
+    assert "redacted-invalid-model-id-1" in serialized
     assert "client@example.com" not in serialized
+    assert "ignored malformed row" not in serialized
     assert evidence["summary"]["raw_payload_echoed"] is False
     assert evidence["privacy_boundary"]["credentials_included"] is False
 

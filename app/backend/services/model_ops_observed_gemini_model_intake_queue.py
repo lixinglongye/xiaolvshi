@@ -25,12 +25,20 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
         blocked = [item for item in queue_items if item["intake_status"] == "blocked"]
         review = [item for item in queue_items if item["intake_status"] == "review_required"]
         ready = [item for item in queue_items if item["intake_status"] == "ready"]
+        source_summary = matrix["source_summaries"]["observed_model_extraction"]
+        rejected_model_count = int(source_summary.get("rejected_model_count") or 0)
+        rejected_sensitive_count = int(source_summary.get("rejected_sensitive_count") or 0)
+        rejected_invalid_count = int(source_summary.get("rejected_invalid_count") or 0)
         cheap_first_ready = [item for item in queue_items if item["cheap_first_default_candidate"]]
         unknown_gemini = [item for item in queue_items if item["intake_action"] == "catalog_metadata_review"]
         external = [item for item in queue_items if item["intake_action"] == "ignore_non_gemini"]
 
         return {
-            "status": "blocked" if blocked else ("review_required" if review else ("ready" if queue_items else "not_run")),
+            "status": (
+                "blocked"
+                if blocked or rejected_model_count
+                else ("review_required" if review else ("ready" if queue_items else "not_run"))
+            ),
             "method": {
                 "type": "model-ops-observed-gemini-model-intake-queue",
                 "notes": [
@@ -43,13 +51,16 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
                 "observed_model_count": len(queue_items),
                 "ready_count": len(ready),
                 "review_required_count": len(review),
-                "blocked_count": len(blocked),
+                "blocked_count": len(blocked) + rejected_model_count,
                 "cheap_first_candidate_count": len(cheap_first_ready),
                 "unknown_gemini_count": len(unknown_gemini),
                 "external_non_gemini_count": len(external),
                 "source_catalog_review_count": matrix["summary"]["catalog_review_count"],
                 "source_accepted_observed_model_count": matrix["summary"]["accepted_observed_model_count"],
                 "source_dropped_observed_model_count": matrix["summary"]["dropped_observed_model_count"],
+                "source_rejected_sensitive_observed_model_count": rejected_sensitive_count,
+                "source_rejected_invalid_observed_model_count": rejected_invalid_count,
+                "source_rejected_observed_model_count": rejected_model_count,
                 "configuration_written": False,
                 "gateway_called": False,
                 "network_called": False,
@@ -59,7 +70,13 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
             "ready_model_ids": [item["raw_model"] for item in ready],
             "review_model_ids": [item["raw_model"] for item in review],
             "blocked_model_ids": [item["raw_model"] for item in blocked],
-            "recommended_actions": self._recommended_actions(blocked, review, ready, cheap_first_ready),
+            "recommended_actions": self._recommended_actions(
+                blocked,
+                review,
+                ready,
+                cheap_first_ready,
+                rejected_model_count,
+            ),
             "source_summaries": {
                 "variant_matrix": matrix["summary"],
                 "observed_model_extraction": matrix["source_summaries"]["observed_model_extraction"],
@@ -193,7 +210,13 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
         review: list[dict[str, Any]],
         ready: list[dict[str, Any]],
         cheap_first_ready: list[dict[str, Any]],
+        rejected_model_count: int = 0,
     ) -> list[str]:
+        if rejected_model_count:
+            return [
+                "Do not promote observed model ids until sensitive or malformed model metadata is removed from the intake payload.",
+                "Rerun the shared observed-model extractor and intake queue with sanitized gateway /models metadata only.",
+            ]
         if blocked:
             return [
                 "Do not promote unknown or unpriced Gemini-like gateway ids into defaults until catalog pricing and lifecycle metadata are added.",

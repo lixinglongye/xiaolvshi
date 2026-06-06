@@ -139,7 +139,7 @@ outputs, credentials, or emails.
 for gateway-specific Gemini model names. It maps canonical, `models/`,
 `google/`, `google:`, `yibu/`, and nested provider aliases back to local catalog
 ids, then exposes cheap-first eligibility, premium/manual review boundaries,
-unknown-model review states, and sensitive-input rejection counts. It does not
+unknown-model review states, and sensitive/invalid/total rejection counts. It does not
 call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does not write
 configuration, and does not include raw prompts, payloads, legal text, model
 outputs, credentials, or emails.

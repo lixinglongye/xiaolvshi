@@ -60,7 +60,8 @@ packet. Valid submitted metadata may include:
 - `low_resource_fixture_review`: optional payload with one or more local
   gateway fixture responses. The packet runs the same deterministic
   `/legal-review-benchmark/local-run-review` normalization and keeps only
-  status, counts, check ids, redaction counts, release-decision labels, and
+  status, counts, check ids, sensitive/invalid/total rejection counts,
+  release-decision labels, and
   safe evidence boundaries.
 
 The endpoint may reference command labels such as `pytest`, `rg`, `npm run

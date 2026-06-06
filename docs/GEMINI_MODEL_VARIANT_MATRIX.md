@@ -45,7 +45,7 @@ Other accepted metadata-only sources are `model_ids`, `gateway_models`, `models`
 ## What It Returns
 
 - `summary`: catalog model count, family count, high-frequency default count, explicit-only count, preview count, unpriced count, observed model review count, catalog-review count, model-list extraction counts, and cheap-first default model.
-- `source_summaries.observed_model_extraction`: shared extractor version, source field names, candidate count, accepted count, dropped count, sensitive/invalid rejection count, limits, supported model field names, and `raw_payload_echoed: false`.
+- `source_summaries.observed_model_extraction`: shared extractor version, source field names, candidate count, accepted count, dropped count, `rejected_sensitive_count`, `rejected_invalid_count`, `rejected_model_count`, limits, supported model field names, and `raw_payload_echoed: false`.
 - `family_rows`: Gemini family posture and allowed default use.
 - `model_rows`: model ID, family, catalog status, cost tier, route role, pricing status, configured roles, supported request shapes, and review note.
 - `observed_model_reviews`: sanitized model-ID review rows for optional submitted observed model names.
@@ -71,7 +71,7 @@ The frontend blocks obvious secrets, authorization headers, prompts, emails, raw
 
 ## Safety
 
-The matrix uses the shared Gemini/NewAPI observed-model extractor that is also used by selector, alias capability, alias matrix, and catalog candidate patch-plan evidence. The matrix does not call Gemini, NewAPI, OpenAI, or the gateway. It does not echo raw payloads, prompts, legal text, model output, credentials, emails, headers, or client documents. It stores and returns model IDs, source field names, counts, families, costs, route roles, and review statuses only.
+The matrix uses the shared Gemini/NewAPI observed-model extractor that is also used by selector, alias capability, alias matrix, and catalog candidate patch-plan evidence. The extractor separates sensitive rejections from invalid/malformed model metadata, and downstream release gates use the total rejected count for blocking. The matrix does not call Gemini, NewAPI, OpenAI, or the gateway. It does not echo raw payloads, prompts, legal text, model output, credentials, emails, headers, or client documents. It stores and returns model IDs, source field names, counts, families, costs, route roles, and review statuses only.
 
 ## Validation
 

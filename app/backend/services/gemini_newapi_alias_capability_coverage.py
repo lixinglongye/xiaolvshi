@@ -75,6 +75,10 @@ class GeminiNewapiAliasCapabilityCoverageService:
                 "rejected_sensitive_observed_model_count": observed_model_extraction["summary"][
                     "rejected_sensitive_count"
                 ],
+                "rejected_invalid_observed_model_count": observed_model_extraction["summary"].get(
+                    "rejected_invalid_count", 0
+                ),
+                "rejected_observed_model_count": observed_model_extraction["summary"].get("rejected_model_count", 0),
                 "observed_model_source_count": len(observed_model_extraction["summary"]["source_fields"]),
                 "observed_model_extractor_version": observed_model_extraction["summary"]["extractor_version"],
                 "raw_payload_echoed": False,
@@ -153,9 +157,13 @@ class GeminiNewapiAliasCapabilityCoverageService:
             canonical = model_catalog.canonical_model_id(safe_alias)
             profile = model_catalog.model_profile(canonical) if canonical else None
             rows.append(self._row(safe_alias, source="observed", profile=profile))
-        rejected = int(extraction.get("summary", {}).get("rejected_sensitive_count") or 0)
-        for index in range(1, rejected + 1):
-            rows.append(self._blocked_row(index))
+        summary = extraction.get("summary", {})
+        rejected_sensitive = int(summary.get("rejected_sensitive_count") or 0)
+        rejected_invalid = int(summary.get("rejected_invalid_count") or 0)
+        for index in range(1, rejected_sensitive + 1):
+            rows.append(self._blocked_row(index, reason="sensitive"))
+        for index in range(1, rejected_invalid + 1):
+            rows.append(self._blocked_row(index, reason="invalid"))
         return rows
 
     def _row(self, alias: str, *, source: str, profile: ModelProfile | None) -> dict[str, Any]:
@@ -207,13 +215,17 @@ class GeminiNewapiAliasCapabilityCoverageService:
             "recommended_action": self._recommended_action(status, high_frequency_default_allowed, premium_or_media_review),
         }
 
-    def _blocked_row(self, index: int) -> dict[str, Any]:
+    def _blocked_row(self, index: int, *, reason: str = "sensitive") -> dict[str, Any]:
+        sensitive = reason == "sensitive"
+        alias_model = (
+            f"{REJECTED_MODEL_ID_PREFIX}-{index}" if sensitive else f"redacted-invalid-model-id-{index}"
+        )
         return {
-            "id": f"gemini-alias-capability-{REJECTED_MODEL_ID_PREFIX}-{index}",
+            "id": f"gemini-alias-capability-{alias_model}",
             "source": "observed",
-            "alias_model": f"{REJECTED_MODEL_ID_PREFIX}-{index}",
+            "alias_model": alias_model,
             "canonical_model": None,
-            "alias_shape": "rejected_sensitive",
+            "alias_shape": "rejected_sensitive" if sensitive else "rejected_invalid",
             "coverage_status": "blocked",
             "known_catalog_model": False,
             "model_family": "unknown",
@@ -227,8 +239,12 @@ class GeminiNewapiAliasCapabilityCoverageService:
             "balanced_after_precheck_allowed": False,
             "premium_or_media_review_required": True,
             "default_allowed_without_review": False,
-            "reason_codes": ["sensitive-alias-rejected"],
-            "recommended_action": "Remove sensitive observed model values and resubmit sanitized gateway model ids only.",
+            "reason_codes": ["sensitive-alias-rejected" if sensitive else "invalid-alias-rejected"],
+            "recommended_action": (
+                "Remove sensitive observed model values and resubmit sanitized gateway model ids only."
+                if sensitive
+                else "Remove malformed observed model values and resubmit supported model id metadata only."
+            ),
         }
 
     def _task_coverage(self, profile: ModelProfile | None) -> list[str]:

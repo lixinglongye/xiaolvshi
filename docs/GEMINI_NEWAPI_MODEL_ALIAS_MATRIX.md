@@ -41,6 +41,10 @@ external ids are kept out of Gemini defaults.
   explicit maintainer review before default use.
 - Sensitive observed values are replaced with `redacted-sensitive-model-id-*`
   rows and counted in `rejected_sensitive_count`.
+- Malformed observed values without supported model-id fields are replaced with
+  `redacted-invalid-model-id-*` rows and counted in
+  `rejected_invalid_count`. `rejected_model_count` is the total blocking count
+  used for sanitization posture.
 - The endpoint never writes `.env`, changes model defaults, shifts traffic, or
   calls a gateway.
 
@@ -58,9 +62,9 @@ external ids are kept out of Gemini defaults.
 }
 ```
 
-Only sanitized model id metadata is returned. Raw prompts, legal text, gateway
-payloads, credentials, emails, and raw model outputs are not accepted as
-evidence and are not echoed.
+Only sanitized model id metadata and rejection counts are returned. Raw prompts,
+legal text, gateway payloads, malformed source rows, credentials, emails, and
+raw model outputs are not accepted as evidence and are not echoed.
 
 ## Validation
 

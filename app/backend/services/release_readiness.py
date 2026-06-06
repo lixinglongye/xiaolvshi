@@ -269,7 +269,7 @@ class ReleaseReadinessService:
                     "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md",
                 ),
                 validation_command="python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
-                manual_note="This is metadata-only shared extraction evidence for OpenAI-compatible /models, Gemini native model-list wrappers, probe rows, and intake queue rows; it returns sanitized model ids, counts, source field names, and redaction counts only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, raw payload echoing, prompts, legal text, model outputs, emails, headers, or credentials.",
+                manual_note="This is metadata-only shared extraction evidence for OpenAI-compatible /models, Gemini native model-list wrappers, probe rows, and intake queue rows; it returns sanitized model ids, counts, source field names, and sensitive/invalid/total rejection counts only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, raw payload echoing, prompts, legal text, model outputs, emails, headers, or credentials.",
             ),
             ReleaseCheck(
                 id="gemini-newapi-model-alias-matrix",

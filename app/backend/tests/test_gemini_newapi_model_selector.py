@@ -31,7 +31,7 @@ def test_model_selector_normalizes_newapi_prefixes_and_flags_unknown_gemini_like
                 "models/gemini-2.5-flash-lite",
                 "google/gemini-2.5-flash",
                 "google:gemini-3.2-flash-lite",
-            "vendor/other-model",
+                "vendor/other-model",
             ],
         }
     )
@@ -46,6 +46,9 @@ def test_model_selector_normalizes_newapi_prefixes_and_flags_unknown_gemini_like
     assert reviews["vendor/other-model"]["status"] == "external_model"
     assert selector["summary"]["catalog_review_count"] == 1
     assert selector["summary"]["unknown_model_count"] == 2
+    assert selector["summary"]["rejected_sensitive_observed_model_count"] == 0
+    assert selector["summary"]["rejected_invalid_observed_model_count"] == 0
+    assert selector["summary"]["rejected_observed_model_count"] == 0
 
 
 def test_model_selector_extracts_observed_models_from_wrapped_model_lists():
@@ -66,9 +69,11 @@ def test_model_selector_extracts_observed_models_from_wrapped_model_lists():
     assert selector["status"] == "needs_catalog_review"
     assert selector["summary"]["observed_model_candidate_count"] == 3
     assert selector["summary"]["accepted_observed_model_count"] == 3
+    assert selector["summary"]["rejected_observed_model_count"] == 0
     assert selector["source_summaries"]["observed_model_extraction"]["extractor_version"] == (
         "gemini-newapi-observed-model-extraction-v1"
     )
+    assert selector["source_summaries"]["observed_model_extraction"]["rejected_model_count"] == 0
     assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
     assert reviews["newapi/google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
     assert reviews["vendor/other-model"]["status"] == "external_model"
@@ -108,19 +113,31 @@ def test_model_selector_uses_catalog_derived_ladders_for_agentic_and_image_tasks
 
 
 def test_model_selector_redacts_sensitive_inputs_from_output():
+    secret = "s" + "k-" + "a" * 24
+    invalid_marker = "raw-invalid-marker-999"
     selector = GeminiNewapiModelSelectorService().build_selector(
         {
             "tasks": ["fast", "client@example.com"],
-            "observed_models": ["s" + "k-" + "a" * 24, "gemini-2.5-flash-lite"],
+            "observed_models": [secret, "gemini-2.5-flash-lite", {"metadata": {"source": invalid_marker}}],
             "explicit_models": {"fast": "s" + "k-" + "b" * 24},
         }
     )
     serialized = json.dumps(selector, ensure_ascii=False)
+    extraction = selector["source_summaries"]["observed_model_extraction"]
 
     assert not SENSITIVE_PATTERN.search(serialized)
     assert selector["summary"]["raw_payload_echoed"] is False
+    assert selector["summary"]["rejected_sensitive_observed_model_count"] == 1
+    assert selector["summary"]["rejected_invalid_observed_model_count"] == 1
+    assert selector["summary"]["rejected_observed_model_count"] == 2
+    assert extraction["rejected_sensitive_count"] == 1
+    assert extraction["rejected_invalid_count"] == 1
+    assert extraction["rejected_model_count"] == 2
+    assert extraction["raw_rejected_values_echoed"] is False
     assert selector["privacy_boundary"]["credential_material_included"] is False
     assert selector["task_recommendations"][0]["selected_model"] == "gemini-2.5-flash-lite"
+    assert secret not in serialized
+    assert invalid_marker not in serialized
 
 
 def test_gemini_newapi_model_selector_route_returns_template_and_assessment():

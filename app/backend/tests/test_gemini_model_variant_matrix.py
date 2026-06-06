@@ -54,7 +54,14 @@ def test_gemini_model_variant_matrix_reviews_unknown_observed_models_without_ech
     assert matrix["summary"]["observed_model_count"] == 3
     assert matrix["summary"]["catalog_review_count"] == 1
     assert matrix["summary"]["accepted_observed_model_count"] == 3
+    assert matrix["summary"]["rejected_sensitive_observed_model_count"] == 2
+    assert matrix["summary"]["rejected_invalid_observed_model_count"] == 0
+    assert matrix["summary"]["rejected_observed_model_count"] == 2
     assert matrix["source_summaries"]["observed_model_extraction"]["source_fields"] == ["observed_models"]
+    assert matrix["source_summaries"]["observed_model_extraction"]["rejected_sensitive_count"] == 2
+    assert matrix["source_summaries"]["observed_model_extraction"]["rejected_invalid_count"] == 0
+    assert matrix["source_summaries"]["observed_model_extraction"]["rejected_model_count"] == 2
+    assert matrix["source_summaries"]["observed_model_extraction"]["raw_rejected_values_echoed"] is False
     assert matrix["source_summaries"]["observed_model_extraction"]["raw_payload_echoed"] is False
     assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
     assert reviews["models/gemini-2.5-flash-lite"]["default_allowed_for_high_frequency"] is True
@@ -93,7 +100,13 @@ def test_gemini_model_variant_matrix_extracts_openai_compatible_model_list_witho
     assert matrix["summary"]["catalog_review_count"] == 1
     assert matrix["summary"]["observed_model_candidate_count"] == 7
     assert matrix["summary"]["dropped_observed_model_count"] == 3
+    assert matrix["summary"]["rejected_sensitive_observed_model_count"] == 2
+    assert matrix["summary"]["rejected_invalid_observed_model_count"] == 0
+    assert matrix["summary"]["rejected_observed_model_count"] == 2
     assert extraction["source_fields"] == ["model_ids", "gateway_models", "models_response.data"]
+    assert extraction["rejected_sensitive_count"] == 2
+    assert extraction["rejected_invalid_count"] == 0
+    assert extraction["rejected_model_count"] == 2
     assert extraction["raw_payload_echoed"] is False
     assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
     assert reviews["google/gemini-2.5-flash"]["status"] == "catalog_known"
@@ -112,6 +125,7 @@ def test_gemini_model_variant_matrix_accepts_direct_data_model_list_shape():
 
     assert matrix["summary"]["observed_model_count"] == 2
     assert matrix["summary"]["catalog_review_count"] == 1
+    assert matrix["summary"]["rejected_observed_model_count"] == 0
     assert matrix["source_summaries"]["observed_model_extraction"]["source_fields"] == ["data"]
 
 
@@ -128,10 +142,14 @@ def test_gemini_model_variant_matrix_extracts_nested_newapi_and_gemini_native_sh
 
     assert matrix["summary"]["observed_model_count"] == 3
     assert matrix["summary"]["catalog_review_count"] == 1
+    assert matrix["summary"]["rejected_sensitive_observed_model_count"] == 0
+    assert matrix["summary"]["rejected_invalid_observed_model_count"] == 0
+    assert matrix["summary"]["rejected_observed_model_count"] == 0
     assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
     assert reviews["publishers/google/models/gemini-2.5-flash:generatecontent"]["canonical_model"] == "gemini-2.5-flash"
     assert reviews["newapi/google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
     assert extraction["extractor_version"] == "gemini-newapi-observed-model-extraction-v1"
+    assert extraction["rejected_model_count"] == 0
     assert set(extraction["source_fields"]) == {"models_response.models", "result.items", "availableModels"}
 
 

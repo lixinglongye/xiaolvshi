@@ -324,7 +324,8 @@ or that the 24-hour continuous window is complete.
 It maps canonical, `models/`, `google/`, `google:`, `yibu/`, and nested
 provider Gemini aliases to catalog ids, cheap-first eligibility, premium/manual
 review boundaries, and unknown-model review states. It stores sanitized alias
-metadata only, rejects sensitive observed values into redacted counts, and does
+metadata only, rejects sensitive or malformed observed values into separate
+sensitive/invalid/total rejection counts, and does
 not prove live NewAPI execution or 24-hour completion.
 
 `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md` defines the metadata-only

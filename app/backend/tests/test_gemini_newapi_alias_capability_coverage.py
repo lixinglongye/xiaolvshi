@@ -120,6 +120,7 @@ def test_alias_capability_coverage_redacts_sensitive_observed_values():
             "observed_models": [
                 "s" + "k-" + "a" * 24,
                 {"id": "client@example.com"},
+                {"not_model": "ignored malformed alias"},
                 "google/gemini-2.5-flash-lite",
             ],
         }
@@ -128,11 +129,15 @@ def test_alias_capability_coverage_redacts_sensitive_observed_values():
     blocked_rows = [row for row in coverage["coverage_rows"] if row["coverage_status"] == "blocked"]
 
     assert coverage["status"] == "blocked"
-    assert coverage["summary"]["blocked_count"] == 2
+    assert coverage["summary"]["blocked_count"] == 3
     assert coverage["summary"]["rejected_sensitive_observed_model_count"] == 2
-    assert len(blocked_rows) == 2
+    assert coverage["summary"]["rejected_invalid_observed_model_count"] == 1
+    assert coverage["summary"]["rejected_observed_model_count"] == 3
+    assert len(blocked_rows) == 3
+    assert any(row["alias_shape"] == "rejected_invalid" for row in blocked_rows)
     assert coverage["privacy_boundary"]["raw_payload_echoed"] is False
     assert coverage["privacy_boundary"]["credentials_included"] is False
+    assert "ignored malformed alias" not in serialized
     assert not SENSITIVE_PATTERN.search(serialized)
 
 

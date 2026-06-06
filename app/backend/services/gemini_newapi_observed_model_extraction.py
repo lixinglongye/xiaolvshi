@@ -79,10 +79,14 @@ def extract_observed_model_ids(
 
     observed: list[str] = []
     rejected_sensitive_count = 0
+    rejected_invalid_count = 0
     for item in candidates[:max_candidates]:
-        safe = safe_model_id(item)
+        safe, rejection_reason = _sanitize_model_id(item)
         if not safe:
-            rejected_sensitive_count += 1
+            if rejection_reason == "sensitive":
+                rejected_sensitive_count += 1
+            else:
+                rejected_invalid_count += 1
             continue
         if safe in observed:
             continue
@@ -91,6 +95,7 @@ def extract_observed_model_ids(
             break
 
     source_fields = list(dict.fromkeys(source_fields))
+    rejected_model_count = rejected_sensitive_count + rejected_invalid_count
     return {
         "observed_models": observed,
         "model_ids": observed,
@@ -100,29 +105,56 @@ def extract_observed_model_ids(
             "accepted_model_count": len(observed),
             "dropped_model_count": max(0, len(candidates) - len(observed)),
             "rejected_sensitive_count": rejected_sensitive_count,
+            "rejected_invalid_count": rejected_invalid_count,
+            "rejected_model_count": rejected_model_count,
+            "rejection_counts": {
+                "sensitive": rejected_sensitive_count,
+                "invalid": rejected_invalid_count,
+                "total": rejected_model_count,
+            },
             "source_fields": source_fields,
             "max_candidate_count": max_candidates,
             "max_accepted_model_count": max_model_ids,
             "raw_payload_echoed": False,
+            "raw_rejected_values_echoed": False,
             "supported_model_fields": list(MODEL_ID_FIELD_KEYS),
         },
     }
 
 
 def safe_model_id(value: Any) -> str:
+    return _sanitize_model_id(value)[0]
+
+
+def _sanitize_model_id(value: Any) -> tuple[str, str]:
     if isinstance(value, dict):
         for key in MODEL_ID_FIELD_KEYS:
             if isinstance(value.get(key), str):
                 value = value[key]
                 break
         else:
-            return ""
+            return "", "sensitive" if _contains_sensitive_value(value) else "invalid"
     if isinstance(value, (list, tuple, set)):
-        return ""
+        return "", "sensitive" if _contains_sensitive_value(value) else "invalid"
     raw = str(value or "").strip().lower()[:180]
-    if not raw or SENSITIVE_MODEL_VALUE_PATTERN.search(raw):
-        return ""
-    return re.sub(r"[^a-z0-9_.:/@?#=-]+", "-", raw).strip("-")
+    if not raw:
+        return "", "invalid"
+    if SENSITIVE_MODEL_VALUE_PATTERN.search(raw):
+        return "", "sensitive"
+    safe = re.sub(r"[^a-z0-9_.:/@?#=-]+", "-", raw).strip("-")
+    if not safe:
+        return "", "invalid"
+    return safe, ""
+
+
+def _contains_sensitive_value(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(_contains_sensitive_value(child) for child in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return any(_contains_sensitive_value(child) for child in value)
+    if value is None:
+        return False
+    return bool(SENSITIVE_MODEL_VALUE_PATTERN.search(str(value)[:4096]))
 
 
 def _append_from_payload(

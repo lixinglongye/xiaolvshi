@@ -27,8 +27,13 @@ task, lifecycle, and cost metadata.
 - Observed model ids are sanitized; secrets, authorization values, emails,
   prompts, legal text, raw payloads, and model outputs are rejected or omitted.
 - Source summaries include extractor version, source field names, counts,
-  supported model-id fields, and `raw_payload_echoed: false`; they do not return
-  headers, request bodies, response bodies, prompts, legal text, or model output.
+  supported model-id fields, `rejected_sensitive_count`,
+  `rejected_invalid_count`, `rejected_model_count`, and
+  `raw_payload_echoed: false`; they do not return headers, request bodies,
+  response bodies, prompts, legal text, or model output.
+- Capability review blocks on the total rejected model count, while sensitive
+  and invalid counts stay separate so maintainers can distinguish credential
+  leakage from malformed model metadata.
 - Unknown Gemini-like aliases remain review-only until catalog, price,
   lifecycle, capability, and gateway compatibility evidence is added.
 

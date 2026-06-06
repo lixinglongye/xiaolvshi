@@ -33,8 +33,12 @@ The plan can consume:
 All of these inputs pass through the shared Gemini/NewAPI observed-model
 extractor used by the selector, variant matrix, alias matrix, and alias
 capability coverage gates. The shared summary returns extractor version, source
-field names, candidate/accepted/dropped counts, redaction counts, and
-`raw_payload_echoed: false` only.
+field names, candidate/accepted/dropped counts, sensitive/invalid/total
+rejection counts, and
+`raw_payload_echoed: false` only. The patch plan uses `rejected_model_count`
+for blocking, while `rejected_sensitive_count` and `rejected_invalid_count`
+remain separate so maintainers can tell credential-like values from malformed
+metadata.
 
 ## Boundaries
 

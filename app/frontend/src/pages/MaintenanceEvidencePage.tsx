@@ -6592,7 +6592,13 @@ function Inner() {
                       value: geminiNewApiModelAliasMatrix.summary.high_frequency_default_allowed_count ?? 0,
                     },
                     { label: 'catalog review', value: geminiNewApiModelAliasMatrix.summary.catalog_review_count ?? 0 },
-                    { label: 'redacted', value: geminiNewApiModelAliasMatrix.summary.rejected_sensitive_count ?? 0 },
+                    {
+                      label: 'rejected',
+                      value:
+                        geminiNewApiModelAliasMatrix.summary.rejected_model_count ??
+                        geminiNewApiModelAliasMatrix.summary.rejected_sensitive_count ??
+                        0,
+                    },
                   ].map((metric) => (
                     <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
                       <div className="text-xl font-black text-stone-950">{metric.value}</div>
@@ -6614,48 +6620,51 @@ function Inner() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(geminiNewApiModelAliasMatrix.alias_rows ?? []).slice(0, 8).map((row) => (
-                          <TableRow key={row.id}>
-                            <TableCell className="max-w-[260px]">
-                              <div className="font-mono text-xs font-semibold text-stone-950">{row.alias_model}</div>
-                              <div className="mt-1 text-[11px] text-stone-500">{row.source}</div>
-                            </TableCell>
-                            <TableCell className="max-w-[220px]">
-                              <div className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</div>
-                              <Badge variant="outline" className="mt-2 bg-white">
-                                {row.cost_tier ?? 'unknown'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[210px]">
-                              <div className="font-mono text-xs text-stone-700">{row.alias_shape}</div>
-                              <Badge
-                                variant="outline"
-                                className={statusClass[row.alias_status] ?? statusClass.review_recommended}
-                              >
-                                {row.alias_status.replace(/_/g, ' ')}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
-                              <div className="font-mono font-semibold text-stone-950">{row.default_class}</div>
-                              {(row.reason_codes ?? []).slice(0, 3).map((reason) => (
-                                <div key={`${row.id}-${reason}`} className="mt-1">
-                                  {reason}
+                        {(geminiNewApiModelAliasMatrix.alias_rows ?? []).slice(0, 8).map((row, index) => {
+                          const rowKey = `${row.id}-${row.alias_model}-${row.alias_status}-${index}`;
+                          return (
+                            <TableRow key={rowKey}>
+                              <TableCell className="max-w-[260px]">
+                                <div className="font-mono text-xs font-semibold text-stone-950">{row.alias_model}</div>
+                                <div className="mt-1 text-[11px] text-stone-500">{row.source}</div>
+                              </TableCell>
+                              <TableCell className="max-w-[220px]">
+                                <div className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</div>
+                                <Badge variant="outline" className="mt-2 bg-white">
+                                  {row.cost_tier ?? 'unknown'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[210px]">
+                                <div className="font-mono text-xs text-stone-700">{row.alias_shape}</div>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.alias_status] ?? statusClass.review_recommended}
+                                >
+                                  {row.alias_status.replace(/_/g, ' ')}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                                <div className="font-mono font-semibold text-stone-950">{row.default_class}</div>
+                                {(row.reason_codes ?? []).slice(0, 3).map((reason, reasonIndex) => (
+                                  <div key={`${rowKey}-${reason}-${reasonIndex}`} className="mt-1">
+                                    {reason}
+                                  </div>
+                                ))}
+                              </TableCell>
+                              <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="outline" className={row.high_frequency_default_allowed ? statusClass.ready : statusClass.warn}>
+                                    high frequency {row.high_frequency_default_allowed ? 'allowed' : 'blocked'}
+                                  </Badge>
+                                  <Badge variant="outline" className={row.premium_exception ? statusClass.warn : statusClass.ready}>
+                                    {row.premium_exception ? 'review required' : 'cheap-first ok'}
+                                  </Badge>
                                 </div>
-                              ))}
-                            </TableCell>
-                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
-                              <div className="flex flex-wrap gap-2">
-                                <Badge variant="outline" className={row.high_frequency_default_allowed ? statusClass.ready : statusClass.warn}>
-                                  high frequency {row.high_frequency_default_allowed ? 'allowed' : 'blocked'}
-                                </Badge>
-                                <Badge variant="outline" className={row.premium_exception ? statusClass.warn : statusClass.ready}>
-                                  {row.premium_exception ? 'review required' : 'cheap-first ok'}
-                                </Badge>
-                              </div>
-                              {row.recommended_action && <div className="mt-2">{row.recommended_action}</div>}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                {row.recommended_action && <div className="mt-2">{row.recommended_action}</div>}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
@@ -6663,6 +6672,20 @@ function Inner() {
                   <div className="space-y-3">
                     <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                       <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Accepted shapes</h3>
+                      <div className="mb-3 grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                        <div className="rounded-[6px] border border-stone-950/10 bg-white p-2">
+                          <div className="font-mono text-stone-950">
+                            {geminiNewApiModelAliasMatrix.summary.rejected_sensitive_count ?? 0}
+                          </div>
+                          <div>sensitive</div>
+                        </div>
+                        <div className="rounded-[6px] border border-stone-950/10 bg-white p-2">
+                          <div className="font-mono text-stone-950">
+                            {geminiNewApiModelAliasMatrix.summary.rejected_invalid_count ?? 0}
+                          </div>
+                          <div>invalid format</div>
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         {(geminiNewApiModelAliasMatrix.accepted_alias_shapes ?? []).slice(0, 6).map((shape) => (
                           <div key={shape} className="font-mono text-xs leading-5 text-stone-700">

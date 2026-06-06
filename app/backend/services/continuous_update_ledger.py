@@ -130,6 +130,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_gemini_newapi_model_selector.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
+                "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
                 "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_selector_replay.py -q",
@@ -1100,7 +1101,7 @@ class ContinuousUpdateLedgerService:
                 impact=(
                     "Adds one shared extractor for sanitized Gemini/NewAPI observed model ids across OpenAI-compatible "
                     "/models responses, Gemini native wrappers, gateway probe rows, and intake queue rows, returning only "
-                    "model ids, source field names, counts, redaction counts, and no raw payloads or gateway calls."
+                    "model ids, source field names, counts, sensitive/invalid/total rejection counts, and no raw payloads or gateway calls."
                 ),
                 evidence_paths=(
                     "app/backend/services/gemini_newapi_observed_model_extraction.py",
@@ -1126,6 +1127,44 @@ class ContinuousUpdateLedgerService:
                     "gemini-newapi-model-alias-matrix",
                     "gemini-newapi-alias-capability-coverage",
                     "model-catalog-candidate-patch-plan",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="gemini-newapi-extractor-rejection-taxonomy",
+                title="Gemini/NewAPI extractor rejection taxonomy",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Separates sensitive observed model values from malformed model-list metadata in the shared "
+                    "Gemini/NewAPI extractor, exposes sensitive/invalid/total rejected counts to backend evidence and "
+                    "maintenance UI, and keeps downstream release gates blocking on the total rejected model count without "
+                    "echoing rejected raw values."
+                ),
+                evidence_paths=(
+                    "app/backend/services/gemini_newapi_observed_model_extraction.py",
+                    "app/backend/tests/test_gemini_newapi_observed_model_extraction.py",
+                    "app/backend/services/gemini_newapi_model_alias_matrix.py",
+                    "app/backend/tests/test_gemini_newapi_model_alias_matrix.py",
+                    "app/backend/services/gemini_newapi_alias_capability_coverage.py",
+                    "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py",
+                    "app/backend/services/model_catalog_candidate_patch_plan.py",
+                    "app/backend/tests/test_model_catalog_candidate_patch_plan.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "docs/GEMINI_MODEL_VARIANT_MATRIX.md",
+                    "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md",
+                    "docs/GEMINI_NEWAPI_ALIAS_CAPABILITY_COVERAGE.md",
+                    "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md",
+                ),
+                release_gate_links=(
+                    "gemini-newapi-observed-model-extraction",
+                    "gemini-newapi-model-alias-matrix",
+                    "gemini-newapi-alias-capability-coverage",
+                    "model-catalog-candidate-patch-plan",
+                    "frontend-ui-regression",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),

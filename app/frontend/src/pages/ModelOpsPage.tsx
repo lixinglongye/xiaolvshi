@@ -3728,6 +3728,11 @@ function Inner() {
                       {geminiVariantExtraction.accepted_model_count} / dropped:{' '}
                       {geminiVariantExtraction.dropped_model_count}
                     </div>
+                    <div>
+                      rejected: {geminiVariantExtraction.rejected_model_count ?? 0} / sensitive:{' '}
+                      {geminiVariantExtraction.rejected_sensitive_count ?? 0} / invalid:{' '}
+                      {geminiVariantExtraction.rejected_invalid_count ?? 0}
+                    </div>
                     <div>raw payload echoed: {String(geminiVariantExtraction.raw_payload_echoed)}</div>
                   </div>
                 )}

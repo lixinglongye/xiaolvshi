@@ -98,6 +98,13 @@ class GeminiNewapiModelSelectorService:
                 "observed_model_candidate_count": observed_model_extraction["summary"]["candidate_count"],
                 "accepted_observed_model_count": observed_model_extraction["summary"]["accepted_model_count"],
                 "dropped_observed_model_count": observed_model_extraction["summary"]["dropped_model_count"],
+                "rejected_sensitive_observed_model_count": observed_model_extraction["summary"][
+                    "rejected_sensitive_count"
+                ],
+                "rejected_invalid_observed_model_count": observed_model_extraction["summary"].get(
+                    "rejected_invalid_count", 0
+                ),
+                "rejected_observed_model_count": observed_model_extraction["summary"].get("rejected_model_count", 0),
                 "observed_model_source_count": len(observed_model_extraction["summary"]["source_fields"]),
                 "known_catalog_model_count": len(model_catalog.GEMINI_MODEL_CATALOG),
                 "raw_payload_echoed": False,

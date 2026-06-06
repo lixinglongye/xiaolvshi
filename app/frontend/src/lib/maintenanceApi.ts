@@ -2082,6 +2082,8 @@ export type GeminiNewApiModelAliasMatrixEvidence = {
     catalog_review_count?: number;
     external_model_count?: number;
     rejected_sensitive_count?: number;
+    rejected_invalid_count?: number;
+    rejected_model_count?: number;
     cheap_first_candidate_count?: number;
     high_frequency_default_allowed_count?: number;
     premium_exception_count?: number;

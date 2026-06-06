@@ -93,7 +93,15 @@ def test_observed_model_extraction_dedupes_and_redacts_sensitive_values():
     assert extraction["summary"]["candidate_count"] == 5
     assert extraction["summary"]["accepted_model_count"] == 1
     assert extraction["summary"]["dropped_model_count"] == 4
-    assert extraction["summary"]["rejected_sensitive_count"] == 3
+    assert extraction["summary"]["rejected_sensitive_count"] == 2
+    assert extraction["summary"]["rejected_invalid_count"] == 1
+    assert extraction["summary"]["rejected_model_count"] == 3
+    assert extraction["summary"]["rejection_counts"] == {
+        "sensitive": 2,
+        "invalid": 1,
+        "total": 3,
+    }
+    assert extraction["summary"]["raw_rejected_values_echoed"] is False
     assert secret not in serialized
     assert "client@example.com" not in serialized
     assert "ignored" not in serialized

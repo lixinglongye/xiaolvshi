@@ -293,13 +293,24 @@ export type GeminiVariantMatrixObservedReview = {
 };
 
 export type GeminiVariantMatrixObservedModelExtraction = {
+  extractor_version?: string;
   candidate_count: number;
   accepted_model_count: number;
   dropped_model_count: number;
+  rejected_sensitive_count?: number;
+  rejected_invalid_count?: number;
+  rejected_model_count?: number;
+  rejection_counts?: {
+    sensitive?: number;
+    invalid?: number;
+    total?: number;
+  };
   source_fields: string[];
   max_candidate_count: number;
   max_accepted_model_count: number;
   raw_payload_echoed: boolean;
+  raw_rejected_values_echoed?: boolean;
+  supported_model_fields?: string[];
 };
 
 export type GeminiVariantMatrix = {
@@ -320,6 +331,9 @@ export type GeminiVariantMatrix = {
     observed_model_candidate_count: number;
     accepted_observed_model_count: number;
     dropped_observed_model_count: number;
+    rejected_sensitive_observed_model_count?: number;
+    rejected_invalid_observed_model_count?: number;
+    rejected_observed_model_count?: number;
     observed_model_source_count: number;
     cheap_first_default_model: string;
     raw_payload_echoed: boolean;
@@ -395,6 +409,9 @@ export type ModelOpsObservedGeminiModelIntakeQueue = {
     source_catalog_review_count: number;
     source_accepted_observed_model_count: number;
     source_dropped_observed_model_count: number;
+    source_rejected_sensitive_observed_model_count?: number;
+    source_rejected_invalid_observed_model_count?: number;
+    source_rejected_observed_model_count?: number;
     configuration_written: boolean;
     gateway_called: boolean;
     network_called: boolean;
@@ -866,6 +883,8 @@ export type ModelCatalogCandidatePatchPlan = {
     cheap_first_candidate_count: number;
     premium_or_preview_candidate_count: number;
     rejected_sensitive_count: number;
+    rejected_invalid_count?: number;
+    rejected_model_count?: number;
     forbidden_payload_field_count: number;
     candidate_patch_written: boolean;
     configuration_written: boolean;

@@ -164,6 +164,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-price-refresh-monitor-readiness-ui" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
     assert "gemini-newapi-observed-model-extraction" in completed_ids
+    assert "gemini-newapi-extractor-rejection-taxonomy" in completed_ids
     assert "gemini-newapi-model-alias-matrix" in completed_ids
     assert "gemini-newapi-alias-capability-coverage" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
@@ -303,6 +304,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-ledger-low-resource-fixture-evidence" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-observed-model-extraction" not in queue_ids
+    assert "gemini-newapi-extractor-rejection-taxonomy" not in queue_ids
     assert "gemini-newapi-model-alias-matrix" not in queue_ids
     assert "gemini-newapi-alias-capability-coverage" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
@@ -422,6 +424,14 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py "
         "tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py "
         "tests/test_model_catalog_candidate_patch_plan.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py "
+        "tests/test_gemini_newapi_model_alias_matrix.py "
+        "tests/test_gemini_newapi_alias_capability_coverage.py "
+        "tests/test_model_catalog_candidate_patch_plan.py -q && cd ../frontend && npm run typecheck && "
+        "npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert (
@@ -610,7 +620,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "Gemini native wrappers" in observed_extraction_entry["impact"]
     assert "gateway probe rows" in observed_extraction_entry["impact"]
     assert "intake queue rows" in observed_extraction_entry["impact"]
-    assert "redaction counts" in observed_extraction_entry["impact"]
+    assert "sensitive/invalid/total rejection counts" in observed_extraction_entry["impact"]
     assert "no raw payloads" in observed_extraction_entry["impact"]
     assert "gateway calls" in observed_extraction_entry["impact"]
     assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in observed_extraction_entry[
@@ -630,6 +640,33 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-model-variant-matrix" in observed_extraction_entry["release_gate_links"]
     assert "gemini-newapi-alias-capability-coverage" in observed_extraction_entry["release_gate_links"]
     assert "model-catalog-candidate-patch-plan" in observed_extraction_entry["release_gate_links"]
+    rejection_taxonomy_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-extractor-rejection-taxonomy"
+    )
+    assert rejection_taxonomy_entry["size"] == "medium"
+    assert rejection_taxonomy_entry["status"] == "shipped"
+    assert "Separates sensitive observed model values" in rejection_taxonomy_entry["impact"]
+    assert "malformed model-list metadata" in rejection_taxonomy_entry["impact"]
+    assert "sensitive/invalid/total rejected counts" in rejection_taxonomy_entry["impact"]
+    assert "maintenance UI" in rejection_taxonomy_entry["impact"]
+    assert "total rejected model count" in rejection_taxonomy_entry["impact"]
+    assert "without echoing rejected raw values" in rejection_taxonomy_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in rejection_taxonomy_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in rejection_taxonomy_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in rejection_taxonomy_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in rejection_taxonomy_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_catalog_candidate_patch_plan.py" in rejection_taxonomy_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in rejection_taxonomy_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in rejection_taxonomy_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in rejection_taxonomy_entry["evidence_paths"]
+    assert "gemini-newapi-observed-model-extraction" in rejection_taxonomy_entry["release_gate_links"]
+    assert "frontend-ui-regression" in rejection_taxonomy_entry["release_gate_links"]
     alias_capability_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-alias-capability-coverage"
     )

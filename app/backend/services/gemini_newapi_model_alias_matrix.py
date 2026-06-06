@@ -9,6 +9,7 @@ from services.model_catalog import GEMINI_MODEL_CATALOG, canonical_model_id, mod
 
 DEFAULT_PREFIXES = ("", "models/", "google/", "google:", "yibu/", "gemini/", "openrouter/google/")
 REJECTED_MODEL_ID_PREFIX = "redacted-sensitive-model-id"
+REJECTED_INVALID_MODEL_ID_PREFIX = "redacted-invalid-model-id"
 
 
 class GeminiNewapiModelAliasMatrixService:
@@ -22,7 +23,7 @@ class GeminiNewapiModelAliasMatrixService:
         known_rows = [row for row in rows if row["alias_status"] == "catalog_known"]
         review_rows = [row for row in rows if row["alias_status"] == "catalog_review"]
         external_rows = [row for row in rows if row["alias_status"] == "external_model"]
-        rejected_rows = [row for row in rows if row["alias_status"] == "rejected_sensitive"]
+        rejected_rows = [row for row in rows if row["alias_status"] in {"rejected_sensitive", "rejected_invalid"}]
         high_frequency_rows = [row for row in rows if row["high_frequency_default_allowed"]]
         cheap_first_rows = [row for row in rows if row["cheap_first_candidate"]]
         premium_rows = [row for row in rows if row["premium_exception"]]
@@ -38,7 +39,9 @@ class GeminiNewapiModelAliasMatrixService:
                 "known_alias_count": len(known_rows),
                 "catalog_review_count": len(review_rows),
                 "external_model_count": len(external_rows),
-                "rejected_sensitive_count": len(rejected_rows),
+                "rejected_sensitive_count": sum(1 for row in rejected_rows if row["alias_status"] == "rejected_sensitive"),
+                "rejected_invalid_count": sum(1 for row in rejected_rows if row["alias_status"] == "rejected_invalid"),
+                "rejected_model_count": len(rejected_rows),
                 "cheap_first_candidate_count": len(cheap_first_rows),
                 "high_frequency_default_allowed_count": len(high_frequency_rows),
                 "premium_exception_count": len(premium_rows),
@@ -109,13 +112,20 @@ class GeminiNewapiModelAliasMatrixService:
     def _observed_aliases(self, data: dict[str, Any]) -> list[str]:
         extraction = extract_observed_model_ids(data, max_model_ids=80)
         aliases = list(extraction["observed_models"])
-        rejected_count = int(extraction["summary"]["rejected_sensitive_count"])
-        for index in range(1, rejected_count + 1):
+        rejected_sensitive_count = int(extraction["summary"]["rejected_sensitive_count"])
+        rejected_invalid_count = int(extraction["summary"].get("rejected_invalid_count") or 0)
+        for index in range(1, rejected_sensitive_count + 1):
             aliases.append(f"{REJECTED_MODEL_ID_PREFIX}-{index}")
+        for index in range(1, rejected_invalid_count + 1):
+            aliases.append(f"{REJECTED_INVALID_MODEL_ID_PREFIX}-{index}")
         return aliases
 
     def _row(self, raw_model: str, *, source: str) -> dict[str, Any]:
-        if not raw_model or raw_model.startswith(REJECTED_MODEL_ID_PREFIX):
+        if (
+            not raw_model
+            or raw_model.startswith(REJECTED_MODEL_ID_PREFIX)
+            or raw_model.startswith(REJECTED_INVALID_MODEL_ID_PREFIX)
+        ):
             return self._rejected_row(raw_model)
         canonical = canonical_model_id(raw_model)
         profile = model_profile(raw_model) if canonical else None
@@ -165,15 +175,16 @@ class GeminiNewapiModelAliasMatrixService:
 
     def _rejected_row(self, raw_model: str | None = None) -> dict[str, Any]:
         safe_model_id = raw_model if raw_model else REJECTED_MODEL_ID_PREFIX
+        invalid_input = safe_model_id.startswith(REJECTED_INVALID_MODEL_ID_PREFIX)
         return {
             "id": f"gemini-alias-{safe_model_id}",
             "source": "observed",
             "alias_model": safe_model_id,
             "sanitized_model_id": safe_model_id,
             "canonical_model": None,
-            "alias_shape": "rejected_sensitive",
-            "alias_status": "rejected_sensitive",
-            "default_class": "blocked_sensitive_input",
+            "alias_shape": "rejected_invalid" if invalid_input else "rejected_sensitive",
+            "alias_status": "rejected_invalid" if invalid_input else "rejected_sensitive",
+            "default_class": "blocked_invalid_input" if invalid_input else "blocked_sensitive_input",
             "known_catalog_model": False,
             "model_family": "unknown",
             "cost_tier": None,
@@ -183,8 +194,12 @@ class GeminiNewapiModelAliasMatrixService:
             "balanced_after_precheck_allowed": False,
             "premium_exception": True,
             "default_allowed_without_review": False,
-            "reason_codes": ["sensitive-model-id-rejected"],
-            "recommended_action": "Drop sensitive model-id input and rerun with sanitized gateway /models metadata.",
+            "reason_codes": ["invalid-model-id-rejected" if invalid_input else "sensitive-model-id-rejected"],
+            "recommended_action": (
+                "Drop malformed model-id metadata and rerun with supported model id fields only."
+                if invalid_input
+                else "Drop sensitive model-id input and rerun with sanitized gateway /models metadata."
+            ),
             "configuration_write_allowed": False,
             "gateway_call_allowed": False,
             "traffic_shift_allowed": False,
@@ -286,7 +301,7 @@ class GeminiNewapiModelAliasMatrixService:
         if external_rows:
             actions.append("Separate non-Gemini gateway ids from Gemini default recommendations.")
         if rejected_rows:
-            actions.append("Remove sensitive values from observed gateway metadata before review.")
+            actions.append("Remove sensitive or malformed values from observed gateway metadata before review.")
         return actions
 
     def _status(
