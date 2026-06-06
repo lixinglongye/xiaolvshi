@@ -82,6 +82,9 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "metadata-only evidence bundle integrity checker" in gaps["evidence-management"]["current_state"]
     assert "evidence-catalog export preflight" in gaps["evidence-management"]["current_state"]
     assert "case download readiness gating" in gaps["evidence-management"]["current_state"]
+    assert "uploaded deep-review status binding" in gaps["ocr-import"]["current_state"]
+    assert "upload/progress UI OCR readiness panels" in gaps["ocr-import"]["current_state"]
+    assert "safe OCR failure-code persistence" in gaps["ocr-import"]["current_state"]
     assert "deterministic repeated issue clustering" in gaps["feedback-loop"]["current_state"]
     assert "adoption research bridge" in gaps["feedback-loop"]["current_state"]
     assert "reusable settings/report capture-plan previews" in gaps["feedback-loop"]["current_state"]
@@ -96,6 +99,9 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "docs/CASE_EXPORT_READINESS_DOWNLOAD_GATE.md" in gaps["document-generation"]["evidence_paths"]
     assert "app/backend/tests/test_deep_review_document_quota.py" in gaps["document-generation"]["evidence_paths"]
     assert "app/backend/tests/test_case_export_readiness.py" in gaps["document-generation"]["evidence_paths"]
+    assert "app/backend/tests/test_deep_review_ocr_readiness_runtime.py" in gaps["ocr-import"]["evidence_paths"]
+    assert "app/frontend/src/pages/UploadPage.tsx" in gaps["ocr-import"]["evidence_paths"]
+    assert "app/frontend/src/pages/ReviewProgressPage.tsx" in gaps["ocr-import"]["evidence_paths"]
     assert "app/backend/tests/test_evidence_bundle_integrity.py" in gaps["evidence-management"]["evidence_paths"]
     assert "app/backend/services/case_evidence_catalog_export_preflight.py" in gaps["evidence-management"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in gaps["evidence-management"]["evidence_paths"]
@@ -195,6 +201,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert any("support-facing index" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("validation event normalizer" in action for action in gaps["continuous-maintenance-evidence"]["next_actions"])
     assert any("benchmark coverage matrix" in action for action in gaps["contract-review"]["next_actions"])
+    assert any("OCR retry execution records" in action for action in gaps["ocr-import"]["next_actions"])
 
 
 def test_product_feature_gap_radar_has_no_secret_material():

@@ -51,6 +51,29 @@ export interface AnalyzeUploadedDocumentRequest {
   enable_ocr?: boolean;
 }
 
+export interface UploadedOcrReadiness {
+  status?: string;
+  policy_id?: string;
+  summary?: {
+    ready_for_parse?: boolean;
+    ocr_required?: boolean;
+    blocked?: boolean;
+    manual_review_required?: boolean;
+    low_text_page_count?: number;
+    scanned_page_count?: number;
+    ocr_attempt_count?: number;
+  };
+  retry_state?: {
+    attempt_count?: number;
+    retry_budget_remaining?: number;
+    latest_failure_reason?: string | null;
+    retry_allowed?: boolean;
+  };
+  blocking_conditions?: Array<{ id?: string; title?: string; reviewer_action?: string }>;
+  manual_review_conditions?: Array<{ id?: string; title?: string; reviewer_action?: string }>;
+  recommended_next_actions?: string[];
+}
+
 interface AnalyzeUploadedDocumentResponse {
   success: boolean;
   report_id?: number;
@@ -75,7 +98,9 @@ interface AnalyzeUploadedDocumentResponse {
       warning_reasons?: string[];
       recommended_actions?: string[];
     };
+    ocr_readiness?: UploadedOcrReadiness;
   };
+  ocr_readiness?: UploadedOcrReadiness;
   error?: string;
 }
 
@@ -94,6 +119,7 @@ export interface AnalyzeUploadedDocumentStatusResponse {
   report_id?: number;
   review_id?: number;
   extraction?: AnalyzeUploadedDocumentResponse['extraction'];
+  ocr_readiness?: UploadedOcrReadiness;
   progress?: {
     phase?: string;
     stage_id?: string;

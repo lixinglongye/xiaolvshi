@@ -275,10 +275,10 @@ This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy
 retention rules, release-claim compliance checks, case export readiness checks,
-a real deep-review export readiness route gate, and admin audit policy
-evidence. The medium/large update count is now at or above 100, but the goal is
-still not complete because the 24-hour continuous validation window remains
-unproven.
+a real deep-review export readiness route gate, OCR readiness runtime binding
+for uploaded deep-review polling, and admin audit policy evidence. The
+medium/large update count is now at or above 100, but the goal is still not
+complete because the 24-hour continuous validation window remains unproven.
 These are reviewable product slices; they do not finish real payment provider
 settlement or webhook verification, automatic deep-review report binding for
 selected-source validation, raw contract extraction, or a database-backed team
@@ -491,6 +491,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/ocr_import_readiness_policy.py`
+- `app/backend/routers/deep_review.py`
 - `app/backend/services/small_legal_document_corpus_expansion.py`
 - `app/backend/services/legal_document_template_matrix.py`
 - `app/backend/services/legal_document_benchmark_suite.py`
@@ -550,6 +551,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/tests/test_model_cost_regression_snapshots.py`
 - `app/backend/tests/test_route_telemetry_persistence_plan.py`
 - `app/backend/tests/test_ocr_import_readiness_policy.py`
+- `app/backend/tests/test_deep_review_ocr_readiness_runtime.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_document_benchmark_suite.py`

@@ -139,6 +139,25 @@ def test_parsed_status_when_preflight_has_sufficient_text():
     assert policy["summary"]["ocr_required"] is False
 
 
+def test_completed_ocr_status_allows_parse_while_preserving_ocr_required_signal():
+    policy = OcrImportReadinessPolicyService().build_policy(
+        {
+            "preflight_complete": True,
+            "page_count": 2,
+            "ocr_status": "completed",
+            "ocr_attempt_count": 1,
+            "pages": [
+                {"page_number": 1, "text_char_count": 10, "has_text_layer": False, "image_only": True},
+                {"page_number": 2, "text_char_count": 1000, "has_text_layer": True},
+            ],
+        }
+    )
+
+    assert policy["status"] == "parsed"
+    assert policy["summary"]["ready_for_parse"] is True
+    assert policy["summary"]["ocr_required"] is True
+
+
 def test_ocr_import_readiness_payload_has_no_credentials_addresses_or_passwords():
     policy = OcrImportReadinessPolicyService().build_policy(
         {

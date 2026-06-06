@@ -13,9 +13,16 @@ Legal uploads can include scanned PDFs, image-only pages, corrupted pages, and p
 ```http
 GET /api/v1/maintenance/ocr-import-readiness-policy
 POST /api/v1/maintenance/ocr-import-readiness-policy
+GET /api/v1/deep-review/analyze-uploaded/status/{document_id}
 ```
 
 The `GET` endpoint returns the template. The `POST` endpoint accepts metadata from upload preflight and returns an import status, OCR detection signals, retry state, blocking conditions, manual review conditions, and next actions.
+
+The deep-review uploaded-document status endpoint now returns `ocr_readiness`
+alongside extraction metadata. The upload and review-progress UIs render that
+status so users can see whether a scanned or low-text file is waiting for OCR,
+completed OCR, needs manual review, or hit an OCR retry failure before legal
+parsing continues.
 
 ## Status Enumeration
 
@@ -58,6 +65,7 @@ Run from `app/backend`:
 
 ```powershell
 python -m pytest tests/test_ocr_import_readiness_policy.py -q
+python -m pytest tests/test_deep_review_ocr_readiness_runtime.py tests/test_ocr_import_readiness_policy.py -q
 ```
 
 Expected static scan from the repository root:
@@ -71,3 +79,8 @@ Expected result: no matches.
 ## Privacy Notes
 
 Store document IDs, page-level counts, status labels, retry counts, and OCR engine metadata. Do not store raw legal text, uploaded images, credentials, user contact details, or full local paths in readiness payloads. Manual review should disclose the smallest useful set of page numbers and detection reasons.
+
+The uploaded-document runtime binding stores only readiness metadata and safe
+failure codes. It must not expose raw OCR text, uploaded page images, original
+exception strings, full local paths, client emails, or credentials in polling
+responses.

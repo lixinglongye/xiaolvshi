@@ -351,6 +351,8 @@ class OcrImportReadinessPolicyService:
             return "blocked"
         if payload.get("ocr_status") == "failed":
             return "ocr_failed"
+        if str(payload.get("ocr_status") or "").lower() in {"completed", "succeeded", "success"}:
+            return "parsed"
         if manual_review_conditions:
             return "manual_review"
         if detection["ocr_needed"]:

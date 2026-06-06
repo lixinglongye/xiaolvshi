@@ -128,6 +128,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_git_history_evidence.py -q",
                 "python -m pytest tests/test_validation_event_evidence.py -q",
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
+                "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_gemini_newapi_model_selector.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -1031,6 +1032,33 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("ocr-import-readiness-policy", "product-feature-gap-radar"),
                 user_need_ids=("document-intake", "case-workbench", "low-resource-testing"),
+            ),
+            LedgerEntry(
+                id="deep-review-ocr-readiness-runtime-binding",
+                title="Deep-review OCR readiness runtime binding",
+                category="backend_api",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Binds OCR import readiness into uploaded-document deep-review responses, polling status, and the upload UI and progress UI so scanned/low-text/OCR-completed/failed states are visible before legal parsing, without exposing raw OCR text, uploaded images, full file paths, client emails, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/routers/deep_review.py",
+                    "app/backend/services/ocr_import_readiness_policy.py",
+                    "app/backend/tests/test_deep_review_ocr_readiness_runtime.py",
+                    "app/backend/tests/test_ocr_import_readiness_policy.py",
+                    "app/frontend/src/lib/deepReviewApi.ts",
+                    "app/frontend/src/pages/UploadPage.tsx",
+                    "app/frontend/src/pages/ReviewProgressPage.tsx",
+                    "docs/OCR_IMPORT_READINESS_POLICY.md",
+                ),
+                release_gate_links=(
+                    "deep-review-ocr-readiness-runtime-binding",
+                    "ocr-import-readiness-policy",
+                    "extraction-quality",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("document-intake", "reviewer-visibility", "low-resource-testing"),
             ),
             LedgerEntry(
                 id="billing-entitlement-gap-evidence",

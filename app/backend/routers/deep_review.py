@@ -29,6 +29,7 @@ from services.document_extraction import DocumentExtractionError, DocumentExtrac
 from services.documents import DocumentsService
 from services.entitlements import EntitlementService
 from services.extraction_quality import ExtractionQualityAuditService
+from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.review_reports import Review_reportsService
 from services.storage import StorageService
 from schemas.storage import FileUpDownRequest
@@ -89,6 +90,7 @@ class AnalyzeUploadedDocumentResponse(BaseModel):
     review_id: Optional[int] = None
     report: Optional[Dict[str, Any]] = None
     extraction: Optional[Dict[str, Any]] = None
+    ocr_readiness: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
 
 
@@ -107,6 +109,7 @@ class AnalyzeUploadedDocumentStatusResponse(BaseModel):
     report_id: Optional[int] = None
     review_id: Optional[int] = None
     extraction: Optional[Dict[str, Any]] = None
+    ocr_readiness: Optional[Dict[str, Any]] = None
     progress: Optional[Dict[str, Any]] = None
     pipeline_preview: Optional[List[Dict[str, Any]]] = None
     error: Optional[str] = None
@@ -297,6 +300,108 @@ def _parse_extraction_info(raw: Optional[str]) -> Dict[str, Any]:
         return parsed if isinstance(parsed, dict) else {}
     except json.JSONDecodeError:
         return {}
+
+
+def _int_list(value: Any) -> list[int]:
+    if not isinstance(value, list):
+        return []
+    items: list[int] = []
+    for item in value:
+        try:
+            parsed = int(item)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0 and parsed not in items:
+            items.append(parsed)
+    return items
+
+
+def _safe_positive_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _ocr_failure_code(error: Optional[str]) -> str | None:
+    if not error:
+        return None
+    lowered = str(error).lower()
+    if "ocr" in lowered:
+        return "ocr_failed"
+    if "encrypt" in lowered or "加密" in lowered:
+        return "encrypted_or_locked_file"
+    if "format" in lowered or "unsupported" in lowered or "不支持" in lowered:
+        return "unsupported_or_unreadable_file"
+    if "empty" in lowered or "空" in lowered:
+        return "empty_or_blank_extraction"
+    return "extraction_failed"
+
+
+def _safe_uploaded_review_error(error: Optional[str], default_code: str = "uploaded_document_review_failed") -> Optional[str]:
+    if not error:
+        return None
+    return _ocr_failure_code(error) or default_code
+
+
+def _build_uploaded_ocr_readiness(
+    extraction_info: Optional[Dict[str, Any]],
+    *,
+    enable_ocr: Optional[bool] = None,
+    extraction_error: Optional[str] = None,
+) -> Dict[str, Any]:
+    info = extraction_info if isinstance(extraction_info, dict) else {}
+    nested = info.get("ocr_readiness")
+    if isinstance(nested, dict) and not extraction_error:
+        return nested
+    if not info and not extraction_error:
+        return OcrImportReadinessPolicyService().build_policy()
+
+    page_count = _safe_positive_int(info.get("page_count"))
+    text_layer_pages = set(_int_list(info.get("text_layer_pages")))
+    low_text_pages = set(_int_list(info.get("low_text_pages")))
+    ocr_pages = set(_int_list(info.get("ocr_pages")))
+    signal_pages = sorted(text_layer_pages | low_text_pages | ocr_pages)
+
+    pages: list[dict[str, Any]] = []
+    for page_number in signal_pages[:500]:
+        has_text_layer = page_number in text_layer_pages or page_number in ocr_pages
+        pages.append(
+            {
+                "page_number": page_number,
+                "text_char_count": (
+                    OcrImportReadinessPolicyService.LOW_TEXT_PAGE_THRESHOLD - 1
+                    if page_number in low_text_pages
+                    else OcrImportReadinessPolicyService.LOW_TEXT_PAGE_THRESHOLD + 1
+                ),
+                "has_text_layer": has_text_layer,
+                "image_only": page_number in ocr_pages and page_number not in text_layer_pages,
+            }
+        )
+
+    payload: dict[str, Any] = {
+        "preflight_complete": bool(info),
+        "page_count": page_count,
+        "pages": pages,
+        "scan_detected": bool(ocr_pages),
+        "low_text_detected": bool(low_text_pages and not ocr_pages),
+        "ocr_attempt_count": len(ocr_pages),
+    }
+    if ocr_pages:
+        payload["ocr_status"] = "completed"
+    if enable_ocr is False and low_text_pages and not ocr_pages:
+        payload["ocr_status"] = "not_requested"
+    failure_code = _ocr_failure_code(extraction_error)
+    if failure_code:
+        payload["preflight_complete"] = True
+        payload["ocr_status"] = "failed"
+        payload["ocr_last_error"] = failure_code
+        payload["ocr_attempt_count"] = max(payload["ocr_attempt_count"], 1 if failure_code == "ocr_failed" else 0)
+
+    return OcrImportReadinessPolicyService().build_policy(payload)
 
 
 def _status_message(status: str) -> str:
@@ -1199,6 +1304,10 @@ async def _run_uploaded_document_review(
             }
             extraction_quality = ExtractionQualityAuditService().evaluate(extraction_info)
             extraction_info["extraction_quality"] = extraction_quality
+            extraction_info["ocr_readiness"] = _build_uploaded_ocr_readiness(
+                extraction_info,
+                enable_ocr=data.enable_ocr,
+            )
             if extraction_quality["status"] == "fail":
                 raise DocumentExtractionError("；".join(extraction_quality["blocking_reasons"]))
             _set_review_progress(
@@ -1264,6 +1373,10 @@ async def _run_uploaded_document_review(
             }
             extraction_quality = ExtractionQualityAuditService().evaluate(extraction_info)
             extraction_info["extraction_quality"] = extraction_quality
+            extraction_info["ocr_readiness"] = _build_uploaded_ocr_readiness(
+                extraction_info,
+                enable_ocr=data.enable_ocr,
+            )
             if extraction_quality["status"] == "fail":
                 raise DocumentExtractionError("；".join(extraction_quality["blocking_reasons"]))
             _set_review_progress(
@@ -1345,34 +1458,51 @@ async def _run_uploaded_document_review(
             review_id=review_id,
             report=report,
             extraction=extraction_info,
+            ocr_readiness=_build_uploaded_ocr_readiness(extraction_info, enable_ocr=data.enable_ocr),
         )
     except HTTPException:
         raise
     except DocumentExtractionError as e:
+        safe_error = _safe_uploaded_review_error(str(e), "extraction_failed")
+        ocr_readiness = _build_uploaded_ocr_readiness(
+            extraction_info,
+            enable_ocr=data.enable_ocr,
+            extraction_error=str(e),
+        )
         _set_review_progress(
             user_id=user_id,
             document_id=document.id,
             phase="failed",
             stage_id="failed",
             stage_name="解析失败",
-            detail=str(e),
+            detail=safe_error or "extraction_failed",
             percent=100,
             status="error",
         )
         await documents_service.update(
             document.id,
-            {"status": "failed", "extraction_error": str(e)},
+            {
+                "status": "failed",
+                "extraction_error": str(e),
+                "extraction_metadata_json": _json_dumps({**extraction_info, "ocr_readiness": ocr_readiness}),
+            },
             user_id=user_id,
         )
-        return AnalyzeUploadedDocumentResponse(success=False, error=str(e), extraction=extraction_info)
+        return AnalyzeUploadedDocumentResponse(
+            success=False,
+            error=safe_error,
+            extraction=extraction_info or None,
+            ocr_readiness=ocr_readiness,
+        )
     except ValueError as e:
+        safe_error = _safe_uploaded_review_error(str(e), "uploaded_document_review_failed")
         _set_review_progress(
             user_id=user_id,
             document_id=document.id,
             phase="failed",
             stage_id="failed",
             stage_name="审查失败",
-            detail=str(e),
+            detail=safe_error or "uploaded_document_review_failed",
             percent=100,
             status="error",
         )
@@ -1381,16 +1511,17 @@ async def _run_uploaded_document_review(
             {"status": "failed", "extraction_error": str(e)},
             user_id=user_id,
         )
-        return AnalyzeUploadedDocumentResponse(success=False, error=str(e), extraction=extraction_info)
+        return AnalyzeUploadedDocumentResponse(success=False, error=safe_error, extraction=extraction_info)
     except Exception as e:
         logger.error("Uploaded document deep review failed: %s", e, exc_info=True)
+        safe_error = _safe_uploaded_review_error(str(e), "uploaded_document_review_failed")
         _set_review_progress(
             user_id=user_id,
             document_id=document.id,
             phase="failed",
             stage_id="failed",
             stage_name="审查失败",
-            detail=f"上传文书深度审查失败：{str(e)}",
+            detail=safe_error or "uploaded_document_review_failed",
             percent=100,
             status="error",
         )
@@ -1401,7 +1532,7 @@ async def _run_uploaded_document_review(
         )
         return AnalyzeUploadedDocumentResponse(
             success=False,
-            error=f"上传文书深度审查失败，请稍后重试。错误: {str(e)}",
+            error=safe_error,
             extraction=extraction_info,
         )
 
@@ -1577,6 +1708,10 @@ async def get_uploaded_document_analysis_status(
 
     status = document.status or "processing"
     extraction = _parse_extraction_info(document.extraction_metadata_json)
+    ocr_readiness = _build_uploaded_ocr_readiness(
+        extraction,
+        extraction_error=document.extraction_error if status == "failed" else None,
+    )
     report_id: Optional[int] = None
     review_id: Optional[int] = None
     progress = _get_review_progress(user_id, document_id, status)
@@ -1614,9 +1749,10 @@ async def get_uploaded_document_analysis_status(
         report_id=report_id,
         review_id=review_id,
         extraction=extraction or None,
+        ocr_readiness=ocr_readiness,
         progress=progress,
         pipeline_preview=pipeline_preview,
-        error=document.extraction_error or None,
+        error=_safe_uploaded_review_error(document.extraction_error) if status == "failed" else None,
         message=_status_message(status),
     )
 

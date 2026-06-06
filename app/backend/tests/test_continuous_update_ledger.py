@@ -310,6 +310,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-case-research-ui" in completed_ids
     assert "case-export-readiness-download-gate" in completed_ids
     assert "deep-review-export-readiness-route-gate" in completed_ids
+    assert "deep-review-ocr-readiness-runtime-binding" in completed_ids
     assert "billing-usage-workspace-badge" in completed_ids
     assert "billing-report-preflight-route" in completed_ids
     assert "case-edit-runtime-event-binding" in completed_ids
@@ -390,6 +391,31 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "deep-review-export-readiness-route-gate" in deep_review_export_gate_entry["release_gate_links"]
     assert "case-export-readiness" in deep_review_export_gate_entry["release_gate_links"]
     assert "deep-review-selected-source-binding" in deep_review_export_gate_entry["release_gate_links"]
+    ocr_runtime_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "deep-review-ocr-readiness-runtime-binding"
+    )
+    assert ocr_runtime_entry["size"] == "medium"
+    assert ocr_runtime_entry["status"] == "shipped"
+    assert "uploaded-document deep-review responses" in ocr_runtime_entry["impact"]
+    assert "polling status" in ocr_runtime_entry["impact"]
+    assert "upload UI" in ocr_runtime_entry["impact"]
+    assert "progress UI" in ocr_runtime_entry["impact"]
+    assert "OCR-completed/failed states" in ocr_runtime_entry["impact"]
+    assert "raw OCR text" in ocr_runtime_entry["impact"]
+    assert "uploaded images" in ocr_runtime_entry["impact"]
+    assert "client emails" in ocr_runtime_entry["impact"]
+    assert "credentials" in ocr_runtime_entry["impact"]
+    assert "app/backend/routers/deep_review.py" in ocr_runtime_entry["evidence_paths"]
+    assert "app/backend/tests/test_deep_review_ocr_readiness_runtime.py" in ocr_runtime_entry["evidence_paths"]
+    assert "app/frontend/src/lib/deepReviewApi.ts" in ocr_runtime_entry["evidence_paths"]
+    assert "app/frontend/src/pages/UploadPage.tsx" in ocr_runtime_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ReviewProgressPage.tsx" in ocr_runtime_entry["evidence_paths"]
+    assert "docs/OCR_IMPORT_READINESS_POLICY.md" in ocr_runtime_entry["evidence_paths"]
+    assert "deep-review-ocr-readiness-runtime-binding" in ocr_runtime_entry["release_gate_links"]
+    assert "ocr-import-readiness-policy" in ocr_runtime_entry["release_gate_links"]
+    assert "frontend-typecheck" in ocr_runtime_entry["release_gate_links"]
     assert "admin-audit-policy" in completed_ids
     assert "legal-fixture-regression-comparison" in completed_ids
     assert "user-need-benchmark-coverage" in completed_ids
@@ -461,6 +487,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-case-research-ui" not in queue_ids
     assert "case-export-readiness-download-gate" not in queue_ids
     assert "deep-review-export-readiness-route-gate" not in queue_ids
+    assert "deep-review-ocr-readiness-runtime-binding" not in queue_ids
     assert "billing-usage-workspace-badge" not in queue_ids
     assert "billing-report-preflight-route" not in queue_ids
     assert "case-edit-runtime-event-binding" not in queue_ids
@@ -527,6 +554,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py "
         "tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py "
+        "tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]

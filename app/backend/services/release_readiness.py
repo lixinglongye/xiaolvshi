@@ -1828,12 +1828,23 @@ class ReleaseReadinessService:
                 required=False,
                 owner="engineering",
                 evidence_paths=(
+                    "app/backend/routers/deep_review.py",
                     "app/backend/services/ocr_import_readiness_policy.py",
+                    "app/backend/tests/test_deep_review_ocr_readiness_runtime.py",
                     "app/backend/tests/test_ocr_import_readiness_policy.py",
+                    "app/frontend/src/lib/deepReviewApi.ts",
+                    "app/frontend/src/pages/UploadPage.tsx",
+                    "app/frontend/src/pages/ReviewProgressPage.tsx",
                     "docs/OCR_IMPORT_READINESS_POLICY.md",
                 ),
-                validation_command="python -m pytest tests/test_ocr_import_readiness_policy.py -q",
-                manual_note="This is metadata-only OCR/import state policy; actual OCR engine execution remains a separate implementation step.",
+                validation_command=(
+                    "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py "
+                    "tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck"
+                ),
+                manual_note=(
+                    "This binds metadata-only OCR/import readiness into deep-review upload status and progress UI; "
+                    "lawyer ZIP import, persisted OCR retry execution records, and scanned-document fixtures remain separate work."
+                ),
             ),
             ReleaseCheck(
                 id="case-timeline-deadline-risk",

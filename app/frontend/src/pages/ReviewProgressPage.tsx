@@ -177,6 +177,7 @@ function Inner() {
     const stageName = statusInfo?.progress?.stage_name || (lang === 'zh' ? '正在准备审查' : 'Preparing review');
     const stageDetail = statusInfo?.progress?.detail || (lang === 'zh' ? '页面会自动刷新当前步骤。' : 'This page refreshes the current step automatically.');
     const preview = statusInfo?.pipeline_preview ?? statusInfo?.progress?.completed_stages ?? [];
+    const ocrReadiness = statusInfo?.ocr_readiness || statusInfo?.extraction?.ocr_readiness;
     const stageLabels = lang === 'zh'
       ? ['上传', '解析/OCR', '风险识别', '法律依据', '报告']
       : ['Upload', 'OCR', 'Issue spotting', 'Authorities', 'Report'];
@@ -240,6 +241,40 @@ function Inner() {
             {statusInfo?.extraction?.warnings?.length ? (
               <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
                 {statusInfo.extraction.warnings.join('；')}
+              </div>
+            ) : null}
+
+            {ocrReadiness ? (
+              <div className="mt-5 rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs text-indigo-950">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-semibold">{lang === 'zh' ? 'OCR 导入状态' : 'OCR readiness'}</div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      ocrReadiness.status === 'parsed'
+                        ? 'border-emerald-200 bg-white text-emerald-800'
+                        : ocrReadiness.status === 'blocked' || ocrReadiness.status === 'ocr_failed'
+                          ? 'border-red-200 bg-white text-red-800'
+                          : ocrReadiness.status === 'manual_review'
+                            ? 'border-amber-200 bg-white text-amber-900'
+                            : 'border-indigo-200 bg-white text-indigo-900'
+                    }
+                  >
+                    {ocrReadiness.status || 'uploaded'}
+                  </Badge>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div>{lang === 'zh' ? '需 OCR' : 'OCR required'}: {ocrReadiness.summary?.ocr_required ? 'yes' : 'no'}</div>
+                  <div>{lang === 'zh' ? '低文本页' : 'Low text'}: {ocrReadiness.summary?.low_text_page_count ?? 0}</div>
+                  <div>{lang === 'zh' ? '尝试次数' : 'Attempts'}: {ocrReadiness.summary?.ocr_attempt_count ?? 0}</div>
+                </div>
+                {ocrReadiness.blocking_conditions?.[0] ? (
+                  <div className="mt-2 leading-5 text-red-800">{ocrReadiness.blocking_conditions[0].title}</div>
+                ) : ocrReadiness.manual_review_conditions?.[0] ? (
+                  <div className="mt-2 leading-5 text-amber-900">{ocrReadiness.manual_review_conditions[0].title}</div>
+                ) : ocrReadiness.recommended_next_actions?.[0] ? (
+                  <div className="mt-2 leading-5 text-indigo-900">{ocrReadiness.recommended_next_actions[0]}</div>
+                ) : null}
               </div>
             ) : null}
 

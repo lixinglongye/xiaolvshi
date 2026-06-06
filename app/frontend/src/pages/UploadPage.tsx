@@ -227,6 +227,7 @@ function UploadInner() {
   const progressStageName = liveStatus?.progress?.stage_name || currentPhase.title;
   const liveProgressValue = liveStatus?.progress?.percent;
   const extractionQuality = liveStatus?.extraction?.extraction_quality;
+  const ocrReadiness = liveStatus?.ocr_readiness || liveStatus?.extraction?.ocr_readiness;
   const preflightProgress = liveStatus?.progress?.preflight_status
       ? {
           status: liveStatus.progress.preflight_status,
@@ -868,6 +869,42 @@ function UploadInner() {
                           <div className="mt-2 leading-5 text-sky-900">
                             {extractionQuality.recommended_actions[0]}
                           </div>
+                        ) : null}
+                      </div>
+                    )}
+
+                    {ocrReadiness && (
+                      <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-3 text-xs text-indigo-950">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold">
+                            {lang === 'zh' ? 'OCR 导入状态' : 'OCR readiness'}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={
+                              ocrReadiness.status === 'parsed'
+                                ? 'border-emerald-200 bg-white text-emerald-800'
+                                : ocrReadiness.status === 'blocked' || ocrReadiness.status === 'ocr_failed'
+                                  ? 'border-red-200 bg-white text-red-800'
+                                  : ocrReadiness.status === 'manual_review'
+                                    ? 'border-amber-200 bg-white text-amber-900'
+                                    : 'border-indigo-200 bg-white text-indigo-900'
+                            }
+                          >
+                            {ocrReadiness.status || 'uploaded'}
+                          </Badge>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          <div>{lang === 'zh' ? '需 OCR' : 'OCR required'}: {ocrReadiness.summary?.ocr_required ? 'yes' : 'no'}</div>
+                          <div>{lang === 'zh' ? '扫描页' : 'Scanned'}: {ocrReadiness.summary?.scanned_page_count ?? 0}</div>
+                          <div>{lang === 'zh' ? '尝试次数' : 'Attempts'}: {ocrReadiness.summary?.ocr_attempt_count ?? 0}</div>
+                        </div>
+                        {ocrReadiness.blocking_conditions?.[0] ? (
+                          <div className="mt-2 leading-5 text-red-800">{ocrReadiness.blocking_conditions[0].title}</div>
+                        ) : ocrReadiness.manual_review_conditions?.[0] ? (
+                          <div className="mt-2 leading-5 text-amber-900">{ocrReadiness.manual_review_conditions[0].title}</div>
+                        ) : ocrReadiness.recommended_next_actions?.[0] ? (
+                          <div className="mt-2 leading-5 text-indigo-900">{ocrReadiness.recommended_next_actions[0]}</div>
                         ) : null}
                       </div>
                     )}
