@@ -821,6 +821,95 @@ export type ModelCatalogCandidatePatchPlan = {
   validation_commands: string[];
 };
 
+export type ModelCatalogCandidateImpactTaskRow = {
+  id: string;
+  task: string;
+  baseline_model: string;
+  replay_model: string;
+  selected_model_changed: boolean;
+  cheap_first_would_promote: boolean;
+  high_frequency: boolean;
+  route_mode: string;
+  baseline_cost_tier?: string;
+  replay_cost_tier?: string;
+  replay_pricing_status?: string;
+  replay_catalog_status?: string;
+  eligible_candidate_count: number;
+  candidate_count: number;
+  reason: string;
+};
+
+export type ModelCatalogCandidateImpactRow = {
+  id: string;
+  observed_model: string;
+  model_id: string;
+  candidate_status: string;
+  virtual_profile_accepted: boolean;
+  default_candidate_allowed: boolean;
+  cost_tier: string;
+  latency_tier: string;
+  catalog_status: string;
+  pricing_status: string;
+  capabilities: string[];
+  reason_codes: string[];
+  recommended_action: string;
+};
+
+export type ModelCatalogCandidateImpactReplay = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    candidate_profile_count: number;
+    accepted_virtual_profile_count: number;
+    review_required_candidate_count: number;
+    blocked_candidate_count: number;
+    task_impact_count: number;
+    recommended_change_count: number;
+    cheap_first_would_promote_count: number;
+    high_frequency_change_count: number;
+    forbidden_payload_field_count: number;
+    patch_plan_status: string;
+    virtual_catalog_model_count: number;
+    baseline_catalog_model_count: number;
+    configuration_written: boolean;
+    catalog_file_written: boolean;
+    env_file_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+    secret_value_included: boolean;
+  };
+  candidate_rows: ModelCatalogCandidateImpactRow[];
+  task_impact_rows: ModelCatalogCandidateImpactTaskRow[];
+  selector_delta: {
+    changed_tasks: string[];
+    cheap_first_promoted_tasks: string[];
+    high_frequency_changed_tasks: string[];
+  };
+  capability_matrix_coverage?: {
+    task_count: number;
+    catalog_model_count: number;
+    recommended_models: string[];
+    premium_exception_tasks: string[];
+  };
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGeminiCheapFirstCoverageGateSummary = {
   coverage_row_count: number;
   ready_row_count: number;
@@ -2567,6 +2656,7 @@ export type ModelOpsResponse = {
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
+  catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
@@ -2623,6 +2713,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     proposal_rows?: unknown;
     impact_rows?: unknown;
     candidate_patch_rows?: unknown;
+    candidate_rows?: unknown;
+    task_impact_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
     promotion_items?: unknown;
@@ -2646,6 +2738,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.proposal_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.impact_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.candidate_patch_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.candidate_rows) && Array.isArray(payload.task_impact_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
@@ -2826,6 +2919,13 @@ export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAu
 export async function getModelCatalogCandidatePatchPlan(): Promise<ModelCatalogCandidatePatchPlan> {
   return invokeModelOpsApi<ModelCatalogCandidatePatchPlan>({
     url: '/api/v1/aihub/models/catalog-candidate-patch-plan',
+    method: 'GET',
+  });
+}
+
+export async function getModelCatalogCandidateImpactReplay(): Promise<ModelCatalogCandidateImpactReplay> {
+  return invokeModelOpsApi<ModelCatalogCandidateImpactReplay>({
+    url: '/api/v1/aihub/models/catalog-candidate-impact-replay',
     method: 'GET',
   });
 }

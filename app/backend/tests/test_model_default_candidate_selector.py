@@ -3,6 +3,7 @@ from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPoli
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
 from services.model_catalog import ModelProfile
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
+from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 
 
@@ -63,6 +64,20 @@ def test_default_candidate_selector_promotes_catalog_cheapest_stable_flash_lite(
 
     model_selector = GeminiNewapiModelSelectorService(candidate_selector=selector).build_selector({"tasks": ["fast"]})
     assert model_selector["task_recommendations"][0]["escalation_chain"][0] == "gemini-4.0-flash-lite"
+
+
+def test_default_candidate_selector_supports_in_memory_catalog_injection():
+    future_model = _future_flash_lite()
+
+    selector = ModelDefaultCandidateSelectorService(catalog=(future_model, *model_catalog.GEMINI_MODEL_CATALOG))
+
+    assert selector.recommended_model_for_task("fast") == "gemini-4.0-flash-lite"
+    assert selector.recommended_model_for_task("ocr") == "gemini-4.0-flash-lite"
+    assert selector.build_selector()["summary"]["catalog_model_count"] == len(model_catalog.GEMINI_MODEL_CATALOG) + 1
+    matrix = ModelCapabilityMatrixService(candidate_selector=selector, catalog=selector.catalog).build_matrix()
+    fast = {row["task"]: row for row in matrix["tasks"]}["fast"]
+    assert matrix["coverage"]["catalog_model_count"] == len(model_catalog.GEMINI_MODEL_CATALOG) + 1
+    assert fast["recommended_model"] == "gemini-4.0-flash-lite"
 
 
 def test_default_candidate_selector_keeps_preview_and_unpriced_models_out_of_defaults(monkeypatch):

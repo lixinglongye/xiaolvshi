@@ -37,6 +37,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "configuration",
         "catalog_candidate_patch_plan",
     ),
+    ReadinessComponent(
+        "catalog-candidate-impact-replay",
+        "Model catalog candidate impact replay",
+        "configuration",
+        "catalog_candidate_impact_replay",
+    ),
     ReadinessComponent("catalog-source-audit", "Gemini catalog source audit", "configuration", "catalog_source_audit"),
     ReadinessComponent(
         "gateway-probe-evaluation",

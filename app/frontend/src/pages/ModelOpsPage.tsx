@@ -802,6 +802,12 @@ function Inner() {
   const catalogCandidatePatchRows = catalogCandidatePatchPlan?.candidate_patch_rows ?? [];
   const catalogCandidatePatchChecks = catalogCandidatePatchPlan?.checks ?? [];
   const catalogCandidateClaimBoundaryEntries = boundaryDisplayEntries(catalogCandidatePatchPlan?.claim_boundary);
+  const catalogCandidateImpactReplay = data?.catalog_candidate_impact_replay ?? null;
+  const catalogCandidateImpactRows = catalogCandidateImpactReplay?.task_impact_rows ?? [];
+  const catalogCandidateReplayRows = catalogCandidateImpactReplay?.candidate_rows ?? [];
+  const catalogCandidateImpactChecks = catalogCandidateImpactReplay?.checks ?? [];
+  const catalogCandidateImpactPrivacyEntries = boundaryDisplayEntries(catalogCandidateImpactReplay?.privacy_boundary);
+  const catalogCandidateImpactClaimEntries = boundaryDisplayEntries(catalogCandidateImpactReplay?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -4367,6 +4373,243 @@ function Inner() {
                   <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                   <div className="space-y-2">
                     {catalogCandidatePatchPlan.validation_commands.slice(0, 3).map((command) => (
+                      <div
+                        key={command}
+                        className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                      >
+                        {command}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {catalogCandidateImpactReplay && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Model catalog candidate impact replay</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {catalogCandidateImpactReplay.summary.candidate_profile_count} candidate profiles /{' '}
+                  {catalogCandidateImpactReplay.summary.recommended_change_count} task changes /{' '}
+                  {catalogCandidateImpactReplay.summary.cheap_first_would_promote_count} cheap-first promotions
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(catalogCandidateImpactReplay.status)}>
+                {catalogCandidateImpactReplay.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidateImpactReplay.summary.accepted_virtual_profile_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">accepted virtual profiles</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidateImpactReplay.summary.review_required_candidate_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review required</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidateImpactReplay.summary.blocked_candidate_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocked</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidateImpactReplay.summary.high_frequency_change_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">high-frequency changes</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black text-stone-950">
+                  {String(catalogCandidateImpactReplay.summary.configuration_written)} /{' '}
+                  {String(catalogCandidateImpactReplay.summary.gateway_called)} /{' '}
+                  {String(catalogCandidateImpactReplay.summary.network_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">writes / gateway / network</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="space-y-3">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Baseline</TableHead>
+                        <TableHead>Replay</TableHead>
+                        <TableHead>Impact</TableHead>
+                        <TableHead>Reason</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {catalogCandidateImpactRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.task}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.route_mode}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px]">
+                            <div className="break-all font-mono text-xs text-stone-700">{row.baseline_model}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.baseline_cost_tier ?? 'unknown'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px]">
+                            <div className="break-all font-mono text-xs font-semibold text-stone-950">{row.replay_model}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {row.replay_cost_tier ?? 'unknown'} / {row.replay_pricing_status ?? 'unknown'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={row.cheap_first_would_promote ? statusClass('pass') : statusClass(row.selected_model_changed ? 'warn' : 'monitor_only')}
+                            >
+                              {row.cheap_first_would_promote
+                                ? 'cheap-first promote'
+                                : row.selected_model_changed
+                                  ? 'review change'
+                                  : 'unchanged'}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {row.eligible_candidate_count}/{row.candidate_count} eligible
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Candidate</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Cost / pricing</TableHead>
+                        <TableHead>Capabilities</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {catalogCandidateReplayRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[260px]">
+                            <div className="break-all font-mono text-xs font-semibold text-stone-950">
+                              {row.model_id || row.observed_model || '-'}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.observed_model || '-'}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.candidate_status)}>
+                              {row.candidate_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              default allowed: {String(row.default_candidate_allowed)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                              {row.cost_tier}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {row.latency_tier} / {row.pricing_status}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.capabilities.slice(0, 6).join(', ') || '-'}
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.slice(0, 3).join(', ') || 'metadata-only'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {row.recommended_action.replace(/_/g, ' ')}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {catalogCandidateReplayRows.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-sm text-stone-600">
+                            No candidate profile has been supplied yet; replay remains monitor-only.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Replay checks</h3>
+                  <div className="space-y-2">
+                    {catalogCandidateImpactChecks.map((check) => (
+                      <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono font-semibold text-stone-950">{check.id}</span>
+                          <Badge variant="outline" className={statusClass(check.status)}>
+                            {check.status}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 text-stone-600">{check.reason}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                  <div className="space-y-2 text-xs leading-5 text-stone-600">
+                    {catalogCandidateImpactReplay.recommended_actions.slice(0, 4).map((action) => (
+                      <div key={action} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                        {action}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {catalogCandidateImpactPrivacyEntries.map(([key, value]) => (
+                      <div key={key}>
+                        {key}: {String(value)}
+                      </div>
+                    ))}
+                    <div>writes disabled: {String(!catalogCandidateImpactReplay.summary.configuration_written)}</div>
+                    <div>gateway disabled: {String(!catalogCandidateImpactReplay.summary.gateway_called)}</div>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {catalogCandidateImpactClaimEntries.length > 0 ? (
+                      catalogCandidateImpactClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {String(value)}
+                        </div>
+                      ))
+                    ) : (
+                      <div>No automatic catalog edit, default change, live execution, pricing accuracy, or quality claims.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="space-y-2">
+                    {catalogCandidateImpactReplay.validation_commands.slice(0, 3).map((command) => (
                       <div
                         key={command}
                         className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

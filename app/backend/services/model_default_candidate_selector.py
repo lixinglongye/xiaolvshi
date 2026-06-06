@@ -157,6 +157,9 @@ TASK_POLICIES: dict[str, TaskCandidatePolicy] = {
 class ModelDefaultCandidateSelectorService:
     """Select cheapest capable Gemini defaults from the local catalog metadata only."""
 
+    def __init__(self, catalog: tuple[ModelProfile, ...] | None = None) -> None:
+        self.catalog = catalog or model_catalog.GEMINI_MODEL_CATALOG
+
     def recommendation(self, task: str) -> dict[str, Any]:
         policy = self.policy_for_task(task)
         candidates = self.candidates_for_task(task)
@@ -218,7 +221,7 @@ class ModelDefaultCandidateSelectorService:
         policy = self.policy_for_task(task)
         rows = [
             self._candidate_row(profile, policy)
-            for profile in model_catalog.GEMINI_MODEL_CATALOG
+            for profile in self.catalog
             if _has_required_capabilities(profile, policy.required_capabilities)
         ]
         rows.sort(key=lambda item: item["sort_key"])
@@ -237,7 +240,7 @@ class ModelDefaultCandidateSelectorService:
             "status": "ready",
             "summary": {
                 "task_count": len(rows),
-                "catalog_model_count": len(model_catalog.GEMINI_MODEL_CATALOG),
+                "catalog_model_count": len(self.catalog),
                 "high_frequency_task_count": sum(1 for row in rows if row["high_frequency"]),
                 "candidate_model_count": len(
                     {

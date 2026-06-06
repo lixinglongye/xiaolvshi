@@ -164,6 +164,14 @@ def test_model_ops_route_includes_readiness():
     assert "catalog_source_audit" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "catalog_candidate_impact_replay" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    replay_check = next(
+        check for check in payload["model_ops_readiness"]["checks"] if check["source_key"] == "catalog_candidate_impact_replay"
+    )
+    assert replay_check["status"] in {"pass", "warn"}
+    assert payload["catalog_candidate_impact_replay"]["status"] in {"monitor_only", "ready", "review_required", "blocked"}
     assert "model_ops_performance_budget" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }

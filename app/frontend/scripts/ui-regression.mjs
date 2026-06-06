@@ -89,8 +89,14 @@ const geminiAliasMatrixPanel = sourceSection(
 const catalogCandidatePatchPlanPanel = sourceSection(
   modelOpsPage,
   'Model catalog candidate patch plan',
-  'Gateway health plan',
+  'Model catalog candidate impact replay',
   'model-ops catalog candidate patch plan section',
+);
+const catalogCandidateImpactReplayPanel = sourceSection(
+  modelOpsPage,
+  'Model catalog candidate impact replay',
+  'Gateway health plan',
+  'model-ops catalog candidate impact replay section',
 );
 const caseWorkbenchRiskRefreshPanel = sourceSection(
   caseWorkbenchRuntimePanel,
@@ -540,12 +546,37 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Privacy boundary', 'model-ops catalog candidate privacy boundary panel'),
   () => assertIncludes(modelOpsPage, 'Claim boundary', 'model-ops catalog candidate claim boundary panel'),
   () => assertBefore(modelOpsPage, 'Gemini catalog source audit', 'Model catalog candidate patch plan', 'model-ops catalog candidate after source audit'),
-  () => assertBefore(modelOpsPage, 'Model catalog candidate patch plan', 'Gateway health plan', 'model-ops catalog candidate before gateway health'),
+  () => assertBefore(modelOpsPage, 'Model catalog candidate patch plan', 'Model catalog candidate impact replay', 'model-ops catalog candidate patch before impact replay'),
+  () => assertIncludes(modelOpsApi, 'ModelCatalogCandidateImpactReplay', 'model-ops catalog candidate impact replay type'),
+  () => assertIncludes(modelOpsApi, 'ModelCatalogCandidateImpactRow', 'model-ops catalog candidate impact row type'),
+  () => assertIncludes(modelOpsApi, 'ModelCatalogCandidateImpactTaskRow', 'model-ops catalog candidate impact task row type'),
+  () => assertIncludes(modelOpsApi, 'getModelCatalogCandidateImpactReplay', 'model-ops catalog candidate impact replay getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/catalog-candidate-impact-replay', 'model-ops catalog candidate impact replay endpoint'),
+  () => assertIncludes(modelOpsApi, 'catalog_candidate_impact_replay', 'model-ops catalog candidate impact replay response binding'),
+  () => assertIncludes(modelOpsApi, 'candidate_rows', 'model-ops catalog candidate impact candidate rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'task_impact_rows', 'model-ops catalog candidate impact task rows payload guard'),
+  () => assertIncludes(modelOpsPage, 'Model catalog candidate impact replay', 'model-ops catalog candidate impact replay panel'),
+  () => assertIncludes(modelOpsPage, 'catalogCandidateImpactRows', 'model-ops catalog candidate impact task rows binding'),
+  () => assertIncludes(modelOpsPage, 'catalogCandidateReplayRows', 'model-ops catalog candidate replay rows binding'),
+  () => assertIncludes(modelOpsPage, 'catalogCandidateImpactChecks', 'model-ops catalog candidate impact checks binding'),
+  () => assertIncludes(modelOpsPage, 'selected_model_changed', 'model-ops catalog candidate impact selected-change binding'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_would_promote', 'model-ops catalog candidate impact cheap-first binding'),
+  () => assertIncludes(modelOpsPage, 'reason_codes', 'model-ops catalog candidate impact reason binding'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops catalog candidate impact no-write boundary'),
+  () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops catalog candidate impact gateway boundary'),
+  () => assertIncludes(modelOpsPage, 'network_called', 'model-ops catalog candidate impact network boundary'),
+  () => assertBefore(modelOpsPage, 'Model catalog candidate impact replay', 'Gateway health plan', 'model-ops catalog candidate impact before gateway health'),
   () =>
     assertNotMatches(
       catalogCandidatePatchPlanPanel,
       /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|raw_legal_text)\b/i,
       'model-ops catalog candidate patch plan no secret or raw prompt/payload/output fields',
+    ),
+  () =>
+    assertNotMatches(
+      catalogCandidateImpactReplayPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|raw_legal_text|gateway_response|request_body|response_body|headers|candidate_text|generated_text|output_text)\b/i,
+      'model-ops catalog candidate impact replay no secret or raw prompt/payload/output fields',
     ),
   () => assertIncludes(modelOpsPage, 'Cheap-first release decision', 'model-ops cheap-first release decision panel'),
   () => assertIncludes(modelOpsPage, 'cheapFirstDecisionChecks', 'model-ops cheap-first decision row binding'),

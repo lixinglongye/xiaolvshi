@@ -175,6 +175,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-quality-budget" in completed_ids
     assert "gemini-catalog-source-audit" in completed_ids
     assert "model-catalog-candidate-patch-plan" in completed_ids
+    assert "model-catalog-candidate-impact-replay" in completed_ids
     assert "modelops-cheap-first-release-decision" in completed_ids
     assert "modelops-default-change-queue" in completed_ids
     assert "modelops-cheap-first-priority-queue" in completed_ids
@@ -311,6 +312,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-quality-budget" not in queue_ids
     assert "gemini-catalog-source-audit" not in queue_ids
     assert "model-catalog-candidate-patch-plan" not in queue_ids
+    assert "model-catalog-candidate-impact-replay" not in queue_ids
     assert "modelops-cheap-first-release-decision" not in queue_ids
     assert "modelops-default-change-queue" not in queue_ids
     assert "modelops-cheap-first-priority-queue" not in queue_ids
@@ -490,6 +492,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py "
         "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && "
         "npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_catalog_candidate_impact_replay.py "
+        "tests/test_model_default_candidate_selector.py tests/test_model_capability_matrix.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert (
@@ -863,6 +871,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-catalog-source-audit" in catalog_candidate_patch_entry["release_gate_links"]
     assert "model-ops-readiness" in catalog_candidate_patch_entry["release_gate_links"]
     assert "frontend-ui-regression" in catalog_candidate_patch_entry["release_gate_links"]
+    catalog_candidate_impact_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-catalog-candidate-impact-replay"
+    )
+    assert catalog_candidate_impact_entry["size"] == "medium"
+    assert catalog_candidate_impact_entry["status"] == "shipped"
+    assert "sanitized Gemini candidate profiles" in catalog_candidate_impact_entry["impact"]
+    assert "in-memory virtual catalog" in catalog_candidate_impact_entry["impact"]
+    assert "cheap-first selector deltas" in catalog_candidate_impact_entry["impact"]
+    assert "no-write/no-gateway safety boundaries" in catalog_candidate_impact_entry["impact"]
+    assert "app/backend/services/model_catalog_candidate_impact_replay.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_catalog_candidate_impact_replay.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/backend/services/model_default_candidate_selector.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/backend/services/model_capability_matrix.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "docs/MODEL_CATALOG_CANDIDATE_IMPACT_REPLAY.md" in catalog_candidate_impact_entry["evidence_paths"]
+    assert "model-catalog-candidate-impact-replay" in catalog_candidate_impact_entry["release_gate_links"]
+    assert "model-catalog-candidate-patch-plan" in catalog_candidate_impact_entry["release_gate_links"]
+    assert "model-default-candidate-selector" in catalog_candidate_impact_entry["release_gate_links"]
+    assert "model-ops-readiness" in catalog_candidate_impact_entry["release_gate_links"]
+    assert "frontend-ui-regression" in catalog_candidate_impact_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

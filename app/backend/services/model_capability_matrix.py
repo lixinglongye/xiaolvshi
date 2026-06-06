@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from services import model_catalog
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
-from services.model_catalog import GEMINI_MODEL_CATALOG, ModelProfile, task_default_model
+from services.model_catalog import ModelProfile
 
 
 COST_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3}
@@ -32,8 +33,13 @@ class ModelTaskRequirement:
 class ModelCapabilityMatrixService:
     """Ranks Gemini models by capability fit, cost, and latency for each project task."""
 
-    def __init__(self, candidate_selector: ModelDefaultCandidateSelectorService | None = None) -> None:
-        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
+    def __init__(
+        self,
+        candidate_selector: ModelDefaultCandidateSelectorService | None = None,
+        catalog: tuple[ModelProfile, ...] | None = None,
+    ) -> None:
+        self.catalog = catalog or model_catalog.GEMINI_MODEL_CATALOG
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService(catalog=self.catalog)
 
     def build_matrix(self) -> dict[str, Any]:
         tasks = [self._task_row(requirement) for requirement in self._requirements()]
@@ -53,6 +59,7 @@ class ModelCapabilityMatrixService:
             "tasks": tasks,
             "coverage": {
                 "task_count": len(tasks),
+                "catalog_model_count": len(self.catalog),
                 "recommended_models": sorted({task["recommended_model"] for task in tasks if task["recommended_model"]}),
                 "premium_exception_tasks": [
                     task["task"]
@@ -156,13 +163,13 @@ class ModelCapabilityMatrixService:
     def _task_row(self, requirement: ModelTaskRequirement) -> dict[str, Any]:
         candidates = [
             self._candidate(profile, requirement)
-            for profile in GEMINI_MODEL_CATALOG
+            for profile in self.catalog
             if _has_required(profile, requirement.required_capabilities)
         ]
         candidates.sort(key=lambda item: item["sort_key"])
         for item in candidates:
             item.pop("sort_key", None)
-        candidate_fallback = candidates[0]["model_id"] if candidates else task_default_model(requirement.task)
+        candidate_fallback = candidates[0]["model_id"] if candidates else model_catalog.task_default_model(requirement.task)
         recommended = self.candidate_selector.recommended_model_for_task(
             requirement.task,
             fallback=candidate_fallback,
@@ -172,8 +179,8 @@ class ModelCapabilityMatrixService:
             "task": requirement.task,
             "requirement": requirement.to_api(),
             "recommended_model": recommended,
-            "runtime_default_model": task_default_model(requirement.task),
-            "runtime_default_is_recommended": task_default_model(requirement.task) == recommended,
+            "runtime_default_model": model_catalog.task_default_model(requirement.task),
+            "runtime_default_is_recommended": model_catalog.task_default_model(requirement.task) == recommended,
             "candidate_count": len(candidates),
             "candidates": candidates,
         }

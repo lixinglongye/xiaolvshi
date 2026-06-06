@@ -37,6 +37,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
+    assert "Model catalog candidate impact replay" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first release decision" in rows["/model-ops"]["protected_panels"]
     assert "Default change queue" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first priority queue" in rows["/model-ops"]["protected_panels"]
@@ -107,6 +108,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
     assert "ModelOps maintainer execution checklist UI evidence is metadata only" in payload_text
+    assert "ModelOps catalog candidate impact replay UI evidence is metadata only" in payload_text
     assert "Legal benchmark fixture crosswalk UI evidence is metadata only" in payload_text
     assert "gemini-cheap-first-coverage-gate-regresses" in payload_text
     assert "feedback-capture-plan-regresses" in payload_text
