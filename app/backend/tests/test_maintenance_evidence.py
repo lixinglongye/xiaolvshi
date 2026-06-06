@@ -47,6 +47,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal document benchmark suite" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark gap fixtures" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal document fact consistency benchmark" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
     assert "User need public benchmark mapping" in profile["release_management"]["release_readiness_controls"]
     assert "User need cheap-first calibration mapping" in profile["release_management"]["release_readiness_controls"]
@@ -168,6 +169,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
+    assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in evidence_paths
+    assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in evidence_paths
+    assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
     assert "app/backend/routers/maintenance.py" in evidence_paths
@@ -205,10 +209,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in priority_signal["evidence_paths"]
     assert "docs/USER_NEEDS_RADAR.md" in priority_signal["evidence_paths"]
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
+    assert "metadata-only legal document fact consistency benchmark evidence" in quality_signal["description"]
+    assert "fact consistency" in quality_signal["description"]
     assert "metadata-only authority/citation gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval diagnostics gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval observation gate evidence" in quality_signal["description"]
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
+    assert "fact-consistency benchmark review" in quality_signal["responsibility"]
     assert "authority/citation gate review" in quality_signal["responsibility"]
     assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
     assert "retrieval observation gate review" in quality_signal["responsibility"]
@@ -366,6 +373,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("sanitized model ids to canonical catalog ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal document fact consistency benchmark is metadata-only amount/date/fact consistency evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("case ids, counts, and reason codes only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not write configuration" in guardrail for guardrail in profile["application_guardrails"])
     assert any("shift traffic" in guardrail for guardrail in profile["application_guardrails"])
     assert any("agentic grounded defaults evidence is metadata-only/default routing evidence" in guardrail for guardrail in profile["application_guardrails"])

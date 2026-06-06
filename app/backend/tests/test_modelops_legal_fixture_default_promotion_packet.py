@@ -2,6 +2,7 @@ import json
 import re
 
 from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
+from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.modelops_legal_fixture_default_promotion_packet import (
     ModelOpsLegalFixtureDefaultPromotionPacketService,
@@ -38,6 +39,24 @@ def _passing_document_outputs() -> dict[str, dict]:
     }
 
 
+def _passing_fact_consistency_outputs() -> dict[str, dict]:
+    suite = LegalDocumentFactConsistencyBenchmarkService().build_suite()
+    return {
+        case["id"]: {
+            "amounts": {
+                item["id"]: item["value"]
+                for item in case["amount_expectations"]
+            },
+            "deadlines": {
+                item["id"]: item["value"]
+                for item in case["deadline_expectations"]
+            },
+            "facts": list(case["required_fact_ids"]),
+        }
+        for case in suite["benchmark_cases"]
+    }
+
+
 def test_legal_fixture_default_promotion_packet_is_not_ready_by_default():
     packet = ModelOpsLegalFixtureDefaultPromotionPacketService().build_packet()
     serialized = json.dumps(packet, ensure_ascii=False)
@@ -48,6 +67,7 @@ def test_legal_fixture_default_promotion_packet_is_not_ready_by_default():
     assert packet["summary"]["source_gate_status"] == "not_run"
     assert packet["summary"]["source_default_change_evidence_allowed"] is False
     assert packet["summary"]["document_benchmark_status"] == "not_run"
+    assert packet["summary"]["fact_consistency_status"] == "not_run"
     assert packet["summary"]["configuration_written"] is False
     assert packet["summary"]["gateway_called"] is False
     assert packet["summary"]["traffic_shifted"] is False
@@ -55,6 +75,7 @@ def test_legal_fixture_default_promotion_packet_is_not_ready_by_default():
     assert packet["privacy_boundary"]["returns_raw_fixture_text"] is False
     assert packet["privacy_boundary"]["returns_document_snippets"] is False
     assert packet["claim_boundary"]["automatic_default_change_claimed"] is False
+    assert packet["claim_boundary"]["fact_consistency_benchmark_scores_claimed"] is False
     assert packet["claim_boundary"]["maintainer_approval_claimed"] is False
     assert all(item["promotion_status"] == "not_ready" for item in packet["promotion_items"])
     assert "generated_text" not in serialized
@@ -67,6 +88,7 @@ def test_legal_fixture_default_promotion_packet_ready_after_gate_and_document_be
         {
             "observations": _passing_observations(),
             "document_benchmark_outputs": _passing_document_outputs(),
+            "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
         }
     )
 
@@ -74,14 +96,19 @@ def test_legal_fixture_default_promotion_packet_ready_after_gate_and_document_be
     assert packet["summary"]["source_gate_status"] == "ready"
     assert packet["summary"]["source_default_change_evidence_allowed"] is True
     assert packet["summary"]["document_benchmark_status"] == "pass"
+    assert packet["summary"]["fact_consistency_status"] == "pass"
+    assert packet["summary"]["fact_consistency_score"] == 100
+    assert packet["summary"]["fact_consistency_case_count"] == 4
     assert packet["summary"]["document_coverage_status"] == "ready"
     assert packet["summary"]["ready_for_review_count"] == 3
     assert packet["required_signoffs"] == ["maintainer_owner", "model_ops_reviewer", "legal_quality_reviewer"]
     assert packet["decision"]["default_change_allowed_by_packet"] is False
     assert packet["decision"]["configuration_change_allowed"] is False
     assert all(item["promotion_status"] == "ready_for_maintainer_review" for item in packet["promotion_items"])
+    assert all(item["fact_consistency_status"] == "pass" for item in packet["promotion_items"])
     assert all(item["configuration_change_allowed"] is False for item in packet["promotion_items"])
     assert all("maintainer signoff outside this service" in item["required_evidence"] for item in packet["promotion_items"])
+    assert any(item["id"] == "fact-consistency-pass" and item["passed"] for item in packet["evidence_checklist"])
 
 
 def test_legal_fixture_default_promotion_packet_blocks_document_pii_failure():
@@ -93,6 +120,7 @@ def test_legal_fixture_default_promotion_packet_blocks_document_pii_failure():
         {
             "observations": _passing_observations(),
             "document_benchmark_outputs": document_outputs,
+            "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
         }
     )
     serialized = json.dumps(packet, ensure_ascii=False)
@@ -112,6 +140,7 @@ def test_legal_fixture_default_promotion_packet_accepts_source_gate_without_echo
         {
             "observations": _passing_observations(),
             "document_benchmark_outputs": _passing_document_outputs(),
+            "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
         }
     )
 
@@ -120,6 +149,7 @@ def test_legal_fixture_default_promotion_packet_accepts_source_gate_without_echo
 
     assert packet["status"] == "ready_for_maintainer_review"
     assert packet["summary"]["source_gate_status"] == "ready"
+    assert packet["summary"]["fact_consistency_status"] == "pass"
     assert "output_text" not in serialized
     assert "should not echo" not in serialized
 
@@ -150,9 +180,10 @@ def test_legal_fixture_default_promotion_packet_route_returns_packet():
     post_response = client.post(
         "/api/v1/maintenance/legal-review-benchmark/default-promotion-packet",
         json={
-            "observations": _passing_observations(),
-            "document_benchmark_outputs": _passing_document_outputs(),
-        },
+                "observations": _passing_observations(),
+                "document_benchmark_outputs": _passing_document_outputs(),
+                "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
+            },
     )
     assert post_response.status_code == 200
     post_payload = post_response.json()
@@ -165,6 +196,7 @@ def test_legal_fixture_default_promotion_packet_route_returns_packet():
         json={
             "observations": _passing_observations(),
             "document_benchmark_outputs": _passing_document_outputs(),
+            "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
         },
     )
     assert alias_post_response.status_code == 200

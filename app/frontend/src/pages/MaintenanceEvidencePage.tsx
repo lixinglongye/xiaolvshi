@@ -39,6 +39,7 @@ import {
   getLegalFixtureRunReport,
   getLegalBenchmarkFixtureCrosswalk,
   getLegalDocumentBenchmarkCoverage,
+  getLegalDocumentFactConsistencyBenchmark,
   getLegalAdoptionResearchBridge,
   getLegalBenchmarkResearchRegistry,
   getGeminiNewApiSelectorReplayEvidence,
@@ -110,6 +111,7 @@ import {
   type LegalBenchmarkResearchRegistry,
   type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
+  type LegalDocumentFactConsistencyBenchmark,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkSampler,
   type LegalRagAbstentionEscalationGate,
@@ -434,6 +436,8 @@ function Inner() {
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [legalDocumentBenchmarkCoverage, setLegalDocumentBenchmarkCoverage] =
     useState<LegalDocumentBenchmarkCoverage | null>(null);
+  const [legalDocumentFactConsistencyBenchmark, setLegalDocumentFactConsistencyBenchmark] =
+    useState<LegalDocumentFactConsistencyBenchmark | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
   const [fixtureLocalRunReview, setFixtureLocalRunReview] = useState<LegalFixtureLocalRunReview | null>(null);
   const [normalizerPayloadText, setNormalizerPayloadText] = useState('');
@@ -605,6 +609,11 @@ function Inner() {
           label: 'Legal document benchmark coverage',
           run: getLegalDocumentBenchmarkCoverage,
           apply: (value) => setLegalDocumentBenchmarkCoverage(value as LegalDocumentBenchmarkCoverage),
+        },
+        {
+          label: 'Legal document fact consistency benchmark',
+          run: getLegalDocumentFactConsistencyBenchmark,
+          apply: (value) => setLegalDocumentFactConsistencyBenchmark(value as LegalDocumentFactConsistencyBenchmark),
         },
         {
           label: 'Legal research backlog',
@@ -881,12 +890,22 @@ function Inner() {
     0;
   const legalFixtureDocumentSummary = modelOpsLegalFixtureCheapFirstBenchmarkGate?.document_benchmark_summary;
   const legalFixtureDocumentRows = modelOpsLegalFixtureCheapFirstBenchmarkGate?.document_benchmark_rows ?? [];
+  const legalFixtureFactConsistencySummary =
+    modelOpsLegalFixtureCheapFirstBenchmarkGate?.fact_consistency_summary;
+  const legalFixtureFactConsistencyRows =
+    modelOpsLegalFixtureCheapFirstBenchmarkGate?.fact_consistency_rows ?? [];
   const legalFixtureDocumentAttentionRows = legalFixtureDocumentRows
+    .filter((row) => row.default_change_blocker || row.gate_status !== 'pass')
+    .slice(0, 3);
+  const legalFixtureFactConsistencyAttentionRows = legalFixtureFactConsistencyRows
     .filter((row) => row.default_change_blocker || row.gate_status !== 'pass')
     .slice(0, 3);
   const hasLegalFixtureDocumentBenchmark =
     Boolean(legalFixtureDocumentSummary) ||
     (modelOpsLegalFixtureCheapFirstBenchmarkGate?.summary.document_benchmark_case_count ?? 0) > 0;
+  const hasLegalFixtureFactConsistency =
+    Boolean(legalFixtureFactConsistencySummary) ||
+    (modelOpsLegalFixtureCheapFirstBenchmarkGate?.summary.fact_consistency_case_count ?? 0) > 0;
   const legalFixtureDefaultPromotionRows =
     modelOpsLegalFixtureCheapFirstDefaultPromotionPacket?.promotion_items ?? [];
   const legalFixtureDefaultPromotionAttentionRows = (
@@ -4892,6 +4911,13 @@ function Inner() {
                         )}
                       </div>
                       <div>
+                        fact consistency required:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy
+                            .fact_consistency_required_for_default_change,
+                        )}
+                      </div>
+                      <div>
                         default change evidence:{' '}
                         {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.default_change_evidence_allowed)}
                       </div>
@@ -5031,6 +5057,123 @@ function Inner() {
                             </div>
                           </div>
                         ))}
+                    </div>
+                  </div>
+                )}
+
+                {hasLegalFixtureFactConsistency && (
+                  <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black uppercase text-stone-500">Fact consistency gate</h3>
+                        <div className="mt-1 text-xs leading-5 text-stone-600">
+                          score{' '}
+                          {legalFixtureFactConsistencySummary?.score ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_score ??
+                            0}{' '}
+                          / cases{' '}
+                          {legalFixtureFactConsistencySummary?.case_count ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_case_count ??
+                            0}{' '}
+                          / amount mismatches{' '}
+                          {legalFixtureFactConsistencySummary?.amount_mismatch_count ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_amount_mismatch_count ??
+                            0}
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={
+                          statusClass[
+                            legalFixtureFactConsistencySummary?.status ??
+                              modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_status ??
+                              'not_run'
+                          ] ?? statusClass.review_required
+                        }
+                      >
+                        {displayToken(
+                          legalFixtureFactConsistencySummary?.status ??
+                            modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_status ??
+                            'not_run',
+                        )}
+                      </Badge>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="text-xs leading-5 text-stone-600">
+                        passed{' '}
+                        {legalFixtureFactConsistencySummary?.passed_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_passed_case_count ??
+                          0}{' '}
+                        / warn{' '}
+                        {legalFixtureFactConsistencySummary?.warning_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_warning_case_count ??
+                          0}{' '}
+                        / failed{' '}
+                        {legalFixtureFactConsistencySummary?.failed_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_failed_case_count ??
+                          0}
+                        <br />
+                        not run{' '}
+                        {legalFixtureFactConsistencySummary?.not_run_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_not_run_case_count ??
+                          0}{' '}
+                        / blocking{' '}
+                        {legalFixtureFactConsistencySummary?.blocking_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_blocking_case_count ??
+                          0}{' '}
+                        / review{' '}
+                        {legalFixtureFactConsistencySummary?.review_case_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_review_case_count ??
+                          0}
+                      </div>
+                      <div className="text-xs leading-5 text-stone-600">
+                        deadline mismatches{' '}
+                        {legalFixtureFactConsistencySummary?.deadline_mismatch_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_deadline_mismatch_count ??
+                          0}
+                        <br />
+                        contradictions{' '}
+                        {legalFixtureFactConsistencySummary?.contradiction_count ??
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.fact_consistency_contradiction_count ??
+                          0}
+                        <br />
+                        raw input fields {legalFixtureFactConsistencySummary?.raw_input_field_count ?? 0}
+                      </div>
+                      <div className="text-xs leading-5 text-stone-600">
+                        model calls {legalFixtureFactConsistencySummary?.model_calls ?? 'not_required'}
+                        <br />
+                        network {legalFixtureFactConsistencySummary?.network_access ?? 'disabled'}
+                        <br />
+                        raw document text{' '}
+                        {String(legalFixtureFactConsistencySummary?.raw_document_text_returned ?? false)} / raw
+                        candidate text {String(legalFixtureFactConsistencySummary?.raw_candidate_text_returned ?? false)}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 md:grid-cols-3">
+                      {legalFixtureFactConsistencyAttentionRows.map((row) => (
+                        <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-stone-950">{row.title}</div>
+                              <div className="font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                            </div>
+                            <Badge variant="outline" className={statusClass[row.gate_status] ?? statusClass.warn}>
+                              {displayToken(row.gate_status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">
+                            score {row.score} / amounts {row.mismatched_amount_count} / deadlines{' '}
+                            {row.mismatched_deadline_count}
+                            <br />
+                            facts missing {row.missing_fact_count} / contradictions {row.contradiction_count}
+                          </div>
+                          <div className="mt-2 font-mono text-[11px] leading-5 text-stone-500">
+                            {(row.reason_codes ?? []).join(', ') || 'fact-consistency-ready'}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -5911,6 +6054,148 @@ function Inner() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentFactConsistencyBenchmark && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document fact consistency benchmark
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentFactConsistencyBenchmark.summary.case_count} cases /{' '}
+                      {legalDocumentFactConsistencyBenchmark.summary.check_count} checks / tolerance{' '}
+                      {legalDocumentFactConsistencyBenchmark.summary.amount_tolerance}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalDocumentFactConsistencyBenchmark.status] ?? statusClass.ready}
+                  >
+                    {legalDocumentFactConsistencyBenchmark.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    { label: 'fact cases', value: legalDocumentFactConsistencyBenchmark.summary.case_count },
+                    { label: 'checks', value: legalDocumentFactConsistencyBenchmark.summary.check_count },
+                    { label: 'max cases', value: legalDocumentFactConsistencyBenchmark.summary.max_cases },
+                    { label: 'tolerance', value: legalDocumentFactConsistencyBenchmark.summary.amount_tolerance },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Case</TableHead>
+                        <TableHead>Document</TableHead>
+                        <TableHead>Structured expectations</TableHead>
+                        <TableHead>Contradictions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentFactConsistencyBenchmark.benchmark_cases.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[320px]">
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className="bg-white font-mono text-[11px]">
+                              {row.document_type}
+                            </Badge>
+                            <div className="mt-2">{row.matter_type}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.amount_expectations.length} amount_expectations</div>
+                            <div>{row.deadline_expectations.length} deadline_expectations</div>
+                            <div>{row.required_fact_ids.length} required_fact_ids</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.contradiction_pairs.length} contradiction_pairs</div>
+                            <div className="mt-1 text-stone-500">
+                              {row.contradiction_pairs.slice(0, 2).map((item) => item.id).join(', ') || 'none'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Check</TableHead>
+                          <TableHead>Target</TableHead>
+                          <TableHead>Weight</TableHead>
+                          <TableHead>Local rule</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentFactConsistencyBenchmark.checks.map((check) => (
+                          <TableRow key={check.id}>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                              {check.hard_fail && (
+                                <Badge variant="outline" className="mt-2 bg-red-50 text-red-800">
+                                  hard fail
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-600">{check.target}</TableCell>
+                            <TableCell>{check.weight}</TableCell>
+                            <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">
+                              {check.local_check}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="grid gap-2 text-xs leading-5 text-stone-600">
+                      <div>model calls: {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.model_calls)}</div>
+                      <div>network called: {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.network_called)}</div>
+                      <div>
+                        external datasets:{' '}
+                        {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.external_dataset_downloads)}
+                      </div>
+                      <div>
+                        returns_raw_document_text:{' '}
+                        {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.returns_raw_document_text)}
+                      </div>
+                      <div>
+                        generated text:{' '}
+                        {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.returns_generated_text)}
+                      </div>
+                      <div>
+                        credentials: {String(legalDocumentFactConsistencyBenchmark.privacy_boundary.returns_credentials)}
+                      </div>
+                    </div>
+                    <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Validation</h3>
+                    <div className="space-y-2">
+                      {legalDocumentFactConsistencyBenchmark.validation_commands.map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

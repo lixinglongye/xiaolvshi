@@ -41,6 +41,7 @@ from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
@@ -1198,6 +1199,24 @@ async def evaluate_legal_document_benchmark_fixtures(predictions: dict[str, Any]
     return {
         "success": True,
         "data": LegalDocumentBenchmarkFixturesService().evaluate_predictions(predictions),
+    }
+
+
+@router.get("/legal-review-benchmark/document-fact-consistency")
+async def get_legal_document_fact_consistency_benchmark():
+    """Return structured fact consistency benchmark expectations for legal documents."""
+    return {
+        "success": True,
+        "data": LegalDocumentFactConsistencyBenchmarkService().build_suite(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-fact-consistency")
+async def evaluate_legal_document_fact_consistency_benchmark(outputs: dict[str, Any]):
+    """Evaluate structured amount, deadline, and fact consistency outputs."""
+    return {
+        "success": True,
+        "data": LegalDocumentFactConsistencyBenchmarkService().evaluate_outputs(outputs),
     }
 
 

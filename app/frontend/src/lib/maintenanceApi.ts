@@ -2798,14 +2798,63 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkDocumentSummary = {
   raw_candidate_text_returned: boolean;
 };
 
+export type ModelOpsLegalFixtureCheapFirstBenchmarkFactConsistencyRow = {
+  id: string;
+  case_id: string;
+  title: string;
+  benchmark_status: string;
+  gate_status: string;
+  score: number;
+  amount_score: number;
+  deadline_score: number;
+  fact_score: number;
+  contradiction_score: number;
+  privacy_score: number;
+  missing_amount_count: number;
+  mismatched_amount_count: number;
+  missing_deadline_count: number;
+  mismatched_deadline_count: number;
+  missing_fact_count: number;
+  contradiction_count: number;
+  raw_input_field_count: number;
+  default_change_blocker: boolean;
+  reason_codes: string[];
+  validation_target: string;
+  raw_document_text_returned: boolean;
+  raw_candidate_text_returned: boolean;
+  gateway_called: boolean;
+};
+
+export type ModelOpsLegalFixtureCheapFirstBenchmarkFactConsistencySummary = {
+  status: string;
+  score: number;
+  case_count: number;
+  passed_case_count: number;
+  warning_case_count: number;
+  failed_case_count: number;
+  not_run_case_count: number;
+  blocking_case_count: number;
+  review_case_count: number;
+  amount_mismatch_count: number;
+  deadline_mismatch_count: number;
+  contradiction_count: number;
+  raw_input_field_count: number;
+  model_calls: string;
+  network_access: string;
+  raw_document_text_returned: boolean;
+  raw_candidate_text_returned: boolean;
+};
+
 export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
   metadata_only: boolean;
   returns_fixture_ids: boolean;
   returns_document_case_ids?: boolean;
+  returns_fact_consistency_case_ids?: boolean;
   returns_expected_signal_counts: boolean;
   returns_raw_fixture_text: boolean;
   returns_fixture_excerpt: boolean;
   returns_document_snippets?: boolean;
+  returns_fact_consistency_raw_text?: boolean;
   returns_candidate_text?: boolean;
   returns_document_missing_labels?: boolean;
   returns_prompt_text: boolean;
@@ -2823,6 +2872,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGateClaimBoundary = {
   automatic_default_change_claimed: boolean;
   public_benchmark_scores_claimed: boolean;
   legal_document_benchmark_scores_claimed?: boolean;
+  fact_consistency_benchmark_scores_claimed?: boolean;
   external_dataset_execution_claimed: boolean;
   live_gateway_quality_claimed: boolean;
   production_legal_accuracy_claimed: boolean;
@@ -2860,6 +2910,18 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     document_benchmark_not_run_case_count: number;
     document_benchmark_blocking_case_count: number;
     document_benchmark_review_case_count: number;
+    fact_consistency_status?: string;
+    fact_consistency_score?: number;
+    fact_consistency_case_count?: number;
+    fact_consistency_passed_case_count?: number;
+    fact_consistency_warning_case_count?: number;
+    fact_consistency_failed_case_count?: number;
+    fact_consistency_not_run_case_count?: number;
+    fact_consistency_blocking_case_count?: number;
+    fact_consistency_review_case_count?: number;
+    fact_consistency_amount_mismatch_count?: number;
+    fact_consistency_deadline_mismatch_count?: number;
+    fact_consistency_contradiction_count?: number;
     document_coverage_status: string;
     document_coverage_target_type_count: number;
     document_coverage_covered_type_count: number;
@@ -2876,11 +2938,15 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
   };
   gate_rows: ModelOpsLegalFixtureCheapFirstBenchmarkGateRow[];
   document_benchmark_summary?: ModelOpsLegalFixtureCheapFirstBenchmarkDocumentSummary;
+  fact_consistency_summary?: ModelOpsLegalFixtureCheapFirstBenchmarkFactConsistencySummary;
   document_benchmark_rows?: ModelOpsLegalFixtureCheapFirstBenchmarkDocumentRow[];
+  fact_consistency_rows?: ModelOpsLegalFixtureCheapFirstBenchmarkFactConsistencyRow[];
   blocking_fixture_ids: string[];
   review_fixture_ids: string[];
   blocking_document_case_ids?: string[];
   review_document_case_ids?: string[];
+  blocking_fact_consistency_case_ids?: string[];
+  review_fact_consistency_case_ids?: string[];
   default_evidence_fixture_ids: string[];
   default_change_evidence_allowed?: boolean;
   routing_policy: {
@@ -2890,6 +2956,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     blocked_actions: string[];
     max_parallel_requests: number;
     document_benchmark_required_for_default_change?: boolean;
+    fact_consistency_required_for_default_change?: boolean;
     default_change_evidence_allowed?: boolean;
     configuration_write_allowed: boolean;
     gateway_call_allowed: boolean;
@@ -3552,6 +3619,97 @@ export type LegalDocumentBenchmarkCoverage = {
   privacy_note: string;
 };
 
+export type LegalDocumentFactConsistencyAmountExpectation = {
+  id: string;
+  value: number;
+  currency: string;
+  formula: string;
+};
+
+export type LegalDocumentFactConsistencyDeadlineExpectation = {
+  id: string;
+  value: string;
+  rule: string;
+};
+
+export type LegalDocumentFactConsistencyContradictionPair = {
+  id: string;
+  fact_ids: string[];
+};
+
+export type LegalDocumentFactConsistencyCase = {
+  id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  amount_expectations: LegalDocumentFactConsistencyAmountExpectation[];
+  deadline_expectations: LegalDocumentFactConsistencyDeadlineExpectation[];
+  required_fact_ids: string[];
+  contradiction_pairs: LegalDocumentFactConsistencyContradictionPair[];
+};
+
+export type LegalDocumentFactConsistencyCheck = {
+  id: string;
+  target: string;
+  local_check: string;
+  weight: number;
+  hard_fail?: boolean;
+};
+
+export type LegalDocumentFactConsistencyBenchmark = {
+  status: string;
+  summary: {
+    case_count: number;
+    check_count: number;
+    max_cases: number;
+    language: string;
+    data_source: string;
+    model_calls: string;
+    network_access: string;
+    external_datasets: string;
+    amount_tolerance: number;
+  };
+  benchmark_cases: LegalDocumentFactConsistencyCase[];
+  checks: LegalDocumentFactConsistencyCheck[];
+  resource_policy: Record<string, unknown>;
+  privacy_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
+export type LegalDocumentFactConsistencyCaseResult = {
+  case_id: string;
+  title: string;
+  status: string;
+  score: number;
+  metric_scores: Record<string, number>;
+  missing_amount_ids: string[];
+  mismatched_amount_ids: string[];
+  missing_deadline_ids: string[];
+  mismatched_deadline_ids: string[];
+  missing_fact_ids: string[];
+  contradiction_pair_ids: string[];
+  raw_input_field_count: number;
+  hard_consistency_block: boolean;
+  reason_codes: string[];
+};
+
+export type LegalDocumentFactConsistencyEvaluation = {
+  status: string;
+  score: number;
+  case_count: number;
+  passed_case_count: number;
+  warning_case_count: number;
+  failed_case_count: number;
+  not_run_case_count: number;
+  amount_mismatch_count: number;
+  deadline_mismatch_count: number;
+  contradiction_count: number;
+  raw_input_field_count: number;
+  blocking_case_ids: string[];
+  case_results: LegalDocumentFactConsistencyCaseResult[];
+  privacy_boundary: Record<string, unknown>;
+};
+
 type LegalReviewBenchmarkResponse = {
   success: boolean;
   data: LegalReviewBenchmark;
@@ -3560,6 +3718,16 @@ type LegalReviewBenchmarkResponse = {
 type LegalDocumentBenchmarkCoverageResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkCoverage;
+};
+
+type LegalDocumentFactConsistencyBenchmarkResponse = {
+  success: boolean;
+  data: LegalDocumentFactConsistencyBenchmark;
+};
+
+type LegalDocumentFactConsistencyEvaluationResponse = {
+  success: boolean;
+  data: LegalDocumentFactConsistencyEvaluation;
 };
 
 type LegalReviewFixtureSmokeResponse = {
@@ -4899,6 +5067,37 @@ export async function getLegalDocumentBenchmarkCoverage(): Promise<LegalDocument
     return payload.data;
   }
   return payload as LegalDocumentBenchmarkCoverage;
+}
+
+export async function getLegalDocumentFactConsistencyBenchmark(): Promise<LegalDocumentFactConsistencyBenchmark> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-fact-consistency',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentFactConsistencyBenchmarkResponse
+    | LegalDocumentFactConsistencyBenchmark;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentFactConsistencyBenchmark;
+}
+
+export async function evaluateLegalDocumentFactConsistencyBenchmark(
+  outputs: Record<string, unknown> = {},
+): Promise<LegalDocumentFactConsistencyEvaluation> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-fact-consistency',
+    method: 'POST',
+    data: outputs,
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentFactConsistencyEvaluationResponse
+    | LegalDocumentFactConsistencyEvaluation;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentFactConsistencyEvaluation;
 }
 
 export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {

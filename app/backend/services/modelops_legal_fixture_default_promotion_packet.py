@@ -32,9 +32,15 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         document_summary = gate.get("document_benchmark_summary")
         if not isinstance(document_summary, dict):
             document_summary = {}
+        fact_consistency_summary = gate.get("fact_consistency_summary")
+        if not isinstance(fact_consistency_summary, dict):
+            fact_consistency_summary = {}
         privacy_boundary = gate.get("privacy_boundary") if isinstance(gate.get("privacy_boundary"), dict) else {}
 
-        promotion_items = [self._promotion_item(row, gate, document_summary) for row in self._gate_rows(gate)]
+        promotion_items = [
+            self._promotion_item(row, gate, document_summary, fact_consistency_summary)
+            for row in self._gate_rows(gate)
+        ]
         ready_items = [item for item in promotion_items if item["promotion_status"] == "ready_for_maintainer_review"]
         blocked_items = [item for item in promotion_items if item["promotion_status"] == "blocked"]
         review_items = [item for item in promotion_items if item["promotion_status"] == "review_required"]
@@ -54,13 +60,14 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "requires_gate_ready": True,
                 "requires_document_benchmark_pass": True,
                 "requires_document_coverage_ready": True,
+                "requires_fact_consistency_pass": True,
             },
             "method": {
                 "type": "modelops-legal-fixture-default-promotion-packet",
                 "notes": [
                     "Consumes the metadata-only legal fixture cheap-first benchmark gate.",
                     "Creates maintainer review items for cheap-first default evidence but never applies configuration.",
-                    "Requires fixture gate pass, document benchmark pass, ready document coverage, and privacy-safe boundaries.",
+                    "Requires fixture gate pass, document benchmark pass, fact consistency pass, ready document coverage, and privacy-safe boundaries.",
                     "Does not call NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -87,6 +94,31 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                     document_summary.get("missing_document_type_count")
                     or summary.get("document_coverage_missing_type_count")
                 ),
+                "fact_consistency_status": str(
+                    fact_consistency_summary.get("status") or summary.get("fact_consistency_status") or "not_run"
+                ),
+                "fact_consistency_score": self._safe_int(
+                    fact_consistency_summary.get("score") or summary.get("fact_consistency_score")
+                ),
+                "fact_consistency_case_count": self._safe_int(
+                    fact_consistency_summary.get("case_count") or summary.get("fact_consistency_case_count")
+                ),
+                "fact_consistency_blocking_case_count": self._safe_int(
+                    fact_consistency_summary.get("blocking_case_count")
+                    or summary.get("fact_consistency_blocking_case_count")
+                ),
+                "fact_consistency_amount_mismatch_count": self._safe_int(
+                    fact_consistency_summary.get("amount_mismatch_count")
+                    or summary.get("fact_consistency_amount_mismatch_count")
+                ),
+                "fact_consistency_deadline_mismatch_count": self._safe_int(
+                    fact_consistency_summary.get("deadline_mismatch_count")
+                    or summary.get("fact_consistency_deadline_mismatch_count")
+                ),
+                "fact_consistency_contradiction_count": self._safe_int(
+                    fact_consistency_summary.get("contradiction_count")
+                    or summary.get("fact_consistency_contradiction_count")
+                ),
                 "privacy_boundary_passed": self._privacy_boundary_passed(privacy_boundary),
                 "raw_input_field_count": self._safe_int(summary.get("raw_input_field_count")),
                 "configuration_written": False,
@@ -101,17 +133,24 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "review_item_ids": [item["id"] for item in review_items],
             "not_ready_item_ids": [item["id"] for item in not_ready_items],
             "required_signoffs": self._required_signoffs(status),
-            "evidence_checklist": self._evidence_checklist(gate, document_summary, privacy_boundary),
+            "evidence_checklist": self._evidence_checklist(
+                gate,
+                document_summary,
+                fact_consistency_summary,
+                privacy_boundary,
+            ),
             "recommended_actions": self._recommended_actions(status, promotion_items),
             "source_gate_links": {
                 "cheap_first_benchmark_gate": "/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate",
                 "document_benchmark_suite": "/api/v1/maintenance/legal-review-benchmark/document-fixtures",
                 "document_coverage": "/api/v1/maintenance/legal-review-benchmark/document-coverage",
+                "document_fact_consistency": "/api/v1/maintenance/legal-review-benchmark/document-fact-consistency",
             },
             "privacy_boundary": {
                 "metadata_only": True,
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
+                "returns_fact_consistency_case_ids": True,
                 "returns_raw_fixture_text": False,
                 "returns_document_snippets": False,
                 "returns_candidate_text": False,
@@ -132,6 +171,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "live_gateway_execution_claimed": False,
                 "public_benchmark_scores_claimed": False,
                 "legal_document_benchmark_scores_claimed": False,
+                "fact_consistency_benchmark_scores_claimed": False,
                 "production_accuracy_claimed": False,
                 "legal_advice_claimed": False,
             },
@@ -161,6 +201,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         row: dict[str, Any],
         gate: dict[str, Any],
         document_summary: dict[str, Any],
+        fact_consistency_summary: dict[str, Any],
     ) -> dict[str, Any]:
         gate_status = str(row.get("gate_status") or "not_run")
         document_status = str(
@@ -173,7 +214,12 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             or (gate.get("summary") or {}).get("document_coverage_status")
             or "unknown"
         )
-        reason_codes = self._item_reason_codes(row, gate, document_status, coverage_status)
+        fact_consistency_status = str(
+            fact_consistency_summary.get("status")
+            or (gate.get("summary") or {}).get("fact_consistency_status")
+            or "not_run"
+        )
+        reason_codes = self._item_reason_codes(row, gate, document_status, coverage_status, fact_consistency_status)
         promotion_status = self._promotion_status(row, gate, reason_codes)
         fixture_id = str(row.get("fixture_id") or "unknown-fixture")
         return {
@@ -187,6 +233,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "gate_status": gate_status,
             "document_benchmark_status": document_status,
             "document_coverage_status": coverage_status,
+            "fact_consistency_status": fact_consistency_status,
             "promotion_status": promotion_status,
             "default_change_evidence_allowed": bool(row.get("default_change_evidence_allowed"))
             and bool(gate.get("default_change_evidence_allowed")),
@@ -194,6 +241,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "required_evidence": [
                 "legal fixture cheap-first gate pass",
                 "document benchmark pass",
+                "fact consistency pass",
                 "document coverage ready",
                 "metadata-only privacy boundary pass",
                 "maintainer signoff outside this service",
@@ -212,6 +260,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         gate: dict[str, Any],
         document_status: str,
         coverage_status: str,
+        fact_consistency_status: str,
     ) -> list[str]:
         codes = [str(code) for code in row.get("reason_codes", []) if str(code).strip()]
         if row.get("gate_status") != "pass":
@@ -220,6 +269,8 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             codes.append("packet-source-default-change-not-allowed")
         if document_status != "pass":
             codes.append("document-benchmark-not-pass")
+        if fact_consistency_status != "pass":
+            codes.append("fact-consistency-not-pass")
         if coverage_status != "ready":
             codes.append("document-coverage-not-ready")
         if row.get("premium_escalation_candidate"):
@@ -279,6 +330,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         self,
         gate: dict[str, Any],
         document_summary: dict[str, Any],
+        fact_consistency_summary: dict[str, Any],
         privacy_boundary: dict[str, Any],
     ) -> list[dict[str, Any]]:
         summary = gate.get("summary") if isinstance(gate.get("summary"), dict) else {}
@@ -302,6 +354,11 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 )
                 == 0,
                 str(document_summary.get("coverage_status") or summary.get("document_coverage_status") or "unknown"),
+            ),
+            (
+                "fact-consistency-pass",
+                (fact_consistency_summary.get("status") or summary.get("fact_consistency_status")) == "pass",
+                str(fact_consistency_summary.get("status") or summary.get("fact_consistency_status") or "not_run"),
             ),
             (
                 "metadata-only-boundary",
@@ -368,7 +425,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             ]
         if status == "blocked":
             return [
-                "Fix blocked legal fixture or document benchmark evidence before any cheap-first default promotion.",
+                "Fix blocked legal fixture, document benchmark, or fact consistency evidence before any cheap-first default promotion.",
                 "Rerun the legal fixture default promotion packet after blockers clear.",
             ]
         if status == "review_required":
@@ -377,7 +434,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "Keep premium escalation candidates explicit-only unless separate exception evidence is attached.",
             ]
         return [
-            "Run selected legal fixtures and the document benchmark suite before requesting default promotion review.",
+            "Run selected legal fixtures, the document benchmark suite, and fact consistency benchmark before requesting default promotion review.",
             "Do not write configuration or shift traffic from this packet.",
         ]
 

@@ -270,6 +270,37 @@ const checks = [
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
   () => assertIncludes(maintenancePage, 'Legal document benchmark coverage', 'legal document benchmark coverage panel'),
   () => assertIncludes(maintenancePage, 'returns_raw_model_output', 'maintenance privacy boundary'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentFactConsistencyBenchmark', 'legal document fact consistency benchmark type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentFactConsistencyEvaluation', 'legal document fact consistency evaluation type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentFactConsistencyBenchmark', 'legal document fact consistency API binding'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-fact-consistency',
+      'legal document fact consistency endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentFactConsistencyBenchmark', 'legal document fact consistency load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentFactConsistencyBenchmark', 'legal document fact consistency state binding'),
+  () => assertIncludes(maintenancePage, 'Legal document fact consistency benchmark', 'legal document fact consistency panel'),
+  () => assertIncludes(maintenancePage, 'amount_expectations', 'legal document fact consistency amount binding'),
+  () => assertIncludes(maintenancePage, 'deadline_expectations', 'legal document fact consistency deadline binding'),
+  () => assertIncludes(maintenancePage, 'required_fact_ids', 'legal document fact consistency required fact binding'),
+  () => assertIncludes(maintenancePage, 'contradiction_pairs', 'legal document fact consistency contradiction binding'),
+  () => assertIncludes(maintenancePage, 'returns_raw_document_text', 'legal document fact consistency raw document boundary'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Legal document benchmark coverage',
+      'Legal document fact consistency benchmark',
+      'fact consistency follows document coverage',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Legal document fact consistency benchmark',
+      'Public benchmark sampler',
+      'fact consistency precedes public sampler',
+    ),
   () => assertIncludes(maintenanceApi, 'LegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk type'),
   () => assertIncludes(maintenanceApi, 'getLegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk', 'legal benchmark fixture crosswalk endpoint'),
@@ -954,6 +985,12 @@ const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
   'Model route legal benchmark risk queue',
   'maintenance legal fixture cheap-first default promotion packet section',
 );
+const legalDocumentFactConsistencyPanel = sourceSection(
+  maintenancePage,
+  'Legal document fact consistency benchmark',
+  '<h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>',
+  'maintenance legal document fact consistency section',
+);
 const legalBenchmarkFixtureCrosswalkPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
@@ -1035,6 +1072,11 @@ assertNotMatches(
   'maintenance legal fixture cheap-first default promotion packet no secrets or raw fixture/output field names',
 );
 assertNotMatches(
+  legalDocumentFactConsistencyPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_output|raw_response|raw_prompt|prompt_payload|request_body|response_body|headers|document_text|fixture_text|sample_text|input_excerpt|output_text|generated_text|candidate_text)\b/i,
+  'maintenance legal document fact consistency no secrets or raw document/model fields',
+);
+assertNotMatches(
   legalBenchmarkFixtureCrosswalkPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|sample_text|synthetic_excerpt|input_excerpt|output_text|raw_prompt|prompt_payload|candidate_text)\b/i,
   'maintenance legal benchmark fixture crosswalk no secrets or raw fixture/corpus/model fields',
@@ -1046,7 +1088,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 26,
+      assertions: checks.length + 27,
     },
     null,
     2,

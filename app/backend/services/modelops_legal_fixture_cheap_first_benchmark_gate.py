@@ -8,6 +8,7 @@ from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
 from services.model_budget import COST_TIER_RANK
 
@@ -42,6 +43,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         evidence_bundle_service: LegalFixtureEvidenceBundleService | None = None,
         document_benchmark_service: LegalDocumentBenchmarkSuiteService | None = None,
         document_coverage_service: LegalDocumentBenchmarkCoverageService | None = None,
+        fact_consistency_service: LegalDocumentFactConsistencyBenchmarkService | None = None,
     ) -> None:
         self.quick_suite_service = quick_suite_service or LegalFixtureQuickSuiteService()
         self.model_matrix_service = model_matrix_service or LegalFixtureModelMatrixService()
@@ -49,6 +51,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         self.evidence_bundle_service = evidence_bundle_service or LegalFixtureEvidenceBundleService()
         self.document_benchmark_service = document_benchmark_service or LegalDocumentBenchmarkSuiteService()
         self.document_coverage_service = document_coverage_service or LegalDocumentBenchmarkCoverageService()
+        self.fact_consistency_service = fact_consistency_service or LegalDocumentFactConsistencyBenchmarkService()
 
     def build_gate(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         quick_suite = self.quick_suite_service.build_suite()
@@ -56,6 +59,9 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         run_report = self.run_report_service.build_report(payload)
         evidence_bundle = self.evidence_bundle_service.build_bundle(payload)
         document_evaluation = self.document_benchmark_service.evaluate_outputs(self._document_outputs(payload))
+        fact_consistency_evaluation = self.fact_consistency_service.evaluate_outputs(
+            self._fact_consistency_outputs(payload)
+        )
         document_coverage = self.document_coverage_service.build_matrix()
         matrix_by_fixture = {
             row["fixture_id"]: row
@@ -82,26 +88,39 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             document_benchmark_rows,
             document_coverage,
         )
+        fact_consistency_rows = self._fact_consistency_rows(fact_consistency_evaluation)
+        fact_consistency_status = self._fact_consistency_status(fact_consistency_evaluation, fact_consistency_rows)
         document_blocking_rows = [row for row in document_benchmark_rows if row["gate_status"] == "blocked"]
         document_warning_rows = [
             row for row in document_benchmark_rows if row["gate_status"] in {"review_required", "not_run"}
+        ]
+        fact_blocking_rows = [row for row in fact_consistency_rows if row["gate_status"] == "blocked"]
+        fact_warning_rows = [
+            row for row in fact_consistency_rows if row["gate_status"] in {"review_required", "not_run"}
         ]
         default_change_evidence_allowed = (
             bool(gate_rows)
             and all(row["gate_status"] == "pass" for row in gate_rows)
             and document_benchmark_status == "pass"
+            and fact_consistency_status == "pass"
             and document_coverage["status"] == "ready"
             and document_coverage["summary"]["missing_document_type_count"] == 0
         )
         raw_input_field_count = self._raw_input_field_count(payload)
 
         return {
-            "status": self._status(gate_rows, blocking_rows, warning_rows, document_benchmark_status),
+            "status": self._status(
+                gate_rows,
+                blocking_rows,
+                warning_rows,
+                document_benchmark_status,
+                fact_consistency_status,
+            ),
             "method": {
                 "type": "modelops-legal-fixture-cheap-first-benchmark-gate",
                 "notes": [
                     "Joins the laptop-safe quick suite, fixture model matrix, run report, evidence bundle, and legal document benchmark suite into one default-change gate.",
-                    "Cheap Gemini fixture results can support default retention only after selected fixtures and document benchmark cases pass without high-priority actions.",
+                    "Cheap Gemini fixture results can support default retention only after selected fixtures, document benchmark cases, and fact consistency cases pass without high-priority actions.",
                     "The gate returns metadata only and never calls NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -135,6 +154,18 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "document_benchmark_not_run_case_count": document_evaluation["not_run_case_count"],
                 "document_benchmark_blocking_case_count": len(document_blocking_rows),
                 "document_benchmark_review_case_count": len(document_warning_rows),
+                "fact_consistency_status": fact_consistency_status,
+                "fact_consistency_score": fact_consistency_evaluation["score"],
+                "fact_consistency_case_count": fact_consistency_evaluation["case_count"],
+                "fact_consistency_passed_case_count": fact_consistency_evaluation["passed_case_count"],
+                "fact_consistency_warning_case_count": fact_consistency_evaluation["warning_case_count"],
+                "fact_consistency_failed_case_count": fact_consistency_evaluation["failed_case_count"],
+                "fact_consistency_not_run_case_count": fact_consistency_evaluation["not_run_case_count"],
+                "fact_consistency_blocking_case_count": len(fact_blocking_rows),
+                "fact_consistency_review_case_count": len(fact_warning_rows),
+                "fact_consistency_amount_mismatch_count": fact_consistency_evaluation["amount_mismatch_count"],
+                "fact_consistency_deadline_mismatch_count": fact_consistency_evaluation["deadline_mismatch_count"],
+                "fact_consistency_contradiction_count": fact_consistency_evaluation["contradiction_count"],
                 "document_coverage_status": document_coverage["status"],
                 "document_coverage_target_type_count": document_coverage["summary"]["target_document_type_count"],
                 "document_coverage_covered_type_count": document_coverage["summary"]["covered_document_type_count"],
@@ -170,11 +201,33 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "raw_document_snippets_returned": False,
                 "raw_candidate_text_returned": False,
             },
+            "fact_consistency_summary": {
+                "status": fact_consistency_status,
+                "score": fact_consistency_evaluation["score"],
+                "case_count": fact_consistency_evaluation["case_count"],
+                "passed_case_count": fact_consistency_evaluation["passed_case_count"],
+                "warning_case_count": fact_consistency_evaluation["warning_case_count"],
+                "failed_case_count": fact_consistency_evaluation["failed_case_count"],
+                "not_run_case_count": fact_consistency_evaluation["not_run_case_count"],
+                "blocking_case_count": len(fact_blocking_rows),
+                "review_case_count": len(fact_warning_rows),
+                "amount_mismatch_count": fact_consistency_evaluation["amount_mismatch_count"],
+                "deadline_mismatch_count": fact_consistency_evaluation["deadline_mismatch_count"],
+                "contradiction_count": fact_consistency_evaluation["contradiction_count"],
+                "raw_input_field_count": fact_consistency_evaluation["raw_input_field_count"],
+                "model_calls": "not_required",
+                "network_access": "disabled",
+                "raw_document_text_returned": False,
+                "raw_candidate_text_returned": False,
+            },
             "document_benchmark_rows": document_benchmark_rows,
+            "fact_consistency_rows": fact_consistency_rows,
             "blocking_fixture_ids": [row["fixture_id"] for row in blocking_rows],
             "review_fixture_ids": [row["fixture_id"] for row in warning_rows],
             "blocking_document_case_ids": [row["case_id"] for row in document_blocking_rows],
             "review_document_case_ids": [row["case_id"] for row in document_warning_rows],
+            "blocking_fact_consistency_case_ids": [row["case_id"] for row in fact_blocking_rows],
+            "review_fact_consistency_case_ids": [row["case_id"] for row in fact_warning_rows],
             "default_evidence_fixture_ids": [
                 row["fixture_id"] for row in passing_rows
             ] if default_change_evidence_allowed else [],
@@ -186,18 +239,22 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                     "selected fixture smoke status pass",
                     "no high priority improvement actions",
                     "legal document benchmark suite status pass",
+                    "legal document fact consistency status pass",
                     "no document benchmark PII hard block",
+                    "no amount, deadline, or contradiction blockers",
                     "known low-cost cheap-first model ladder",
                     "release evidence bundle reviewed",
                 ],
                 "blocked_actions": [
                     "do not promote a new default from failed or not-run fixture evidence",
                     "do not promote a new default from failed or not-run legal document benchmark evidence",
+                    "do not promote a new default from failed or not-run fact consistency evidence",
                     "do not convert premium escalation candidates into defaults",
                     "do not claim public benchmark scores from metadata-only source mappings",
                 ],
                 "max_parallel_requests": quick_suite["summary"]["max_parallel_requests"],
                 "document_benchmark_required_for_default_change": True,
+                "fact_consistency_required_for_default_change": True,
                 "default_change_evidence_allowed": default_change_evidence_allowed,
                 "configuration_write_allowed": False,
                 "gateway_call_allowed": False,
@@ -209,15 +266,19 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 passing_rows,
                 document_benchmark_status,
                 document_benchmark_rows,
+                fact_consistency_status,
+                fact_consistency_rows,
             ),
             "privacy_boundary": {
                 "metadata_only": True,
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
+                "returns_fact_consistency_case_ids": True,
                 "returns_expected_signal_counts": True,
                 "returns_raw_fixture_text": False,
                 "returns_fixture_excerpt": False,
                 "returns_document_snippets": False,
+                "returns_fact_consistency_raw_text": False,
                 "returns_candidate_text": False,
                 "returns_document_missing_labels": False,
                 "returns_prompt_text": False,
@@ -234,13 +295,14 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "automatic_default_change_claimed": False,
                 "public_benchmark_scores_claimed": False,
                 "legal_document_benchmark_scores_claimed": False,
+                "fact_consistency_benchmark_scores_claimed": False,
                 "external_dataset_execution_claimed": False,
                 "live_gateway_quality_claimed": False,
                 "production_legal_accuracy_claimed": False,
                 "legal_advice_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
+                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py -q",
                 "npm run typecheck",
                 "npm run ui:regression",
             ],
@@ -300,6 +362,19 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         if not isinstance(payload, dict):
             return None
         for key in ("document_benchmark_outputs", "legal_document_outputs", "document_outputs"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                return value
+        return None
+
+    def _fact_consistency_outputs(self, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        for key in (
+            "document_fact_consistency_outputs",
+            "fact_consistency_outputs",
+            "legal_document_fact_outputs",
+        ):
             value = payload.get(key)
             if isinstance(value, dict):
                 return value
@@ -400,6 +475,74 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             return "review_required"
         return "pass"
 
+    def _fact_consistency_rows(self, fact_consistency_evaluation: dict[str, Any]) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for result in fact_consistency_evaluation.get("case_results", []):
+            if not isinstance(result, dict):
+                continue
+            case_id = str(result.get("case_id") or "")
+            reason_codes = [str(item) for item in result.get("reason_codes", [])]
+            gate_status = self._fact_consistency_gate_status(result, reason_codes)
+            rows.append(
+                {
+                    "id": f"{case_id}-fact-consistency-gate",
+                    "case_id": case_id,
+                    "title": str(result.get("title") or case_id),
+                    "benchmark_status": str(result.get("status") or "not_run"),
+                    "gate_status": gate_status,
+                    "score": int(result.get("score") or 0),
+                    "amount_score": int((result.get("metric_scores") or {}).get("amount_consistency") or 0),
+                    "deadline_score": int((result.get("metric_scores") or {}).get("deadline_consistency") or 0),
+                    "fact_score": int((result.get("metric_scores") or {}).get("required_fact_presence") or 0),
+                    "contradiction_score": int((result.get("metric_scores") or {}).get("contradiction_exclusion") or 0),
+                    "privacy_score": int((result.get("metric_scores") or {}).get("raw_input_exclusion") or 0),
+                    "missing_amount_count": len(result.get("missing_amount_ids") or []),
+                    "mismatched_amount_count": len(result.get("mismatched_amount_ids") or []),
+                    "missing_deadline_count": len(result.get("missing_deadline_ids") or []),
+                    "mismatched_deadline_count": len(result.get("mismatched_deadline_ids") or []),
+                    "missing_fact_count": len(result.get("missing_fact_ids") or []),
+                    "contradiction_count": len(result.get("contradiction_pair_ids") or []),
+                    "raw_input_field_count": int(result.get("raw_input_field_count") or 0),
+                    "default_change_blocker": gate_status in {"blocked", "not_run"},
+                    "reason_codes": reason_codes,
+                    "validation_target": "/api/v1/maintenance/legal-review-benchmark/document-fact-consistency",
+                    "raw_document_text_returned": False,
+                    "raw_candidate_text_returned": False,
+                    "gateway_called": False,
+                }
+            )
+        return rows
+
+    def _fact_consistency_gate_status(self, result: dict[str, Any], reason_codes: list[str]) -> str:
+        status = str(result.get("status") or "not_run")
+        if status == "not_run":
+            return "not_run"
+        blocking = {
+            "amount-mismatch",
+            "deadline-mismatch",
+            "fact-contradiction",
+            "raw-or-sensitive-input-rejected",
+        }
+        if status == "fail" or bool(result.get("hard_consistency_block")) or any(code in blocking for code in reason_codes):
+            return "blocked"
+        review = {"amount-missing", "deadline-missing", "required-fact-missing"}
+        if status == "warn" or any(code in review for code in reason_codes):
+            return "review_required"
+        return "pass"
+
+    def _fact_consistency_status(
+        self,
+        fact_consistency_evaluation: dict[str, Any],
+        fact_consistency_rows: list[dict[str, Any]],
+    ) -> str:
+        if fact_consistency_evaluation.get("status") == "not_run":
+            return "not_run"
+        if any(row["gate_status"] == "blocked" for row in fact_consistency_rows):
+            return "blocked"
+        if any(row["gate_status"] in {"review_required", "not_run"} for row in fact_consistency_rows):
+            return "review_required"
+        return "pass"
+
     def _source_by_fixture(self, quick_suite: dict[str, Any]) -> dict[str, list[dict[str, str]]]:
         rows: dict[str, list[dict[str, str]]] = {}
         for source in quick_suite.get("public_source_mapping", []):
@@ -497,14 +640,28 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         blocking_rows: list[dict[str, Any]],
         warning_rows: list[dict[str, Any]],
         document_benchmark_status: str,
+        fact_consistency_status: str,
     ) -> str:
-        if blocking_rows or document_benchmark_status == "blocked":
+        if blocking_rows or document_benchmark_status == "blocked" or fact_consistency_status == "blocked":
             return "blocked"
-        if gate_rows and all(row["gate_status"] == "pass" for row in gate_rows) and document_benchmark_status == "pass":
+        if (
+            gate_rows
+            and all(row["gate_status"] == "pass" for row in gate_rows)
+            and document_benchmark_status == "pass"
+            and fact_consistency_status == "pass"
+        ):
             return "ready"
-        if gate_rows and all(row["gate_status"] == "not_run" for row in gate_rows) and document_benchmark_status == "not_run":
+        if (
+            gate_rows
+            and all(row["gate_status"] == "not_run" for row in gate_rows)
+            and document_benchmark_status == "not_run"
+            and fact_consistency_status == "not_run"
+        ):
             return "not_run"
-        if warning_rows or document_benchmark_status in {"review_required", "not_run"}:
+        if warning_rows or document_benchmark_status in {"review_required", "not_run"} or fact_consistency_status in {
+            "review_required",
+            "not_run",
+        }:
             return "ready_with_watchlist"
         return "not_run"
 
@@ -536,6 +693,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         passing_rows: list[dict[str, Any]],
         document_benchmark_status: str,
         document_benchmark_rows: list[dict[str, Any]],
+        fact_consistency_status: str,
+        fact_consistency_rows: list[dict[str, Any]],
     ) -> list[str]:
         if blocking_rows:
             return [
@@ -563,9 +722,25 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "Review legal document benchmark warnings before changing cheap-first defaults.",
                 "Fix missing structure, citation, or risk-label counts while keeping benchmark evidence metadata-only.",
             ]
+        fact_blockers = [row for row in fact_consistency_rows if row["gate_status"] == "blocked"]
+        if fact_blockers:
+            return [
+                f"{row['case_id']}: clear amount, deadline, contradiction, or raw-input blockers before changing cheap-first defaults."
+                for row in fact_blockers[:4]
+            ]
+        if fact_consistency_status == "not_run":
+            return [
+                "Run the legal document fact consistency benchmark before using cheap-first fixture evidence for a default change.",
+                "POST structured amounts, deadlines, and fact IDs only; do not return generated text or raw document text.",
+            ]
+        if fact_consistency_status == "review_required":
+            return [
+                "Review legal document fact consistency warnings before changing cheap-first defaults.",
+                "Fix missing amount, deadline, or required fact IDs while keeping benchmark evidence metadata-only.",
+            ]
         if passing_rows:
             return [
-                "Selected legal fixtures and document benchmark cases passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
+                "Selected legal fixtures, document benchmark cases, and fact consistency cases passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
                 "Do not promote premium escalation candidates into defaults from this gate alone.",
             ]
         return ["Prepare selected fixture observations before evaluating the cheap-first benchmark gate."]

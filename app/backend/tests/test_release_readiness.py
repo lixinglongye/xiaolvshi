@@ -655,14 +655,15 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-gap-fixtures": "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
         "legal-document-benchmark-coverage": "python -m pytest tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py -q",
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
+        "legal-document-fact-consistency-benchmark": "python -m pytest tests/test_legal_document_fact_consistency_benchmark.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
-        "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
-        "modelops-legal-fixture-cheap-first-default-promotion-packet": "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-legal-fixture-cheap-first-default-promotion-packet": "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -718,6 +719,31 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "real client-document coverage" in checks["legal-document-benchmark-gap-fixtures"]["manual_note"]
     assert "metadata-only coverage matrix" in checks["legal-document-benchmark-coverage"]["manual_note"]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
+    assert "metadata-only amount, deadline, and fact-consistency benchmark evidence" in checks[
+        "legal-document-fact-consistency-benchmark"
+    ]["manual_note"]
+    assert "does not call NewAPI" in checks["legal-document-fact-consistency-benchmark"]["manual_note"]
+    assert "raw legal text" in checks["legal-document-fact-consistency-benchmark"]["manual_note"]
+    assert "generated document text" in checks["legal-document-fact-consistency-benchmark"]["manual_note"]
+    assert "credentials" in checks["legal-document-fact-consistency-benchmark"]["manual_note"]
+    assert "client identifiers" in checks["legal-document-fact-consistency-benchmark"]["manual_note"]
+    assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in checks[
+        "legal-document-fact-consistency-benchmark"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in checks[
+        "legal-document-fact-consistency-benchmark"
+    ]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["legal-document-fact-consistency-benchmark"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["legal-document-fact-consistency-benchmark"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "legal-document-fact-consistency-benchmark"
+    ]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-document-fact-consistency-benchmark"][
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in checks[
+        "legal-document-fact-consistency-benchmark"
+    ]["evidence_paths"]
     assert "browser-level network-mocking automation gaps" in checks["frontend-ui-regression-gate"]["manual_note"]
     assert "does not claim public benchmark scores" in checks["legal-benchmark-research-registry"]["manual_note"]
     assert "does not download datasets" in checks["legal-benchmark-research-refresh"]["manual_note"]
@@ -790,7 +816,9 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "redacted fixture ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "document case ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "fact-consistency case ids" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "expected issue counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
+    assert "amount/date/fact consistency counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "cost metadata" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "document benchmark pass/fail counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "coverage-gap counts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
@@ -809,12 +837,15 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "credentials" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "emails" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["manual_note"]
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/frontend/src/lib/maintenanceApi.ts" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/backend/services/release_readiness.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/backend/services/continuous_update_ledger.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
     assert "app/backend/services/maintenance_evidence.py" in checks["modelops-legal-fixture-cheap-first-benchmark-gate"]["evidence_paths"]
@@ -827,7 +858,9 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "cheap-first legal fixture default promotion" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "fixture ids" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "document case ids" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
+    assert "fact-consistency case ids" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "document benchmark pass/fail counts" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
+    assert "amount/date/fact consistency counts" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "coverage-gap counts" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "required signoff roles" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "never writes configuration" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
@@ -840,11 +873,14 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "emails" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["manual_note"]
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
+    assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "app/frontend/src/lib/maintenanceApi.ts" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "metadata-only/default routing change evidence" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
