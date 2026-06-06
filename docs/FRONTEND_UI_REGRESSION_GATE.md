@@ -47,8 +47,12 @@ The `/model-ops` page carries evidence for:
 - Cheap-first canary approval packet
 - Cheap-first canary rollback drill
 - Cheap-first quality budget
+- Gateway request compatibility gate
 - selector replay
 - route telemetry
+- route telemetry repository
+- route telemetry ops summary
+- route telemetry triage queue
 - route telemetry remediation
 - gateway probe evaluation
 
@@ -86,6 +90,9 @@ This gate does not:
   prompts, model outputs, or credentials for the Legal RAG authority citation
   gate
 - prove production model routing health
+- prove that route telemetry remediation suggestions have been applied, write
+  configuration, call NewAPI/Gemini/gateways, or expose route prompts, request
+  bodies, response bodies, headers, raw model output, emails, or credentials
 - return source code, raw browser storage, raw model output, credentials, or user
   legal text
 - replace future mocked `/maintenance` and `/model-ops` page regression tests
@@ -100,4 +107,5 @@ assert:
 - one failing maintenance endpoint shows the partial-load banner while other
   panels remain visible
 - raw fixture snippets, credentials, and raw model outputs are never rendered
-- cheap-first and route telemetry warnings remain visible in model-ops scenarios
+- cheap-first and route telemetry repository, ops summary, triage, and
+  remediation warnings remain visible in model-ops scenarios

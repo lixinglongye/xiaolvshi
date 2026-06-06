@@ -131,6 +131,14 @@ call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write
 configuration, shift traffic, or include headers, request bodies, prompts, raw
 legal text, model outputs, payloads, emails, or credentials.
 
+Current route telemetry UI regression evidence:
+`route-telemetry-ui-regression-contract` hardens the `/model-ops` source
+contract for route telemetry repository, operations summary, triage queue, and
+remediation panels. It keeps cheap-first routing warnings, sanitized route
+counters, no-config-write boundaries, and no-NewAPI-call boundaries visible
+without rendering prompts, legal text, request bodies, response bodies, headers,
+raw model output, emails, or credentials.
+
 Current legal fixture cheap-first benchmark gate evidence:
 `modelops-legal-fixture-cheap-first-benchmark-gate` adds shipped metadata-only
 small legal-document cheap-first Gemini benchmark/risk gate evidence. It records

@@ -157,6 +157,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_ops_cheap_first_canary_change_manifest.py tests/test_model_ops_cheap_first_canary_rollback_drill.py -q",
                 "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
                 "python -m pytest tests/test_model_gateway_request_compatibility_gate.py tests/test_model_request_policy.py tests/test_model_reasoning_policy.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_frontend_ui_regression_gate.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run ui:regression",
                 "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
                 "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_model_gateway_health_plan.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck",
@@ -1089,6 +1090,40 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("frontend-ui-regression-gate", "frontend-ui-regression", "frontend-lint", "frontend-typecheck", "frontend-build"),
                 user_need_ids=("reviewer-visibility", "low-cost-routing", "legal-review-benchmark"),
+            ),
+            LedgerEntry(
+                id="route-telemetry-ui-regression-contract",
+                title="Route telemetry UI regression contract",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Hardens the /model-ops source contract for route telemetry repository, ops summary, triage queue, "
+                    "and remediation panels so cheap-first routing warnings, sanitized route counters, no-config-write "
+                    "boundaries, and no-NewAPI-call boundaries stay visible without rendering prompts, legal text, request "
+                    "bodies, response bodies, headers, raw model output, emails, or credentials."
+                ),
+                evidence_paths=(
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "frontend-ui-regression-gate",
+                    "frontend-ui-regression",
+                    "route-telemetry-repository",
+                    "route-telemetry-ops-summary",
+                    "route-telemetry-triage-queue",
+                    "route-telemetry-remediation-plan",
+                    "model-ops-readiness",
+                ),
+                user_need_ids=("reviewer-visibility", "low-cost-routing", "safe-ai-ops"),
             ),
             LedgerEntry(
                 id="cheap-first-result-archive",

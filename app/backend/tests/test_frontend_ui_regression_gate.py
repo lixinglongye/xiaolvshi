@@ -59,6 +59,9 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Model failure upgrade budget" in rows["/model-ops"]["protected_panels"]
     assert "ModelOps legal benchmark risk bridge" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first escalation budget" in rows["/model-ops"]["protected_panels"]
+    assert "route telemetry repository" in rows["/model-ops"]["protected_panels"]
+    assert "route telemetry ops summary" in rows["/model-ops"]["protected_panels"]
+    assert "route telemetry triage queue" in rows["/model-ops"]["protected_panels"]
     assert "product feedback capture form" in rows["/settings"]["protected_panels"]
     assert "feedback capture-plan preview" in rows["/settings"]["protected_panels"]
     assert "metadata-only feedback privacy boundary" in rows["/settings"]["protected_panels"]
@@ -124,6 +127,8 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps maintainer execution checklist UI evidence is metadata only" in payload_text
     assert "ModelOps catalog candidate impact replay UI evidence is metadata only" in payload_text
     assert "ModelOps cheap-first escalation budget UI evidence is metadata only" in payload_text
+    assert "ModelOps route telemetry UI evidence is metadata only" in payload_text
+    assert "sanitized route counters" in payload_text
     assert "Model failure upgrade budget UI evidence is metadata only" in payload_text
     assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
     assert "Public benchmark license gate UI evidence is metadata only" in payload_text
@@ -134,6 +139,9 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "gateway-request-compatibility-gate-regresses" in payload_text
     assert "JSON response shapes" in payload_text
     assert "forbidden raw request fields" in payload_text
+    assert "route-telemetry-ui-contract-regresses" in payload_text
+    assert "remediation env suggestions" in payload_text
+    assert "forbidden raw request/model fields" in payload_text
     assert "user-need gaps" in payload_text
     assert "runaway retries" in payload_text
     assert "premium review coverage" in payload_text
