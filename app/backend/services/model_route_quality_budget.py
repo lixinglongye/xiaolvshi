@@ -5,6 +5,7 @@ from typing import Any
 
 from services.model_capability_matrix import COST_RANK, ModelCapabilityMatrixService
 from services.model_catalog import model_profile, task_default_model
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 
 
 SENSITIVE_PATTERN = re.compile(
@@ -27,8 +28,13 @@ QUALITY_GATES: dict[str, tuple[str, ...]] = {
 class ModelRouteQualityBudgetService:
     """Review cheap-first route quality gates without running model calls."""
 
-    def __init__(self, capability_matrix_service: ModelCapabilityMatrixService | None = None) -> None:
+    def __init__(
+        self,
+        capability_matrix_service: ModelCapabilityMatrixService | None = None,
+        candidate_selector: ModelDefaultCandidateSelectorService | None = None,
+    ) -> None:
         self.capability_matrix_service = capability_matrix_service or ModelCapabilityMatrixService()
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
 
     def build_budget(self, payload: Any = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -53,7 +59,7 @@ class ModelRouteQualityBudgetService:
             },
             "summary": {
                 "task_count": len(rows),
-                "cheap_start_task_count": sum(1 for row in rows if row["cheap_start_model"] == "gemini-2.5-flash-lite"),
+                "cheap_start_task_count": sum(1 for row in rows if self._is_low_cost_start(row["cheap_start_model"])),
                 "premium_exception_task_count": sum(1 for row in rows if row["premium_exception_allowed"]),
                 "runtime_default_gap_count": sum(1 for row in rows if not row["runtime_default_has_required_capabilities"]),
                 "quality_gate_count": sum(row["quality_gate_count"] for row in rows),
@@ -76,7 +82,7 @@ class ModelRouteQualityBudgetService:
                 "output_scope": "task ids, model ids, cost tiers, capability booleans, quality gate ids, and review actions only",
             },
             "validation_commands": [
-                "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py -q",
+                "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py tests/test_model_default_candidate_selector.py -q",
                 "cd ../frontend && npm run typecheck && npm run ui:regression",
             ],
         }
@@ -89,6 +95,7 @@ class ModelRouteQualityBudgetService:
         runtime_default = str(row.get("runtime_default_model") or task_default_model(task))
         runtime_profile = model_profile(runtime_default)
         recommended_profile = model_profile(recommended_model)
+        cheap_start_model = self._cheap_start_model(task, recommended_model)
         runtime_capabilities = set(runtime_profile.capabilities if runtime_profile else ())
         runtime_has_required = all(capability in runtime_capabilities for capability in required_capabilities)
         runtime_cost_tier = runtime_profile.cost_tier if runtime_profile else "unknown"
@@ -104,7 +111,7 @@ class ModelRouteQualityBudgetService:
             "display_name": str(requirement.get("display_name") or task),
             "recommended_model": recommended_model,
             "runtime_default_model": runtime_default,
-            "cheap_start_model": "gemini-2.5-flash-lite" if task != "image" else recommended_model,
+            "cheap_start_model": cheap_start_model,
             "recommended_model_cost_tier": recommended_profile.cost_tier if recommended_profile else "unknown",
             "runtime_default_cost_tier": runtime_cost_tier,
             "max_cost_tier": max_cost_tier,
@@ -212,6 +219,17 @@ class ModelRouteQualityBudgetService:
 
     def _cost_rank(self, tier: str) -> int:
         return COST_RANK.get(str(tier or "").strip().lower(), 99)
+
+    def _cheap_start_model(self, task: str, recommended_model: str) -> str:
+        if task == "image":
+            return recommended_model
+        return self.candidate_selector.recommended_model_for_task(task, fallback=recommended_model)
+
+    def _is_low_cost_start(self, model_id: str) -> bool:
+        profile = model_profile(model_id)
+        if profile is None:
+            return False
+        return profile.status == "stable" and self._cost_rank(profile.cost_tier) <= self._cost_rank("low")
 
     def _review_action(
         self,

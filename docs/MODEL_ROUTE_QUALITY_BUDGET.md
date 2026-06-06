@@ -13,7 +13,8 @@ The full ModelOps payload also includes `route_quality_budget`, and `model_ops_r
 ## What It Proves
 
 - Every catalog-backed task has deterministic quality gates before escalation.
-- High-volume text tasks expose `gemini-2.5-flash-lite` as the cheap-start model.
+- Text tasks expose the catalog-derived, task-capable recommendation as the cheap-start model.
+- A future stable, lower-cost Flash-Lite catalog row can become the cheap-start model in review metadata without editing runtime defaults or `.env` templates.
 - Runtime defaults that do not expose a task's required capabilities are flagged for maintainer review.
 - Premium and media routes remain explicit exceptions instead of silent cheap-first defaults.
 
@@ -36,7 +37,7 @@ This is not a live benchmark score and does not call Gemini, NewAPI, OpenAI, or 
 ## Validation
 
 ```bash
-python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py -q
+python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py tests/test_model_default_candidate_selector.py -q
 cd ../frontend && npm run typecheck && npm run ui:regression
 ```
 
@@ -44,6 +45,8 @@ cd ../frontend && npm run typecheck && npm run ui:regression
 
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/tests/test_model_route_quality_budget.py`
+- `app/backend/services/model_default_candidate_selector.py`
+- `app/backend/tests/test_model_default_candidate_selector.py`
 - `app/backend/services/model_capability_matrix.py`
 - `app/backend/services/model_ops_readiness.py`
 - `app/backend/routers/aihub.py`

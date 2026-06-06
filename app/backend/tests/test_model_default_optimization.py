@@ -1,4 +1,5 @@
 from services import model_catalog
+from services.model_catalog import ModelProfile
 from services.model_default_optimization import ModelDefaultOptimizationService
 
 
@@ -34,6 +35,39 @@ def test_default_optimization_fails_when_fast_default_exceeds_cost_ceiling(monke
     assert fast["recommended_model"] == "gemini-2.5-flash-lite"
     assert fast["estimated_monthly_savings_usd"] > 0
     assert any("APP_AI_FAST_MODEL=gemini-2.5-flash-lite" in action for action in plan["recommended_actions"])
+
+
+def test_default_optimization_follows_catalog_derived_future_cheaper_default(monkeypatch):
+    future_model = ModelProfile(
+        id="gemini-4.0-flash-lite",
+        provider="google",
+        family="gemini",
+        cost_tier="lowest",
+        latency_tier="fastest",
+        capabilities=("text", "vision", "json", "ocr", "classification", "grounding", "agentic"),
+        best_for=("routing", "ocr", "classification", "agentic-routing"),
+        input_usd_per_million_tokens=0.05,
+        output_usd_per_million_tokens=0.20,
+        status="stable",
+        context_window_tokens=1_000_000,
+    )
+    monkeypatch.setattr(
+        model_catalog,
+        "GEMINI_MODEL_CATALOG",
+        (future_model, *model_catalog.GEMINI_MODEL_CATALOG),
+    )
+
+    plan = ModelDefaultOptimizationService().build_plan()
+    rows = {row["task"]: row for row in plan["recommendations"]}
+
+    assert plan["status"] == "warn"
+    assert rows["fast"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["classification"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["ocr"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["agentic"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["fast"]["current_model"] == "gemini-2.5-flash-lite"
+    assert rows["fast"]["requires_change"] is True
+    assert any("APP_AI_FAST_MODEL=gemini-4.0-flash-lite" in action for action in plan["recommended_actions"])
 
 
 def test_default_optimization_fails_when_ocr_default_lacks_vision(monkeypatch):

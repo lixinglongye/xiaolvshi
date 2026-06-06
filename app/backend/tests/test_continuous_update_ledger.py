@@ -471,7 +471,8 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert (
-        "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py -q "
+        "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py "
+        "tests/test_model_default_candidate_selector.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )

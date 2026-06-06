@@ -92,7 +92,7 @@ Run:
 
 ```powershell
 cd app/backend
-python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py -q
+python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_default_candidate_selector.py -q
 
 cd ../frontend
 npm run typecheck

@@ -208,10 +208,13 @@ class ReleaseReadinessService:
                 owner="engineering",
                 evidence_paths=(
                     "app/backend/services/model_default_recommendation_snapshot.py",
+                    "app/backend/services/model_default_candidate_selector.py",
                     "app/backend/tests/test_model_default_recommendation_snapshot.py",
+                    "app/backend/tests/test_model_default_candidate_selector.py",
                     "docs/MODEL_DEFAULT_RECOMMENDATION_SNAPSHOT.md",
+                    "docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md",
                 ),
-                validation_command="python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_optimization.py tests/test_model_catalog.py -q",
+                validation_command="python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py tests/test_model_default_optimization.py tests/test_model_catalog.py -q",
             ),
             ReleaseCheck(
                 id="gemini-newapi-cheap-first-policy",
@@ -413,13 +416,17 @@ class ReleaseReadinessService:
                 evidence_paths=(
                     "app/backend/services/model_ops_cheap_first_release_decision.py",
                     "app/backend/tests/test_model_ops_cheap_first_release_decision.py",
+                    "app/backend/services/model_route_quality_budget.py",
+                    "app/backend/tests/test_model_route_quality_budget.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/tests/test_model_default_candidate_selector.py",
                     "app/backend/services/model_ops_readiness.py",
                     "app/backend/routers/aihub.py",
                     "app/frontend/src/lib/modelOpsApi.ts",
                     "app/frontend/src/pages/ModelOpsPage.tsx",
                     "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md",
                 ),
-                validation_command="python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py -q",
+                validation_command="python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_default_candidate_selector.py -q",
                 manual_note="This is a metadata-only cheap-first release decision packet; it does not call NewAPI, Gemini, OpenAI, Google, any gateway, or claim public benchmark scores.",
             ),
             ReleaseCheck(

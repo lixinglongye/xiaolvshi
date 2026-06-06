@@ -4,8 +4,8 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 from services.model_budget import COST_TIER_RANK
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import (
-    GEMINI_MODEL_CATALOG,
     canonical_model_id,
     model_profile,
     task_default_model,
@@ -43,6 +43,9 @@ ROLE_TARGETS: tuple[DefaultRoleTarget, ...] = (
 class ModelDefaultRecommendationSnapshotService:
     """Summarize current Gemini/NewAPI defaults against cheap-first role targets."""
 
+    def __init__(self, candidate_selector: ModelDefaultCandidateSelectorService | None = None) -> None:
+        self.candidate_selector = candidate_selector or ModelDefaultCandidateSelectorService()
+
     def build_snapshot(self, observed_models: list[Any] | None = None) -> dict[str, Any]:
         role_rows = [self._role_row(target) for target in ROLE_TARGETS]
         observed_rows = [self._observed_row(model_id) for model_id in self._observed_model_ids(observed_models)]
@@ -74,12 +77,7 @@ class ModelDefaultRecommendationSnapshotService:
             "observed_gateway_models": observed_rows,
             "blocked_default_roles": [row["role"] for row in blocking],
             "catalog_review_models": [row["model"] for row in catalog_review],
-            "newapi_prefix_compatibility": [
-                "gemini-2.5-flash-lite",
-                "models/gemini-2.5-flash-lite",
-                "google/gemini-2.5-flash-lite",
-                "openrouter/google/gemini-2.5-flash-lite",
-            ],
+            "newapi_prefix_compatibility": self._prefix_compatibility_examples(),
             "recommended_env": [
                 {
                     "env_var": row["env_var"],
@@ -97,7 +95,7 @@ class ModelDefaultRecommendationSnapshotService:
                 "Keep premium PDF/final-review routes behind operator review and explicit task routing.",
             ],
             "validation_commands": [
-                "python -m pytest tests/test_model_default_recommendation_snapshot.py -q",
+                "python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py -q",
                 "python -m pytest tests/test_model_catalog.py tests/test_model_default_optimization.py -q",
             ],
             "privacy_note": (
@@ -124,6 +122,8 @@ class ModelDefaultRecommendationSnapshotService:
             status = "warn"
         if over_budget or high_volume_bad_default:
             status = "fail"
+        if status == "pass" and current_model != recommended_model:
+            status = "warn"
         return {
             "id": f"default-recommendation-{target.role}",
             "role": target.role,
@@ -175,25 +175,22 @@ class ModelDefaultRecommendationSnapshotService:
         }
 
     def _recommended_model(self, target: DefaultRoleTarget) -> str:
-        candidates = []
-        for profile in GEMINI_MODEL_CATALOG:
-            if profile.status != "stable":
-                continue
-            if _tier_rank(profile.cost_tier) > _tier_rank(target.max_cost_tier):
-                continue
-            if set(target.required_capabilities).issubset(set(profile.capabilities)):
-                candidates.append(profile)
-        if not candidates:
-            return task_default_model(target.task)
-        return sorted(
-            candidates,
-            key=lambda item: (
-                _tier_rank(item.cost_tier),
-                item.latency_tier != "fastest",
-                item.input_usd_per_million_tokens or 999,
-                item.id,
-            ),
-        )[0].id
+        return self.candidate_selector.recommended_model_for_task(
+            target.task,
+            fallback=task_default_model(target.task),
+        )
+
+    def _prefix_compatibility_examples(self) -> list[str]:
+        cheap_model = self.candidate_selector.recommended_model_for_task(
+            "cheap",
+            fallback=task_default_model("cheap"),
+        )
+        return [
+            cheap_model,
+            f"models/{cheap_model}",
+            f"google/{cheap_model}",
+            f"openrouter/google/{cheap_model}",
+        ]
 
     def _missing_capabilities(self, profile: Any, required_capabilities: tuple[str, ...]) -> list[str]:
         if profile is None:

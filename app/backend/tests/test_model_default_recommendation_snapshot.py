@@ -1,6 +1,7 @@
 import re
 
 from services import model_catalog
+from services.model_catalog import ModelProfile
 from services.model_default_recommendation_snapshot import ModelDefaultRecommendationSnapshotService
 
 
@@ -35,6 +36,39 @@ def test_model_default_recommendation_snapshot_blocks_premium_fast_default(monke
     assert fast["recommended_model"] == "gemini-2.5-flash-lite"
     assert "high-volume" in fast["reason"]
     assert "fast" in snapshot["blocked_default_roles"]
+
+
+def test_model_default_recommendation_snapshot_uses_catalog_derived_future_cheaper_default(monkeypatch):
+    future_model = ModelProfile(
+        id="gemini-4.0-flash-lite",
+        provider="google",
+        family="gemini",
+        cost_tier="lowest",
+        latency_tier="fastest",
+        capabilities=("text", "vision", "json", "ocr", "classification", "grounding", "agentic"),
+        best_for=("routing", "ocr", "classification", "agentic-routing"),
+        input_usd_per_million_tokens=0.05,
+        output_usd_per_million_tokens=0.20,
+        status="stable",
+        context_window_tokens=1_000_000,
+    )
+    monkeypatch.setattr(
+        model_catalog,
+        "GEMINI_MODEL_CATALOG",
+        (future_model, *model_catalog.GEMINI_MODEL_CATALOG),
+    )
+
+    snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot()
+    rows = {row["role"]: row for row in snapshot["role_recommendations"]}
+
+    assert snapshot["status"] == "warn"
+    assert rows["fast"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["classification"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["ocr"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["agentic"]["recommended_model"] == "gemini-4.0-flash-lite"
+    assert rows["fast"]["current_model"] == "gemini-2.5-flash-lite"
+    assert rows["fast"]["requires_change"] is True
+    assert "models/gemini-4.0-flash-lite" in snapshot["newapi_prefix_compatibility"]
 
 
 def test_model_default_recommendation_snapshot_warns_unknown_gemini_like_models():
