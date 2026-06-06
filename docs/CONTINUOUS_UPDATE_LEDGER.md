@@ -139,6 +139,14 @@ counters, no-config-write boundaries, and no-NewAPI-call boundaries visible
 without rendering prompts, legal text, request bodies, response bodies, headers,
 raw model output, emails, or credentials.
 
+Current route telemetry cost evidence:
+`route-telemetry-catalog-cost-estimation` calculates persisted
+`estimated_cost_usd` from local Gemini catalog token prices for known
+NewAPI/Gemini routes. Unknown gateway models stay unpriced and continue to
+surface through unknown-model counters, so cheap-first cost review remains
+metadata-only and does not store prompts, legal text, model outputs, payloads,
+emails, or credentials.
+
 Current ModelOps performance release evidence:
 `modelops-performance-observation-release-binding` binds sanitized
 `POST /api/v1/aihub/models/performance-budget` observations back into aggregate

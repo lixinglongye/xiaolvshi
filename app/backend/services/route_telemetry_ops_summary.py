@@ -19,6 +19,8 @@ class RouteTelemetryOpsThresholds:
     fail_premium_ratio: float = 0.25
     warn_unknown_model_count: int = 1
     fail_unknown_model_count: int = 3
+    warn_unpriced_model_count: int = 1
+    fail_unpriced_model_count: int = 3
 
     def to_api(self) -> dict[str, Any]:
         return asdict(self)
@@ -47,7 +49,7 @@ class RouteTelemetryOpsSummaryService:
                 "type": "persisted-route-telemetry-ops-summary",
                 "notes": [
                     "Consumes sanitized route telemetry repository aggregates only.",
-                    "Highlights cheap-first downgrades, premium drift, over-budget pressure, failures, and unknown models.",
+                    "Highlights cheap-first downgrades, premium drift, over-budget pressure, failures, unknown models, and catalog models without token prices.",
                     "Does not read prompts, legal text, request bodies, response bodies, credentials, emails, or raw model outputs.",
                 ],
             },
@@ -99,6 +101,8 @@ class RouteTelemetryOpsSummaryService:
                     "over_budget_count": 0,
                     "operator_review_count": 0,
                     "premium_request_count": 0,
+                    "unknown_model_count": 0,
+                    "unpriced_model_count": 0,
                     "estimated_cost_usd_sum": 0.0,
                     "models": {},
                 },
@@ -112,6 +116,8 @@ class RouteTelemetryOpsSummaryService:
             row["over_budget_count"] += requests if bool(bucket.get("is_over_budget")) else 0
             row["operator_review_count"] += requests if bool(bucket.get("requires_operator_review")) else 0
             row["premium_request_count"] += requests if _cost_tier(model) == "premium" else 0
+            row["unknown_model_count"] += _int(bucket.get("unknown_model_count"))
+            row["unpriced_model_count"] += _int(bucket.get("unpriced_model_count"))
             row["estimated_cost_usd_sum"] = round(row["estimated_cost_usd_sum"] + _float(bucket.get("estimated_cost_usd_sum")), 8)
             row["models"][model] = row["models"].get(model, 0) + requests
 
@@ -141,7 +147,8 @@ class RouteTelemetryOpsSummaryService:
         operator_review_count = sum(_int(row.get("operator_review_count")) for row in daily_rows)
         premium_count = sum(_int(row.get("premium_request_count")) for row in daily_rows)
         estimated_cost = round(sum(_float(row.get("estimated_cost_usd_sum")) for row in daily_rows), 8)
-        unknown_model_count = _int(repo_totals.get("unknown_model_count"))
+        unknown_model_count = sum(_int(row.get("unknown_model_count")) for row in daily_rows)
+        unpriced_model_count = sum(_int(row.get("unpriced_model_count")) for row in daily_rows)
         return {
             "stored_event_count": _int(repo_summary.get("stored_event_count")),
             "daily_bucket_count": _int(repo_summary.get("daily_bucket_count")),
@@ -152,7 +159,8 @@ class RouteTelemetryOpsSummaryService:
             "over_budget_count": over_budget_count,
             "operator_review_count": operator_review_count,
             "premium_request_count": premium_count,
-            "unknown_model_count": unknown_model_count,
+            "unknown_model_count": unknown_model_count or _int(repo_totals.get("unknown_model_count")),
+            "unpriced_model_count": unpriced_model_count or _int(repo_totals.get("unpriced_model_count")),
             "estimated_cost_usd_sum": estimated_cost,
             "failure_rate": _ratio(failure_count, request_count),
             "downgrade_ratio": _ratio(downgrade_count, request_count),
@@ -174,6 +182,7 @@ class RouteTelemetryOpsSummaryService:
             self._ratio_check("operator-review-ratio", totals["operator_review_ratio"], totals["request_count"], self.thresholds.warn_operator_review_ratio, self.thresholds.fail_operator_review_ratio),
             self._ratio_check("premium-request-ratio", totals["premium_request_ratio"], totals["request_count"], self.thresholds.warn_premium_ratio, self.thresholds.fail_premium_ratio),
             self._count_check("unknown-model-count", totals["unknown_model_count"], self.thresholds.warn_unknown_model_count, self.thresholds.fail_unknown_model_count),
+            self._count_check("unpriced-model-count", totals["unpriced_model_count"], self.thresholds.warn_unpriced_model_count, self.thresholds.fail_unpriced_model_count),
         ]
 
     def _status_check(self, check_id: str, status: str, reason: str) -> dict[str, Any]:
@@ -204,7 +213,7 @@ class RouteTelemetryOpsSummaryService:
             "value": value,
             "warn_threshold": warn,
             "fail_threshold": fail,
-            "reason": "Unknown-price models should be cataloged before release evidence relies on them.",
+            "reason": self._count_reason(check_id),
         }
 
     def _ratio_reason(self, check_id: str, requests: int) -> str:
@@ -216,6 +225,12 @@ class RouteTelemetryOpsSummaryService:
             "operator-review-ratio": "Operator review routes should remain explicit exceptions.",
             "premium-request-ratio": "Premium requests should not become a silent default for routine work.",
         }.get(check_id, "Route telemetry operations check.")
+
+    def _count_reason(self, check_id: str) -> str:
+        return {
+            "unknown-model-count": "Unknown gateway models should be cataloged before release evidence relies on them.",
+            "unpriced-model-count": "Catalog models without token pricing should be priced or explicitly excluded before release evidence relies on them.",
+        }.get(check_id, "Route telemetry count check.")
 
     def _status(self, checks: list[dict[str, Any]], totals: dict[str, Any]) -> str:
         if any(check["status"] == "fail" for check in checks):

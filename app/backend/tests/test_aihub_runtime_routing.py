@@ -2,6 +2,7 @@ import pytest
 
 from schemas.aihub import AnalyzePdfRequest, ChatMessage, GenImgRequest, GenTxtRequest
 from services import route_telemetry_repository
+from services.model_catalog import estimate_token_cost_usd
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
@@ -134,9 +135,12 @@ async def test_gentxt_uses_declared_review_task_default_model():
     assert route_snapshot["summary"]["request_count"] == 1
     assert route_snapshot["by_task"]["review"]["explicit_task"] == 1
     repository = RouteTelemetryRepositoryService().build_repository()
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash", 11, 7)
     assert repository["summary"]["stored_event_count"] == 1
     assert repository["totals"]["request_count"] == 1
+    assert repository["totals"]["estimated_cost_usd_sum"] == expected_cost
     assert repository["daily_buckets"][0]["task"] == "review"
+    assert repository["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
     assert "review this clause" not in str(repository)
 
 
@@ -203,9 +207,12 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     assert route_snapshot["summary"]["downgrade_ratio"] == 1.0
     assert route_snapshot["summary"]["operator_review_request_count"] == 1
     repository = RouteTelemetryRepositoryService().build_repository()
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash-lite", 11, 7)
     assert repository["totals"]["downgrade_count"] == 1
+    assert repository["totals"]["estimated_cost_usd_sum"] == expected_cost
     assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash-lite"
     assert repository["daily_buckets"][0]["routed_to_recommended_model"] is True
+    assert repository["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
 
 
 @pytest.mark.asyncio

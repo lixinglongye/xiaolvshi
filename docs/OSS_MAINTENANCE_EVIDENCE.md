@@ -57,6 +57,12 @@ over-budget, operator-review, unknown-model, and downgrade review, while
 excluding prompts, legal text, credentials, raw payloads, emails, and raw model
 outputs.
 
+Route telemetry cost evidence is catalog-priced and metadata-only. Runtime
+events estimate known Gemini route cost from local token prices and usage
+counts, while unknown gateway model IDs remain unpriced for manual catalog
+review. Support applications should not describe this as final provider billing
+or live NewAPI execution.
+
 `docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md` documents the implemented
 `GET /api/v1/maintenance/route-telemetry-triage` endpoint. It turns those
 summary checks into maintainer actions for cheap-first drift, daily hotspots,

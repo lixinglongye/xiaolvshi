@@ -15,7 +15,9 @@ Route telemetry records:
 - requests downgraded to the recommended model,
 - over-budget and operator-review-gated requests,
 - allowed over-budget requests,
-- unknown-price gateway model usage,
+- estimated route cost from local catalog token pricing,
+- unknown gateway model usage,
+- known catalog model usage without token pricing,
 - route success and failure counts.
 
 Text, PDF, and image route decisions all use the same telemetry shape. PDF and
@@ -25,6 +27,14 @@ model-ops snapshots and the local repository aggregates.
 Image generation `model=auto` decisions are recorded after resolving to the
 configured image task default, so telemetry can prove image calls stayed on the
 Gemini image route instead of drifting to a text model.
+
+For known Gemini/NewAPI catalog model routes, the repository estimates
+`estimated_cost_usd` from recorded token counts and the local model catalog's
+token pricing metadata. Unknown gateway model ids are not cost-estimated:
+their `estimated_cost_usd` remains `0`, and they stay visible in the unknown
+model review path. Known catalog models that are missing token pricing are
+tracked separately through `unpriced_model_count` so pricing gaps do not look
+like unknown gateway traffic.
 
 The local `route_telemetry_repository` stores only allowed metadata fields after
 the persistence plan passes. It rejects prompts, raw legal text, client contact

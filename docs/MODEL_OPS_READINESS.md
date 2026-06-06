@@ -127,6 +127,13 @@ payloads, emails, or credentials.
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
+`route-telemetry-repository` and downstream route telemetry summaries estimate
+`estimated_cost_usd` for known Gemini/NewAPI catalog model routes from local
+catalog token pricing. Unknown gateway model ids remain at `0` estimated cost
+and continue through unknown model review. Known catalog models without token
+pricing metadata are counted in `unpriced_model_count`, which keeps catalog
+pricing gaps separate from unknown gateway model traffic.
+
 `cheap_first_release_decision` is a downstream release decision packet that uses
 readiness plus cheap-first calibration, Gemini variant review, catalog source
 audit, route quality, failure upgrade budget, escalation budget, price refresh, and ModelOps performance

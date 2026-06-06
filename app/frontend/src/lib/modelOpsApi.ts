@@ -2604,6 +2604,7 @@ export type ModelRouteTelemetryRepository = {
     request_count: number;
     success_count: number;
     failure_count: number;
+    unpriced_model_count: number;
     estimated_cost_usd_sum: number;
   }>;
   totals: {
@@ -2614,6 +2615,7 @@ export type ModelRouteTelemetryRepository = {
     over_budget_count: number;
     operator_review_count: number;
     unknown_model_count: number;
+    unpriced_model_count: number;
     estimated_cost_usd_sum: number;
   };
   persistence_plan_status: string;
@@ -2645,6 +2647,7 @@ export type ModelRouteTelemetryOpsSummary = {
     operator_review_count: number;
     premium_request_count: number;
     unknown_model_count: number;
+    unpriced_model_count: number;
     estimated_cost_usd_sum: number;
     failure_rate: number;
     downgrade_ratio: number;
@@ -2665,6 +2668,7 @@ export type ModelRouteTelemetryOpsSummary = {
     over_budget_count: number;
     operator_review_count: number;
     premium_request_count: number;
+    unpriced_model_count: number;
     estimated_cost_usd_sum: number;
     models: Record<string, number>;
     failure_rate: number;

@@ -18,6 +18,11 @@ calculates operational checks for:
 - downgrade evidence for cheap-first routing,
 - persisted estimated cost totals.
 
+The persisted cost totals now come from catalog-priced runtime route events:
+known Gemini/NewAPI-compatible catalog models use local token prices, while
+unknown gateway model IDs stay unpriced and are surfaced through the unknown
+model checks.
+
 An empty repository returns `ready` so local development is not blocked, but it
 is not production proof. Maintainers still need staging or production route
 events before treating telemetry as routing health evidence.
@@ -57,6 +62,7 @@ Run:
 ```powershell
 cd D:\小律师\app\backend
 python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
+python -m pytest tests/test_route_telemetry_repository.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q
 ```
 
 ## Privacy Boundary

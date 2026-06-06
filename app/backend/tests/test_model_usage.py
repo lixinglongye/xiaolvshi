@@ -71,3 +71,20 @@ def test_model_usage_marks_unknown_model_as_unpriced():
     assert snapshot["totals"]["estimated_cost_usd"] == 0
     assert snapshot["totals"]["priced_model_count"] == 0
     assert snapshot["totals"]["unpriced_model_count"] == 1
+
+
+def test_model_usage_marks_known_catalog_model_without_token_price_as_unpriced():
+    registry = ModelUsageRegistry()
+    registry.record(
+        model="gemini-3-pro-image",
+        task="image",
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+    )
+
+    snapshot = registry.snapshot()
+
+    assert snapshot["models"]["gemini-3-pro-image"]["estimated_cost_usd"] is None
+    assert snapshot["totals"]["estimated_cost_usd"] == 0
+    assert snapshot["totals"]["priced_model_count"] == 0
+    assert snapshot["totals"]["unpriced_model_count"] == 1

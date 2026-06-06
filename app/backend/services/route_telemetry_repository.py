@@ -8,6 +8,7 @@ from typing import Any, Iterable
 from uuid import uuid4
 
 from core.config import settings
+from services.model_catalog import estimate_token_cost_usd, model_profile
 from services.model_runtime_router import RuntimeModelRoute
 from services.model_task_inference import TaskInference
 from services.route_telemetry_persistence_plan import (
@@ -108,6 +109,8 @@ class RouteTelemetryRepositoryService:
         error_category: str = "",
     ) -> dict[str, Any]:
         usage = usage if isinstance(usage, dict) else {}
+        input_tokens = _safe_int(usage.get("prompt_tokens"))
+        output_tokens = _safe_int(usage.get("completion_tokens"))
         return {
             "event_id": f"route-{uuid4().hex}",
             "event_type": ROUTE_TELEMETRY_EVENT_TYPE,
@@ -124,9 +127,9 @@ class RouteTelemetryRepositoryService:
             "requires_operator_review": route.requires_operator_review,
             "allow_over_budget_model": route.allow_over_budget_model,
             "is_known_model": route.is_known_model,
-            "estimated_input_tokens": _safe_int(usage.get("prompt_tokens")),
-            "estimated_output_tokens": _safe_int(usage.get("completion_tokens")),
-            "estimated_cost_usd": 0.0,
+            "estimated_input_tokens": input_tokens,
+            "estimated_output_tokens": output_tokens,
+            "estimated_cost_usd": _estimated_route_cost(route.resolved_model, input_tokens, output_tokens),
             "latency_ms": _safe_int(latency_ms),
             "success": success,
             "error_category": _safe_error_category(error_category),
@@ -320,6 +323,7 @@ class RouteTelemetryRepositoryService:
             "over_budget_count": 0,
             "operator_review_count": 0,
             "unknown_model_count": 0,
+            "unpriced_model_count": 0,
             "estimated_cost_usd_sum": 0.0,
         }
         for event in events:
@@ -328,11 +332,13 @@ class RouteTelemetryRepositoryService:
             over_budget = bool(event.get("is_over_budget"))
             operator_review = bool(event.get("requires_operator_review"))
             known = bool(event.get("is_known_model"))
+            model = str(event.get("resolved_model") or "unknown")
+            unpriced_model = known and _is_token_unpriced_catalog_model(model)
             cost = _safe_float(event.get("estimated_cost_usd"))
             key = (
                 str(event.get("day") or self._day(event.get("timestamp"))),
                 str(event.get("task") or "unknown"),
-                str(event.get("resolved_model") or "unknown"),
+                model,
                 str(event.get("inference_source") or "unknown"),
                 downgraded,
                 over_budget,
@@ -353,12 +359,16 @@ class RouteTelemetryRepositoryService:
                     "request_count": 0,
                     "success_count": 0,
                     "failure_count": 0,
+                    "unknown_model_count": 0,
+                    "unpriced_model_count": 0,
                     "estimated_cost_usd_sum": 0.0,
                 },
             )
             bucket["request_count"] += 1
             bucket["success_count"] += 1 if success else 0
             bucket["failure_count"] += 0 if success else 1
+            bucket["unknown_model_count"] += 0 if known else 1
+            bucket["unpriced_model_count"] += 1 if unpriced_model else 0
             bucket["estimated_cost_usd_sum"] = round(bucket["estimated_cost_usd_sum"] + cost, 8)
 
             totals["request_count"] += 1
@@ -368,6 +378,7 @@ class RouteTelemetryRepositoryService:
             totals["over_budget_count"] += 1 if over_budget else 0
             totals["operator_review_count"] += 1 if operator_review else 0
             totals["unknown_model_count"] += 0 if known else 1
+            totals["unpriced_model_count"] += 1 if unpriced_model else 0
             totals["estimated_cost_usd_sum"] = round(totals["estimated_cost_usd_sum"] + cost, 8)
 
         return {
@@ -430,6 +441,20 @@ def _provider_family(model: str) -> str:
     if "qwen" in normalized:
         return "qwen"
     return "unknown"
+
+
+def _estimated_route_cost(model: str, input_tokens: int, output_tokens: int) -> float:
+    estimated = estimate_token_cost_usd(model, input_tokens, output_tokens)
+    return _safe_float(estimated)
+
+
+def _is_token_unpriced_catalog_model(model: str) -> bool:
+    profile = model_profile(model)
+    return bool(
+        profile
+        and profile.input_usd_per_million_tokens is None
+        and profile.output_usd_per_million_tokens is None
+    )
 
 
 def _safe_error_category(value: Any) -> str:

@@ -1,6 +1,9 @@
 import json
 import re
 
+from services.model_catalog import estimate_token_cost_usd
+from services.model_runtime_router import resolve_runtime_model
+from services.model_task_inference import TaskInference
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 
 
@@ -43,6 +46,8 @@ def test_route_telemetry_repository_starts_empty(tmp_path):
     assert result["summary"]["stored_event_count"] == 0
     assert result["summary"]["raw_payload_storage_allowed"] is False
     assert result["totals"]["request_count"] == 0
+    assert result["totals"]["unknown_model_count"] == 0
+    assert result["totals"]["unpriced_model_count"] == 0
     assert not SECRET_PATTERN.search(str(result))
 
 
@@ -66,6 +71,114 @@ def test_route_telemetry_repository_persists_sanitized_events_and_aggregates(tmp
     assert stored_lines[0]["day"] == "2026-06-04"
     assert stored_lines[0]["resolved_model"] == "gemini-2.5-flash-lite"
     assert "raw_prompt" not in str(stored_lines)
+
+
+def test_route_telemetry_repository_estimates_catalog_route_costs(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    route = resolve_runtime_model("gemini-2.5-pro", task="fast")
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash-lite", 1000, 1000)
+    result = service.append_route_decision(
+        route=route,
+        task_inference=TaskInference(
+            requested_task="fast",
+            task="fast",
+            source="explicit",
+            confidence=1.0,
+            signals=("requested:fast",),
+            reason="test",
+        ),
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+        latency_ms=50,
+    )
+
+    assert result["status"] == "pass"
+    assert result["summary"]["accepted_event_count"] == 1
+    assert result["accepted_events"][0]["resolved_model"] == "gemini-2.5-flash-lite"
+    assert result["accepted_events"][0]["estimated_input_tokens"] == 1000
+    assert result["accepted_events"][0]["estimated_output_tokens"] == 1000
+    assert result["accepted_events"][0]["estimated_cost_usd"] == expected_cost
+    assert result["totals"]["estimated_cost_usd_sum"] == expected_cost
+    assert result["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
+
+
+def test_route_telemetry_repository_estimates_prefixed_catalog_route_costs(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    route = resolve_runtime_model("google/gemini-2.5-flash", task="review")
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash", 1000, 1000)
+    result = service.append_route_decision(
+        route=route,
+        task_inference=TaskInference(
+            requested_task="review",
+            task="review",
+            source="explicit",
+            confidence=1.0,
+            signals=("requested:review",),
+            reason="test",
+        ),
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+        latency_ms=50,
+    )
+
+    assert result["status"] == "pass"
+    assert result["accepted_events"][0]["resolved_model"] == "google/gemini-2.5-flash"
+    assert result["accepted_events"][0]["is_known_model"] is True
+    assert result["accepted_events"][0]["estimated_cost_usd"] == expected_cost
+    assert result["totals"]["estimated_cost_usd_sum"] == expected_cost
+    assert result["totals"]["unpriced_model_count"] == 0
+
+
+def test_route_telemetry_repository_keeps_unknown_gateway_route_unpriced(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    route = resolve_runtime_model("gateway/custom-unknown", task="fast")
+    result = service.append_route_decision(
+        route=route,
+        task_inference=TaskInference(
+            requested_task="fast",
+            task="fast",
+            source="explicit",
+            confidence=1.0,
+            signals=("requested:fast",),
+            reason="test",
+        ),
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+        latency_ms=50,
+    )
+
+    assert result["status"] == "pass"
+    assert result["accepted_events"][0]["is_known_model"] is False
+    assert result["accepted_events"][0]["estimated_cost_usd"] == 0.0
+    assert result["totals"]["estimated_cost_usd_sum"] == 0.0
+    assert result["totals"]["unknown_model_count"] == 1
+    assert result["totals"]["unpriced_model_count"] == 0
+
+
+def test_route_telemetry_repository_counts_known_catalog_models_without_token_prices(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    route = resolve_runtime_model("gemini-3-pro-image", task="image")
+    result = service.append_route_decision(
+        route=route,
+        task_inference=TaskInference(
+            requested_task="image",
+            task="image",
+            source="explicit",
+            confidence=1.0,
+            signals=("requested:image",),
+            reason="test",
+        ),
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+        latency_ms=50,
+    )
+
+    assert result["status"] == "pass"
+    assert result["accepted_events"][0]["is_known_model"] is True
+    assert result["accepted_events"][0]["estimated_cost_usd"] == 0.0
+    assert result["totals"]["unknown_model_count"] == 0
+    assert result["totals"]["unpriced_model_count"] == 1
+    assert result["daily_buckets"][0]["unpriced_model_count"] == 1
 
 
 def test_route_telemetry_repository_rejects_sensitive_events_without_echoing_values(tmp_path):

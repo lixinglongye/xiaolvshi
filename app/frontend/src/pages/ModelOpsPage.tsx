@@ -7419,7 +7419,8 @@ function Inner() {
                 <h2 className="text-xl font-black text-stone-950">Route telemetry repository</h2>
                 <div className="mt-1 text-sm text-stone-600">
                   {data.route_telemetry_repository.summary.stored_event_count} stored events /{' '}
-                  {data.route_telemetry_repository.summary.daily_bucket_count} daily buckets
+                  {data.route_telemetry_repository.summary.daily_bucket_count} daily buckets /{' '}
+                  {formatNumber(data.route_telemetry_repository.totals.unpriced_model_count)} unpriced models
                 </div>
               </div>
               <Badge variant="outline" className={statusClass(data.route_telemetry_repository.status)}>
@@ -7474,13 +7475,14 @@ function Inner() {
                     <TableHead>Route</TableHead>
                     <TableHead>Requests</TableHead>
                     <TableHead>Success</TableHead>
+                    <TableHead>Unpriced</TableHead>
                     <TableHead>Cost</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {routeTelemetryRepositoryRows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                      <TableCell colSpan={8} className="py-8 text-center text-stone-500">
                         No persisted route telemetry events yet.
                       </TableCell>
                     </TableRow>
@@ -7501,6 +7503,7 @@ function Inner() {
                         <TableCell>
                           {formatNumber(row.success_count)}/{formatNumber(row.failure_count)}
                         </TableCell>
+                        <TableCell>{formatNumber(row.unpriced_model_count)}</TableCell>
                         <TableCell className="font-mono text-xs text-stone-700">
                           {formatUsd(row.estimated_cost_usd_sum)}
                         </TableCell>
@@ -7521,7 +7524,8 @@ function Inner() {
                 <div className="mt-1 text-sm text-stone-600">
                   {data.route_telemetry_ops_summary.summary.request_count} persisted requests /{' '}
                   {Math.round(data.route_telemetry_ops_summary.summary.failure_rate * 100)}% failure /{' '}
-                  {Math.round(data.route_telemetry_ops_summary.summary.premium_request_ratio * 100)}% premium
+                  {Math.round(data.route_telemetry_ops_summary.summary.premium_request_ratio * 100)}% premium /{' '}
+                  {formatNumber(data.route_telemetry_ops_summary.summary.unpriced_model_count)} unpriced models
                 </div>
               </div>
               <Badge variant="outline" className={statusClass(data.route_telemetry_ops_summary.status)}>
@@ -7543,9 +7547,10 @@ function Inner() {
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {data.route_telemetry_ops_summary.summary.unknown_model_count}
+                  {formatNumber(data.route_telemetry_ops_summary.summary.unknown_model_count)} /{' '}
+                  {formatNumber(data.route_telemetry_ops_summary.summary.unpriced_model_count)}
                 </div>
-                <div className="mt-1 text-sm text-stone-600">unknown models</div>
+                <div className="mt-1 text-sm text-stone-600">unknown / unpriced models</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
@@ -7579,13 +7584,14 @@ function Inner() {
                     <TableHead>Downgrade</TableHead>
                     <TableHead>Over budget</TableHead>
                     <TableHead>Premium</TableHead>
+                    <TableHead>Unpriced</TableHead>
                     <TableHead>Models</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {routeTelemetryOpsRows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                      <TableCell colSpan={8} className="py-8 text-center text-stone-500">
                         No persisted route telemetry events yet.
                       </TableCell>
                     </TableRow>
@@ -7598,6 +7604,7 @@ function Inner() {
                         <TableCell>{Math.round(row.downgrade_ratio * 100)}%</TableCell>
                         <TableCell>{Math.round(row.over_budget_ratio * 100)}%</TableCell>
                         <TableCell>{Math.round(row.premium_request_ratio * 100)}%</TableCell>
+                        <TableCell>{formatNumber(row.unpriced_model_count)}</TableCell>
                         <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
                           {Object.entries(row.models).map(([model, count]) => `${model}:${count}`).join(', ')}
                         </TableCell>

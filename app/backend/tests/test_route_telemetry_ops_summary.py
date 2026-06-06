@@ -2,7 +2,14 @@ from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 
 
-def _event(event_id: str, *, model: str = "gemini-2.5-flash-lite", success: bool = True, over_budget: bool = False) -> dict:
+def _event(
+    event_id: str,
+    *,
+    model: str = "gemini-2.5-flash-lite",
+    success: bool = True,
+    over_budget: bool = False,
+    estimated_cost_usd: float = 0.0012,
+) -> dict:
     return {
         "event_id": event_id,
         "event_type": "model_route_decision",
@@ -21,7 +28,7 @@ def _event(event_id: str, *, model: str = "gemini-2.5-flash-lite", success: bool
         "is_known_model": model != "gateway/custom-unknown",
         "estimated_input_tokens": 1200,
         "estimated_output_tokens": 500,
-        "estimated_cost_usd": 0.0012,
+        "estimated_cost_usd": estimated_cost_usd,
         "latency_ms": 860,
         "success": success,
         "stream": False,
@@ -55,8 +62,12 @@ def test_route_telemetry_ops_summary_passes_cheap_first_events(tmp_path):
     assert result["summary"]["downgrade_count"] == 1
     assert result["summary"]["premium_request_count"] == 0
     assert result["summary"]["failure_rate"] == 0.0
+    assert result["summary"]["estimated_cost_usd_sum"] == 0.024
     assert result["daily_rows"][0]["day"] == "2026-06-04"
     assert result["daily_rows"][0]["models"]["gemini-2.5-flash-lite"] == 20
+    assert result["daily_rows"][0]["estimated_cost_usd_sum"] == 0.024
+    assert result["daily_rows"][0]["unknown_model_count"] == 0
+    assert result["daily_rows"][0]["unpriced_model_count"] == 0
 
 
 def test_route_telemetry_ops_summary_fails_on_routing_drift(tmp_path):
@@ -78,6 +89,26 @@ def test_route_telemetry_ops_summary_fails_on_routing_drift(tmp_path):
     assert "premium-request-ratio" in result["blocking_check_ids"]
     assert "unknown-model-count" in result["warning_check_ids"]
     assert result["summary"]["premium_request_count"] == 2
+
+
+def test_route_telemetry_ops_summary_warns_on_known_unpriced_catalog_models(tmp_path):
+    repository_service = RouteTelemetryRepositoryService(tmp_path)
+    repository = repository_service.append_events(
+        [
+            *[_event(f"route-event-{index:03d}") for index in range(19)],
+            _event("route-event-019", model="gemini-3-pro-image", estimated_cost_usd=0.0),
+        ]
+    )
+
+    result = RouteTelemetryOpsSummaryService().build_summary(repository)
+
+    assert result["status"] == "warn"
+    assert result["summary"]["request_count"] == 20
+    assert result["summary"]["unknown_model_count"] == 0
+    assert result["summary"]["unpriced_model_count"] == 1
+    assert result["daily_rows"][0]["unpriced_model_count"] == 1
+    assert "unpriced-model-count" in result["warning_check_ids"]
+    assert result["blocking_check_ids"] == []
 
 
 def test_route_telemetry_ops_summary_routes_are_available(tmp_path, monkeypatch):

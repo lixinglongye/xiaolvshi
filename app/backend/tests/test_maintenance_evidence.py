@@ -81,6 +81,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first escalation budget" in profile["release_management"]["release_readiness_controls"]
     assert "Model failure upgrade budget" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
+    assert "Route telemetry catalog cost estimation" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry operations summary" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry triage queue" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry remediation plan" in profile["release_management"]["release_readiness_controls"]
@@ -289,7 +290,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps readiness warning triage review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "model failure-upgrade budget review" in model_signal["responsibility"]
+    assert "route telemetry catalog cost-estimation review" in model_signal["responsibility"]
     assert "legal benchmark route risk queue review" in model_signal["responsibility"]
+    assert "catalog-priced route telemetry cost estimation" in model_signal["description"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
@@ -324,6 +327,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
+    assert "app/backend/services/model_usage.py" in evidence_paths
     assert "app/backend/tests/test_route_telemetry_repository.py" in evidence_paths
     assert "app/backend/services/route_telemetry_ops_summary.py" in evidence_paths
     assert "app/backend/tests/test_route_telemetry_ops_summary.py" in evidence_paths

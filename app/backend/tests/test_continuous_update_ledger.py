@@ -261,6 +261,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-ledger-low-resource-fixture-evidence" in completed_ids
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
+    assert "route-telemetry-catalog-cost-estimation" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
     assert "image-auto-route-default" in completed_ids
     assert "image-price-refresh-monitor" in completed_ids
@@ -665,6 +666,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_route_telemetry_repository.py tests/test_aihub_runtime_routing.py "
+        "tests/test_model_usage.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_route_telemetry_ops_summary.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_triage_queue.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_route_telemetry_remediation_plan.py -q" in ledger["validation_commands"]
@@ -1270,6 +1276,41 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-catalog-source-audit" in intake_queue_entry["release_gate_links"]
     assert "model-gateway-compatibility" in intake_queue_entry["release_gate_links"]
     assert "model-lifecycle-policy" in intake_queue_entry["release_gate_links"]
+
+    route_telemetry_catalog_cost_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "route-telemetry-catalog-cost-estimation"
+    )
+    assert route_telemetry_catalog_cost_entry["category"] == "model_ops"
+    assert route_telemetry_catalog_cost_entry["size"] == "medium"
+    assert route_telemetry_catalog_cost_entry["status"] == "shipped"
+    assert "local Gemini catalog token pricing" in route_telemetry_catalog_cost_entry["impact"]
+    assert "known NewAPI/Gemini routes" in route_telemetry_catalog_cost_entry["impact"]
+    assert "unknown gateway models unpriced" in route_telemetry_catalog_cost_entry["impact"]
+    assert "daily cheap-first cost aggregates" in route_telemetry_catalog_cost_entry["impact"]
+    assert "raw model output" in route_telemetry_catalog_cost_entry["impact"]
+    assert "payloads" in route_telemetry_catalog_cost_entry["impact"]
+    assert "credentials" in route_telemetry_catalog_cost_entry["impact"]
+    assert "app/backend/services/route_telemetry_repository.py" in route_telemetry_catalog_cost_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_catalog.py" in route_telemetry_catalog_cost_entry["evidence_paths"]
+    assert "app/backend/services/model_usage.py" in route_telemetry_catalog_cost_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_repository.py" in route_telemetry_catalog_cost_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in route_telemetry_catalog_cost_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_usage.py" in route_telemetry_catalog_cost_entry["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md" in route_telemetry_catalog_cost_entry[
+        "evidence_paths"
+    ]
+    assert "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md" in route_telemetry_catalog_cost_entry["evidence_paths"]
+    assert "route-telemetry-repository" in route_telemetry_catalog_cost_entry["release_gate_links"]
+    assert "route-telemetry-ops-summary" in route_telemetry_catalog_cost_entry["release_gate_links"]
+    assert "model-usage" in route_telemetry_catalog_cost_entry["release_gate_links"]
 
     route_telemetry_ui_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-ui-regression-contract"

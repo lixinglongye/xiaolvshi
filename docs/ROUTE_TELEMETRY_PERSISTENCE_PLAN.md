@@ -7,6 +7,12 @@ only sanitized allowed fields to `local_storage/model_ops/route_telemetry/events
 rejects duplicates or sensitive payloads, and rebuilds daily aggregate counters
 in `daily_aggregates.json`.
 
+Runtime route events now estimate `estimated_cost_usd` from the local Gemini
+model catalog when the resolved model has known token pricing. Unknown
+OpenAI-compatible gateway models remain `0.0` cost in route telemetry and keep
+`is_known_model=false`, so downstream summaries can flag them for catalog and
+pricing review instead of inventing a cost.
+
 ## Event Schema
 
 The only supported event type is `model_route_decision`.
@@ -31,6 +37,10 @@ Recommended fields:
 - `is_known_model`
 
 Allowed metrics and metadata include route IDs, task labels, model IDs, gateway/provider labels, budget flags, success/error category, estimated token counts, estimated cost, latency, stream flag, cache flag, and coarse HTTP status.
+
+`estimated_cost_usd` is an aggregate budget-monitoring estimate only. It uses
+stored token counts plus local catalog prices and may differ from final gateway
+billing, discounts, cache pricing, or provider-side accounting.
 
 Forbidden fields include prompt text, raw messages, raw legal documents, client names or contact details, headers, request bodies, response bodies, raw model output, passwords, secrets, and API key or bearer-token fields.
 
@@ -116,6 +126,7 @@ Run:
 cd D:\小律师\app\backend
 python -m pytest tests/test_route_telemetry_persistence_plan.py -q
 python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q
+python -m pytest tests/test_route_telemetry_repository.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q
 python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
 python -m pytest tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py -q
 python -m pytest tests/test_route_telemetry_remediation_plan.py tests/test_route_telemetry_triage_queue.py tests/test_model_default_optimization.py -q

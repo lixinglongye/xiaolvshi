@@ -44,6 +44,15 @@ bounds. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the
 network, write configuration, shift traffic, or store headers, request bodies,
 prompts, raw legal text, model outputs, payloads, emails, or credentials.
 
+Additional required evidence: `route-telemetry-repository` records sanitized
+route decisions and derives `estimated_cost_usd` only for known Gemini/NewAPI
+catalog model routes using local catalog token pricing. Unknown gateway model
+ids keep `estimated_cost_usd` at `0` and continue through unknown model review.
+Known catalog models without token pricing metadata are counted separately in
+`unpriced_model_count` for maintainer pricing review. It does not call
+gateways, write configuration, store raw payloads, prompts, legal text, model
+outputs, credentials, or emails.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint

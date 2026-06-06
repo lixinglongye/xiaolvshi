@@ -93,4 +93,7 @@ def test_estimate_token_cost_uses_catalog_pricing():
     cost = model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", 1_000_000, 500_000)
 
     assert cost == 0.30
+    assert model_catalog.estimate_token_cost_usd("google/gemini-2.5-flash", 1_000_000, 500_000) == 1.55
+    assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) is None
+    assert model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", -100, -100) == 0.0
     assert model_catalog.estimate_token_cost_usd("provider-custom-model", 100, 100) is None

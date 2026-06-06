@@ -873,8 +873,8 @@ class ReleaseReadinessService:
                     "app/frontend/src/pages/ModelOpsPage.tsx",
                     "docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md",
                 ),
-                validation_command="python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q",
-                manual_note="This persists sanitized route telemetry events locally and rejects prompts, client details, gateway credentials, headers, request bodies, and raw model outputs.",
+                validation_command="python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q",
+                manual_note="This persists sanitized route telemetry events locally, estimates known Gemini route costs from local catalog token pricing, keeps unknown gateway models unpriced for review, and rejects prompts, client details, gateway credentials, headers, request bodies, and raw model outputs.",
             ),
             ReleaseCheck(
                 id="route-telemetry-ops-summary",
