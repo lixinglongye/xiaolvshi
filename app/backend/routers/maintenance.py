@@ -33,6 +33,7 @@ from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.gemini_newapi_model_alias_matrix import GeminiNewapiModelAliasMatrixService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
 from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplayService
 from services.git_history_evidence import GitHistoryEvidenceService
@@ -894,6 +895,24 @@ async def evaluate_gemini_newapi_model_selector(payload: Any = Body(default=None
     return {
         "success": True,
         "data": GeminiNewapiModelSelectorService().build_selector(payload),
+    }
+
+
+@router.get("/gemini-newapi-model-alias-matrix")
+async def get_gemini_newapi_model_alias_matrix():
+    """Return metadata-only Gemini/NewAPI alias normalization evidence."""
+    return {
+        "success": True,
+        "data": GeminiNewapiModelAliasMatrixService().build_matrix(),
+    }
+
+
+@router.post("/gemini-newapi-model-alias-matrix")
+async def evaluate_gemini_newapi_model_alias_matrix(payload: Any = Body(default=None)):
+    """Evaluate sanitized Gemini/NewAPI alias ids without calling the gateway."""
+    return {
+        "success": True,
+        "data": GeminiNewapiModelAliasMatrixService().build_matrix(payload),
     }
 
 

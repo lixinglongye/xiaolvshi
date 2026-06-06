@@ -293,6 +293,14 @@ not store API keys, gateway credentials, prompts, raw legal text, raw model
 outputs, or emails, and it must not be counted as proof that NewAPI was called
 or that the 24-hour continuous window is complete.
 
+`docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md` defines the metadata-only
+`GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-alias-matrix` endpoint.
+It maps canonical, `models/`, `google/`, `google:`, `yibu/`, and nested
+provider Gemini aliases to catalog ids, cheap-first eligibility, premium/manual
+review boundaries, and unknown-model review states. It stores sanitized alias
+metadata only, rejects sensitive observed values into redacted counts, and does
+not prove live NewAPI execution or 24-hour completion.
+
 `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md` defines the metadata-only
 `GET`/`POST` `/api/v1/maintenance/gemini-newapi-selector-replay` endpoint. It
 replays deterministic selector scenarios for fast/classification/OCR

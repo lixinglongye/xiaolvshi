@@ -66,6 +66,7 @@ import {
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getFeedbackRoadmapCatalog,
+  getGeminiNewApiModelAliasMatrixEvidence,
   getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
   getReleaseReadiness,
@@ -87,6 +88,7 @@ import {
   type EvidenceExhibitPackagePolicy,
   type FeedbackRoadmapCatalog,
   type FrontendUiRegressionGate,
+  type GeminiNewApiModelAliasMatrixEvidence,
   type GeminiNewApiModelSelectorEvidence,
   type GeminiNewApiSelectorReplayEvidence,
   type LawyerReviewWorkflowPolicy,
@@ -420,6 +422,8 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
     useState<GeminiNewApiModelSelectorEvidence | null>(null);
+  const [geminiNewApiModelAliasMatrix, setGeminiNewApiModelAliasMatrix] =
+    useState<GeminiNewApiModelAliasMatrixEvidence | null>(null);
   const [geminiNewApiSelectorReplay, setGeminiNewApiSelectorReplay] =
     useState<GeminiNewApiSelectorReplayEvidence | null>(null);
   const [fixturePromptPack, setFixturePromptPack] = useState<LegalFixturePromptPack | null>(null);
@@ -655,6 +659,11 @@ function Inner() {
           label: 'Gemini/NewAPI model selector',
           run: getGeminiNewApiModelSelectorEvidence,
           apply: (value) => setGeminiNewApiModelSelector(value as GeminiNewApiModelSelectorEvidence),
+        },
+        {
+          label: 'Gemini/NewAPI model alias matrix',
+          run: getGeminiNewApiModelAliasMatrixEvidence,
+          apply: (value) => setGeminiNewApiModelAliasMatrix(value as GeminiNewApiModelAliasMatrixEvidence),
         },
         {
           label: 'Gemini/NewAPI selector replay',
@@ -6349,6 +6358,130 @@ function Inner() {
                       <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
                       <ul className="space-y-2 text-xs leading-5 text-stone-600">
                         {geminiNewApiPrivacyBoundarySummary(geminiNewApiModelSelector.privacy_boundary).map((item) => (
+                          <li key={item} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {geminiNewApiModelAliasMatrix && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model alias matrix</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only alias evidence for OpenAI-compatible Gemini gateway model names. It excludes
+                      credentials, prompts, complete legal text, gateway payload bodies, and model outputs.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[geminiNewApiModelAliasMatrix.status] ?? statusClass.review_recommended}
+                  >
+                    {geminiNewApiModelAliasMatrix.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    { label: 'aliases', value: geminiNewApiModelAliasMatrix.summary.alias_row_count ?? 0 },
+                    { label: 'catalog models', value: geminiNewApiModelAliasMatrix.summary.catalog_model_count ?? 0 },
+                    { label: 'known aliases', value: geminiNewApiModelAliasMatrix.summary.known_alias_count ?? 0 },
+                    {
+                      label: 'cheap-first',
+                      value: geminiNewApiModelAliasMatrix.summary.high_frequency_default_allowed_count ?? 0,
+                    },
+                    { label: 'catalog review', value: geminiNewApiModelAliasMatrix.summary.catalog_review_count ?? 0 },
+                    { label: 'redacted', value: geminiNewApiModelAliasMatrix.summary.rejected_sensitive_count ?? 0 },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="text-xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.5fr_0.5fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Alias</TableHead>
+                          <TableHead>Canonical</TableHead>
+                          <TableHead>Shape</TableHead>
+                          <TableHead>Default class</TableHead>
+                          <TableHead>Boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(geminiNewApiModelAliasMatrix.alias_rows ?? []).slice(0, 8).map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[260px]">
+                              <div className="font-mono text-xs font-semibold text-stone-950">{row.alias_model}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">{row.source}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px]">
+                              <div className="font-mono text-xs text-stone-700">{row.canonical_model ?? '-'}</div>
+                              <Badge variant="outline" className="mt-2 bg-white">
+                                {row.cost_tier ?? 'unknown'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[210px]">
+                              <div className="font-mono text-xs text-stone-700">{row.alias_shape}</div>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.alias_status] ?? statusClass.review_recommended}
+                              >
+                                {row.alias_status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">{row.default_class}</div>
+                              {(row.reason_codes ?? []).slice(0, 3).map((reason) => (
+                                <div key={`${row.id}-${reason}`} className="mt-1">
+                                  {reason}
+                                </div>
+                              ))}
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div className="flex flex-wrap gap-2">
+                                <Badge variant="outline" className={row.high_frequency_default_allowed ? statusClass.ready : statusClass.warn}>
+                                  high frequency {row.high_frequency_default_allowed ? 'allowed' : 'blocked'}
+                                </Badge>
+                                <Badge variant="outline" className={row.premium_exception ? statusClass.warn : statusClass.ready}>
+                                  {row.premium_exception ? 'review required' : 'cheap-first ok'}
+                                </Badge>
+                              </div>
+                              {row.recommended_action && <div className="mt-2">{row.recommended_action}</div>}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Accepted shapes</h3>
+                      <div className="space-y-2">
+                        {(geminiNewApiModelAliasMatrix.accepted_alias_shapes ?? []).slice(0, 6).map((shape) => (
+                          <div key={shape} className="font-mono text-xs leading-5 text-stone-700">
+                            {shape}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Alias privacy boundary</h3>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {geminiNewApiPrivacyBoundarySummary(geminiNewApiModelAliasMatrix.privacy_boundary).map((item) => (
                           <li key={item} className="flex gap-2">
                             <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
                             <span>{item}</span>

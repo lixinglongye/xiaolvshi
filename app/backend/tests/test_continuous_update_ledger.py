@@ -163,6 +163,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-price-refresh-monitor" in completed_ids
     assert "model-price-refresh-monitor-readiness-ui" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
+    assert "gemini-newapi-model-alias-matrix" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
     assert "modelops-cheap-first-calibration-review-form" in completed_ids
@@ -290,6 +291,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-session-low-resource-fixture-review" not in queue_ids
     assert "continuous-ledger-low-resource-fixture-evidence" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
+    assert "gemini-newapi-model-alias-matrix" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "modelops-cheap-first-calibration-review-form" not in queue_ids
@@ -396,6 +398,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py "
+        "tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
@@ -519,6 +526,19 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
     )
+    alias_matrix_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-model-alias-matrix"
+    )
+    assert alias_matrix_entry["size"] == "medium"
+    assert alias_matrix_entry["status"] == "shipped"
+    assert "canonical, models/, google/, yibu/" in alias_matrix_entry["impact"]
+    assert "premium exceptions" in alias_matrix_entry["impact"]
+    assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in alias_matrix_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in alias_matrix_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in alias_matrix_entry["evidence_paths"]
+    assert "gemini-newapi-model-alias-matrix" in alias_matrix_entry["release_gate_links"]
+    assert "gemini-newapi-model-selector" in alias_matrix_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in alias_matrix_entry["release_gate_links"]
     coverage_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-coverage-gate"
     )

@@ -56,6 +56,12 @@ const relevantSources = [
   maintenanceApi,
   modelOpsApi,
 ].join('\n');
+const geminiAliasMatrixPanel = sourceSection(
+  maintenancePage,
+  'Gemini/NewAPI model alias matrix',
+  'Gemini/NewAPI selector replay',
+  'maintenance Gemini/NewAPI model alias matrix panel',
+);
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
 for (const script of requiredScripts) {
@@ -70,6 +76,26 @@ const checks = [
   () => assertIncludes(maintenancePage, 'task.apply(await runMaintenanceLoadTask(task))', 'maintenance incremental render'),
   () => assertIncludes(maintenancePage, 'Partial maintenance evidence loaded', 'maintenance partial-load banner'),
   () => assertIncludes(maintenancePage, 'Frontend UI regression gate', 'maintenance UI gate panel'),
+  () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix type'),
+  () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixRow', 'maintenance Gemini/NewAPI alias matrix row type'),
+  () => assertIncludes(maintenanceApi, 'getGeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/gemini-newapi-model-alias-matrix', 'maintenance Gemini/NewAPI alias matrix endpoint'),
+  () => assertIncludes(maintenancePage, 'getGeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix load task'),
+  () => assertIncludes(maintenancePage, 'geminiNewApiModelAliasMatrix', 'maintenance Gemini/NewAPI alias matrix state'),
+  () => assertIncludes(maintenancePage, 'Gemini/NewAPI model alias matrix', 'maintenance Gemini/NewAPI alias matrix panel'),
+  () => assertIncludes(maintenancePage, 'Accepted shapes', 'maintenance Gemini/NewAPI alias shape list'),
+  () => assertIncludes(maintenancePage, 'Alias privacy boundary', 'maintenance Gemini/NewAPI alias privacy panel'),
+  () => assertIncludes(maintenancePage, 'high_frequency_default_allowed', 'maintenance Gemini/NewAPI high-frequency default binding'),
+  () => assertIncludes(maintenancePage, 'premium_exception', 'maintenance Gemini/NewAPI premium exception binding'),
+  () => assertIncludes(maintenancePage, 'rejected_sensitive_count', 'maintenance Gemini/NewAPI rejected sensitive summary'),
+  () => assertBefore(maintenancePage, 'Gemini/NewAPI model selector', 'Gemini/NewAPI model alias matrix', 'maintenance Gemini alias matrix after selector'),
+  () => assertBefore(maintenancePage, 'Gemini/NewAPI model alias matrix', 'Gemini/NewAPI selector replay', 'maintenance Gemini alias matrix before replay'),
+  () =>
+    assertNotMatches(
+      geminiAliasMatrixPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|email/i,
+      'maintenance Gemini/NewAPI alias matrix sensitive field guard',
+    ),
   () => assertIncludes(maintenancePage, 'Low-resource fixture review', 'maintenance review packet fixture panel'),
   () => assertIncludes(maintenancePage, 'raw fixture payload echoed: false', 'maintenance fixture privacy boundary'),
   () => assertIncludes(maintenancePage, 'Local run review status', 'maintenance local run review status panel'),

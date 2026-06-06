@@ -49,6 +49,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini/NewAPI model alias matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI cheap-first calibration" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini model variant matrix" in profile["release_management"]["release_readiness_controls"]
@@ -115,6 +116,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_selector.py" in evidence_paths
+    assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in evidence_paths
+    assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in evidence_paths
+    assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_selector_replay.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_selector_replay.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md" in evidence_paths
@@ -318,6 +322,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("sanitized model ids to canonical catalog ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not write configuration" in guardrail for guardrail in profile["application_guardrails"])
     assert any("shift traffic" in guardrail for guardrail in profile["application_guardrails"])

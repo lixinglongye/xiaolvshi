@@ -25,6 +25,11 @@ metadata-only Legal RAG hallucination triage checks. It does not call NewAPI,
 Gemini, or gateways, download datasets, store raw legal text, retrieved
 snippets, prompts, model outputs, or credentials.
 
+Additional required evidence: `gemini-newapi-model-alias-matrix` records
+metadata-only alias normalization for OpenAI-compatible Gemini gateway model ids.
+It does not call NewAPI, Gemini, or gateways, write configuration, shift traffic,
+store raw payloads, prompts, legal text, model outputs, credentials, or emails.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -50,6 +55,7 @@ POST /api/v1/maintenance/release-readiness
   "model-default-recommendation-snapshot": "pass",
   "gemini-newapi-cheap-first-policy": "pass",
   "gemini-newapi-model-selector": "pass",
+  "gemini-newapi-model-alias-matrix": "pass",
   "gemini-newapi-selector-replay": "pass",
   "model-price-refresh-monitor": "pass",
   "model-gateway-compatibility": "pass",

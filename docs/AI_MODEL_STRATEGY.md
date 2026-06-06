@@ -127,6 +127,15 @@ It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
 not write real environment values, and does not include raw prompts, payloads,
 model outputs, or credentials.
 
+`gemini-newapi-model-alias-matrix` is the shipped metadata-only alias evidence
+for gateway-specific Gemini model names. It maps canonical, `models/`,
+`google/`, `google:`, `yibu/`, and nested provider aliases back to local catalog
+ids, then exposes cheap-first eligibility, premium/manual review boundaries,
+unknown-model review states, and sensitive-input rejection counts. It does not
+call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does not write
+configuration, and does not include raw prompts, payloads, legal text, model
+outputs, credentials, or emails.
+
 `modelops-legal-fixture-cheap-first-benchmark-gate` is the shipped
 metadata-only small legal-document cheap-first Gemini benchmark/risk gate
 evidence. It uses redacted fixture ids, document case ids, expected issue

@@ -2045,6 +2045,62 @@ export type GeminiNewApiModelSelectorEvidence = {
   validation_commands: string[];
 };
 
+export type GeminiNewApiModelAliasMatrixRow = {
+  id: string;
+  source: string;
+  alias_model: string;
+  sanitized_model_id?: string;
+  canonical_model?: string | null;
+  alias_shape: string;
+  alias_status: string;
+  default_class: string;
+  known_catalog_model: boolean;
+  model_family?: string;
+  cost_tier?: string | null;
+  lifecycle_status?: string;
+  cheap_first_candidate: boolean;
+  high_frequency_default_allowed: boolean;
+  balanced_after_precheck_allowed?: boolean;
+  premium_exception: boolean;
+  default_allowed_without_review: boolean;
+  reason_codes?: string[];
+  recommended_action?: string;
+  configuration_write_allowed?: boolean;
+  gateway_call_allowed?: boolean;
+  traffic_shift_allowed?: boolean;
+};
+
+export type GeminiNewApiModelAliasMatrixEvidence = {
+  id?: string;
+  title?: string;
+  status: string;
+  summary: {
+    alias_row_count?: number;
+    catalog_model_count?: number;
+    observed_model_count?: number;
+    known_alias_count?: number;
+    catalog_review_count?: number;
+    external_model_count?: number;
+    rejected_sensitive_count?: number;
+    cheap_first_candidate_count?: number;
+    high_frequency_default_allowed_count?: number;
+    premium_exception_count?: number;
+    canonical_catalog_count?: number;
+    configuration_written?: boolean;
+    gateway_called?: boolean;
+    network_called?: boolean;
+    raw_payload_echoed?: boolean;
+    credentials_included?: boolean;
+  };
+  alias_rows: GeminiNewApiModelAliasMatrixRow[];
+  accepted_alias_shapes?: string[];
+  default_policy?: Record<string, unknown>;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary?: Record<string, unknown>;
+  recommended_actions?: string[];
+  validation_commands: string[];
+};
+
 export type GeminiNewApiSelectorReplayCheck = {
   id: string;
   status: string;
@@ -3462,6 +3518,11 @@ type LegalFixtureModelMatrixResponse = {
 type GeminiNewApiModelSelectorEvidenceResponse = {
   success: boolean;
   data: GeminiNewApiModelSelectorEvidence;
+};
+
+type GeminiNewApiModelAliasMatrixEvidenceResponse = {
+  success: boolean;
+  data: GeminiNewApiModelAliasMatrixEvidence;
 };
 
 type GeminiNewApiSelectorReplayEvidenceResponse = {
@@ -5009,6 +5070,25 @@ export async function postGeminiNewApiModelSelectorEvidence(
     data: payload,
   });
   return unwrapMaintenanceData<GeminiNewApiModelSelectorEvidenceResponse['data']>(resp);
+}
+
+export async function getGeminiNewApiModelAliasMatrixEvidence(): Promise<GeminiNewApiModelAliasMatrixEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-model-alias-matrix',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<GeminiNewApiModelAliasMatrixEvidenceResponse['data']>(resp);
+}
+
+export async function postGeminiNewApiModelAliasMatrixEvidence(
+  payload: Record<string, unknown> = {},
+): Promise<GeminiNewApiModelAliasMatrixEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-model-alias-matrix',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<GeminiNewApiModelAliasMatrixEvidenceResponse['data']>(resp);
 }
 
 export async function getGeminiNewApiSelectorReplayEvidence(): Promise<GeminiNewApiSelectorReplayEvidence> {
