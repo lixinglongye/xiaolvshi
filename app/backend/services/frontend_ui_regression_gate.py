@@ -129,6 +129,28 @@ PAGE_GATES = (
             "network-mocked feedback capture-plan and ticket-create browser regression",
         ),
     },
+    {
+        "route": "/deep-report/:id",
+        "page": "DeepReportPage",
+        "source_path": "app/frontend/src/pages/DeepReportPage.tsx",
+        "risk_area": "report-level feedback capture and legal review closure",
+        "protected_panels": (
+            "report feedback capture form",
+            "report-quality capture-plan preview",
+            "report id feedback linkage",
+            "metadata-only feedback privacy boundary",
+        ),
+        "covered_by": (
+            "frontend-lint",
+            "frontend-typecheck",
+            "frontend-build",
+            "frontend-ui-regression",
+            "manual-browser-smoke",
+        ),
+        "missing_automation": (
+            "network-mocked report feedback preview and ticket-create browser regression",
+        ),
+    },
 )
 
 
@@ -164,6 +186,7 @@ class FrontendUiRegressionGateService:
                     "Legal RAG retrieval diagnostics gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, raw query, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
+                    "Deep report feedback capture evidence is metadata only: report-level feedback links to report IDs, roadmap IDs, and release gates without raw report text, prompts, model output, or external calls.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
                 ],
             },
@@ -211,6 +234,12 @@ class FrontendUiRegressionGateService:
                     "page": "/settings",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the product feedback form, capture-plan API binding, ticket creation path, and privacy-boundary rendering in the source contract.",
                     "regression_target": "Add browser-level mocked capture-plan 200/500 checks and assert raw user feedback text is not rendered in the preview summary.",
+                },
+                {
+                    "id": "deep-report-feedback-capture-regresses",
+                    "page": "/deep-report/:id",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the report-level feedback panel bound to report_quality and report identifiers.",
+                    "regression_target": "Add browser-level mocked report feedback submission checks and assert report body text is not sent to capture-plan previews.",
                 },
             ],
             "recommended_actions": self._recommended_actions(missing_script_ids, missing_automation),

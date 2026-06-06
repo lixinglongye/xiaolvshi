@@ -22,6 +22,7 @@ import {
 } from '@/lib/mockData';
 import { analyzeDocument, downloadDeepReviewReport, getDeepReviewReport } from '@/lib/deepReviewApi';
 import { mapAIReportToFrontend } from '@/lib/reportMapper';
+import FeedbackCapturePanel from '@/components/feedback/FeedbackCapturePanel';
 
 export default function DeepReportPage() {
   return (<AuthGuard><Inner /></AuthGuard>);
@@ -868,6 +869,15 @@ function Inner() {
           </section>
 
           {/* ═══ Section 2: Executive Summary ═══ */}
+          <FeedbackCapturePanel
+            title="Report feedback"
+            description="Attach feedback to this report so support can preview triage, roadmap linkage, release gates, and lifecycle state before closing it."
+            defaultCategory="report_quality"
+            defaultAffectedArtifactId={id ?? report.report_no}
+            lockCategory
+            compact
+          />
+
           <section id="executive-summary">
             <Card className="surface-card">
               <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Hash className="w-5 h-5 text-emerald-800" />执行摘要</CardTitle></CardHeader>

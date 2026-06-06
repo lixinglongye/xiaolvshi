@@ -25,6 +25,7 @@ from models.templates import Templates
 from schemas.auth import UserResponse
 from services.deep_review import DeepReviewService
 from services.entitlements import EntitlementService, PLAN_LIMITS
+from services.feedback_capture_plan import FeedbackCapturePlanService
 
 router = APIRouter(prefix="/api/v1/admin/ops", tags=["admin-ops"])
 
@@ -505,6 +506,54 @@ async def _deactivate_other_prompts(db: AsyncSession, *, purpose: str, keep_id: 
             prompt.is_active = False
 
 
+def _with_feedback_capture_summary(row: Dict[str, Any], planner: FeedbackCapturePlanService) -> Dict[str, Any]:
+    plan = planner.build_plan({**row, "state": _feedback_lifecycle_state(row.get("status"))})
+    capture = plan.get("capture_summary") or {}
+    roadmap = plan.get("roadmap_alignment") or {}
+    lifecycle = plan.get("lifecycle") or {}
+    row["capture_summary"] = {
+        "priority": capture.get("priority"),
+        "assignee": capture.get("assignee"),
+        "linked_need_id": capture.get("linked_need_id"),
+        "roadmap_alignment_status": capture.get("roadmap_alignment_status"),
+        "release_gate_links": list(capture.get("release_gate_links") or [])[:5],
+        "missing_required_fields": list(capture.get("missing_required_fields") or [])[:5],
+        "high_risk": capture.get("high_risk") is True,
+    }
+    row["roadmap_summary"] = {
+        "status": roadmap.get("status"),
+        "top_need_id": roadmap.get("top_need_id"),
+        "match_count": roadmap.get("match_count", 0),
+    }
+    row["lifecycle_summary"] = {
+        "state": lifecycle.get("state"),
+        "next_state": lifecycle.get("next_state"),
+        "blocking_check_ids": list(lifecycle.get("current_transition_blocking_check_ids") or [])[:5],
+        "required_actions": [_clip_text(action, 160) for action in list(lifecycle.get("required_actions") or [])[:3]],
+    }
+    return row
+
+
+def _feedback_lifecycle_state(status: Any) -> str:
+    normalized = str(status or "").strip().lower()
+    if normalized in {"processing", "in_progress", "working"}:
+        return "in_progress"
+    if normalized in {"release_validation", "validating"}:
+        return "release_validation"
+    if normalized in {"customer_visible_resolution", "customer_update"}:
+        return "customer_visible_resolution"
+    if normalized in {"resolved", "closed", "done"}:
+        return "closed"
+    if normalized in {"linked_gap", "linked"}:
+        return "linked_gap"
+    return "triage"
+
+
+def _clip_text(value: Any, limit: int) -> str:
+    text = str(value or "")
+    return text if len(text) <= limit else f"{text[: limit - 1]}..."
+
+
 @router.get("/feedback")
 async def list_feedback(
     skip: int = Query(0, ge=0),
@@ -512,7 +561,10 @@ async def list_feedback(
     _admin: UserResponse = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await _list_model(db, Feedback_tickets, skip=skip, limit=limit)
+    payload = await _list_model(db, Feedback_tickets, skip=skip, limit=limit)
+    planner = FeedbackCapturePlanService()
+    payload["items"] = [_with_feedback_capture_summary(row, planner) for row in payload["items"]]
+    return payload
 
 
 @router.patch("/feedback/{ticket_id}")

@@ -73,15 +73,20 @@ def test_feedback_capture_plan_is_required_release_evidence():
     assert commands == [
         {
             "check_id": "feedback-capture-plan",
-            "command": "python -m pytest tests/test_feedback_capture_plan.py tests/test_feedback_lifecycle_policy.py tests/test_feedback_roadmap_alignment.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+            "command": "python -m pytest tests/test_feedback_capture_plan.py tests/test_admin_feedback_capture_summary.py tests/test_feedback_lifecycle_policy.py tests/test_feedback_roadmap_alignment.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         }
     ]
     assert check["required"] is True
     assert check["blocks_release"] is True
     assert "app/backend/services/feedback_capture_plan.py" in check["evidence_paths"]
+    assert "app/backend/routers/admin_ops.py" in check["evidence_paths"]
     assert "app/backend/routers/feedback_tickets.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_admin_feedback_capture_summary.py" in check["evidence_paths"]
     assert "app/backend/tests/test_feedback_capture_plan.py" in check["evidence_paths"]
+    assert "app/frontend/src/components/feedback/FeedbackCapturePanel.tsx" in check["evidence_paths"]
     assert "app/frontend/src/lib/feedbackApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/AdminPage.tsx" in check["evidence_paths"]
+    assert "app/frontend/src/pages/DeepReportPage.tsx" in check["evidence_paths"]
     assert "app/frontend/src/pages/SettingsPage.tsx" in check["evidence_paths"]
     assert "docs/FEEDBACK_CAPTURE_PLAN.md" in check["evidence_paths"]
     assert "metadata-only triage" in check["manual_note"]

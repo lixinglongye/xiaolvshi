@@ -12,9 +12,12 @@ const files = {
   modelOpsApi: 'src/lib/modelOpsApi.ts',
   workbenchRuntimeApi: 'src/lib/workbenchRuntimeApi.ts',
   feedbackApi: 'src/lib/feedbackApi.ts',
+  feedbackCapturePanel: 'src/components/feedback/FeedbackCapturePanel.tsx',
   caseWorkbenchRuntimePanel: 'src/components/cases/CaseWorkbenchRuntimePanel.tsx',
   caseDetailPage: 'src/pages/CaseDetailPage.tsx',
+  deepReportPage: 'src/pages/DeepReportPage.tsx',
   settingsPage: 'src/pages/SettingsPage.tsx',
+  adminPage: 'src/pages/AdminPage.tsx',
 };
 
 function read(relativePath) {
@@ -57,9 +60,12 @@ const maintenanceApi = read(files.maintenanceApi);
 const modelOpsApi = read(files.modelOpsApi);
 const workbenchRuntimeApi = read(files.workbenchRuntimeApi);
 const feedbackApi = read(files.feedbackApi);
+const feedbackCapturePanel = read(files.feedbackCapturePanel);
 const caseWorkbenchRuntimePanel = read(files.caseWorkbenchRuntimePanel);
 const caseDetailPage = read(files.caseDetailPage);
+const deepReportPage = read(files.deepReportPage);
 const settingsPage = read(files.settingsPage);
+const adminPage = read(files.adminPage);
 const relevantSources = [
   maintenancePage,
   modelOpsPage,
@@ -67,9 +73,12 @@ const relevantSources = [
   modelOpsApi,
   workbenchRuntimeApi,
   feedbackApi,
+  feedbackCapturePanel,
   caseWorkbenchRuntimePanel,
   caseDetailPage,
+  deepReportPage,
   settingsPage,
+  adminPage,
 ].join('\n');
 const geminiAliasMatrixPanel = sourceSection(
   maintenancePage,
@@ -107,12 +116,7 @@ const caseExportReadinessApiCall = sourceSection(
   'setExportReadiness(readiness);',
   'case detail export readiness API call',
 );
-const settingsFeedbackCaptureSection = sourceSection(
-  settingsPage,
-  'Product feedback',
-  "{t('data_deletion_request')}",
-  'settings feedback capture section',
-);
+const settingsFeedbackCaptureSection = feedbackCapturePanel;
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
 for (const script of requiredScripts) {
@@ -200,13 +204,27 @@ const checks = [
     ),
   () => assertIncludes(feedbackApi, 'FeedbackCapturePlan', 'feedback capture plan API type'),
   () => assertIncludes(feedbackApi, '/api/v1/entities/feedback_tickets/capture-plan', 'feedback capture plan endpoint binding'),
-  () => assertIncludes(settingsPage, 'previewFeedbackCapturePlan', 'settings feedback capture plan API binding'),
-  () => assertIncludes(settingsPage, 'Product feedback', 'settings product feedback panel'),
-  () => assertIncludes(settingsPage, 'Preview triage', 'settings feedback triage preview action'),
-  () => assertIncludes(settingsPage, 'Send feedback', 'settings feedback submit action'),
-  () => assertIncludes(settingsPage, 'Related report/case/document ID', 'settings feedback artifact link field'),
-  () => assertIncludes(settingsPage, 'raw feedback returned', 'settings feedback privacy boundary UI'),
-  () => assertIncludes(settingsPage, 'calls_ai_model', 'settings feedback model-call privacy binding'),
+  () => assertIncludes(feedbackCapturePanel, 'FeedbackCapturePanelProps', 'feedback capture reusable component props'),
+  () => assertIncludes(feedbackCapturePanel, 'previewFeedbackCapturePlan', 'feedback capture panel preview API binding'),
+  () => assertIncludes(feedbackCapturePanel, 'client.entities.feedback_tickets.create', 'feedback capture panel ticket create binding'),
+  () => assertIncludes(feedbackCapturePanel, 'raw feedback returned', 'feedback capture panel privacy boundary UI'),
+  () => assertIncludes(feedbackCapturePanel, 'calls_ai_model', 'feedback capture panel model-call privacy binding'),
+  () => assertIncludes(settingsPage, 'FeedbackCapturePanel', 'settings feedback capture import'),
+  () => assertIncludes(settingsPage, '<FeedbackCapturePanel />', 'settings feedback capture component binding'),
+  () => assertIncludes(deepReportPage, 'FeedbackCapturePanel', 'deep report feedback capture component binding'),
+  () => assertIncludes(deepReportPage, 'Report feedback', 'deep report feedback panel title'),
+  () => assertIncludes(deepReportPage, 'defaultCategory="report_quality"', 'deep report feedback category default'),
+  () => assertIncludes(deepReportPage, 'defaultAffectedArtifactId={id ?? report.report_no}', 'deep report feedback report id binding'),
+  () => assertIncludes(feedbackCapturePanel, 'Product feedback', 'settings product feedback panel'),
+  () => assertIncludes(feedbackCapturePanel, 'Preview triage', 'settings feedback triage preview action'),
+  () => assertIncludes(feedbackCapturePanel, 'Send feedback', 'settings feedback submit action'),
+  () => assertIncludes(feedbackCapturePanel, 'Related report/case/document ID', 'settings feedback artifact link field'),
+  () => assertIncludes(adminPage, "'roadmap'", 'admin feedback roadmap column'),
+  () => assertIncludes(adminPage, "'lifecycle'", 'admin feedback lifecycle column'),
+  () => assertIncludes(adminPage, "'closure'", 'admin feedback closure column'),
+  () => assertIncludes(adminPage, 'row.capture_summary?.linked_need_id', 'admin feedback linked need binding'),
+  () => assertIncludes(adminPage, 'row.lifecycle_summary?.state', 'admin feedback lifecycle state binding'),
+  () => assertIncludes(adminPage, 'row.lifecycle_summary?.blocking_check_ids', 'admin feedback closure blocker binding'),
   () =>
     assertNotMatches(
       settingsFeedbackCaptureSection,

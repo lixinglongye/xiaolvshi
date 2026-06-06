@@ -64,6 +64,10 @@ const feedbackPriorityClass: Record<string, string> = {
   P3: 'border-stone-200 bg-stone-50 text-stone-700',
 };
 
+function listText(value: unknown, fallback = '-') {
+  return Array.isArray(value) && value.length > 0 ? value.join(', ') : fallback;
+}
+
 async function adminApi<T>(path: string, method = 'GET', data?: unknown): Promise<T> {
   const resp = await client.apiCall.invoke({
     url: `/api/v1/admin/ops${path}`,
@@ -426,7 +430,20 @@ function Inner() {
               <CardContent>
                 <DataTable
                   rows={data.feedback?.items ?? []}
-                  columns={['id', 'priority', 'category', 'content', 'assignee', 'contact', 'status', 'resolution_note', 'actions']}
+                  columns={[
+                    'id',
+                    'priority',
+                    'category',
+                    'content',
+                    'assignee',
+                    'roadmap',
+                    'lifecycle',
+                    'closure',
+                    'contact',
+                    'status',
+                    'resolution_note',
+                    'actions',
+                  ]}
                   render={(row, col) => {
                     if (col === 'priority') {
                       return (
@@ -437,6 +454,38 @@ function Inner() {
                     }
                     if (col === 'assignee') {
                       return <span className="font-mono text-xs">{row.assignee || '-'}</span>;
+                    }
+                    if (col === 'roadmap') {
+                      const needId = row.capture_summary?.linked_need_id ?? row.roadmap_summary?.top_need_id;
+                      const gates = row.capture_summary?.release_gate_links;
+                      return (
+                        <div className="space-y-1">
+                          <div className="font-mono text-xs">{needId || '-'}</div>
+                          <div className="text-[11px] text-slate-500">{listText(gates, 'no gates')}</div>
+                        </div>
+                      );
+                    }
+                    if (col === 'lifecycle') {
+                      return (
+                        <div className="space-y-1">
+                          <Badge variant="outline">{row.lifecycle_summary?.state || row.status || 'open'}</Badge>
+                          <div className="text-[11px] text-slate-500">
+                            next: {row.lifecycle_summary?.next_state || '-'}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (col === 'closure') {
+                      const blockers = row.lifecycle_summary?.blocking_check_ids ?? [];
+                      const missing = row.capture_summary?.missing_required_fields ?? [];
+                      return (
+                        <div className="space-y-1 text-xs">
+                          <Badge variant="outline" className={blockers.length ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}>
+                            {blockers.length ? `${blockers.length} blockers` : 'ready'}
+                          </Badge>
+                          <div className="text-[11px] text-slate-500">missing: {listText(missing, 'none')}</div>
+                        </div>
+                      );
                     }
                     if (col === 'resolution_note') {
                       return <span title={row.resolution_note || ''}>{row.resolution_note || '-'}</span>;

@@ -26,8 +26,10 @@ export type FeedbackCapturePlan = {
   };
   lifecycle: {
     state?: string;
+    next_state?: string | null;
     next_allowed_states: string[];
     blocking_check_ids: string[];
+    current_transition_blocking_check_ids?: string[];
     required_actions: string[];
   };
   public_acknowledgement: string;
