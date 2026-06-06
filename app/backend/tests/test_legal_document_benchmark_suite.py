@@ -29,7 +29,7 @@ def test_legal_document_benchmark_suite_is_laptop_safe_and_small():
     suite = LegalDocumentBenchmarkSuiteService().build_suite()
 
     assert suite["status"] == "ready"
-    assert suite["summary"]["case_count"] == 6
+    assert suite["summary"]["case_count"] == 7
     assert suite["summary"]["check_count"] == 4
     assert suite["summary"]["language"] == "zh-CN"
     assert suite["summary"]["model_calls"] == "not_required"
@@ -54,6 +54,7 @@ def test_legal_document_benchmark_suite_covers_structure_citations_pii_and_risk(
     }
     assert {
         "civil_complaint",
+        "defense_answer",
         "lawyer_letter",
         "contract_review",
         "evidence_catalog",
@@ -73,6 +74,9 @@ def test_legal_document_benchmark_suite_fills_coverage_matrix_document_gaps():
     suite = LegalDocumentBenchmarkSuiteService().build_suite()
     cases = {case["document_type"]: case for case in suite["benchmark_cases"]}
 
+    assert cases["defense_answer"]["id"] == "ldoc-defense-answer-mini"
+    assert "evidence_rebuttal" in cases["defense_answer"]["required_sections"]
+    assert "admission_waiver_check" in cases["defense_answer"]["expected_risk_labels"]
     assert cases["evidence_catalog"]["id"] == "ldoc-evidence-catalog-mini"
     assert "proof_purpose" in cases["evidence_catalog"]["required_sections"]
     assert "source_authenticity_review" in cases["evidence_catalog"]["expected_risk_labels"]

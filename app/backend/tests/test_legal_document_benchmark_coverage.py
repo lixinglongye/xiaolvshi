@@ -20,7 +20,7 @@ def test_legal_document_benchmark_coverage_matrix_is_metadata_only():
     matrix = LegalDocumentBenchmarkCoverageService().build_matrix()
 
     assert matrix["status"] == "ready"
-    assert matrix["summary"]["case_count"] == 6
+    assert matrix["summary"]["case_count"] == 7
     assert matrix["summary"]["target_document_type_count"] == len(TARGET_DOCUMENT_TYPES)
     assert matrix["summary"]["covered_document_type_count"] == len(TARGET_DOCUMENT_TYPES)
     assert matrix["summary"]["missing_document_type_count"] == 0
@@ -57,9 +57,11 @@ def test_legal_document_benchmark_coverage_queue_is_laptop_safe():
 def test_legal_document_benchmark_coverage_dimensions_are_reviewable():
     matrix = LegalDocumentBenchmarkCoverageService().build_matrix()
 
-    assert matrix["summary"]["section_label_count"] >= 31
-    assert matrix["summary"]["citation_label_count"] == 12
-    assert matrix["summary"]["risk_label_count"] == 18
+    assert matrix["summary"]["section_label_count"] >= 34
+    assert matrix["summary"]["citation_label_count"] == 14
+    assert matrix["summary"]["risk_label_count"] == 21
+    assert "defense_points" in {row["label"] for row in matrix["dimensions"]["required_sections"]}
+    assert "evidence_rebuttal_gap" in {row["label"] for row in matrix["dimensions"]["expected_risk_labels"]}
     assert matrix["summary"]["pii_category_count"] == 4
     assert all(row["case_ids"] for row in matrix["dimensions"]["required_sections"])
     assert all(row["case_ids"] for row in matrix["dimensions"]["expected_citations"])

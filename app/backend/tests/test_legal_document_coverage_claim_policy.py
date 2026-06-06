@@ -12,13 +12,13 @@ PRIVATE_KEY = "sk-PRIVATE_COVERAGE_CLAIM_KEY_SHOULD_NOT_LEAK"
 def test_legal_document_coverage_claim_policy_allows_scoped_local_fixture_claims():
     result = LegalDocumentCoverageClaimPolicyService().evaluate(
         [
-            "Repository tests include synthetic local fixtures for civil complaint, lawyer letter, contract review, evidence catalog, settlement agreement, and legal opinion coverage.",
+            "Repository tests include synthetic local fixtures for civil complaint, defense answer, lawyer letter, contract review, evidence catalog, settlement agreement, and legal opinion coverage.",
         ]
     )
 
     assert result["status"] == "ready"
     assert result["coverage_summary"]["coverage_status"] == "ready"
-    assert result["coverage_summary"]["covered_document_type_count"] == 6
+    assert result["coverage_summary"]["covered_document_type_count"] == 7
     assert result["coverage_summary"]["missing_document_type_count"] == 0
     assert result["summary"]["ready_count"] == 1
     assert result["summary"]["supported_type_claim_count"] == 1
@@ -26,6 +26,7 @@ def test_legal_document_coverage_claim_policy_allows_scoped_local_fixture_claims
     assert {item["id"] for item in result["research_calibration"]} == {"legalbench", "lexglue", "coliee", "cuad"}
     assert set(result["claim_checks"][0]["matched_document_types"]) == {
         "civil_complaint",
+        "defense_answer",
         "lawyer_letter",
         "contract_review",
         "evidence_catalog",
@@ -67,12 +68,13 @@ def test_legal_document_coverage_claim_policy_blocks_broad_and_unsupported_claim
 
 def test_legal_document_coverage_claim_policy_handles_chinese_document_type_aliases():
     result = LegalDocumentCoverageClaimPolicyService().evaluate(
-        ["\u4ed3\u5e93\u672c\u5730\u5408\u6210 fixture \u8986\u76d6\u6c11\u4e8b\u8d77\u8bc9\u72b6\u3001\u8bc1\u636e\u76ee\u5f55\u548c\u6cd5\u5f8b\u610f\u89c1\u4e66\u3002"]
+        ["\u4ed3\u5e93\u672c\u5730\u5408\u6210 fixture \u8986\u76d6\u6c11\u4e8b\u8d77\u8bc9\u72b6\u3001\u7b54\u8fa9\u72b6\u3001\u8bc1\u636e\u76ee\u5f55\u548c\u6cd5\u5f8b\u610f\u89c1\u4e66\u3002"]
     )
 
     assert result["status"] == "ready"
     assert set(result["claim_checks"][0]["matched_document_types"]) == {
         "civil_complaint",
+        "defense_answer",
         "evidence_catalog",
         "legal_opinion",
     }

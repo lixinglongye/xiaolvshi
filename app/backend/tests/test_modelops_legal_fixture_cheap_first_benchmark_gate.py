@@ -65,8 +65,8 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["summary"]["selected_fixture_count"] == 3
     assert gate["summary"]["not_run_count"] == 3
     assert gate["summary"]["document_benchmark_status"] == "not_run"
-    assert gate["summary"]["document_benchmark_case_count"] == 6
-    assert gate["summary"]["document_benchmark_not_run_case_count"] == 6
+    assert gate["summary"]["document_benchmark_case_count"] == 7
+    assert gate["summary"]["document_benchmark_not_run_case_count"] == 7
     assert gate["summary"]["fact_consistency_status"] == "not_run"
     assert gate["summary"]["fact_consistency_case_count"] == 4
     assert gate["summary"]["fact_consistency_not_run_case_count"] == 4
@@ -134,7 +134,7 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
     assert gate["summary"]["default_change_evidence_allowed"] is True
     assert gate["summary"]["document_benchmark_status"] == "pass"
     assert gate["summary"]["document_benchmark_score"] == 100
-    assert gate["summary"]["document_benchmark_passed_case_count"] == 6
+    assert gate["summary"]["document_benchmark_passed_case_count"] == 7
     assert gate["summary"]["fact_consistency_status"] == "pass"
     assert gate["summary"]["fact_consistency_score"] == 100
     assert gate["summary"]["fact_consistency_passed_case_count"] == 4

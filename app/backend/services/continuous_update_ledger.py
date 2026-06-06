@@ -171,6 +171,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_route_telemetry_remediation_plan.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
+                "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
                 "python -m pytest tests/test_legal_public_benchmark_license_gate.py tests/test_legal_public_benchmark_sampler.py tests/test_user_need_benchmark_coverage.py tests/test_model_route_legal_benchmark_risk_queue.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -990,10 +991,11 @@ class ContinuousUpdateLedgerService:
                 category="product_planning",
                 size="large",
                 status="shipped",
-                impact="Defines required fields, formatting requirements, blockers, lawyer-review gates, and export formats for six legal document types.",
+                impact="Defines required fields, formatting requirements, blockers, lawyer-review gates, canonical benchmark document types, and export formats for seven legal document types.",
                 evidence_paths=(
                     "app/backend/services/legal_document_template_matrix.py",
                     "app/backend/tests/test_legal_document_template_matrix.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
                     "docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md",
                 ),
                 release_gate_links=("legal-document-template-matrix", "product-feature-gap-radar"),
@@ -3585,7 +3587,7 @@ class ContinuousUpdateLedgerService:
                 category="benchmark",
                 size="medium",
                 status="shipped",
-                impact="Adds three deterministic laptop-safe legal document fixture checks for structure, citations, PII exclusion, and risk labels without model calls or dataset downloads.",
+                impact="Adds seven deterministic laptop-safe legal document fixture checks for structure, citations, PII exclusion, and risk labels without model calls or dataset downloads.",
                 evidence_paths=(
                     "app/backend/services/legal_document_benchmark_suite.py",
                     "app/backend/tests/test_legal_document_benchmark_suite.py",
@@ -3615,7 +3617,7 @@ class ContinuousUpdateLedgerService:
                 category="benchmark",
                 size="medium",
                 status="shipped",
-                impact="Adds synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures so the local legal document coverage matrix covers all current target document types.",
+                impact="Adds synthetic evidence-catalog, settlement-agreement, legal-opinion, and defense-answer fixtures so the local legal document coverage matrix covers all current target document types.",
                 evidence_paths=(
                     "app/backend/services/legal_document_benchmark_suite.py",
                     "app/backend/services/legal_document_benchmark_coverage.py",
@@ -3625,6 +3627,39 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("legal-document-benchmark-gap-fixtures", "legal-document-benchmark-coverage"),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="legal-document-template-benchmark-alignment",
+                title="Legal document template benchmark alignment",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Aligns legal-document template matrix canonical benchmark document types with the local "
+                    "benchmark coverage targets, adds defense-answer fixture coverage, adds legal-opinion template "
+                    "delivery rules, and verifies mock template UTF-8 readability without model calls, dataset "
+                    "downloads, raw client documents, prompts, model outputs, emails, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_template_matrix.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_coverage_claim_policy.py",
+                    "app/backend/tests/test_legal_document_template_matrix.py",
+                    "app/backend/tests/test_legal_document_benchmark_coverage.py",
+                    "app/backend/tests/test_legal_document_benchmark_suite.py",
+                    "app/backend/tests/test_legal_document_coverage_claim_policy.py",
+                    "app/backend/mock_data/templates.json",
+                    "docs/LEGAL_DOCUMENT_TEMPLATE_MATRIX.md",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md",
+                ),
+                release_gate_links=(
+                    "legal-document-template-matrix",
+                    "legal-document-benchmark-coverage",
+                    "legal-document-benchmark-suite",
+                    "legal-document-coverage-claim-policy",
+                ),
+                user_need_ids=("document-generation", "grounded-legal-output", "low-resource-testing", "product-readiness"),
             ),
             LedgerEntry(
                 id="legal-document-benchmark-coverage-ui",
@@ -3646,7 +3681,7 @@ class ContinuousUpdateLedgerService:
                 category="safety",
                 size="medium",
                 status="shipped",
-                impact="Turns the 6/6 synthetic fixture matrix into a claim-review policy that blocks broad, real-client, public-benchmark, and unsupported legal-document coverage wording.",
+                impact="Turns the 7/7 synthetic fixture matrix into a claim-review policy that blocks broad, real-client, public-benchmark, and unsupported legal-document coverage wording.",
                 evidence_paths=(
                     "app/backend/services/legal_document_coverage_claim_policy.py",
                     "app/backend/tests/test_legal_document_coverage_claim_policy.py",

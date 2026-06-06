@@ -8,6 +8,7 @@ from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteS
 
 TARGET_DOCUMENT_TYPES = (
     "civil_complaint",
+    "defense_answer",
     "lawyer_letter",
     "contract_review",
     "evidence_catalog",
@@ -246,6 +247,7 @@ class LegalDocumentBenchmarkCoverageService:
 
     def _fixture_shape(self, document_type: str) -> str:
         shapes = {
+            "defense_answer": "A short defense answer with claim-by-claim response, deadline, evidence rebuttal, and admission-waiver review labels.",
             "evidence_catalog": "A short evidence-catalog row set with exhibit refs, proof purpose, authenticity status, and missing-source risk.",
             "settlement_agreement": "A short settlement draft with payment schedule, release scope, breach consequence, and execution review labels.",
             "legal_opinion": "A short legal opinion memo with issue, rule, application, conclusion, citation, and confidence sections.",

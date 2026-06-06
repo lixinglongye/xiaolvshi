@@ -10,6 +10,7 @@ from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCov
 
 DOCUMENT_TYPE_ALIASES: dict[str, tuple[str, ...]] = {
     "civil_complaint": ("civil complaint", "\u6c11\u4e8b\u8d77\u8bc9\u72b6", "\u8d77\u8bc9\u72b6"),
+    "defense_answer": ("defense answer", "\u7b54\u8fa9\u72b6", "\u6c11\u4e8b\u7b54\u8fa9\u72b6"),
     "lawyer_letter": ("lawyer letter", "\u5f8b\u5e08\u51fd"),
     "contract_review": ("contract review", "\u5408\u540c\u5ba1\u67e5", "\u5408\u540c\u5ba1\u6838"),
     "evidence_catalog": ("evidence catalog", "\u8bc1\u636e\u76ee\u5f55"),
@@ -77,7 +78,7 @@ RESEARCH_CALIBRATION = [
         "id": "cuad",
         "source_url": "https://arxiv.org/abs/2103.06268",
         "scope": "expert-annotated contract review dataset used for clause extraction and contract understanding research",
-        "local_boundary": "Do not claim CUAD-scale contract review validation from six local synthetic fixtures.",
+        "local_boundary": "Do not claim CUAD-scale contract review validation from seven local synthetic fixtures.",
     },
 ]
 
@@ -119,8 +120,8 @@ class LegalDocumentCoverageClaimPolicyService:
             },
             "recommended_actions": self._recommended_actions(status),
             "allowed_claim_template": (
-                "Repository tests include synthetic local fixtures covering civil complaints, lawyer letters, "
-                "contract review, evidence catalogs, settlement agreements, and legal opinions."
+                "Repository tests include synthetic local fixtures covering civil complaints, defense answers, "
+                "lawyer letters, contract review, evidence catalogs, settlement agreements, and legal opinions."
             ),
             "forbidden_claim_examples": [
                 "Supports every legal document type.",

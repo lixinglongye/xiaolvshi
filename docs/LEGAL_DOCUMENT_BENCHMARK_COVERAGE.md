@@ -22,13 +22,14 @@ This slice adds a metadata-only coverage matrix for the tiny local legal-documen
 The initial target matrix tracks:
 
 - `civil_complaint`
+- `defense_answer`
 - `lawyer_letter`
 - `contract_review`
 - `evidence_catalog`
 - `settlement_agreement`
 - `legal_opinion`
 
-The current local benchmark suite covers all six target document types with synthetic, short, laptop-safe fixtures. This means the local target matrix is complete, but broad legal-document coverage claims remain blocked by `legal-document-coverage-claim-policy` until larger public-source review, real-world workflow testing, public benchmark runs, and lawyer review evidence exist.
+The current local benchmark suite covers all seven target document types with synthetic, short, laptop-safe fixtures. The target set is aligned with the legal-document template matrix through canonical `benchmark_document_type` IDs, including `defense_answer` and `legal_opinion`. This means the local target matrix is complete, but broad legal-document coverage claims remain blocked by `legal-document-coverage-claim-policy` until larger public-source review, real-world workflow testing, public benchmark runs, and lawyer review evidence exist.
 
 ## Validation
 

@@ -37,6 +37,7 @@ class LegalDocumentTemplateMatrixService:
             },
             "summary": {
                 "document_type_count": len(rows),
+                "benchmark_document_type_count": len({row["benchmark_document_type"] for row in rows}),
                 "review_gate_required_count": sum(1 for row in rows if row["review_gate"]["critical"]),
                 "blocking_condition_count": sum(len(row["pre_generation_blockers"]) for row in rows),
                 "export_format_count": len({fmt for row in rows for fmt in row["export_formats"]}),
@@ -46,6 +47,7 @@ class LegalDocumentTemplateMatrixService:
             "document_types": rows,
             "low_resource_validation_commands": [
                 "python -m pytest tests/test_legal_document_template_matrix.py -q",
+                "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_fixture_prompt_pack.py -q",
             ],
             "delivery_policy": [
@@ -64,6 +66,7 @@ class LegalDocumentTemplateMatrixService:
         return {
             "id": item["id"],
             "document_type": item["document_type"],
+            "benchmark_document_type": item["benchmark_document_type"],
             "product_gap_closed": item["product_gap_closed"],
             "required_fields": item["required_fields"],
             "format_requirements": item["format_requirements"],
@@ -90,6 +93,7 @@ class LegalDocumentTemplateMatrixService:
         return [
             {
                 "id": "civil-complaint",
+                "benchmark_document_type": "civil_complaint",
                 "document_type": "\u6c11\u4e8b\u8d77\u8bc9\u72b6",
                 "product_gap_closed": "Turns litigation drafting into a filing-ready delivery flow.",
                 "required_fields": [
@@ -117,6 +121,7 @@ class LegalDocumentTemplateMatrixService:
             },
             {
                 "id": "defense-answer",
+                "benchmark_document_type": "defense_answer",
                 "document_type": "\u7b54\u8fa9\u72b6",
                 "product_gap_closed": "Structures claim-by-claim response, defenses, and evidence references.",
                 "required_fields": [
@@ -144,6 +149,7 @@ class LegalDocumentTemplateMatrixService:
             },
             {
                 "id": "evidence-catalog",
+                "benchmark_document_type": "evidence_catalog",
                 "document_type": "\u8bc1\u636e\u76ee\u5f55",
                 "product_gap_closed": "Adds evidence numbering, proof purpose, source, and attachment export checks.",
                 "required_fields": [
@@ -171,6 +177,7 @@ class LegalDocumentTemplateMatrixService:
             },
             {
                 "id": "lawyer-letter",
+                "benchmark_document_type": "lawyer_letter",
                 "document_type": "\u5f8b\u5e08\u51fd",
                 "product_gap_closed": "Adds authorization, fact, risk, and sending gates to external letters.",
                 "required_fields": [
@@ -199,6 +206,7 @@ class LegalDocumentTemplateMatrixService:
             },
             {
                 "id": "contract-review-report",
+                "benchmark_document_type": "contract_review",
                 "document_type": "\u5408\u540c\u5ba1\u67e5\u62a5\u544a",
                 "product_gap_closed": "Breaks contract review into risks, clauses, amendment advice, and review conclusion.",
                 "required_fields": [
@@ -227,6 +235,7 @@ class LegalDocumentTemplateMatrixService:
             },
             {
                 "id": "settlement-agreement",
+                "benchmark_document_type": "settlement_agreement",
                 "document_type": "\u548c\u89e3\u534f\u8bae",
                 "product_gap_closed": "Adds performance terms, default liability, authorization, and signing checks.",
                 "required_fields": [
@@ -251,6 +260,35 @@ class LegalDocumentTemplateMatrixService:
                     "performance_obligation_unenforceable_or_acceptance_standard_missing",
                     "default_liability_not_matched_to_settlement_obligation",
                     "withdrawal_preservation_release_or_security_arrangement_path_missing",
+                ],
+            },
+            {
+                "id": "legal-opinion",
+                "benchmark_document_type": "legal_opinion",
+                "document_type": "\u6cd5\u5f8b\u610f\u89c1\u4e66",
+                "product_gap_closed": "Adds engagement scope, assumptions, legal basis, analysis, conclusion limits, and delivery checks to opinion drafting.",
+                "required_fields": [
+                    "client_or_instructing_party",
+                    "engagement_scope",
+                    "reviewed_materials",
+                    "facts_and_assumptions",
+                    "legal_issues",
+                    "legal_basis",
+                    "analysis_and_reasoning",
+                    "conclusion_and_limitations",
+                ],
+                "format_requirements": [
+                    "scope_assumptions_basis_analysis_and_conclusion_are_separate",
+                    "materials_reviewed_are_listed_before_analysis",
+                    "legal_basis_citations_map_to_each_issue",
+                    "conclusion_uses_limited_and_conditioned_language",
+                    "lawyer_review_and_issue_date_are_present_before_delivery",
+                ],
+                "pre_generation_blockers": [
+                    "engagement_scope_or_reliance_party_unclear",
+                    "reviewed_materials_incomplete_or_unverified",
+                    "legal_issue_requires_jurisdiction_or_date_confirmation",
+                    "conclusion_requested_beyond_available_facts_or_authority",
                 ],
             },
         ]

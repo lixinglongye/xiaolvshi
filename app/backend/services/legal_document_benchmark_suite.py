@@ -7,7 +7,7 @@ from typing import Any
 
 PASS_THRESHOLD = 85
 WARN_THRESHOLD = 60
-MAX_CASES = 6
+MAX_CASES = 7
 MAX_SNIPPET_CHARS = 420
 
 
@@ -295,6 +295,38 @@ class LegalDocumentBenchmarkSuiteService:
                     "service_deadline_unclear",
                     "penalty_basis_review",
                     "delivery_method_check",
+                ),
+                banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
+            ),
+            LegalDocumentBenchmarkCase(
+                id="ldoc-defense-answer-mini",
+                title="\u7b54\u8fa9\u72b6\u6297\u8fa9\u4e0e\u8bc1\u636e\u53cd\u9a73\u7247\u6bb5",
+                document_type="defense_answer",
+                matter_type="sales_payment_defense",
+                snippet=(
+                    "\u7b54\u8fa9\u72b6\uff1a\u88ab\u544aB\u516c\u53f8\u5bf9A\u516c\u53f8"
+                    "\u8d27\u6b3e\u8bf7\u6c42\u63d0\u51fa\u90e8\u5206\u6297\u8fa9\u3002"
+                    "\u7b54\u8fa9\u610f\u89c1\u8bb0\u8f7d\u5df2\u4ed8\u6b3e12000\u5143\uff0c"
+                    "\u5bf9\u539f\u544a\u8bc1\u636e1\u300a\u4e70\u5356\u5408\u540c\u300b"
+                    "\u771f\u5b9e\u6027\u65e0\u5f02\u8bae\uff0c\u4f46\u5bf9\u8bc1\u636e2\u300a\u5bf9\u8d26\u5355\u300b"
+                    "\u6570\u989d\u63d0\u51fa\u53cd\u9a73\uff0c\u5e76\u9700\u6838\u5bf9\u7b54\u8fa9\u671f\u9650\u3002"
+                ),
+                required_sections=(
+                    "title",
+                    "case_caption",
+                    "respondent_identity",
+                    "defense_points",
+                    "facts_and_reasons",
+                    "evidence_rebuttal",
+                ),
+                expected_citations=(
+                    "\u539f\u544a\u8bc1\u636e1\u300a\u4e70\u5356\u5408\u540c\u300b",
+                    "\u8bc1\u636e2\u300a\u5bf9\u8d26\u5355\u300b",
+                ),
+                expected_risk_labels=(
+                    "answer_deadline_review",
+                    "admission_waiver_check",
+                    "evidence_rebuttal_gap",
                 ),
                 banned_pii_categories=("identity_number", "mobile_phone", "email", "api_key"),
             ),

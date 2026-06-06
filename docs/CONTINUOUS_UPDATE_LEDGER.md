@@ -2,7 +2,7 @@
 
 Latest product-quality slice: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, and `legal-document-coverage-claim-policy` add a metadata-only legal document coverage matrix, maintenance route, tests, UI panel, and claim-review gate for low-resource fixture planning. The claim policy keeps broad, real-client, public-benchmark, and unsupported document coverage wording blocked.
 
-Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures so the current local coverage matrix reaches 6/6 target document types. This still does not prove broad real-world document coverage or live model accuracy.
+Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence-catalog, settlement-agreement, legal-opinion, and defense-answer fixtures so the current local coverage matrix reaches 7/7 target document types. This still does not prove broad real-world document coverage or live model accuracy.
 
 Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
 
@@ -147,6 +147,14 @@ require maintainer review or block default promotion in the POST response and
 later in-process `/api/v1/aihub/models` aggregate payloads without storing raw
 payloads, URLs, headers, emails, credentials, prompts, legal text, gateway
 responses, model output, or making network calls.
+
+Current legal document benchmark alignment evidence:
+`legal-document-template-benchmark-alignment` aligns the legal-document
+template matrix with local benchmark coverage targets through canonical
+`benchmark_document_type` IDs. It adds defense-answer fixture coverage,
+legal-opinion template delivery rules, and a UTF-8 readability guard for mock
+templates without model calls, dataset downloads, raw client documents, prompts,
+model outputs, emails, or credentials.
 
 Current Legal RAG citation blocker evidence:
 `legal-rag-missing-answer-citation-blocker` blocks local Legal RAG evaluation

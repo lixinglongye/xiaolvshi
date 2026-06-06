@@ -1,6 +1,6 @@
 # Legal Document Coverage Claim Policy
 
-This slice adds a metadata-only claim policy for legal-document coverage wording. It keeps the local 6/6 synthetic fixture matrix useful for regression planning while blocking public claims that would overstate benchmark, real-client, or universal document coverage.
+This slice adds a metadata-only claim policy for legal-document coverage wording. It keeps the local 7/7 synthetic fixture matrix useful for regression planning while blocking public claims that would overstate benchmark, real-client, or universal document coverage.
 
 ## Implemented evidence
 

@@ -326,6 +326,29 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-document-benchmark-coverage" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
+    assert "legal-document-template-benchmark-alignment" in completed_ids
+    template_benchmark_alignment_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-template-benchmark-alignment"
+    )
+    assert template_benchmark_alignment_entry["size"] == "medium"
+    assert template_benchmark_alignment_entry["status"] == "shipped"
+    assert "template matrix canonical benchmark document types" in template_benchmark_alignment_entry["impact"]
+    assert "defense-answer fixture coverage" in template_benchmark_alignment_entry["impact"]
+    assert "legal-opinion template delivery rules" in template_benchmark_alignment_entry["impact"]
+    assert "UTF-8 readability" in template_benchmark_alignment_entry["impact"]
+    assert "model calls" in template_benchmark_alignment_entry["impact"]
+    assert "dataset downloads" in template_benchmark_alignment_entry["impact"]
+    assert "credentials" in template_benchmark_alignment_entry["impact"]
+    assert "app/backend/services/legal_document_template_matrix.py" in template_benchmark_alignment_entry["evidence_paths"]
+    assert "app/backend/services/legal_document_benchmark_coverage.py" in template_benchmark_alignment_entry["evidence_paths"]
+    assert "app/backend/services/legal_document_benchmark_suite.py" in template_benchmark_alignment_entry["evidence_paths"]
+    assert "app/backend/services/legal_document_coverage_claim_policy.py" in template_benchmark_alignment_entry["evidence_paths"]
+    assert "app/backend/mock_data/templates.json" in template_benchmark_alignment_entry["evidence_paths"]
+    assert "legal-document-template-matrix" in template_benchmark_alignment_entry["release_gate_links"]
+    assert "legal-document-benchmark-coverage" in template_benchmark_alignment_entry["release_gate_links"]
+    assert "legal-document-coverage-claim-policy" in template_benchmark_alignment_entry["release_gate_links"]
     assert "legal-document-benchmark-coverage-ui" in completed_ids
     assert "legal-document-coverage-claim-policy" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
@@ -432,6 +455,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-document-benchmark-coverage" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
+    assert "legal-document-template-benchmark-alignment" not in queue_ids
     assert "legal-document-benchmark-coverage-ui" not in queue_ids
     assert "legal-document-coverage-claim-policy" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
@@ -564,6 +588,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ) in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_legal_document_template_matrix.py "
+        "tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py "
+        "tests/test_legal_document_coverage_claim_policy.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q" in ledger["validation_commands"]
     assert (
         "python -m pytest tests/test_legal_benchmark_research_refresh.py "
