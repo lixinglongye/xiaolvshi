@@ -205,6 +205,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         if item["check_id"]
         in {
             "gemini-newapi-model-selector",
+            "gemini-newapi-observed-model-extraction",
             "gemini-newapi-model-alias-matrix",
             "gemini-newapi-alias-capability-coverage",
             "gemini-newapi-selector-replay",
@@ -217,6 +218,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     result = service.evaluate(
         {
             "gemini-newapi-model-selector": "not_run",
+            "gemini-newapi-observed-model-extraction": "not_run",
             "gemini-newapi-model-alias-matrix": "not_run",
             "gemini-newapi-alias-capability-coverage": "not_run",
             "gemini-newapi-selector-replay": "not_run",
@@ -229,16 +231,18 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     checks = {check["id"]: check for check in result["checks"]}
 
     assert commands == {
-        "gemini-newapi-model-selector": "python -m pytest tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
-        "gemini-newapi-model-alias-matrix": "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
-        "gemini-newapi-alias-capability-coverage": "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
+        "gemini-newapi-model-selector": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
+        "gemini-newapi-observed-model-extraction": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
+        "gemini-newapi-model-alias-matrix": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
+        "gemini-newapi-alias-capability-coverage": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
         "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
         "gemini-newapi-cheap-first-calibration": "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
         "model-catalog-source-audit": "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
-        "model-catalog-candidate-patch-plan": "python -m pytest tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py -q",
+        "model-catalog-candidate-patch-plan": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py -q",
         "model-catalog-candidate-impact-replay": "python -m pytest tests/test_model_catalog_candidate_impact_replay.py tests/test_model_default_candidate_selector.py tests/test_model_capability_matrix.py tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_readiness.py -q",
     }
     assert checks["gemini-newapi-model-selector"]["required"] is True
+    assert checks["gemini-newapi-observed-model-extraction"]["required"] is True
     assert checks["gemini-newapi-model-alias-matrix"]["required"] is True
     assert checks["gemini-newapi-alias-capability-coverage"]["required"] is True
     assert checks["gemini-newapi-selector-replay"]["required"] is True
@@ -247,6 +251,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert checks["model-catalog-candidate-patch-plan"]["required"] is True
     assert checks["model-catalog-candidate-impact-replay"]["required"] is True
     assert checks["gemini-newapi-model-selector"]["blocks_release"] is True
+    assert checks["gemini-newapi-observed-model-extraction"]["blocks_release"] is True
     assert checks["gemini-newapi-model-alias-matrix"]["blocks_release"] is True
     assert checks["gemini-newapi-alias-capability-coverage"]["blocks_release"] is True
     assert checks["gemini-newapi-selector-replay"]["blocks_release"] is True
@@ -255,6 +260,15 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert checks["model-catalog-candidate-patch-plan"]["blocks_release"] is True
     assert checks["model-catalog-candidate-impact-replay"]["blocks_release"] is True
     assert "does not call NewAPI" in checks["gemini-newapi-model-selector"]["manual_note"]
+    assert "shared extraction evidence" in checks["gemini-newapi-observed-model-extraction"]["manual_note"]
+    assert "sanitized model ids" in checks["gemini-newapi-observed-model-extraction"]["manual_note"]
+    assert "raw payload echoing" in checks["gemini-newapi-observed-model-extraction"]["manual_note"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in checks[
+        "gemini-newapi-observed-model-extraction"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in checks[
+        "gemini-newapi-observed-model-extraction"
+    ]["evidence_paths"]
     assert "alias normalization evidence" in checks["gemini-newapi-model-alias-matrix"]["manual_note"]
     assert "write configuration" in checks["gemini-newapi-model-alias-matrix"]["manual_note"]
     assert "alias capability evidence" in checks["gemini-newapi-alias-capability-coverage"]["manual_note"]
@@ -653,7 +667,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-cost-impact": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
-        "modelops-observed-gemini-model-intake-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-observed-gemini-model-intake-queue": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -948,6 +962,18 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "payloads" in checks["modelops-observed-gemini-model-intake-queue"]["manual_note"]
     assert "model outputs" in checks["modelops-observed-gemini-model-intake-queue"]["manual_note"]
     assert "credentials" in checks["modelops-observed-gemini-model-intake-queue"]["manual_note"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in checks[
+        "modelops-observed-gemini-model-intake-queue"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_ops_observed_gemini_model_intake_queue.py" in checks[
+        "modelops-observed-gemini-model-intake-queue"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in checks[
+        "modelops-observed-gemini-model-intake-queue"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_observed_gemini_model_intake_queue.py" in checks[
+        "modelops-observed-gemini-model-intake-queue"
+    ]["evidence_paths"]
     assert "app/backend/services/release_readiness.py" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]
     assert "app/backend/services/continuous_update_ledger.py" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]
     assert "app/backend/services/maintenance_evidence.py" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]

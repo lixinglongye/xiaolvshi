@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from services.gemini_newapi_observed_model_extraction import extract_observed_model_ids
 from services.model_budget import COST_TIER_RANK
 from services.model_catalog import canonical_model_id, model_profile
 
@@ -309,77 +310,16 @@ class ModelCatalogCandidatePatchPlanService:
         return "missing"
 
     def _extract_model_ids(self, data: dict[str, Any], signals: dict[str, Any]) -> dict[str, Any]:
-        values = [
-            *self._extract_from_payload(data),
-            *self._extract_from_signals(signals),
-        ]
-        seen: set[str] = set()
-        model_ids: list[str] = []
-        rejected_sensitive_count = 0
-        for value in values[:120]:
-            safe = self._safe_model_id(value)
-            if not safe:
-                rejected_sensitive_count += 1
-                continue
-            if safe in seen:
-                continue
-            seen.add(safe)
-            model_ids.append(safe)
+        extraction_payload = dict(data)
+        for key in ("gateway_probe_evaluation", "observed_gemini_model_intake_queue"):
+            if key not in extraction_payload and key in signals:
+                extraction_payload[key] = signals[key]
+        extraction = extract_observed_model_ids(extraction_payload, max_candidates=120, max_model_ids=80)
         return {
-            "model_ids": model_ids[:80],
-            "rejected_sensitive_count": rejected_sensitive_count,
+            "model_ids": extraction["model_ids"],
+            "rejected_sensitive_count": extraction["summary"]["rejected_sensitive_count"],
+            "summary": extraction["summary"],
         }
-
-    def _extract_from_payload(self, data: dict[str, Any]) -> list[Any]:
-        values: list[Any] = []
-        for key in ("model_ids", "observed_models"):
-            rows = data.get(key)
-            if isinstance(rows, list):
-                values.extend(rows)
-        response = data.get("models_response")
-        if isinstance(response, list):
-            values.extend(response)
-        elif isinstance(response, dict):
-            for key in ("data", "models", "items"):
-                rows = response.get(key)
-                if isinstance(rows, list):
-                    values.extend(rows)
-        for key in ("gateway_probe_evaluation", "observed_gemini_model_intake_queue"):
-            values.extend(self._extract_from_signal(data.get(key)))
-        return values
-
-    def _extract_from_signals(self, signals: dict[str, Any]) -> list[Any]:
-        values: list[Any] = []
-        for key in ("gateway_probe_evaluation", "observed_gemini_model_intake_queue"):
-            values.extend(self._extract_from_signal(signals.get(key)))
-        return values
-
-    def _extract_from_signal(self, value: Any) -> list[Any]:
-        if not isinstance(value, dict):
-            return []
-        values: list[Any] = []
-        rows = value.get("model_rows")
-        if isinstance(rows, list):
-            values.extend(row.get("model") for row in rows if isinstance(row, dict))
-        queue_items = value.get("queue_items")
-        if isinstance(queue_items, list):
-            values.extend(row.get("raw_model") or row.get("observed_model") for row in queue_items if isinstance(row, dict))
-        return values
-
-    def _safe_model_id(self, value: Any) -> str | None:
-        if isinstance(value, dict):
-            for key in ("id", "model", "name"):
-                if isinstance(value.get(key), str):
-                    value = value[key]
-                    break
-            else:
-                return None
-        if not isinstance(value, str):
-            return None
-        raw = value.strip().lower()[:180]
-        if not raw or SENSITIVE_VALUE_PATTERN.search(raw):
-            return None
-        return re.sub(r"[^a-z0-9_.:/-]+", "-", raw).strip("-") or None
 
     def _forbidden_payload_field_count(self, value: Any) -> int:
         return min(20, len(self._forbidden_payload_hits(value)))

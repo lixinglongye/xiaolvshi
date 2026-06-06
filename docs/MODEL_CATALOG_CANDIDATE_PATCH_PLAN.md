@@ -25,8 +25,16 @@ The plan can consume:
 
 - sanitized `model_ids`
 - sanitized OpenAI-compatible `models_response.data[*].id`
+- sanitized Gemini native model-list wrappers such as `availableModels[*].name`
+- sanitized `result.items[*].model_id` / `gateway_models_response.data[*].id`
 - sanitized `gateway_probe_evaluation.model_rows[*].model`
 - sanitized `observed_gemini_model_intake_queue.queue_items[*].raw_model`
+
+All of these inputs pass through the shared Gemini/NewAPI observed-model
+extractor used by the selector, variant matrix, alias matrix, and alias
+capability coverage gates. The shared summary returns extractor version, source
+field names, candidate/accepted/dropped counts, redaction counts, and
+`raw_payload_echoed: false` only.
 
 ## Boundaries
 
@@ -60,6 +68,7 @@ Run from `app/backend`:
 
 ```powershell
 python -m pytest tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py -q
+python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_catalog_candidate_patch_plan.py -q
 ```
 
 Run from `app/frontend`:

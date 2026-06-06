@@ -115,6 +115,26 @@ def test_gemini_model_variant_matrix_accepts_direct_data_model_list_shape():
     assert matrix["source_summaries"]["observed_model_extraction"]["source_fields"] == ["data"]
 
 
+def test_gemini_model_variant_matrix_extracts_nested_newapi_and_gemini_native_shapes():
+    matrix = GeminiModelVariantMatrixService().build_matrix(
+        {
+            "models_response": {"models": [{"name": "models/gemini-2.5-flash-lite"}]},
+            "result": {"items": [{"model_id": "newapi/google/gemini-3.2-flash-lite"}]},
+            "availableModels": [{"id": "publishers/google/models/gemini-2.5-flash:generateContent"}],
+        }
+    )
+    reviews = {row["raw_model"]: row for row in matrix["observed_model_reviews"]}
+    extraction = matrix["source_summaries"]["observed_model_extraction"]
+
+    assert matrix["summary"]["observed_model_count"] == 3
+    assert matrix["summary"]["catalog_review_count"] == 1
+    assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
+    assert reviews["publishers/google/models/gemini-2.5-flash:generatecontent"]["canonical_model"] == "gemini-2.5-flash"
+    assert reviews["newapi/google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
+    assert extraction["extractor_version"] == "gemini-newapi-observed-model-extraction-v1"
+    assert set(extraction["source_fields"]) == {"models_response.models", "result.items", "availableModels"}
+
+
 def test_gemini_model_variant_matrix_route_returns_metadata_only_payload():
     import pytest
 

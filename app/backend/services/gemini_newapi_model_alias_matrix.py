@@ -3,14 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from services.gemini_newapi_observed_model_extraction import extract_observed_model_ids
 from services.model_catalog import GEMINI_MODEL_CATALOG, canonical_model_id, model_profile
-
-
-SENSITIVE_PATTERN = re.compile(
-    r"(sk-[A-Za-z0-9]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|"
-    r"\bbearer\s+[A-Za-z0-9._-]{10,}|password|secret|api[_-]?key|token)",
-    re.IGNORECASE,
-)
 
 
 DEFAULT_PREFIXES = ("", "models/", "google/", "google:", "yibu/", "gemini/", "openrouter/google/")
@@ -113,18 +107,11 @@ class GeminiNewapiModelAliasMatrixService:
         return _dedupe([alias for alias in aliases if alias])
 
     def _observed_aliases(self, data: dict[str, Any]) -> list[str]:
-        observed = data.get("observed_models")
-        if not isinstance(observed, list):
-            return []
-        aliases: list[str] = []
-        rejected_count = 0
-        for item in observed[:80]:
-            safe_id = self._safe_model_id(item)
-            if safe_id:
-                aliases.append(safe_id)
-                continue
-            rejected_count += 1
-            aliases.append(f"{REJECTED_MODEL_ID_PREFIX}-{rejected_count}")
+        extraction = extract_observed_model_ids(data, max_model_ids=80)
+        aliases = list(extraction["observed_models"])
+        rejected_count = int(extraction["summary"]["rejected_sensitive_count"])
+        for index in range(1, rejected_count + 1):
+            aliases.append(f"{REJECTED_MODEL_ID_PREFIX}-{index}")
         return aliases
 
     def _row(self, raw_model: str, *, source: str) -> dict[str, Any]:
@@ -145,7 +132,7 @@ class GeminiNewapiModelAliasMatrixService:
             default_class = "ignore_for_gemini_defaults"
         reason_codes = self._reason_codes(alias_status, profile, alias_shape, default_class)
         return {
-            "id": f"gemini-alias-{_slug(raw_model)}",
+            "id": f"gemini-alias-{alias_shape}-{_slug(raw_model)}",
             "source": source,
             "alias_model": raw_model,
             "sanitized_model_id": raw_model,
@@ -202,21 +189,6 @@ class GeminiNewapiModelAliasMatrixService:
             "gateway_call_allowed": False,
             "traffic_shift_allowed": False,
         }
-
-    def _safe_model_id(self, value: Any) -> str | None:
-        if isinstance(value, dict):
-            for key in ("model", "id", "name"):
-                if isinstance(value.get(key), str):
-                    value = value[key]
-                    break
-            else:
-                return None
-        if not isinstance(value, str):
-            return None
-        raw = str(value or "").strip().lower()[:160]
-        if not raw or SENSITIVE_PATTERN.search(raw):
-            return None
-        return re.sub(r"[^a-z0-9_.:/-]+", "-", raw).strip("-")
 
     def _is_gemini_like(self, model_id: str) -> bool:
         value = (model_id or "").strip().lower()

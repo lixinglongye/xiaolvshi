@@ -5,15 +5,10 @@ from typing import Any
 
 from services import model_catalog
 from services.gemini_newapi_model_alias_matrix import DEFAULT_PREFIXES, REJECTED_MODEL_ID_PREFIX
+from services.gemini_newapi_observed_model_extraction import extract_observed_model_ids
 from services.model_catalog import ModelProfile
 from services.model_default_candidate_selector import TASK_POLICIES, normalize_task
 
-
-SENSITIVE_PATTERN = re.compile(
-    r"(sk-[A-Za-z0-9_-]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|"
-    r"\bbearer\s+[A-Za-z0-9._-]{10,}|password|secret|api[_-]?key|authorization|token)",
-    re.IGNORECASE,
-)
 
 EXTRA_PREFIXES = (
     "yibu:",
@@ -33,8 +28,9 @@ class GeminiNewapiAliasCapabilityCoverageService:
     def build_coverage(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
         include_catalog_aliases = data.get("include_catalog_aliases", True) is not False
+        observed_model_extraction = extract_observed_model_ids(data, max_candidates=80, max_model_ids=80)
         rows = self._catalog_rows() if include_catalog_aliases else []
-        rows.extend(self._observed_rows(data.get("observed_models")))
+        rows.extend(self._observed_rows(observed_model_extraction))
         known_rows = [row for row in rows if row["coverage_status"] == "covered"]
         external_rows = [row for row in rows if row["coverage_status"] == "external"]
         review_rows = [row for row in rows if row["coverage_status"] == "review_required"] + external_rows
@@ -73,6 +69,14 @@ class GeminiNewapiAliasCapabilityCoverageService:
                 "image_capable_alias_count": capability_totals["image"],
                 "covered_task_count": len([task for task, count in task_totals.items() if count]),
                 "high_frequency_task_count": len([task for task in task_totals if TASK_POLICIES[task].high_frequency]),
+                "observed_model_candidate_count": observed_model_extraction["summary"]["candidate_count"],
+                "accepted_observed_model_count": observed_model_extraction["summary"]["accepted_model_count"],
+                "dropped_observed_model_count": observed_model_extraction["summary"]["dropped_model_count"],
+                "rejected_sensitive_observed_model_count": observed_model_extraction["summary"][
+                    "rejected_sensitive_count"
+                ],
+                "observed_model_source_count": len(observed_model_extraction["summary"]["source_fields"]),
+                "observed_model_extractor_version": observed_model_extraction["summary"]["extractor_version"],
                 "raw_payload_echoed": False,
                 "configuration_written": False,
                 "gateway_called": False,
@@ -97,6 +101,9 @@ class GeminiNewapiAliasCapabilityCoverageService:
                 "balanced_rule": "Stable low/medium Flash aliases can support review/document routes after cheap precheck.",
                 "premium_rule": "Pro, preview, image, media, unknown, unpriced, and external aliases require explicit maintainer review.",
                 "observed_unknown_rule": "Observed Gemini-like aliases that do not resolve to catalog metadata remain explicit-only until price, lifecycle, capability, and gateway evidence pass.",
+            },
+            "source_summaries": {
+                "observed_model_extraction": observed_model_extraction["summary"],
             },
             "privacy_boundary": {
                 "metadata_only": True,
@@ -137,20 +144,18 @@ class GeminiNewapiAliasCapabilityCoverageService:
                     rows.append(self._row(alias, source="catalog", profile=profile))
         return rows
 
-    def _observed_rows(self, value: Any) -> list[dict[str, Any]]:
-        if not isinstance(value, list):
-            return []
+    def _observed_rows(self, extraction: dict[str, Any]) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
-        rejected = 0
-        for item in value[:80]:
-            safe_alias = self._safe_alias(item)
-            if not safe_alias:
-                rejected += 1
-                rows.append(self._blocked_row(rejected))
-                continue
+        observed_models = extraction.get("observed_models", [])
+        if not isinstance(observed_models, list):
+            observed_models = []
+        for safe_alias in observed_models[:80]:
             canonical = model_catalog.canonical_model_id(safe_alias)
             profile = model_catalog.model_profile(canonical) if canonical else None
             rows.append(self._row(safe_alias, source="observed", profile=profile))
+        rejected = int(extraction.get("summary", {}).get("rejected_sensitive_count") or 0)
+        for index in range(1, rejected + 1):
+            rows.append(self._blocked_row(index))
         return rows
 
     def _row(self, alias: str, *, source: str, profile: ModelProfile | None) -> dict[str, Any]:
@@ -357,21 +362,6 @@ class GeminiNewapiAliasCapabilityCoverageService:
         if blocked_rows:
             actions.append("Remove sensitive observed model values before alias capability review.")
         return actions
-
-    def _safe_alias(self, value: Any) -> str | None:
-        if isinstance(value, dict):
-            for key in ("model", "id", "name"):
-                if isinstance(value.get(key), str):
-                    value = value[key]
-                    break
-            else:
-                return None
-        if not isinstance(value, str):
-            return None
-        text = value.strip().lower()[:180]
-        if not text or SENSITIVE_PATTERN.search(text):
-            return None
-        return re.sub(r"[^a-z0-9_.:/@?#-]+", "-", text).strip("-") or None
 
     def _is_gemini_like(self, alias: str) -> bool:
         value = (alias or "").strip().lower()

@@ -48,6 +48,32 @@ def test_model_selector_normalizes_newapi_prefixes_and_flags_unknown_gemini_like
     assert selector["summary"]["unknown_model_count"] == 2
 
 
+def test_model_selector_extracts_observed_models_from_wrapped_model_lists():
+    selector = GeminiNewapiModelSelectorService().build_selector(
+        {
+            "tasks": ["fast"],
+            "models_response": {
+                "models": [
+                    {"name": "models/gemini-2.5-flash-lite"},
+                    {"model_id": "newapi/google/gemini-3.2-flash-lite"},
+                ]
+            },
+            "result": {"items": [{"id": "vendor/other-model"}]},
+        }
+    )
+    reviews = {item["raw_model"]: item for item in selector["observed_model_reviews"]}
+
+    assert selector["status"] == "needs_catalog_review"
+    assert selector["summary"]["observed_model_candidate_count"] == 3
+    assert selector["summary"]["accepted_observed_model_count"] == 3
+    assert selector["source_summaries"]["observed_model_extraction"]["extractor_version"] == (
+        "gemini-newapi-observed-model-extraction-v1"
+    )
+    assert reviews["models/gemini-2.5-flash-lite"]["status"] == "catalog_known"
+    assert reviews["newapi/google/gemini-3.2-flash-lite"]["status"] == "catalog_review"
+    assert reviews["vendor/other-model"]["status"] == "external_model"
+
+
 def test_model_selector_blocks_premium_high_frequency_explicit_default():
     selector = GeminiNewapiModelSelectorService().build_selector(
         {

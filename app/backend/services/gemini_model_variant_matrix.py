@@ -1,20 +1,14 @@
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
+from services.gemini_newapi_observed_model_extraction import (
+    extract_observed_model_ids,
+)
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import GEMINI_MODEL_CATALOG, catalog_for_api
-
-
-SENSITIVE_PATTERN = re.compile(
-    r"(sk-[A-Za-z0-9]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|password|secret|api[_-]?key|token)",
-    re.IGNORECASE,
-)
-MAX_OBSERVED_MODEL_CANDIDATES = 200
-MAX_OBSERVED_MODEL_IDS = 40
 
 
 class GeminiModelVariantMatrixService:
@@ -150,108 +144,7 @@ class GeminiModelVariantMatrixService:
         return rows
 
     def _observed_model_extraction(self, value: Any) -> dict[str, Any]:
-        candidates: list[Any] = []
-        source_fields: list[str] = []
-        if isinstance(value, list):
-            self._append_observed_candidates(candidates, source_fields, "payload", value)
-        elif isinstance(value, dict):
-            for key in ("observed_models", "model_ids", "gateway_models", "models"):
-                self._append_observed_candidates(candidates, source_fields, key, value.get(key))
-            self._append_observed_response_candidates(
-                candidates,
-                source_fields,
-                "models_response",
-                value.get("models_response"),
-            )
-            self._append_observed_response_candidates(
-                candidates,
-                source_fields,
-                "gateway_models_response",
-                value.get("gateway_models_response"),
-            )
-            self._append_observed_response_candidates(
-                candidates,
-                source_fields,
-                "model_list",
-                value.get("model_list"),
-            )
-            self._append_observed_candidates(candidates, source_fields, "data", value.get("data"))
-
-        observed: list[str] = []
-        for item in candidates:
-            token = self._safe_model_id(item)
-            if token and token not in observed:
-                observed.append(token)
-            if len(observed) >= MAX_OBSERVED_MODEL_IDS:
-                break
-        source_fields = list(dict.fromkeys(source_fields))
-        return {
-            "observed_models": observed,
-            "summary": {
-                "candidate_count": len(candidates),
-                "accepted_model_count": len(observed),
-                "dropped_model_count": max(0, len(candidates) - len(observed)),
-                "source_fields": source_fields,
-                "max_candidate_count": MAX_OBSERVED_MODEL_CANDIDATES,
-                "max_accepted_model_count": MAX_OBSERVED_MODEL_IDS,
-                "raw_payload_echoed": False,
-            },
-        }
-
-    def _append_observed_response_candidates(
-        self,
-        candidates: list[Any],
-        source_fields: list[str],
-        source: str,
-        value: Any,
-    ) -> None:
-        if isinstance(value, list):
-            self._append_observed_candidates(candidates, source_fields, source, value)
-            return
-        if not isinstance(value, dict):
-            return
-        for key in ("data", "models", "items"):
-            nested = value.get(key)
-            if isinstance(nested, list):
-                self._append_observed_candidates(candidates, source_fields, f"{source}.{key}", nested)
-
-    def _append_observed_candidates(
-        self,
-        candidates: list[Any],
-        source_fields: list[str],
-        source: str,
-        value: Any,
-    ) -> None:
-        if not isinstance(value, list) or len(candidates) >= MAX_OBSERVED_MODEL_CANDIDATES:
-            return
-        source_fields.append(source)
-        remaining = MAX_OBSERVED_MODEL_CANDIDATES - len(candidates)
-        candidates.extend(value[:remaining])
-
-    def _observed_models(self, value: Any) -> list[str]:
-        if not isinstance(value, list):
-            return []
-        observed: list[str] = []
-        for item in value[:MAX_OBSERVED_MODEL_IDS]:
-            token = self._safe_model_id(item)
-            if token and token not in observed:
-                observed.append(token)
-        return observed
-
-    def _safe_model_id(self, value: Any) -> str:
-        if isinstance(value, dict):
-            for key in ("model", "model_id", "id", "name"):
-                if isinstance(value.get(key), str):
-                    value = value[key]
-                    break
-            else:
-                return ""
-        if isinstance(value, (list, tuple, set)):
-            return ""
-        raw = str(value or "").strip().lower()[:120]
-        if not raw or SENSITIVE_PATTERN.search(raw):
-            return ""
-        return re.sub(r"[^a-z0-9_.:/-]+", "-", raw).strip("-")
+        return extract_observed_model_ids(value)
 
     def _family_label(self, model_id: str) -> str:
         if "flash-lite" in model_id:

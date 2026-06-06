@@ -67,6 +67,50 @@ def test_alias_capability_coverage_reviews_unknown_and_external_observed_models(
     assert rows["newapi/google/gemini-2.5-flash-lite"]["high_frequency_default_allowed"] is True
     assert rows["vendor/other-model"]["coverage_status"] == "external"
     assert rows["vendor/other-model"]["default_allowed_without_review"] is False
+    assert coverage["summary"]["observed_model_candidate_count"] == 3
+    assert coverage["summary"]["accepted_observed_model_count"] == 3
+    assert coverage["source_summaries"]["observed_model_extraction"]["source_fields"] == ["observed_models"]
+
+
+def test_alias_capability_coverage_extracts_wrapped_model_list_shapes():
+    coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
+        {
+            "include_catalog_aliases": False,
+            "models_response": {
+                "data": [
+                    {"id": "models/gemini-2.5-flash-lite"},
+                    {"name": "publishers/google/models/gemini-2.5-flash:generateContent"},
+                ]
+            },
+            "availableModels": [
+                {"model_id": "newapi/google/gemini-3.2-flash-lite"},
+            ],
+            "gateway_probe_evaluation": {
+                "model_rows": [
+                    {"model": "openrouter/google/gemini-3.1-flash-lite@latest"},
+                ]
+            },
+        }
+    )
+    rows = {row["alias_model"]: row for row in coverage["coverage_rows"]}
+    extraction = coverage["source_summaries"]["observed_model_extraction"]
+
+    assert coverage["status"] == "review_required"
+    assert coverage["summary"]["coverage_row_count"] == 4
+    assert coverage["summary"]["accepted_observed_model_count"] == 4
+    assert coverage["summary"]["observed_model_extractor_version"] == "gemini-newapi-observed-model-extraction-v1"
+    assert rows["models/gemini-2.5-flash-lite"]["coverage_status"] == "covered"
+    assert rows["publishers/google/models/gemini-2.5-flash:generatecontent"]["canonical_model"] == (
+        "gemini-2.5-flash"
+    )
+    assert rows["newapi/google/gemini-3.2-flash-lite"]["coverage_status"] == "review_required"
+    assert rows["openrouter/google/gemini-3.1-flash-lite@latest"]["known_catalog_model"] is True
+    assert extraction["raw_payload_echoed"] is False
+    assert set(extraction["source_fields"]) == {
+        "models_response.data",
+        "availableModels",
+        "gateway_probe_evaluation.model_rows",
+    }
 
 
 def test_alias_capability_coverage_redacts_sensitive_observed_values():
@@ -85,6 +129,7 @@ def test_alias_capability_coverage_redacts_sensitive_observed_values():
 
     assert coverage["status"] == "blocked"
     assert coverage["summary"]["blocked_count"] == 2
+    assert coverage["summary"]["rejected_sensitive_observed_model_count"] == 2
     assert len(blocked_rows) == 2
     assert coverage["privacy_boundary"]["raw_payload_echoed"] is False
     assert coverage["privacy_boundary"]["credentials_included"] is False

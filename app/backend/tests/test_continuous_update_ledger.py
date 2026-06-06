@@ -163,6 +163,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-price-refresh-monitor" in completed_ids
     assert "model-price-refresh-monitor-readiness-ui" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
+    assert "gemini-newapi-observed-model-extraction" in completed_ids
     assert "gemini-newapi-model-alias-matrix" in completed_ids
     assert "gemini-newapi-alias-capability-coverage" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
@@ -301,6 +302,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-session-low-resource-fixture-review" not in queue_ids
     assert "continuous-ledger-low-resource-fixture-evidence" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
+    assert "gemini-newapi-observed-model-extraction" not in queue_ids
     assert "gemini-newapi-model-alias-matrix" not in queue_ids
     assert "gemini-newapi-alias-capability-coverage" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
@@ -415,6 +417,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py "
+        "tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py "
+        "tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py "
+        "tests/test_model_catalog_candidate_patch_plan.py -q"
+        in ledger["validation_commands"]
+    )
     assert (
         "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py "
         "tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q"
@@ -582,12 +591,45 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert alias_matrix_entry["status"] == "shipped"
     assert "canonical, models/, google/, yibu/" in alias_matrix_entry["impact"]
     assert "premium exceptions" in alias_matrix_entry["impact"]
+    assert "shared observed-model extraction" in alias_matrix_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in alias_matrix_entry["evidence_paths"]
     assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in alias_matrix_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in alias_matrix_entry["evidence_paths"]
     assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in alias_matrix_entry["evidence_paths"]
     assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in alias_matrix_entry["evidence_paths"]
     assert "gemini-newapi-model-alias-matrix" in alias_matrix_entry["release_gate_links"]
     assert "gemini-newapi-model-selector" in alias_matrix_entry["release_gate_links"]
     assert "modelops-gemini-cheap-first-coverage-gate" in alias_matrix_entry["release_gate_links"]
+    observed_extraction_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-observed-model-extraction"
+    )
+    assert observed_extraction_entry["size"] == "medium"
+    assert observed_extraction_entry["status"] == "shipped"
+    assert "shared extractor" in observed_extraction_entry["impact"]
+    assert "OpenAI-compatible /models responses" in observed_extraction_entry["impact"]
+    assert "Gemini native wrappers" in observed_extraction_entry["impact"]
+    assert "gateway probe rows" in observed_extraction_entry["impact"]
+    assert "intake queue rows" in observed_extraction_entry["impact"]
+    assert "redaction counts" in observed_extraction_entry["impact"]
+    assert "no raw payloads" in observed_extraction_entry["impact"]
+    assert "gateway calls" in observed_extraction_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in observed_extraction_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in observed_extraction_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_model_variant_matrix.py" in observed_extraction_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_model_selector.py" in observed_extraction_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in observed_extraction_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in observed_extraction_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_catalog_candidate_patch_plan.py" in observed_extraction_entry["evidence_paths"]
+    assert "gemini-newapi-observed-model-extraction" in observed_extraction_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in observed_extraction_entry["release_gate_links"]
+    assert "gemini-newapi-alias-capability-coverage" in observed_extraction_entry["release_gate_links"]
+    assert "model-catalog-candidate-patch-plan" in observed_extraction_entry["release_gate_links"]
     alias_capability_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-alias-capability-coverage"
     )
@@ -599,7 +641,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "without gateway calls" in alias_capability_entry["impact"]
     assert "configuration writes" in alias_capability_entry["impact"]
     assert "credentials" in alias_capability_entry["impact"]
+    assert "shared observed-model extraction" in alias_capability_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in alias_capability_entry["evidence_paths"]
     assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in alias_capability_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in alias_capability_entry["evidence_paths"]
     assert "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py" in alias_capability_entry["evidence_paths"]
     assert "app/backend/services/model_ops_readiness.py" in alias_capability_entry["evidence_paths"]
     assert "app/backend/routers/aihub.py" in alias_capability_entry["evidence_paths"]
@@ -864,6 +909,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "payloads" in intake_queue_entry["impact"]
     assert "model outputs" in intake_queue_entry["impact"]
     assert "credentials" in intake_queue_entry["impact"]
+    assert "shared observed-model extraction" in intake_queue_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_observed_gemini_model_intake_queue.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in intake_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_observed_gemini_model_intake_queue.py" in intake_queue_entry[
+        "evidence_paths"
+    ]
     assert "app/backend/services/release_readiness.py" in intake_queue_entry["evidence_paths"]
     assert "app/backend/services/continuous_update_ledger.py" in intake_queue_entry["evidence_paths"]
     assert "app/backend/services/maintenance_evidence.py" in intake_queue_entry["evidence_paths"]
@@ -890,7 +942,14 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "explicit-only default-promotion boundaries" in catalog_candidate_patch_entry["impact"]
     assert "without editing model_catalog.py" in catalog_candidate_patch_entry["impact"]
     assert "calling gateways" in catalog_candidate_patch_entry["impact"]
+    assert "shared observed-model extraction" in catalog_candidate_patch_entry["impact"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in catalog_candidate_patch_entry[
+        "evidence_paths"
+    ]
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in catalog_candidate_patch_entry[
+        "evidence_paths"
+    ]
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in catalog_candidate_patch_entry["evidence_paths"]
     assert "app/backend/services/model_ops_readiness.py" in catalog_candidate_patch_entry["evidence_paths"]
     assert "app/backend/routers/aihub.py" in catalog_candidate_patch_entry["evidence_paths"]

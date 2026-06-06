@@ -24,6 +24,7 @@ def test_alias_matrix_defaults_cover_catalog_prefixes_and_cheap_first_flags():
     assert evidence["summary"]["raw_payload_echoed"] is False
     assert evidence["summary"]["gateway_called"] is False
     assert evidence["summary"]["credentials_included"] is False
+    assert len({row["id"] for row in evidence["alias_rows"]}) == len(evidence["alias_rows"])
     assert flash_lite["known_catalog_model"] is True
     assert flash_lite["high_frequency_default_allowed"] is True
     assert flash_lite["default_allowed_without_review"] is True
@@ -88,6 +89,28 @@ def test_alias_matrix_redacts_sensitive_observed_model_values():
     assert "client@example.com" not in serialized
     assert evidence["summary"]["raw_payload_echoed"] is False
     assert evidence["privacy_boundary"]["credentials_included"] is False
+
+
+def test_alias_matrix_uses_shared_extractor_for_newapi_wrapper_shapes():
+    evidence = GeminiNewapiModelAliasMatrixService().build_matrix(
+        {
+            "include_catalog_aliases": False,
+            "models_response": {
+                "models": [
+                    {"name": "models/gemini-2.5-flash-lite"},
+                    {"model_id": "newapi/google/gemini-3.2-flash-lite"},
+                ]
+            },
+            "availableModels": [{"id": "publishers/google/models/gemini-2.5-flash:generateContent"}],
+        }
+    )
+    rows = {row["alias_model"]: row for row in evidence["alias_rows"]}
+
+    assert evidence["status"] == "needs_catalog_review"
+    assert evidence["summary"]["observed_model_count"] == 3
+    assert rows["models/gemini-2.5-flash-lite"]["alias_status"] == "catalog_known"
+    assert rows["publishers/google/models/gemini-2.5-flash:generatecontent"]["canonical_model"] == "gemini-2.5-flash"
+    assert rows["newapi/google/gemini-3.2-flash-lite"]["alias_status"] == "catalog_review"
 
 
 def test_gemini_newapi_model_alias_matrix_route_returns_template_and_assessment():

@@ -59,6 +59,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini/NewAPI observed model extraction" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model alias matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI alias capability coverage" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
@@ -128,6 +129,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_selector.py" in evidence_paths
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in evidence_paths
+    assert "app/backend/tests/test_gemini_newapi_observed_model_extraction.py" in evidence_paths
     assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in evidence_paths
@@ -204,6 +207,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
+    assert "Gemini/NewAPI observed model extraction evidence" in model_signal["description"]
+    assert "Gemini/NewAPI observed model extraction review" in model_signal["responsibility"]
     assert "Gemini/NewAPI alias capability coverage evidence" in model_signal["description"]
     assert "Gemini/NewAPI alias capability coverage review" in model_signal["responsibility"]
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
@@ -357,6 +362,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini default change proposal review is metadata-only proposal evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini default cost impact forecast is metadata-only cost evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("observed Gemini model intake queue is metadata-only intake evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini/NewAPI observed model extraction evidence is metadata-only parsing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model catalog candidate patch plan is metadata-only catalog maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not edit model_catalog.py" in guardrail for guardrail in profile["application_guardrails"])
     assert any("OpenAI-compatible gateway /models or manually observed Gemini-like model ids" in guardrail for guardrail in profile["application_guardrails"])

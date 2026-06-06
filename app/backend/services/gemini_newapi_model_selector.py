@@ -6,6 +6,7 @@ from typing import Any
 
 from services import model_catalog
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.gemini_newapi_observed_model_extraction import extract_observed_model_ids, safe_model_id
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_catalog import (
     canonical_model_id,
@@ -75,9 +76,10 @@ class GeminiNewapiModelSelectorService:
         data = payload if isinstance(payload, dict) else {}
         tasks = self._tasks(data.get("tasks"))
         explicit_models = data.get("explicit_models") if isinstance(data.get("explicit_models"), dict) else {}
-        observed_models = data.get("observed_models") if isinstance(data.get("observed_models"), list) else []
+        observed_model_extraction = extract_observed_model_ids(data)
+        observed_models = observed_model_extraction["observed_models"]
         recommendations = [self._recommendation(task, explicit_models.get(task)) for task in tasks]
-        observed_reviews = [self._observed_review(item).to_api() for item in observed_models if self._safe_model_id(item)]
+        observed_reviews = [self._observed_review(item).to_api() for item in observed_models]
         policy = self.policy_service.build_policy(observed_models=observed_models)
         recommendation_payloads = [item.to_api() for item in recommendations]
         catalog_reviews = [item for item in observed_reviews if item["status"] == "catalog_review"]
@@ -93,8 +95,15 @@ class GeminiNewapiModelSelectorService:
                 "premium_exception_count": sum(1 for item in recommendation_payloads if item["premium_exception"] is True),
                 "catalog_review_count": len(catalog_reviews),
                 "unknown_model_count": len(unknown_models),
+                "observed_model_candidate_count": observed_model_extraction["summary"]["candidate_count"],
+                "accepted_observed_model_count": observed_model_extraction["summary"]["accepted_model_count"],
+                "dropped_observed_model_count": observed_model_extraction["summary"]["dropped_model_count"],
+                "observed_model_source_count": len(observed_model_extraction["summary"]["source_fields"]),
                 "known_catalog_model_count": len(model_catalog.GEMINI_MODEL_CATALOG),
                 "raw_payload_echoed": False,
+            },
+            "source_summaries": {
+                "observed_model_extraction": observed_model_extraction["summary"],
             },
             "task_recommendations": recommendation_payloads,
             "observed_model_reviews": observed_reviews,
@@ -222,15 +231,7 @@ class GeminiNewapiModelSelectorService:
         return re.sub(r"[^a-z0-9:-]+", "-", raw).strip("-") or "fast"
 
     def _safe_model_id(self, value: Any) -> str:
-        if isinstance(value, dict):
-            for key in ("model", "id", "name"):
-                if isinstance(value.get(key), str):
-                    value = value[key]
-                    break
-        raw = str(value or "").strip().lower()[:120]
-        if not raw or SENSITIVE_PATTERN.search(raw):
-            return ""
-        return re.sub(r"[^a-z0-9_.:/-]+", "-", raw).strip("-")
+        return safe_model_id(value)
 
     def _is_gemini_like(self, model_id: str) -> bool:
         value = (model_id or "").strip().lower()
