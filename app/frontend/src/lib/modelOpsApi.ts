@@ -2349,6 +2349,79 @@ export type ModelRequestPolicy = {
   task_policies: ModelRequestPolicyTask[];
 };
 
+export type ModelGatewayRequestCompatibilityRow = {
+  id: string;
+  task: string;
+  model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  gemini_like: boolean;
+  gateway_prefixed_model: boolean;
+  cost_tier: string;
+  max_default_cost_tier: string;
+  cheap_first_task: boolean;
+  compatibility_status: string;
+  release_action: string;
+  gateway_request_shape: {
+    messages: string;
+    response_format_mode: string;
+    temperature: number;
+    max_tokens: number;
+    reasoning_effort?: string | null;
+    request_body_returned: boolean;
+    headers_returned: boolean;
+  };
+  request_policy: {
+    temperature_adjusted: boolean;
+    max_tokens_adjusted: boolean;
+    cost_mode: string;
+  };
+  reasoning_policy: {
+    effective_effort?: string | null;
+    gateway_parameter?: string | null;
+    cost_mode: string;
+    adjusted: boolean;
+  };
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelGatewayRequestCompatibilityGate = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    task_count: number;
+    ready_task_count: number;
+    review_task_count: number;
+    blocked_task_count: number;
+    cheap_first_task_count: number;
+    cheap_first_ready_count: number;
+    gateway_prefixed_model_count: number;
+    unknown_model_count: number;
+    reasoning_omitted_count: number;
+    json_response_format_count: number;
+    forbidden_payload_field_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+    credentials_included: boolean;
+  };
+  task_rows: ModelGatewayRequestCompatibilityRow[];
+  checks: Array<{ id: string; status: string; reason: string }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelRequestCostBound = {
   id: string;
   task: string;
@@ -3023,6 +3096,7 @@ export type ModelOpsResponse = {
   lifecycle_policy?: ModelLifecyclePolicy;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
+  gateway_request_compatibility_gate?: ModelGatewayRequestCompatibilityGate;
   request_cost_bounds?: ModelRequestCostBounds;
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
@@ -3118,6 +3192,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     rows?: unknown;
+    task_rows?: unknown;
     default_targets?: unknown;
     required?: unknown;
     optional?: unknown;
@@ -3148,6 +3223,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
 }
@@ -3334,6 +3410,23 @@ export async function getModelCatalogCandidateImpactReplay(): Promise<ModelCatal
   return invokeModelOpsApi<ModelCatalogCandidateImpactReplay>({
     url: '/api/v1/aihub/models/catalog-candidate-impact-replay',
     method: 'GET',
+  });
+}
+
+export async function getModelGatewayRequestCompatibilityGate(): Promise<ModelGatewayRequestCompatibilityGate> {
+  return invokeModelOpsApi<ModelGatewayRequestCompatibilityGate>({
+    url: '/api/v1/aihub/models/gateway-request-compatibility-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelGatewayRequestCompatibilityGate(
+  payload: Record<string, unknown>,
+): Promise<ModelGatewayRequestCompatibilityGate> {
+  return invokeModelOpsApi<ModelGatewayRequestCompatibilityGate>({
+    url: '/api/v1/aihub/models/gateway-request-compatibility-gate',
+    method: 'POST',
+    data: payload,
   });
 }
 

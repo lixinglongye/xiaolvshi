@@ -43,6 +43,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Model catalog candidate patch plan" in rows["/model-ops"]["protected_panels"]
     assert "Model catalog candidate impact replay" in rows["/model-ops"]["protected_panels"]
     assert "Gemini/NewAPI alias capability coverage" in rows["/model-ops"]["protected_panels"]
+    assert "Gateway request compatibility gate" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first release decision" in rows["/model-ops"]["protected_panels"]
     assert "Default change queue" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first priority queue" in rows["/model-ops"]["protected_panels"]
@@ -116,6 +117,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
     assert "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only" in payload_text
+    assert "ModelOps gateway request compatibility gate UI evidence is metadata only" in payload_text
     assert "request bodies" in payload_text
     assert "response bodies" in payload_text
     assert "headers" in payload_text
@@ -129,6 +131,9 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "public benchmark sample text" in payload_text
     assert "public score claims" in payload_text
     assert "modelops-legal-benchmark-risk-bridge-regresses" in payload_text
+    assert "gateway-request-compatibility-gate-regresses" in payload_text
+    assert "JSON response shapes" in payload_text
+    assert "forbidden raw request fields" in payload_text
     assert "user-need gaps" in payload_text
     assert "runaway retries" in payload_text
     assert "premium review coverage" in payload_text

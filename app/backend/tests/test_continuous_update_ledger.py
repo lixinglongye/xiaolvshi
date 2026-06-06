@@ -214,6 +214,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" in completed_ids
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
+    assert "model-gateway-request-compatibility-gate" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
@@ -359,6 +360,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" not in queue_ids
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
+    assert "model-gateway-request-compatibility-gate" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
     assert "legal-document-fact-consistency-benchmark" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" not in queue_ids
@@ -773,6 +775,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "payloads" in coverage_gate_entry["impact"]
     assert "model outputs" in coverage_gate_entry["impact"]
     assert "credentials" in coverage_gate_entry["impact"]
+    gateway_request_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-request-compatibility-gate"
+    )
+    assert gateway_request_gate_entry["size"] == "medium"
+    assert gateway_request_gate_entry["status"] == "shipped"
+    assert "OpenAI-compatible Gemini request-shape evidence" in gateway_request_gate_entry["impact"]
+    assert "task defaults" in gateway_request_gate_entry["impact"]
+    assert "gateway model compatibility" in gateway_request_gate_entry["impact"]
+    assert "request parameter caps" in gateway_request_gate_entry["impact"]
+    assert "reasoning_effort policy" in gateway_request_gate_entry["impact"]
+    assert "cheap-first cost bounds" in gateway_request_gate_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in gateway_request_gate_entry["impact"]
+    assert "configuration writes" in gateway_request_gate_entry["impact"]
+    assert "traffic shifts" in gateway_request_gate_entry["impact"]
+    assert "headers" in gateway_request_gate_entry["impact"]
+    assert "request bodies" in gateway_request_gate_entry["impact"]
+    assert "prompts" in gateway_request_gate_entry["impact"]
+    assert "raw legal text" in gateway_request_gate_entry["impact"]
+    assert "model outputs" in gateway_request_gate_entry["impact"]
+    assert "payloads" in gateway_request_gate_entry["impact"]
+    assert "emails" in gateway_request_gate_entry["impact"]
+    assert "credentials" in gateway_request_gate_entry["impact"]
+    assert "app/backend/services/model_gateway_request_compatibility_gate.py" in gateway_request_gate_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_gateway_request_compatibility_gate.py" in gateway_request_gate_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/aihub.py" in gateway_request_gate_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in gateway_request_gate_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gateway_request_gate_entry["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_REQUEST_COMPATIBILITY_GATE.md" in gateway_request_gate_entry["evidence_paths"]
+    assert "model-gateway-request-compatibility-gate" in gateway_request_gate_entry["release_gate_links"]
+    assert "model-request-policy" in gateway_request_gate_entry["release_gate_links"]
+    assert "model-reasoning-policy" in gateway_request_gate_entry["release_gate_links"]
+    assert "model-gateway-compatibility" in gateway_request_gate_entry["release_gate_links"]
+    assert "model-request-cost-bounds" in gateway_request_gate_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in gateway_request_gate_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_gateway_request_compatibility_gate.py "
+        "tests/test_model_request_policy.py tests/test_model_reasoning_policy.py "
+        "tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     legal_fixture_gate_entry = next(
         entry
         for entry in ledger["completed_updates"]

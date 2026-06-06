@@ -54,6 +54,7 @@ from services.model_failure_upgrade_budget import ModelFailureUpgradeBudgetServi
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
+from services.model_gateway_request_compatibility_gate import ModelGatewayRequestCompatibilityGateService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
 from services.model_ops_readiness import ModelOpsReadinessService
@@ -222,6 +223,7 @@ async def list_models():
     default_template_audit = ModelDefaultTemplateAuditService().build_audit()
     reasoning_policy = reasoning_policy_for_api()
     request_policy = generation_request_policy_for_api()
+    gateway_request_compatibility_gate = ModelGatewayRequestCompatibilityGateService().build_gate()
     route_guardrails = ModelRouteGuardrailService().evaluate(route_telemetry)
     callsite_audit = ModelCallsiteAuditService().audit()
     budget_policy = budget_policy_for_api()
@@ -308,6 +310,7 @@ async def list_models():
         "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
+        "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -393,6 +396,7 @@ async def list_models():
         "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
+        "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -586,6 +590,25 @@ async def evaluate_model_catalog_candidate_impact_replay(payload: dict[str, Any]
             payload,
             signals={"catalog_candidate_patch_plan": patch_plan},
         ),
+    }
+
+
+@router.get("/models/gateway-request-compatibility-gate")
+async def model_gateway_request_compatibility_gate():
+    """Return metadata-only OpenAI-compatible Gemini request-shape gate evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gateway_request_compatibility_gate"],
+    }
+
+
+@router.post("/models/gateway-request-compatibility-gate")
+async def evaluate_model_gateway_request_compatibility_gate(payload: dict[str, Any]):
+    """Evaluate sanitized task/model request-shape metadata without sending requests."""
+    return {
+        "success": True,
+        "data": ModelGatewayRequestCompatibilityGateService().build_gate(payload),
     }
 
 

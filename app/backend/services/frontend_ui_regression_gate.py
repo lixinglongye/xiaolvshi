@@ -88,6 +88,7 @@ PAGE_GATES = (
                 "Model catalog candidate patch plan",
                 "Model catalog candidate impact replay",
                 "Gemini/NewAPI alias capability coverage",
+            "Gateway request compatibility gate",
             "Cheap-first release decision",
             "Default change queue",
             "Cheap-first priority queue",
@@ -198,6 +199,7 @@ class FrontendUiRegressionGateService:
                     "Legal RAG retrieval diagnostics gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, raw query, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
                     "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, raw prompts, payloads, model output, legal text, emails, or credentials.",
+                    "ModelOps gateway request compatibility gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, headers, request bodies, prompts, raw legal text, model output, payloads, emails, or credentials.",
                     "ModelOps catalog candidate impact replay UI evidence is metadata only: no catalog/config/env writes, no NewAPI/Gemini/OpenAI/Google/gateway/network calls, and no raw prompts, payloads, model output, legal text, or credentials.",
                     "ModelOps maintainer execution checklist UI evidence is metadata only: no configuration writes, approval records, traffic shifts, gateway calls, prompts, raw model output, or credentials.",
                     "Model failure upgrade budget UI evidence is metadata only: no automatic retries, premium quota consumption, gateway calls, traffic shifts, configuration writes, prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
@@ -248,6 +250,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini/NewAPI alias capability coverage panel in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked alias-capability API checks for yibu/NewAPI/action-suffix aliases, unknown models, external models, and privacy-boundary rows.",
+                },
+                {
+                    "id": "gateway-request-compatibility-gate-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the gateway request compatibility gate panel, API binding, and privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked gateway-request-compatibility API checks for task defaults, JSON response shapes, reasoning policy omissions, unsafe overrides, unknown models, and forbidden raw request fields.",
                 },
                 {
                     "id": "cheap-first-escalation-budget-regresses",

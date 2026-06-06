@@ -1095,6 +1095,15 @@ function Inner() {
   const taskInferenceRules = data?.runtime_router?.auto_task_inference?.rules ?? [];
   const reasoningRows = data?.reasoning_policy?.task_defaults ?? [];
   const requestPolicyRows = data?.request_policy?.task_defaults ?? [];
+  const gatewayRequestCompatibilityGate = data?.gateway_request_compatibility_gate ?? null;
+  const gatewayRequestCompatibilityRows = gatewayRequestCompatibilityGate?.task_rows ?? [];
+  const gatewayRequestCompatibilityChecks = gatewayRequestCompatibilityGate?.checks ?? [];
+  const gatewayRequestCompatibilityPrivacyEntries = boundaryDisplayEntries(
+    gatewayRequestCompatibilityGate?.privacy_boundary,
+  );
+  const gatewayRequestCompatibilityClaimEntries = boundaryDisplayEntries(
+    gatewayRequestCompatibilityGate?.claim_boundary,
+  );
   const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
@@ -6967,6 +6976,140 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {gatewayRequestCompatibilityGate && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway request compatibility gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {gatewayRequestCompatibilityGate.summary.ready_task_count} ready /{' '}
+                  {gatewayRequestCompatibilityGate.summary.blocked_task_count} blocked /{' '}
+                  {gatewayRequestCompatibilityGate.summary.cheap_first_ready_count} cheap-first ready
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(gatewayRequestCompatibilityGate.status)}>
+                {gatewayRequestCompatibilityGate.status}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              {[
+                ['tasks', gatewayRequestCompatibilityGate.summary.task_count],
+                ['JSON shapes', gatewayRequestCompatibilityGate.summary.json_response_format_count],
+                ['reasoning omitted', gatewayRequestCompatibilityGate.summary.reasoning_omitted_count],
+                ['unknown models', gatewayRequestCompatibilityGate.summary.unknown_model_count],
+              ].map(([label, value]) => (
+                <Card key={`gateway-request-compat-${label}`}>
+                  <CardContent className="p-4">
+                    <div className="text-2xl font-black text-stone-950">{formatNumber(Number(value))}</div>
+                    <div className="mt-1 text-xs text-stone-600">{label}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="overflow-hidden rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Shape</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayRequestCompatibilityRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          max tier {row.max_default_cost_tier}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px]">
+                        <div className="font-mono text-xs text-stone-700">{row.model}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.canonical_model ?? 'pass-through'} / {row.cost_tier}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        <div>temperature: {row.gateway_request_shape.temperature}</div>
+                        <div>max_tokens: {formatNumber(row.gateway_request_shape.max_tokens)}</div>
+                        <div>response_format: {row.gateway_request_shape.response_format_mode}</div>
+                        <div>reasoning_effort: {row.gateway_request_shape.reasoning_effort ?? 'omitted'}</div>
+                        <div>request body returned: {String(row.gateway_request_shape.request_body_returned)}</div>
+                        <div>headers returned: {String(row.gateway_request_shape.headers_returned)}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.compatibility_status)}>
+                          {row.compatibility_status}
+                        </Badge>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {row.reason_codes.slice(0, 3).map((reason) => (
+                            <Badge key={`${row.id}-${reason}`} variant="outline" className="bg-white text-[10px]">
+                              {reason}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                        <div className="font-mono text-[11px] text-stone-500">{row.release_action}</div>
+                        <div className="mt-2">{row.next_action}</div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="mt-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Checks</h3>
+                <div className="mt-3 space-y-2">
+                  {gatewayRequestCompatibilityChecks.map((check) => (
+                    <div key={check.id} className="rounded-[6px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-800">{check.id}</div>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Privacy boundary</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {gatewayRequestCompatibilityPrivacyEntries.map(([key, value]) => (
+                    <div key={key} className="flex justify-between gap-3 border-b border-stone-950/10 pb-1">
+                      <span>{key}</span>
+                      <span className="font-mono">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Claim boundary</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {gatewayRequestCompatibilityClaimEntries.map(([key, value]) => (
+                    <div key={key} className="flex justify-between gap-3 border-b border-stone-950/10 pb-1">
+                      <span>{key}</span>
+                      <span className="font-mono">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  validation: {gatewayRequestCompatibilityGate.validation_commands[0]}
+                </div>
+              </div>
             </div>
           </section>
         )}

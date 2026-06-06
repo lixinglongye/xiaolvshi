@@ -36,6 +36,14 @@ unknown observed Gemini-like model ids. It does not edit `model_catalog.py`,
 write configuration, call gateways or the network, shift traffic, or store raw
 payloads, prompts, legal text, model outputs, credentials, or emails.
 
+Additional required evidence: `model-gateway-request-compatibility-gate`
+records metadata-only OpenAI-compatible Gemini/NewAPI request-shape checks for
+task defaults, gateway model compatibility, request parameter caps,
+reasoning-effort policy, JSON response-format requirements, and cheap-first cost
+bounds. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the
+network, write configuration, shift traffic, or store headers, request bodies,
+prompts, raw legal text, model outputs, payloads, emails, or credentials.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -73,6 +81,7 @@ POST /api/v1/maintenance/release-readiness
   "model-runtime-router": "pass",
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
+  "model-gateway-request-compatibility-gate": "pass",
   "model-request-cost-bounds": "pass",
   "model-cache-policy": "pass",
   "model-route-telemetry": "pass",
@@ -130,6 +139,7 @@ The service does not run shell commands itself. It only evaluates results suppli
 - Runtime model router coverage.
 - Gemini reasoning effort policy coverage.
 - Generation request parameter policy coverage.
+- Gateway request compatibility gate coverage.
 - Model request cost bounds coverage.
 - Model cache policy coverage.
 - Model route telemetry coverage.

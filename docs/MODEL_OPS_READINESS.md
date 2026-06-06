@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, and maintainer execution evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, and maintainer execution evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -25,10 +25,10 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 51,
-      "required_component_count": 50,
+      "component_count": 52,
+      "required_component_count": 51,
       "optional_component_count": 1,
-      "pass_count": 51,
+      "pass_count": 52,
       "warn_count": 0,
       "fail_count": 0,
       "required_warning_count": 0,
@@ -80,6 +80,7 @@ The readiness service checks:
 - runtime router,
 - reasoning policy,
 - request policy,
+- gateway request compatibility gate,
 - request cost bounds,
 - cache policy,
 - callsite audit,
@@ -110,6 +111,14 @@ Any required `fail` status blocks model-ops readiness. Any `warn` status require
 `cheap-first-escalation-budget` is required evidence for cheap-first cascade cost control. It checks aggregate failure, verification, escalation, premium escalation, operator review, and wasted escalation spend rates before a cheap Gemini/NewAPI default can be promoted.
 
 `model-failure-upgrade-budget` is required evidence for single-request failure handling. It checks sanitized failure metadata, attempt budget, hard-stop signals, incremental cost, task budget tier, premium quota, and operator approval before any retry-up or premium exception is allowed.
+
+`gateway-request-compatibility-gate` is required metadata-only evidence for
+OpenAI-compatible Gemini/NewAPI request shapes. It checks task default model
+selection, gateway-prefixed model normalization, request parameter caps, JSON
+response-format needs, reasoning-effort policy, and cheap-first cost bounds
+without calling models or gateways, writing configuration, shifting traffic, or
+returning headers, request bodies, prompts, raw legal text, model output,
+payloads, emails, or credentials.
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 

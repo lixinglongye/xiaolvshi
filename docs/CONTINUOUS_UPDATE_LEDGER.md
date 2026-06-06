@@ -122,6 +122,15 @@ configuration, call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
 shift traffic, or include raw payloads, prompts, legal text, model outputs,
 credentials, or emails.
 
+Current gateway request compatibility evidence:
+`model-gateway-request-compatibility-gate` adds shipped metadata-only
+OpenAI-compatible Gemini/NewAPI request-shape evidence for task defaults,
+gateway model compatibility, request parameter caps, reasoning-effort policy,
+JSON response-format requirements, and cheap-first cost bounds. It does not
+call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write
+configuration, shift traffic, or include headers, request bodies, prompts, raw
+legal text, model outputs, payloads, emails, or credentials.
+
 Current legal fixture cheap-first benchmark gate evidence:
 `modelops-legal-fixture-cheap-first-benchmark-gate` adds shipped metadata-only
 small legal-document cheap-first Gemini benchmark/risk gate evidence. It records

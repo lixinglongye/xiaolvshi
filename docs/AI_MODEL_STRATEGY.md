@@ -80,6 +80,15 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `routing_replay` 使用固定法律工作流场景回放当前升级策略，检查高频任务是否仍从便宜模型开始、警告/失败信号是否按预期验证或升级、premium 例外是否仍需要人工复核、硬停止是否避免继续花费模型预算。
 
+`gateway_request_compatibility_gate` is the shipped metadata-only request-shape
+gate for OpenAI-compatible Gemini/NewAPI gateways. It joins task defaults,
+gateway model compatibility, request parameter caps, reasoning-effort defaults,
+JSON response-format requirements, and cheap-first cost bounds before any live
+model call is attempted. The evidence does not call NewAPI, Gemini, OpenAI,
+Google, gateways, or the network, does not write configuration or shift traffic,
+and does not include headers, request bodies, prompts, raw legal text, model
+outputs, payloads, emails, or credentials.
+
 ## Cost-First Defaults
 
 当前默认策略：
