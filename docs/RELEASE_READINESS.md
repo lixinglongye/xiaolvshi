@@ -30,6 +30,12 @@ metadata-only alias normalization for OpenAI-compatible Gemini gateway model ids
 It does not call NewAPI, Gemini, or gateways, write configuration, shift traffic,
 store raw payloads, prompts, legal text, model outputs, credentials, or emails.
 
+Additional required evidence: `model-catalog-candidate-patch-plan` records
+metadata-only catalog candidate stubs and required review checks for sanitized
+unknown observed Gemini-like model ids. It does not edit `model_catalog.py`,
+write configuration, call gateways or the network, shift traffic, or store raw
+payloads, prompts, legal text, model outputs, credentials, or emails.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -58,6 +64,7 @@ POST /api/v1/maintenance/release-readiness
   "gemini-newapi-model-alias-matrix": "pass",
   "gemini-newapi-selector-replay": "pass",
   "model-price-refresh-monitor": "pass",
+  "model-catalog-candidate-patch-plan": "pass",
   "model-gateway-compatibility": "pass",
   "model-gateway-health-plan": "pass",
   "model-gateway-probe-evaluation": "pass",

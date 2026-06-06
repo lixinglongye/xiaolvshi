@@ -62,6 +62,12 @@ const geminiAliasMatrixPanel = sourceSection(
   'Gemini/NewAPI selector replay',
   'maintenance Gemini/NewAPI model alias matrix panel',
 );
+const catalogCandidatePatchPlanPanel = sourceSection(
+  modelOpsPage,
+  'Model catalog candidate patch plan',
+  'Gateway health plan',
+  'model-ops catalog candidate patch plan section',
+);
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
 for (const script of requiredScripts) {
@@ -362,6 +368,28 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Metadata only; no prompt text, request bodies, secrets, or model/gateway calls are included.', 'model-ops Gemini cheap-first privacy copy'),
   () => assertIncludes(modelOpsPage, 'Validation commands', 'model-ops Gemini cheap-first validation commands panel'),
   () => assertIncludes(modelOpsPage, 'Gemini catalog source audit', 'model-ops Gemini catalog source audit panel'),
+  () => assertIncludes(modelOpsApi, 'ModelCatalogCandidatePatchPlan', 'model-ops catalog candidate patch plan type'),
+  () => assertIncludes(modelOpsApi, 'ModelCatalogCandidatePatchRow', 'model-ops catalog candidate patch row type'),
+  () => assertIncludes(modelOpsApi, 'getModelCatalogCandidatePatchPlan', 'model-ops catalog candidate patch plan getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/catalog-candidate-patch-plan', 'model-ops catalog candidate patch plan endpoint'),
+  () => assertIncludes(modelOpsApi, 'catalog_candidate_patch_plan', 'model-ops catalog candidate patch plan response binding'),
+  () => assertIncludes(modelOpsApi, 'candidate_patch_rows', 'model-ops catalog candidate patch rows payload guard'),
+  () => assertIncludes(modelOpsPage, 'Model catalog candidate patch plan', 'model-ops catalog candidate patch plan panel'),
+  () => assertIncludes(modelOpsPage, 'catalogCandidatePatchRows', 'model-ops catalog candidate patch rows binding'),
+  () => assertIncludes(modelOpsPage, 'catalogCandidatePatchChecks', 'model-ops catalog candidate patch checks binding'),
+  () => assertIncludes(modelOpsPage, 'patch_action', 'model-ops catalog candidate patch action binding'),
+  () => assertIncludes(modelOpsPage, 'release_action', 'model-ops catalog candidate release action binding'),
+  () => assertIncludes(modelOpsPage, 'default_allowed_for_high_frequency', 'model-ops catalog candidate high-frequency binding'),
+  () => assertIncludes(modelOpsPage, 'Privacy boundary', 'model-ops catalog candidate privacy boundary panel'),
+  () => assertIncludes(modelOpsPage, 'Claim boundary', 'model-ops catalog candidate claim boundary panel'),
+  () => assertBefore(modelOpsPage, 'Gemini catalog source audit', 'Model catalog candidate patch plan', 'model-ops catalog candidate after source audit'),
+  () => assertBefore(modelOpsPage, 'Model catalog candidate patch plan', 'Gateway health plan', 'model-ops catalog candidate before gateway health'),
+  () =>
+    assertNotMatches(
+      catalogCandidatePatchPlanPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|raw_legal_text)\b/i,
+      'model-ops catalog candidate patch plan no secret or raw prompt/payload/output fields',
+    ),
   () => assertIncludes(modelOpsPage, 'Cheap-first release decision', 'model-ops cheap-first release decision panel'),
   () => assertIncludes(modelOpsPage, 'cheapFirstDecisionChecks', 'model-ops cheap-first decision row binding'),
   () => assertIncludes(modelOpsPage, 'Default change queue', 'model-ops default change queue panel'),

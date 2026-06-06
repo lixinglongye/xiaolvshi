@@ -784,6 +784,10 @@ function Inner() {
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
   const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
+  const catalogCandidatePatchPlan = data?.catalog_candidate_patch_plan ?? null;
+  const catalogCandidatePatchRows = catalogCandidatePatchPlan?.candidate_patch_rows ?? [];
+  const catalogCandidatePatchChecks = catalogCandidatePatchPlan?.checks ?? [];
+  const catalogCandidateClaimBoundaryEntries = boundaryDisplayEntries(catalogCandidatePatchPlan?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -3833,6 +3837,175 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {catalogCandidatePatchPlan && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Model catalog candidate patch plan</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {catalogCandidatePatchPlan.summary.candidate_patch_count} candidate patches /{' '}
+                  {catalogCandidatePatchPlan.summary.existing_catalog_review_count} known catalog reviews /{' '}
+                  {catalogCandidatePatchPlan.summary.external_ignore_count} external ids ignored
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(catalogCandidatePatchPlan.status)}>
+                {catalogCandidatePatchPlan.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidatePatchPlan.summary.candidate_patch_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">candidate patches</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{catalogCandidatePatchPlan.summary.add_count}</div>
+                <div className="mt-1 text-sm text-stone-600">adds</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidatePatchPlan.summary.review_required_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review required</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">{catalogCandidatePatchPlan.summary.blocked_count}</div>
+                <div className="mt-1 text-sm text-stone-600">blocked</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {catalogCandidatePatchPlan.summary.pricing_watch_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">pricing watch</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.3fr_0.7fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Model</TableHead>
+                      <TableHead>Patch action</TableHead>
+                      <TableHead>Cost / pricing</TableHead>
+                      <TableHead>Default posture</TableHead>
+                      <TableHead>Release action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {catalogCandidatePatchRows.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="max-w-[260px]">
+                          <div className="font-mono text-xs font-semibold text-stone-950">
+                            {row.proposed_catalog_id ?? row.model_id ?? row.observed_model}
+                          </div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{row.observed_model}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                          <div className="font-mono font-semibold text-stone-950">{row.patch_action}</div>
+                          <div className="mt-1">{row.catalog_status ?? row.row_type}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={costClass[row.cost_tier ?? ''] ?? 'bg-white'}>
+                            {row.cost_tier ?? 'unknown'}
+                          </Badge>
+                          <div className="mt-2 text-xs text-stone-600">
+                            {row.latency_tier ?? 'unknown'} / {row.pricing_status ?? 'unknown'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                          <Badge
+                            variant="outline"
+                            className={
+                              row.default_allowed_for_high_frequency ? statusClass('pass') : statusClass('warn')
+                            }
+                          >
+                            default_allowed_for_high_frequency:{' '}
+                            {String(Boolean(row.default_allowed_for_high_frequency))}
+                          </Badge>
+                          <div className="mt-2">{row.cheap_first_candidate_status ?? row.default_promotion_state}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          <div className="font-mono text-[11px] text-stone-500">{row.release_action ?? '-'}</div>
+                          <div className="mt-1">{row.recommended_action ?? row.reason ?? '-'}</div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {catalogCandidatePatchRows.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-sm text-stone-600">
+                          No new catalog candidate rows are required for the current sanitized model metadata.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="space-y-3">
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Candidate checks</h3>
+                  <div className="space-y-2">
+                    {catalogCandidatePatchChecks.map((check) => (
+                      <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono font-semibold text-stone-950">{check.id}</span>
+                          <Badge variant="outline" className={statusClass(check.status)}>
+                            {check.status}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 text-stone-600">{check.reason}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {boundaryDisplayEntries(catalogCandidatePatchPlan.privacy_boundary).map(([key, value]) => (
+                      <div key={key}>
+                        {key}: {String(value)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                  <div className="space-y-1 text-xs leading-5 text-stone-600">
+                    {catalogCandidateClaimBoundaryEntries.length > 0 ? (
+                      catalogCandidateClaimBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {String(value)}
+                        </div>
+                      ))
+                    ) : (
+                      <div>No automatic catalog edit, default change, live execution, pricing accuracy, or quality claims.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="space-y-2">
+                    {catalogCandidatePatchPlan.validation_commands.slice(0, 3).map((command) => (
+                      <div
+                        key={command}
+                        className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                      >
+                        {command}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}

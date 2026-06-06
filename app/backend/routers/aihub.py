@@ -37,6 +37,7 @@ from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
 from services.model_callsite_audit import ModelCallsiteAuditService
 from services.model_cache_policy import ModelCachePolicyService
+from services.model_catalog_candidate_patch_plan import ModelCatalogCandidatePatchPlanService
 from services.model_catalog_source_audit import ModelCatalogSourceAuditService
 from services.model_catalog import catalog_for_api, task_default_model
 from services.model_configuration_audit import ModelConfigurationAuditService
@@ -243,6 +244,12 @@ async def list_models():
     observed_gemini_model_intake_queue = ModelOpsObservedGeminiModelIntakeQueueService().build_queue(
         {"observed_models": observed_gateway_models}
     )
+    catalog_candidate_patch_plan = ModelCatalogCandidatePatchPlanService().build_plan(
+        signals={
+            "gateway_probe_evaluation": gateway_probe_evaluation,
+            "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        }
+    )
     gemini_cheap_first_coverage_gate = ModelOpsGeminiCheapFirstCoverageGateService().build_gate(
         {
             "capability_matrix": capability_matrix,
@@ -295,6 +302,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -367,6 +375,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -471,6 +480,25 @@ async def evaluate_model_ops_observed_gemini_model_intake_queue(payload: dict[st
     return {
         "success": True,
         "data": ModelOpsObservedGeminiModelIntakeQueueService().build_queue(payload),
+    }
+
+
+@router.get("/models/catalog-candidate-patch-plan")
+async def model_catalog_candidate_patch_plan():
+    """Return metadata-only catalog patch candidates for observed Gemini-like ids."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["catalog_candidate_patch_plan"],
+    }
+
+
+@router.post("/models/catalog-candidate-patch-plan")
+async def evaluate_model_catalog_candidate_patch_plan(payload: dict[str, Any]):
+    """Evaluate sanitized observed model ids into catalog patch candidates."""
+    return {
+        "success": True,
+        "data": ModelCatalogCandidatePatchPlanService().build_plan(payload),
     }
 
 

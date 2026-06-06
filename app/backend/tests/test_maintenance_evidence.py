@@ -79,6 +79,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default change proposal review" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini default cost impact forecast" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps observed Gemini model intake queue" in profile["release_management"]["release_readiness_controls"]
+    assert "Model catalog candidate patch plan" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session timeline" in profile["release_management"]["release_readiness_controls"]
@@ -140,6 +141,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
+    assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
+    assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
+    assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
@@ -189,6 +193,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
     assert "sanitized gateway model-list ingestion" in model_signal["description"]
     assert "Gemini catalog source audit" in model_signal["description"]
+    assert "model catalog candidate patch planning" in model_signal["description"]
     assert "ModelOps cheap-first release decision review" in model_signal["description"]
     assert "ModelOps default change queue review" in model_signal["description"]
     assert "ModelOps cheap-first canary plan review" in model_signal["description"]
@@ -212,6 +217,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "sanitized ModelOps calibration review" in model_signal["description"]
     assert "sanitized review-form upkeep" in model_signal["responsibility"]
     assert "catalog source-audit review" in model_signal["responsibility"]
+    assert "model catalog candidate patch-plan review" in model_signal["responsibility"]
     assert "observed-model form upkeep" in model_signal["responsibility"]
     assert "public benchmark mapping review" in model_signal["responsibility"]
     assert "ModelOps performance-observation review" in model_signal["responsibility"]
@@ -235,6 +241,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "legal benchmark route risk queue review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
+    assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in evidence_paths
     assert "app/backend/services/model_ops_default_change_queue.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_plan.py" in evidence_paths
@@ -244,6 +251,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
+    assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_default_change_queue.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_plan.py" in evidence_paths
@@ -253,6 +261,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
+    assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
     assert "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PLAN.md" in evidence_paths
@@ -332,6 +341,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini default change proposal review is metadata-only proposal evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini default cost impact forecast is metadata-only cost evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("observed Gemini model intake queue is metadata-only intake evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("model catalog candidate patch plan is metadata-only catalog maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("does not edit model_catalog.py" in guardrail for guardrail in profile["application_guardrails"])
     assert any("OpenAI-compatible gateway /models or manually observed Gemini-like model ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("known/unknown status, price, lifecycle, cost tier, cheap-first eligibility" in guardrail for guardrail in profile["application_guardrails"])
     assert any("default-promotion block/review/ready state" in guardrail for guardrail in profile["application_guardrails"])

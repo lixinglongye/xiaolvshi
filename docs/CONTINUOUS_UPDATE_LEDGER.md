@@ -103,6 +103,16 @@ it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
 write real environment values, or include raw prompts, payloads, model outputs,
 or credentials.
 
+Current model catalog candidate patch evidence:
+`model-catalog-candidate-patch-plan` adds shipped metadata-only catalog
+maintenance evidence for unknown observed Gemini-like model ids. It records
+manual `ModelProfile` candidate stubs, required source/pricing/lifecycle/
+capability/gateway-probe checks, cheap-first boundaries, and explicit-only
+default-promotion states. It does not edit `model_catalog.py`, write
+configuration, call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
+shift traffic, or include raw payloads, prompts, legal text, model outputs,
+credentials, or emails.
+
 Current legal fixture cheap-first benchmark gate evidence:
 `modelops-legal-fixture-cheap-first-benchmark-gate` adds shipped metadata-only
 small legal-document cheap-first Gemini benchmark/risk gate evidence. It records

@@ -740,6 +740,87 @@ export type ModelCatalogSourceAudit = {
   validation_commands: string[];
 };
 
+export type ModelCatalogCandidatePatchRow = {
+  id: string;
+  row_type: string;
+  observed_model: string;
+  model_id?: string;
+  proposed_catalog_id?: string | null;
+  canonical_model?: string | null;
+  known_catalog_model?: boolean;
+  catalog_action?: string;
+  patch_action: string;
+  catalog_status?: string;
+  cost_tier?: string;
+  latency_tier?: string;
+  source_url?: string;
+  pricing_status?: string;
+  default_allowed_for_high_frequency?: boolean;
+  cheap_first_default_allowed?: boolean;
+  requires_operator_review?: boolean;
+  manual_review_required?: boolean;
+  cheap_first_candidate_status?: string;
+  default_promotion_state?: string;
+  release_action?: string;
+  reason?: string;
+  recommended_action?: string;
+  required_metadata_checks?: string[];
+  proposed_profile_stub?: Record<string, unknown>;
+  candidate_patch_written?: boolean;
+  gateway_call_allowed?: boolean;
+};
+
+export type ModelCatalogCandidatePatchPlan = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls?: string[];
+  };
+  summary: {
+    observed_model_count: number;
+    candidate_patch_count: number;
+    add_count: number;
+    update_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    pricing_watch_count: number;
+    existing_catalog_review_count: number;
+    external_ignore_count: number;
+    cheap_first_candidate_count: number;
+    premium_or_preview_candidate_count: number;
+    rejected_sensitive_count: number;
+    forbidden_payload_field_count: number;
+    candidate_patch_written: boolean;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  candidate_patch_rows: ModelCatalogCandidatePatchRow[];
+  candidate_patches?: ModelCatalogCandidatePatchRow[];
+  existing_catalog_diffs: ModelCatalogCandidatePatchRow[];
+  external_model_ignores: ModelCatalogCandidatePatchRow[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  manual_source_review: {
+    required: boolean;
+    source_urls: string[];
+    required_checks: string[];
+  };
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGeminiCheapFirstCoverageGateSummary = {
   coverage_row_count: number;
   ready_row_count: number;
@@ -2329,6 +2410,7 @@ export type ModelOpsResponse = {
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
+  catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
@@ -2382,6 +2464,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     queue_items?: unknown;
     proposal_rows?: unknown;
     impact_rows?: unknown;
+    candidate_patch_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
     promotion_items?: unknown;
@@ -2402,6 +2485,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.proposal_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.impact_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.candidate_patch_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
@@ -2573,6 +2657,13 @@ export async function getModelDefaultTemplateAudit(): Promise<ModelDefaultTempla
 export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAudit> {
   return invokeModelOpsApi<ModelCatalogSourceAudit>({
     url: '/api/v1/aihub/models/catalog-source-audit',
+    method: 'GET',
+  });
+}
+
+export async function getModelCatalogCandidatePatchPlan(): Promise<ModelCatalogCandidatePatchPlan> {
+  return invokeModelOpsApi<ModelCatalogCandidatePatchPlan>({
+    url: '/api/v1/aihub/models/catalog-candidate-patch-plan',
     method: 'GET',
   });
 }

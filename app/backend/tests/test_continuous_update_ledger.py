@@ -174,6 +174,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-performance-observation-review" in completed_ids
     assert "modelops-cheap-first-quality-budget" in completed_ids
     assert "gemini-catalog-source-audit" in completed_ids
+    assert "model-catalog-candidate-patch-plan" in completed_ids
     assert "modelops-cheap-first-release-decision" in completed_ids
     assert "modelops-default-change-queue" in completed_ids
     assert "modelops-cheap-first-canary-plan" in completed_ids
@@ -302,6 +303,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-performance-observation-review" not in queue_ids
     assert "modelops-cheap-first-quality-budget" not in queue_ids
     assert "gemini-catalog-source-audit" not in queue_ids
+    assert "model-catalog-candidate-patch-plan" not in queue_ids
     assert "modelops-cheap-first-release-decision" not in queue_ids
     assert "modelops-default-change-queue" not in queue_ids
     assert "modelops-cheap-first-canary-plan" not in queue_ids
@@ -469,6 +471,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_catalog_candidate_patch_plan.py "
+        "tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py "
+        "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && "
+        "npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert (
@@ -807,6 +816,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-catalog-source-audit" in intake_queue_entry["release_gate_links"]
     assert "model-gateway-compatibility" in intake_queue_entry["release_gate_links"]
     assert "model-lifecycle-policy" in intake_queue_entry["release_gate_links"]
+    catalog_candidate_patch_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-catalog-candidate-patch-plan"
+    )
+    assert catalog_candidate_patch_entry["size"] == "medium"
+    assert catalog_candidate_patch_entry["status"] == "shipped"
+    assert "sanitized observed Gemini-like gateway model ids" in catalog_candidate_patch_entry["impact"]
+    assert "manual ModelProfile candidate rows" in catalog_candidate_patch_entry["impact"]
+    assert "required metadata checks" in catalog_candidate_patch_entry["impact"]
+    assert "explicit-only default-promotion boundaries" in catalog_candidate_patch_entry["impact"]
+    assert "without editing model_catalog.py" in catalog_candidate_patch_entry["impact"]
+    assert "calling gateways" in catalog_candidate_patch_entry["impact"]
+    assert "app/backend/services/model_catalog_candidate_patch_plan.py" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in catalog_candidate_patch_entry["evidence_paths"]
+    assert "model-catalog-candidate-patch-plan" in catalog_candidate_patch_entry["release_gate_links"]
+    assert "modelops-observed-gemini-model-intake-queue" in catalog_candidate_patch_entry["release_gate_links"]
+    assert "model-catalog-source-audit" in catalog_candidate_patch_entry["release_gate_links"]
+    assert "model-ops-readiness" in catalog_candidate_patch_entry["release_gate_links"]
+    assert "frontend-ui-regression" in catalog_candidate_patch_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

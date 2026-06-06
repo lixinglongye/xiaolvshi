@@ -127,6 +127,14 @@ It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
 not write real environment values, and does not include raw prompts, payloads,
 model outputs, or credentials.
 
+`model-catalog-candidate-patch-plan` is the shipped metadata-only catalog
+maintenance plan for unknown observed Gemini-like model ids. It creates manual
+`ModelProfile` candidate stubs, required source/pricing/lifecycle/capability
+checks, cheap-first boundaries, and explicit-only default-promotion states. It
+does not edit `model_catalog.py`, write configuration, call a gateway or the
+network, shift traffic, or include raw payloads, prompts, legal text, model
+outputs, credentials, or emails.
+
 `gemini-newapi-model-alias-matrix` is the shipped metadata-only alias evidence
 for gateway-specific Gemini model names. It maps canonical, `models/`,
 `google/`, `google:`, `yibu/`, and nested provider aliases back to local catalog
