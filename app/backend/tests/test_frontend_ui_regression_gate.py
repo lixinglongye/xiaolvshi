@@ -26,6 +26,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert rows["/settings"]["source_exists"] is True
     assert rows["/deep-report/:id"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
+    assert "public benchmark license gate" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark fixture crosswalk" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
@@ -123,6 +124,10 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps cheap-first escalation budget UI evidence is metadata only" in payload_text
     assert "Model failure upgrade budget UI evidence is metadata only" in payload_text
     assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
+    assert "Public benchmark license gate UI evidence is metadata only" in payload_text
+    assert "public-benchmark-license-gate-regresses" in payload_text
+    assert "public benchmark sample text" in payload_text
+    assert "public score claims" in payload_text
     assert "modelops-legal-benchmark-risk-bridge-regresses" in payload_text
     assert "user-need gaps" in payload_text
     assert "runaway retries" in payload_text

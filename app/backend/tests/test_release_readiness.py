@@ -754,6 +754,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
         "legal-benchmark-research-refresh": "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
+        "legal-public-benchmark-license-gate": "python -m pytest tests/test_legal_public_benchmark_license_gate.py tests/test_legal_public_benchmark_sampler.py tests/test_user_need_benchmark_coverage.py tests/test_model_route_legal_benchmark_risk_queue.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -849,6 +850,34 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
     assert "docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md" in checks["legal-benchmark-research-refresh"]["evidence_paths"]
+    assert "metadata-only public legal benchmark license-gate evidence" in checks[
+        "legal-public-benchmark-license-gate"
+    ]["manual_note"]
+    assert "does not download datasets" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "import public benchmark text" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "claim public benchmark scores" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "call NewAPI" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "Gemini" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "gateways" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "network" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "raw legal text" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "prompts" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "model outputs" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "payloads" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "credentials" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "guarantee legal/license compliance" in checks["legal-public-benchmark-license-gate"]["manual_note"]
+    assert "app/backend/services/legal_public_benchmark_license_gate.py" in checks[
+        "legal-public-benchmark-license-gate"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_legal_public_benchmark_license_gate.py" in checks[
+        "legal-public-benchmark-license-gate"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "legal-public-benchmark-license-gate"
+    ]["evidence_paths"]
+    assert "docs/LEGAL_PUBLIC_BENCHMARK_LICENSE_GATE.md" in checks[
+        "legal-public-benchmark-license-gate"
+    ]["evidence_paths"]
     assert "metadata-only risk queue evidence" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
     assert "does not call gateways" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
     assert "download datasets" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]

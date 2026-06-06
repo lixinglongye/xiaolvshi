@@ -46,6 +46,7 @@ import {
   getLegalKnowledgeAudit,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -113,6 +114,7 @@ import {
   type LegalDocumentBenchmarkCoverage,
   type LegalDocumentFactConsistencyBenchmark,
   type LegalKnowledgeAudit,
+  type LegalPublicBenchmarkLicenseGate,
   type LegalPublicBenchmarkSampler,
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
@@ -170,6 +172,7 @@ const statusClass: Record<string, string> = {
   ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready_for_review: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   covered: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
@@ -422,6 +425,8 @@ function Inner() {
     setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ] = useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
+  const [publicBenchmarkLicenseGate, setPublicBenchmarkLicenseGate] =
+    useState<LegalPublicBenchmarkLicenseGate | null>(null);
   const [benchmarkFixtureCrosswalk, setBenchmarkFixtureCrosswalk] =
     useState<LegalBenchmarkFixtureCrosswalk | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
@@ -657,6 +662,11 @@ function Inner() {
           label: 'Legal public benchmark sampler',
           run: getLegalPublicBenchmarkSampler,
           apply: (value) => setPublicBenchmarkSampler(value as LegalPublicBenchmarkSampler),
+        },
+        {
+          label: 'Legal public benchmark license gate',
+          run: getLegalPublicBenchmarkLicenseGate,
+          apply: (value) => setPublicBenchmarkLicenseGate(value as LegalPublicBenchmarkLicenseGate),
         },
         {
           label: 'Legal benchmark fixture crosswalk',
@@ -6310,6 +6320,176 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{publicBenchmarkSampler.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {publicBenchmarkLicenseGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Public benchmark license gate</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {publicBenchmarkLicenseGate.summary.source_count} sources /{' '}
+                      {publicBenchmarkLicenseGate.summary.license_review_required_source_count} need review /{' '}
+                      {publicBenchmarkLicenseGate.summary.release_claim_blocked_source_count} claim-blocked
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[publicBenchmarkLicenseGate.status] ?? statusClass.warn}>
+                    {displayToken(publicBenchmarkLicenseGate.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkLicenseGate.summary.approved_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">approved sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkLicenseGate.summary.license_review_required_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">license review</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkLicenseGate.summary.linked_user_need_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">linked user needs</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicBenchmarkLicenseGate.summary.linked_route_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">route tasks</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Review</TableHead>
+                        <TableHead>Mappings</TableHead>
+                        <TableHead>Checks</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {publicBenchmarkLicenseGate.source_rows.map((source) => (
+                        <TableRow key={source.id}>
+                          <TableCell>
+                            <a
+                              className="inline-flex items-center gap-1 font-semibold text-stone-950 hover:underline"
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.title}
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{source.source_id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{displayToken(source.resource_profile)}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[source.review_state] ?? statusClass.warn}>
+                              {displayToken(source.review_state)}
+                            </Badge>
+                            <div className="mt-2 font-mono text-[11px] text-stone-500">{source.decision}</div>
+                            <div className="mt-2 text-xs text-stone-600">max {source.max_samples} samples</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">User needs</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {source.linked_user_need_ids.join(', ') || 'metadata only'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">Route tasks</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {source.linked_route_task_ids.join(', ') || 'metadata only'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <div className="flex flex-wrap gap-1">
+                              {source.required_checks.map((check) => (
+                                <Badge
+                                  key={`${source.id}-${check.id}`}
+                                  variant="outline"
+                                  className={statusClass[check.status] ?? statusClass.warn}
+                                >
+                                  {displayToken(check.id)}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="mt-2 font-mono text-[11px] text-stone-500">{source.license_gate}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {source.next_action}
+                            <div className="mt-2">
+                              public score claim: {String(source.public_score_claim_allowed)} / dataset download:{' '}
+                              {String(source.dataset_download_allowed)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">User need review</h3>
+                    <div className="space-y-3">
+                      {publicBenchmarkLicenseGate.user_need_rows.slice(0, 5).map((row) => (
+                        <div key={row.need_id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className={priorityClass[row.priority_band] ?? priorityClass.medium}>
+                              {displayToken(row.priority_band)}
+                            </Badge>
+                            <span className="font-mono text-[11px] text-stone-500">{row.need_id}</span>
+                          </div>
+                          <div className="font-semibold text-stone-950">{row.title}</div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{row.next_action}</div>
+                          <div className="mt-2 break-words font-mono text-[11px] text-stone-500">
+                            blocked: {row.blocked_source_ids.join(', ') || 'none'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>public benchmark scores claimed: {String(publicBenchmarkLicenseGate.claim_boundary.public_benchmark_scores_claimed)}</div>
+                      <div>external dataset execution claimed: {String(publicBenchmarkLicenseGate.claim_boundary.external_dataset_execution_claimed)}</div>
+                      <div>public benchmark text returned: {String(publicBenchmarkLicenseGate.privacy_boundary.returns_public_benchmark_text)}</div>
+                      <div>datasets downloaded: {String(publicBenchmarkLicenseGate.privacy_boundary.dataset_downloaded)}</div>
+                      <div>model calls: {String(publicBenchmarkLicenseGate.privacy_boundary.model_called)}</div>
+                      <div>gateway calls: {String(publicBenchmarkLicenseGate.privacy_boundary.gateway_called)}</div>
+                      <div>credentials returned: {String(publicBenchmarkLicenseGate.privacy_boundary.returns_credentials)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {publicBenchmarkLicenseGate.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {publicBenchmarkLicenseGate.validation_commands.slice(0, 3).map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

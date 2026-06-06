@@ -2250,6 +2250,79 @@ export type LegalPublicBenchmarkSampler = {
   privacy_note: string;
 };
 
+export type LegalPublicBenchmarkLicenseGate = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    source_count: number;
+    approved_source_count: number;
+    license_review_required_source_count: number;
+    catalog_only_source_count: number;
+    release_claim_blocked_source_count: number;
+    linked_user_need_count: number;
+    linked_route_task_count: number;
+    sampling_ready_source_count: number;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    raw_public_text_returned: boolean;
+    configuration_written: boolean;
+  };
+  source_rows: Array<{
+    id: string;
+    source_id: string;
+    title: string;
+    url: string;
+    priority: string;
+    resource_profile: string;
+    sampling_state: string;
+    review_state: string;
+    decision: string;
+    release_claim_blocked: boolean;
+    max_samples: number;
+    license_gate: string;
+    source_license_note: string;
+    linked_user_need_ids: string[];
+    linked_route_task_ids: string[];
+    validation_targets: string[];
+    required_checks: Array<{
+      id: string;
+      status: string;
+      required: boolean;
+      detail: string;
+    }>;
+    next_action: string;
+    raw_text_import_allowed: boolean;
+    public_score_claim_allowed: boolean;
+    dataset_download_allowed: boolean;
+    network_call_allowed: boolean;
+  }>;
+  user_need_rows: Array<{
+    need_id: string;
+    title: string;
+    priority_band: string;
+    coverage_status: string;
+    linked_source_ids: string[];
+    approved_source_ids: string[];
+    blocked_source_ids: string[];
+    release_claim_blocked: boolean;
+    next_action: string;
+  }>;
+  review_policy: Record<string, boolean | string | number | null>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type LegalBenchmarkFixtureCrosswalk = {
   status: string;
   method: {
@@ -3810,6 +3883,11 @@ type LegalPublicBenchmarkSamplerResponse = {
   data: LegalPublicBenchmarkSampler;
 };
 
+type LegalPublicBenchmarkLicenseGateResponse = {
+  success: boolean;
+  data: LegalPublicBenchmarkLicenseGate;
+};
+
 type LegalBenchmarkFixtureCrosswalkResponse = {
   success: boolean;
   data: LegalBenchmarkFixtureCrosswalk;
@@ -5221,6 +5299,14 @@ export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBench
     return payload.data;
   }
   return payload as LegalPublicBenchmarkSampler;
+}
+
+export async function getLegalPublicBenchmarkLicenseGate(): Promise<LegalPublicBenchmarkLicenseGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/public-license-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalPublicBenchmarkLicenseGateResponse['data']>(resp);
 }
 
 export async function getLegalBenchmarkFixtureCrosswalk(): Promise<LegalBenchmarkFixtureCrosswalk> {

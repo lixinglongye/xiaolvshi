@@ -303,6 +303,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-coverage-claim-policy" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-refresh" in completed_ids
+    assert "legal-public-benchmark-license-gate" in completed_ids
     assert "model-route-legal-benchmark-risk-queue" in completed_ids
     assert "modelops-legal-benchmark-risk-bridge" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
@@ -405,6 +406,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-coverage-claim-policy" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-refresh" not in queue_ids
+    assert "legal-public-benchmark-license-gate" not in queue_ids
     assert "model-route-legal-benchmark-risk-queue" not in queue_ids
     assert "modelops-legal-benchmark-risk-bridge" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
@@ -1191,6 +1193,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "external legal text" in refresh_entry["impact"]
     assert "model calls" in refresh_entry["impact"]
     assert "credentials" in refresh_entry["impact"]
+    license_gate_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-public-benchmark-license-gate"
+    )
+    assert license_gate_entry["size"] == "medium"
+    assert license_gate_entry["status"] == "shipped"
+    assert "metadata-only public legal benchmark license" in license_gate_entry["impact"]
+    assert "attribution" in license_gate_entry["impact"]
+    assert "privacy" in license_gate_entry["impact"]
+    assert "storage" in license_gate_entry["impact"]
+    assert "user-need" in license_gate_entry["impact"]
+    assert "route-risk review evidence" in license_gate_entry["impact"]
+    assert "without public dataset downloads" in license_gate_entry["impact"]
+    assert "public benchmark text imports" in license_gate_entry["impact"]
+    assert "public benchmark score claims" in license_gate_entry["impact"]
+    assert "model or gateway calls" in license_gate_entry["impact"]
+    assert "network calls" in license_gate_entry["impact"]
+    assert "raw legal text" in license_gate_entry["impact"]
+    assert "prompts" in license_gate_entry["impact"]
+    assert "model outputs" in license_gate_entry["impact"]
+    assert "payloads" in license_gate_entry["impact"]
+    assert "credentials" in license_gate_entry["impact"]
+    assert "app/backend/services/legal_public_benchmark_license_gate.py" in license_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_public_benchmark_license_gate.py" in license_gate_entry["evidence_paths"]
+    assert "app/backend/services/legal_public_benchmark_sampler.py" in license_gate_entry["evidence_paths"]
+    assert "app/backend/services/user_need_benchmark_coverage.py" in license_gate_entry["evidence_paths"]
+    assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in license_gate_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in license_gate_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in license_gate_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in license_gate_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in license_gate_entry["evidence_paths"]
+    assert "docs/LEGAL_PUBLIC_BENCHMARK_LICENSE_GATE.md" in license_gate_entry["evidence_paths"]
+    assert "legal-public-benchmark-license-gate" in license_gate_entry["release_gate_links"]
+    assert "legal-public-benchmark-sampler" in license_gate_entry["release_gate_links"]
+    assert "user-need-benchmark-coverage" in license_gate_entry["release_gate_links"]
+    assert "model-route-legal-benchmark-risk-queue" in license_gate_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in license_gate_entry["release_gate_links"]
+    assert "traceable-legal-review" in license_gate_entry["user_need_ids"]
+    assert "cheap-first-review-routing" in license_gate_entry["user_need_ids"]
+    assert (
+        "python -m pytest tests/test_legal_public_benchmark_license_gate.py "
+        "tests/test_legal_public_benchmark_sampler.py tests/test_user_need_benchmark_coverage.py "
+        "tests/test_model_route_legal_benchmark_risk_queue.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     route_queue_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-route-legal-benchmark-risk-queue"
     )

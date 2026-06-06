@@ -305,6 +305,25 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'getLegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk', 'legal benchmark fixture crosswalk endpoint'),
   () => assertIncludes(maintenanceApi, 'document_fixture_ids?: string[]', 'public benchmark sampler document fixture ids type'),
+  () => assertIncludes(maintenanceApi, 'LegalPublicBenchmarkLicenseGate', 'public benchmark license gate type'),
+  () => assertIncludes(maintenanceApi, 'getLegalPublicBenchmarkLicenseGate', 'public benchmark license gate API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/public-license-gate', 'public benchmark license gate endpoint'),
+  () => assertIncludes(maintenanceApi, 'raw_text_import_allowed: boolean', 'public benchmark license gate raw text boundary type'),
+  () => assertIncludes(maintenanceApi, 'public_score_claim_allowed: boolean', 'public benchmark license gate public score boundary type'),
+  () => assertIncludes(maintenanceApi, 'dataset_download_allowed: boolean', 'public benchmark license gate dataset boundary type'),
+  () => assertIncludes(maintenanceApi, 'linked_route_task_ids: string[]', 'public benchmark license gate route task type'),
+  () => assertIncludes(maintenancePage, 'getLegalPublicBenchmarkLicenseGate', 'public benchmark license gate load task'),
+  () => assertIncludes(maintenancePage, 'publicBenchmarkLicenseGate', 'public benchmark license gate state binding'),
+  () => assertIncludes(maintenancePage, 'Legal public benchmark license gate', 'public benchmark license gate load label'),
+  () => assertIncludes(maintenancePage, 'Public benchmark license gate', 'public benchmark license gate panel'),
+  () => assertIncludes(maintenancePage, 'release_claim_blocked_source_count', 'public benchmark license gate blocked source summary'),
+  () => assertIncludes(maintenancePage, 'linked_route_task_count', 'public benchmark license gate route task summary'),
+  () => assertIncludes(maintenancePage, 'required_checks', 'public benchmark license gate checklist binding'),
+  () => assertIncludes(maintenancePage, 'public score claim:', 'public benchmark license gate public score label'),
+  () => assertIncludes(maintenancePage, 'datasets downloaded:', 'public benchmark license gate dataset label'),
+  () => assertIncludes(maintenancePage, 'gateway calls:', 'public benchmark license gate gateway label'),
+  () => assertIncludes(maintenancePage, 'credentials returned:', 'public benchmark license gate credential label'),
+  () => assertIncludes(maintenancePage, 'publicBenchmarkLicenseGate.validation_commands', 'public benchmark license gate validation binding'),
   () => assertIncludes(maintenancePage, 'getLegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk load task'),
   () => assertIncludes(maintenancePage, 'benchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk state binding'),
   () => assertIncludes(maintenancePage, 'Legal benchmark fixture crosswalk', 'legal benchmark fixture crosswalk panel'),
@@ -320,6 +339,13 @@ const checks = [
       '<h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
       'crosswalk follows public sampler',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Public benchmark license gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+      'license gate precedes crosswalk',
     ),
   () =>
     assertBefore(
@@ -1087,6 +1113,12 @@ const legalDocumentFactConsistencyPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>',
   'maintenance legal document fact consistency section',
 );
+const publicBenchmarkLicenseGatePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Public benchmark license gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+  'maintenance public benchmark license gate section',
+);
 const legalBenchmarkFixtureCrosswalkPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
@@ -1188,6 +1220,11 @@ assertNotMatches(
   'maintenance legal document fact consistency no secrets or raw document/model fields',
 );
 assertNotMatches(
+  publicBenchmarkLicenseGatePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|public_benchmark_raw_text|raw_sample_text|sample_payload|gateway_response|model_output)\b/i,
+  'maintenance public benchmark license gate no raw samples, model output, gateway payload, or credentials',
+);
+assertNotMatches(
   legalBenchmarkFixtureCrosswalkPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|sample_text|synthetic_excerpt|input_excerpt|output_text|raw_prompt|prompt_payload|candidate_text)\b/i,
   'maintenance legal benchmark fixture crosswalk no secrets or raw fixture/corpus/model fields',
@@ -1199,7 +1236,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 27,
+      assertions: checks.length + 28,
     },
     null,
     2,

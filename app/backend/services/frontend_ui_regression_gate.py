@@ -51,6 +51,7 @@ PAGE_GATES = (
             "partial evidence failure banner",
             "user need benchmark coverage",
             "legal document benchmark coverage",
+            "public benchmark license gate",
             "legal benchmark fixture crosswalk",
             "legal benchmark research refresh",
             "model route legal benchmark risk queue",
@@ -202,6 +203,7 @@ class FrontendUiRegressionGateService:
                     "Model failure upgrade budget UI evidence is metadata only: no automatic retries, premium quota consumption, gateway calls, traffic shifts, configuration writes, prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps legal benchmark risk bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, routing writes, dataset downloads, public benchmark scores, raw legal text, model output, prompts, or credentials.",
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
+                    "Public benchmark license gate UI evidence is metadata only: no public benchmark sample text, fixture snippets, model output, gateway payloads, dataset downloads, public score claims, or credentials.",
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
                     "Deep report feedback capture evidence is metadata only: report-level feedback links to report IDs, roadmap IDs, and release gates without raw report text, prompts, model output, or external calls.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
@@ -264,6 +266,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the legal benchmark risk bridge panel, policy boundary, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked legal-benchmark-risk-bridge API checks for route watchlists, user-need gaps, premium exception rows, and no raw legal/benchmark/model fields.",
+                },
+                {
+                    "id": "public-benchmark-license-gate-regresses",
+                    "page": "/maintenance",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the public benchmark license gate panel, review checklist, and claim/privacy boundary in the maintenance source contract.",
+                    "regression_target": "Add browser-level mocked public-license-gate API checks for blocked sources, reviewed metadata-only sources, user-need mappings, route-risk mappings, and forbidden raw benchmark/model/gateway fields.",
                 },
                 {
                     "id": "raw-private-output-renders",

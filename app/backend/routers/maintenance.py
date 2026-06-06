@@ -66,6 +66,7 @@ from services.lawyer_review_workflow_policy import LawyerReviewWorkflowPolicySer
 from services.legal_adoption_research_bridge import LegalAdoptionResearchBridgeService
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
+from services.legal_public_benchmark_license_gate import LegalPublicBenchmarkLicenseGateService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
@@ -1154,6 +1155,24 @@ async def build_legal_public_benchmark_sampler(config: dict[str, Any]):
     return {
         "success": True,
         "data": LegalPublicBenchmarkSamplerService().build_plan(config),
+    }
+
+
+@router.get("/legal-review-benchmark/public-license-gate")
+async def get_legal_public_benchmark_license_gate():
+    """Return public legal benchmark source license review gate evidence."""
+    return {
+        "success": True,
+        "data": LegalPublicBenchmarkLicenseGateService().build_gate(),
+    }
+
+
+@router.post("/legal-review-benchmark/public-license-gate")
+async def build_legal_public_benchmark_license_gate(config: dict[str, Any]):
+    """Build public benchmark license review evidence from explicit review settings."""
+    return {
+        "success": True,
+        "data": LegalPublicBenchmarkLicenseGateService().build_gate(config),
     }
 
 
