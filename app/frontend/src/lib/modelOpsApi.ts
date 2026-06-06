@@ -2218,6 +2218,83 @@ export type ModelFailureUpgradeBudget = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkRiskBridgeRouteReview = {
+  id: string;
+  task_id: string;
+  task: string;
+  product_area: string;
+  risk_level: string;
+  priority: number;
+  calibration_status: string;
+  calibration_decision: string;
+  cheap_first_allowed: boolean;
+  balanced_precheck_required: boolean;
+  premium_exception_required: boolean;
+  cost_tier: string;
+  research_source_ids: string[];
+  user_need_ids: string[];
+  coverage_statuses: string[];
+  public_benchmark_statuses: string[];
+  release_gate_links: string[];
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsLegalBenchmarkRiskBridgeUserNeedReview = {
+  need_id: string;
+  title: string;
+  priority_band: string;
+  priority_score: number;
+  coverage_status: string;
+  public_benchmark_status: string;
+  calibration_status: string;
+  highest_risk_level: string;
+  queue_row_ids: string[];
+  task_ids: string[];
+  research_source_ids: string[];
+  cheap_first_allowed_count: number;
+  premium_exception_count: number;
+  next_action: string;
+};
+
+export type ModelOpsLegalBenchmarkRiskBridge = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    route_review_count: number;
+    user_need_review_count: number;
+    blocking_route_count: number;
+    watch_route_count: number;
+    premium_exception_route_count: number;
+    benchmark_license_watch_count: number;
+    cheap_first_allowed_route_count: number;
+    balanced_precheck_route_count: number;
+    default_change_queue_item_count: number;
+    source_risk_queue_status: string;
+    source_release_decision_status: string;
+    newapi_called: boolean;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    raw_payload_echoed: boolean;
+  };
+  route_reviews: ModelOpsLegalBenchmarkRiskBridgeRouteReview[];
+  user_need_reviews: ModelOpsLegalBenchmarkRiskBridgeUserNeedReview[];
+  bridge_policy: Record<string, boolean | string | number | null>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -2971,6 +3048,7 @@ export type ModelOpsResponse = {
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
+  legal_benchmark_risk_bridge?: ModelOpsLegalBenchmarkRiskBridge;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -3037,6 +3115,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     execution_items?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
+    route_reviews?: unknown;
+    user_need_reviews?: unknown;
     rows?: unknown;
     default_targets?: unknown;
     required?: unknown;
@@ -3067,6 +3147,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
 }
@@ -3430,6 +3511,13 @@ export async function evaluateModelFailureUpgradeBudget(
     url: '/api/v1/aihub/models/failure-upgrade-budget',
     method: 'POST',
     data: payload,
+  });
+}
+
+export async function getModelOpsLegalBenchmarkRiskBridge(): Promise<ModelOpsLegalBenchmarkRiskBridge> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkRiskBridge>({
+    url: '/api/v1/aihub/models/legal-benchmark-risk-bridge',
+    method: 'GET',
   });
 }
 

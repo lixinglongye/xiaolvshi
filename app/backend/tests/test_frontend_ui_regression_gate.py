@@ -55,6 +55,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Gemini cheap-first coverage gate" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert "Model failure upgrade budget" in rows["/model-ops"]["protected_panels"]
+    assert "ModelOps legal benchmark risk bridge" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first escalation budget" in rows["/model-ops"]["protected_panels"]
     assert "product feedback capture form" in rows["/settings"]["protected_panels"]
     assert "feedback capture-plan preview" in rows["/settings"]["protected_panels"]
@@ -121,6 +122,9 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps catalog candidate impact replay UI evidence is metadata only" in payload_text
     assert "ModelOps cheap-first escalation budget UI evidence is metadata only" in payload_text
     assert "Model failure upgrade budget UI evidence is metadata only" in payload_text
+    assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
+    assert "modelops-legal-benchmark-risk-bridge-regresses" in payload_text
+    assert "user-need gaps" in payload_text
     assert "runaway retries" in payload_text
     assert "premium review coverage" in payload_text
     assert "attempt exhaustion" in payload_text

@@ -100,6 +100,7 @@ PAGE_GATES = (
             "Gemini cheap-first coverage gate",
             "Cheap-first quality budget",
             "Model failure upgrade budget",
+            "ModelOps legal benchmark risk bridge",
             "Cheap-first escalation budget",
             "selector replay",
             "route telemetry",
@@ -199,6 +200,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps catalog candidate impact replay UI evidence is metadata only: no catalog/config/env writes, no NewAPI/Gemini/OpenAI/Google/gateway/network calls, and no raw prompts, payloads, model output, legal text, or credentials.",
                     "ModelOps maintainer execution checklist UI evidence is metadata only: no configuration writes, approval records, traffic shifts, gateway calls, prompts, raw model output, or credentials.",
                     "Model failure upgrade budget UI evidence is metadata only: no automatic retries, premium quota consumption, gateway calls, traffic shifts, configuration writes, prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
+                    "ModelOps legal benchmark risk bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, routing writes, dataset downloads, public benchmark scores, raw legal text, model output, prompts, or credentials.",
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
                     "Deep report feedback capture evidence is metadata only: report-level feedback links to report IDs, roadmap IDs, and release gates without raw report text, prompts, model output, or external calls.",
@@ -256,6 +258,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the model failure upgrade budget panel, sanitized payload guard, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked failure-upgrade-budget API checks for retry-up decisions, premium approval blocks, attempt exhaustion, hard-stop signals, and forbidden raw fields.",
+                },
+                {
+                    "id": "modelops-legal-benchmark-risk-bridge-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the legal benchmark risk bridge panel, policy boundary, and privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked legal-benchmark-risk-bridge API checks for route watchlists, user-need gaps, premium exception rows, and no raw legal/benchmark/model fields.",
                 },
                 {
                     "id": "raw-private-output-renders",

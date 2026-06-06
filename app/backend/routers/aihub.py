@@ -72,6 +72,7 @@ from services.model_ops_cheap_first_priority_queue import ModelOpsCheapFirstPrio
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
+from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
 from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
@@ -341,6 +342,8 @@ async def list_models():
     model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
     default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
     model_ops_signals["default_change_queue"] = default_change_queue
+    legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(model_ops_signals)
+    model_ops_signals["legal_benchmark_risk_bridge"] = legal_benchmark_risk_bridge
     cheap_first_priority_queue = ModelOpsCheapFirstPriorityQueueService().build_queue(model_ops_signals)
     model_ops_signals["cheap_first_priority_queue"] = cheap_first_priority_queue
     gemini_default_change_review = ModelOpsGeminiDefaultChangeReviewService().build_review()
@@ -419,6 +422,7 @@ async def list_models():
         "model_ops_performance_budget": model_ops_performance_budget,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
+        "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
         "cheap_first_priority_queue": cheap_first_priority_queue,
         "gemini_default_change_review": gemini_default_change_review,
         "gemini_default_cost_impact": gemini_default_cost_impact,
@@ -620,6 +624,16 @@ async def model_ops_default_change_queue():
     return {
         "success": True,
         "data": models_payload["default_change_queue"],
+    }
+
+
+@router.get("/models/legal-benchmark-risk-bridge")
+async def model_ops_legal_benchmark_risk_bridge():
+    """Return metadata-only legal benchmark risk bridge for default reviews."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_benchmark_risk_bridge"],
     }
 
 

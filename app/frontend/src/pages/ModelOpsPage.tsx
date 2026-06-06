@@ -31,6 +31,7 @@ import {
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
+  getModelOpsLegalBenchmarkRiskBridge,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -47,6 +48,7 @@ import {
   type ModelOpsCheapFirstCanaryRollbackDrill,
   type ModelOpsCheapFirstEscalationBudget,
   type ModelFailureUpgradeBudget,
+  type ModelOpsLegalBenchmarkRiskBridge,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsObservedGeminiModelIntakeQueue,
@@ -439,6 +441,9 @@ function Inner() {
   const [failureUpgradeLoading, setFailureUpgradeLoading] = useState(false);
   const [failureUpgradeTemplateLoading, setFailureUpgradeTemplateLoading] = useState(false);
   const [failureUpgradeError, setFailureUpgradeError] = useState('');
+  const [legalBenchmarkRiskBridge, setLegalBenchmarkRiskBridge] =
+    useState<ModelOpsLegalBenchmarkRiskBridge | null>(null);
+  const [legalBenchmarkRiskBridgeError, setLegalBenchmarkRiskBridgeError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -475,6 +480,8 @@ function Inner() {
     setEscalationBudget(null);
     setFailureUpgradeError('');
     setFailureUpgradeBudget(null);
+    setLegalBenchmarkRiskBridgeError('');
+    setLegalBenchmarkRiskBridge(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -492,6 +499,7 @@ function Inner() {
         geminiCheapFirstCoverageGateResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
+        legalBenchmarkRiskBridgeResult,
       ] =
         await Promise.allSettled([
         getModelOps(),
@@ -499,6 +507,7 @@ function Inner() {
         getGeminiCheapFirstCoverageGate(),
         getModelOpsCheapFirstEscalationBudget(),
         getModelFailureUpgradeBudget(),
+        getModelOpsLegalBenchmarkRiskBridge(),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
@@ -510,6 +519,7 @@ function Inner() {
         setPerformanceBudget(null);
         setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
         setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
+        setLegalBenchmarkRiskBridge(modelOpsResult.value.legal_benchmark_risk_bridge ?? null);
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
@@ -580,6 +590,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.failure_upgrade_budget)
         ) {
           setFailureUpgradeError('Failure upgrade budget failed to load.');
+        }
+      }
+      if (legalBenchmarkRiskBridgeResult.status === 'fulfilled') {
+        setLegalBenchmarkRiskBridge(legalBenchmarkRiskBridgeResult.value);
+      } else {
+        console.error(legalBenchmarkRiskBridgeResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalBenchmarkRiskBridge(modelOpsResult.value.legal_benchmark_risk_bridge ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_benchmark_risk_bridge)
+        ) {
+          setLegalBenchmarkRiskBridgeError('Legal benchmark risk bridge failed to load.');
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -1007,6 +1031,10 @@ function Inner() {
   const escalationBudgetRows = activeEscalationBudget?.budget_rows ?? [];
   const activeFailureUpgradeBudget = failureUpgradeBudget ?? data?.failure_upgrade_budget ?? null;
   const failureUpgradeChecks = activeFailureUpgradeBudget?.checks ?? [];
+  const activeLegalBenchmarkRiskBridge =
+    legalBenchmarkRiskBridge ?? data?.legal_benchmark_risk_bridge ?? null;
+  const legalBenchmarkRiskRouteReviews = activeLegalBenchmarkRiskBridge?.route_reviews ?? [];
+  const legalBenchmarkRiskUserNeedReviews = activeLegalBenchmarkRiskBridge?.user_need_reviews ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -3584,6 +3612,145 @@ function Inner() {
               raw payload echoed: {String(activeFailureUpgradeBudget.privacy_boundary.raw_payload_echoed)} / raw model
               output: {String(activeFailureUpgradeBudget.privacy_boundary['raw_' + 'model_output_included'])} / configuration
               written: {String(activeFailureUpgradeBudget.privacy_boundary.configuration_written)}
+            </div>
+          </section>
+        )}
+
+        {activeLegalBenchmarkRiskBridge && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeLegalBenchmarkRiskBridge.summary.route_review_count} route reviews /{' '}
+                  {activeLegalBenchmarkRiskBridge.summary.user_need_review_count} user needs /{' '}
+                  {activeLegalBenchmarkRiskBridge.summary.watch_route_count} watch routes
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeLegalBenchmarkRiskBridge.status)}>
+                {activeLegalBenchmarkRiskBridge.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeLegalBenchmarkRiskBridge.summary.route_review_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">route reviews</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeLegalBenchmarkRiskBridge.summary.cheap_first_allowed_route_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first allowed</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeLegalBenchmarkRiskBridge.summary.balanced_precheck_route_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">balanced prechecks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeLegalBenchmarkRiskBridge.summary.premium_exception_route_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeLegalBenchmarkRiskBridge.summary.benchmark_license_watch_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">license watch</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {String(activeLegalBenchmarkRiskBridge.bridge_policy.new_default_promotion_allowed)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default promotion</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Risk</TableHead>
+                      <TableHead>Decision</TableHead>
+                      <TableHead>Evidence</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {legalBenchmarkRiskRouteReviews.slice(0, 8).map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.task}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task_id}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{row.product_area}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(row.risk_level)}>
+                            {row.risk_level.replace(/_/g, ' ')}
+                          </Badge>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">P{row.priority}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                          {row.calibration_decision.replace(/_/g, ' ')}
+                          <div className="mt-1">
+                            cheap-first: {String(row.cheap_first_allowed)} / balanced:{' '}
+                            {String(row.balanced_precheck_required)} / premium:{' '}
+                            {String(row.premium_exception_required)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                          <div>needs: {row.user_need_ids.join(', ') || '-'}</div>
+                          <div>sources: {row.research_source_ids.join(', ') || '-'}</div>
+                          <div>reasons: {row.reason_codes.join(', ') || '-'}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          {row.next_action}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">User-need review</div>
+                <div className="mt-3 space-y-2">
+                  {legalBenchmarkRiskUserNeedReviews.slice(0, 5).map((row) => (
+                    <div key={row.need_id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.need_id}</div>
+                        <Badge variant="outline" className={statusClass(row.highest_risk_level)}>
+                          {row.highest_risk_level.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">
+                        {row.coverage_status} / public benchmark {row.public_benchmark_status}
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">
+                        cheap-first {row.cheap_first_allowed_count} / premium {row.premium_exception_count}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 text-xs leading-5 text-stone-600">
+                  {activeLegalBenchmarkRiskBridge.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                {legalBenchmarkRiskBridgeError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">{legalBenchmarkRiskBridgeError}</div>
+                )}
+              </div>
+            </div>
+            <div className="text-xs leading-5 text-stone-500">
+              network called: {String(activeLegalBenchmarkRiskBridge.summary.network_called)} / dataset downloaded:{' '}
+              {String(activeLegalBenchmarkRiskBridge.summary.dataset_downloaded)} / configuration written:{' '}
+              {String(activeLegalBenchmarkRiskBridge.summary.configuration_written)} / traffic shifted:{' '}
+              {String(activeLegalBenchmarkRiskBridge.summary.traffic_shifted)} / legal text returned:{' '}
+              {String(activeLegalBenchmarkRiskBridge.privacy_boundary['returns_raw_' + 'legal_text'])} / secrets returned:{' '}
+              {String(activeLegalBenchmarkRiskBridge.privacy_boundary['returns_' + 'cred' + 'entials'])}
             </div>
           </section>
         )}

@@ -154,6 +154,28 @@ def test_continuous_update_ledger_completed_entries_are_reviewable():
     assert all(entry["release_gate_links"] for entry in completed)
 
 
+def test_continuous_update_ledger_includes_modelops_legal_benchmark_risk_bridge_evidence():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "modelops-legal-benchmark-risk-bridge"
+    )
+
+    assert entry["category"] == "model_ops"
+    assert entry["size"] == "medium"
+    assert "metadata-only ModelOps review evidence" in entry["impact"]
+    assert "gateway/network calls" in entry["impact"]
+    assert "raw legal text" in entry["impact"]
+    assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in entry["evidence_paths"]
+    assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in entry["evidence_paths"]
+    assert "modelops-legal-benchmark-risk-bridge" in entry["release_gate_links"]
+    assert "model-route-legal-benchmark-risk-queue" in entry["release_gate_links"]
+    assert "cheap-first-review-routing" in entry["user_need_ids"]
+    assert "traceable-legal-review" in entry["user_need_ids"]
+
+
 def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     queue_ids = {entry["id"] for entry in ledger["next_update_queue"]}
@@ -282,6 +304,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-refresh" in completed_ids
     assert "model-route-legal-benchmark-risk-queue" in completed_ids
+    assert "modelops-legal-benchmark-risk-bridge" in completed_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
@@ -383,6 +406,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-refresh" not in queue_ids
     assert "model-route-legal-benchmark-risk-queue" not in queue_ids
+    assert "modelops-legal-benchmark-risk-bridge" not in queue_ids
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids

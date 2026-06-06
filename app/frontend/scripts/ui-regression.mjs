@@ -856,6 +856,11 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'evaluateModelFailureUpgradeBudget', 'model-ops model failure upgrade budget evaluation API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/failure-upgrade-budget', 'model-ops model failure upgrade budget endpoint'),
   () => assertIncludes(modelOpsApi, 'failure_upgrade_budget', 'model-ops model failure upgrade budget response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkRiskBridgeRouteReview', 'model-ops legal benchmark risk bridge route type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-risk-bridge', 'model-ops legal benchmark risk bridge endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_benchmark_risk_bridge', 'model-ops legal benchmark risk bridge response binding'),
   () => assertIncludes(modelOpsPage, 'Model failure upgrade budget', 'model-ops model failure upgrade budget panel'),
   () => assertIncludes(modelOpsPage, 'activeFailureUpgradeBudget', 'model-ops model failure upgrade budget state binding'),
   () => assertIncludes(modelOpsPage, 'failureUpgradeChecks', 'model-ops model failure upgrade budget check binding'),
@@ -865,6 +870,14 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'operator_approved', 'model-ops model failure upgrade budget approval binding'),
   () => assertIncludes(modelOpsPage, 'hasForbiddenFailureUpgradePayloadText', 'model-ops model failure upgrade budget payload guard'),
   () => assertIncludes(modelOpsPage, 'Evaluate failure upgrade budget', 'model-ops model failure upgrade budget submit button'),
+  () => assertIncludes(modelOpsPage, 'ModelOps legal benchmark risk bridge', 'model-ops legal benchmark risk bridge panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge active binding'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkRiskRouteReviews', 'model-ops legal benchmark risk bridge route rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkRiskUserNeedReviews', 'model-ops legal benchmark risk bridge user need rows'),
+  () => assertIncludes(modelOpsPage, 'new_default_promotion_allowed', 'model-ops legal benchmark risk bridge default promotion policy'),
+  () => assertIncludes(modelOpsPage, 'premium_exception_required', 'model-ops legal benchmark risk bridge premium exception binding'),
+  () => assertIncludes(modelOpsPage, 'benchmark_license_watch_count', 'model-ops legal benchmark risk bridge license watch binding'),
+  () => assertIncludes(modelOpsPage, 'dataset_downloaded', 'model-ops legal benchmark risk bridge dataset boundary'),
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Cheap-first quality budget</h2>',
@@ -876,6 +889,18 @@ const checks = [
     '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
     '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
     'model-ops failure upgrade budget precedes escalation budget',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+    'model-ops legal benchmark bridge follows failure budget',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+    'model-ops legal benchmark bridge precedes escalation budget',
   ),
   () => assertIncludes(modelOpsPage, 'Cheap-first escalation budget', 'model-ops cheap-first escalation budget panel'),
   () => assertIncludes(modelOpsPage, 'activeEscalationBudget', 'model-ops cheap-first escalation budget state binding'),
@@ -1017,8 +1042,14 @@ const cheapFirstMaintainerExecutionChecklistPanel = sourceSection(
 const modelFailureUpgradeBudgetPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
   'model-ops model failure upgrade budget section',
+);
+const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+  'model-ops legal benchmark risk bridge section',
 );
 const cheapFirstEscalationBudgetPanel = sourceSection(
   modelOpsPage,
@@ -1120,6 +1151,11 @@ assertNotMatches(
   modelFailureUpgradeBudgetPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content)\b/i,
   'model-ops model failure upgrade budget no secrets or raw model/payload fields',
+);
+assertNotMatches(
+  modelOpsLegalBenchmarkRiskBridgePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
+  'model-ops legal benchmark risk bridge no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
   cheapFirstEscalationBudgetPanel,

@@ -378,6 +378,38 @@ def test_model_failure_upgrade_budget_is_required_model_ops_gate():
     assert "docs/MODEL_FAILURE_UPGRADE_BUDGET.md" in check["evidence_paths"]
 
 
+def test_modelops_legal_benchmark_risk_bridge_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-legal-benchmark-risk-bridge"
+    ]
+    result = service.evaluate({"modelops-legal-benchmark-risk-bridge": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "modelops-legal-benchmark-risk-bridge")
+
+    assert commands == [
+        {
+            "check_id": "modelops-legal-benchmark-risk-bridge",
+            "command": (
+                "python -m pytest tests/test_model_ops_legal_benchmark_risk_bridge.py "
+                "tests/test_model_route_legal_benchmark_risk_queue.py "
+                "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && "
+                "npm run typecheck && npm run ui:regression"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only legal benchmark risk bridge evidence" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "public benchmark scores" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in check["evidence_paths"]
+
+
 def test_model_ops_default_change_queue_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = [
