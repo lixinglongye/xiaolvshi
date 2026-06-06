@@ -502,6 +502,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     expected_commands = {
         "generated-documents-crud-quota-guard": "python -m pytest tests/test_generated_documents_quota.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py -q",
         "case-generation-quota-guard": "python -m pytest tests/test_case_generation_quota.py tests/test_billing_entitlement_quota_binding.py -q",
+        "case-evidence-catalog-export-preflight": "python -m pytest tests/test_case_evidence_catalog_export_preflight.py tests/test_case_generation_quota.py -q",
         "deep-review-document-generation-quota-guard": "python -m pytest tests/test_deep_review_document_quota.py tests/test_billing_entitlement_quota_binding.py -q",
         "legal-rag-selected-source-request-metadata": "python -m pytest tests/test_legal_rag_request_metadata.py -q",
         "legal-rag-selected-source-citation-validation": "python -m pytest tests/test_legal_rag_selected_source_validation.py tests/test_maintenance_legal_rag_selected_source_validation_route.py tests/test_legal_rag_request_metadata.py -q",
@@ -560,6 +561,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         assert checks[check_id]["blocks_release"] is False
     assert "case generation and deep-review first-principles generation are covered separately" in checks["generated-documents-crud-quota-guard"]["manual_note"]
     assert "evidence-catalog and civil-complaint generation consume report quota" in checks["case-generation-quota-guard"]["manual_note"]
+    assert "exhibit package policy and bundle integrity metadata" in checks["case-evidence-catalog-export-preflight"]["manual_note"]
+    assert "does not read files" in checks["case-evidence-catalog-export-preflight"]["manual_note"]
     assert "blocks exhausted users without calling the AI generator" in checks["deep-review-document-generation-quota-guard"]["manual_note"]
     assert "metadata only" in checks["legal-rag-selected-source-request-metadata"]["manual_note"]
     assert "citation_map and generation_plan source IDs" in checks["legal-rag-selected-source-citation-validation"]["manual_note"]

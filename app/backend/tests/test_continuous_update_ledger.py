@@ -254,6 +254,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "document-generation-quota-consumption-attempt" in completed_ids
     assert "generated-documents-crud-quota-guard" in completed_ids
     assert "case-generation-quota-guard" in completed_ids
+    assert "case-evidence-catalog-export-preflight" in completed_ids
     assert "deep-review-document-generation-quota-guard" in completed_ids
     assert "legal-rag-selected-source-request-metadata" in completed_ids
     assert "legal-rag-selected-source-citation-validation" in completed_ids
@@ -344,6 +345,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "document-generation-quota-consumption-attempt" not in queue_ids
     assert "generated-documents-crud-quota-guard" not in queue_ids
     assert "case-generation-quota-guard" not in queue_ids
+    assert "case-evidence-catalog-export-preflight" not in queue_ids
     assert "deep-review-document-generation-quota-guard" not in queue_ids
     assert "legal-rag-selected-source-request-metadata" not in queue_ids
     assert "legal-rag-selected-source-citation-validation" not in queue_ids

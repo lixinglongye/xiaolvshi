@@ -1885,6 +1885,22 @@ class ReleaseReadinessService:
                 manual_note="This verifies case evidence-catalog and civil-complaint generation consume report quota server-side; deep-review first-principles generation is covered separately.",
             ),
             ReleaseCheck(
+                id="case-evidence-catalog-export-preflight",
+                title="Case evidence catalog export preflight",
+                category="backend",
+                required=False,
+                owner="backend",
+                evidence_paths=(
+                    "app/backend/services/case_evidence_catalog_export_preflight.py",
+                    "app/backend/services/case_intelligence.py",
+                    "app/backend/tests/test_case_evidence_catalog_export_preflight.py",
+                    "app/backend/tests/test_case_generation_quota.py",
+                    "docs/CASE_EVIDENCE_CATALOG_EXPORT_PREFLIGHT.md",
+                ),
+                validation_command="python -m pytest tests/test_case_evidence_catalog_export_preflight.py tests/test_case_generation_quota.py -q",
+                manual_note="This wires exhibit package policy and bundle integrity metadata into evidence-catalog generation preflight; it does not read files, call models, create attachment bundles, verify checksums against storage, or complete lawyer review.",
+            ),
+            ReleaseCheck(
                 id="deep-review-document-generation-quota-guard",
                 title="Deep-review document generation quota guard",
                 category="backend",

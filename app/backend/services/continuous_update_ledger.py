@@ -2876,6 +2876,28 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("document-generation", "billing-entitlements", "case-workbench"),
             ),
             LedgerEntry(
+                id="case-evidence-catalog-export-preflight",
+                title="Case evidence catalog export preflight",
+                category="backend_api",
+                size="medium",
+                status="shipped",
+                impact="Wires exhibit package policy and evidence bundle integrity metadata into case evidence-catalog generation, allowing drafts while blocking final export until package and integrity checks pass.",
+                evidence_paths=(
+                    "app/backend/services/case_evidence_catalog_export_preflight.py",
+                    "app/backend/services/case_intelligence.py",
+                    "app/backend/tests/test_case_evidence_catalog_export_preflight.py",
+                    "app/backend/tests/test_case_generation_quota.py",
+                    "docs/CASE_EVIDENCE_CATALOG_EXPORT_PREFLIGHT.md",
+                ),
+                release_gate_links=(
+                    "case-evidence-catalog-export-preflight",
+                    "case-generation-quota-guard",
+                    "evidence-exhibit-package-policy",
+                    "evidence-bundle-integrity",
+                ),
+                user_need_ids=("evidence-management", "document-generation", "case-workbench"),
+            ),
+            LedgerEntry(
                 id="deep-review-document-generation-quota-guard",
                 title="Deep-review document generation quota guard",
                 category="backend_api",

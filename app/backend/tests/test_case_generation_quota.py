@@ -163,6 +163,19 @@ async def test_case_evidence_catalog_generation_consumes_report_quota(db_session
     document_count = await db_session.scalar(select(func.count(Generated_documents.id)))
 
     assert payload["success"] is True
+    assert payload["evidence_catalog_export_preflight"]["status"] == "blocked"
+    assert payload["evidence_catalog_export_preflight"]["draft_generation_allowed"] is True
+    assert payload["evidence_catalog_export_preflight"]["export_allowed"] is False
+    assert payload["evidence_catalog_export_preflight"]["summary"]["package_policy_status"] == "blocked"
+    assert payload["evidence_catalog_export_preflight"]["summary"]["bundle_integrity_status"] == "review_recommended"
+    assert (
+        payload["document"]["content_json"]["evidence_catalog_export_preflight"]["preflight_id"]
+        == "case-evidence-catalog-export-preflight-v1"
+    )
+    assert (
+        payload["document"]["generation_plan"]["evidence_catalog_export_preflight_status"]
+        == payload["evidence_catalog_export_preflight"]["status"]
+    )
     assert payload["quota"]["decision_status"] == "ready"
     assert payload["quota"]["privacy_boundary"] == {
         "raw_document_text_included": False,

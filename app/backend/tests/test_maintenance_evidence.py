@@ -15,6 +15,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/case_workbench_risk_refresh_plan.py" in evidence_paths
     assert "app/backend/tests/test_case_workbench_risk_refresh_plan.py" in evidence_paths
     assert "docs/CASE_WORKBENCH_RISK_REFRESH_PLAN.md" in evidence_paths
+    assert "app/backend/services/case_evidence_catalog_export_preflight.py" in evidence_paths
+    assert "app/backend/tests/test_case_evidence_catalog_export_preflight.py" in evidence_paths
+    assert "docs/CASE_EVIDENCE_CATALOG_EXPORT_PREFLIGHT.md" in evidence_paths
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in evidence_paths
     assert "app/backend/routers/billing_usage.py" in evidence_paths
     assert "Billing report preflight route" in profile["release_management"]["release_readiness_controls"]
@@ -24,6 +27,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Document generation quota consumption attempt" in profile["release_management"]["release_readiness_controls"]
     assert "Generated documents CRUD quota guard" in profile["release_management"]["release_readiness_controls"]
     assert "Case generation quota guard" in profile["release_management"]["release_readiness_controls"]
+    assert "Case evidence catalog export preflight" in profile["release_management"]["release_readiness_controls"]
     assert "Deep-review document generation quota guard" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source request metadata" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG selected-source citation validation" in profile["release_management"]["release_readiness_controls"]

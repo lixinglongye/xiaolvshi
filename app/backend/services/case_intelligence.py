@@ -26,6 +26,7 @@ from models.generated_documents import Generated_documents
 from models.import_jobs import Import_jobs
 from models.legal_sources import Legal_sources
 from services.billing_entitlement_quota_binding import BillingEntitlementQuotaBindingService, build_quota_subject_hash
+from services.case_evidence_catalog_export_preflight import CaseEvidenceCatalogExportPreflightService
 from services.document_extraction import DocumentExtractionError, DocumentExtractionService
 from services.legal_rag_request_metadata import legal_rag_citation_metadata, sanitize_case_request_metadata
 from sqlalchemy import select
@@ -1130,6 +1131,7 @@ class CaseDraftingService:
                 missing.append(f"{row['evidence_no']} 证明目的需具体化")
             if "待确认" in row["page_range"]:
                 missing.append(f"{row['evidence_no']} 页码/份数需确认")
+        export_preflight = CaseEvidenceCatalogExportPreflightService().build_preflight(rows)
         markdown = self._render_evidence_catalog_markdown(workspace["case"], rows, missing)
         qa = self._qa_gate("证据目录", missing, rows)
         quota_summary = await self._consume_case_generation_quota(
@@ -1145,8 +1147,17 @@ class CaseDraftingService:
             doc_type="证据目录",
             title=f"证据目录 - {workspace['case'].title}",
             content=markdown,
-            content_json={"rows": rows, "missing_evidence": missing},
-            generation_plan={"source": "case_workspace", "agent": "evidence_catalog_drafting"},
+            content_json={
+                "rows": rows,
+                "missing_evidence": missing,
+                "evidence_catalog_export_preflight": export_preflight,
+            },
+            generation_plan={
+                "source": "case_workspace",
+                "agent": "evidence_catalog_drafting",
+                "evidence_catalog_export_preflight_status": export_preflight["status"],
+                "evidence_catalog_export_allowed": export_preflight["export_allowed"],
+            },
             evidence_citations=[{"evidence_id": row["evidence_no"], "evidence_name": row["evidence_name"]} for row in rows],
             legal_citations=[],
             qa_report=qa,
@@ -1158,6 +1169,7 @@ class CaseDraftingService:
             "document_id": document.id,
             "document": self._serialize_document(document),
             "qa_report": qa,
+            "evidence_catalog_export_preflight": export_preflight,
             "quota": self._safe_quota_summary(quota_summary),
         }
 
