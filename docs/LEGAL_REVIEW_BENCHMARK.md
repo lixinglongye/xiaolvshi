@@ -54,9 +54,9 @@ It also returns a lightweight public benchmark source catalog and small syntheti
 
 Metric values can be `pass`, `warn`, `fail`, booleans, or `0-100` numeric scores.
 
-`GET /research-backlog` maps LegalBench, FrugalGPT, RAGAS, CRAG, and CUAD signals into prioritized engineering items for cheap-first routing, legal task coverage, RAG grounding, retrieval failure cases, contract-clause sampling, and UI review visibility.
+`GET /research-backlog` maps LegalBench, FrugalGPT, RAGAS, CRAG, CUAD, LegalBench-RAG, LexEval, and CaseGen signals into prioritized engineering items for cheap-first routing, legal task coverage, RAG grounding, retrieval failure cases, Chinese legal workflow coverage, document-generation checks, contract-clause sampling, and UI review visibility.
 
-`GET/POST /public-sampler` turns LegalBench, CUAD, LexGLUE, and Pile of Law into a resource-capped sampling plan. It maps reviewed public-source samples back to local fixtures and benchmark cases, but it does not download data.
+`GET/POST /public-sampler` turns LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law into a resource-capped sampling plan. It maps reviewed public-source samples back to local fixtures, local `ldoc-*` document fixtures, and benchmark cases, but it does not download data.
 
 `GET /quick-suite` returns the smallest laptop-safe benchmark plan. By default it selects 3 synthetic fixtures, maps them to public benchmark source metadata, keeps `max_parallel_requests=1`, and points normalized observations to `/fixture-smoke`, `/fixture-run-report`, and `/fixture-evidence-bundle`.
 
@@ -103,10 +103,13 @@ The smoke evaluator scores signal coverage, task output coverage, and route matc
 - FrugalGPT: use cheap-first cascade routing and escalate only selected failures when cost matters.
 - RAGAS: track faithfulness, answer relevance, and context relevance for RAG-style outputs.
 - CRAG: use comprehensive factual QA and retrieval-style checks for answer reliability.
+- LegalBench-RAG: keep legal retrieval, citation grounding, unsupported-claim, and abstention failures visible as separate quality gates.
+- LexEval: include Chinese legal cognition, reasoning, and generation task-family coverage in local zh-CN fixture planning.
+- CaseGen: evaluate legal document generation as staged classification, extraction, reasoning, drafting, citation, PII, and risk-label checks.
 
 ## Public Sources and Fixtures
 
-The suite catalogs LegalBench, CUAD, LexGLUE, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Use `/public-sampler` to create a reviewed, capped sampling plan before touching any public examples. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
+The suite catalogs LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law as future benchmark candidates, but default tests do not fetch them. Use `/public-sampler` to create a reviewed, capped sampling plan before touching any public examples. Large public datasets should only be sampled in a resource-controlled job after license and attribution review.
 
 For low-resource local machines, use `/quick-suite` before the full run plan. It selects a default 3-fixture subset covering contract risk, evidence completeness, and low-text PDF extraction.
 

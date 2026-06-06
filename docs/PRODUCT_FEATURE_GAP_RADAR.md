@@ -45,10 +45,10 @@ first-principles document-generation quota guards, metadata-level
 selected-source citation validation, a metadata-only selected-source validation
 maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
-benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to local
+benchmark suite, a LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE research registry mapped to local
 low-resource validation, and a maintenance UI section for that registry.
 The latest product-research slice adds a metadata-only legal adoption research
-bridge that maps LegalBench, FrugalGPT, RAGAS, CRAG, and professional AI
+bridge that maps LegalBench, FrugalGPT, RAGAS, CRAG, CUAD, LegalBench-RAG, LexEval, CaseGen, and professional AI
 governance/adoption signals into existing user needs, product gaps,
 cheap-first validation commands, release gates, survey intake questions, and a
 maintenance UI review panel.

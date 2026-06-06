@@ -28,12 +28,17 @@ The external research digest endpoint keeps the public source metadata, engineer
 - RAGAS: retrieval-augmented generation needs faithfulness, answer relevance, and context relevance metrics.
 - CRAG: retrieval QA evaluation should include factuality, source availability, and retrieval failure modes.
 - CUAD: contract review evaluation benefits from clause-level issue spotting and extraction tasks, after license review.
+- LegalBench-RAG: legal retrieval, citation grounding, unsupported-claim, and abstention checks should be first-class fixture work.
+- LexEval: Chinese legal cognition, reasoning, and generation task families should map to local zh-CN fixtures before public sample import.
+- CaseGen: legal case document generation should be split into classification, extraction, reasoning, drafting, citation, PII, and risk-label checks.
 
 ## Current High-Priority Items
 
 - `cheap-first-cascade-evaluation`: keep Gemini/NewAPI fixture runs cheap-first and escalate only selected failures.
 - `legal-task-coverage-map`: keep each fixture tied to legal task family, expected route, signals, and output tasks.
 - `rag-grounding-metric-gates`: map RAGAS/CRAG signals to citation, evidence, grounding, and unsupported-claim gates.
+- `chinese-legal-benchmark-fixture-refresh`: map LegalBench-RAG, LexEval, and CaseGen metadata to local synthetic fixture IDs.
+- `casegen-document-output-gates`: keep document generation checks staged and metadata-only before any public case text import.
 
 ## Low-Resource Policy
 

@@ -41,6 +41,7 @@ from services.deep_review_selected_source_binding import DeepReviewSelectedSourc
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
+from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
 from services.legal_benchmark_research_registry import LegalBenchmarkResearchRegistryService
 from services.legal_benchmark_research_refresh import LegalBenchmarkResearchRefreshService
 from services.legal_rag_failure_fixtures import LegalRagFailureFixturesService
@@ -1126,6 +1127,15 @@ async def build_legal_public_benchmark_sampler(config: dict[str, Any]):
     return {
         "success": True,
         "data": LegalPublicBenchmarkSamplerService().build_plan(config),
+    }
+
+
+@router.get("/legal-review-benchmark/fixture-crosswalk")
+async def get_legal_benchmark_fixture_crosswalk():
+    """Return public benchmark to local fixture crosswalk metadata."""
+    return {
+        "success": True,
+        "data": LegalBenchmarkFixtureCrosswalkService().build_crosswalk(),
     }
 
 

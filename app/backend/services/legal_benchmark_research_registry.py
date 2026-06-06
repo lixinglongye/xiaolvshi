@@ -123,6 +123,75 @@ class LegalBenchmarkResearchRegistryService:
                 ),
             ),
             LegalBenchmarkResearchSource(
+                public_name="LegalBench-RAG",
+                public_link="https://arxiv.org/abs/2408.10343",
+                experience_takeaways=(
+                    "Legal RAG should be evaluated through retrieval, grounding, and citation support instead of answer text alone.",
+                    "Missing-authority and unsupported-claim cases should be visible as separate failure modes.",
+                    "RAG benchmark ideas can guide local synthetic source-pair fixtures without importing retrieval corpora.",
+                ),
+                project_mapping={
+                    "local_area": "legal_rag_failure_fixtures",
+                    "fixture_focus": "retrieval grounding, citation support, missing authority, abstention, and selected-source validation",
+                    "measurement": "source availability, citation-map coverage, abstention routing, unsupported-claim blocking, and release decision",
+                },
+                low_resource_action=(
+                    "Use LegalBench-RAG as a legal RAG task reference; run synthetic source-pair and abstention fixtures "
+                    "before any public retrieval context import is considered."
+                ),
+                forbidden_claims=(
+                    "Do not claim a LegalBench-RAG score, legal RAG benchmark result, or retrieval benchmark parity.",
+                    "Do not claim production legal RAG accuracy or hallucination elimination.",
+                    "Do not claim external legal retrieval corpora or real client sources were evaluated.",
+                ),
+            ),
+            LegalBenchmarkResearchSource(
+                public_name="LexEval",
+                public_link="https://arxiv.org/abs/2409.20288",
+                experience_takeaways=(
+                    "Chinese legal AI evaluation should keep cognition, reasoning, and generation task families explicit.",
+                    "Jurisdiction and document-type assumptions should be separated from generic legal reasoning labels.",
+                    "Chinese benchmark ideas should map to zh-CN synthetic fixtures before public examples are imported.",
+                ),
+                project_mapping={
+                    "local_area": "user_need_benchmark_coverage",
+                    "fixture_focus": "zh-CN legal document classification, evidence reasoning, citation grounding, and generation readiness",
+                    "measurement": "document fixture ids, task-family links, public-source license state, and user-need coverage status",
+                },
+                low_resource_action=(
+                    "Use LexEval as a Chinese legal task-family reference; keep validation on local zh-CN synthetic "
+                    "document fixtures until source license and attribution review pass."
+                ),
+                forbidden_claims=(
+                    "Do not claim a LexEval score, Chinese legal benchmark score, or jurisdiction-wide legal accuracy.",
+                    "Do not claim production Chinese legal reasoning uplift.",
+                    "Do not claim public benchmark examples or real Chinese client documents were imported.",
+                ),
+            ),
+            LegalBenchmarkResearchSource(
+                public_name="CaseGen",
+                public_link="https://arxiv.org/abs/2502.17943",
+                experience_takeaways=(
+                    "Legal case document generation should be evaluated as staged classification, extraction, reasoning, and drafting.",
+                    "Generated legal documents need structure, citation, PII exclusion, and risk-label checks before release claims.",
+                    "Case-generation research should map to local output fixtures without copying benchmark case text.",
+                ),
+                project_mapping={
+                    "local_area": "legal_document_benchmark_fixtures",
+                    "fixture_focus": "civil complaint, lawyer letter, contract review, settlement agreement, and legal opinion output checks",
+                    "measurement": "document structure, citation presence, risk labels, PII exclusion, and generated-document release gates",
+                },
+                low_resource_action=(
+                    "Use CaseGen as a legal document generation task-shape reference; run local synthetic document "
+                    "fixture checks before considering any reviewed public case text."
+                ),
+                forbidden_claims=(
+                    "Do not claim a CaseGen score, public document generation benchmark result, or drafting parity.",
+                    "Do not claim production drafting quality or lawyer-equivalent document generation.",
+                    "Do not claim benchmark case text, generated legal documents, or client documents were imported.",
+                ),
+            ),
+            LegalBenchmarkResearchSource(
                 public_name="COLIEE",
                 public_link="https://coliee.org/COLIEE2026/overview",
                 experience_takeaways=(

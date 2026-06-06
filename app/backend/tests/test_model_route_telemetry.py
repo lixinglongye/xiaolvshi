@@ -63,3 +63,21 @@ def test_model_ops_route_includes_route_telemetry():
     assert payload["route_telemetry"]["summary"]["request_count"] == 0
     assert payload["route_telemetry_repository"]["status"] == "ready"
     assert payload["route_telemetry_repository"]["summary"]["raw_payload_storage_allowed"] is False
+
+
+def test_route_telemetry_version_changes_on_record_and_reset():
+    registry = ModelRouteTelemetryRegistry()
+    initial_version = registry.version
+    task_inference = infer_gentxt_task(
+        "fast",
+        [ChatMessage(role="user", content="Summarize this note.")],
+    )
+    route = resolve_runtime_model(None, task=task_inference.task)
+
+    registry.record(route=route, task_inference=task_inference, success=True)
+    recorded_version = registry.version
+    registry.reset()
+
+    assert recorded_version == initial_version + 1
+    assert registry.version == recorded_version + 1
+    assert registry.snapshot()["version"] == registry.version

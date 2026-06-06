@@ -10,8 +10,11 @@ def test_user_need_benchmark_coverage_maps_high_priority_needs_to_fixtures():
     assert coverage["summary"]["need_count"] >= 6
     assert coverage["summary"]["high_priority_gap_count"] == 0
     assert coverage["summary"]["covered_need_count"] >= coverage["summary"]["high_priority_need_count"]
-    assert coverage["summary"]["public_benchmark_source_count"] >= 4
+    assert coverage["summary"]["public_benchmark_source_count"] >= 7
     assert coverage["summary"]["public_benchmark_mapped_need_count"] >= coverage["summary"]["high_priority_need_count"]
+    assert coverage["summary"]["public_benchmark_document_fixture_mapped_need_count"] >= coverage["summary"][
+        "high_priority_need_count"
+    ]
     assert coverage["summary"]["public_benchmark_license_review_required_need_count"] >= 1
     assert coverage["summary"]["public_sampler_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/public-sampler"
     assert coverage["summary"]["cheap_first_calibration_status"] == "pass"
@@ -31,6 +34,13 @@ def test_user_need_benchmark_coverage_maps_high_priority_needs_to_fixtures():
     assert rows["cheap-first-review-routing"]["calibration_status"] == "pass"
     assert rows["cheap-first-review-routing"]["calibration_decisions"]["fast-intake-preflight"] == "keep_cheap_first_default"
     assert "legalbench" in rows["traceable-legal-review"]["linked_public_source_ids"]
+    assert "legalbench-rag" in rows["traceable-legal-review"]["linked_public_source_ids"]
+    assert "lexeval" in rows["traceable-legal-review"]["linked_public_source_ids"]
+    assert "casegen" in rows["plain-language-actionability"]["linked_public_source_ids"]
+    assert "ldoc-legal-opinion-mini" in rows["traceable-legal-review"]["linked_public_document_fixture_ids"]
+    assert "ldoc-settlement-agreement-mini" in rows["plain-language-actionability"][
+        "linked_public_document_fixture_ids"
+    ]
     assert rows["traceable-legal-review"]["public_sampling_states"]["legalbench"] == "license_review_required"
     assert rows["traceable-legal-review"]["public_benchmark_status"] == "license_review_required"
     assert "legal_reasoning_smoke" in rows["traceable-legal-review"]["linked_public_sampling_batch_ids"]

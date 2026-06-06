@@ -88,13 +88,16 @@ MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS = 10.0
 _model_ops_payload_cache: dict[str, Any] | None = None
 _model_ops_payload_cache_at = 0.0
 _model_ops_payload_cache_probe_version = -1
+_model_ops_payload_cache_route_telemetry_version = -1
 
 
 def _clear_model_ops_payload_cache() -> None:
     global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
+    global _model_ops_payload_cache_route_telemetry_version
     _model_ops_payload_cache = None
     _model_ops_payload_cache_at = 0.0
     _model_ops_payload_cache_probe_version = -1
+    _model_ops_payload_cache_route_telemetry_version = -1
 
 
 def _try_extract_message_from_dict(data: dict) -> str | None:
@@ -186,12 +189,15 @@ async def list_models():
     names; those can still be sent directly in request payloads.
     """
     global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
+    global _model_ops_payload_cache_route_telemetry_version
 
     now = monotonic()
     gateway_probe_version = model_gateway_probe_evaluation_registry.version
+    route_telemetry_version = model_route_telemetry_registry.version
     if (
         _model_ops_payload_cache is not None
         and _model_ops_payload_cache_probe_version == gateway_probe_version
+        and _model_ops_payload_cache_route_telemetry_version == route_telemetry_version
         and now - _model_ops_payload_cache_at <= MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS
     ):
         return deepcopy(_model_ops_payload_cache)
@@ -395,6 +401,7 @@ async def list_models():
     _model_ops_payload_cache = deepcopy(payload)
     _model_ops_payload_cache_at = monotonic()
     _model_ops_payload_cache_probe_version = gateway_probe_version
+    _model_ops_payload_cache_route_telemetry_version = route_telemetry_version
     return payload
 
 

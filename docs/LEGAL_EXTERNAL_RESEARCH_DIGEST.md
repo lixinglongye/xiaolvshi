@@ -21,6 +21,9 @@ The endpoint returns:
 - CUAD: contract clause review and extraction dataset candidate.
 - RAGAS: retrieval augmented generation evaluation metrics.
 - CRAG: retrieval QA failure modes, factuality, and source availability.
+- LegalBench-RAG: legal retrieval, citation grounding, unsupported-claim, and abstention task design.
+- LexEval: Chinese legal cognition, reasoning, and generation benchmark planning.
+- CaseGen: staged legal case document generation benchmark planning.
 - FrugalGPT: cost-quality cascades and cheap-first escalation.
 
 ## Safety Policy

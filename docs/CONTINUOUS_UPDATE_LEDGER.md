@@ -4,11 +4,11 @@ Latest product-quality slice: `legal-document-benchmark-coverage`, `legal-docume
 
 Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures so the current local coverage matrix reaches 6/6 target document types. This still does not prove broad real-world document coverage or live model accuracy.
 
-Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
+Current claim-policy slice: `legal-document-coverage-claim-policy` allows only repository-backed synthetic fixture wording and keeps LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, CUAD, leaderboard, real-client, and universal legal-document claims out of release evidence unless separate public proof exists.
 
 Current research refresh slice: `legal-benchmark-research-refresh` adds
-metadata-only maintenance evidence for refreshing LegalBench, LexGLUE, COLIEE,
-and adoption-bridge mappings. It records expected backend service/test evidence
+metadata-only maintenance evidence for refreshing LegalBench, LexGLUE,
+LegalBench-RAG, LexEval, CaseGen, COLIEE, and adoption-bridge mappings. It records expected backend service/test evidence
 paths and release links only; it does not download datasets, claim public
 benchmark scores, store external legal text, call models, or handle
 credentials.
@@ -208,7 +208,7 @@ selected-source Legal RAG request metadata propagation, metadata-level
 selected-source citation validation, a metadata-only maintenance self-check
 route for selected-source validation, a local-only billing payment
 reconciliation policy, task runtime notification summaries, a deterministic
-laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/COLIEE
+laptop-safe legal document benchmark suite, a LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE
 research registry mapped to low-resource local tests, a metadata-only research
 refresh slice for that registry, and a maintenance UI section for that
 registry. The latest adoption-research bridge joins public

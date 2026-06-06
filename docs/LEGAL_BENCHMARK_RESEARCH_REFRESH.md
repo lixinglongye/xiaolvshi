@@ -2,7 +2,7 @@
 
 This release evidence tracks a metadata-only backend feature for refreshing the
 local legal benchmark research plan. It is meant to sit beside the existing
-LegalBench, LexGLUE, COLIEE registry and the adoption research bridge.
+LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE registry and the adoption research bridge.
 
 ## Scope
 
@@ -33,7 +33,7 @@ claim boundaries, and local validation commands.
 
 This feature does not:
 
-- download LegalBench, LexGLUE, COLIEE, or other public benchmark datasets
+- download LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, or other public benchmark datasets
 - publish or imply public benchmark scores, leaderboard rank, or parity
 - import, store, or echo external legal text or benchmark examples
 - call models, gateways, NewAPI, Gemini, OpenAI, or other providers
@@ -46,6 +46,20 @@ The release gate is optional, matching the current legal benchmark research
 registry and adoption bridge checks. A missing or not-run refresh check must not
 block release by itself. It should only help reviewers see whether research
 planning metadata is current.
+
+## 2026-06 Source Expansion
+
+The refresh now maps seven metadata-only sources into local validation rows:
+
+- LegalBench for task-family legal reasoning coverage.
+- LexGLUE for label discipline and classification-style checks.
+- COLIEE for legal retrieval and entailment separation.
+- LegalBench-RAG for legal retrieval, citation grounding, unsupported-claim, and abstention fixtures.
+- LexEval for Chinese legal cognition, reasoning, and generation task-family coverage.
+- CaseGen for staged legal document generation structure, citation, PII exclusion, and risk-label checks.
+- FrugalGPT for cheap-first cost-quality cascade planning.
+
+The LexEval and CaseGen rows intentionally point to local `ldoc-*` synthetic fixture checks rather than public examples. The LegalBench-RAG row points to legal RAG failure fixtures and authority/citation, abstention, and retrieval diagnostics gates.
 
 Suggested validation command:
 

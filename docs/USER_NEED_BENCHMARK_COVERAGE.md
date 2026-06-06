@@ -12,7 +12,7 @@ GET /api/v1/maintenance/user-needs/benchmark-coverage
 
 The user-needs radar ranks product needs, while the legal benchmark suite and fixture services prove low-resource validation coverage. This endpoint joins those artifacts so maintainers can see which high-priority needs already have local synthetic benchmark cases, fixtures, research backlog items, release gates, and public benchmark research mappings.
 
-The endpoint also reads the metadata-only public benchmark sampler. This links LegalBench, CUAD, LexGLUE, and Pile of Law source plans to each user need by local fixture IDs and benchmark case IDs. It reports whether those public sources are still `license_review_required`, `sampling_ready`, or `catalog_only`; it does not download or return external examples.
+The endpoint also reads the metadata-only public benchmark sampler. This links LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law source plans to each user need by local fixture IDs, local `ldoc-*` document fixture IDs, and benchmark case IDs. It reports whether those public sources are still `license_review_required`, `sampling_ready`, or `catalog_only`; it does not download or return external examples.
 
 The endpoint also reads the Gemini/NewAPI cheap-first calibration service. Calibration rows are linked through each task's `user_need_ids`, so maintainers can see whether a user need is backed by passing selector replay, fixture, cost-guardrail, and cost-forecast evidence. The map returns calibration task IDs, release gates, status, and decisions only; it does not echo calibration payloads, prompts, gateway responses, or model output.
 
@@ -20,7 +20,7 @@ The endpoint also reads the Gemini/NewAPI cheap-first calibration service. Calib
 
 - `status`: `ready` or `ready_with_gaps`
 - `summary`: need counts, high-priority gap counts, benchmark case counts, fixture counts, backlog counts, public-source readiness counts, cheap-first calibration counts, sampler endpoint, and local-run policy
-- `coverage_rows`: one row per user need with linked benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public source IDs, public sampling batch IDs, public sampling states, cheap-first calibration task IDs, calibration release gates, calibration decisions, research backlog item IDs, release gates, gap reasons, and next actions
+- `coverage_rows`: one row per user need with linked benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public source IDs, public-source document fixture IDs, public sampling batch IDs, public sampling states, cheap-first calibration task IDs, calibration release gates, calibration decisions, research backlog item IDs, release gates, gap reasons, and next actions
 - `gap_need_ids`, `high_priority_gap_need_ids`, `public_benchmark_gap_need_ids`, and `calibration_attention_need_ids`
 - `source_summaries.public_sampler`, `source_summaries.public_sampler_resource_policy`, and `source_summaries.cheap_first_calibration`
 - `recommended_actions`

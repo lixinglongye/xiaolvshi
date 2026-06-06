@@ -160,7 +160,7 @@ class GeminiNewapiCheapFirstCalibrationService:
             "release_guardrails": [
                 "Do not use calibration as proof of live NewAPI execution or public benchmark performance.",
                 "Do not promote premium models to defaults when only selected fixtures need escalation.",
-                "Do not import LegalBench, CUAD, LexGLUE, COLIEE, DocLayNet, or other public benchmark samples into default local tests.",
+                "Do not import LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, DocLayNet, or other public benchmark samples into default local tests.",
                 "Keep raw model output, prompts, legal text, gateway payloads, emails, and credentials out of calibration evidence.",
             ],
             "privacy_boundary": {

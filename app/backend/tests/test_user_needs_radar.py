@@ -16,8 +16,19 @@ def test_user_needs_radar_tracks_research_and_internal_sources():
     radar = UserNeedsRadarService().build_radar()
     source_ids = {source["id"] for source in radar["method"]["input_sources"]}
 
-    assert {"legalbench", "stanford-legal-rag", "internal-feedback-triage", "legal-research-backlog"}.issubset(source_ids)
+    assert {
+        "legalbench",
+        "legalbench-rag",
+        "lexeval",
+        "casegen",
+        "stanford-legal-rag",
+        "internal-feedback-triage",
+        "legal-research-backlog",
+    }.issubset(source_ids)
     assert radar["summary"]["source_coverage"]["legalbench"] >= 1
+    assert radar["summary"]["source_coverage"]["legalbench-rag"] >= 2
+    assert radar["summary"]["source_coverage"]["lexeval"] >= 2
+    assert radar["summary"]["source_coverage"]["casegen"] >= 2
     assert radar["summary"]["source_coverage"]["internal-feedback-triage"] >= 3
     assert radar["summary"]["source_coverage"]["legal-research-backlog"] >= 3
     assert "sk-" not in str(radar)

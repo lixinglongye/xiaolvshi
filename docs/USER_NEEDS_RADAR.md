@@ -23,7 +23,7 @@ GET /api/v1/maintenance/user-needs/benchmark-coverage
 
 The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `maintenance_actions`.
 
-`GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public benchmark sampler source IDs, sampling batch IDs, cheap-first Gemini/NewAPI calibration task IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence. Public benchmark mappings report sampler readiness and license-review status only; they do not download LegalBench, CUAD, LexGLUE, Pile of Law, or other external examples. Calibration mappings report task IDs, status, release gates, and decisions only; they do not echo prompts, payloads, gateway responses, or model output.
+`GET /user-needs/benchmark-coverage` joins those needs to local benchmark case IDs, synthetic fixture IDs, legal-document fixture IDs, public benchmark sampler source IDs, sampling batch IDs, cheap-first Gemini/NewAPI calibration task IDs, research backlog item IDs, release gates, and gap reasons. It is metadata-only and should be used before claiming that a high-priority user need is covered by low-resource validation evidence. Public benchmark mappings report sampler readiness and license-review status only; they do not download LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, Pile of Law, or other external examples. Calibration mappings report task IDs, status, release gates, and decisions only; they do not echo prompts, payloads, gateway responses, or model output.
 
 `user-need-implementation-priority-queue` is the metadata-only evidence id for
 turning high-priority user needs, legal benchmark coverage gaps, cheap-first
@@ -39,7 +39,7 @@ Related legal-AI research planning is exposed at:
 GET /api/v1/maintenance/legal-review-benchmark/research-backlog
 ```
 
-Use that endpoint when converting LegalBench, FrugalGPT, RAGAS, CRAG, or CUAD signals into concrete benchmark, routing, grounding, or UI tasks.
+Use that endpoint when converting LegalBench, FrugalGPT, RAGAS, CRAG, CUAD, LegalBench-RAG, LexEval, or CaseGen signals into concrete benchmark, routing, grounding, document-generation, or UI tasks.
 
 The maintenance UI renders the radar and the research backlog together so maintainers can compare user needs against research-backed engineering tasks before choosing the next update.
 
@@ -60,6 +60,9 @@ The score is a planning signal, not product analytics. It does not use private u
 ## Research Signals
 
 - LegalBench: legal AI evaluation should cover multiple legal reasoning task types instead of a single generic QA score.
+- LegalBench-RAG: legal retrieval, citation grounding, unsupported-claim, and abstention checks should be visible as separate RAG quality signals.
+- LexEval: Chinese legal workflows need cognition, reasoning, and generation task-family coverage.
+- CaseGen: legal document generation should be evaluated through staged classification, extraction, reasoning, and drafting checks.
 - Stanford legal RAG hallucination evaluation: legal tools still need citation grounding checks, professional review, and hallucination-aware release gates.
 - Internal feedback triage: support work should distinguish security, access, legal-output risk, pipeline failure, and usability.
 - Local user research notes: target users need low-cost review, traceable evidence, missing facts, and lawyer-review escalation.

@@ -93,7 +93,8 @@ Calibration must not be used as proof of:
 - production traffic coverage, or
 - legal correctness for client matters.
 
-It also must not be used as proof that LegalBench, CUAD, LexGLUE, COLIEE,
+It also must not be used as proof that LegalBench, CUAD, LexGLUE, LegalBench-RAG,
+LexEval, CaseGen, COLIEE,
 DocLayNet, or any other public benchmark was downloaded or scored.
 
 ## Privacy Boundary

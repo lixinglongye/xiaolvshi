@@ -2217,7 +2217,7 @@ class ReleaseReadinessService:
                     "app/backend/routers/maintenance.py",
                 ),
                 validation_command="python -m pytest tests/test_legal_benchmark_research_registry.py -q",
-                manual_note="This maps LegalBench, LexGLUE, and COLIEE lessons to local synthetic validation; it does not claim public benchmark scores or external adoption.",
+                manual_note="This maps LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and COLIEE lessons to local synthetic validation; it does not claim public benchmark scores or external adoption.",
             ),
             ReleaseCheck(
                 id="legal-benchmark-research-refresh",
@@ -2529,7 +2529,7 @@ class ReleaseReadinessService:
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                 ),
                 validation_command="npm run typecheck",
-                manual_note="This exposes the metadata-only LegalBench/LexGLUE/COLIEE registry on the maintenance evidence page without claiming benchmark downloads, runs, scores, or leaderboard status.",
+                manual_note="This exposes the metadata-only LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE registry on the maintenance evidence page without claiming benchmark downloads, runs, scores, or leaderboard status.",
             ),
             ReleaseCheck(
                 id="legal-adoption-research-bridge",

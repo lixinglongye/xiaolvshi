@@ -87,6 +87,24 @@ class UserNeedsRadarService:
                 signal="Legal AI evaluation should cover multiple legal reasoning task types, not a single generic QA score.",
             ),
             ResearchSource(
+                id="legalbench-rag",
+                title="LegalBench-RAG legal retrieval benchmark",
+                url="https://arxiv.org/abs/2408.10343",
+                signal="Legal RAG evaluation needs retrieval, citation, and grounding checks that are separate from general legal reasoning.",
+            ),
+            ResearchSource(
+                id="lexeval",
+                title="LexEval Chinese legal benchmark",
+                url="https://arxiv.org/abs/2409.20288",
+                signal="Chinese legal workflows need jurisdiction-specific cognition, reasoning, and generation validation.",
+            ),
+            ResearchSource(
+                id="casegen",
+                title="CaseGen legal case generation benchmark",
+                url="https://arxiv.org/abs/2502.17943",
+                signal="Legal document generation should be evaluated as staged classification, extraction, reasoning, and drafting tasks.",
+            ),
+            ResearchSource(
                 id="stanford-legal-rag",
                 title="Stanford legal RAG hallucination evaluation",
                 url="https://reglab.stanford.edu/publications/hallucination-free-assessing-the-reliability-of-leading-ai-legal-research-tools/",
@@ -124,7 +142,14 @@ class UserNeedsRadarService:
                 impact=10,
                 effort=5,
                 confidence=9,
-                source_ids=("legalbench", "stanford-legal-rag", "local-maintenance-notes", "legal-research-backlog"),
+                source_ids=(
+                    "legalbench",
+                    "legalbench-rag",
+                    "lexeval",
+                    "stanford-legal-rag",
+                    "local-maintenance-notes",
+                    "legal-research-backlog",
+                ),
                 evidence_paths=(
                     "app/backend/services/citation_audit.py",
                     "app/backend/services/evidence_audit.py",
@@ -147,7 +172,7 @@ class UserNeedsRadarService:
                 impact=9,
                 effort=4,
                 confidence=8,
-                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog"),
+                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog", "casegen"),
                 evidence_paths=(
                     "app/backend/services/model_budget.py",
                     "app/backend/services/document_preflight.py",
@@ -192,7 +217,7 @@ class UserNeedsRadarService:
                 impact=9,
                 effort=5,
                 confidence=8,
-                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog"),
+                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog", "lexeval"),
                 evidence_paths=(
                     "app/backend/services/extraction_quality.py",
                     "app/backend/routers/deep_review.py",
@@ -215,7 +240,7 @@ class UserNeedsRadarService:
                 impact=8,
                 effort=4,
                 confidence=8,
-                source_ids=("internal-feedback-triage", "stanford-legal-rag", "legal-research-backlog"),
+                source_ids=("internal-feedback-triage", "stanford-legal-rag", "legalbench-rag", "legal-research-backlog"),
                 evidence_paths=(
                     "app/backend/services/instruction_injection_audit.py",
                     "app/backend/services/document_preflight.py",
@@ -238,7 +263,7 @@ class UserNeedsRadarService:
                 impact=8,
                 effort=6,
                 confidence=7,
-                source_ids=("local-maintenance-notes", "legal-research-backlog"),
+                source_ids=("local-maintenance-notes", "legal-research-backlog", "casegen", "lexeval"),
                 evidence_paths=(
                     "app/frontend/src/pages/DeepReportPage.tsx",
                     "app/backend/services/report_quality_gate.py",

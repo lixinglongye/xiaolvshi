@@ -9,7 +9,9 @@ GET /api/v1/maintenance/legal-review-benchmark/public-sampler
 POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 ```
 
-`GET` returns the default plan for LegalBench, CUAD, LexGLUE, and Pile of Law.
+`GET` returns the default plan for LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law.
+
+Use `/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk` when you need the same public sources joined to local benchmark case IDs, `fixture-*` IDs, `ldoc-*` document fixture IDs, and tiny `small-corpus-*` metadata IDs.
 
 `POST` accepts explicit source and license-review settings:
 
@@ -29,6 +31,9 @@ POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 - LegalBench maps to multi-task legal reasoning, evidence reasoning, and legal RAG checks.
 - CUAD maps to contract clause extraction and service-agreement risk fixtures.
 - LexGLUE maps to legal classification and CaseHOLD-style reasoning checks.
+- LegalBench-RAG maps to legal retrieval, citation grounding, abstention, and hallucination-triage fixture design.
+- LexEval maps to Chinese legal cognition, reasoning, and generation coverage over local zh-CN fixtures.
+- CaseGen maps to staged legal document generation checks for structure, citation, PII exclusion, and risk labels.
 - Pile of Law remains catalog-only for local runs because it is corpus-scale.
 
 ## Local Run Policy
@@ -42,7 +47,9 @@ POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 ## Output
 
 - `source_plans`: source metadata, local fixture mapping, sampling state, license gate, and recommended action.
-- `sampling_batches`: task-oriented batches that map public-source samples back to fixture or benchmark endpoints.
+- `source_plans[].document_fixture_ids`: local `ldoc-*` legal-document fixture IDs used for Chinese legal generation and legal RAG planning.
+- `sampling_batches`: task-oriented batches that map public-source samples back to fixture, document-fixture, or benchmark endpoints.
+- `fixture-crosswalk`: companion endpoint that shows whether each public source has local fixture, legal-document fixture, and small-corpus coverage.
 - `resource_policy`: network, storage, and sample-size limits.
 - `validation_commands`: focused tests that prove the sampler and release evidence indexes are wired.
 
@@ -53,7 +60,9 @@ Do not commit raw public benchmark examples, client documents, personal data, ga
 ## Related Files
 
 - `app/backend/services/legal_public_benchmark_sampler.py`
+- `app/backend/services/legal_benchmark_fixture_crosswalk.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
+- `app/backend/tests/test_legal_benchmark_fixture_crosswalk.py`
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_fixture_evidence_bundle.py`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`

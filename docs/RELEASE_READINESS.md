@@ -5,8 +5,8 @@ Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-b
 Additional optional evidence: `legal-document-benchmark-gap-fixtures` validates the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures against the same low-resource benchmark suite.
 
 Additional optional evidence: `legal-benchmark-research-refresh` records
-metadata-only refresh evidence for LegalBench, LexGLUE, COLIEE, and adoption
-bridge mappings. It does not download datasets, claim public benchmark scores,
+metadata-only refresh evidence for LegalBench, LexGLUE, LegalBench-RAG, LexEval,
+CaseGen, COLIEE, and adoption bridge mappings. It does not download datasets, claim public benchmark scores,
 store external legal text, call models, or handle credentials.
 
 Additional optional evidence: `model-route-legal-benchmark-risk-queue` records
@@ -188,7 +188,7 @@ deep-review first-principles document-generation quota guards, metadata-level
 selected-source citation validation, a metadata-only selected-source validation
 maintenance route, a local-only billing payment reconciliation policy, task
 runtime notification summaries, a deterministic laptop-safe legal document
-benchmark suite, a LegalBench/LexGLUE/COLIEE research registry mapped to
+benchmark suite, a LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE research registry mapped to
 low-resource local validation, a metadata-only legal benchmark research refresh
 check, a maintenance UI section for that registry, and a metadata-only legal
 adoption research bridge that maps public research and

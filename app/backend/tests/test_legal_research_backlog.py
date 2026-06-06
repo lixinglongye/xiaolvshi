@@ -8,9 +8,11 @@ def test_legal_research_backlog_tracks_primary_research_sources():
     source_ids = {source["id"] for source in backlog["method"]["input_sources"]}
 
     assert backlog["status"] == "ready"
-    assert {"legalbench", "frugalgpt", "ragas", "crag", "cuad"}.issubset(source_ids)
-    assert backlog["summary"]["source_count"] >= 5
-    assert backlog["summary"]["backlog_item_count"] >= 6
+    assert {"legalbench", "frugalgpt", "ragas", "crag", "cuad", "legalbench-rag", "lexeval", "casegen"}.issubset(
+        source_ids
+    )
+    assert backlog["summary"]["source_count"] >= 8
+    assert backlog["summary"]["backlog_item_count"] >= 8
     assert backlog["summary"]["high_priority_count"] >= 2
     assert not re.search(r"sk-[A-Za-z0-9]{20,}", str(backlog))
 
@@ -36,6 +38,17 @@ def test_legal_research_backlog_maps_rag_sources_to_grounding_gates():
     assert "legal-rag-evaluation" in grounding["release_gate_links"]
     assert "citation_audit" in grounding["release_gate_links"]
     assert any(path.endswith("legal_rag_evaluation.py") for path in grounding["evidence_paths"])
+
+
+def test_legal_research_backlog_maps_chinese_benchmark_sources_to_fixture_work():
+    backlog = LegalResearchBacklogService().build_backlog()
+    refresh = next(item for item in backlog["backlog"] if item["id"] == "chinese-legal-benchmark-fixture-refresh")
+    output_gates = next(item for item in backlog["backlog"] if item["id"] == "casegen-document-output-gates")
+
+    assert {"lexeval", "legalbench-rag", "casegen"}.issubset(set(refresh["source_ids"]))
+    assert "user-need-benchmark-coverage" in refresh["release_gate_links"]
+    assert "legal_document_benchmark_fixtures.py" in " ".join(output_gates["evidence_paths"])
+    assert "plain-language-actionability" in output_gates["user_need_ids"]
 
 
 def test_legal_research_backlog_builds_workstream_plan_and_queue():

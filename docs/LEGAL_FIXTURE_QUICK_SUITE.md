@@ -22,7 +22,7 @@ The fourth optional fixture covers privacy-sensitive and instruction-injection u
 
 - `selected_fixtures`: fixture IDs, expected tasks/signals, linked benchmark cases, cheap-first model, estimated request cost, and source mappings.
 - `quick_steps`: fetch, serial cheap-first run, smoke scoring, run-report, and evidence-bundle steps.
-- `public_source_mapping`: LegalBench, CUAD, LexGLUE, and Pile of Law mappings for the selected fixtures, with download disabled by default.
+- `public_source_mapping`: LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law mappings for the selected fixtures, with download disabled by default.
 - `observation_template`: minimal payload to paste normalized outputs into `/fixture-smoke`.
 - `validation_commands`: small pytest commands for the quick suite and its dependencies.
 

@@ -116,7 +116,9 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/backend/tests/test_maintenance_legal_rag_selected_source_validation_route.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/tests/test_deep_review_selected_source_binding.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/services/billing_payment_reconciliation.py" in gaps["billing-entitlements"]["evidence_paths"]
-    assert "LegalBench/LexGLUE/COLIEE research registry" in gaps["model-cost-ops"]["current_state"]
+    assert "LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE research registry" in gaps["model-cost-ops"][
+        "current_state"
+    ]
     assert "task-level model selector audits" in gaps["model-cost-ops"]["current_state"]
     assert "deterministic selector replay evidence" in gaps["model-cost-ops"]["current_state"]
     assert "metadata-only cheap-first calibration" in gaps["model-cost-ops"]["current_state"]

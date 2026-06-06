@@ -1,5 +1,7 @@
 from services.model_route_guardrails import ModelRouteGuardrailService, RouteGuardrailThresholds
 from services.model_route_telemetry import ModelRouteTelemetryRegistry, model_route_telemetry_registry
+from services.model_runtime_router import resolve_runtime_model
+from services.model_task_inference import TaskInference
 
 
 def _snapshot(
@@ -121,3 +123,39 @@ def test_model_ops_route_includes_route_guardrails():
     assert payload["success"] is True
     assert payload["route_guardrails"]["status"] == "pass"
     assert payload["route_guardrails"]["checks"]
+
+
+def test_model_ops_route_guardrail_cache_invalidates_after_telemetry_reset():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    model_route_telemetry_registry.reset()
+    task_inference = TaskInference(
+        requested_task="fast",
+        task="fast",
+        source="explicit",
+        confidence=1.0,
+        signals=("test",),
+        reason="test fixture",
+    )
+    route = resolve_runtime_model("gemini-2.5-pro", task="fast")
+    for _ in range(3):
+        model_route_telemetry_registry.record(route=route, task_inference=task_inference, success=False)
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    failed_response = client.get("/api/v1/aihub/models")
+    assert failed_response.status_code == 200
+    assert failed_response.json()["route_guardrails"]["status"] == "fail"
+
+    model_route_telemetry_registry.reset()
+    reset_response = client.get("/api/v1/aihub/models")
+
+    assert reset_response.status_code == 200
+    assert reset_response.json()["route_guardrails"]["status"] == "pass"
+    assert reset_response.json()["route_telemetry"]["summary"]["request_count"] == 0

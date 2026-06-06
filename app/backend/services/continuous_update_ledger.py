@@ -467,7 +467,7 @@ class ContinuousUpdateLedgerService:
                 category="user_research",
                 size="large",
                 status="shipped",
-                impact="Maps LegalBench, FrugalGPT, RAGAS, CRAG, and CUAD signals into concrete engineering tasks.",
+                impact="Maps LegalBench, FrugalGPT, RAGAS, CRAG, CUAD, LegalBench-RAG, LexEval, and CaseGen signals into concrete engineering tasks.",
                 evidence_paths=(
                     "app/backend/services/legal_research_backlog.py",
                     "app/backend/tests/test_legal_research_backlog.py",
@@ -482,7 +482,7 @@ class ContinuousUpdateLedgerService:
                 category="user_research",
                 size="large",
                 status="shipped",
-                impact="Maps LegalBench, CUAD, RAGAS, CRAG, and FrugalGPT signals into local legal benchmark, RAG, and cheap-first routing work.",
+                impact="Maps LegalBench, CUAD, RAGAS, CRAG, LegalBench-RAG, LexEval, CaseGen, and FrugalGPT signals into local legal benchmark, RAG, Chinese legal-document, and cheap-first routing work.",
                 evidence_paths=(
                     "app/backend/services/legal_external_research_digest.py",
                     "app/backend/tests/test_legal_external_research_digest.py",
@@ -3162,7 +3162,7 @@ class ContinuousUpdateLedgerService:
                 category="benchmark",
                 size="medium",
                 status="shipped",
-                impact="Maps LegalBench, LexGLUE, and COLIEE lessons into local synthetic, low-resource legal validation strategy without dataset downloads or leaderboard claims.",
+                impact="Maps LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and COLIEE lessons into local synthetic, low-resource legal validation strategy without dataset downloads or leaderboard claims.",
                 evidence_paths=(
                     "app/backend/services/legal_benchmark_research_registry.py",
                     "app/backend/tests/test_legal_benchmark_research_registry.py",
@@ -3177,7 +3177,7 @@ class ContinuousUpdateLedgerService:
                 category="benchmark",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only refresh evidence for updating LegalBench, LexGLUE, COLIEE, and adoption-bridge mappings without dataset downloads, public scores, external legal text, model calls, or credentials.",
+                impact="Adds metadata-only refresh evidence for updating LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, and adoption-bridge mappings without dataset downloads, public scores, external legal text, model calls, or credentials.",
                 evidence_paths=(
                     "app/backend/services/legal_benchmark_research_refresh.py",
                     "app/backend/tests/test_legal_benchmark_research_refresh.py",
@@ -3348,7 +3348,7 @@ class ContinuousUpdateLedgerService:
                 category="frontend_ui",
                 size="medium",
                 status="shipped",
-                impact="Adds a maintenance evidence page section and typed API client for the metadata-only LegalBench, LexGLUE, and COLIEE research registry without benchmark download or score claims.",
+                impact="Adds a maintenance evidence page section and typed API client for the metadata-only LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and COLIEE research registry without benchmark download or score claims.",
                 evidence_paths=(
                     "app/frontend/src/lib/maintenanceApi.ts",
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",

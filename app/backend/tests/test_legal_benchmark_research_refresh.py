@@ -11,16 +11,19 @@ SECRET_PATTERN = re.compile(
 NETWORK_COMMAND_PATTERN = re.compile(r"\b(curl|wget|Invoke-WebRequest|iwr)\b", re.IGNORECASE)
 
 
-def test_research_refresh_maps_four_sources_without_downloads_or_model_calls():
+def test_research_refresh_maps_seven_sources_without_downloads_or_model_calls():
     refresh = LegalBenchmarkResearchRefreshService().build_refresh()
 
     assert refresh["status"] == "ready"
     assert refresh["method"]["type"] == "legal-benchmark-research-refresh"
-    assert refresh["summary"]["source_count"] == 4
+    assert refresh["summary"]["source_count"] == 7
     assert {source["id"] for source in refresh["research_sources"]} == {
         "legalbench",
         "lexglue",
         "coliee",
+        "legalbench-rag",
+        "lexeval",
+        "casegen",
         "frugalgpt",
     }
     assert refresh["summary"]["dataset_downloaded"] is False
@@ -44,6 +47,9 @@ def test_research_refresh_links_sources_to_user_needs_and_local_evidence():
     ]
     assert "robust-extraction-quality" in rows["lexglue"]["user_need_ids"]
     assert "prompt-injection-resilience" in rows["coliee"]["user_need_ids"]
+    assert "prompt-injection-resilience" in rows["legalbench-rag"]["user_need_ids"]
+    assert "robust-extraction-quality" in rows["lexeval"]["user_need_ids"]
+    assert "plain-language-actionability" in rows["casegen"]["user_need_ids"]
     assert "cheap-first-review-routing" in rows["frugalgpt"]["user_need_ids"]
     assert all(row["local_evidence_paths"] for row in rows.values())
     assert all(row["release_gate_links"] for row in rows.values())
@@ -61,7 +67,7 @@ def test_research_refresh_aggregates_user_need_rows_from_existing_coverage():
 
     assert "frugalgpt" in cheap_first["source_ids"]
     assert cheap_first["cheap_first_relevant"] is True
-    assert {"legalbench", "coliee"}.issubset(set(traceable["source_ids"]))
+    assert {"legalbench", "coliee", "legalbench-rag", "lexeval", "casegen"}.issubset(set(traceable["source_ids"]))
     assert traceable["public_benchmark_status"] in {
         "sampling_ready",
         "license_review_required",
@@ -103,5 +109,5 @@ def test_research_refresh_routes_return_refresh_payload():
         assert response.status_code == 200
         payload = response.json()
         assert payload["success"] is True
-        assert payload["data"]["summary"]["source_count"] == 4
+        assert payload["data"]["summary"]["source_count"] == 7
         assert payload["data"]["privacy_boundary"]["network_called"] is False

@@ -27,7 +27,7 @@ def test_registry_returns_api_ready_local_metadata_only_dict():
 
     assert registry["status"] == "ready"
     assert registry["method"]["type"] == "local-legal-benchmark-research-registry"
-    assert registry["summary"]["source_count"] == 3
+    assert registry["summary"]["source_count"] == 6
     assert registry["validation_commands"]
     assert registry["low_resource_strategy"]["network_access"] == "disabled_for_local_validation"
     assert registry["low_resource_strategy"]["dataset_downloads"] == "forbidden_in_default_tests"
@@ -40,11 +40,14 @@ def test_registry_covers_legalbench_lexglue_and_coliee_sources():
     registry = LegalBenchmarkResearchRegistryService().build_registry()
     sources_by_name = {source["public_name"]: source for source in registry["sources"]}
 
-    assert set(sources_by_name) == {"LegalBench", "LexGLUE", "COLIEE"}
+    assert set(sources_by_name) == {"LegalBench", "LexGLUE", "LegalBench-RAG", "LexEval", "CaseGen", "COLIEE"}
     assert all(set(source) == SOURCE_FIELDS for source in registry["sources"])
     assert all(source["public_link"].startswith("https://") for source in registry["sources"])
     assert "task-family coverage reference" in sources_by_name["LegalBench"]["low_resource_action"]
     assert "label-discipline reference" in sources_by_name["LexGLUE"]["low_resource_action"]
+    assert "legal RAG task reference" in sources_by_name["LegalBench-RAG"]["low_resource_action"]
+    assert "Chinese legal task-family reference" in sources_by_name["LexEval"]["low_resource_action"]
+    assert "legal document generation task-shape reference" in sources_by_name["CaseGen"]["low_resource_action"]
     assert "retrieval-and-entailment reference" in sources_by_name["COLIEE"]["low_resource_action"]
 
 
@@ -57,9 +60,15 @@ def test_registry_maps_public_benchmark_experience_to_local_low_resource_tests()
     assert "citation grounding" in mappings["LegalBench"]["fixture_focus"]
     assert mappings["LexGLUE"]["local_area"] == "legal_fixture_quick_suite"
     assert "classification" in mappings["LexGLUE"]["fixture_focus"]
+    assert mappings["LegalBench-RAG"]["local_area"] == "legal_rag_failure_fixtures"
+    assert "abstention" in mappings["LegalBench-RAG"]["fixture_focus"]
+    assert mappings["LexEval"]["local_area"] == "user_need_benchmark_coverage"
+    assert "zh-CN" in mappings["LexEval"]["fixture_focus"]
+    assert mappings["CaseGen"]["local_area"] == "legal_document_benchmark_fixtures"
+    assert "legal opinion" in mappings["CaseGen"]["fixture_focus"]
     assert mappings["COLIEE"]["local_area"] == "legal_rag_evaluation"
     assert "missing-authority" in mappings["COLIEE"]["fixture_focus"]
-    assert len(low_resource_actions) == 3
+    assert len(low_resource_actions) == 6
     assert all("synthetic" in action.lower() for action in low_resource_actions)
     assert registry["low_resource_strategy"]["fixture_cap"]["max_fixtures_per_source_without_review"] == 3
 
@@ -102,5 +111,12 @@ def test_registry_route_returns_public_benchmark_mapping():
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
-    assert payload["data"]["summary"]["source_names"] == ["LegalBench", "LexGLUE", "COLIEE"]
+    assert payload["data"]["summary"]["source_names"] == [
+        "LegalBench",
+        "LexGLUE",
+        "LegalBench-RAG",
+        "LexEval",
+        "CaseGen",
+        "COLIEE",
+    ]
     assert payload["data"]["low_resource_strategy"]["dataset_downloads"] == "forbidden_in_default_tests"

@@ -65,7 +65,9 @@ Use `/api/v1/maintenance/legal-review-benchmark/fixture-run-report` to convert o
 
 Use `/api/v1/maintenance/legal-review-benchmark/fixture-evidence-bundle` to bundle smoke scores, model routing evidence, run reports, validation commands, and release-safe claims after a small local run.
 
-Use `/api/v1/maintenance/legal-review-benchmark/public-sampler` to map reviewed LegalBench, CUAD, LexGLUE, or Pile of Law samples back to these local fixtures without downloading public datasets during default tests.
+Use `/api/v1/maintenance/legal-review-benchmark/public-sampler` to map reviewed LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, or Pile of Law samples back to these local fixtures without downloading public datasets during default tests.
+
+Use `/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk` to inspect the full metadata path from public benchmark source ID to local benchmark case, synthetic fixture, `ldoc-*` legal-document fixture, and tiny `small-corpus-*` item. The crosswalk is metadata-only and does not return public benchmark text, fixture snippets, corpus excerpts, prompts, model outputs, or credentials.
 
 ## Continuous Maintenance Evidence
 
@@ -88,6 +90,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/services/legal_review_benchmark.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
+- `app/backend/services/legal_benchmark_fixture_crosswalk.py`
 - `app/backend/services/legal_fixture_quick_suite.py`
 - `app/backend/services/legal_fixture_model_matrix.py`
 - `app/backend/services/legal_fixture_prompt_pack.py`
@@ -102,6 +105,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `app/backend/tests/test_legal_review_benchmark.py`
 - `app/backend/tests/test_legal_research_backlog.py`
 - `app/backend/tests/test_legal_public_benchmark_sampler.py`
+- `app/backend/tests/test_legal_benchmark_fixture_crosswalk.py`
 - `app/backend/tests/test_legal_fixture_quick_suite.py`
 - `app/backend/tests/test_legal_fixture_model_matrix.py`
 - `app/backend/tests/test_legal_fixture_prompt_pack.py`
@@ -116,6 +120,7 @@ The fixtures support the `legal-review-benchmark` release-readiness check. They 
 - `docs/LEGAL_REVIEW_BENCHMARK.md`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`
 - `docs/LEGAL_PUBLIC_BENCHMARK_SAMPLER.md`
+- `docs/LEGAL_BENCHMARK_FIXTURE_CROSSWALK.md`
 - `docs/LEGAL_FIXTURE_QUICK_SUITE.md`
 - `docs/LEGAL_FIXTURE_MODEL_MATRIX.md`
 - `docs/LEGAL_FIXTURE_GATEWAY_MANIFEST.md`

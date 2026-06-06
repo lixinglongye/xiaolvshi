@@ -24,7 +24,7 @@ The policy blocks or flags claims that mention:
 
 - Full, all, any, complete, universal, or broad legal-document coverage.
 - Real client documents, production cases, customer documents, or law-firm adoption.
-- LegalBench, LexGLUE, COLIEE, leaderboard, or public benchmark score claims.
+- LegalBench, LexGLUE, LegalBench-RAG, LexEval, CaseGen, COLIEE, leaderboard, or public benchmark score claims.
 - Unsupported document types such as appeal briefs, arbitration applications, and bankruptcy filings.
 - Email addresses or `sk-` style secrets, which are dropped from output and represented only by reason codes.
 

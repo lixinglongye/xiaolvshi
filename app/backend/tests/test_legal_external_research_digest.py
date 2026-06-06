@@ -11,9 +11,11 @@ def test_legal_external_research_digest_tracks_primary_sources():
     signal_ids = {signal["id"] for signal in digest["signals"]}
 
     assert digest["status"] == "ready"
-    assert {"legalbench", "cuad", "ragas", "crag", "frugalgpt"}.issubset(signal_ids)
+    assert {"legalbench", "cuad", "ragas", "crag", "legalbench-rag", "lexeval", "casegen", "frugalgpt"}.issubset(signal_ids)
     assert digest["summary"]["signal_count"] >= 5
-    assert digest["summary"]["rag_source_count"] >= 2
+    assert digest["summary"]["rag_source_count"] >= 3
+    assert digest["summary"]["chinese_legal_source_count"] == 1
+    assert digest["summary"]["document_generation_source_count"] == 1
     assert digest["summary"]["cheap_first_source_count"] == 1
     assert not SECRET_PATTERN.search(str(digest))
 

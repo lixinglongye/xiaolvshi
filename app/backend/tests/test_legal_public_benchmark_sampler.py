@@ -7,7 +7,7 @@ def test_public_benchmark_sampler_builds_metadata_only_plan():
     plan = LegalPublicBenchmarkSamplerService().build_plan()
 
     assert plan["status"] == "ready"
-    assert plan["summary"]["source_count"] >= 4
+    assert plan["summary"]["source_count"] >= 7
     assert plan["summary"]["license_review_required_source_count"] >= 1
     assert plan["summary"]["catalog_only_source_count"] >= 1
     assert plan["resource_policy"]["network_access"] == "disabled_by_default"
@@ -23,6 +23,10 @@ def test_public_benchmark_sampler_maps_sources_to_local_fixtures_and_cases():
     assert "fixture-service-agreement-small" in plans_by_id["cuad"]["local_fixture_ids"]
     assert "service-contract-risk" in plans_by_id["cuad"]["benchmark_case_ids"]
     assert "legal-rag-grounding" in plans_by_id["legalbench"]["benchmark_case_ids"]
+    assert "legal-rag-grounding" in plans_by_id["legalbench-rag"]["benchmark_case_ids"]
+    assert "ldoc-legal-opinion-mini" in plans_by_id["legalbench-rag"]["document_fixture_ids"]
+    assert "ldoc-contract-review-mini" in plans_by_id["lexeval"]["document_fixture_ids"]
+    assert "ldoc-settlement-agreement-mini" in plans_by_id["casegen"]["document_fixture_ids"]
     assert plans_by_id["pile-of-law"]["sampling_state"] == "catalog_only"
     assert plans_by_id["pile-of-law"]["max_samples"] == 0
 
@@ -66,7 +70,7 @@ def test_public_benchmark_sampler_route_returns_plan():
 
     get_response = client.get("/api/v1/maintenance/legal-review-benchmark/public-sampler")
     assert get_response.status_code == 200
-    assert get_response.json()["data"]["summary"]["source_count"] >= 4
+    assert get_response.json()["data"]["summary"]["source_count"] >= 7
 
     post_response = client.post(
         "/api/v1/maintenance/legal-review-benchmark/public-sampler",

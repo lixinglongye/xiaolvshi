@@ -20,11 +20,13 @@ class PublicBenchmarkMapping:
     benchmark_case_ids: tuple[str, ...]
     validation_targets: tuple[str, ...]
     license_gate: str
+    document_fixture_ids: tuple[str, ...] = ()
 
     def to_api(self) -> dict[str, Any]:
         data = asdict(self)
         data["local_fixture_ids"] = list(self.local_fixture_ids)
         data["benchmark_case_ids"] = list(self.benchmark_case_ids)
+        data["document_fixture_ids"] = list(self.document_fixture_ids)
         data["validation_targets"] = list(self.validation_targets)
         return data
 
@@ -80,6 +82,21 @@ class LegalPublicBenchmarkSamplerService:
                         "id": "pile-of-law",
                         "url": "https://arxiv.org/abs/2207.00220",
                         "use": "corpus-scale reference only unless a resource-controlled job is approved",
+                    },
+                    {
+                        "id": "legalbench-rag",
+                        "url": "https://arxiv.org/abs/2408.10343",
+                        "use": "legal RAG retrieval, citation, and grounding task design",
+                    },
+                    {
+                        "id": "lexeval",
+                        "url": "https://arxiv.org/abs/2409.20288",
+                        "use": "Chinese legal cognition, reasoning, and generation coverage planning",
+                    },
+                    {
+                        "id": "casegen",
+                        "url": "https://arxiv.org/abs/2502.17943",
+                        "use": "multi-stage legal case document generation fixture planning",
                     },
                 ],
             },
@@ -181,6 +198,36 @@ class LegalPublicBenchmarkSamplerService:
                 "run_condition": "Run as small label-only or metadata-only samples before any raw text import.",
             },
             {
+                "id": "legal_rag_grounding_smoke",
+                "source_ids": [
+                    item["source_id"]
+                    for item in source_plans
+                    if item["source_id"] in {"legalbench-rag", "pile-of-law"}
+                ],
+                "local_fixture_ids": ["fixture-low-text-pdf-page-small"],
+                "document_fixture_ids": ["ldoc-evidence-catalog-mini", "ldoc-legal-opinion-mini"],
+                "target_endpoint": "/api/v1/maintenance/legal-review-benchmark/rag-failure-fixtures",
+                "run_condition": "Run only with synthetic source/citation fixtures until legal RAG source licenses pass review.",
+            },
+            {
+                "id": "chinese_legal_document_generation_smoke",
+                "source_ids": [
+                    item["source_id"]
+                    for item in source_plans
+                    if item["source_id"] in {"lexeval", "casegen"}
+                ],
+                "local_fixture_ids": ["fixture-lease-dispute-notice-small", "fixture-service-agreement-small"],
+                "document_fixture_ids": [
+                    "ldoc-civil-complaint-mini",
+                    "ldoc-lawyer-letter-mini",
+                    "ldoc-contract-review-mini",
+                    "ldoc-settlement-agreement-mini",
+                    "ldoc-legal-opinion-mini",
+                ],
+                "target_endpoint": "/api/v1/maintenance/legal-review-benchmark/document-fixtures",
+                "run_condition": "Run on synthetic zh-CN document fixtures; do not import public benchmark raw case text.",
+            },
+            {
                 "id": "corpus_reference_only",
                 "source_ids": [item["source_id"] for item in source_plans if item["resource_profile"] == "corpus_scale"],
                 "local_fixture_ids": ["fixture-low-text-pdf-page-small"],
@@ -241,5 +288,48 @@ class LegalPublicBenchmarkSamplerService:
                 benchmark_case_ids=("long-pdf-extraction", "legal-rag-grounding"),
                 validation_targets=("extraction_quality", "context_relevance", "citation_grounding"),
                 license_gate="source_specific_license_privacy_and_resource_review_required",
+            ),
+            PublicBenchmarkMapping(
+                source_id="legalbench-rag",
+                priority="high",
+                resource_profile="legal_rag_sampling",
+                sample_strategy="Use tiny retrieval-grounding task metadata to compare against synthetic citation and abstention fixtures.",
+                local_fixture_ids=("fixture-low-text-pdf-page-small",),
+                benchmark_case_ids=("legal-rag-grounding", "long-pdf-extraction"),
+                validation_targets=("citation_grounding", "context_relevance", "release_decision"),
+                license_gate="legal_rag_source_license_and_context_privacy_review_required",
+                document_fixture_ids=("ldoc-evidence-catalog-mini", "ldoc-legal-opinion-mini"),
+            ),
+            PublicBenchmarkMapping(
+                source_id="lexeval",
+                priority="high",
+                resource_profile="chinese_legal_task_sampling",
+                sample_strategy="Use Chinese legal task taxonomy as metadata for local zh-CN classification and generation fixtures.",
+                local_fixture_ids=("fixture-lease-dispute-notice-small", "fixture-adversarial-upload-small"),
+                benchmark_case_ids=("lease-dispute-evidence", "instruction-injection-upload", "legal-rag-grounding"),
+                validation_targets=("field_coverage", "answer_relevance", "release_decision"),
+                license_gate="lexeval_license_attribution_and_jurisdiction_review_required",
+                document_fixture_ids=(
+                    "ldoc-civil-complaint-mini",
+                    "ldoc-lawyer-letter-mini",
+                    "ldoc-contract-review-mini",
+                    "ldoc-legal-opinion-mini",
+                ),
+            ),
+            PublicBenchmarkMapping(
+                source_id="casegen",
+                priority="medium",
+                resource_profile="legal_document_generation_sampling",
+                sample_strategy="Use multi-stage legal case document generation tasks as a planning reference for synthetic output fixtures.",
+                local_fixture_ids=("fixture-service-agreement-small", "fixture-lease-dispute-notice-small"),
+                benchmark_case_ids=("service-contract-risk", "lease-dispute-evidence"),
+                validation_targets=("document_structure", "citation_presence", "risk_labeling"),
+                license_gate="casegen_license_attribution_and_generated_text_review_required",
+                document_fixture_ids=(
+                    "ldoc-civil-complaint-mini",
+                    "ldoc-lawyer-letter-mini",
+                    "ldoc-settlement-agreement-mini",
+                    "ldoc-legal-opinion-mini",
+                ),
             ),
         )

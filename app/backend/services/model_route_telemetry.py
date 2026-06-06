@@ -88,6 +88,7 @@ class ModelRouteTelemetryRegistry:
         self._totals = RouteBucket()
         self._by_task: dict[str, RouteBucket] = {}
         self._by_inference_source: dict[str, RouteBucket] = {}
+        self._version = 0
 
     def record(
         self,
@@ -124,9 +125,11 @@ class ModelRouteTelemetryRegistry:
                     stream=stream,
                     success=success,
                 )
+            self._version += 1
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
+            version = self._version
             totals = self._totals.snapshot()
             by_task = {
                 task: bucket.snapshot()
@@ -147,6 +150,7 @@ class ModelRouteTelemetryRegistry:
                 ],
             },
             "summary": _summary(totals),
+            "version": version,
             "totals": totals,
             "by_task": by_task,
             "by_inference_source": by_inference_source,
@@ -157,6 +161,12 @@ class ModelRouteTelemetryRegistry:
             self._totals = RouteBucket()
             self._by_task.clear()
             self._by_inference_source.clear()
+            self._version += 1
+
+    @property
+    def version(self) -> int:
+        with self._lock:
+            return self._version
 
 
 def _summary(totals: dict[str, Any]) -> dict[str, Any]:

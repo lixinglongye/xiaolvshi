@@ -90,6 +90,7 @@ class UserNeedBenchmarkCoverageService:
         public_mapped_rows = [row for row in rows if row["linked_public_source_ids"]]
         public_ready_rows = [row for row in rows if row["public_benchmark_status"] == "sampling_ready"]
         public_license_rows = [row for row in rows if row["public_benchmark_status"] == "license_review_required"]
+        public_document_rows = [row for row in rows if row["linked_public_document_fixture_ids"]]
         calibration_mapped_rows = [row for row in rows if row["linked_calibration_task_ids"]]
         calibration_pass_rows = [row for row in rows if row["calibration_status"] == "pass"]
         calibration_attention_rows = [
@@ -105,7 +106,7 @@ class UserNeedBenchmarkCoverageService:
                     "Links deterministic user-need IDs to local synthetic benchmark cases, fixture IDs, and research backlog items.",
                     "Reports planning coverage only; it is not a claim of production accuracy, public benchmark scores, or real client-document testing.",
                     "Uses explicit ID maps and release-gate intersections rather than raw text or model calls.",
-                    "Joins the public benchmark sampler so user needs show LegalBench, CUAD, LexGLUE, and Pile of Law readiness without downloading datasets.",
+                    "Joins the public benchmark sampler so user needs show LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law readiness without downloading datasets.",
                     "Joins cheap-first Gemini/NewAPI calibration tasks by user_need_ids so model-routing evidence is visible in the same coverage map.",
                 ],
             },
@@ -127,6 +128,7 @@ class UserNeedBenchmarkCoverageService:
                 "public_benchmark_mapped_need_count": len(public_mapped_rows),
                 "public_benchmark_ready_need_count": len(public_ready_rows),
                 "public_benchmark_license_review_required_need_count": len(public_license_rows),
+                "public_benchmark_document_fixture_mapped_need_count": len(public_document_rows),
                 "public_sampler_endpoint": "/api/v1/maintenance/legal-review-benchmark/public-sampler",
                 "public_sampler_network_access": public_sampler["resource_policy"]["network_access"],
                 "cheap_first_calibration_status": cheap_first_calibration["status"],
@@ -183,6 +185,7 @@ class UserNeedBenchmarkCoverageService:
             need,
             linked_case_ids,
             linked_fixture_ids,
+            linked_document_fixture_ids,
             public_sampler,
         )
         public_sampling_states = self._public_sampling_states(linked_public_source_ids, public_sampler)
@@ -236,6 +239,10 @@ class UserNeedBenchmarkCoverageService:
             "linked_fixture_ids": linked_fixture_ids,
             "linked_document_fixture_ids": linked_document_fixture_ids,
             "linked_public_source_ids": linked_public_source_ids,
+            "linked_public_document_fixture_ids": self._linked_public_document_fixture_ids(
+                linked_public_source_ids,
+                public_sampler,
+            ),
             "linked_public_sampling_batch_ids": linked_public_sampling_batch_ids,
             "public_sampling_states": public_sampling_states,
             "public_benchmark_status": self._public_benchmark_status(public_sampling_states),
@@ -295,11 +302,13 @@ class UserNeedBenchmarkCoverageService:
         need: dict[str, Any],
         linked_case_ids: list[str],
         linked_fixture_ids: list[str],
+        linked_document_fixture_ids: list[str],
         public_sampler: dict[str, Any],
     ) -> list[str]:
         need_source_ids = {str(source_id) for source_id in need.get("source_ids", [])}
         case_ids = set(linked_case_ids)
         fixture_ids = set(linked_fixture_ids)
+        document_fixture_ids = set(linked_document_fixture_ids)
         linked: set[str] = set()
         for plan in public_sampler.get("source_plans", []):
             source_id = str(plan.get("source_id") or "")
@@ -307,13 +316,29 @@ class UserNeedBenchmarkCoverageService:
                 continue
             plan_cases = {str(item) for item in plan.get("benchmark_case_ids", [])}
             plan_fixtures = {str(item) for item in plan.get("local_fixture_ids", [])}
+            plan_document_fixtures = {str(item) for item in plan.get("document_fixture_ids", [])}
             if (
                 source_id in need_source_ids
                 or case_ids.intersection(plan_cases)
                 or fixture_ids.intersection(plan_fixtures)
+                or document_fixture_ids.intersection(plan_document_fixtures)
             ):
                 linked.add(source_id)
         return sorted(linked)
+
+    def _linked_public_document_fixture_ids(
+        self,
+        linked_public_source_ids: list[str],
+        public_sampler: dict[str, Any],
+    ) -> list[str]:
+        source_ids = set(linked_public_source_ids)
+        document_fixture_ids = {
+            str(item)
+            for plan in public_sampler.get("source_plans", [])
+            if str(plan.get("source_id") or "") in source_ids
+            for item in plan.get("document_fixture_ids", [])
+        }
+        return sorted(document_fixture_ids)
 
     def _public_sampling_states(
         self,
@@ -463,7 +488,7 @@ class UserNeedBenchmarkCoverageService:
         if public_license_rows:
             return [
                 "High-priority user needs have local benchmark links; keep public benchmark evidence metadata-only until license review passes for mapped sources.",
-                "Use /api/v1/maintenance/legal-review-benchmark/public-sampler before importing LegalBench, CUAD, LexGLUE, or corpus-scale samples.",
+                "Use /api/v1/maintenance/legal-review-benchmark/public-sampler before importing LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, or corpus-scale samples.",
                 "Use fixture regression comparison before promoting cheap-first or prompt changes.",
             ]
         if calibration_attention_rows:
