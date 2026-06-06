@@ -281,6 +281,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
+    assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
     assert "quota-delivery-decision" in completed_ids
@@ -379,6 +380,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
+    assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
     assert "quota-delivery-decision" not in queue_ids
@@ -1214,6 +1216,40 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
+    retrieval_observation_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-retrieval-observation-gate"
+    )
+    assert "app/backend/services/legal_rag_retrieval_observation_gate.py" in retrieval_observation_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_retrieval_observation_gate.py" in retrieval_observation_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_RETRIEVAL_OBSERVATION_GATE.md" in retrieval_observation_entry["evidence_paths"]
+    assert "legal-rag-retrieval-observation-gate" in retrieval_observation_entry["release_gate_links"]
+    assert "legal-rag-selected-source-citation-validation" in retrieval_observation_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in retrieval_observation_entry["release_gate_links"]
+    assert "legal-rag-authority-citation-gate" in retrieval_observation_entry["release_gate_links"]
+    assert "model-escalation-policy" in retrieval_observation_entry["release_gate_links"]
+    assert "sanitized local retrieval observation rows" in retrieval_observation_entry["impact"]
+    assert "selected-source citation validation" in retrieval_observation_entry["impact"]
+    assert "top-k depth" in retrieval_observation_entry["impact"]
+    assert "jurisdiction/freshness" in retrieval_observation_entry["impact"]
+    assert "cheap-first routing decisions" in retrieval_observation_entry["impact"]
+    assert "answer-release actions" in retrieval_observation_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in retrieval_observation_entry["impact"]
+    assert "gateway calls" in retrieval_observation_entry["impact"]
+    assert "network calls" in retrieval_observation_entry["impact"]
+    assert "dataset downloads" in retrieval_observation_entry["impact"]
+    assert "source-id echoing" in retrieval_observation_entry["impact"]
+    assert "raw query" in retrieval_observation_entry["impact"]
+    assert "raw retrieved context" in retrieval_observation_entry["impact"]
+    assert "raw legal text" in retrieval_observation_entry["impact"]
+    assert "prompts" in retrieval_observation_entry["impact"]
+    assert "model outputs" in retrieval_observation_entry["impact"]
+    assert "credentials" in retrieval_observation_entry["impact"]
+    assert (
+        "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py "
+        "tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
     )
 

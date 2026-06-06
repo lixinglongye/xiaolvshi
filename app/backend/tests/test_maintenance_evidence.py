@@ -57,6 +57,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI observed model extraction" in profile["release_management"]["release_readiness_controls"]
@@ -155,6 +156,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
     assert "app/backend/tests/test_legal_rag_retrieval_diagnostics_gate.py" in evidence_paths
     assert "docs/LEGAL_RAG_RETRIEVAL_DIAGNOSTICS_GATE.md" in evidence_paths
+    assert "app/backend/services/legal_rag_retrieval_observation_gate.py" in evidence_paths
+    assert "app/backend/tests/test_legal_rag_retrieval_observation_gate.py" in evidence_paths
+    assert "docs/LEGAL_RAG_RETRIEVAL_OBSERVATION_GATE.md" in evidence_paths
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
@@ -202,9 +206,11 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
     assert "metadata-only authority/citation gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval diagnostics gate evidence" in quality_signal["description"]
+    assert "metadata-only retrieval observation gate evidence" in quality_signal["description"]
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
     assert "authority/citation gate review" in quality_signal["responsibility"]
     assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
+    assert "retrieval observation gate review" in quality_signal["responsibility"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
     assert "Gemini/NewAPI observed model extraction evidence" in model_signal["description"]
@@ -342,6 +348,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG retrieval diagnostics gate is metadata-only retrieval evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG retrieval observation gate is metadata-only local retrieval observation evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("store or return source ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw query" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw retrieved context" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write model routes" in guardrail for guardrail in profile["application_guardrails"])

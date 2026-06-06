@@ -70,6 +70,7 @@ from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitation
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_retrieval_diagnostics_gate import LegalRagRetrievalDiagnosticsGateService
+from services.legal_rag_retrieval_observation_gate import LegalRagRetrievalObservationGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
 from services.legal_review_benchmark import LegalReviewBenchmarkService
 from services.legal_source_durable_index_plan import LegalSourceDurableIndexPlanService
@@ -110,6 +111,12 @@ class LegalRagSelectedSourceValidationRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     citation_map: Any | None = None
     generation_plan: Any | None = None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class LegalRagRetrievalObservationGateRequest(BaseModel):
+    retrieval_observations: list[dict[str, Any]] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="ignore")
 
@@ -1267,6 +1274,15 @@ async def get_legal_rag_retrieval_diagnostics_gate():
     return {
         "success": True,
         "data": LegalRagRetrievalDiagnosticsGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-retrieval-observation-gate")
+async def evaluate_legal_rag_retrieval_observation_gate(payload: LegalRagRetrievalObservationGateRequest):
+    """Evaluate sanitized Legal RAG retrieval observations without raw text echo."""
+    return {
+        "success": True,
+        "data": LegalRagRetrievalObservationGateService().build_gate(payload.model_dump()),
     }
 
 

@@ -2,6 +2,10 @@
 
 `GET /api/v1/maintenance/legal-rag-retrieval-diagnostics-gate`
 
+Related local-observation endpoint:
+
+`POST /api/v1/maintenance/legal-rag-retrieval-observation-gate`
+
 This maintenance endpoint returns metadata-only release evidence for Legal RAG
 retrieval diagnostics. It records deterministic diagnostic rows for local
 reviewers so retrieval quality problems are visible before answer release.
@@ -85,6 +89,11 @@ It supports release readiness, the continuous update ledger, OSS maintenance
 evidence, and maintenance UI regression coverage. It does not prove live Legal
 RAG accuracy, public benchmark scores, live gateway quality, broad jurisdiction
 coverage, or automatic client delivery.
+
+Use `LEGAL_RAG_RETRIEVAL_OBSERVATION_GATE.md` when a maintainer wants to paste
+sanitized local retrieval observation metadata and get ready/review/blocked
+release actions without returning source ids, raw queries, retrieved context,
+or legal text.
 
 ## Validation
 
