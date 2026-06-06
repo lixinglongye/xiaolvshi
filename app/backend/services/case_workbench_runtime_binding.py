@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.case_workbench_section_states import CaseWorkbenchSectionState
 from models.case_workbench_state_events import CaseWorkbenchStateEvent
 from services.case_workbench_persistence_plan import SECTION_SCHEMAS, SUPPORTED_SECTIONS
+from services.case_workbench_risk_refresh_plan import CaseWorkbenchRiskRefreshPlanService
 from services.case_workbench_state_repository import CaseWorkbenchStateRepository
 
 
@@ -22,8 +23,13 @@ UNSPECIFIED_WORKSPACE_ID = "workspace-unspecified"
 class CaseWorkbenchRuntimeBindingService:
     """API-ready facade over repository-backed case workbench state."""
 
-    def __init__(self, repository: CaseWorkbenchStateRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: CaseWorkbenchStateRepository | None = None,
+        risk_refresh_plan_service: CaseWorkbenchRiskRefreshPlanService | None = None,
+    ) -> None:
         self.repository = repository or CaseWorkbenchStateRepository()
+        self.risk_refresh_plan_service = risk_refresh_plan_service or CaseWorkbenchRiskRefreshPlanService()
 
     async def get_state_payload(
         self,
@@ -50,7 +56,7 @@ class CaseWorkbenchRuntimeBindingService:
         created_at_values = [state.created_at for state in loaded_states if state.created_at is not None]
         updated_at_values = [state.updated_at for state in loaded_states if state.updated_at is not None]
 
-        return {
+        payload = {
             "payload_id": RUNTIME_PAYLOAD_ID,
             "case_id": case_ref,
             "workspace_id": self._workspace_id(workspace_id, loaded_states),
@@ -63,6 +69,18 @@ class CaseWorkbenchRuntimeBindingService:
             "updated_at": self._iso(max(updated_at_values)) if updated_at_values else None,
             "sections": section_payloads,
         }
+        recent_events = await self.repository.list_state_events(
+            session,
+            owner_id,
+            case_ref,
+            limit=25,
+            offset=0,
+        )
+        payload["risk_refresh_plan"] = self.risk_refresh_plan_service.build_plan(
+            payload,
+            [self._event_to_payload(event) for event in recent_events],
+        )
+        return payload
 
     async def build_state_payload(
         self,

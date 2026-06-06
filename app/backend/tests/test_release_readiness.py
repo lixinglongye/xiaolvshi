@@ -62,6 +62,30 @@ def test_runtime_router_discovery_smoke_is_optional_release_evidence():
     assert "app/backend/tests/test_runtime_router_discovery.py" in check["evidence_paths"]
 
 
+def test_case_workbench_risk_refresh_plan_is_optional_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands() if item["check_id"] == "case-workbench-risk-refresh-plan"
+    ]
+    result = service.evaluate({"case-workbench-risk-refresh-plan": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "case-workbench-risk-refresh-plan")
+
+    assert commands == [
+        {
+            "check_id": "case-workbench-risk-refresh-plan",
+            "command": "python -m pytest tests/test_case_workbench_risk_refresh_plan.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is False
+    assert check["blocks_release"] is False
+    assert "app/backend/services/case_workbench_risk_refresh_plan.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_case_workbench_risk_refresh_plan.py" in check["evidence_paths"]
+    assert "app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx" in check["evidence_paths"]
+    assert "docs/CASE_WORKBENCH_RISK_REFRESH_PLAN.md" in check["evidence_paths"]
+    assert "does not write risk state" in check["manual_note"]
+    assert "return raw event payloads" in check["manual_note"]
+
+
 def test_frontend_runtime_ui_checks_are_optional_release_evidence():
     service = ReleaseReadinessService()
     commands = {

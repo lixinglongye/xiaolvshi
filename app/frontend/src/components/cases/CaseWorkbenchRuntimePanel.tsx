@@ -64,7 +64,7 @@ function randomSuffix() {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return '暂无记录';
+  if (!value) return '鏆傛棤璁板綍';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString('zh-CN');
@@ -206,6 +206,12 @@ export function CaseWorkbenchRuntimePanel({
   const [taskRefHash, setTaskRefHash] = useState(defaultTaskRefHash || '');
 
   const taskSection = state?.sections?.tasks;
+  const riskRefreshPlan = state?.risk_refresh_plan;
+  const riskRefreshRows = riskRefreshPlan?.section_refresh_rows?.filter((row) => row.refresh_required) ?? [];
+  const riskTriggerRows =
+    riskRefreshPlan?.event_trigger_rows?.filter(
+      (row) => row.requires_risk_state_refresh || row.requires_evidence_graph_refresh,
+    ) ?? [];
   const latestEvents = useMemo(() => [...events].reverse().slice(0, 5), [events]);
   const resolvedTaskRefHash = taskRefHash.trim() || `task_hash_ui_${shortToken(runtimeCaseId)}`;
 
@@ -220,7 +226,7 @@ export function CaseWorkbenchRuntimePanel({
       setState(nextState);
       setEvents(nextEvents.events || []);
     } catch (err) {
-      setError(errorMessage(err, '工作台运行状态加载失败'));
+      setError(errorMessage(err, 'Failed to load workbench runtime state.'));
     } finally {
       setLoading(false);
     }
@@ -250,9 +256,9 @@ export function CaseWorkbenchRuntimePanel({
       const nextEvents = await listCaseWorkbenchStateEvents(runtimeCaseId, { section: 'tasks', limit: 5 });
       setEvents(nextEvents.events || []);
       if (receipt.payload) onStateChanged?.(receipt.payload, receipt);
-      toast.success(receipt.status === 'idempotent_replay' ? '运行状态事件已去重' : '运行状态已更新');
+      toast.success(receipt.status === 'idempotent_replay' ? 'Runtime event already applied' : 'Runtime state updated');
     } catch (err) {
-      const message = errorMessage(err, '运行状态事件提交失败');
+      const message = errorMessage(err, 'Failed to submit runtime state event.');
       setError(message);
       toast.error(message);
     } finally {
@@ -266,22 +272,22 @@ export function CaseWorkbenchRuntimePanel({
         <div>
           <CardTitle className="flex items-center gap-2 text-base">
             <ClipboardCheck className="h-4 w-4" />
-            工作台运行状态
+            Workbench runtime state
           </CardTitle>
           <p className="mt-1 text-xs text-slate-500">
-            仅同步 section 状态、计数和引用 hash，不写入案件正文或当事人明文。
+            Syncs section state, counts, and reference hashes only. It does not store case narrative or party names.
           </p>
         </div>
         <Button type="button" size="sm" variant="outline" onClick={load} disabled={loading || submitting}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          刷新
+          Refresh
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
           <Alert className="border-red-200 bg-red-50 text-red-950">
             <AlertTriangle className="h-4 w-4 text-red-700" />
-            <AlertTitle>操作未完成</AlertTitle>
+            <AlertTitle>Action incomplete</AlertTitle>
             <AlertDescription className="text-sm text-red-900">{error}</AlertDescription>
           </Alert>
         )}
@@ -289,15 +295,15 @@ export function CaseWorkbenchRuntimePanel({
         {loading ? (
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
             <Loader2 className="h-4 w-4 animate-spin" />
-            正在加载工作台运行状态
+            Loading workbench runtime state
           </div>
         ) : (
           <>
             <div className="grid gap-3 md:grid-cols-4">
-              <Metric label="整体状态" value={state?.status || 'empty'} />
-              <Metric label="已填充 section" value={`${state?.populated_section_count || 0}/${state?.section_count || 0}`} />
-              <Metric label="任务版本" value={taskSection?.state_version || 0} />
-              <Metric label="活跃任务" value={summaryCount(taskSection, 'active_count')} />
+              <Metric label="Overall status" value={state?.status || 'empty'} />
+              <Metric label="Populated sections" value={`${state?.populated_section_count || 0}/${state?.section_count || 0}`} />
+              <Metric label="Task version" value={taskSection?.state_version || 0} />
+              <Metric label="Active tasks" value={summaryCount(taskSection, 'active_count')} />
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-white p-3">
@@ -308,7 +314,7 @@ export function CaseWorkbenchRuntimePanel({
                 <Badge variant="outline" className={statusBadgeClass(taskSection?.validation_status || undefined)}>
                   validation: {taskSection?.validation_status || 'pending'}
                 </Badge>
-                <span className="text-xs text-slate-500">最近更新：{formatDate(taskSection?.updated_at)}</span>
+                <span className="text-xs text-slate-500">Updated: {formatDate(taskSection?.updated_at)}</span>
               </div>
               {taskSection?.state_version ? (
                 <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
@@ -317,20 +323,97 @@ export function CaseWorkbenchRuntimePanel({
                   <span>review_required_count: {summaryCount(taskSection, 'review_required_count')}</span>
                 </div>
               ) : (
-                <EmptyState>暂无 tasks section 状态，可先提交一个轻量复核任务状态事件。</EmptyState>
+                <EmptyState>No tasks section state yet. Submit a lightweight review task event first.</EmptyState>
               )}
             </div>
+
+            {riskRefreshPlan && (
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <AlertTriangle className="h-4 w-4 text-amber-700" />
+                    Risk refresh plan
+                  </div>
+                  <Badge variant="outline" className={statusBadgeClass(riskRefreshPlan.status)}>
+                    {riskRefreshPlan.status}
+                  </Badge>
+                </div>
+                <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-4">
+                  <span>refresh_required: {riskRefreshPlan.summary.refresh_required_count}</span>
+                  <span>blocking_sections: {riskRefreshPlan.summary.blocking_section_count}</span>
+                  <span>risk_events: {riskRefreshPlan.summary.risk_affecting_event_count}</span>
+                  <span>graph_events: {riskRefreshPlan.summary.evidence_graph_affecting_event_count}</span>
+                </div>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Sections requiring refresh
+                    </div>
+                    {riskRefreshRows.length ? (
+                      <div className="mt-2 space-y-2">
+                        {riskRefreshRows.slice(0, 4).map((row) => (
+                          <div key={row.section} className="rounded-md bg-white p-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="secondary">{row.section}</Badge>
+                              <span className="text-xs text-slate-500">v{row.state_version}</span>
+                            </div>
+                            <div className="mt-1 text-xs text-slate-600">
+                              targets: {row.refresh_targets.join(', ') || 'watch'}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-500">
+                              reasons: {row.reason_codes.slice(0, 3).join(', ') || 'none'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState>No section refresh required.</EmptyState>
+                    )}
+                  </div>
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Event delta triggers
+                    </div>
+                    {riskTriggerRows.length ? (
+                      <div className="mt-2 space-y-2">
+                        {riskTriggerRows.slice(0, 4).map((row) => (
+                          <div key={row.event_id} className="rounded-md bg-white p-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="secondary">{row.section}</Badge>
+                              <span className="font-mono text-xs text-slate-500">{row.event_id}</span>
+                            </div>
+                            <div className="mt-1 text-xs text-slate-600">
+                              fields: {row.changed_field_names.slice(0, 4).join(', ') || 'metadata'}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-500">
+                              raw_event_payload_returned: {String(row.raw_event_payload_returned)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState>No risk-affecting event deltas.</EmptyState>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+                  <span>raw_text_returned: {String(riskRefreshPlan.summary.raw_text_returned)}</span>
+                  <span>event_payloads_returned: {String(riskRefreshPlan.summary.event_payloads_returned)}</span>
+                  <span>risk_state_written: {String(riskRefreshPlan.summary.risk_state_written)}</span>
+                </div>
+              </div>
+            )}
           </>
         )}
 
         <form onSubmit={submitTaskEvent} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
             <ShieldCheck className="h-4 w-4 text-emerald-700" />
-            提交轻量任务状态事件
+            Submit lightweight task state event
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-1.5">
-              <Label htmlFor="task-ref-hash">任务引用 hash</Label>
+              <Label htmlFor="task-ref-hash">Task reference hash</Label>
               <Input
                 id="task-ref-hash"
                 value={taskRefHash}
@@ -339,7 +422,7 @@ export function CaseWorkbenchRuntimePanel({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>状态</Label>
+              <Label>Status</Label>
               <Select value={status} onValueChange={(value) => setStatus(value as TaskStatus)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -353,7 +436,7 @@ export function CaseWorkbenchRuntimePanel({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>优先级</Label>
+              <Label>Priority</Label>
               <Select value={priority} onValueChange={(value) => setPriority(value as TaskPriority)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -369,11 +452,11 @@ export function CaseWorkbenchRuntimePanel({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <Checkbox checked={reviewRequired} onCheckedChange={(checked) => setReviewRequired(checked === true)} />
-              需要律师复核
+              Requires lawyer review
             </label>
             <Button type="submit" size="sm" disabled={loading || submitting}>
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {submitting ? '提交中' : '提交状态事件'}
+              {submitting ? 'Submitting' : 'Submit state event'}
             </Button>
           </div>
         </form>
@@ -381,7 +464,7 @@ export function CaseWorkbenchRuntimePanel({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
             <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-            最近事件
+            Recent events
           </div>
           {latestEvents.length ? (
             <div className="space-y-2">
@@ -401,7 +484,7 @@ export function CaseWorkbenchRuntimePanel({
               ))}
             </div>
           ) : (
-            <EmptyState>暂无 tasks section 事件。</EmptyState>
+            <EmptyState>No tasks section events.</EmptyState>
           )}
         </div>
       </CardContent>

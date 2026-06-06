@@ -240,6 +240,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-query-index-binding" in completed_ids
     assert "billing-entitlement-repository-binding" in completed_ids
     assert "case-workbench-runtime-router" in completed_ids
+    assert "case-workbench-risk-refresh-plan" in completed_ids
     assert "legal-rag-index-route" in completed_ids
     assert "billing-quota-consumption-route" in completed_ids
     assert "frontend-runtime-api-client-bindings" in completed_ids

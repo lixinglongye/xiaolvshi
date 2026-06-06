@@ -10,6 +10,8 @@ const files = {
   modelOpsPage: 'src/pages/ModelOpsPage.tsx',
   maintenanceApi: 'src/lib/maintenanceApi.ts',
   modelOpsApi: 'src/lib/modelOpsApi.ts',
+  workbenchRuntimeApi: 'src/lib/workbenchRuntimeApi.ts',
+  caseWorkbenchRuntimePanel: 'src/components/cases/CaseWorkbenchRuntimePanel.tsx',
 };
 
 function read(relativePath) {
@@ -50,11 +52,15 @@ const maintenancePage = read(files.maintenancePage);
 const modelOpsPage = read(files.modelOpsPage);
 const maintenanceApi = read(files.maintenanceApi);
 const modelOpsApi = read(files.modelOpsApi);
+const workbenchRuntimeApi = read(files.workbenchRuntimeApi);
+const caseWorkbenchRuntimePanel = read(files.caseWorkbenchRuntimePanel);
 const relevantSources = [
   maintenancePage,
   modelOpsPage,
   maintenanceApi,
   modelOpsApi,
+  workbenchRuntimeApi,
+  caseWorkbenchRuntimePanel,
 ].join('\n');
 const geminiAliasMatrixPanel = sourceSection(
   maintenancePage,
@@ -67,6 +73,12 @@ const catalogCandidatePatchPlanPanel = sourceSection(
   'Model catalog candidate patch plan',
   'Gateway health plan',
   'model-ops catalog candidate patch plan section',
+);
+const caseWorkbenchRiskRefreshPanel = sourceSection(
+  caseWorkbenchRuntimePanel,
+  'Risk refresh plan',
+  '<form onSubmit={submitTaskEvent}',
+  'case workbench risk refresh plan section',
 );
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
@@ -101,6 +113,23 @@ const checks = [
       geminiAliasMatrixPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|email/i,
       'maintenance Gemini/NewAPI alias matrix sensitive field guard',
+    ),
+  () => assertIncludes(workbenchRuntimeApi, 'CaseWorkbenchRiskRefreshPlan', 'case workbench risk refresh plan API type'),
+  () => assertIncludes(workbenchRuntimeApi, 'risk_refresh_plan?: CaseWorkbenchRiskRefreshPlan', 'case workbench state payload risk refresh plan binding'),
+  () => assertIncludes(workbenchRuntimeApi, 'section_refresh_rows', 'case workbench risk refresh section rows'),
+  () => assertIncludes(workbenchRuntimeApi, 'event_trigger_rows', 'case workbench risk refresh event rows'),
+  () => assertIncludes(workbenchRuntimeApi, 'risk_state_written', 'case workbench risk refresh no-write summary'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'Risk refresh plan', 'case workbench risk refresh UI panel'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'riskRefreshPlan', 'case workbench risk refresh state binding'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'riskRefreshRows', 'case workbench risk refresh row binding'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'riskTriggerRows', 'case workbench risk trigger row binding'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'raw_event_payload_returned', 'case workbench risk refresh raw event boundary'),
+  () => assertIncludes(caseWorkbenchRuntimePanel, 'risk_state_written', 'case workbench risk refresh write boundary'),
+  () =>
+    assertNotMatches(
+      caseWorkbenchRiskRefreshPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details/i,
+      'case workbench risk refresh panel sensitive field guard',
     ),
   () => assertIncludes(maintenancePage, 'Low-resource fixture review', 'maintenance review packet fixture panel'),
   () => assertIncludes(maintenancePage, 'raw fixture payload echoed: false', 'maintenance fixture privacy boundary'),

@@ -32,8 +32,9 @@ route failure, premium-model, over-budget, operator-review, unknown-model, and
 downgrade review, plus a triage queue that turns those checks into maintainer
 actions and a remediation plan that maps triage into reviewed cheap-first env
 suggestions. The latest UI evidence adds runtime router discovery smoke, the
-case workbench runtime state/event panel, the metadata-only legal RAG research
-panel, and the global billing usage badge.
+case workbench runtime state/event panel, metadata-only risk/evidence refresh
+planning from runtime event deltas, the metadata-only legal RAG research panel,
+and the global billing usage badge.
 The current follow-up evidence also adds billing report preflight, privacy-safe
 case edit runtime events, metadata-only Legal RAG context cache/copy controls,
 and a best-effort document-generation quota consumption attempt. The newest

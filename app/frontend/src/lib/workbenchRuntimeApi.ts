@@ -29,6 +29,83 @@ export type CaseWorkbenchStatePayload = {
   created_at?: string | null;
   updated_at?: string | null;
   sections: Record<string, CaseWorkbenchSectionState>;
+  risk_refresh_plan?: CaseWorkbenchRiskRefreshPlan;
+};
+
+export type CaseWorkbenchRiskRefreshSectionRow = {
+  section: string;
+  status: string;
+  state_version: number;
+  latest_event_id?: string | null;
+  validation_status?: string | null;
+  refresh_required: boolean;
+  refresh_targets: string[];
+  reason_codes: string[];
+  active_count?: number;
+  blocked_count?: number;
+  urgent_count?: number;
+  blocking_gap_count?: number;
+  review_required_count?: number;
+  raw_content_returned: boolean;
+};
+
+export type CaseWorkbenchRiskRefreshEventRow = {
+  event_id: string;
+  section: string;
+  operation: string;
+  state_version: number;
+  validation_status: string;
+  changed_item_count: number;
+  changed_field_names: string[];
+  requires_risk_state_refresh: boolean;
+  requires_evidence_graph_refresh: boolean;
+  raw_event_payload_returned: boolean;
+  reason_codes: string[];
+};
+
+export type CaseWorkbenchRiskRefreshPlan = {
+  id: string;
+  status: string;
+  summary: {
+    section_count: number;
+    populated_section_count: number;
+    refresh_required_count: number;
+    blocking_section_count: number;
+    review_section_count: number;
+    recent_event_count: number;
+    risk_affecting_event_count: number;
+    evidence_graph_affecting_event_count: number;
+    task_active_count: number;
+    task_blocked_count: number;
+    deadline_urgent_count: number;
+    evidence_graph_blocking_gap_count: number;
+    review_required_count: number;
+    raw_text_returned: boolean;
+    event_payloads_returned: boolean;
+    risk_state_written: boolean;
+    evidence_graph_written: boolean;
+    notification_sent: boolean;
+  };
+  section_refresh_rows: CaseWorkbenchRiskRefreshSectionRow[];
+  event_trigger_rows: CaseWorkbenchRiskRefreshEventRow[];
+  refresh_required_section_ids: string[];
+  risk_affecting_event_ids: string[];
+  evidence_graph_affecting_event_ids: string[];
+  blocking_section_ids: string[];
+  review_section_ids: string[];
+  evidence_graph_plan: {
+    status: string;
+    required_before_client_delivery: boolean;
+    source_sections: string[];
+    blocking_gap_count: number;
+    trigger_event_count: number;
+    writes_graph: boolean;
+    action: string;
+  };
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
 };
 
 export type CaseWorkbenchStateEvent = {

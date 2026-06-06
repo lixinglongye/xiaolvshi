@@ -2,6 +2,12 @@
 
 `CaseWorkbenchPayloadService` assembles a frontend-ready case workbench skeleton from existing deterministic backend policy services.
 
+Runtime payloads now also include `case-workbench-risk-refresh-plan`, which
+derives metadata-only risk/evidence refresh instructions from sanitized section
+state and recent event deltas. The plan is attached by
+`CaseWorkbenchRuntimeBindingService`; it does not write live risk state, refresh
+the evidence graph, or return raw event payloads.
+
 The service is intentionally local-only:
 
 - no router integration

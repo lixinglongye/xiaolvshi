@@ -90,6 +90,68 @@ def _event(
     }
 
 
+def _task_event(
+    *,
+    event_id: str = "cwp-event-runtime-task-001",
+    case_ref_hash: str = "case_hash_runtime_task_abcdefghijkl",
+    state_version: int = 1,
+    status: str = "blocked",
+) -> dict:
+    return {
+        "event_id": event_id,
+        "event_type": "case_workbench_state_event",
+        "timestamp": f"2026-06-04T09:00:0{state_version}Z",
+        "idempotency_key": f"cwp:v1:{case_ref_hash}:tasks:{state_version}:risk_refresh",
+        "case_ref_hash": case_ref_hash,
+        "matter_ref_hash": "workspace_hash_runtime_task_abcdefghijkl",
+        "actor_ref_hash": "actor_hash_runtime_abcdefghijkl",
+        "section": "tasks",
+        "operation": "upsert_snapshot",
+        "state_version": state_version,
+        "previous_state_version": state_version - 1,
+        "schema_version": "case-workbench-state-v1",
+        "source_component": "case_workbench_runtime_binding",
+        "payload_kind": "metadata_snapshot",
+        "item_count": 1,
+        "changed_item_refs": ["task_hash_runtime_risk_001"],
+        "changed_field_names": ["task_ref_hash", "status", "priority", "review_required", "blocker_codes"],
+        "state_delta": {
+            "schema_version": "case-workbench-state-v1",
+            "section": "tasks",
+            "state_version": state_version,
+            "summary": {
+                "task_count": 1,
+                "active_count": 1,
+                "completed_count": 0,
+                "review_required_count": 1,
+            },
+            "updated_by_role": "lawyer",
+            "source_component": "case_workbench_runtime_binding",
+            "policy_version": "case-workbench-persistence-v1",
+            "task_states": [
+                {
+                    "task_ref_hash": "task_hash_runtime_risk_001",
+                    "task_type": "lawyer_review",
+                    "status": status,
+                    "priority": "high",
+                    "owner_role": "lawyer",
+                    "due_date_status": "none",
+                    "escalation_status": "watch",
+                    "blocker_codes": ["missing_evidence_link"],
+                    "dependency_refs": [],
+                    "review_required": True,
+                    "updated_at": "2026-06-04T09:00:00Z",
+                }
+            ],
+        },
+        "retention_bucket": "active_case_workbench",
+        "policy_version": "case-workbench-persistence-v1",
+        "review_required": True,
+        "validation_status": "pass",
+        "created_at": f"2026-06-04T09:00:1{state_version}Z",
+    }
+
+
 @pytest.mark.asyncio
 async def test_runtime_binding_returns_empty_state_payload_for_case_workspace():
     async with _session() as db:
@@ -113,6 +175,9 @@ async def test_runtime_binding_returns_empty_state_payload_for_case_workspace():
         assert set(payload["sections"]) == {"parties", "facts", "tasks", "deadlines", "evidence_graph"}
         assert payload["sections"]["parties"]["status"] == "empty"
         assert payload["sections"]["parties"]["collection_counts"] == {"party_states": 0}
+        assert payload["risk_refresh_plan"]["status"] == "empty"
+        assert payload["risk_refresh_plan"]["summary"]["refresh_required_count"] == 0
+        assert payload["risk_refresh_plan"]["privacy_boundary"]["returns_raw_event_payload"] is False
         assert "user_hash_runtime_abcdefghijkl" not in json.dumps(payload)
 
 
@@ -270,3 +335,28 @@ async def test_runtime_binding_lists_audit_trail_sorted_and_serializable():
         assert all(isinstance(event["created_at"], str) for event in trail["events"])
         assert trail["events"][0]["event_json"]["state_delta"]["party_states"][0]["status"] == "active"
         json.dumps(trail, sort_keys=True)
+
+
+@pytest.mark.asyncio
+async def test_runtime_binding_payload_includes_risk_refresh_plan_for_task_events():
+    async with _session() as db:
+        service = CaseWorkbenchRuntimeBindingService()
+        event = _task_event()
+
+        result = await service.apply_section_state_event(
+            db,
+            user_id="user_hash_runtime_abcdefghijkl",
+            event=event,
+        )
+        plan = result["payload"]["risk_refresh_plan"]
+        serialized_plan = json.dumps(plan, ensure_ascii=False)
+
+        assert plan["status"] == "blocked"
+        assert "tasks" in plan["refresh_required_section_ids"]
+        assert "tasks" in plan["blocking_section_ids"]
+        assert event["event_id"] in plan["risk_affecting_event_ids"]
+        assert plan["summary"]["task_blocked_count"] == 1
+        assert plan["summary"]["risk_state_written"] is False
+        assert plan["privacy_boundary"]["returns_raw_event_payload"] is False
+        assert "event_json" not in serialized_plan
+        assert "active-task-state" in serialized_plan

@@ -153,6 +153,13 @@ The response includes:
 - `low_resource_test_policy`: fixture limits, serial execution policy, default benchmark endpoint, ledger review endpoint, and run-monitor review endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
 
+Current case workbench runtime evidence:
+`case-workbench-risk-refresh-plan` adds shipped metadata-only risk/evidence
+refresh planning to repository-backed workbench payloads. It reads sanitized
+section counts and event deltas, lists section/event ids that need follow-up,
+and keeps live risk-state writes, evidence graph refreshes, notifications, raw
+event payloads, legal text, and client contact details outside the ledger claim.
+
 `POST` accepts the same compact low-resource fixture payload used by
 `/legal-review-benchmark/local-run-review`, either directly or under
 `low_resource_fixture_review`. The ledger internally builds the local run review
