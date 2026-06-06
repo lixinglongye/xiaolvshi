@@ -75,7 +75,10 @@ from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaul
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
 from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
-from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
+from services.model_ops_performance_budget import (
+    ModelOpsPerformanceBudgetService,
+    model_ops_performance_budget_registry,
+)
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_request_cost_bounds import ModelRequestCostBoundsService
@@ -99,15 +102,17 @@ _model_ops_payload_cache: dict[str, Any] | None = None
 _model_ops_payload_cache_at = 0.0
 _model_ops_payload_cache_probe_version = -1
 _model_ops_payload_cache_route_telemetry_version = -1
+_model_ops_payload_cache_performance_version = -1
 
 
 def _clear_model_ops_payload_cache() -> None:
     global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
-    global _model_ops_payload_cache_route_telemetry_version
+    global _model_ops_payload_cache_route_telemetry_version, _model_ops_payload_cache_performance_version
     _model_ops_payload_cache = None
     _model_ops_payload_cache_at = 0.0
     _model_ops_payload_cache_probe_version = -1
     _model_ops_payload_cache_route_telemetry_version = -1
+    _model_ops_payload_cache_performance_version = -1
 
 
 def _try_extract_message_from_dict(data: dict) -> str | None:
@@ -190,6 +195,20 @@ def extract_error_message(error: Any) -> str:
 router = APIRouter(prefix="/api/v1/aihub", tags=["aihub"])
 
 
+def _model_ops_performance_budget_input(observations: Any = None) -> dict[str, Any]:
+    data = {
+        "models_payload_cache_enabled": True,
+        "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+        "same_origin_fetch_first": True,
+        "fallback_after_timeout_disabled": True,
+        "duplicate_calibration_fetch_removed": True,
+        "frontend_abort_controller_required": True,
+    }
+    if observations is not None:
+        data["observations"] = observations
+    return data
+
+
 @router.get("/models")
 async def list_models():
     """
@@ -199,15 +218,17 @@ async def list_models():
     names; those can still be sent directly in request payloads.
     """
     global _model_ops_payload_cache, _model_ops_payload_cache_at, _model_ops_payload_cache_probe_version
-    global _model_ops_payload_cache_route_telemetry_version
+    global _model_ops_payload_cache_route_telemetry_version, _model_ops_payload_cache_performance_version
 
     now = monotonic()
     gateway_probe_version = model_gateway_probe_evaluation_registry.version
     route_telemetry_version = model_route_telemetry_registry.version
+    performance_observation_version = model_ops_performance_budget_registry.version
     if (
         _model_ops_payload_cache is not None
         and _model_ops_payload_cache_probe_version == gateway_probe_version
         and _model_ops_payload_cache_route_telemetry_version == route_telemetry_version
+        and _model_ops_payload_cache_performance_version == performance_observation_version
         and now - _model_ops_payload_cache_at <= MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS
     ):
         return deepcopy(_model_ops_payload_cache)
@@ -285,16 +306,12 @@ async def list_models():
     )
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     cheap_first_escalation_budget = ModelOpsCheapFirstEscalationBudgetService().build_budget()
-    model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
-        {
-            "models_payload_cache_enabled": True,
-            "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
-            "same_origin_fetch_first": True,
-            "fallback_after_timeout_disabled": True,
-            "duplicate_calibration_fetch_removed": True,
-            "frontend_abort_controller_required": True,
-        },
+    default_model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
+        _model_ops_performance_budget_input(),
         cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+    )
+    model_ops_performance_budget = (
+        model_ops_performance_budget_registry.latest() or default_model_ops_performance_budget
     )
     model_ops_signals = {
         "runtime_router": runtime_router,
@@ -444,6 +461,7 @@ async def list_models():
     _model_ops_payload_cache_at = monotonic()
     _model_ops_payload_cache_probe_version = gateway_probe_version
     _model_ops_payload_cache_route_telemetry_version = route_telemetry_version
+    _model_ops_payload_cache_performance_version = performance_observation_version
     return payload
 
 
@@ -827,14 +845,7 @@ async def model_ops_performance_budget():
     return {
         "success": True,
         "data": ModelOpsPerformanceBudgetService().build_budget(
-            {
-                "models_payload_cache_enabled": True,
-                "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
-                "same_origin_fetch_first": True,
-                "fallback_after_timeout_disabled": True,
-                "duplicate_calibration_fetch_removed": True,
-                "frontend_abort_controller_required": True,
-            },
+            _model_ops_performance_budget_input(),
             cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
         ),
     }
@@ -844,20 +855,18 @@ async def model_ops_performance_budget():
 async def evaluate_model_ops_performance_budget(payload: dict[str, Any]):
     """Evaluate sanitized ModelOps timing observations without echoing raw payloads."""
     observations = payload.get("observations") if isinstance(payload, dict) else None
+    performance_budget = ModelOpsPerformanceBudgetService().build_budget(
+        _model_ops_performance_budget_input(observations),
+        cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
+    )
+    recorded_budget = model_ops_performance_budget_registry.record(performance_budget)
+    _clear_model_ops_payload_cache()
+    models_payload = await list_models()
     return {
         "success": True,
-        "data": ModelOpsPerformanceBudgetService().build_budget(
-            {
-                "models_payload_cache_enabled": True,
-                "backend_cache_ttl_seconds": MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
-                "same_origin_fetch_first": True,
-                "fallback_after_timeout_disabled": True,
-                "duplicate_calibration_fetch_removed": True,
-                "frontend_abort_controller_required": True,
-                "observations": observations,
-            },
-            cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
-        ),
+        "data": recorded_budget,
+        "model_ops_readiness": models_payload["model_ops_readiness"],
+        "cheap_first_release_decision": models_payload["cheap_first_release_decision"],
     }
 
 

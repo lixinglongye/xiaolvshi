@@ -10,6 +10,13 @@ POST /api/v1/aihub/models/performance-budget
 ```
 
 The full ModelOps payload also includes `model_ops_performance_budget` and the aggregate `model_ops_readiness` checks it as a required signal.
+When timing observations are submitted through `POST`, the response also returns
+fresh `model_ops_readiness` and `cheap_first_release_decision` packets computed
+with the submitted performance budget, so slow observations immediately surface
+as maintainer review or release blockers. The sanitized observation result is
+kept as the latest in-process performance evidence, and subsequent
+`GET /api/v1/aihub/models` responses use it until the process is reset or the
+registry is cleared in tests.
 
 ## What It Proves
 
@@ -26,6 +33,8 @@ The full ModelOps payload also includes `model_ops_performance_budget` and the a
 - `summary`: first-load budget, cache-hit budget, frontend request timeout, total wall-clock timeout, backend cache TTL, same-origin fetch-first status, timeout-fallback status, duplicate-fetch status, observation counts, and check counts.
 - `checks`: timeout, backend cache, same-origin fetch-first, single wall-clock timeout, duplicate calibration fetch, AbortController, and optional observed timing checks.
 - `observations`: sanitized numeric timing rows only when explicitly supplied to the service.
+- `model_ops_readiness`: included on `POST`, recomputed with the submitted timing observations.
+- `cheap_first_release_decision`: included on `POST`, recomputed so performance warnings require review and performance blockers block default promotion.
 - `privacy_boundary`: confirms raw payloads, credentials, prompts, legal text, raw model output, and URLs are excluded.
 - `validation_commands`: backend and frontend checks that protect this signal.
 
@@ -46,7 +55,7 @@ The full ModelOps payload also includes `model_ops_performance_budget` and the a
 }
 ```
 
-Only numeric rows are retained. Metrics that look like secrets, emails, keys, headers, prompts, URLs, raw legal text, or raw model output are redacted or dropped. One or two slow rows warn; three or more slow rows fail the budget.
+Only numeric rows are retained. Metrics that look like secrets, emails, keys, headers, prompts, URLs, raw legal text, or raw model output are redacted or dropped. One or two slow rows warn and require maintainer review through the returned and subsequent in-process release decision; three or more slow rows fail the budget, aggregate readiness, and cheap-first release decision.
 
 ## Safety
 

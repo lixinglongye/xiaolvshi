@@ -105,6 +105,11 @@ The readiness service checks:
 Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. The summary separates `required_warning_count`, `required_failure_count`, and `optional_review_count` so manual evidence does not look like a required gate failure. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs. After a maintainer posts sanitized gateway probe results, `/api/v1/aihub/models` uses the latest in-process sanitized snapshot for this optional component; rejected payloads only contribute a minimal safe failure snapshot.
 
 `model-ops-performance-budget` is required evidence for the local operations UI. It checks that the heavyweight `/api/v1/aihub/models` payload has a short backend cache, the frontend has a request timeout and abort path, and the page does not repeat the cheap-first calibration request on first load.
+Submitted performance observations are also bound back into aggregate review:
+`POST /api/v1/aihub/models/performance-budget` recomputes readiness and the
+cheap-first release decision with the sanitized observation result, and later
+in-process `/api/v1/aihub/models` payloads use that latest sanitized result.
+Slow rows become review warnings or blockers without storing raw payloads.
 
 `route-quality-budget` is required evidence for cheap-first model routing. It checks that each task has deterministic quality gates, a cheap-start model where appropriate, and a visible review action when a runtime default lacks the required task capabilities.
 

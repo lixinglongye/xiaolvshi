@@ -139,6 +139,15 @@ counters, no-config-write boundaries, and no-NewAPI-call boundaries visible
 without rendering prompts, legal text, request bodies, response bodies, headers,
 raw model output, emails, or credentials.
 
+Current ModelOps performance release evidence:
+`modelops-performance-observation-release-binding` binds sanitized
+`POST /api/v1/aihub/models/performance-budget` observations back into aggregate
+ModelOps readiness and the cheap-first release decision. Slow timing rows now
+require maintainer review or block default promotion in the POST response and
+later in-process `/api/v1/aihub/models` aggregate payloads without storing raw
+payloads, URLs, headers, emails, credentials, prompts, legal text, gateway
+responses, model output, or making network calls.
+
 Current Legal RAG citation blocker evidence:
 `legal-rag-missing-answer-citation-blocker` blocks local Legal RAG evaluation
 artifacts when expected or retrieved legal source IDs exist but the generated

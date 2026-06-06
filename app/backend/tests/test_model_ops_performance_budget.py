@@ -1,10 +1,26 @@
 import json
 import re
 
-from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
+import pytest
+
+from services.model_ops_performance_budget import (
+    ModelOpsPerformanceBudgetService,
+    model_ops_performance_budget_registry,
+)
 
 
 SECRET_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")
+
+
+@pytest.fixture(autouse=True)
+def clear_model_ops_performance_observations():
+    from routers.aihub import _clear_model_ops_payload_cache
+
+    model_ops_performance_budget_registry.clear()
+    _clear_model_ops_payload_cache()
+    yield
+    model_ops_performance_budget_registry.clear()
+    _clear_model_ops_payload_cache()
 
 
 def test_model_ops_performance_budget_passes_with_cache_timeout_and_deduped_load():
@@ -85,8 +101,6 @@ def test_model_ops_performance_budget_fails_when_timeout_or_cache_guard_missing(
 
 
 def test_model_ops_performance_budget_route_returns_metadata_only_payload():
-    import pytest
-
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
     from routers.aihub import router
@@ -106,8 +120,6 @@ def test_model_ops_performance_budget_route_returns_metadata_only_payload():
 
 
 def test_model_ops_performance_budget_post_reviews_sanitized_observations():
-    import pytest
-
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
     from routers.aihub import router
@@ -134,7 +146,63 @@ def test_model_ops_performance_budget_post_reviews_sanitized_observations():
     assert payload["data"]["status"] == "warn"
     assert payload["data"]["summary"]["observation_count"] == 2
     assert "observed-load-within-budget" in payload["data"]["warning_check_ids"]
+    assert "model-ops-performance-budget" in payload["model_ops_readiness"]["warning_check_ids"]
+    release_check = next(
+        check
+        for check in payload["cheap_first_release_decision"]["checks"]
+        if check["source_key"] == "model_ops_performance_budget"
+    )
+    assert release_check["status"] == "warn"
+    assert "observed-load-within-budget" in release_check["source_warning_ids"]
+    assert payload["cheap_first_release_decision"]["summary"]["maintainer_review_required"] is True
+    assert payload["data"]["source"] == "latest_sanitized_performance_observation"
     assert secret not in serialized
     assert "client@example.com" not in serialized
     assert "must not echo" not in serialized
     assert not SECRET_PATTERN.search(serialized)
+
+
+def test_model_ops_performance_budget_post_blocks_aggregate_on_repeated_slow_observations():
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    response = client.post(
+        "/api/v1/aihub/models/performance-budget",
+        json={
+            "observations": [
+                {"metric": "model-ops-first-load", "duration_ms": 4_000, "budget_ms": 2_500},
+                {"metric": "model-ops-cache-hit", "duration_ms": 1_200, "budget_ms": 750},
+                {"metric": "model-ops-refresh", "duration_ms": 5_500, "budget_ms": 2_500},
+            ],
+            "raw_payload": "must not echo",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    serialized = json.dumps(payload, ensure_ascii=False)
+    assert payload["success"] is True
+    assert payload["data"]["status"] == "fail"
+    assert payload["data"]["source"] == "latest_sanitized_performance_observation"
+    assert "observed-load-within-budget" in payload["data"]["blocking_check_ids"]
+    assert payload["model_ops_readiness"]["status"] == "fail"
+    assert "model-ops-performance-budget" in payload["model_ops_readiness"]["blocking_check_ids"]
+    assert payload["cheap_first_release_decision"]["status"] == "fail"
+    assert "performance-budget-review" in payload["cheap_first_release_decision"]["blocking_check_ids"]
+    assert "must not echo" not in serialized
+    assert not SECRET_PATTERN.search(serialized)
+
+    models_response = client.get("/api/v1/aihub/models")
+    assert models_response.status_code == 200
+    models_payload = models_response.json()
+    assert models_payload["model_ops_performance_budget"]["status"] == "fail"
+    assert models_payload["model_ops_performance_budget"]["source"] == "latest_sanitized_performance_observation"
+    assert models_payload["model_ops_readiness"]["status"] == "fail"
+    assert "model-ops-performance-budget" in models_payload["model_ops_readiness"]["blocking_check_ids"]
+    assert models_payload["cheap_first_release_decision"]["status"] == "fail"
+    assert "performance-budget-review" in models_payload["cheap_first_release_decision"]["blocking_check_ids"]

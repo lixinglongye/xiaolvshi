@@ -197,6 +197,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-variant-model-list-ingestion" in completed_ids
     assert "modelops-load-performance-budget" in completed_ids
     assert "modelops-performance-observation-review" in completed_ids
+    assert "modelops-performance-observation-release-binding" in completed_ids
+    performance_release_binding_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-performance-observation-release-binding"
+    )
+    assert performance_release_binding_entry["size"] == "medium"
+    assert performance_release_binding_entry["status"] == "shipped"
+    assert "sanitized POST performance observations" in performance_release_binding_entry["impact"]
+    assert "aggregate ModelOps readiness" in performance_release_binding_entry["impact"]
+    assert "cheap-first release decision" in performance_release_binding_entry["impact"]
+    assert "subsequent in-process /models payloads" in performance_release_binding_entry["impact"]
+    assert "maintainer review" in performance_release_binding_entry["impact"]
+    assert "block default promotion" in performance_release_binding_entry["impact"]
+    assert "raw payloads" in performance_release_binding_entry["impact"]
+    assert "credentials" in performance_release_binding_entry["impact"]
+    assert "network calls" in performance_release_binding_entry["impact"]
+    assert "app/backend/routers/aihub.py" in performance_release_binding_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_performance_budget.py" in performance_release_binding_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_PERFORMANCE_BUDGET.md" in performance_release_binding_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in performance_release_binding_entry["evidence_paths"]
+    assert "modelops-performance-observation-review" in performance_release_binding_entry["release_gate_links"]
+    assert "model-ops-readiness" in performance_release_binding_entry["release_gate_links"]
+    assert "modelops-cheap-first-release-decision" in performance_release_binding_entry["release_gate_links"]
     assert "modelops-cheap-first-quality-budget" in completed_ids
     assert "modelops-cheap-first-escalation-budget" in completed_ids
     assert "model-failure-upgrade-budget" in completed_ids
@@ -347,6 +371,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-variant-model-list-ingestion" not in queue_ids
     assert "modelops-load-performance-budget" not in queue_ids
     assert "modelops-performance-observation-review" not in queue_ids
+    assert "modelops-performance-observation-release-binding" not in queue_ids
     assert "modelops-cheap-first-quality-budget" not in queue_ids
     assert "gemini-catalog-source-audit" not in queue_ids
     assert "model-catalog-candidate-patch-plan" not in queue_ids
@@ -496,6 +521,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_performance_budget.py "
+        "tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py -q"
         in ledger["validation_commands"]
     )
     assert (

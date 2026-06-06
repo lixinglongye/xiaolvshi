@@ -27,6 +27,12 @@ The full `/api/v1/aihub/models` payload also includes
 cheap-first default edits into `ready`, `review_required`, `blocked`, or
 `no_action` queue items.
 
+`POST /api/v1/aihub/models/performance-budget` also returns a fresh release
+decision computed with the submitted sanitized timing observations. A warning
+performance budget requires maintainer review, and a failing performance budget
+blocks cheap-first default promotion in the same response and in subsequent
+in-process `/api/v1/aihub/models` aggregate payloads.
+
 ## Inputs
 
 The service consumes existing signal metadata only:

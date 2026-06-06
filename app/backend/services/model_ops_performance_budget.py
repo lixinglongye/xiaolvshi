@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from datetime import datetime, timezone
 import re
 from typing import Any
 
@@ -221,3 +223,35 @@ class ModelOpsPerformanceBudgetService:
         if SENSITIVE_PATTERN.search(raw):
             return "redacted-observation"
         return "".join(char if char.isalnum() or char in "_.:-" else "-" for char in raw).strip("-")
+
+
+class ModelOpsPerformanceBudgetRegistry:
+    """Keep the latest sanitized performance observation for ModelOps aggregation."""
+
+    def __init__(self) -> None:
+        self._latest: dict[str, Any] | None = None
+        self._version = 0
+
+    @property
+    def version(self) -> int:
+        return self._version
+
+    def latest(self) -> dict[str, Any] | None:
+        if self._latest is None:
+            return None
+        return deepcopy(self._latest)
+
+    def record(self, result: dict[str, Any]) -> dict[str, Any]:
+        snapshot = deepcopy(result)
+        snapshot["source"] = "latest_sanitized_performance_observation"
+        snapshot["stored_at"] = datetime.now(timezone.utc).isoformat()
+        self._latest = snapshot
+        self._version += 1
+        return deepcopy(snapshot)
+
+    def clear(self) -> None:
+        self._latest = None
+        self._version += 1
+
+
+model_ops_performance_budget_registry = ModelOpsPerformanceBudgetRegistry()

@@ -138,6 +138,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_gemini_model_variant_matrix.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py tests/test_model_default_candidate_selector.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -1511,6 +1512,38 @@ class ContinuousUpdateLedgerService:
                     "frontend-ui-regression",
                     "frontend-typecheck",
                     "frontend-build",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="modelops-performance-observation-release-binding",
+                title="ModelOps performance observation release binding",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Binds sanitized POST performance observations back into aggregate ModelOps readiness and the "
+                    "cheap-first release decision, including subsequent in-process /models payloads, so slow timing "
+                    "rows require maintainer review or block default promotion without storing raw payloads, URLs, "
+                    "headers, emails, credentials, prompts, legal text, gateway responses, model output, or making "
+                    "network calls."
+                ),
+                evidence_paths=(
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_performance_budget.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/model_ops_cheap_first_release_decision.py",
+                    "app/backend/tests/test_model_ops_performance_budget.py",
+                    "docs/MODEL_OPS_PERFORMANCE_BUDGET.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                ),
+                release_gate_links=(
+                    "modelops-performance-observation-review",
+                    "model-ops-readiness",
+                    "modelops-cheap-first-release-decision",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
