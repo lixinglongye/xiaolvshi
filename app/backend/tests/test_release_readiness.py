@@ -95,6 +95,7 @@ def test_frontend_runtime_ui_checks_are_optional_release_evidence():
         in {
             "case-workbench-frontend-state-events",
             "case-edit-runtime-event-binding",
+            "case-export-readiness-download-gate",
             "legal-rag-case-research-ui",
             "legal-rag-research-context-cache",
             "billing-usage-workspace-badge",
@@ -104,6 +105,7 @@ def test_frontend_runtime_ui_checks_are_optional_release_evidence():
     result = service.evaluate({
         "case-workbench-frontend-state-events": "not_run",
         "case-edit-runtime-event-binding": "not_run",
+        "case-export-readiness-download-gate": "not_run",
         "legal-rag-case-research-ui": "not_run",
         "legal-rag-research-context-cache": "not_run",
         "billing-usage-workspace-badge": "not_run",
@@ -114,6 +116,7 @@ def test_frontend_runtime_ui_checks_are_optional_release_evidence():
     assert commands == {
         "case-workbench-frontend-state-events": "npm run typecheck",
         "case-edit-runtime-event-binding": "npm run typecheck",
+        "case-export-readiness-download-gate": "cd ../frontend && npm run typecheck && npm run ui:regression && cd ../backend && python -m pytest tests/test_case_export_readiness.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-case-research-ui": "npm run typecheck",
         "legal-rag-research-context-cache": "npm run typecheck",
         "billing-usage-workspace-badge": "npm run typecheck",
@@ -121,18 +124,22 @@ def test_frontend_runtime_ui_checks_are_optional_release_evidence():
     }
     assert checks["case-workbench-frontend-state-events"]["required"] is False
     assert checks["case-edit-runtime-event-binding"]["required"] is False
+    assert checks["case-export-readiness-download-gate"]["required"] is False
     assert checks["legal-rag-case-research-ui"]["required"] is False
     assert checks["legal-rag-research-context-cache"]["required"] is False
     assert checks["billing-usage-workspace-badge"]["required"] is False
     assert checks["document-generation-quota-consumption-attempt"]["required"] is False
     assert checks["case-workbench-frontend-state-events"]["blocks_release"] is False
     assert checks["case-edit-runtime-event-binding"]["blocks_release"] is False
+    assert checks["case-export-readiness-download-gate"]["blocks_release"] is False
     assert checks["legal-rag-case-research-ui"]["blocks_release"] is False
     assert checks["legal-rag-research-context-cache"]["blocks_release"] is False
     assert checks["billing-usage-workspace-badge"]["blocks_release"] is False
     assert checks["document-generation-quota-consumption-attempt"]["blocks_release"] is False
     assert "app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx" in checks["case-workbench-frontend-state-events"]["evidence_paths"]
     assert "app/frontend/src/pages/CaseDetailPage.tsx" in checks["case-edit-runtime-event-binding"]["evidence_paths"]
+    assert "app/frontend/src/pages/CaseDetailPage.tsx" in checks["case-export-readiness-download-gate"]["evidence_paths"]
+    assert "metadata-only export readiness" in checks["case-export-readiness-download-gate"]["manual_note"]
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in checks["legal-rag-case-research-ui"]["evidence_paths"]
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in checks["legal-rag-research-context-cache"]["evidence_paths"]
     assert "app/frontend/src/components/billing/BillingUsageBadge.tsx" in checks["billing-usage-workspace-badge"]["evidence_paths"]

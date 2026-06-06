@@ -18,11 +18,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/case_evidence_catalog_export_preflight.py" in evidence_paths
     assert "app/backend/tests/test_case_evidence_catalog_export_preflight.py" in evidence_paths
     assert "docs/CASE_EVIDENCE_CATALOG_EXPORT_PREFLIGHT.md" in evidence_paths
+    assert "docs/CASE_EXPORT_READINESS_DOWNLOAD_GATE.md" in evidence_paths
     assert "app/frontend/src/components/cases/LegalRagResearchPanel.tsx" in evidence_paths
     assert "app/backend/routers/billing_usage.py" in evidence_paths
     assert "Billing report preflight route" in profile["release_management"]["release_readiness_controls"]
     assert "Case workbench risk refresh plan" in profile["release_management"]["release_readiness_controls"]
     assert "Case edit runtime event binding" in profile["release_management"]["release_readiness_controls"]
+    assert "Case export readiness download gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG research context cache" in profile["release_management"]["release_readiness_controls"]
     assert "Document generation quota consumption attempt" in profile["release_management"]["release_readiness_controls"]
     assert "Generated documents CRUD quota guard" in profile["release_management"]["release_readiness_controls"]

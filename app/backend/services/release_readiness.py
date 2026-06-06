@@ -1797,6 +1797,23 @@ class ReleaseReadinessService:
                 manual_note="This verifies landed case edit flows emit privacy-safe runtime event metadata; live risk graph refresh and escalation wiring remain separate.",
             ),
             ReleaseCheck(
+                id="case-export-readiness-download-gate",
+                title="Case export readiness download gate",
+                category="frontend_ui",
+                required=False,
+                owner="frontend",
+                evidence_paths=(
+                    "app/frontend/src/pages/CaseDetailPage.tsx",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/case_export_readiness.py",
+                    "app/backend/tests/test_case_export_readiness.py",
+                    "docs/CASE_EXPORT_READINESS_DOWNLOAD_GATE.md",
+                ),
+                validation_command="cd ../frontend && npm run typecheck && npm run ui:regression && cd ../backend && python -m pytest tests/test_case_export_readiness.py tests/test_frontend_ui_regression_gate.py -q",
+                manual_note="This gates case report, evidence catalog, and generated-document downloads through metadata-only export readiness before calling downloadText; it does not send raw document content, file URLs, parsed text, or PII to the readiness endpoint.",
+            ),
+            ReleaseCheck(
                 id="legal-rag-case-research-ui",
                 title="Legal RAG case research UI",
                 category="frontend_ui",

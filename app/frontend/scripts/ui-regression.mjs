@@ -12,6 +12,7 @@ const files = {
   modelOpsApi: 'src/lib/modelOpsApi.ts',
   workbenchRuntimeApi: 'src/lib/workbenchRuntimeApi.ts',
   caseWorkbenchRuntimePanel: 'src/components/cases/CaseWorkbenchRuntimePanel.tsx',
+  caseDetailPage: 'src/pages/CaseDetailPage.tsx',
 };
 
 function read(relativePath) {
@@ -54,6 +55,7 @@ const maintenanceApi = read(files.maintenanceApi);
 const modelOpsApi = read(files.modelOpsApi);
 const workbenchRuntimeApi = read(files.workbenchRuntimeApi);
 const caseWorkbenchRuntimePanel = read(files.caseWorkbenchRuntimePanel);
+const caseDetailPage = read(files.caseDetailPage);
 const relevantSources = [
   maintenancePage,
   modelOpsPage,
@@ -61,6 +63,7 @@ const relevantSources = [
   modelOpsApi,
   workbenchRuntimeApi,
   caseWorkbenchRuntimePanel,
+  caseDetailPage,
 ].join('\n');
 const geminiAliasMatrixPanel = sourceSection(
   maintenancePage,
@@ -79,6 +82,24 @@ const caseWorkbenchRiskRefreshPanel = sourceSection(
   'Risk refresh plan',
   '<form onSubmit={submitTaskEvent}',
   'case workbench risk refresh plan section',
+);
+const caseExportReadinessPayloadBuilder = sourceSection(
+  caseDetailPage,
+  'function buildCaseExportReadinessPayload',
+  'export default function CaseDetailPage',
+  'case detail export readiness payload builder',
+);
+const caseExportReadinessDownloadGuard = sourceSection(
+  caseDetailPage,
+  'const runExportReadinessThenDownload',
+  'const emitMaterialRuntimeEvent',
+  'case detail export readiness download guard',
+);
+const caseExportReadinessApiCall = sourceSection(
+  caseExportReadinessDownloadGuard,
+  'const readiness = await getMaintenanceCaseExportReadiness(',
+  'setExportReadiness(readiness);',
+  'case detail export readiness API call',
 );
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
@@ -130,6 +151,40 @@ const checks = [
       caseWorkbenchRiskRefreshPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details/i,
       'case workbench risk refresh panel sensitive field guard',
+    ),
+  () => assertIncludes(caseDetailPage, 'getMaintenanceCaseExportReadiness', 'case detail export readiness API binding'),
+  () => assertIncludes(caseDetailPage, 'buildCaseExportReadinessPayload', 'case detail export readiness payload builder'),
+  () => assertIncludes(caseDetailPage, 'runExportReadinessThenDownload', 'case detail export readiness download guard'),
+  () => assertIncludes(caseDetailPage, 'case_header_report_download', 'case detail report download readiness source'),
+  () => assertIncludes(caseDetailPage, 'case_evidence_tab_export', 'case detail evidence export readiness source'),
+  () => assertIncludes(caseDetailPage, 'case_generated_document_dialog_download', 'case detail generated document download readiness source'),
+  () => assertIncludes(caseDetailPage, 'case-export-readiness-panel', 'case detail export readiness UI panel'),
+  () => assertIncludes(caseDetailPage, 'reason_codes:', 'case detail export readiness reason codes UI'),
+  () => assertIncludes(caseDetailPage, 'recommended_actions:', 'case detail export readiness recommended actions UI'),
+  () => assertIncludes(caseDetailPage, 'raw_document_text_included: {String(exportReadiness.privacy_boundary.raw_document_text_included)}', 'case detail export readiness privacy UI'),
+  () => assertIncludes(caseExportReadinessPayloadBuilder, 'report_meta', 'case detail export readiness report_meta section'),
+  () => assertIncludes(caseExportReadinessPayloadBuilder, 'risk_scoring', 'case detail export readiness risk_scoring section'),
+  () => assertIncludes(caseExportReadinessPayloadBuilder, 'citations', 'case detail export readiness citations section'),
+  () => assertIncludes(caseExportReadinessPayloadBuilder, 'evidence', 'case detail export readiness evidence section'),
+  () => assertIncludes(caseExportReadinessPayloadBuilder, 'release_decision', 'case detail export readiness release_decision section'),
+  () => assertIncludes(caseExportReadinessDownloadGuard, 'downloadText(filename, content)', 'case detail download only after readiness gate'),
+  () => {
+    const count = caseDetailPage.match(/downloadText\(/g)?.length ?? 0;
+    if (count !== 2) {
+      throw new Error(`case detail direct downloadText call count: expected 2, got ${count}`);
+    }
+  },
+  () =>
+    assertNotMatches(
+      caseExportReadinessPayloadBuilder,
+      /viewDoc\.content|params\.content|content_json|raw_document_text["']?\s*:|document_text["']?\s*:|parsed_text|file_url/i,
+      'case detail export readiness metadata-only payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      caseExportReadinessApiCall,
+      /viewDoc\.content|content\s*:|buildDocumentContent\(|buildEvidenceDirectory\(|raw_document_text["']?\s*:|document_text["']?\s*:/i,
+      'case detail export readiness API call must stay metadata-only',
     ),
   () => assertIncludes(maintenancePage, 'Low-resource fixture review', 'maintenance review packet fixture panel'),
   () => assertIncludes(maintenancePage, 'raw fixture payload echoed: false', 'maintenance fixture privacy boundary'),

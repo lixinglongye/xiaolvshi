@@ -55,6 +55,10 @@ import {
   type CaseWorkbenchSectionId,
   type CaseWorkbenchStateEvent,
 } from '@/lib/workbenchRuntimeApi';
+import {
+  getMaintenanceCaseExportReadiness,
+  type MaintenanceCaseExportReadiness,
+} from '@/lib/maintenanceApi';
 import { useI18n } from '@/contexts/I18nContext';
 
 type TabKey = 'overview' | 'materials' | 'evidence' | 'facts' | 'timeline' | 'research' | 'documents' | 'tasks' | 'team' | 'settings';
@@ -402,6 +406,100 @@ function buildDocumentContent(
   ].join('\n');
 }
 
+type ExportReadinessDownloadInput = {
+  filename: string;
+  content: string;
+  docType: string;
+  source: string;
+  document?: GeneratedCaseDocument | null;
+};
+
+function selectedSourceValidationForExport(metadata: LegalRagResearchSafeMetadata | null): Record<string, unknown> {
+  if (!metadata?.selected_source_ids.length) {
+    return {
+      status: 'not_run',
+      delivery_status: 'not_run',
+      selected_source_count: 0,
+      reason_codes: [],
+    };
+  }
+  const blocked = Boolean(metadata.blocked || metadata.evaluation_status === 'blocked');
+  return {
+    status: blocked ? 'blocked' : 'ready',
+    delivery_status: blocked ? 'blocked' : 'ready',
+    selected_source_count: metadata.selected_source_count,
+    reason_codes: metadata.reason_codes,
+    freshness_statuses: metadata.freshness_statuses,
+  };
+}
+
+function buildCaseExportReadinessPayload(params: {
+  caseItem: CaseRecord;
+  materials: CaseMaterialRecord[];
+  facts: CaseFactRecord[];
+  legalRagMetadata: LegalRagResearchSafeMetadata | null;
+  docType: string;
+  source: string;
+  document?: GeneratedCaseDocument | null;
+}): Record<string, unknown> {
+  const evidenceRows = params.materials
+    .filter((material) => material.is_evidence)
+    .map((material, index) => {
+      const evidenceRef = material.material_no || `E-${String(index + 1).padStart(3, '0')}`;
+      return {
+        evidence_id: safeRef(evidenceRef, `evidence_${index + 1}`),
+        source_id: safeRef(material.material_no || material.id, `source_${index + 1}`),
+        proof_purpose_present: Boolean(material.proof_purpose?.trim()),
+        page_anchor_present: Boolean(material.page_refs?.trim()),
+        authenticity_status: material.authenticity_status || 'not_run',
+        relevance_status: material.relevance_status || 'not_run',
+        legality_status: material.legality_status || 'not_run',
+      };
+    });
+  const factEvidenceRefs = params.facts.flatMap((fact) => extractEvidenceRefs(fact.source_refs));
+  const selectedSourceRefs = params.legalRagMetadata?.selected_source_ids.map((sourceId) => safeRef(sourceId, 'selected_source')) ?? [];
+  const citationIds = Array.from(new Set([...factEvidenceRefs, ...selectedSourceRefs]));
+  const unsupportedFactCount = params.facts.filter((fact) => !extractEvidenceRefs(fact.source_refs).length).length;
+  const selectedSourceValidation = selectedSourceValidationForExport(params.legalRagMetadata);
+  const releaseReasonCodes = [
+    ...(evidenceRows.length ? [] : ['no_confirmed_evidence_metadata']),
+    ...(citationIds.length ? [] : ['no_citation_metadata']),
+    ...(unsupportedFactCount ? ['unsupported_fact_metadata'] : []),
+    ...(selectedSourceValidation.delivery_status === 'blocked' ? ['selected_source_validation_blocked'] : []),
+  ];
+
+  return {
+    report: {
+      report_meta: {
+        schema_version: 'case-export-readiness-ui-v1',
+        source_component: CASE_DETAIL_RUNTIME_SOURCE,
+        source_action: params.source,
+        case_id: params.caseItem.id,
+        document_id: params.document?.id ?? null,
+        doc_type: params.docType,
+        selected_source_validation: selectedSourceValidation,
+        privacy_boundary: {
+          raw_document_text_included: false,
+          raw_legal_text_included: false,
+          user_claims_included: false,
+          pii_included: false,
+        },
+      },
+      risk_scoring: {
+        risk_level: normalizedFactConfidence(params.caseItem.risk_level),
+        unsupported_fact_count: unsupportedFactCount,
+        evidence_gap_count: evidenceRows.filter((row) => !row.proof_purpose_present || !row.page_anchor_present).length,
+      },
+      citations: citationIds.map((sourceId) => ({ source_id: sourceId })),
+      evidence: evidenceRows,
+      release_decision: {
+        status: releaseReasonCodes.length ? 'blocked' : 'ready',
+        reason_codes: releaseReasonCodes,
+      },
+    },
+  };
+}
+
 export default function CaseDetailPage() {
   return <AuthGuard><Inner /></AuthGuard>;
 }
@@ -434,6 +532,8 @@ function Inner() {
   const [, setResearchResults] = useState<string[]>([]);
   const [, setResearchLoading] = useState(false);
   const [legalRagMetadata, setLegalRagMetadata] = useState<LegalRagResearchSafeMetadata | null>(null);
+  const [exportReadiness, setExportReadiness] = useState<MaintenanceCaseExportReadiness | null>(null);
+  const [exportReadinessRunning, setExportReadinessRunning] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const runtimeStateVersionRef = useRef(0);
 
@@ -635,6 +735,44 @@ function Inner() {
       });
     } catch (error) {
       console.warn('Billing report usage was not recorded', error);
+    }
+  };
+
+  const runExportReadinessThenDownload = async ({
+    filename,
+    content,
+    docType,
+    source,
+    document,
+  }: ExportReadinessDownloadInput) => {
+    if (!caseItem || exportReadinessRunning) return;
+    setExportReadinessRunning(true);
+    try {
+      const readiness = await getMaintenanceCaseExportReadiness(
+        buildCaseExportReadinessPayload({
+          caseItem,
+          materials,
+          facts,
+          legalRagMetadata,
+          docType,
+          source,
+          document,
+        }),
+      );
+      setExportReadiness(readiness);
+      if (readiness.status === 'blocked') {
+        const codes = readiness.reason_codes.slice(0, 3).join(', ') || 'export_not_ready';
+        toast.warning(`Export readiness blocked: ${codes}`);
+        return;
+      }
+      if (readiness.status !== 'ready') {
+        toast.warning(`Export readiness requires review: ${readiness.status}`);
+      }
+      downloadText(filename, content);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Export readiness check failed');
+    } finally {
+      setExportReadinessRunning(false);
     }
   };
 
@@ -1216,7 +1354,18 @@ function Inner() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Badge className={`border ${riskClass(caseItem.risk_level)}`}>{caseItem.risk_level || '中'}风险</Badge>
-                  <Button size="sm" variant="outline" className="h-8 rounded-full border-stone-950/10 bg-white/70 px-3 text-xs shadow-none" onClick={() => downloadText(`${caseItem.title}-案件分析报告.md`, buildDocumentContent('案件分析报告', caseItem, materials, facts))}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 rounded-full border-stone-950/10 bg-white/70 px-3 text-xs shadow-none"
+                    disabled={exportReadinessRunning}
+                    onClick={() => runExportReadinessThenDownload({
+                      filename: `${caseItem.title}-案件分析报告.md`,
+                      content: buildDocumentContent('案件分析报告', caseItem, materials, facts),
+                      docType: 'case_analysis_report',
+                      source: 'case_header_report_download',
+                    })}
+                  >
                     <Download className="w-3.5 h-3.5 mr-1" />报告下载
                   </Button>
                 </div>
@@ -1269,7 +1418,12 @@ function Inner() {
               <TabsContent value="evidence" className={tabPaneClass}>
                 <EvidenceTab
                   evidences={evidences}
-                  onExport={() => downloadText(`${caseItem.title}-证据目录.md`, buildEvidenceDirectory(materials))}
+                  onExport={() => runExportReadinessThenDownload({
+                    filename: `${caseItem.title}-证据目录.md`,
+                    content: buildEvidenceDirectory(materials),
+                    docType: 'evidence_catalog',
+                    source: 'case_evidence_tab_export',
+                  })}
                   onReinforce={async (material) => {
                     const task = await createCaseTask({
                       case_id: caseItem.id,
@@ -1437,9 +1591,31 @@ function Inner() {
                 <DialogDescription className="sr-only">查看、复制或下载生成的案件文书草稿。</DialogDescription>
               </DialogHeader>
               <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 border p-4 text-sm text-slate-700">{viewDoc.content}</pre>
+              {exportReadiness && (
+                <div data-testid="case-export-readiness-panel" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">Export readiness</span>
+                    <Badge variant="outline" className="border-amber-300 bg-white/70 text-amber-800">{exportReadiness.status}</Badge>
+                  </div>
+                  <div>reason_codes: {exportReadiness.reason_codes.length ? exportReadiness.reason_codes.join(', ') : 'none'}</div>
+                  <div>recommended_actions: {exportReadiness.recommended_actions.slice(0, 2).join(' | ') || 'none'}</div>
+                  <div>raw_document_text_included: {String(exportReadiness.privacy_boundary.raw_document_text_included)}</div>
+                </div>
+              )}
               <DialogFooter>
                 <Button variant="outline" onClick={() => { navigator.clipboard.writeText(viewDoc.content || ''); toast.success('已复制'); }}><Copy className="w-4 h-4 mr-1" />复制</Button>
-                <Button onClick={() => downloadText(`${viewDoc.title || viewDoc.doc_type}.md`, viewDoc.content || '')}><Download className="w-4 h-4 mr-1" />下载</Button>
+                <Button
+                  disabled={exportReadinessRunning}
+                  onClick={() => runExportReadinessThenDownload({
+                    filename: `${viewDoc.title || viewDoc.doc_type}.md`,
+                    content: viewDoc.content || '',
+                    docType: viewDoc.doc_type || 'generated_case_document',
+                    source: 'case_generated_document_dialog_download',
+                    document: viewDoc,
+                  })}
+                >
+                  <Download className="w-4 h-4 mr-1" />下载
+                </Button>
               </DialogFooter>
             </>
           )}

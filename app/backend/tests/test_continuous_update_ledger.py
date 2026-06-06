@@ -247,6 +247,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "runtime-router-discovery-smoke" in completed_ids
     assert "case-workbench-frontend-state-events" in completed_ids
     assert "legal-rag-case-research-ui" in completed_ids
+    assert "case-export-readiness-download-gate" in completed_ids
     assert "billing-usage-workspace-badge" in completed_ids
     assert "billing-report-preflight-route" in completed_ids
     assert "case-edit-runtime-event-binding" in completed_ids
@@ -338,6 +339,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
+    assert "case-export-readiness-download-gate" not in queue_ids
     assert "billing-usage-workspace-badge" not in queue_ids
     assert "billing-report-preflight-route" not in queue_ids
     assert "case-edit-runtime-event-binding" not in queue_ids

@@ -61,6 +61,11 @@ The newest evidence-management slice adds a metadata-only evidence-catalog
 export preflight to case evidence-catalog generation. It joins exhibit package
 policy and bundle integrity checks while still allowing draft generation, but
 frontend download/export buttons still need to consume the blocked/ready result.
+That follow-up is now partially closed for markdown downloads: the case detail
+page gates report, evidence-catalog, and generated-document downloads through
+metadata-only case export readiness before calling the local download helper.
+Final DOCX/PDF export and delivery package release actions still need the same
+gate.
 Model-cost evidence now also includes the scoped Gemini/NewAPI model selector
 evidence contract for `GET`/`POST`
 `/api/v1/maintenance/gemini-newapi-model-selector`. That contract is
@@ -260,7 +265,8 @@ python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_
 python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py -q
 python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_cost_regression_snapshots.py tests/test_route_telemetry_persistence_plan.py -q
 python -m pytest tests/test_small_legal_document_corpus_expansion.py tests/test_legal_document_benchmark_suite.py tests/test_legal_rag_failure_fixtures.py tests/test_legal_source_ingestion_metadata.py tests/test_legal_source_freshness_policy.py tests/test_legal_source_durable_index_plan.py tests/test_legal_source_index_repository.py tests/test_legal_rag_index_binding.py tests/test_legal_rag_router.py tests/test_legal_rag_request_metadata.py tests/test_contract_clause_extraction_schema.py -q
-python -m pytest tests/test_case_workbench_payload.py tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_state_repository.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py tests/test_case_task_notification_policy.py tests/test_case_evidence_catalog_export_preflight.py tests/test_document_delivery_package_manifest.py tests/test_document_version_diff_checklist.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_billing_quota_persistence_plan.py tests/test_billing_quota_migration_plan.py tests/test_billing_quota_repository.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py tests/test_generated_documents_quota.py tests/test_billing_payment_reconciliation.py tests/test_feedback_lifecycle_policy.py -q
+python -m pytest tests/test_case_workbench_payload.py tests/test_case_workbench_persistence_plan.py tests/test_case_workbench_state_repository.py tests/test_case_workbench_runtime_binding.py tests/test_case_workbench_runtime_router.py tests/test_case_task_notification_policy.py tests/test_case_evidence_catalog_export_preflight.py tests/test_case_export_readiness.py tests/test_document_delivery_package_manifest.py tests/test_document_version_diff_checklist.py tests/test_case_role_permission_matrix.py tests/test_billing_usage_quota_policy.py tests/test_billing_quota_persistence_plan.py tests/test_billing_quota_migration_plan.py tests/test_billing_quota_repository.py tests/test_billing_entitlement_quota_binding.py tests/test_billing_usage_router.py tests/test_generated_documents_quota.py tests/test_billing_payment_reconciliation.py tests/test_feedback_lifecycle_policy.py -q
+npm run ui:regression
 npm run typecheck
 ```
 
