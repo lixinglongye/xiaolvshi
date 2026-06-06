@@ -183,6 +183,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
     assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
@@ -309,6 +310,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" not in queue_ids
     assert "modelops-agentic-grounded-defaults" not in queue_ids
     assert "modelops-default-template-alignment" not in queue_ids
     assert "modelops-gemini-default-change-review" not in queue_ids
@@ -589,6 +591,43 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-cheap-first-calibration" in legal_fixture_gate_entry["release_gate_links"]
     assert "model-route-legal-benchmark-risk-queue" in legal_fixture_gate_entry["release_gate_links"]
     assert "legal-document-benchmark-coverage" in legal_fixture_gate_entry["release_gate_links"]
+    legal_fixture_promotion_packet_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-legal-fixture-cheap-first-default-promotion-packet"
+    )
+    assert legal_fixture_promotion_packet_entry["size"] == "medium"
+    assert legal_fixture_promotion_packet_entry["status"] == "shipped"
+    assert "maintainer review packet evidence" in legal_fixture_promotion_packet_entry["impact"]
+    assert "cheap-first legal fixture default promotion" in legal_fixture_promotion_packet_entry["impact"]
+    assert "fixture ids" in legal_fixture_promotion_packet_entry["impact"]
+    assert "document case ids" in legal_fixture_promotion_packet_entry["impact"]
+    assert "document benchmark pass/fail counts" in legal_fixture_promotion_packet_entry["impact"]
+    assert "coverage-gap counts" in legal_fixture_promotion_packet_entry["impact"]
+    assert "cost-tier metadata" in legal_fixture_promotion_packet_entry["impact"]
+    assert "required signoff roles" in legal_fixture_promotion_packet_entry["impact"]
+    assert "without configuration writes" in legal_fixture_promotion_packet_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in legal_fixture_promotion_packet_entry["impact"]
+    assert "traffic shifts" in legal_fixture_promotion_packet_entry["impact"]
+    assert "real legal text" in legal_fixture_promotion_packet_entry["impact"]
+    assert "generated document text" in legal_fixture_promotion_packet_entry["impact"]
+    assert "model outputs" in legal_fixture_promotion_packet_entry["impact"]
+    assert "credentials" in legal_fixture_promotion_packet_entry["impact"]
+    assert "emails" in legal_fixture_promotion_packet_entry["impact"]
+    assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in legal_fixture_promotion_packet_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in legal_fixture_promotion_packet_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in legal_fixture_promotion_packet_entry["release_gate_links"]
+    assert "legal-document-benchmark-coverage" in legal_fixture_promotion_packet_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in legal_fixture_promotion_packet_entry["release_gate_links"]
     agentic_defaults_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-agentic-grounded-defaults"
     )

@@ -43,6 +43,7 @@ import {
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getLegalPublicBenchmarkSampler,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -125,6 +126,7 @@ import {
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelRouteLegalBenchmarkRiskQueue,
   type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
@@ -409,6 +411,10 @@ function Inner() {
     useState<ModelRouteLegalBenchmarkRiskQueue | null>(null);
   const [modelOpsLegalFixtureCheapFirstBenchmarkGate, setModelOpsLegalFixtureCheapFirstBenchmarkGate] =
     useState<ModelOpsLegalFixtureCheapFirstBenchmarkGate | null>(null);
+  const [
+    modelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+    setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  ] = useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
@@ -621,6 +627,14 @@ function Inner() {
           label: 'ModelOps legal fixture cheap-first benchmark gate',
           run: getModelOpsLegalFixtureCheapFirstBenchmarkGate,
           apply: (value) => setModelOpsLegalFixtureCheapFirstBenchmarkGate(value as ModelOpsLegalFixtureCheapFirstBenchmarkGate),
+        },
+        {
+          label: 'ModelOps legal fixture cheap-first default promotion packet',
+          run: getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+          apply: (value) =>
+            setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(
+              value as ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+            ),
         },
         {
           label: 'Legal public benchmark sampler',
@@ -855,6 +869,13 @@ function Inner() {
   const hasLegalFixtureDocumentBenchmark =
     Boolean(legalFixtureDocumentSummary) ||
     (modelOpsLegalFixtureCheapFirstBenchmarkGate?.summary.document_benchmark_case_count ?? 0) > 0;
+  const legalFixtureDefaultPromotionRows =
+    modelOpsLegalFixtureCheapFirstDefaultPromotionPacket?.promotion_items ?? [];
+  const legalFixtureDefaultPromotionAttentionRows = (
+    legalFixtureDefaultPromotionRows.some((row) => row.promotion_status !== 'ready_for_maintainer_review')
+      ? legalFixtureDefaultPromotionRows.filter((row) => row.promotion_status !== 'ready_for_maintainer_review')
+      : legalFixtureDefaultPromotionRows
+  ).slice(0, 3);
   const reviewPacketReadinessFlags = continuousSessionReviewPacket
     ? [
         { label: 'updates', value: continuousSessionReviewPacket.summary.update_count_ready },
@@ -4995,6 +5016,220 @@ function Inner() {
                     </div>
                   </div>
                 )}
+              </section>
+            )}
+
+            {modelOpsLegalFixtureCheapFirstDefaultPromotionPacket && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal fixture cheap-first default promotion packet
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Maintainer-only packet for cheap-first legal fixture default review, without configuration writes or gateway calls.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.status] ??
+                      statusClass.review_required
+                    }
+                  >
+                    {displayToken(modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 lg:grid-cols-6">
+                  {[
+                    {
+                      label: 'promotion items',
+                      value: modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.promotion_item_count,
+                    },
+                    {
+                      label: 'ready review',
+                      value: modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.ready_for_review_count,
+                    },
+                    {
+                      label: 'blocked',
+                      value: modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.blocked_count,
+                    },
+                    {
+                      label: 'source gate',
+                      value: displayToken(modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.source_gate_status),
+                    },
+                    {
+                      label: 'document status',
+                      value: displayToken(
+                        modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.document_benchmark_status,
+                      ),
+                    },
+                    {
+                      label: 'coverage gaps',
+                      value:
+                        modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary
+                          .document_coverage_missing_type_count,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Promotion</TableHead>
+                          <TableHead>Proposed default</TableHead>
+                          <TableHead>Review evidence</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalFixtureDefaultPromotionAttentionRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[260px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">
+                                {displayToken(row.matter_type)} / {displayToken(row.task)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.promotion_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.promotion_status)}
+                              </Badge>
+                              <div className="mt-2 text-xs leading-5 text-stone-600">
+                                gate {displayToken(row.gate_status)} / document{' '}
+                                {displayToken(row.document_benchmark_status)}
+                              </div>
+                              <div className="text-xs leading-5 text-stone-500">
+                                coverage {displayToken(row.document_coverage_status)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-950">
+                                {row.proposed_default_model ?? '-'}
+                              </div>
+                              <div>tier {row.proposed_cost_tier ?? '-'}</div>
+                              <div>default evidence {String(row.default_change_evidence_allowed ?? false)}</div>
+                              <div>premium escalation {String(row.premium_escalation_candidate ?? false)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <div>{row.action}</div>
+                              <div className="mt-2">signoffs {(row.required_signoffs ?? []).join(', ') || '-'}</div>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                {(row.reason_codes ?? []).join(', ') || 'promotion-packet-ready'}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Decision boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        default_change_allowed_by_packet:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision
+                            .default_change_allowed_by_packet ?? false,
+                        )}
+                      </div>
+                      <div>
+                        configuration_write_allowed:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision
+                            .configuration_change_allowed ?? false,
+                        )}
+                      </div>
+                      <div>
+                        gateway_call_allowed:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision.gateway_call_allowed ?? false,
+                        )}
+                      </div>
+                      <div>
+                        traffic_shift_allowed:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision.traffic_shift_allowed ?? false,
+                        )}
+                      </div>
+                      <div>
+                        automatic default change:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.claim_boundary
+                            .automatic_default_change_claimed ?? false,
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        metadata only:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary.metadata_only)}
+                      </div>
+                      <div>
+                        raw fixture text:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary
+                            .returns_raw_fixture_text ?? false,
+                        )}
+                      </div>
+                      <div>
+                        raw document snippets:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary
+                            .returns_document_snippets ?? false,
+                        )}
+                      </div>
+                      <div>
+                        raw candidate text:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary.returns_candidate_text ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        credentials:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary.returns_credentials ??
+                            false,
+                        )}
+                      </div>
+                      <div>
+                        NewAPI called:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary.newapi_called)}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Checklist</h3>
+                    <div className="grid gap-2">
+                      {modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.evidence_checklist.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-xs"
+                        >
+                          <span className="font-semibold text-stone-700">{displayToken(item.id)}</span>
+                          <Badge variant="outline" className={statusClass[item.status] ?? statusClass.review_required}>
+                            {displayToken(item.status)}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </section>
             )}
 

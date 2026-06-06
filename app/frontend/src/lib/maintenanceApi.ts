@@ -2743,6 +2743,113 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem = {
+  id: string;
+  fixture_id: string;
+  title: string;
+  task: string;
+  matter_type: string;
+  proposed_default_model?: string | null;
+  proposed_cost_tier?: string | null;
+  gate_status: string;
+  document_benchmark_status: string;
+  document_coverage_status: string;
+  promotion_status: string;
+  default_change_evidence_allowed: boolean;
+  premium_escalation_candidate: boolean;
+  required_evidence: string[];
+  required_signoffs: string[];
+  reason_codes: string[];
+  configuration_change_allowed: boolean;
+  gateway_call_allowed: boolean;
+  traffic_shift_allowed: boolean;
+  action: string;
+};
+
+export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
+  status: string;
+  decision: {
+    status: string;
+    label: string;
+    approval_required: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    default_change_allowed_by_packet: boolean;
+    requires_gate_ready: boolean;
+    requires_document_benchmark_pass: boolean;
+    requires_document_coverage_ready: boolean;
+  };
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    promotion_item_count: number;
+    ready_for_review_count: number;
+    blocked_count: number;
+    review_required_count: number;
+    not_ready_count: number;
+    source_gate_status: string;
+    source_default_change_evidence_allowed: boolean;
+    source_selected_fixture_count: number;
+    source_default_evidence_allowed_count: number;
+    document_benchmark_status: string;
+    document_benchmark_score: number;
+    document_coverage_status: string;
+    document_coverage_missing_type_count: number;
+    privacy_boundary_passed: boolean;
+    raw_input_field_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    raw_text_returned: boolean;
+    newapi_called: boolean;
+  };
+  promotion_items: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem[];
+  ready_item_ids: string[];
+  blocked_item_ids: string[];
+  review_item_ids: string[];
+  not_ready_item_ids: string[];
+  required_signoffs: string[];
+  evidence_checklist: {
+    id: string;
+    status: string;
+    passed: boolean;
+    source_status: string;
+  }[];
+  recommended_actions: string[];
+  source_gate_links: Record<string, string>;
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_fixture_ids: boolean;
+    returns_document_case_ids: boolean;
+    returns_raw_fixture_text: boolean;
+    returns_document_snippets: boolean;
+    returns_candidate_text: boolean;
+    returns_prompt_text: boolean;
+    returns_raw_model_output: boolean;
+    returns_gateway_payloads: boolean;
+    returns_credentials: boolean;
+    network_called: boolean;
+    newapi_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    output_scope: string;
+  };
+  claim_boundary: {
+    maintainer_approval_claimed: boolean;
+    automatic_default_change_claimed: boolean;
+    configuration_change_claimed: boolean;
+    live_gateway_execution_claimed: boolean;
+    public_benchmark_scores_claimed: boolean;
+    legal_document_benchmark_scores_claimed: boolean;
+    production_accuracy_claimed: boolean;
+    legal_advice_claimed: boolean;
+  };
+  validation_commands: string[];
+};
+
 export type LegalRagAuthorityCitationGateSourceRow = {
   id?: string;
   source_id?: string;
@@ -4680,6 +4787,14 @@ export async function getModelOpsLegalFixtureCheapFirstBenchmarkGate(): Promise<
     method: 'GET',
   });
   return unwrapMaintenanceData<ModelOpsLegalFixtureCheapFirstBenchmarkGate>(resp);
+}
+
+export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(): Promise<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket>(resp);
 }
 
 export async function getLegalRagAuthorityCitationGate(): Promise<LegalRagAuthorityCitationGate> {

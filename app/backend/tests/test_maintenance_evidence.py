@@ -72,6 +72,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps agentic grounded defaults" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default template alignment audit" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini default change proposal review" in profile["release_management"]["release_readiness_controls"]
@@ -137,11 +138,14 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in evidence_paths
+    assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
+    assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
     assert "app/backend/routers/maintenance.py" in evidence_paths
     assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in evidence_paths
     assert "app/frontend/scripts/ui-regression.mjs" in evidence_paths
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in evidence_paths
+    assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in evidence_paths
     assert "app/backend/.env.example" in evidence_paths
     assert "README.md" in evidence_paths
     assert "app/backend/services/release_readiness.py" in evidence_paths
@@ -191,6 +195,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["description"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["description"]
+    assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["description"]
     assert "ModelOps agentic/grounded default routing evidence" in model_signal["description"]
     assert "ModelOps default template alignment audit evidence" in model_signal["description"]
     assert "ModelOps Gemini default change proposal review evidence" in model_signal["description"]
@@ -216,6 +221,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["responsibility"]
+    assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["responsibility"]
     assert "ModelOps agentic/grounded defaults review" in model_signal["responsibility"]
     assert "ModelOps default template alignment audit review" in model_signal["responsibility"]
     assert "ModelOps Gemini default change proposal review" in model_signal["responsibility"]
@@ -312,6 +318,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("does not write configuration" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("shift traffic" in guardrail for guardrail in profile["application_guardrails"])
     assert any("agentic grounded defaults evidence is metadata-only/default routing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("default template alignment audit is metadata-only env/template evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini default change proposal review is metadata-only proposal evidence" in guardrail for guardrail in profile["application_guardrails"])

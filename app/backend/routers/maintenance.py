@@ -78,6 +78,7 @@ from services.matter_audit_retention_policy import MatterAuditRetentionPolicySer
 from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
 from services.model_route_legal_benchmark_risk_queue import ModelRouteLegalBenchmarkRiskQueueService
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsLegalFixtureCheapFirstBenchmarkGateService
+from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
@@ -1504,6 +1505,26 @@ async def build_legal_review_fixture_cheap_first_benchmark_gate(payload: dict[st
     return {
         "success": True,
         "data": ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/cheap-first-default-promotion-packet")
+@router.get("/legal-review-benchmark/default-promotion-packet")
+async def get_legal_review_fixture_default_promotion_packet():
+    """Return a maintainer-only default promotion packet template for legal fixture evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureDefaultPromotionPacketService().build_packet(),
+    }
+
+
+@router.post("/legal-review-benchmark/cheap-first-default-promotion-packet")
+@router.post("/legal-review-benchmark/default-promotion-packet")
+async def build_legal_review_fixture_default_promotion_packet(payload: dict[str, Any]):
+    """Build a metadata-only default promotion packet from legal fixture gate evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureDefaultPromotionPacketService().build_packet(payload),
     }
 
 

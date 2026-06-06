@@ -137,6 +137,14 @@ Google, gateways, or the network, and it does not include real legal text,
 fixture snippets, candidate generated text, prompts, model outputs, credentials,
 or emails.
 
+`modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
+metadata-only maintainer review packet for cheap-first legal fixture default
+promotion. It consumes the legal fixture gate and document benchmark metadata,
+then exposes only ids, statuses, counts, cost tiers, reason codes, and signoff
+roles. It never writes configuration, calls NewAPI, Gemini, OpenAI, Google,
+gateways, or the network, shifts traffic, or claims that a default has been
+approved.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

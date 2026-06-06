@@ -230,6 +230,11 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'default_change_evidence_allowed', 'legal fixture cheap-first benchmark gate evidence decision type'),
   () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstBenchmarkGate', 'legal fixture cheap-first benchmark gate API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate', 'legal fixture cheap-first benchmark gate endpoint'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'legal fixture cheap-first default promotion packet type'),
+  () => assertIncludes(maintenanceApi, 'promotion_items', 'legal fixture cheap-first default promotion packet items type'),
+  () => assertIncludes(maintenanceApi, 'default_change_allowed_by_packet', 'legal fixture cheap-first default promotion packet no auto-default type'),
+  () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'legal fixture cheap-first default promotion packet API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet', 'legal fixture cheap-first default promotion packet endpoint'),
   () => assertIncludes(maintenancePage, 'Legal fixture cheap-first benchmark gate', 'legal fixture cheap-first benchmark gate panel'),
   () => assertIncludes(maintenancePage, 'Document benchmark gate', 'legal fixture cheap-first benchmark document panel'),
   () => assertIncludes(maintenancePage, 'document_benchmark_rows ?? []', 'legal fixture cheap-first benchmark document rows fallback'),
@@ -239,6 +244,13 @@ const checks = [
   () => assertIncludes(maintenancePage, 'raw fixture text', 'legal fixture cheap-first benchmark gate raw fixture boundary label'),
   () => assertIncludes(maintenancePage, 'automatic default change', 'legal fixture cheap-first benchmark gate no default-change claim'),
   () => assertIncludes(maintenancePage, 'configuration_write_allowed', 'legal fixture cheap-first benchmark gate no config write binding'),
+  () => assertIncludes(maintenancePage, 'Legal fixture cheap-first default promotion packet', 'legal fixture cheap-first default promotion packet panel'),
+  () => assertIncludes(maintenancePage, 'modelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'legal fixture cheap-first default promotion packet state binding'),
+  () => assertIncludes(maintenancePage, 'legalFixtureDefaultPromotionRows', 'legal fixture cheap-first default promotion packet rows fallback'),
+  () => assertIncludes(maintenancePage, 'promotion_items ?? []', 'legal fixture cheap-first default promotion packet no undefined rows'),
+  () => assertIncludes(maintenancePage, 'default_change_allowed_by_packet', 'legal fixture cheap-first default promotion packet no auto default label'),
+  () => assertIncludes(maintenancePage, 'configuration_write_allowed', 'legal fixture cheap-first default promotion packet no config write label'),
+  () => assertIncludes(maintenancePage, 'traffic_shift_allowed', 'legal fixture cheap-first default promotion packet no traffic shift label'),
   () => assertIncludes(maintenanceApi, 'LegalRagAuthorityCitationGate', 'legal RAG authority citation gate type'),
   () => assertIncludes(maintenanceApi, 'legalRagAuthorityCitationGate', 'legal RAG authority citation gate payload binding'),
   () => assertIncludes(maintenanceApi, 'source_tier', 'legal RAG source tier type'),
@@ -582,8 +594,14 @@ const userNeedImplementationQueuePanel = sourceSection(
 const legalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
   maintenancePage,
   'Small legal-document fixture gate for cheap Gemini default evidence before routing changes.',
-  'Model route legal benchmark risk queue',
+  'Legal fixture cheap-first default promotion packet',
   'maintenance legal fixture cheap-first benchmark gate section',
+);
+const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
+  maintenancePage,
+  'Maintainer-only packet for cheap-first legal fixture default review',
+  'Model route legal benchmark risk queue',
+  'maintenance legal fixture cheap-first default promotion packet section',
 );
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
@@ -633,6 +651,11 @@ assertNotMatches(
   legalFixtureCheapFirstBenchmarkGatePanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
   'maintenance legal fixture cheap-first benchmark gate no secrets or raw fixture/output field names',
+);
+assertNotMatches(
+  legalFixtureCheapFirstDefaultPromotionPacketPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|document_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
+  'maintenance legal fixture cheap-first default promotion packet no secrets or raw fixture/output field names',
 );
 
 console.log(

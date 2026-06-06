@@ -113,6 +113,16 @@ gateways, or the network, and it does not include real legal text, fixture
 snippets, candidate generated text, prompts, model outputs, credentials, or
 emails.
 
+Current legal fixture cheap-first default promotion packet evidence:
+`modelops-legal-fixture-cheap-first-default-promotion-packet` adds shipped
+metadata-only maintainer review evidence for cheap-first legal fixture default
+promotion. It records fixture ids, document case ids, gate status, document
+benchmark pass/fail counts, coverage-gap counts, cost-tier metadata, reason
+codes, and required signoff roles only. It does not write configuration, call
+NewAPI, Gemini, OpenAI, Google, gateways, or the network, shift traffic, or
+include real legal text, fixture snippets, generated document text, prompts,
+model outputs, credentials, or emails.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint
