@@ -129,6 +129,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_validation_event_evidence.py -q",
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck",
+                "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_gemini_newapi_model_selector.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2897,6 +2898,35 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("case-role-permission-matrix", "case-team-access-policy"),
                 user_need_ids=("case-workbench", "safe-ai-ops"),
+            ),
+            LedgerEntry(
+                id="case-access-control-runtime-gate",
+                title="Case access control runtime gate",
+                category="backend_api",
+                size="large",
+                status="shipped",
+                impact=(
+                    "Binds the case role permission matrix into the real cases API and CaseDetail UI so owner/team-member reads and writes are checked at runtime, the previous /all route no longer bypasses access filtering, and /permissions returns a privacy-safe operation summary without raw team member text, client names, emails, case narratives, document text, prompts, model output, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/case_access_control.py",
+                    "app/backend/routers/cases.py",
+                    "app/backend/tests/test_case_access_control.py",
+                    "app/backend/tests/test_case_permission_runtime_router.py",
+                    "app/backend/tests/test_case_role_permission_matrix.py",
+                    "app/backend/tests/test_case_team_access_policy.py",
+                    "app/frontend/src/lib/caseApi.ts",
+                    "app/frontend/src/pages/CaseDetailPage.tsx",
+                    "docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md",
+                    "docs/CASE_ROLE_PERMISSION_MATRIX.md",
+                    "docs/CASE_TEAM_ACCESS_POLICY.md",
+                ),
+                release_gate_links=(
+                    "case-access-control-runtime-gate",
+                    "case-role-permission-matrix",
+                    "case-team-access-policy",
+                ),
+                user_need_ids=("case-workbench", "permissions-team", "safety-compliance"),
             ),
             LedgerEntry(
                 id="billing-usage-quota-policy",

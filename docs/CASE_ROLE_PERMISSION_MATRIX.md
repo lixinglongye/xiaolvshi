@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`CaseRolePermissionMatrixService` defines a pure local matter/case permission matrix. It is deterministic metadata only: no router wiring, no release workflow changes, no ledger writes, no database reads, and no inspection of case files.
+`CaseRolePermissionMatrixService` defines a pure local matter/case permission matrix. The matrix itself is deterministic metadata only and does not inspect case files. It is now also consumed by the first runtime gate in `CaseAccessControlService`, which protects the `cases` API with ownership/team-role checks while keeping responses privacy-safe.
 
 The matrix covers owner/lawyer/reviewer/assistant/client/admin roles across these operations:
 
@@ -69,8 +69,28 @@ python -m compileall services/case_role_permission_matrix.py tests/test_case_rol
 
 The tests verify required role and operation coverage, the three allowed decision values, role summaries, forbidden combinations, approval gates, privacy-safe payload shape, and these validation commands.
 
+## Runtime Binding
+
+`CaseAccessControlService` uses this matrix to evaluate `read` and `write` access for `GET/PUT/DELETE /api/v1/entities/cases...` routes and to expose `GET /api/v1/entities/cases/{id}/permissions`. The CaseDetail UI consumes that endpoint to surface the current role and disable denied or approval-gated actions before the backend rejects them.
+
+Run from `app/backend`:
+
+```bash
+python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q
+cd ../frontend && npm run typecheck
+```
+
+The current runtime bridge reads existing `cases.user_id` and `cases.team_members` metadata. Durable membership rows, persisted approval workflow state, and access audit event storage remain follow-up work.
+
 ## Related Files
 
 - `app/backend/services/case_role_permission_matrix.py`
+- `app/backend/services/case_access_control.py`
+- `app/backend/routers/cases.py`
+- `app/backend/tests/test_case_access_control.py`
+- `app/backend/tests/test_case_permission_runtime_router.py`
+- `app/frontend/src/lib/caseApi.ts`
+- `app/frontend/src/pages/CaseDetailPage.tsx`
 - `app/backend/tests/test_case_role_permission_matrix.py`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
+- `docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md`

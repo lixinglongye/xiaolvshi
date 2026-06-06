@@ -1679,7 +1679,33 @@ class ReleaseReadinessService:
                     "docs/CASE_ROLE_PERMISSION_MATRIX.md",
                 ),
                 validation_command="python -m pytest tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q",
-                manual_note="This is a privacy-safe role-operation matrix; runtime enforcement in database-backed memberships remains separate.",
+                manual_note="This is a privacy-safe role-operation matrix; the first cases API runtime bridge exists, while database-backed memberships remain separate.",
+            ),
+            ReleaseCheck(
+                id="case-access-control-runtime-gate",
+                title="Case access control runtime gate",
+                category="security",
+                required=False,
+                owner="security_privacy_owner",
+                evidence_paths=(
+                    "app/backend/services/case_access_control.py",
+                    "app/backend/routers/cases.py",
+                    "app/backend/tests/test_case_access_control.py",
+                    "app/backend/tests/test_case_permission_runtime_router.py",
+                    "app/frontend/src/lib/caseApi.ts",
+                    "app/frontend/src/pages/CaseDetailPage.tsx",
+                    "docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md",
+                    "docs/CASE_ROLE_PERMISSION_MATRIX.md",
+                    "docs/CASE_TEAM_ACCESS_POLICY.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py "
+                    "tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && cd ../frontend && npm run typecheck"
+                ),
+                manual_note=(
+                    "This binds the privacy-safe role matrix into the cases API and CaseDetail UI using existing owner/team metadata; "
+                    "durable membership rows, approval workflow storage, and audit event persistence remain separate implementation steps."
+                ),
             ),
             ReleaseCheck(
                 id="matter-audit-retention-policy",

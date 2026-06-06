@@ -79,6 +79,35 @@ export interface CaseRecord {
   updated_at?: string | null;
 }
 
+export interface CasePermissionDecision {
+  policy_id?: string;
+  case_id?: number | null;
+  actor_role?: string;
+  role_source?: string;
+  operation: string;
+  decision?: string;
+  status?: string;
+  allowed: boolean;
+  requires_approval?: boolean;
+  approval_gate?: string | null;
+  audit_required?: boolean;
+  reason?: string | null;
+  privacy_safe?: boolean;
+}
+
+export interface CasePermissionSummary {
+  policy_id: string;
+  case_id?: number | null;
+  actor_role: string;
+  role_source: string;
+  allowed_operations: string[];
+  approval_required_operations: string[];
+  denied_operations: string[];
+  decisions: Record<string, CasePermissionDecision>;
+  privacy_safe: boolean;
+  does_not_include: string[];
+}
+
 export interface CaseMaterialRecord {
   id: number;
   user_id?: string;
@@ -291,6 +320,10 @@ export function listCases() {
 
 export function getCase(id: number | string) {
   return invoke<CaseRecord>(`/api/v1/entities/cases/${id}`);
+}
+
+export function getCasePermissions(id: number | string) {
+  return invoke<CasePermissionSummary>(`/api/v1/entities/cases/${id}/permissions`);
 }
 
 export function createCase(data: Partial<CaseRecord> & { title: string }) {

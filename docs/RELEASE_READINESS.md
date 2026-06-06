@@ -399,6 +399,7 @@ approver identity, apply the change, or shift traffic.
 - `docs/BILLING_USAGE_QUOTA_POLICY.md`
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
+- `docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md`
 - `docs/CASE_WORKBENCH_PAYLOAD.md`
 - `docs/CASE_WORKBENCH_PERSISTENCE_PLAN.md`
 - `docs/CLIENT_DELIVERY_TRANSPARENCY_POLICY.md`

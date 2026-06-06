@@ -318,10 +318,13 @@ still stay out of support applications until matching merged evidence exists.
 - `app/backend/tests/test_legal_document_export_readiness.py`
 - `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_research_backlog.py`
+- `app/backend/tests/test_case_access_control.py`
+- `app/backend/tests/test_case_permission_runtime_router.py`
 - `app/frontend/src/lib/maintenanceApi.ts`
 - `app/frontend/src/lib/billingUsageApi.ts`
 - `app/frontend/src/lib/legalRagApi.ts`
 - `app/frontend/src/lib/workbenchRuntimeApi.ts`
+- `app/frontend/src/lib/caseApi.ts`
 - `app/frontend/src/components/billing/BillingUsageBadge.tsx`
 - `app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx`
 - `app/frontend/src/components/cases/LegalRagResearchPanel.tsx`
@@ -342,6 +345,7 @@ still stay out of support applications until matching merged evidence exists.
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_INTAKE_COMPLETENESS.md`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
+- `docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md`
 - `docs/CASE_WORKBENCH_PAYLOAD.md`
 - `docs/CASE_WORKBENCH_PERSISTENCE_PLAN.md`
 - `docs/CASE_TIMELINE_DEADLINE_RISK.md`

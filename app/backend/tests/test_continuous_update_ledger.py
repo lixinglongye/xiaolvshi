@@ -281,6 +281,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-workbench-payload" in completed_ids
     assert "document-delivery-package-manifest" in completed_ids
     assert "case-role-permission-matrix" in completed_ids
+    assert "case-access-control-runtime-gate" in completed_ids
     assert "billing-usage-quota-policy" in completed_ids
     assert "feedback-lifecycle-policy" in completed_ids
     assert "feedback-capture-plan" in completed_ids
@@ -416,6 +417,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "deep-review-ocr-readiness-runtime-binding" in ocr_runtime_entry["release_gate_links"]
     assert "ocr-import-readiness-policy" in ocr_runtime_entry["release_gate_links"]
     assert "frontend-typecheck" in ocr_runtime_entry["release_gate_links"]
+    case_access_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "case-access-control-runtime-gate"
+    )
+    assert case_access_entry["size"] == "large"
+    assert case_access_entry["status"] == "shipped"
+    assert "real cases API and CaseDetail UI" in case_access_entry["impact"]
+    assert "/all route no longer bypasses access filtering" in case_access_entry["impact"]
+    assert "/permissions returns a privacy-safe operation summary" in case_access_entry["impact"]
+    assert "raw team member text" in case_access_entry["impact"]
+    assert "client names" in case_access_entry["impact"]
+    assert "emails" in case_access_entry["impact"]
+    assert "credentials" in case_access_entry["impact"]
+    assert "app/backend/services/case_access_control.py" in case_access_entry["evidence_paths"]
+    assert "app/backend/routers/cases.py" in case_access_entry["evidence_paths"]
+    assert "app/backend/tests/test_case_access_control.py" in case_access_entry["evidence_paths"]
+    assert "app/backend/tests/test_case_permission_runtime_router.py" in case_access_entry["evidence_paths"]
+    assert "app/frontend/src/lib/caseApi.ts" in case_access_entry["evidence_paths"]
+    assert "app/frontend/src/pages/CaseDetailPage.tsx" in case_access_entry["evidence_paths"]
+    assert "docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md" in case_access_entry["evidence_paths"]
+    assert "case-access-control-runtime-gate" in case_access_entry["release_gate_links"]
+    assert "case-role-permission-matrix" in case_access_entry["release_gate_links"]
+    assert "case-team-access-policy" in case_access_entry["release_gate_links"]
     assert "admin-audit-policy" in completed_ids
     assert "legal-fixture-regression-comparison" in completed_ids
     assert "user-need-benchmark-coverage" in completed_ids
@@ -559,6 +584,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py "
         "tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py "
+        "tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && "
+        "cd ../frontend && npm run typecheck"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_model_selector.py -q" in ledger["validation_commands"]

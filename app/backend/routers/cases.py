@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
+from services.case_access_control import CaseAccessControlService
 from services.cases import CasesService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
@@ -113,6 +114,19 @@ class CasesListResponse(BaseModel):
     limit: int
 
 
+class CasePermissionSummaryResponse(BaseModel):
+    policy_id: str
+    case_id: Optional[int] = None
+    actor_role: str
+    role_source: str
+    allowed_operations: List[str]
+    approval_required_operations: List[str]
+    denied_operations: List[str]
+    decisions: dict
+    privacy_safe: bool
+    does_not_include: List[str]
+
+
 class CasesBatchCreateRequest(BaseModel):
     """Batch create request"""
     items: List[CasesData]
@@ -134,6 +148,59 @@ class CasesBatchDeleteRequest(BaseModel):
     ids: List[int]
 
 
+async def _get_case_or_404(service: CasesService, case_id: int):
+    case = await service.get_by_id(case_id)
+    if not case:
+        logger.warning("Cases with id %s not found", case_id)
+        raise HTTPException(status_code=404, detail="Cases not found")
+    return case
+
+
+def _case_access_http_error(decision: dict) -> HTTPException:
+    detail = {
+        "policy_id": decision.get("policy_id"),
+        "status": decision.get("status"),
+        "actor_role": decision.get("actor_role"),
+        "operation": decision.get("operation"),
+        "reason": decision.get("reason") or "permission_denied",
+        "approval_gate": decision.get("approval_gate"),
+        "privacy_safe": True,
+    }
+    return HTTPException(status_code=403, detail=detail)
+
+
+def _require_case_permission(case, current_user: UserResponse, operation: str) -> dict:
+    decision = CaseAccessControlService().evaluate(case, current_user, operation)
+    if not decision["allowed"]:
+        raise _case_access_http_error(decision)
+    return decision
+
+
+async def _list_accessible_cases(
+    service: CasesService,
+    *,
+    query_dict: dict,
+    sort: Optional[str],
+    skip: int,
+    limit: int,
+    current_user: UserResponse,
+) -> dict:
+    raw = await service.get_list(
+        skip=0,
+        limit=2000,
+        query_dict=query_dict,
+        sort=sort,
+    )
+    access = CaseAccessControlService()
+    items = [item for item in raw["items"] if access.can_access(item, current_user, "read")]
+    return {
+        "items": items[skip : skip + limit],
+        "total": len(items),
+        "skip": skip,
+        "limit": limit,
+    }
+
+
 # ---------- Routes ----------
 @router.get("", response_model=CasesListResponse)
 async def query_casess(
@@ -152,12 +219,13 @@ async def query_casess(
     try:
         query_dict = parse_query_param(query)
 
-        result = await service.get_list(
-            skip=skip, 
+        result = await _list_accessible_cases(
+            service,
+            skip=skip,
             limit=limit,
             query_dict=query_dict,
             sort=sort,
-            user_id=str(current_user.id),
+            current_user=current_user,
         )
         logger.debug(f"Found {result['total']} casess")
         return result
@@ -175,20 +243,23 @@ async def query_casess_all(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(20, ge=1, le=2000, description="Max number of records to return"),
     fields: str = Query(None, description="Comma-separated list of fields to return"),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Query casess with filtering, sorting, and pagination without user limitation
+    # Query casess with runtime access filtering; this route no longer bypasses case permissions.
     logger.debug(f"Querying casess: query={query}, sort={sort}, skip={skip}, limit={limit}, fields={fields}")
 
     service = CasesService(db)
     try:
         query_dict = parse_query_param(query)
 
-        result = await service.get_list(
+        result = await _list_accessible_cases(
+            service,
             skip=skip,
             limit=limit,
             query_dict=query_dict,
-            sort=sort
+            sort=sort,
+            current_user=current_user,
         )
         logger.debug(f"Found {result['total']} casess")
         return result
@@ -211,16 +282,34 @@ async def get_cases(
     
     service = CasesService(db)
     try:
-        result = await service.get_by_id(id, user_id=str(current_user.id))
-        if not result:
-            logger.warning(f"Cases with id {id} not found")
-            raise HTTPException(status_code=404, detail="Cases not found")
-        
+        result = await _get_case_or_404(service, id)
+        _require_case_permission(result, current_user, "read")
         return result
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error fetching cases {id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/{id}/permissions", response_model=CasePermissionSummaryResponse)
+async def get_case_permissions(
+    id: int,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return privacy-safe runtime permissions for the current user on a case."""
+    service = CasesService(db)
+    try:
+        case = await _get_case_or_404(service, id)
+        summary = CaseAccessControlService().build_permissions_summary(case, current_user)
+        if not summary["decisions"]["read"]["allowed"]:
+            raise _case_access_http_error(summary["decisions"]["read"])
+        return summary
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching case permissions %s: %s", id, str(e), exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
@@ -290,7 +379,9 @@ async def update_casess_batch(
     try:
         for item in request.items:
             update_dict = partial_update_data(item.updates)
-            result = await service.update(item.id, update_dict, user_id=str(current_user.id))
+            case = await _get_case_or_404(service, item.id)
+            _require_case_permission(case, current_user, "write")
+            result = await service.update(item.id, update_dict)
             if result:
                 results.append(result)
         
@@ -315,10 +406,9 @@ async def update_cases(
     service = CasesService(db)
     try:
         update_dict = partial_update_data(data)
-        result = await service.update(id, update_dict, user_id=str(current_user.id))
-        if not result:
-            logger.warning(f"Cases with id {id} not found for update")
-            raise HTTPException(status_code=404, detail="Cases not found")
+        case = await _get_case_or_404(service, id)
+        _require_case_permission(case, current_user, "write")
+        result = await service.update(id, update_dict)
         
         logger.info(f"Cases {id} updated successfully")
         return result
@@ -346,7 +436,9 @@ async def delete_casess_batch(
     
     try:
         for item_id in request.ids:
-            success = await service.delete(item_id, user_id=str(current_user.id))
+            case = await _get_case_or_404(service, item_id)
+            _require_case_permission(case, current_user, "write")
+            success = await service.delete(item_id)
             if success:
                 deleted_count += 1
         
@@ -369,10 +461,9 @@ async def delete_cases(
     
     service = CasesService(db)
     try:
-        success = await service.delete(id, user_id=str(current_user.id))
-        if not success:
-            logger.warning(f"Cases with id {id} not found for deletion")
-            raise HTTPException(status_code=404, detail="Cases not found")
+        case = await _get_case_or_404(service, id)
+        _require_case_permission(case, current_user, "write")
+        success = await service.delete(id)
         
         logger.info(f"Cases {id} deleted successfully")
         return {"message": "Cases deleted successfully", "id": id}

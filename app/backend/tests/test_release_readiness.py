@@ -117,6 +117,35 @@ def test_case_workbench_risk_refresh_plan_is_optional_release_evidence():
     assert "return raw event payloads" in check["manual_note"]
 
 
+def test_case_access_control_runtime_gate_is_optional_security_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands() if item["check_id"] == "case-access-control-runtime-gate"
+    ]
+    result = service.evaluate({"case-access-control-runtime-gate": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "case-access-control-runtime-gate")
+
+    assert commands == [
+        {
+            "check_id": "case-access-control-runtime-gate",
+            "command": (
+                "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py "
+                "tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && cd ../frontend && npm run typecheck"
+            ),
+        }
+    ]
+    assert check["required"] is False
+    assert check["blocks_release"] is False
+    assert "app/backend/services/case_access_control.py" in check["evidence_paths"]
+    assert "app/backend/routers/cases.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_case_permission_runtime_router.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/caseApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/CaseDetailPage.tsx" in check["evidence_paths"]
+    assert "docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md" in check["evidence_paths"]
+    assert "cases API and CaseDetail UI" in check["manual_note"]
+    assert "durable membership rows" in check["manual_note"]
+
+
 def test_frontend_runtime_ui_checks_are_optional_release_evidence():
     service = ReleaseReadinessService()
     commands = {

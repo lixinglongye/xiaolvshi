@@ -34,6 +34,7 @@ import {
   generateCaseCivilComplaint,
   generateCaseEvidenceCatalog,
   getCase,
+  getCasePermissions,
   listCaseFacts,
   listCaseMaterials,
   listCaseParties,
@@ -45,6 +46,7 @@ import {
   type CaseFactRecord,
   type CaseMaterialRecord,
   type CasePartyRecord,
+  type CasePermissionSummary,
   type CaseRecord,
   type CaseTaskRecord,
   type GeneratedCaseDocument,
@@ -64,6 +66,18 @@ import { useI18n } from '@/contexts/I18nContext';
 type TabKey = 'overview' | 'materials' | 'evidence' | 'facts' | 'timeline' | 'research' | 'documents' | 'tasks' | 'team' | 'settings';
 type ChatMessageItem = { role: 'user' | 'assistant'; content: string };
 type ChatSession = { id: string; title: string; messages: ChatMessageItem[] };
+type CasePermissionOperation = 'read' | 'write' | 'export' | 'share' | 'billing' | 'audit' | 'review';
+
+function permissionAllows(summary: CasePermissionSummary | null, operation: CasePermissionOperation): boolean {
+  return Boolean(summary?.decisions?.[operation]?.allowed);
+}
+
+function permissionReason(summary: CasePermissionSummary | null, operation: CasePermissionOperation): string {
+  const decision = summary?.decisions?.[operation];
+  if (!decision || decision.allowed) return '';
+  if (decision.requires_approval) return decision.approval_gate || 'approval_required';
+  return decision.reason || decision.status || 'permission_denied';
+}
 
 const materialTypes = ['合同', '证据', '沟通记录', '身份/主体材料', '诉讼材料', '仲裁材料', '行政材料', '图片/视频/音频', '内部材料', '其他'];
 const docTypes = ['案件分析报告', '证据目录', '起诉状', '答辩状', '律师函', '仲裁申请书', '庭审提纲', '补证清单', '法律研究备忘录'];
@@ -509,6 +523,7 @@ function Inner() {
   const caseId = Number(id);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [caseItem, setCaseItem] = useState<CaseRecord | null>(null);
+  const [casePermissions, setCasePermissions] = useState<CasePermissionSummary | null>(null);
   const [materials, setMaterials] = useState<CaseMaterialRecord[]>([]);
   const [facts, setFacts] = useState<CaseFactRecord[]>([]);
   const [tasks, setTasks] = useState<CaseTaskRecord[]>([]);
@@ -559,13 +574,23 @@ function Inner() {
     [activeChatId, chatSessions],
   );
   const chatMessages = activeChat?.messages || [];
+  const canWriteCase = permissionAllows(casePermissions, 'write');
+  const canExportCase = permissionAllows(casePermissions, 'export');
+  const canReviewCase = permissionAllows(casePermissions, 'review');
+  const denyByPermission = (operation: CasePermissionOperation, actionLabel: string) => {
+    const reason = permissionReason(casePermissions, operation);
+    if (!reason) return false;
+    toast.warning(`${actionLabel} blocked by case permission: ${reason}`);
+    return true;
+  };
 
   const loadWorkspace = async () => {
     if (!Number.isFinite(caseId)) return;
     setLoading(true);
     try {
-      const [c, materialRes, factRes, taskRes, partyRes, docRes] = await Promise.all([
+      const [c, permissions, materialRes, factRes, taskRes, partyRes, docRes] = await Promise.all([
         getCase(caseId),
+        getCasePermissions(caseId),
         listCaseMaterials(caseId),
         listCaseFacts(caseId),
         listCaseTasks(caseId),
@@ -573,6 +598,7 @@ function Inner() {
         listGeneratedCaseDocuments(caseId),
       ]);
       setCaseItem(c);
+      setCasePermissions(permissions);
       setMaterials(materialRes.items || []);
       setFacts(factRes.items || []);
       setTasks(taskRes.items || []);
@@ -581,6 +607,7 @@ function Inner() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '案件加载失败');
       setCaseItem(null);
+      setCasePermissions(null);
     } finally {
       setLoading(false);
     }
@@ -746,6 +773,7 @@ function Inner() {
     document,
   }: ExportReadinessDownloadInput) => {
     if (!caseItem || exportReadinessRunning) return;
+    if (denyByPermission('export', 'Export')) return;
     setExportReadinessRunning(true);
     try {
       const readiness = await getMaintenanceCaseExportReadiness(
@@ -967,6 +995,7 @@ function Inner() {
   };
 
   const submitMaterial = async () => {
+    if (denyByPermission('write', 'Material update')) return;
     if (!caseItem || !materialForm.title.trim()) {
       toast.error('请输入材料名称');
       return;
@@ -1000,6 +1029,7 @@ function Inner() {
   };
 
   const markAsEvidence = async (material: CaseMaterialRecord) => {
+    if (denyByPermission('write', 'Evidence update')) return;
     const updated = await updateCaseMaterial(material.id, {
       is_evidence: true,
       material_no: material.material_no?.startsWith('E-') ? material.material_no : nextNo('E', materials, 'material_no'),
@@ -1015,6 +1045,7 @@ function Inner() {
   };
 
   const submitFact = async () => {
+    if (denyByPermission('write', 'Fact update')) return;
     if (!caseItem || !factForm.fact_text.trim()) {
       toast.error('请输入事实内容');
       return;
@@ -1033,6 +1064,7 @@ function Inner() {
   };
 
   const submitTask = async () => {
+    if (denyByPermission('write', 'Task update')) return;
     if (!caseItem || !taskForm.title.trim()) {
       toast.error('请输入任务名称');
       return;
@@ -1047,6 +1079,7 @@ function Inner() {
   };
 
   const toggleTaskStatus = async (task: CaseTaskRecord) => {
+    if (denyByPermission('write', 'Task update')) return;
     const updated = await updateCaseTask(task.id, { status: task.status === '已完成' ? '进行中' : '已完成' });
     const nextTasks = tasks.map((item) => (item.id === task.id ? updated : item));
     setTasks(nextTasks);
@@ -1054,6 +1087,7 @@ function Inner() {
   };
 
   const submitParty = async () => {
+    if (denyByPermission('write', 'Team update')) return;
     if (!caseItem || !partyForm.name.trim()) {
       toast.error('请输入当事人名称');
       return;
@@ -1067,6 +1101,7 @@ function Inner() {
 
   const generateDocument = async (docType = docForm.doc_type) => {
     if (!caseItem) return;
+    if (denyByPermission('write', 'Document generation') || denyByPermission('review', 'Document generation')) return;
     const requestMetadata = buildCaseRequestMetadata(legalRagMetadata, 'case_document_generation', docType);
     if (docType === '证据目录' || docType === '起诉状') {
       try {
@@ -1124,6 +1159,7 @@ function Inner() {
 
   const runResearch = async () => {
     if (!caseItem) return;
+    if (denyByPermission('review', 'Legal research')) return;
     const query = researchQuery.trim() || caseItem?.case_type || '案件法律研究';
     const requestMetadata = buildCaseRequestMetadata(legalRagMetadata, 'case_research');
     setResearchLoading(true);
@@ -1192,6 +1228,7 @@ function Inner() {
 
   const saveSettings = async () => {
     if (!caseItem) return;
+    if (denyByPermission('write', 'Case settings')) return;
     setSavingSettings(true);
     try {
       const updated = await updateCase(caseItem.id, caseItem);
@@ -1358,7 +1395,7 @@ function Inner() {
                     size="sm"
                     variant="outline"
                     className="h-8 rounded-full border-stone-950/10 bg-white/70 px-3 text-xs shadow-none"
-                    disabled={exportReadinessRunning}
+                    disabled={exportReadinessRunning || !canExportCase}
                     onClick={() => runExportReadinessThenDownload({
                       filename: `${caseItem.title}-案件分析报告.md`,
                       content: buildDocumentContent('案件分析报告', caseItem, materials, facts),
@@ -1377,6 +1414,22 @@ function Inner() {
                   <InfoItem icon={<Calendar className="w-3.5 h-3.5" />} label="期限" value={caseItem.key_deadline || '待补'} />
                   <InfoItem icon={<Shield className="w-3.5 h-3.5" />} label="证据" value={`${evidences.length}份`} />
                 </div>
+                {casePermissions && (
+                  <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="font-semibold text-slate-900">Case permission</div>
+                      <Badge variant="outline">{casePermissions.actor_role}</Badge>
+                    </div>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      <div>Allow: {casePermissions.allowed_operations.length}</div>
+                      <div>Approve: {casePermissions.approval_required_operations.length}</div>
+                      <div>Deny: {casePermissions.denied_operations.length}</div>
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      {casePermissions.policy_id} · {casePermissions.role_source}
+                    </div>
+                  </div>
+                )}
               </div>
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabKey)} className="flex min-h-0 flex-1 flex-col px-3 pb-3">
               <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-transparent p-0">
@@ -1401,6 +1454,8 @@ function Inner() {
                     tasks={urgentTasks}
                     unsupportedFacts={unsupportedFacts}
                     quickActions={quickActions}
+                    canGenerate={canWriteCase && canReviewCase}
+                    canResearch={canReviewCase}
                     onGenerate={generateDocument}
                     onResearch={() => { setActiveTab('research'); runResearch(); }}
                   />
@@ -1412,12 +1467,14 @@ function Inner() {
               </TabsContent>
 
               <TabsContent value="materials" className={tabPaneClass}>
-                <MaterialsTab materials={materials} onOpenUpload={() => setMaterialDialog(true)} onMarkEvidence={markAsEvidence} />
+                <MaterialsTab materials={materials} canWrite={canWriteCase} onOpenUpload={() => setMaterialDialog(true)} onMarkEvidence={markAsEvidence} />
               </TabsContent>
 
               <TabsContent value="evidence" className={tabPaneClass}>
                 <EvidenceTab
                   evidences={evidences}
+                  canExport={canExportCase}
+                  canWrite={canWriteCase}
                   onExport={() => runExportReadinessThenDownload({
                     filename: `${caseItem.title}-证据目录.md`,
                     content: buildEvidenceDirectory(materials),
@@ -1425,6 +1482,7 @@ function Inner() {
                     source: 'case_evidence_tab_export',
                   })}
                   onReinforce={async (material) => {
+                    if (denyByPermission('write', 'Task update')) return;
                     const task = await createCaseTask({
                       case_id: caseItem.id,
                       title: `补强证据：${material.title}`,
@@ -1443,7 +1501,7 @@ function Inner() {
               </TabsContent>
 
               <TabsContent value="facts" className={tabPaneClass}>
-                <FactsTab facts={facts} onAdd={() => setFactDialog(true)} />
+                <FactsTab facts={facts} canWrite={canWriteCase} onAdd={() => setFactDialog(true)} />
               </TabsContent>
 
               <TabsContent value="timeline" className={tabPaneClass}>
@@ -1459,23 +1517,24 @@ function Inner() {
               </TabsContent>
 
               <TabsContent value="documents" className={tabPaneClass}>
-                <DocumentsTab documents={documents} onOpenGenerate={() => setDocDialog(true)} onView={setViewDoc} />
+                <DocumentsTab documents={documents} canGenerate={canWriteCase && canReviewCase} onOpenGenerate={() => setDocDialog(true)} onView={setViewDoc} />
               </TabsContent>
 
               <TabsContent value="tasks" className={tabPaneClass}>
                 <TasksTab
                   tasks={tasks}
+                  canWrite={canWriteCase}
                   onAdd={() => setTaskDialog(true)}
                   onToggle={toggleTaskStatus}
                 />
               </TabsContent>
 
               <TabsContent value="team" className={tabPaneClass}>
-                <TeamTab parties={parties} teamMembers={caseItem.team_members} onAdd={() => setPartyDialog(true)} />
+                <TeamTab parties={parties} teamMembers={caseItem.team_members} canWrite={canWriteCase} onAdd={() => setPartyDialog(true)} />
               </TabsContent>
 
               <TabsContent value="settings" className={tabPaneClass}>
-                <SettingsTab caseItem={caseItem} setCaseItem={setCaseItem} onSave={saveSettings} saving={savingSettings} />
+                <SettingsTab caseItem={caseItem} setCaseItem={setCaseItem} canWrite={canWriteCase} onSave={saveSettings} saving={savingSettings} />
               </TabsContent>
               </Tabs>
             </aside>
@@ -1506,7 +1565,7 @@ function Inner() {
             <Field label="证明目的" className="md:col-span-2"><Textarea rows={2} value={materialForm.proof_purpose} onChange={(e) => setMaterialForm({ ...materialForm, proof_purpose: e.target.value })} placeholder="说明该材料证明什么事实" /></Field>
             <Field label="解析文本/摘要" className="md:col-span-2"><Textarea rows={4} value={materialForm.parsed_text} onChange={(e) => setMaterialForm({ ...materialForm, parsed_text: e.target.value })} placeholder="可粘贴 OCR/转写/材料摘要，后续将用于事实提取" /></Field>
           </div>
-          <DialogFooter><Button onClick={submitMaterial}>入库</Button></DialogFooter>
+          <DialogFooter><Button onClick={submitMaterial} disabled={!canWriteCase}>入库</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1524,7 +1583,7 @@ function Inner() {
             <Field label="事实内容" className="md:col-span-2"><Textarea rows={3} value={factForm.fact_text} onChange={(e) => setFactForm({ ...factForm, fact_text: e.target.value })} /></Field>
             <Field label="矛盾提示/待核实说明" className="md:col-span-2"><Textarea rows={2} value={factForm.contradiction_note} onChange={(e) => setFactForm({ ...factForm, contradiction_note: e.target.value })} /></Field>
           </div>
-          <DialogFooter><Button onClick={submitFact}>加入事实库</Button></DialogFooter>
+          <DialogFooter><Button onClick={submitFact} disabled={!canWriteCase}>加入事实库</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1540,7 +1599,7 @@ function Inner() {
             <Field label="截止日期"><Input value={taskForm.due_date} onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })} placeholder="2026-06-01" /></Field>
             <Field label="说明"><Textarea value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} /></Field>
           </div>
-          <DialogFooter><Button onClick={submitTask}>创建任务</Button></DialogFooter>
+          <DialogFooter><Button onClick={submitTask} disabled={!canWriteCase}>创建任务</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1557,7 +1616,7 @@ function Inner() {
             <Field label="联系方式"><Input value={partyForm.contact} onChange={(e) => setPartyForm({ ...partyForm, contact: e.target.value })} /></Field>
             <Field label="代理人"><Input value={partyForm.lawyer} onChange={(e) => setPartyForm({ ...partyForm, lawyer: e.target.value })} /></Field>
           </div>
-          <DialogFooter><Button onClick={submitParty}>保存</Button></DialogFooter>
+          <DialogFooter><Button onClick={submitParty} disabled={!canWriteCase}>保存</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1578,7 +1637,7 @@ function Inner() {
               生成前会强制保留事实引用链；没有来源证据的事实将标注“待核实”。正式提交前仍需律师复核。
             </div>
           </div>
-          <DialogFooter><Button onClick={() => generateDocument()}>生成草稿</Button></DialogFooter>
+          <DialogFooter><Button onClick={() => generateDocument()} disabled={!canWriteCase || !canReviewCase}>生成草稿</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1603,9 +1662,9 @@ function Inner() {
                 </div>
               )}
               <DialogFooter>
-                <Button variant="outline" onClick={() => { navigator.clipboard.writeText(viewDoc.content || ''); toast.success('已复制'); }}><Copy className="w-4 h-4 mr-1" />复制</Button>
+                <Button variant="outline" disabled={!canExportCase} onClick={() => { navigator.clipboard.writeText(viewDoc.content || ''); toast.success('已复制'); }}><Copy className="w-4 h-4 mr-1" />复制</Button>
                 <Button
-                  disabled={exportReadinessRunning}
+                  disabled={exportReadinessRunning || !canExportCase}
                   onClick={() => runExportReadinessThenDownload({
                     filename: `${viewDoc.title || viewDoc.doc_type}.md`,
                     content: viewDoc.content || '',
@@ -1695,6 +1754,8 @@ function OverviewTab({
   tasks,
   unsupportedFacts,
   quickActions,
+  canGenerate,
+  canResearch,
   onGenerate,
   onResearch,
 }: {
@@ -1704,6 +1765,8 @@ function OverviewTab({
   tasks: CaseTaskRecord[];
   unsupportedFacts: CaseFactRecord[];
   quickActions: string[];
+  canGenerate: boolean;
+  canResearch: boolean;
   onGenerate: (docType: string) => void;
   onResearch: () => void;
 }) {
@@ -1735,8 +1798,8 @@ function OverviewTab({
       <Card>
         <CardHeader><CardTitle className="text-base">一键生成</CardTitle></CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          {quickActions.map((action) => <Button key={action} variant="outline" size="sm" onClick={() => onGenerate(action)}>{action}</Button>)}
-          <Button size="sm" onClick={onResearch}><Search className="w-4 h-4 mr-1" />开始类案检索</Button>
+          {quickActions.map((action) => <Button key={action} variant="outline" size="sm" disabled={!canGenerate} onClick={() => onGenerate(action)}>{action}</Button>)}
+          <Button size="sm" disabled={!canResearch} onClick={onResearch}><Search className="w-4 h-4 mr-1" />开始类案检索</Button>
         </CardContent>
       </Card>
     </div>
@@ -1752,10 +1815,10 @@ function BulletList({ items, empty }: { items: string[]; empty: string }) {
   return <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">{items.map((item) => <li key={item}>{item}</li>)}</ul>;
 }
 
-function MaterialsTab({ materials, onOpenUpload, onMarkEvidence }: { materials: CaseMaterialRecord[]; onOpenUpload: () => void; onMarkEvidence: (m: CaseMaterialRecord) => void }) {
+function MaterialsTab({ materials, canWrite, onOpenUpload, onMarkEvidence }: { materials: CaseMaterialRecord[]; canWrite: boolean; onOpenUpload: () => void; onMarkEvidence: (m: CaseMaterialRecord) => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">材料库</CardTitle><Button size="sm" onClick={onOpenUpload}><Plus className="w-4 h-4 mr-1" />上传材料</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">材料库</CardTitle><Button size="sm" disabled={!canWrite} onClick={onOpenUpload}><Plus className="w-4 h-4 mr-1" />上传材料</Button></CardHeader>
       <CardContent>
         <Table>
           <TableHeader><TableRow><TableHead>编号</TableHead><TableHead>材料</TableHead><TableHead>类型</TableHead><TableHead>来源</TableHead><TableHead>证明目的</TableHead><TableHead>状态</TableHead><TableHead>操作</TableHead></TableRow></TableHeader>
@@ -1768,7 +1831,7 @@ function MaterialsTab({ materials, onOpenUpload, onMarkEvidence }: { materials: 
                 <TableCell>{item.source}</TableCell>
                 <TableCell className="max-w-[260px] truncate">{item.proof_purpose || '-'}</TableCell>
                 <TableCell>{item.is_evidence ? <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200">证据</Badge> : <Badge variant="outline">材料</Badge>}</TableCell>
-                <TableCell>{!item.is_evidence && <Button size="sm" variant="outline" onClick={() => onMarkEvidence(item)}>标记证据</Button>}</TableCell>
+                <TableCell>{!item.is_evidence && <Button size="sm" variant="outline" disabled={!canWrite} onClick={() => onMarkEvidence(item)}>标记证据</Button>}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -1779,10 +1842,10 @@ function MaterialsTab({ materials, onOpenUpload, onMarkEvidence }: { materials: 
   );
 }
 
-function EvidenceTab({ evidences, onExport, onReinforce }: { evidences: CaseMaterialRecord[]; onExport: () => void; onReinforce: (m: CaseMaterialRecord) => void }) {
+function EvidenceTab({ evidences, canExport, canWrite, onExport, onReinforce }: { evidences: CaseMaterialRecord[]; canExport: boolean; canWrite: boolean; onExport: () => void; onReinforce: (m: CaseMaterialRecord) => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">证据目录</CardTitle><Button size="sm" variant="outline" onClick={onExport}><Download className="w-4 h-4 mr-1" />导出证据目录</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">证据目录</CardTitle><Button size="sm" variant="outline" disabled={!canExport} onClick={onExport}><Download className="w-4 h-4 mr-1" />导出证据目录</Button></CardHeader>
       <CardContent className="space-y-3">
         {evidences.map((item) => (
           <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
@@ -1799,7 +1862,7 @@ function EvidenceTab({ evidences, onExport, onReinforce }: { evidences: CaseMate
             </div>
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-slate-500">采信风险：{item.admissibility_risk || '待律师复核'}</p>
-              <Button size="sm" variant="outline" onClick={() => onReinforce(item)}>生成补强任务</Button>
+              <Button size="sm" variant="outline" disabled={!canWrite} onClick={() => onReinforce(item)}>生成补强任务</Button>
             </div>
           </div>
         ))}
@@ -1809,10 +1872,10 @@ function EvidenceTab({ evidences, onExport, onReinforce }: { evidences: CaseMate
   );
 }
 
-function FactsTab({ facts, onAdd }: { facts: CaseFactRecord[]; onAdd: () => void }) {
+function FactsTab({ facts, canWrite, onAdd }: { facts: CaseFactRecord[]; canWrite: boolean; onAdd: () => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">事实库</CardTitle><Button size="sm" onClick={onAdd}><Plus className="w-4 h-4 mr-1" />补充事实</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">事实库</CardTitle><Button size="sm" disabled={!canWrite} onClick={onAdd}><Plus className="w-4 h-4 mr-1" />补充事实</Button></CardHeader>
       <CardContent>
         <Table>
           <TableHeader><TableRow><TableHead>编号</TableHead><TableHead>日期</TableHead><TableHead>事实</TableHead><TableHead>来源证据</TableHead><TableHead>置信度</TableHead><TableHead>矛盾提示</TableHead></TableRow></TableHeader>
@@ -1880,10 +1943,10 @@ function _ResearchTab({ query, setQuery, results, onRun, loading }: { query: str
   );
 }
 
-function DocumentsTab({ documents, onOpenGenerate, onView }: { documents: GeneratedCaseDocument[]; onOpenGenerate: () => void; onView: (d: GeneratedCaseDocument) => void }) {
+function DocumentsTab({ documents, canGenerate, onOpenGenerate, onView }: { documents: GeneratedCaseDocument[]; canGenerate: boolean; onOpenGenerate: () => void; onView: (d: GeneratedCaseDocument) => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">文书</CardTitle><Button size="sm" onClick={onOpenGenerate}><Plus className="w-4 h-4 mr-1" />生成文书</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">文书</CardTitle><Button size="sm" disabled={!canGenerate} onClick={onOpenGenerate}><Plus className="w-4 h-4 mr-1" />生成文书</Button></CardHeader>
       <CardContent className="space-y-3">
         {documents.map((doc) => (
           <div key={doc.id} className="rounded-lg border border-slate-200 p-3 bg-white">
@@ -1903,10 +1966,10 @@ function DocumentsTab({ documents, onOpenGenerate, onView }: { documents: Genera
   );
 }
 
-function TasksTab({ tasks, onAdd, onToggle }: { tasks: CaseTaskRecord[]; onAdd: () => void; onToggle: (task: CaseTaskRecord) => void }) {
+function TasksTab({ tasks, canWrite, onAdd, onToggle }: { tasks: CaseTaskRecord[]; canWrite: boolean; onAdd: () => void; onToggle: (task: CaseTaskRecord) => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">任务/期限</CardTitle><Button size="sm" onClick={onAdd}><Plus className="w-4 h-4 mr-1" />新建任务</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">任务/期限</CardTitle><Button size="sm" disabled={!canWrite} onClick={onAdd}><Plus className="w-4 h-4 mr-1" />新建任务</Button></CardHeader>
       <CardContent className="space-y-2">
         {tasks.map((task) => (
           <div key={task.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3">
@@ -1916,7 +1979,7 @@ function TasksTab({ tasks, onAdd, onToggle }: { tasks: CaseTaskRecord[]; onAdd: 
             </div>
             <div className="flex items-center gap-2">
               <Badge className={task.priority === '高' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}>{task.priority || '中'}</Badge>
-              <Button size="sm" variant="outline" onClick={() => onToggle(task)}>{task.status || '待开始'}</Button>
+              <Button size="sm" variant="outline" disabled={!canWrite} onClick={() => onToggle(task)}>{task.status || '待开始'}</Button>
             </div>
           </div>
         ))}
@@ -1926,10 +1989,10 @@ function TasksTab({ tasks, onAdd, onToggle }: { tasks: CaseTaskRecord[]; onAdd: 
   );
 }
 
-function TeamTab({ parties, teamMembers, onAdd }: { parties: CasePartyRecord[]; teamMembers?: string | null; onAdd: () => void }) {
+function TeamTab({ parties, teamMembers, canWrite, onAdd }: { parties: CasePartyRecord[]; teamMembers?: string | null; canWrite: boolean; onAdd: () => void }) {
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">团队协作 / 当事人</CardTitle><Button size="sm" onClick={onAdd}><Plus className="w-4 h-4 mr-1" />新增对象</Button></CardHeader>
+      <CardHeader className="flex-row items-center justify-between"><CardTitle className="text-base">团队协作 / 当事人</CardTitle><Button size="sm" disabled={!canWrite} onClick={onAdd}><Plus className="w-4 h-4 mr-1" />新增对象</Button></CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-sm text-slate-700">团队成员：{teamMembers || '待配置主办律师、助理、客户可见范围'}</div>
         <Table>
@@ -1946,7 +2009,7 @@ function TeamTab({ parties, teamMembers, onAdd }: { parties: CasePartyRecord[]; 
   );
 }
 
-function SettingsTab({ caseItem, setCaseItem, onSave, saving }: { caseItem: CaseRecord; setCaseItem: (c: CaseRecord) => void; onSave: () => void; saving: boolean }) {
+function SettingsTab({ caseItem, setCaseItem, canWrite, onSave, saving }: { caseItem: CaseRecord; setCaseItem: (c: CaseRecord) => void; canWrite: boolean; onSave: () => void; saving: boolean }) {
   const update = (key: keyof CaseRecord, value: string) => setCaseItem({ ...caseItem, [key]: key === 'amount' ? Number(value) : value });
   return (
     <Card>
@@ -1962,7 +2025,7 @@ function SettingsTab({ caseItem, setCaseItem, onSave, saving }: { caseItem: Case
         <Field label="案件摘要" className="md:col-span-2"><Textarea rows={3} value={caseItem.summary || ''} onChange={(e) => update('summary', e.target.value)} /></Field>
         <Field label="争议焦点" className="md:col-span-2"><Textarea rows={3} value={caseItem.dispute_focus || ''} onChange={(e) => update('dispute_focus', e.target.value)} /></Field>
         <Field label="诉讼请求/目标" className="md:col-span-2"><Textarea rows={3} value={caseItem.claims || ''} onChange={(e) => update('claims', e.target.value)} /></Field>
-        <div className="md:col-span-2 flex justify-end"><Button onClick={onSave} disabled={saving}>{saving ? '保存中...' : '保存设置'}</Button></div>
+        <div className="md:col-span-2 flex justify-end"><Button onClick={onSave} disabled={saving || !canWrite}>{saving ? '保存中...' : '保存设置'}</Button></div>
       </CardContent>
     </Card>
   );

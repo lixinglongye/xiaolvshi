@@ -552,6 +552,8 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/tests/test_route_telemetry_persistence_plan.py`
 - `app/backend/tests/test_ocr_import_readiness_policy.py`
 - `app/backend/tests/test_deep_review_ocr_readiness_runtime.py`
+- `app/backend/tests/test_case_access_control.py`
+- `app/backend/tests/test_case_permission_runtime_router.py`
 - `app/backend/tests/test_small_legal_document_corpus_expansion.py`
 - `app/backend/tests/test_legal_document_template_matrix.py`
 - `app/backend/tests/test_legal_document_benchmark_suite.py`
@@ -563,6 +565,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/frontend/src/lib/billingUsageApi.ts`
 - `app/frontend/src/lib/legalRagApi.ts`
 - `app/frontend/src/lib/workbenchRuntimeApi.ts`
+- `app/frontend/src/lib/caseApi.ts`
 - `app/frontend/src/components/billing/BillingUsageBadge.tsx`
 - `app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx`
 - `app/frontend/src/components/cases/LegalRagResearchPanel.tsx`
@@ -576,6 +579,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/CASE_EVIDENCE_GRAPH.md`
 - `docs/CASE_INTAKE_COMPLETENESS.md`
 - `docs/CASE_ROLE_PERMISSION_MATRIX.md`
+- `docs/CASE_ACCESS_CONTROL_RUNTIME_GATE.md`
 - `docs/CASE_WORKBENCH_PAYLOAD.md`
 - `docs/CASE_WORKBENCH_PERSISTENCE_PLAN.md`
 - `docs/CASE_TIMELINE_DEADLINE_RISK.md`
