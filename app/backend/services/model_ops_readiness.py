@@ -107,6 +107,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("routing-replay", "Routing replay", "simulation", "routing_replay"),
     ReadinessComponent("fallback-chains", "Fallback chains", "resilience", "fallback_chains"),
     ReadinessComponent("escalation-policy", "Escalation policy", "resilience", "escalation_policy"),
+    ReadinessComponent(
+        "failure-upgrade-budget",
+        "Failure upgrade budget",
+        "resilience",
+        "failure_upgrade_budget",
+    ),
     ReadinessComponent("cost-forecast", "Cost forecast", "cost", "cost_forecast"),
     ReadinessComponent("cost-guardrails", "Cost guardrails", "cost", "cost_guardrails"),
     ReadinessComponent(

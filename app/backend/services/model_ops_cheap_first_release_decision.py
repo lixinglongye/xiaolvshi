@@ -10,6 +10,7 @@ REQUIRED_SIGNAL_KEYS = (
     "catalog_source_audit",
     "route_quality_budget",
     "cheap_first_escalation_budget",
+    "failure_upgrade_budget",
     "price_refresh_monitor",
     "model_ops_performance_budget",
 )
@@ -62,6 +63,13 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 data.get("cheap_first_escalation_budget"),
                 fail_reason="Cheap-first escalation budget has runaway retry, wasted spend, or premium-review blockers.",
                 warn_reason="Cheap-first escalation budget needs maintainer review before default changes.",
+            ),
+            self._check_signal(
+                "failure-upgrade-budget-review",
+                "failure_upgrade_budget",
+                data.get("failure_upgrade_budget"),
+                fail_reason="Failure upgrade budget has unsafe retry, premium quota, or attempt-budget blockers.",
+                warn_reason="Failure upgrade budget needs maintainer review before default changes.",
             ),
             self._check_signal(
                 "price-refresh-review",

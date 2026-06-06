@@ -2130,6 +2130,94 @@ export type ModelOpsCheapFirstEscalationBudget = {
   validation_commands: string[];
 };
 
+export type ModelFailureUpgradeBudgetCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  value?: number | null;
+  warn_threshold?: number;
+  fail_threshold?: number;
+};
+
+export type ModelFailureUpgradeBudgetPayloadShape = {
+  required: string[];
+  optional: string[];
+  forbidden: string[];
+  example: Record<string, unknown>;
+};
+
+export type ModelFailureUpgradeBudgetDecision = {
+  decision: string;
+  task: string;
+  current_model: string;
+  current_cost_tier: string;
+  next_model: string;
+  next_cost_tier: string;
+  next_step?: Record<string, unknown> | null;
+  policy_decision?: string | null;
+  failure_signals: string[];
+  requires_operator_review: boolean;
+  quota_decision?: {
+    status: string;
+    allowed: boolean;
+    effective_plan_type: string;
+    remaining_before: { premium_escalations: number };
+    remaining_after: { premium_escalations: number };
+    over_limit_codes: string[];
+  } | null;
+  cost_delta: {
+    current_cost_usd?: number | null;
+    next_cost_usd?: number | null;
+    incremental_cost_usd?: number | null;
+  };
+};
+
+export type ModelFailureUpgradeBudget = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    research_basis?: Array<{
+      id: string;
+      url: string;
+      signal: string;
+    }>;
+  };
+  payload_shape: ModelFailureUpgradeBudgetPayloadShape;
+  summary: {
+    default_payload_used: boolean;
+    task: string;
+    attempt_index: number;
+    max_attempts: number;
+    attempt_budget_remaining: number;
+    failure_signal_count: number;
+    operator_approved: boolean;
+    current_model_known: boolean;
+    next_model_known: boolean;
+    current_cost_usd?: number | null;
+    next_cost_usd?: number | null;
+    incremental_cost_usd?: number | null;
+    next_cost_tier?: string | null;
+    premium_quota_allowed?: boolean | null;
+    forbidden_payload_field_count: number;
+    secret_like_value_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+  };
+  decision: ModelFailureUpgradeBudgetDecision;
+  checks: ModelFailureUpgradeBudgetCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -2882,6 +2970,7 @@ export type ModelOpsResponse = {
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
+  failure_upgrade_budget?: ModelFailureUpgradeBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -2950,10 +3039,15 @@ function hasModelOpsPayload(value: unknown): boolean {
     coverage_rows?: unknown;
     rows?: unknown;
     default_targets?: unknown;
+    required?: unknown;
+    optional?: unknown;
+    forbidden?: unknown;
+    example?: unknown;
   };
   return Boolean(
     Array.isArray(payload.models)
       || (Boolean(payload.method) && Boolean(payload.payload_shape))
+      || (Array.isArray(payload.required) && Array.isArray(payload.optional) && Array.isArray(payload.forbidden))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
@@ -3310,6 +3404,30 @@ export async function evaluateModelOpsCheapFirstEscalationBudget(
 ): Promise<ModelOpsCheapFirstEscalationBudget> {
   return invokeModelOpsApi<ModelOpsCheapFirstEscalationBudget>({
     url: '/api/v1/aihub/models/cheap-first-escalation-budget',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelFailureUpgradeBudget(): Promise<ModelFailureUpgradeBudget> {
+  return invokeModelOpsApi<ModelFailureUpgradeBudget>({
+    url: '/api/v1/aihub/models/failure-upgrade-budget',
+    method: 'GET',
+  });
+}
+
+export async function getModelFailureUpgradeBudgetTemplate(): Promise<ModelFailureUpgradeBudgetPayloadShape> {
+  return invokeModelOpsApi<ModelFailureUpgradeBudgetPayloadShape>({
+    url: '/api/v1/aihub/models/failure-upgrade-budget-template',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelFailureUpgradeBudget(
+  payload: Record<string, unknown>,
+): Promise<ModelFailureUpgradeBudget> {
+  return invokeModelOpsApi<ModelFailureUpgradeBudget>({
+    url: '/api/v1/aihub/models/failure-upgrade-budget',
     method: 'POST',
     data: payload,
   });

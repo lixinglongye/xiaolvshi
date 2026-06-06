@@ -50,6 +50,7 @@ from services.model_default_recommendation_snapshot import ModelDefaultRecommend
 from services.model_default_template_audit import ModelDefaultTemplateAuditService
 from services.model_escalation_policy import ModelEscalationPolicyService
 from services.model_fallback_chains import ModelFallbackChainService
+from services.model_failure_upgrade_budget import ModelFailureUpgradeBudgetService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
@@ -226,6 +227,7 @@ async def list_models():
     capability_matrix = ModelCapabilityMatrixService().build_matrix()
     escalation_policy = ModelEscalationPolicyService().build_policy()
     fallback_chains = ModelFallbackChainService().build_chains()
+    failure_upgrade_budget = ModelFailureUpgradeBudgetService().build_decision()
     routing_replay = ModelRoutingReplayService().run_replay()
     cost_guardrails = ModelCostGuardrailService().evaluate(usage, forecast)
     default_optimization = ModelDefaultOptimizationService().build_plan(capability_matrix, forecast)
@@ -316,6 +318,7 @@ async def list_models():
         "capability_matrix": capability_matrix,
         "escalation_policy": escalation_policy,
         "fallback_chains": fallback_chains,
+        "failure_upgrade_budget": failure_upgrade_budget,
         "routing_replay": routing_replay,
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
@@ -398,6 +401,7 @@ async def list_models():
         "capability_matrix": capability_matrix,
         "escalation_policy": escalation_policy,
         "fallback_chains": fallback_chains,
+        "failure_upgrade_budget": failure_upgrade_budget,
         "routing_replay": routing_replay,
         "cost_forecast": forecast,
         "cost_guardrails": cost_guardrails,
@@ -835,6 +839,33 @@ async def evaluate_model_ops_cheap_first_escalation_budget(payload: dict[str, An
     return {
         "success": True,
         "data": ModelOpsCheapFirstEscalationBudgetService().build_budget(payload),
+    }
+
+
+@router.get("/models/failure-upgrade-budget")
+async def model_failure_upgrade_budget():
+    """Return metadata-only cheap-first failure upgrade budget evidence."""
+    return {
+        "success": True,
+        "data": ModelFailureUpgradeBudgetService().build_decision(),
+    }
+
+
+@router.get("/models/failure-upgrade-budget-template")
+async def model_failure_upgrade_budget_template():
+    """Return the sanitized input shape for failure upgrade budget review."""
+    return {
+        "success": True,
+        "data": ModelFailureUpgradeBudgetService().payload_shape(),
+    }
+
+
+@router.post("/models/failure-upgrade-budget")
+async def evaluate_model_failure_upgrade_budget(payload: dict[str, Any]):
+    """Evaluate sanitized failure signals before any model retry or upgrade."""
+    return {
+        "success": True,
+        "data": ModelFailureUpgradeBudgetService().build_decision(payload),
     }
 
 

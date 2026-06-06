@@ -20,6 +20,7 @@ import {
   evaluateModelGatewayProbe,
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsCheapFirstEscalationBudget,
+  evaluateModelFailureUpgradeBudget,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
   evaluateModelOpsObservedGeminiModelIntakeQueue,
@@ -28,6 +29,8 @@ import {
   getGeminiCheapFirstCoverageGate,
   getGeminiNewApiAliasCapabilityCoverage,
   getModelOpsCheapFirstEscalationBudget,
+  getModelFailureUpgradeBudget,
+  getModelFailureUpgradeBudgetTemplate,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -43,6 +46,7 @@ import {
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsCheapFirstCanaryRollbackDrill,
   type ModelOpsCheapFirstEscalationBudget,
+  type ModelFailureUpgradeBudget,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsObservedGeminiModelIntakeQueue,
@@ -266,6 +270,20 @@ function defaultEscalationBudgetObservationPayload() {
   };
 }
 
+function defaultFailureUpgradeBudgetPayload() {
+  return {
+    task: 'classification',
+    attempt_index: 1,
+    failure_signals: ['schema_missing_required'],
+    current_model: 'auto-fast',
+    prompt_tokens: 1600,
+    completion_tokens: 512,
+    plan_type: 'personal',
+    premium_escalations_used_month: 0,
+    operator_approved: false,
+  };
+}
+
 function defaultCanaryObservationPayload() {
   return {
     observations: [
@@ -327,6 +345,19 @@ function hasForbiddenEscalationBudgetPayloadText(value: string) {
     /\b\d{17}[\dXx]\b/.test(value) ||
     /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|raw[_ -]?response|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|client[_ -]?email)\b/i.test(
       value,
+    ) ||
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
+  );
+}
+
+function hasForbiddenFailureUpgradePayloadText(value: string) {
+  const safeTokenCounterNames = value.replace(/\b(prompt_tokens|completion_tokens)\b/g, 'token_count');
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b1[3-9]\d{9}\b/.test(value) ||
+    /\b\d{17}[\dXx]\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|raw[_ -]?response|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|client[_ -]?email|messages?|content)\b/i.test(
+      safeTokenCounterNames,
     ) ||
     /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
   );
@@ -403,6 +434,11 @@ function Inner() {
   const [escalationBudgetPayloadText, setEscalationBudgetPayloadText] = useState('');
   const [escalationBudgetLoading, setEscalationBudgetLoading] = useState(false);
   const [escalationBudgetError, setEscalationBudgetError] = useState('');
+  const [failureUpgradeBudget, setFailureUpgradeBudget] = useState<ModelFailureUpgradeBudget | null>(null);
+  const [failureUpgradePayloadText, setFailureUpgradePayloadText] = useState('');
+  const [failureUpgradeLoading, setFailureUpgradeLoading] = useState(false);
+  const [failureUpgradeTemplateLoading, setFailureUpgradeTemplateLoading] = useState(false);
+  const [failureUpgradeError, setFailureUpgradeError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -437,6 +473,8 @@ function Inner() {
     setPerformanceBudget(null);
     setEscalationBudgetError('');
     setEscalationBudget(null);
+    setFailureUpgradeError('');
+    setFailureUpgradeBudget(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -453,12 +491,14 @@ function Inner() {
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
         escalationBudgetResult,
+        failureUpgradeBudgetResult,
       ] =
         await Promise.allSettled([
         getModelOps(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
         getModelOpsCheapFirstEscalationBudget(),
+        getModelFailureUpgradeBudget(),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
@@ -469,6 +509,7 @@ function Inner() {
         setProbeEvaluation(null);
         setPerformanceBudget(null);
         setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
+        setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
@@ -525,6 +566,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.cheap_first_escalation_budget)
         ) {
           setEscalationBudgetError('Cheap-first escalation budget failed to load.');
+        }
+      }
+      if (failureUpgradeBudgetResult.status === 'fulfilled') {
+        setFailureUpgradeBudget(failureUpgradeBudgetResult.value);
+      } else {
+        console.error(failureUpgradeBudgetResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.failure_upgrade_budget)
+        ) {
+          setFailureUpgradeError('Failure upgrade budget failed to load.');
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -749,6 +804,54 @@ function Inner() {
     }
   };
 
+  const loadFailureUpgradeTemplate = async () => {
+    setFailureUpgradeTemplateLoading(true);
+    setFailureUpgradeError('');
+    try {
+      const template = await getModelFailureUpgradeBudgetTemplate();
+      setFailureUpgradePayloadText(
+        JSON.stringify(template.example ?? defaultFailureUpgradeBudgetPayload(), null, 2),
+      );
+    } catch (err) {
+      console.error(err);
+      setFailureUpgradePayloadText(JSON.stringify(defaultFailureUpgradeBudgetPayload(), null, 2));
+      setFailureUpgradeError('Failure upgrade template loaded from local fallback.');
+    } finally {
+      setFailureUpgradeTemplateLoading(false);
+    }
+  };
+
+  const evaluateFailureUpgradePayload = async () => {
+    setFailureUpgradeLoading(true);
+    setFailureUpgradeError('');
+    try {
+      const text = failureUpgradePayloadText.trim();
+      if (!text) {
+        setFailureUpgradeError('Failure upgrade payload is empty.');
+        return;
+      }
+      if (hasForbiddenFailureUpgradePayloadText(text)) {
+        setFailureUpgradeError(
+          'Failure upgrade payload must use metadata counters and signal IDs only; remove credentials, contact details, raw request data, and copied document text.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setFailureUpgradeError('Failure upgrade payload must be a JSON object.');
+        return;
+      }
+      setFailureUpgradeBudget(await evaluateModelFailureUpgradeBudget(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setFailureUpgradeError(
+        err instanceof SyntaxError ? 'Failure upgrade payload is not valid JSON.' : 'Failure upgrade evaluation failed.',
+      );
+    } finally {
+      setFailureUpgradeLoading(false);
+    }
+  };
+
   const loadGeminiDefaultChangeTemplate = () => {
     setGeminiDefaultChangePayloadText(JSON.stringify(defaultGeminiDefaultChangeReviewPayload(), null, 2));
     setGeminiDefaultChangeError('');
@@ -902,6 +1005,8 @@ function Inner() {
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const activeEscalationBudget = escalationBudget ?? data?.cheap_first_escalation_budget ?? null;
   const escalationBudgetRows = activeEscalationBudget?.budget_rows ?? [];
+  const activeFailureUpgradeBudget = failureUpgradeBudget ?? data?.failure_upgrade_budget ?? null;
+  const failureUpgradeChecks = activeFailureUpgradeBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -3343,6 +3448,142 @@ function Inner() {
             <div className="mt-3 text-xs leading-5 text-stone-500">
               raw payload echoed: {String(data.route_quality_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
               {String(data.route_quality_budget.privacy_boundary.raw_model_output_included)}
+            </div>
+          </section>
+        )}
+
+        {activeFailureUpgradeBudget && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeFailureUpgradeBudget.decision.decision.replace(/_/g, ' ')} / next{' '}
+                  {activeFailureUpgradeBudget.decision.next_cost_tier} / attempt budget{' '}
+                  {activeFailureUpgradeBudget.summary.attempt_budget_remaining}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeFailureUpgradeBudget.status)}>
+                {activeFailureUpgradeBudget.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-xs font-black text-stone-950">
+                  {activeFailureUpgradeBudget.decision.current_model}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">current model</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-xs font-black text-stone-950">
+                  {activeFailureUpgradeBudget.decision.next_model}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">next model</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeFailureUpgradeBudget.summary.attempt_budget_remaining}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">attempts left</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {formatUsd(activeFailureUpgradeBudget.summary.incremental_cost_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">incremental_cost_usd</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {String(activeFailureUpgradeBudget.summary.premium_quota_allowed ?? 'not required')}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium_quota_allowed</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {String(activeFailureUpgradeBudget.summary.operator_approved)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">operator_approved</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Check</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Value</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {failureUpgradeChecks.map((check) => (
+                      <TableRow key={check.id}>
+                        <TableCell>
+                          <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            warn {check.warn_threshold ?? '-'} / fail {check.fail_threshold ?? '-'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(check.status)}>
+                            {check.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">
+                          {check.value == null ? '-' : formatUsd(check.value)}
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                          {check.reason}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Failure metadata review</div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-stone-950">{activeFailureUpgradeBudget.blocking_check_ids.length}</div>
+                    <div className="mt-1 text-stone-500">blocking checks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-stone-950">{activeFailureUpgradeBudget.warning_check_ids.length}</div>
+                    <div className="mt-1 text-stone-500">warning checks</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  failure signals: {activeFailureUpgradeBudget.decision.failure_signals.join(', ') || '-'}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeFailureUpgradeBudget.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                <Textarea
+                  value={failureUpgradePayloadText}
+                  onChange={(event) => setFailureUpgradePayloadText(event.target.value)}
+                  className="mt-3 min-h-[180px] font-mono text-xs"
+                  placeholder="Failure metadata JSON"
+                />
+                {failureUpgradeError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">{failureUpgradeError}</div>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={loadFailureUpgradeTemplate} disabled={failureUpgradeTemplateLoading}>
+                    {failureUpgradeTemplateLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardList className="h-4 w-4" />}
+                    Load template
+                  </Button>
+                  <Button type="button" onClick={evaluateFailureUpgradePayload} disabled={failureUpgradeLoading}>
+                    {failureUpgradeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                    Evaluate failure upgrade budget
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="text-xs leading-5 text-stone-500">
+              raw payload echoed: {String(activeFailureUpgradeBudget.privacy_boundary.raw_payload_echoed)} / raw model
+              output: {String(activeFailureUpgradeBudget.privacy_boundary['raw_' + 'model_output_included'])} / configuration
+              written: {String(activeFailureUpgradeBudget.privacy_boundary.configuration_written)}
             </div>
           </section>
         )}

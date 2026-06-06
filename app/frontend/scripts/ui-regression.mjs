@@ -849,6 +849,34 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-escalation-budget', 'model-ops cheap-first escalation budget endpoint'),
   () => assertIncludes(modelOpsApi, 'cheap_first_escalation_budget', 'model-ops cheap-first escalation budget response binding'),
   () => assertIncludes(modelOpsApi, 'budget_rows', 'model-ops cheap-first escalation budget payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelFailureUpgradeBudget', 'model-ops model failure upgrade budget type'),
+  () => assertIncludes(modelOpsApi, 'ModelFailureUpgradeBudgetPayloadShape', 'model-ops model failure upgrade budget template type'),
+  () => assertIncludes(modelOpsApi, 'getModelFailureUpgradeBudget', 'model-ops model failure upgrade budget API'),
+  () => assertIncludes(modelOpsApi, 'getModelFailureUpgradeBudgetTemplate', 'model-ops model failure upgrade budget template API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelFailureUpgradeBudget', 'model-ops model failure upgrade budget evaluation API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/failure-upgrade-budget', 'model-ops model failure upgrade budget endpoint'),
+  () => assertIncludes(modelOpsApi, 'failure_upgrade_budget', 'model-ops model failure upgrade budget response binding'),
+  () => assertIncludes(modelOpsPage, 'Model failure upgrade budget', 'model-ops model failure upgrade budget panel'),
+  () => assertIncludes(modelOpsPage, 'activeFailureUpgradeBudget', 'model-ops model failure upgrade budget state binding'),
+  () => assertIncludes(modelOpsPage, 'failureUpgradeChecks', 'model-ops model failure upgrade budget check binding'),
+  () => assertIncludes(modelOpsPage, 'attempt_budget_remaining', 'model-ops model failure upgrade budget attempt binding'),
+  () => assertIncludes(modelOpsPage, 'incremental_cost_usd', 'model-ops model failure upgrade budget cost binding'),
+  () => assertIncludes(modelOpsPage, 'premium_quota_allowed', 'model-ops model failure upgrade budget premium quota binding'),
+  () => assertIncludes(modelOpsPage, 'operator_approved', 'model-ops model failure upgrade budget approval binding'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenFailureUpgradePayloadText', 'model-ops model failure upgrade budget payload guard'),
+  () => assertIncludes(modelOpsPage, 'Evaluate failure upgrade budget', 'model-ops model failure upgrade budget submit button'),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first quality budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
+    'model-ops failure upgrade budget follows quality budget',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+    'model-ops failure upgrade budget precedes escalation budget',
+  ),
   () => assertIncludes(modelOpsPage, 'Cheap-first escalation budget', 'model-ops cheap-first escalation budget panel'),
   () => assertIncludes(modelOpsPage, 'activeEscalationBudget', 'model-ops cheap-first escalation budget state binding'),
   () => assertIncludes(modelOpsPage, 'escalationBudgetRows', 'model-ops cheap-first escalation budget row binding'),
@@ -986,6 +1014,12 @@ const cheapFirstMaintainerExecutionChecklistPanel = sourceSection(
   'ModelOps load guard',
   'model-ops cheap-first maintainer execution checklist section',
 );
+const modelFailureUpgradeBudgetPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+  'model-ops model failure upgrade budget section',
+);
 const cheapFirstEscalationBudgetPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
@@ -1081,6 +1115,11 @@ assertNotMatches(
   cheapFirstMaintainerExecutionChecklistPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|raw_prompt|prompt_payload|raw_model_output|raw_legal_text|raw_gateway_response|candidate_text)\b/i,
   'model-ops maintainer execution checklist no secret or raw prompt/output/legal text field names',
+);
+assertNotMatches(
+  modelFailureUpgradeBudgetPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content)\b/i,
+  'model-ops model failure upgrade budget no secrets or raw model/payload fields',
 );
 assertNotMatches(
   cheapFirstEscalationBudgetPanel,

@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, and maintainer execution evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, and maintainer execution evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -25,10 +25,10 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 50,
-      "required_component_count": 49,
+      "component_count": 51,
+      "required_component_count": 50,
       "optional_component_count": 1,
-      "pass_count": 50,
+      "pass_count": 51,
       "warn_count": 0,
       "fail_count": 0,
       "required_warning_count": 0,
@@ -90,6 +90,7 @@ The readiness service checks:
 - route telemetry remediation plan,
 - route guardrails,
 - cheap-first route quality budget,
+- model failure upgrade budget,
 - cheap-first escalation budget,
 - routing replay,
 - fallback chains,
@@ -108,11 +109,13 @@ Any required `fail` status blocks model-ops readiness. Any `warn` status require
 
 `cheap-first-escalation-budget` is required evidence for cheap-first cascade cost control. It checks aggregate failure, verification, escalation, premium escalation, operator review, and wasted escalation spend rates before a cheap Gemini/NewAPI default can be promoted.
 
+`model-failure-upgrade-budget` is required evidence for single-request failure handling. It checks sanitized failure metadata, attempt budget, hard-stop signals, incremental cost, task budget tier, premium quota, and operator approval before any retry-up or premium exception is allowed.
+
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
 `cheap_first_release_decision` is a downstream release decision packet that uses
 readiness plus cheap-first calibration, Gemini variant review, catalog source
-audit, route quality, escalation budget, price refresh, and ModelOps performance
+audit, route quality, failure upgrade budget, escalation budget, price refresh, and ModelOps performance
 signals to decide whether current cheap-first defaults can remain and whether
 new default promotion requires maintainer review.
 
@@ -123,7 +126,7 @@ The readiness warning drilldown is release evidence for maintainers reviewing ch
 `model-ops-readiness` is a required release-readiness check. Maintainers should run:
 
 ```bash
-python -m pytest tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression
+python -m pytest tests/test_model_failure_upgrade_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression
 ```
 
 ## Safety
@@ -152,6 +155,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/model_ops_performance_budget.py`
 - `app/backend/services/model_route_quality_budget.py`
+- `app/backend/services/model_failure_upgrade_budget.py`
 - `app/backend/services/model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_ops_readiness.py`
@@ -161,6 +165,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_ops_cheap_first_release_decision.py`
 - `app/backend/tests/test_model_ops_performance_budget.py`
 - `app/backend/tests/test_model_route_quality_budget.py`
+- `app/backend/tests/test_model_failure_upgrade_budget.py`
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`
 - `app/backend/tests/test_model_gateway_compatibility.py`
@@ -178,3 +183,4 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`
+- `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
