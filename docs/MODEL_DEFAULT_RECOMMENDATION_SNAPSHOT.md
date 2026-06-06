@@ -20,6 +20,13 @@ The response includes `default_recommendation_snapshot` next to the existing mod
 - Gateway-prefixed model IDs such as `models/gemini-2.5-flash-lite`, `google/gemini-2.5-flash-lite`, and `openrouter/google/gemini-2.5-flash-lite` map back to the local catalog.
 - Unknown Gemini-like NewAPI model names are treated as catalog-review warnings until pricing, lifecycle, and capability metadata are added.
 
+The snapshot must not treat the entire selector ladder as a default promotion
+list. Only `default_eligible` candidates can be shown as recommended default
+changes. Preview, unpriced, unknown/catalog-review, deprecated,
+premium-over-budget, premium-exception-only, and operator-review-required rows
+remain `review-only` even when they appear in fallback, verification, premium,
+or context positions in the ladder.
+
 ## Validation
 
 Run from `app/backend`:

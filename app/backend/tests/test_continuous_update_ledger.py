@@ -288,6 +288,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "feedback-lifecycle-policy" in completed_ids
     assert "feedback-capture-plan" in completed_ids
     assert "model-default-candidate-selector" in completed_ids
+    assert "model-default-ladder-review-boundaries" in completed_ids
     assert "contract-clause-extraction-schema" in completed_ids
     assert "case-workbench-ui-binding" in completed_ids
     assert "legal-source-ingestion-metadata" in completed_ids
@@ -670,6 +671,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_runtime_router.py "
         "tests/test_aihub_runtime_routing.py tests/test_model_configuration_audit.py tests/test_model_gateway_compatibility.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_default_candidate_selector.py "
+        "tests/test_gemini_newapi_model_selector.py -q && cd ../frontend && npm run typecheck"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
@@ -1648,6 +1654,33 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-default-candidate-selector" in default_candidate_entry["release_gate_links"]
     assert "gemini-newapi-model-selector" in default_candidate_entry["release_gate_links"]
     assert "model-price-refresh-monitor" in default_candidate_entry["release_gate_links"]
+    default_ladder_boundary_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-ladder-review-boundaries"
+    )
+    assert default_ladder_boundary_entry["size"] == "medium"
+    assert default_ladder_boundary_entry["status"] == "shipped"
+    assert default_ladder_boundary_entry["category"] == "model_ops"
+    assert "default_eligible" in default_ladder_boundary_entry["impact"]
+    assert "review-only" in default_ladder_boundary_entry["impact"]
+    assert "promotion blockers" in default_ladder_boundary_entry["impact"]
+    assert "preview" in default_ladder_boundary_entry["impact"]
+    assert "unpriced" in default_ladder_boundary_entry["impact"]
+    assert "premium-over-budget" in default_ladder_boundary_entry["impact"]
+    assert "calling gateways" in default_ladder_boundary_entry["impact"]
+    assert "raw legal text" in default_ladder_boundary_entry["impact"]
+    assert "credentials" in default_ladder_boundary_entry["impact"]
+    assert "app/backend/services/model_default_candidate_selector.py" in default_ladder_boundary_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_default_candidate_selector.py" in default_ladder_boundary_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in default_ladder_boundary_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in default_ladder_boundary_entry["evidence_paths"]
+    assert "docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md" in default_ladder_boundary_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_MODEL_SELECTOR.md" in default_ladder_boundary_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md" in default_ladder_boundary_entry["evidence_paths"]
+    assert "model-default-candidate-selector" in default_ladder_boundary_entry["release_gate_links"]
+    assert "gemini-newapi-model-selector" in default_ladder_boundary_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-policy" in default_ladder_boundary_entry["release_gate_links"]
+    assert "model-ops-readiness" in default_ladder_boundary_entry["release_gate_links"]
+    assert "frontend-typecheck" in default_ladder_boundary_entry["release_gate_links"]
     missing_answer_citation_entry = next(
         entry
         for entry in ledger["completed_updates"]

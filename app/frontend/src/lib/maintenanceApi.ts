@@ -2023,6 +2023,11 @@ export type GeminiNewApiCheapFirstLadder = {
     order: number;
     model: string;
     cost_tier: string;
+    candidate_stage?: string;
+    review_required?: boolean;
+    promotion_blockers?: string[];
+    pricing_status?: string;
+    catalog_status?: string;
     role?: string;
   }>;
 };

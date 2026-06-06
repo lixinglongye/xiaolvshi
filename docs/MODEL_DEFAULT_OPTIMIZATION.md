@@ -21,6 +21,14 @@
 
 The same payload is shown on the frontend `/model-ops` page.
 
+Recommended actions must be derived only from selector candidates that are
+`default_eligible`: stable, priced, catalog-known, task-capable,
+gateway-compatible, and within the task cost ceiling. Selector ladder entries
+that are preview, unpriced, unknown/catalog-review, deprecated,
+premium-over-budget, premium-exception-only, or otherwise operator-review
+required remain `review-only`; the `/model-ops` UI may display them as context
+or blockers, but must not render them as direct env/default promotion actions.
+
 ## Release Use
 
 Run this before model-routing releases:
@@ -38,8 +46,8 @@ A `fail` status means a configurable default is over the task cost ceiling or la
 Default optimization must treat models with unconfirmed official provider or
 gateway pricing, lifecycle status, or availability as `unpriced` and
 `review-only`. It must not hard-code costs, claim savings, or recommend env-var
-default promotion until source-backed price, status, capability, and gateway
-evidence are refreshed.
+default promotion until source-backed price, status, capability, gateway
+evidence, and `default_eligible` status are refreshed.
 
 ## Safety
 

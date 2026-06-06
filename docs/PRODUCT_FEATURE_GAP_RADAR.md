@@ -69,9 +69,12 @@ Model-cost evidence now also includes the scoped Gemini/NewAPI model selector
 evidence contract for `GET`/`POST`
 `/api/v1/maintenance/gemini-newapi-model-selector`. That contract is
 metadata-only selection review for normalized model ids, task labels, cost
-tiers, cheap-first candidate chains, warnings, and evidence paths. It does not
-call NewAPI, store prompts or raw model output, or close the 24-hour maintenance
-proof gap.
+tiers, cheap-first candidate chains, candidate eligibility, warnings, and
+evidence paths. UI and maintainer actions must use only `default_eligible`
+candidates for direct default promotion; preview, unpriced,
+premium-over-budget, premium-exception-only, unknown, or deprecated candidates
+remain `review-only`. It does not call NewAPI, store prompts or raw model
+output, or close the 24-hour maintenance proof gap.
 The companion selector replay contract for `GET`/`POST`
 `/api/v1/maintenance/gemini-newapi-selector-replay` adds deterministic scenario
 replay evidence for fast/classification/OCR cheap-first behavior,

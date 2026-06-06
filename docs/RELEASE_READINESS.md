@@ -219,8 +219,11 @@ bundle integrity, privacy retention rules, release-claim compliance, case export
 readiness, and admin audit policy.
 The Gemini/NewAPI model selector evidence check verifies metadata-only model id
 normalization, cheap-first task candidate chains, premium exception boundaries,
-warnings, and evidence paths; it must not imply that NewAPI was called or that
-24-hour maintenance completion is proven.
+warnings, candidate eligibility, and evidence paths. The check must keep
+`default_eligible` rows separate from `review-only` rows so preview, unpriced,
+premium-over-budget, premium-exception-only, unknown, or deprecated candidates
+cannot be treated as directly promotable defaults; it must not imply that
+NewAPI was called or that 24-hour maintenance completion is proven.
 The Gemini/NewAPI selector replay evidence check verifies deterministic
 scenario coverage for fast/classification/OCR cheap-first behavior,
 review/document_generation balanced-after-precheck, large_pdf/final_review

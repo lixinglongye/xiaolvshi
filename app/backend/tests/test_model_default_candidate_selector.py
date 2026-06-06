@@ -34,6 +34,22 @@ def test_default_candidate_selector_preserves_current_low_cost_defaults():
     assert selector.recommended_model_for_task("grounded-research") == "gemini-3.1-flash-lite"
     assert selector.recommended_model_for_task("image") == "gemini-2.5-flash-image"
 
+    fast = selector.recommendation("fast")
+    fast_ladder = selector.default_ladder_for_task("fast", limit=3)
+    selector_payload = selector.build_selector()
+
+    assert fast["eligible_candidate_count"] >= 1
+    assert fast["review_only_candidate_count"] >= 1
+    assert fast_ladder[0]["model"] == "gemini-2.5-flash-lite"
+    assert fast_ladder[0]["candidate_stage"] == "default_eligible"
+    assert fast_ladder[0]["review_required"] is False
+    assert fast_ladder[0]["promotion_blockers"] == []
+    assert fast_ladder[1]["candidate_stage"] == "review_only"
+    assert fast_ladder[1]["review_required"] is True
+    assert any(blocker.startswith("cost-tier:") for blocker in fast_ladder[1]["promotion_blockers"])
+    assert selector_payload["summary"]["default_eligible_candidate_count"] >= fast["eligible_candidate_count"]
+    assert selector_payload["summary"]["review_only_candidate_count"] >= fast["review_only_candidate_count"]
+
     image_ladder = selector.default_ladder_for_task("image")
     assert [item["model"] for item in image_ladder[:2]] == [
         "gemini-2.5-flash-image",
@@ -105,8 +121,19 @@ def test_default_candidate_selector_keeps_preview_and_unpriced_models_out_of_def
     assert recommendation["selected_model"] == "gemini-2.5-flash-lite"
     assert rows["gemini-4.0-flash-lite"]["default_eligible"] is False
     assert rows["gemini-4.0-flash-lite"]["catalog_status"] == "preview"
+    assert rows["gemini-4.0-flash-lite"]["candidate_stage"] == "review_only"
+    assert rows["gemini-4.0-flash-lite"]["review_required"] is True
+    assert "lifecycle:preview" in rows["gemini-4.0-flash-lite"]["promotion_blockers"]
     assert rows["gemini-4.0-flash-lite-unpriced"]["default_eligible"] is False
     assert rows["gemini-4.0-flash-lite-unpriced"]["pricing_status"] == "missing"
+    assert rows["gemini-4.0-flash-lite-unpriced"]["candidate_stage"] == "review_only"
+    assert rows["gemini-4.0-flash-lite-unpriced"]["review_required"] is True
+    assert "pricing:missing" in rows["gemini-4.0-flash-lite-unpriced"]["promotion_blockers"]
+
+    ladder = ModelDefaultCandidateSelectorService().default_ladder_for_task("fast", limit=20)
+    ladder_rows = {row["model"]: row for row in ladder}
+    assert ladder_rows["gemini-4.0-flash-lite"]["role"] == "explicit preview review"
+    assert ladder_rows["gemini-4.0-flash-lite-unpriced"]["role"] == "explicit price review"
 
 
 def test_price_refresh_monitor_uses_catalog_derived_recommendation_for_drift(monkeypatch):

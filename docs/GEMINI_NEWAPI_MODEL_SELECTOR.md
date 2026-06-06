@@ -65,7 +65,7 @@ Normalization should produce:
   `unknown_gemini_like`.
 - `catalog_status`: `known`, `catalog_review`, or `unsupported`.
 - `warnings`: review notes for unknown, preview, Pro, premium, deprecated, or
-  over-budget ids.
+  premium-over-budget ids.
 
 Unknown ids that still look Gemini-like should remain explicit-only. They may be
 passed through a gateway by a separate runtime caller, but this evidence endpoint
@@ -77,7 +77,7 @@ default-suitability metadata exist.
 Selector evidence must treat any model with unconfirmed official provider or
 gateway pricing, lifecycle status, or availability as `unpriced` and
 `review-only`. It must not hard-code costs, count the model in cheap-first
-savings, or recommend it for default promotion until source-backed price,
+savings, or recommend it as `default_eligible` until source-backed price,
 status, capability, and gateway evidence are refreshed.
 
 ## Cheap-First Candidate Chains
@@ -120,6 +120,24 @@ Premium exception rows are allowed as recommendations only when the task and
 warning metadata make the review boundary visible. They must not silently become
 defaults for fast, routing, classification, OCR, triage, quote extraction, batch
 summary, or other high-volume paths.
+
+## Candidate Eligibility Split
+
+Candidate chains are review ladders, not promotion queues. Every selector row
+that feeds UI or maintainer runbooks must separate:
+
+- `default_eligible`: catalog-known, stable, priced, task-capable,
+  gateway-compatible candidates that are within the task cost ceiling and do
+  not require premium exception or operator review.
+- `review-only`: preview, unpriced, unknown/catalog-review, deprecated,
+  premium-over-budget, premium-exception-only, capability-incomplete, or
+  media-route-mismatched candidates.
+
+The UI may use `primary_candidate` or `candidate_chain` for display, but any
+"promote default", `.env` suggestion, or default-change queue copy must be
+derived only from `default_eligible`. `review-only` candidates may be rendered
+as blocked, experimental, probe-only, fallback context, or manual-review rows;
+they must not appear as one-click or directly promotable defaults.
 
 ## Metadata-Only Boundary
 

@@ -9,6 +9,7 @@ from services.model_catalog import ModelProfile
 
 COST_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3}
 LATENCY_RANK = {"fastest": 0, "fast": 1, "medium": 2, "slower": 3}
+CATALOG_STATUS_RANK = {"stable": 0, "review": 1, "preview": 2, "deprecated": 3}
 TEXT_PRICE_MISSING_PENALTY = 999_999.0
 
 
@@ -177,6 +178,7 @@ class ModelDefaultCandidateSelectorService:
             "fallback_model": policy.fallback_model,
             "candidate_count": len(candidates),
             "eligible_candidate_count": len(eligible),
+            "review_only_candidate_count": sum(1 for item in candidates if item["review_required"]),
             "policy": policy.to_api(),
             "candidates": candidates,
             "privacy_boundary": self._privacy_boundary(),
@@ -198,7 +200,11 @@ class ModelDefaultCandidateSelectorService:
                     "cost_tier": "unknown",
                     "role": "configured fallback",
                     "default_eligible": False,
+                    "candidate_stage": "review_only",
+                    "review_required": True,
+                    "promotion_blockers": ["catalog:no-capable-candidates"],
                     "pricing_status": "unknown",
+                    "catalog_status": "unknown",
                 }
             ]
 
@@ -211,6 +217,9 @@ class ModelDefaultCandidateSelectorService:
                     "cost_tier": candidate["cost_tier"],
                     "role": self._ladder_role(candidate, policy),
                     "default_eligible": candidate["default_eligible"],
+                    "candidate_stage": candidate["candidate_stage"],
+                    "review_required": candidate["review_required"],
+                    "promotion_blockers": list(candidate["promotion_blockers"]),
                     "pricing_status": candidate["pricing_status"],
                     "catalog_status": candidate["catalog_status"],
                 }
@@ -249,6 +258,18 @@ class ModelDefaultCandidateSelectorService:
                         for candidate in row["candidates"]
                     }
                 ),
+                "default_eligible_candidate_count": sum(
+                    1
+                    for row in rows
+                    for candidate in row["candidates"]
+                    if candidate["default_eligible"]
+                ),
+                "review_only_candidate_count": sum(
+                    1
+                    for row in rows
+                    for candidate in row["candidates"]
+                    if candidate["review_required"]
+                ),
                 "metadata_only": True,
                 "gateway_called": False,
                 "configuration_written": False,
@@ -267,6 +288,7 @@ class ModelDefaultCandidateSelectorService:
         pricing_status = _pricing_status(profile, policy.price_mode)
         price_value = _price_value(profile, policy.price_mode)
         default_eligible = stable and within_cost and pricing_status in {"token_priced", "image_priced"}
+        promotion_blockers = _promotion_blockers(profile, policy, stable, within_cost, pricing_status)
         preferred_hits = [capability for capability in policy.preferred_capabilities if capability in profile.capabilities]
         missing_preferred = [
             capability
@@ -286,11 +308,16 @@ class ModelDefaultCandidateSelectorService:
             "output_usd_per_image": profile.output_usd_per_image,
             "within_default_cost_tier": within_cost,
             "default_eligible": default_eligible,
+            "candidate_stage": "default_eligible" if default_eligible else "review_only",
+            "review_required": not default_eligible,
+            "promotion_blockers": promotion_blockers,
             "preferred_capability_hits": preferred_hits,
             "missing_preferred_capabilities": missing_preferred,
             "capabilities": list(profile.capabilities),
             "sort_key": (
                 0 if default_eligible else 1,
+                _family_sort_rank(profile.id),
+                _catalog_status_rank(profile.status),
                 0 if pricing_status in {"token_priced", "image_priced"} else 1,
                 price_value,
                 0 if stable else 1,
@@ -303,8 +330,13 @@ class ModelDefaultCandidateSelectorService:
 
     def _ladder_role(self, candidate: dict[str, Any], policy: TaskCandidatePolicy) -> str:
         if not candidate["default_eligible"]:
-            if candidate["catalog_status"] != "stable":
+            blockers = set(candidate.get("promotion_blockers") or [])
+            if candidate["catalog_status"] == "preview":
                 return "explicit preview review"
+            if candidate["catalog_status"] != "stable":
+                return "explicit catalog review"
+            if any(str(blocker).startswith("cost-tier:") for blocker in blockers):
+                return "operator-approved budget exception"
             if candidate["pricing_status"] not in {"token_priced", "image_priced"}:
                 return "explicit price review"
             return "operator-approved exception only"
@@ -355,8 +387,41 @@ def _price_value(profile: ModelProfile, price_mode: str) -> float:
     return profile.input_usd_per_million_tokens + profile.output_usd_per_million_tokens
 
 
+def _promotion_blockers(
+    profile: ModelProfile,
+    policy: TaskCandidatePolicy,
+    stable: bool,
+    within_cost: bool,
+    pricing_status: str,
+) -> list[str]:
+    blockers: list[str] = []
+    if not stable:
+        blockers.append(f"lifecycle:{profile.status}")
+    if pricing_status not in {"token_priced", "image_priced"}:
+        blockers.append(f"pricing:{pricing_status}")
+    if not within_cost:
+        blockers.append(f"cost-tier:{profile.cost_tier}>max:{policy.max_default_cost_tier}")
+    return blockers
+
+
 def _tier_rank(cost_tier: str) -> int:
     return COST_RANK.get(cost_tier, 99)
+
+
+def _catalog_status_rank(status: str) -> int:
+    return CATALOG_STATUS_RANK.get(status, 99)
+
+
+def _family_sort_rank(model_id: str) -> int:
+    if "flash-lite" in model_id:
+        return 0
+    if "flash" in model_id and "image" not in model_id:
+        return 1
+    if "image" in model_id:
+        return 2
+    if "pro" in model_id:
+        return 3
+    return 9
 
 
 def _family_label(model_id: str) -> str:

@@ -168,6 +168,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_aihub_runtime_routing.py tests/test_model_runtime_router.py tests/test_model_route_telemetry.py tests/test_route_telemetry_repository.py -q",
                 "python -m pytest tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py tests/test_model_configuration_audit.py tests/test_model_gateway_compatibility.py -q",
+                "python -m pytest tests/test_model_default_candidate_selector.py tests/test_gemini_newapi_model_selector.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_route_telemetry_repository.py -q",
                 "python -m pytest tests/test_route_telemetry_repository.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q",
                 "python -m pytest tests/test_route_telemetry_ops_summary.py -q",
@@ -3079,6 +3080,39 @@ class ContinuousUpdateLedgerService:
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("cheap-first-review-routing", "product-readiness", "low-resource-testing"),
+            ),
+            LedgerEntry(
+                id="model-default-ladder-review-boundaries",
+                title="Model default ladder review boundaries",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Separates default_eligible Gemini ladder candidates from review-only candidates in backend "
+                    "selector output and maintenance UI, exposing lifecycle, pricing, and cost-tier promotion "
+                    "blockers so preview, unpriced, premium-over-budget, or operator-review-only rows cannot be "
+                    "mistaken for direct cheap-first default promotions without writing configuration, calling "
+                    "gateways, storing prompts, raw legal text, model outputs, payloads, emails, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/services/gemini_newapi_model_selector.py",
+                    "app/backend/tests/test_model_default_candidate_selector.py",
+                    "app/backend/tests/test_gemini_newapi_model_selector.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md",
+                    "docs/GEMINI_NEWAPI_MODEL_SELECTOR.md",
+                    "docs/GEMINI_NEWAPI_CHEAP_FIRST_POLICY.md",
+                ),
+                release_gate_links=(
+                    "model-default-candidate-selector",
+                    "gemini-newapi-model-selector",
+                    "gemini-newapi-cheap-first-policy",
+                    "model-ops-readiness",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("cheap-first-review-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
                 id="contract-clause-extraction-schema",

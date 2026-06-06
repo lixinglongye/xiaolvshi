@@ -32,6 +32,10 @@ The returned payload includes:
 - `validation_commands`
 - `privacy_note`
 
+Consumers that render or act on `cheap_first_task_ladder` must annotate the
+ladder with candidate eligibility so `default_eligible` rows are visibly
+separate from `review-only` rows.
+
 ## Supported Gemini Families
 
 The policy groups Gemini models into practical routing families:
@@ -63,8 +67,8 @@ remain explicit-only until tier, stability, and default suitability are checked.
 If official provider or gateway pricing, lifecycle status, or model availability
 has not been confirmed, the policy must keep the model `unpriced` and
 `review-only`. Do not hard-code a cost, use it in cheap-first savings claims, or
-promote it into any default route until source-backed price, status, capability,
-and gateway evidence are refreshed.
+promote it into any `default_eligible` route until source-backed price, status,
+capability, and gateway evidence are refreshed.
 
 `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` scopes the upcoming
 `GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` evidence
@@ -72,6 +76,23 @@ endpoint. That endpoint should turn catalog ids, `models/`, `google/`,
 `google:`, and unknown Gemini-like ids into metadata-only selection audit rows
 and task-specific cheap-first candidate chains. It does not call NewAPI and does
 not prove 24-hour maintenance completion.
+
+## Default Eligibility Boundary
+
+`cheap_first_task_ladder` is a task routing ladder, not a direct promotion
+queue. Policy, UI, and maintainer docs must keep two labels visible:
+
+- `default_eligible`: stable, priced, known Gemini catalog candidates that meet
+  the task capability requirement, fit the task cost ceiling, and do not need a
+  premium exception or operator review.
+- `review-only`: preview, unpriced, unknown/catalog-review, deprecated,
+  premium-over-budget, premium-exception-only, capability-incomplete, or
+  media-route-mismatched candidates.
+
+Only `default_eligible` rows can feed default-change suggestions. `review-only`
+rows can support explicit experiments, probes, quality fallback review, or
+premium exception review, but UI and maintainer runbooks must not present them
+as directly promotable defaults.
 
 ## Cheap-First Defaults
 

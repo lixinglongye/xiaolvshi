@@ -7014,6 +7014,40 @@ function Inner() {
                     </div>
 
                     <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Default ladders</h3>
+                      <div className="space-y-3">
+                        {geminiNewApiModelSelector.cheap_first_ladders.slice(0, 3).map((ladder) => (
+                          <div key={ladder.task_group} className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono font-semibold text-stone-950">{ladder.task_group}</div>
+                            <div className="mt-2 space-y-2">
+                              {(ladder.ladder ?? []).slice(0, 3).map((item) => (
+                                <div key={`${ladder.task_group}-${item.order}-${item.model}`} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-mono font-semibold text-stone-950">{item.model}</span>
+                                    <Badge
+                                      variant="outline"
+                                      className={item.review_required ? statusClass.review_required : statusClass.ready}
+                                    >
+                                      {item.candidate_stage ?? (item.review_required ? 'review only' : 'default eligible')}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-1 text-stone-600">
+                                    {item.cost_tier} / {item.pricing_status ?? 'unknown'} / {item.role ?? 'candidate'}
+                                  </div>
+                                  {item.promotion_blockers && item.promotion_blockers.length > 0 && (
+                                    <div className="mt-1 font-mono text-[11px] text-amber-800">
+                                      {item.promotion_blockers.slice(0, 3).join(', ')}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                       <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
                       <ul className="space-y-2 text-xs leading-5 text-stone-600">
                         {geminiNewApiPrivacyBoundarySummary(geminiNewApiModelSelector.privacy_boundary).map((item) => (

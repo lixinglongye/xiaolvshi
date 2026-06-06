@@ -50,9 +50,13 @@ adds a metadata-only Gemini/NewAPI selector that derives cheapest capable task
 recommendations and ladders from local catalog capability, lifecycle, price,
 cost-tier, and latency metadata. Runtime defaults remain unchanged; the selector
 only gives ModelOps a reviewable signal when a future stable lower-cost
-Flash-Lite catalog row should replace a hard-coded recommendation. It does not
-write env files, call gateways, shift traffic, include raw prompts, legal text,
-model outputs, or credentials.
+Flash-Lite catalog row is `default_eligible` and should replace a hard-coded
+recommendation. The ladder must keep `default_eligible` rows separate from
+`review-only` rows; preview, unpriced, premium-over-budget,
+premium-exception-only, unknown, deprecated, and media-route rows are review
+context only and must not be treated by UI or maintainers as directly
+promotable defaults. It does not write env files, call gateways, shift traffic,
+include raw prompts, legal text, model outputs, or credentials.
 
 Newest model-ops release evidence: `modelops-cheap-first-canary-rollback-drill`
 adds a shipped metadata-only rollback rehearsal packet downstream of canary
