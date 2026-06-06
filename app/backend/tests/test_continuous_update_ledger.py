@@ -178,6 +178,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-release-decision" in completed_ids
     assert "modelops-default-change-queue" in completed_ids
     assert "modelops-cheap-first-priority-queue" in completed_ids
+    assert "modelops-cheap-first-maintainer-execution-checklist" in completed_ids
     assert "modelops-cheap-first-canary-plan" in completed_ids
     assert "modelops-cheap-first-canary-observation-review" in completed_ids
     assert "modelops-cheap-first-canary-promotion-decision" in completed_ids
@@ -313,6 +314,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-release-decision" not in queue_ids
     assert "modelops-default-change-queue" not in queue_ids
     assert "modelops-cheap-first-priority-queue" not in queue_ids
+    assert "modelops-cheap-first-maintainer-execution-checklist" not in queue_ids
     assert "modelops-cheap-first-canary-plan" not in queue_ids
     assert "modelops-cheap-first-canary-observation-review" not in queue_ids
     assert "modelops-cheap-first-canary-promotion-decision" not in queue_ids
@@ -503,6 +505,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_ops_cheap_first_priority_queue.py tests/test_model_ops_readiness.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_cheap_first_maintainer_execution_checklist.py "
+        "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && "
+        "npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert (

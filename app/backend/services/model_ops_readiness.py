@@ -181,6 +181,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "release_evidence",
         "cheap_first_canary_change_manifest",
     ),
+    ReadinessComponent(
+        "cheap-first-maintainer-execution-checklist",
+        "Cheap-first maintainer execution checklist",
+        "release_evidence",
+        "cheap_first_maintainer_execution_checklist",
+    ),
 )
 
 
@@ -250,7 +256,14 @@ class ModelOpsReadinessService:
         value = str(data.get("status") or "").strip().lower()
         if value in {"pass", "ready", "ok", "success"}:
             return "pass"
-        if value in {"advance_next_batch", "approval_ready", "drill_ready", "manifest_ready", "monitor_only"}:
+        if value in {
+            "advance_next_batch",
+            "approval_ready",
+            "drill_ready",
+            "manifest_ready",
+            "monitor_only",
+            "ready_for_external_change",
+        }:
             return "pass"
         if value in {
             "warn",

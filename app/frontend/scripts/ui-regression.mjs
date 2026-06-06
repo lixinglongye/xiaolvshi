@@ -740,6 +740,22 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'external_change_set', 'model-ops canary change manifest external change-set type'),
   () => assertIncludes(modelOpsApi, 'prerequisites', 'model-ops canary change manifest prerequisite type'),
   () => assertIncludes(modelOpsApi, 'operator_steps', 'model-ops canary change manifest operator step type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstMaintainerExecutionChecklist', 'model-ops maintainer execution checklist type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstMaintainerExecutionChecklist', 'model-ops maintainer execution checklist API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-maintainer-execution-checklist', 'model-ops maintainer execution checklist endpoint'),
+  () => assertIncludes(modelOpsApi, 'cheap_first_maintainer_execution_checklist', 'model-ops maintainer execution checklist response binding'),
+  () => assertIncludes(modelOpsApi, 'execution_items', 'model-ops maintainer execution checklist payload guard'),
+  () => assertIncludes(modelOpsApi, 'execution_policy', 'model-ops maintainer execution checklist policy type'),
+  () => assertIncludes(modelOpsApi, 'external_change_allowed', 'model-ops maintainer execution external change type'),
+  () => assertIncludes(modelOpsPage, 'Cheap-first maintainer execution checklist', 'model-ops maintainer execution checklist panel'),
+  () => assertIncludes(modelOpsPage, 'maintainerExecutionChecklist', 'model-ops maintainer execution checklist state binding'),
+  () => assertIncludes(modelOpsPage, 'maintainerExecutionRows', 'model-ops maintainer execution checklist row binding'),
+  () => assertIncludes(modelOpsPage, 'execution_policy', 'model-ops maintainer execution checklist policy panel'),
+  () => assertIncludes(modelOpsPage, 'external_change_allowed', 'model-ops maintainer execution external change binding'),
+  () => assertIncludes(modelOpsPage, 'missing_evidence', 'model-ops maintainer execution missing evidence binding'),
+  () => assertIncludes(modelOpsPage, 'operator_action', 'model-ops maintainer execution operator action binding'),
+  () => assertBefore(modelOpsPage, 'Cheap-first canary change manifest', 'Cheap-first maintainer execution checklist', 'model-ops maintainer checklist follows change manifest'),
+  () => assertBefore(modelOpsPage, 'Cheap-first maintainer execution checklist', 'ModelOps load guard', 'model-ops maintainer checklist before performance budget'),
   () => assertIncludes(modelOpsApi, 'claim_boundary', 'model-ops cheap-first release decision claim boundary type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstReleaseDecision', 'model-ops cheap-first release decision API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-release-decision', 'model-ops cheap-first release decision endpoint'),
@@ -822,6 +838,12 @@ const cheapFirstPriorityQueuePanel = sourceSection(
   'Gemini default change review',
   'model-ops cheap-first priority queue section',
 );
+const cheapFirstMaintainerExecutionChecklistPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first maintainer execution checklist</h2>',
+  'ModelOps load guard',
+  'model-ops cheap-first maintainer execution checklist section',
+);
 const geminiDefaultCostImpactPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini default cost impact</h2>',
@@ -892,6 +914,11 @@ assertNotMatches(
   'model-ops cheap-first priority queue no secret or raw prompt/payload/output field names',
 );
 assertNotMatches(
+  cheapFirstMaintainerExecutionChecklistPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|raw_prompt|prompt_payload|raw_model_output|raw_legal_text|raw_gateway_response|candidate_text)\b/i,
+  'model-ops maintainer execution checklist no secret or raw prompt/output/legal text field names',
+);
+assertNotMatches(
   geminiDefaultCostImpactPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default cost impact no secret or raw prompt/payload field names',
@@ -923,7 +950,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 24,
+      assertions: checks.length + 25,
     },
     null,
     2,

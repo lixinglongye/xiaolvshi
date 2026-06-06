@@ -1630,6 +1630,91 @@ export type ModelOpsCheapFirstCanaryChangeManifest = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstMaintainerExecutionChecklist = {
+  id: 'model-ops-cheap-first-maintainer-execution-checklist' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    execution_item_count: number;
+    ready_for_external_change_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    rollback_review_count: number;
+    monitor_only_count: number;
+    priority_queue_status: string;
+    release_decision_status: string;
+    canary_plan_status: string;
+    promotion_decision_status: string;
+    approval_packet_status: string;
+    rollback_drill_status: string;
+    change_manifest_status: string;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_payload_echoed: boolean;
+    secret_value_included: boolean;
+  };
+  execution_policy: {
+    external_execution_required: boolean;
+    configuration_write_allowed: boolean;
+    env_file_write_allowed: boolean;
+    approval_record_write_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    gateway_call_allowed: boolean;
+    requires_release_pass: boolean;
+    requires_canary_evidence: boolean;
+    requires_maintainer_approval: boolean;
+    requires_rollback_drill_ready: boolean;
+    requires_metadata_only_boundary: boolean;
+  };
+  execution_items: Array<{
+    id: string;
+    task: string;
+    execution_rank: number;
+    execution_status: string;
+    priority_rank: number;
+    priority_score: number;
+    priority_label: string;
+    priority_work_status: string;
+    release_decision_status: string;
+    canary_step_status: string;
+    promotion_decision_status: string;
+    approval_status: string;
+    rollback_drill_status: string;
+    manifest_status: string;
+    env_var?: string | null;
+    current_model: string;
+    recommended_model: string;
+    requires_change: boolean;
+    external_change_allowed: boolean;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    gateway_called: boolean;
+    traffic_shifted: boolean;
+    missing_evidence: string[];
+    required_evidence: string[];
+    reason_codes: string[];
+    operator_action: string;
+    validation_commands: string[];
+  }>;
+  ready_execution_item_ids: string[];
+  blocked_execution_item_ids: string[];
+  review_execution_item_ids: string[];
+  rollback_review_item_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsPerformanceBudget = {
   status: string;
   method: {
@@ -2496,6 +2581,7 @@ export type ModelOpsResponse = {
   cheap_first_canary_approval_packet?: ModelOpsCheapFirstCanaryApprovalPacket;
   cheap_first_canary_rollback_drill?: ModelOpsCheapFirstCanaryRollbackDrill;
   cheap_first_canary_change_manifest?: ModelOpsCheapFirstCanaryChangeManifest;
+  cheap_first_maintainer_execution_checklist?: ModelOpsCheapFirstMaintainerExecutionChecklist;
   models: ModelCatalogItem[];
   usage: ModelUsageSummary;
 };
@@ -2543,6 +2629,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     approval_items?: unknown;
     rollback_drill_items?: unknown;
     change_manifest_items?: unknown;
+    execution_items?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
     rows?: unknown;
@@ -2565,6 +2652,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.approval_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
@@ -2845,6 +2933,13 @@ export async function getModelOpsCheapFirstCanaryRollbackDrill(): Promise<ModelO
 export async function getModelOpsCheapFirstCanaryChangeManifest(): Promise<ModelOpsCheapFirstCanaryChangeManifest> {
   return invokeModelOpsApi<ModelOpsCheapFirstCanaryChangeManifest>({
     url: '/api/v1/aihub/models/cheap-first-canary-change-manifest',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstMaintainerExecutionChecklist(): Promise<ModelOpsCheapFirstMaintainerExecutionChecklist> {
+  return invokeModelOpsApi<ModelOpsCheapFirstMaintainerExecutionChecklist>({
+    url: '/api/v1/aihub/models/cheap-first-maintainer-execution-checklist',
     method: 'GET',
   });
 }

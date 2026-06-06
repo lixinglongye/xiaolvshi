@@ -769,6 +769,8 @@ function Inner() {
     ?? data?.cheap_first_canary_change_manifest
     ?? null;
   const canaryChangeManifestRows = activeCanaryChangeManifest?.change_manifest_items ?? [];
+  const maintainerExecutionChecklist = data?.cheap_first_maintainer_execution_checklist ?? null;
+  const maintainerExecutionRows = maintainerExecutionChecklist?.execution_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
@@ -2667,6 +2669,191 @@ function Inner() {
                         <div className="mt-2 font-mono text-[11px] text-stone-500">
                           change_applied:{String(row.change_applied)} / secret_value_included:
                           {String(row.external_change_set.secret_value_included)}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {maintainerExecutionChecklist && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first maintainer execution checklist</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {maintainerExecutionChecklist.summary.ready_for_external_change_count} ready for external change /{' '}
+                  {maintainerExecutionChecklist.summary.review_required_count} review /{' '}
+                  {maintainerExecutionChecklist.summary.blocked_count} blocked /{' '}
+                  {maintainerExecutionChecklist.summary.monitor_only_count} monitor only
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(maintainerExecutionChecklist.status)}>
+                {maintainerExecutionChecklist.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(maintainerExecutionChecklist.summary.execution_item_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">execution items</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(maintainerExecutionChecklist.summary.ready_for_external_change_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">external ready</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(maintainerExecutionChecklist.summary.rollback_review_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">rollback review</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(maintainerExecutionChecklist.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(maintainerExecutionChecklist.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(maintainerExecutionChecklist.summary.traffic_shifted)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">traffic shifted</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[0.8fr_1.2fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">execution_policy</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">external_execution_required</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.external_execution_required)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">configuration_write_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.configuration_write_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">approval_record_write_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.approval_record_write_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">traffic_shift_allowed</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.traffic_shift_allowed)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">requires_canary_evidence</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.requires_canary_evidence)}
+                    </div>
+                  </div>
+                  <div className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-[11px] text-stone-500">requires_rollback_drill_ready</div>
+                    <div className="text-sm font-black text-stone-950">
+                      {String(maintainerExecutionChecklist.execution_policy.requires_rollback_drill_ready)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Source status rollup</div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[
+                    ['priority queue', maintainerExecutionChecklist.summary.priority_queue_status],
+                    ['release decision', maintainerExecutionChecklist.summary.release_decision_status],
+                    ['canary plan', maintainerExecutionChecklist.summary.canary_plan_status],
+                    ['promotion decision', maintainerExecutionChecklist.summary.promotion_decision_status],
+                    ['approval packet', maintainerExecutionChecklist.summary.approval_packet_status],
+                    ['rollback drill', maintainerExecutionChecklist.summary.rollback_drill_status],
+                    ['change manifest', maintainerExecutionChecklist.summary.change_manifest_status],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                      <div className="text-xs font-semibold text-stone-950">{label}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">{value}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {maintainerExecutionChecklist.recommended_actions.slice(0, 3).join(' ')}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-500">
+                  payload echoed: {String(maintainerExecutionChecklist.summary.raw_payload_echoed)} / network called:{' '}
+                  {String(maintainerExecutionChecklist.summary.network_called)} / approval record written:{' '}
+                  {String(maintainerExecutionChecklist.summary.approval_record_written)}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Execution</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Models</TableHead>
+                    <TableHead>Missing evidence</TableHead>
+                    <TableHead>Operator action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {maintainerExecutionRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.task}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.env_var ?? 'explicit model request'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.execution_status)}>
+                          {row.execution_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          external_change_allowed:{String(row.external_change_allowed)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={priorityClass[row.priority_label] ?? priorityClass.P3}>
+                          {row.priority_label} / {row.priority_score}
+                        </Badge>
+                        <div className="mt-1 text-[11px] text-stone-500">rank {row.priority_rank || row.execution_rank}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        <div>from {row.current_model || '-'}</div>
+                        <div>to {row.recommended_model || '-'}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        {row.missing_evidence.join(', ') || 'none'}
+                      </TableCell>
+                      <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                        <div>{row.operator_action}</div>
+                        <div className="mt-2 font-mono text-[11px] text-stone-500">
+                          configuration_written:{String(row.configuration_written)} / traffic_shifted:
+                          {String(row.traffic_shifted)}
                         </div>
                       </TableCell>
                     </TableRow>

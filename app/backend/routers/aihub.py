@@ -61,6 +61,9 @@ from services.model_ops_cheap_first_canary_observation import ModelOpsCheapFirst
 from services.model_ops_cheap_first_canary_plan import ModelOpsCheapFirstCanaryPlanService
 from services.model_ops_cheap_first_canary_promotion_decision import ModelOpsCheapFirstCanaryPromotionDecisionService
 from services.model_ops_cheap_first_canary_rollback_drill import ModelOpsCheapFirstCanaryRollbackDrillService
+from services.model_ops_cheap_first_maintainer_execution_checklist import (
+    ModelOpsCheapFirstMaintainerExecutionChecklistService,
+)
 from services.model_ops_cheap_first_priority_queue import ModelOpsCheapFirstPriorityQueueService
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
@@ -338,6 +341,10 @@ async def list_models():
     model_ops_signals["cheap_first_canary_rollback_drill"] = cheap_first_canary_rollback_drill
     cheap_first_canary_change_manifest = ModelOpsCheapFirstCanaryChangeManifestService().build_manifest(model_ops_signals)
     model_ops_signals["cheap_first_canary_change_manifest"] = cheap_first_canary_change_manifest
+    cheap_first_maintainer_execution_checklist = ModelOpsCheapFirstMaintainerExecutionChecklistService().build_checklist(
+        model_ops_signals
+    )
+    model_ops_signals["cheap_first_maintainer_execution_checklist"] = cheap_first_maintainer_execution_checklist
     model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     payload = {
         "success": True,
@@ -399,6 +406,7 @@ async def list_models():
         "cheap_first_canary_approval_packet": cheap_first_canary_approval_packet,
         "cheap_first_canary_rollback_drill": cheap_first_canary_rollback_drill,
         "cheap_first_canary_change_manifest": cheap_first_canary_change_manifest,
+        "cheap_first_maintainer_execution_checklist": cheap_first_maintainer_execution_checklist,
         "models": catalog_for_api(),
         "usage": usage,
     }
@@ -699,6 +707,16 @@ async def model_ops_cheap_first_canary_change_manifest():
     return {
         "success": True,
         "data": models_payload["cheap_first_canary_change_manifest"],
+    }
+
+
+@router.get("/models/cheap-first-maintainer-execution-checklist")
+async def model_ops_cheap_first_maintainer_execution_checklist():
+    """Return maintainer-only execution checklist for cheap-first default work."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_maintainer_execution_checklist"],
     }
 
 
