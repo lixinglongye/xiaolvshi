@@ -275,9 +275,10 @@ This batch also adds deep-review selected-source report binding, quota delivery
 decisions for export/client delivery/account-plan review, deterministic feedback
 issue clustering, metadata-only evidence bundle integrity checks, privacy
 retention rules, release-claim compliance checks, case export readiness checks,
-and admin audit policy evidence. The medium/large update count is now at or
-above 100, but the goal is still not complete because the 24-hour continuous
-validation window remains unproven.
+a real deep-review export readiness route gate, and admin audit policy
+evidence. The medium/large update count is now at or above 100, but the goal is
+still not complete because the 24-hour continuous validation window remains
+unproven.
 These are reviewable product slices; they do not finish real payment provider
 settlement or webhook verification, automatic deep-review report binding for
 selected-source validation, raw contract extraction, or a database-backed team
@@ -429,6 +430,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
+- `docs/DEEP_REVIEW_EXPORT_READINESS_GATE.md`
 - `docs/CONTINUOUS_SESSION_EVIDENCE.md`
 - `docs/CONTINUOUS_SESSION_TIMELINE.md`
 - `app/backend/main.py`

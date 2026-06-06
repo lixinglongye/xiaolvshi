@@ -18,6 +18,7 @@ from core.auth import AccessTokenError, decode_access_token
 from dependencies.auth import get_current_user
 from models.prompt_versions import Prompt_versions
 from schemas.auth import UserResponse
+from services.case_export_readiness import CaseExportReadinessService
 from services.deep_review import DeepReviewService
 from services.deep_review_document_quota import (
     DeepReviewDocumentQuotaError,
@@ -35,6 +36,7 @@ from schemas.storage import FileUpDownRequest
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/deep-review", tags=["deep-review"])
+SUPPORTED_DEEP_REVIEW_EXPORT_FORMATS = {"md", "markdown", "doc", "word", "json", "pdf"}
 
 
 # ----------------- Request/Response Models -----------------
@@ -409,6 +411,62 @@ def _pipeline_payload_from_record(stored: Any) -> Dict[str, Any]:
 def _safe_filename(value: str, fallback: str = "deep-review-report") -> str:
     name = re.sub(r'[\\/:*?"<>|\r\n]+', "_", str(value or "").strip())
     return name[:80] or fallback
+
+
+def _dict_or_empty(value: Any) -> Dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _list_or_empty(value: Any) -> List[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _deep_review_export_readiness_payload(report: Dict[str, Any]) -> Dict[str, Any]:
+    citation_audit = _dict_or_empty(report.get("citation_audit"))
+    evidence_audit = _dict_or_empty(report.get("evidence_audit"))
+    legal_sources = _list_or_empty(report.get("legal_authority_appendix"))
+    risk_items = _list_or_empty(report.get("risk_items"))
+    citations: Dict[str, Any] = {}
+    if citation_audit or legal_sources:
+        citations = {
+            "status": citation_audit.get("status"),
+            "source_count": citation_audit.get("source_count", len(legal_sources)),
+            "citation_count": citation_audit.get("citation_count", 0),
+            "verified_source_count": citation_audit.get("verified_source_count", 0),
+            "reviewable_source_count": citation_audit.get("reviewable_source_count", 0),
+        }
+    evidence: Dict[str, Any] = {}
+    if evidence_audit or risk_items:
+        evidence = {
+            "status": evidence_audit.get("status"),
+            "risk_count": evidence_audit.get("risk_count", len(risk_items)),
+            "risk_evidence_coverage": evidence_audit.get("risk_evidence_coverage", 0),
+            "blocking_pending_fact_count": evidence_audit.get("blocking_pending_fact_count", 0),
+        }
+    return {
+        "report_meta": _dict_or_empty(report.get("report_meta")),
+        "risk_scoring": _dict_or_empty(report.get("risk_scoring")),
+        "citations": citations,
+        "evidence": evidence,
+        "release_decision": _dict_or_empty(report.get("release_decision")),
+    }
+
+
+def _deep_review_export_readiness(report: Dict[str, Any]) -> Dict[str, Any]:
+    return CaseExportReadinessService().evaluate(_deep_review_export_readiness_payload(report))
+
+
+def _deep_review_export_blocker_detail(readiness: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "code": "deep_review_export_not_ready",
+        "message": "Deep review report is not ready for export.",
+        "status": readiness.get("status", "blocked"),
+        "reason_codes": _list_or_empty(readiness.get("reason_codes")),
+        "missing_sections": _list_or_empty(readiness.get("missing_sections")),
+        "selected_source_validation_status": readiness.get("selected_source_validation_status"),
+        "recommended_actions": _list_or_empty(readiness.get("recommended_actions")),
+        "privacy_boundary": _dict_or_empty(readiness.get("privacy_boundary")),
+    }
 
 
 def _user_from_access_token(token: str) -> UserResponse:
@@ -1679,9 +1737,19 @@ async def export_deep_review_report(
         raise HTTPException(status_code=500, detail="Stored report JSON is corrupted") from exc
 
     report = DeepReviewService().prepare_report_for_display(report)
+    fmt = file_format.lower()
+    if fmt not in SUPPORTED_DEEP_REVIEW_EXPORT_FORMATS:
+        raise HTTPException(status_code=400, detail="Unsupported export format. Use pdf, doc, md, or json.")
+
+    readiness = _deep_review_export_readiness(report)
+    if readiness.get("status") != "ready":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=_deep_review_export_blocker_detail(readiness),
+        )
+
     meta = report.get("report_meta") or {}
     base_name = _safe_filename(meta.get("report_id") or f"deep-review-{report_id}")
-    fmt = file_format.lower()
 
     if fmt in {"md", "markdown"}:
         content = _report_to_markdown(report).encode("utf-8-sig")

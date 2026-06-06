@@ -309,6 +309,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-workbench-frontend-state-events" in completed_ids
     assert "legal-rag-case-research-ui" in completed_ids
     assert "case-export-readiness-download-gate" in completed_ids
+    assert "deep-review-export-readiness-route-gate" in completed_ids
     assert "billing-usage-workspace-badge" in completed_ids
     assert "billing-report-preflight-route" in completed_ids
     assert "case-edit-runtime-event-binding" in completed_ids
@@ -368,6 +369,27 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "privacy-retention-rules" in completed_ids
     assert "release-claim-compliance" in completed_ids
     assert "case-export-readiness" in completed_ids
+    deep_review_export_gate_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "deep-review-export-readiness-route-gate"
+    )
+    assert deep_review_export_gate_entry["size"] == "medium"
+    assert deep_review_export_gate_entry["status"] == "shipped"
+    assert "real deep-review report export route" in deep_review_export_gate_entry["impact"]
+    assert "metadata-only case export readiness" in deep_review_export_gate_entry["impact"]
+    assert "pdf/doc/md/json download content" in deep_review_export_gate_entry["impact"]
+    assert "selected-source validation failures" in deep_review_export_gate_entry["impact"]
+    assert "raw report text" in deep_review_export_gate_entry["impact"]
+    assert "client emails" in deep_review_export_gate_entry["impact"]
+    assert "credentials" in deep_review_export_gate_entry["impact"]
+    assert "app/backend/routers/deep_review.py" in deep_review_export_gate_entry["evidence_paths"]
+    assert "app/backend/tests/test_deep_review_export_gate.py" in deep_review_export_gate_entry["evidence_paths"]
+    assert "app/backend/services/case_export_readiness.py" in deep_review_export_gate_entry["evidence_paths"]
+    assert "docs/DEEP_REVIEW_EXPORT_READINESS_GATE.md" in deep_review_export_gate_entry["evidence_paths"]
+    assert "deep-review-export-readiness-route-gate" in deep_review_export_gate_entry["release_gate_links"]
+    assert "case-export-readiness" in deep_review_export_gate_entry["release_gate_links"]
+    assert "deep-review-selected-source-binding" in deep_review_export_gate_entry["release_gate_links"]
     assert "admin-audit-policy" in completed_ids
     assert "legal-fixture-regression-comparison" in completed_ids
     assert "user-need-benchmark-coverage" in completed_ids
@@ -438,6 +460,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-workbench-frontend-state-events" not in queue_ids
     assert "legal-rag-case-research-ui" not in queue_ids
     assert "case-export-readiness-download-gate" not in queue_ids
+    assert "deep-review-export-readiness-route-gate" not in queue_ids
     assert "billing-usage-workspace-badge" not in queue_ids
     assert "billing-report-preflight-route" not in queue_ids
     assert "case-edit-runtime-event-binding" not in queue_ids
@@ -608,6 +631,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     )
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_rag_evaluation.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_deep_review_export_gate.py tests/test_case_export_readiness.py -q"
+        in ledger["validation_commands"]
+    )
     assert (
         "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py "
         "tests/test_gemini_newapi_cheap_first_calibration.py -q"
