@@ -107,6 +107,28 @@ PAGE_GATES = (
             "network-mocked model-ops API browser regression",
         ),
     },
+    {
+        "route": "/settings",
+        "page": "SettingsPage",
+        "source_path": "app/frontend/src/pages/SettingsPage.tsx",
+        "risk_area": "user-facing feedback capture and account settings",
+        "protected_panels": (
+            "product feedback capture form",
+            "feedback capture-plan preview",
+            "feedback ticket submit action",
+            "metadata-only feedback privacy boundary",
+        ),
+        "covered_by": (
+            "frontend-lint",
+            "frontend-typecheck",
+            "frontend-build",
+            "frontend-ui-regression",
+            "manual-browser-smoke",
+        ),
+        "missing_automation": (
+            "network-mocked feedback capture-plan and ticket-create browser regression",
+        ),
+    },
 )
 
 
@@ -141,6 +163,7 @@ class FrontendUiRegressionGateService:
                     "Legal RAG abstention escalation gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, fixture questions, dangerous answers, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "Legal RAG retrieval diagnostics gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, raw query, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
+                    "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
                 ],
             },
@@ -182,6 +205,12 @@ class FrontendUiRegressionGateService:
                     "page": "/maintenance",
                     "current_control": "Backend services emit metadata-only benchmark evidence and npm run ui:regression scans UI sources for forbidden sensitive examples.",
                     "regression_target": "Add rendered DOM assertions that fixture snippets, raw model output, credentials, and user feedback text are absent.",
+                },
+                {
+                    "id": "feedback-capture-plan-regresses",
+                    "page": "/settings",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the product feedback form, capture-plan API binding, ticket creation path, and privacy-boundary rendering in the source contract.",
+                    "regression_target": "Add browser-level mocked capture-plan 200/500 checks and assert raw user feedback text is not rendered in the preview summary.",
                 },
             ],
             "recommended_actions": self._recommended_actions(missing_script_ids, missing_automation),

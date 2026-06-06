@@ -59,9 +59,8 @@ compliance checks, case export readiness checks, and admin audit policy
 evidence.
 The newest evidence-management slice adds a metadata-only evidence-catalog
 export preflight to case evidence-catalog generation. It joins exhibit package
-policy and bundle integrity checks while still allowing draft generation, but
-frontend download/export buttons still need to consume the blocked/ready result.
-That follow-up is now partially closed for markdown downloads: the case detail
+policy and bundle integrity checks while still allowing draft generation. The
+frontend follow-up is now partially closed for markdown downloads: the case detail
 page gates report, evidence-catalog, and generated-document downloads through
 metadata-only case export readiness before calling the local download helper.
 Final DOCX/PDF export and delivery package release actions still need the same

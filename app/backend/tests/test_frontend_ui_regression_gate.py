@@ -7,7 +7,7 @@ def test_frontend_ui_regression_gate_detects_current_frontend_scripts():
     gate = FrontendUiRegressionGateService().build_gate()
 
     assert gate["status"] == "ready_with_gaps"
-    assert gate["summary"]["page_count"] == 2
+    assert gate["summary"]["page_count"] == 3
     assert gate["summary"]["ready_command_gate_count"] == gate["summary"]["required_command_gate_count"]
     command_ids = {row["id"] for row in gate["command_gates"]}
     assert {"frontend-lint", "frontend-typecheck", "frontend-build", "frontend-ui-regression"}.issubset(command_ids)
@@ -20,9 +20,10 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     gate = FrontendUiRegressionGateService().build_gate()
     rows = {row["route"]: row for row in gate["page_rows"]}
 
-    assert set(rows) == {"/maintenance", "/model-ops"}
+    assert set(rows) == {"/maintenance", "/model-ops", "/settings"}
     assert rows["/maintenance"]["source_exists"] is True
     assert rows["/model-ops"]["source_exists"] is True
+    assert rows["/settings"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
@@ -44,11 +45,16 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Cheap-first canary change manifest" in rows["/model-ops"]["protected_panels"]
     assert "Gemini cheap-first coverage gate" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
+    assert "product feedback capture form" in rows["/settings"]["protected_panels"]
+    assert "feedback capture-plan preview" in rows["/settings"]["protected_panels"]
+    assert "metadata-only feedback privacy boundary" in rows["/settings"]["protected_panels"]
     assert rows["/maintenance"]["status"] == "ready_with_gaps"
     assert rows["/model-ops"]["status"] == "ready_with_gaps"
-    assert gate["summary"]["missing_page_automation_count"] == 2
+    assert rows["/settings"]["status"] == "ready_with_gaps"
+    assert gate["summary"]["missing_page_automation_count"] == 3
     assert "frontend-ui-regression" in rows["/maintenance"]["ready_cover"]
     assert "frontend-ui-regression" in rows["/model-ops"]["ready_cover"]
+    assert "frontend-ui-regression" in rows["/settings"]["ready_cover"]
 
 
 def test_frontend_ui_regression_gate_is_metadata_only():
@@ -93,6 +99,8 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
     assert "gemini-cheap-first-coverage-gate-regresses" in payload_text
+    assert "feedback-capture-plan-regresses" in payload_text
+    assert "raw feedback text" in payload_text
     assert "credentials" in payload_text
     assert "function Inner()" not in payload_text
     assert "localStorage.getItem" not in payload_text
@@ -114,5 +122,5 @@ def test_frontend_ui_regression_gate_route_returns_gate():
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
-    assert payload["data"]["summary"]["page_count"] == 2
+    assert payload["data"]["summary"]["page_count"] == 3
     assert payload["data"]["status"] == "ready_with_gaps"

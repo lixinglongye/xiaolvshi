@@ -225,6 +225,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-role-permission-matrix" in completed_ids
     assert "billing-usage-quota-policy" in completed_ids
     assert "feedback-lifecycle-policy" in completed_ids
+    assert "feedback-capture-plan" in completed_ids
     assert "contract-clause-extraction-schema" in completed_ids
     assert "case-workbench-ui-binding" in completed_ids
     assert "legal-source-ingestion-metadata" in completed_ids

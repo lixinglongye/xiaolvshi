@@ -62,6 +62,32 @@ def test_runtime_router_discovery_smoke_is_optional_release_evidence():
     assert "app/backend/tests/test_runtime_router_discovery.py" in check["evidence_paths"]
 
 
+def test_feedback_capture_plan_is_required_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands() if item["check_id"] == "feedback-capture-plan"
+    ]
+    result = service.evaluate({"feedback-capture-plan": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "feedback-capture-plan")
+
+    assert commands == [
+        {
+            "check_id": "feedback-capture-plan",
+            "command": "python -m pytest tests/test_feedback_capture_plan.py tests/test_feedback_lifecycle_policy.py tests/test_feedback_roadmap_alignment.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "app/backend/services/feedback_capture_plan.py" in check["evidence_paths"]
+    assert "app/backend/routers/feedback_tickets.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_feedback_capture_plan.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/feedbackApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/SettingsPage.tsx" in check["evidence_paths"]
+    assert "docs/FEEDBACK_CAPTURE_PLAN.md" in check["evidence_paths"]
+    assert "metadata-only triage" in check["manual_note"]
+    assert "raw feedback text" in check["manual_note"]
+
+
 def test_case_workbench_risk_refresh_plan_is_optional_release_evidence():
     service = ReleaseReadinessService()
     commands = [

@@ -5,10 +5,11 @@ from typing import List, Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
+from services.feedback_capture_plan import FeedbackCapturePlanService
 from services.feedback_tickets import Feedback_ticketsService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.feedback_triage import FeedbackTriageService
@@ -94,6 +95,16 @@ class Feedback_ticketsBatchDeleteRequest(BaseModel):
 class FeedbackTriagePreviewRequest(BaseModel):
     category: str
     content: str
+
+
+class FeedbackCapturePlanRequest(BaseModel):
+    category: str
+    content: str
+    state: Optional[str] = None
+    affected_artifact_id: Optional[str] = None
+    account_context: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class FeedbackTriagePreviewResponse(BaseModel):
@@ -186,6 +197,16 @@ async def preview_feedback_triage(
     return triage
 
 
+@router.post("/capture-plan")
+async def preview_feedback_capture_plan(
+    data: FeedbackCapturePlanRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """Preview feedback capture, roadmap linkage, and lifecycle checks without writing a ticket."""
+    _ = current_user
+    return FeedbackCapturePlanService().build_plan(data.model_dump())
+
+
 @router.get("/{id}", response_model=Feedback_ticketsResponse)
 async def get_feedback_tickets(
     id: int,
@@ -222,7 +243,7 @@ async def create_feedback_tickets(
     
     service = Feedback_ticketsService(db)
     try:
-        payload = FeedbackTriageService().apply_to_payload(data.model_dump())
+        payload = FeedbackCapturePlanService().enrich_ticket_payload(data.model_dump())
         result = await service.create(payload, user_id=str(current_user.id))
         if not result:
             raise HTTPException(status_code=400, detail="Failed to create feedback_tickets")
@@ -251,7 +272,10 @@ async def create_feedback_ticketss_batch(
     
     try:
         for item_data in request.items:
-            result = await service.create(item_data.model_dump(), user_id=str(current_user.id))
+            result = await service.create(
+                FeedbackCapturePlanService().enrich_ticket_payload(item_data.model_dump()),
+                user_id=str(current_user.id),
+            )
             if result:
                 results.append(result)
         

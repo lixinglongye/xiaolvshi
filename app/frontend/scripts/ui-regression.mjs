@@ -11,8 +11,10 @@ const files = {
   maintenanceApi: 'src/lib/maintenanceApi.ts',
   modelOpsApi: 'src/lib/modelOpsApi.ts',
   workbenchRuntimeApi: 'src/lib/workbenchRuntimeApi.ts',
+  feedbackApi: 'src/lib/feedbackApi.ts',
   caseWorkbenchRuntimePanel: 'src/components/cases/CaseWorkbenchRuntimePanel.tsx',
   caseDetailPage: 'src/pages/CaseDetailPage.tsx',
+  settingsPage: 'src/pages/SettingsPage.tsx',
 };
 
 function read(relativePath) {
@@ -54,16 +56,20 @@ const modelOpsPage = read(files.modelOpsPage);
 const maintenanceApi = read(files.maintenanceApi);
 const modelOpsApi = read(files.modelOpsApi);
 const workbenchRuntimeApi = read(files.workbenchRuntimeApi);
+const feedbackApi = read(files.feedbackApi);
 const caseWorkbenchRuntimePanel = read(files.caseWorkbenchRuntimePanel);
 const caseDetailPage = read(files.caseDetailPage);
+const settingsPage = read(files.settingsPage);
 const relevantSources = [
   maintenancePage,
   modelOpsPage,
   maintenanceApi,
   modelOpsApi,
   workbenchRuntimeApi,
+  feedbackApi,
   caseWorkbenchRuntimePanel,
   caseDetailPage,
+  settingsPage,
 ].join('\n');
 const geminiAliasMatrixPanel = sourceSection(
   maintenancePage,
@@ -100,6 +106,12 @@ const caseExportReadinessApiCall = sourceSection(
   'const readiness = await getMaintenanceCaseExportReadiness(',
   'setExportReadiness(readiness);',
   'case detail export readiness API call',
+);
+const settingsFeedbackCaptureSection = sourceSection(
+  settingsPage,
+  'Product feedback',
+  "{t('data_deletion_request')}",
+  'settings feedback capture section',
 );
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
@@ -185,6 +197,21 @@ const checks = [
       caseExportReadinessApiCall,
       /viewDoc\.content|content\s*:|buildDocumentContent\(|buildEvidenceDirectory\(|raw_document_text["']?\s*:|document_text["']?\s*:/i,
       'case detail export readiness API call must stay metadata-only',
+    ),
+  () => assertIncludes(feedbackApi, 'FeedbackCapturePlan', 'feedback capture plan API type'),
+  () => assertIncludes(feedbackApi, '/api/v1/entities/feedback_tickets/capture-plan', 'feedback capture plan endpoint binding'),
+  () => assertIncludes(settingsPage, 'previewFeedbackCapturePlan', 'settings feedback capture plan API binding'),
+  () => assertIncludes(settingsPage, 'Product feedback', 'settings product feedback panel'),
+  () => assertIncludes(settingsPage, 'Preview triage', 'settings feedback triage preview action'),
+  () => assertIncludes(settingsPage, 'Send feedback', 'settings feedback submit action'),
+  () => assertIncludes(settingsPage, 'Related report/case/document ID', 'settings feedback artifact link field'),
+  () => assertIncludes(settingsPage, 'raw feedback returned', 'settings feedback privacy boundary UI'),
+  () => assertIncludes(settingsPage, 'calls_ai_model', 'settings feedback model-call privacy binding'),
+  () =>
+    assertNotMatches(
+      settingsFeedbackCaptureSection,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|payment_secret/i,
+      'settings feedback capture panel sensitive field guard',
     ),
   () => assertIncludes(maintenancePage, 'Low-resource fixture review', 'maintenance review packet fixture panel'),
   () => assertIncludes(maintenancePage, 'raw fixture payload echoed: false', 'maintenance fixture privacy boundary'),
