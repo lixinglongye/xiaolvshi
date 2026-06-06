@@ -480,9 +480,12 @@ class ReleaseReadinessService:
                 evidence_paths=(
                     "app/backend/services/model_ops_readiness.py",
                     "app/backend/tests/test_model_ops_readiness.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "docs/MODEL_OPS_READINESS.md",
                 ),
-                validation_command="python -m pytest tests/test_model_ops_readiness.py -q",
+                validation_command="python -m pytest tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
             ),
             ReleaseCheck(
                 id="model-ops-cheap-first-release-decision",

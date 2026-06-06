@@ -49,6 +49,15 @@ def test_model_ops_readiness_warns_on_warning_component():
     assert "route-guardrails" in result["warning_check_ids"]
     assert result["summary"]["required_warning_count"] == 1
     assert result["summary"]["optional_review_count"] == 0
+    assert result["summary"]["warning_drilldown_count"] == 1
+    assert result["summary"]["p1_warning_count"] == 1
+    assert result["warning_category_counts"] == {"runtime_telemetry_review": 1}
+    assert result["warning_drilldown"][0]["id"] == "route-guardrails"
+    assert result["warning_drilldown"][0]["warning_category"] == "runtime_telemetry_review"
+    assert result["warning_drilldown"][0]["severity"] == "p1_required_review"
+    assert "route telemetry" in result["warning_drilldown"][0]["next_action"].lower()
+    assert result["warning_drilldown"][0]["privacy_boundary"]["metadata_only"] is True
+    assert result["warning_drilldown"][0]["privacy_boundary"]["credentials_included"] is False
 
 
 def test_model_ops_readiness_warns_on_review_required_gemini_variant_matrix():
@@ -66,6 +75,8 @@ def test_model_ops_readiness_warns_on_review_required_gemini_variant_matrix():
     assert "gemini-variant-matrix" in result["warning_check_ids"]
     assert "gemini-variant-matrix" not in result["blocking_check_ids"]
     assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
 
 
 def test_model_ops_readiness_fails_on_blocking_component():
@@ -84,6 +95,9 @@ def test_model_ops_readiness_fails_on_blocking_component():
     assert "cost-guardrails" in result["blocking_check_ids"]
     assert result["summary"]["required_failure_count"] == 1
     assert result["summary"]["optional_failure_count"] == 0
+    assert result["summary"]["p0_warning_count"] == 1
+    assert result["warning_drilldown"][0]["severity"] == "p0_blocking_required"
+    assert result["warning_drilldown"][0]["warning_category"] == "cost_guardrail_review"
 
 
 def test_model_ops_readiness_fails_when_required_signal_is_missing():
@@ -110,6 +124,12 @@ def test_model_ops_readiness_warns_when_optional_probe_evaluation_is_missing():
     assert result["summary"]["optional_failure_count"] == 0
     probe_check = next(check for check in result["checks"] if check["id"] == "gateway-probe-evaluation")
     assert probe_check["required"] is False
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["id"] == "gateway-probe-evaluation"
+    assert drilldown["warning_category"] == "manual_evidence_gap"
+    assert drilldown["severity"] == "p2_optional_review"
+    assert "sanitized manual gateway probe evidence" in drilldown["next_action"]
+    assert "test_model_gateway_probe_evaluation.py" in drilldown["validation_hint"]
 
 
 def test_model_ops_readiness_warns_on_failed_optional_probe_when_supplied():
@@ -151,6 +171,14 @@ def test_model_ops_route_includes_readiness():
     assert payload["model_ops_readiness"]["status"] in {"pass", "warn", "fail"}
     assert payload["model_ops_readiness"]["summary"]["optional_component_count"] >= 1
     assert payload["model_ops_readiness"]["summary"]["optional_review_count"] >= 1
+    assert payload["model_ops_readiness"]["summary"]["warning_drilldown_count"] >= 1
+    assert payload["model_ops_readiness"]["warning_category_counts"]
+    assert payload["model_ops_readiness"]["warning_drilldown"]
+    assert all(
+        row["privacy_boundary"]["credentials_included"] is False
+        for row in payload["model_ops_readiness"]["warning_drilldown"]
+    )
+    assert "sk-" not in str(payload["model_ops_readiness"]["warning_drilldown"])
     assert payload["model_ops_readiness"]["checks"]
     assert "price_refresh_monitor" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]

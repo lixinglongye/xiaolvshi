@@ -69,6 +69,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini variant review form" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini model-list ingestion" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini catalog source audit" in profile["release_management"]["release_readiness_controls"]
+    assert "Model operations readiness warning drilldown" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps load performance budget" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps performance observation review" in profile["release_management"]["release_readiness_controls"]
     assert "Cheap-first route quality budget" in profile["release_management"]["release_readiness_controls"]
@@ -237,6 +238,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default change proposal review evidence" in model_signal["description"]
     assert "ModelOps Gemini default cost impact forecast evidence" in model_signal["description"]
     assert "ModelOps observed Gemini model intake queue evidence" in model_signal["description"]
+    assert "ModelOps readiness warning drilldown evidence" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
     assert "cheap-first route quality budgets" in model_signal["description"]
@@ -264,6 +266,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default change proposal review" in model_signal["responsibility"]
     assert "ModelOps Gemini default cost impact forecast review" in model_signal["responsibility"]
     assert "ModelOps observed Gemini model intake queue review" in model_signal["responsibility"]
+    assert "ModelOps readiness warning triage review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "legal benchmark route risk queue review" in model_signal["responsibility"]
     assert "app/backend/services/model_route_quality_budget.py" in evidence_paths
@@ -380,6 +383,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("estimated monthly cost delta, cheap-first savings or regression, unknown pricing, and premium exception/manual review boundary" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Settings defaults, app/backend/.env.example, the README env block, and docs/AI_MODEL_STRATEGY" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("ModelOps readiness warning drilldown is metadata-only warning triage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("review category, priority, next action, and validation hint" in guardrail for guardrail in profile["application_guardrails"])
     assert any("write real environment values" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw prompts, payloads, model outputs, or credentials" in guardrail for guardrail in profile["application_guardrails"])
 

@@ -572,6 +572,17 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops catalog candidate impact gateway boundary'),
   () => assertIncludes(modelOpsPage, 'network_called', 'model-ops catalog candidate impact network boundary'),
   () => assertBefore(modelOpsPage, 'Model catalog candidate impact replay', 'Gateway health plan', 'model-ops catalog candidate impact before gateway health'),
+  () => assertIncludes(modelOpsPage, 'Warning drilldown', 'model-ops readiness warning drilldown panel'),
+  () => assertIncludes(modelOpsPage, 'readinessWarningRows', 'model-ops readiness warning drilldown row binding'),
+  () => assertIncludes(modelOpsPage, 'readinessWarningCategoryRows', 'model-ops readiness warning category binding'),
+  () => assertIncludes(modelOpsPage, 'warning_drilldown_count', 'model-ops readiness warning drilldown summary binding'),
+  () => assertIncludes(modelOpsPage, 'p0_warning_count', 'model-ops readiness P0 warning binding'),
+  () => assertIncludes(modelOpsPage, 'warning_category_counts', 'model-ops readiness warning category counts binding'),
+  () => assertIncludes(modelOpsPage, 'validation_hint', 'model-ops readiness warning validation hint binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsReadinessWarningDrilldown', 'model-ops readiness warning drilldown type'),
+  () => assertIncludes(modelOpsApi, 'warning_drilldown', 'model-ops readiness warning drilldown response binding'),
+  () => assertIncludes(modelOpsApi, 'warning_category_counts', 'model-ops readiness warning category response binding'),
+  () => assertIncludes(modelOpsApi, 'p1_warning_count', 'model-ops readiness P1 warning summary type'),
   () =>
     assertNotMatches(
       catalogCandidatePatchPlanPanel,
@@ -901,6 +912,12 @@ const geminiDefaultChangeReviewPanel = sourceSection(
   'Gemini default cost impact',
   'model-ops Gemini default change review section',
 );
+const modelOpsReadinessPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Model ops readiness</h2>',
+  'Cheap-first release decision',
+  'model-ops readiness section',
+);
 const cheapFirstPriorityQueuePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>',
@@ -981,6 +998,11 @@ assertNotMatches(
   geminiDefaultChangeReviewPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default change review no secret or raw prompt/payload field names',
+);
+assertNotMatches(
+  modelOpsReadinessPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|gateway_response|request_body|response_body|headers)\b/i,
+  'model-ops readiness warning drilldown no secret or raw request/response/prompt field names',
 );
 assertNotMatches(
   cheapFirstPriorityQueuePanel,

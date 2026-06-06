@@ -1135,6 +1135,32 @@ export type ModelOpsReadinessCheck = {
   warning_ids: string[];
 };
 
+export type ModelOpsReadinessWarningDrilldown = {
+  id: string;
+  label: string;
+  status: string;
+  required: boolean;
+  source_key: string;
+  component_category: string;
+  warning_category: string;
+  severity: string;
+  priority: number;
+  reason: string;
+  blocking_ids: string[];
+  warning_ids: string[];
+  next_action: string;
+  validation_hint: string;
+  privacy_boundary: {
+    metadata_only: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payloads_included: boolean;
+    raw_model_output_included: boolean;
+    credentials_included: boolean;
+  };
+};
+
 export type ModelOpsReadiness = {
   status: string;
   release_recommendation: string;
@@ -1155,10 +1181,16 @@ export type ModelOpsReadiness = {
     optional_failure_count: number;
     blocking_count: number;
     warning_count: number;
+    warning_drilldown_count: number;
+    p0_warning_count: number;
+    p1_warning_count: number;
+    p2_warning_count: number;
   };
   checks: ModelOpsReadinessCheck[];
   blocking_check_ids: string[];
   warning_check_ids: string[];
+  warning_category_counts: Record<string, number>;
+  warning_drilldown: ModelOpsReadinessWarningDrilldown[];
   recommended_actions: string[];
 };
 

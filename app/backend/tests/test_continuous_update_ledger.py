@@ -220,6 +220,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gateway-probe-readiness-binding" in completed_ids
     assert "gateway-probe-latest-evidence-store" in completed_ids
     assert "model-ops-readiness-required-optional-summary" in completed_ids
+    assert "model-ops-readiness-warning-drilldown" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
@@ -348,6 +349,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gateway-probe-readiness-binding" not in queue_ids
     assert "gateway-probe-latest-evidence-store" not in queue_ids
     assert "model-ops-readiness-required-optional-summary" not in queue_ids
+    assert "model-ops-readiness-warning-drilldown" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
@@ -459,6 +461,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && "
+        "cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
@@ -970,6 +977,27 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-catalog-source-audit" in intake_queue_entry["release_gate_links"]
     assert "model-gateway-compatibility" in intake_queue_entry["release_gate_links"]
     assert "model-lifecycle-policy" in intake_queue_entry["release_gate_links"]
+
+    readiness_drilldown_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-ops-readiness-warning-drilldown"
+    )
+    assert readiness_drilldown_entry["size"] == "medium"
+    assert readiness_drilldown_entry["status"] == "shipped"
+    assert "Classifies ModelOps readiness warnings" in readiness_drilldown_entry["impact"]
+    assert "priority" in readiness_drilldown_entry["impact"]
+    assert "validation-hint" in readiness_drilldown_entry["impact"]
+    assert "without calling NewAPI/Gemini/gateways" in readiness_drilldown_entry["impact"]
+    assert "raw payloads" in readiness_drilldown_entry["impact"]
+    assert "credentials" in readiness_drilldown_entry["impact"]
+    assert "app/backend/services/model_ops_readiness.py" in readiness_drilldown_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_readiness.py" in readiness_drilldown_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in readiness_drilldown_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in readiness_drilldown_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in readiness_drilldown_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in readiness_drilldown_entry["evidence_paths"]
+    assert "model-ops-readiness" in readiness_drilldown_entry["release_gate_links"]
+    assert "frontend-ui-regression" in readiness_drilldown_entry["release_gate_links"]
+
     catalog_candidate_patch_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-catalog-candidate-patch-plan"
     )

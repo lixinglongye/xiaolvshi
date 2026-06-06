@@ -759,6 +759,8 @@ function Inner() {
   const aliases = useMemo(() => Object.entries(data?.routing_aliases ?? {}), [data]);
   const usageRows = useMemo(() => Object.entries(data?.usage.models ?? {}), [data]);
   const readinessRows = data?.model_ops_readiness?.checks ?? [];
+  const readinessWarningRows = data?.model_ops_readiness?.warning_drilldown ?? [];
+  const readinessWarningCategoryRows = Object.entries(data?.model_ops_readiness?.warning_category_counts ?? {});
   const cheapFirstDecisionChecks = data?.cheap_first_release_decision?.checks ?? [];
   const defaultChangeQueueRows = data?.default_change_queue?.queue_items ?? [];
   const cheapFirstPriorityRows = data?.cheap_first_priority_queue?.priority_items ?? [];
@@ -994,6 +996,80 @@ function Inner() {
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">{data.model_ops_readiness.blocking_check_ids.length}</div>
                 <div className="mt-1 text-sm text-stone-600">blocking ids</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="border-b border-stone-950/10 p-4">
+                  <h3 className="text-sm font-black uppercase text-stone-500">Warning drilldown</h3>
+                  <div className="mt-1 text-xs leading-5 text-stone-600">
+                    {data.model_ops_readiness.summary.warning_drilldown_count} review items / P0{' '}
+                    {data.model_ops_readiness.summary.p0_warning_count} / P1{' '}
+                    {data.model_ops_readiness.summary.p1_warning_count} / P2{' '}
+                    {data.model_ops_readiness.summary.p2_warning_count}
+                  </div>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Next action</TableHead>
+                      <TableHead>Validation</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {readinessWarningRows.slice(0, 8).map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(item.status)}>
+                            {item.severity.replace(/_/g, ' ')}
+                          </Badge>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">priority {item.priority}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            {item.required ? 'required gate' : 'optional evidence'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                          <div className="font-semibold text-stone-950">{item.label}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{item.source_key}</div>
+                          <div className="mt-2">{item.warning_category.replace(/_/g, ' ')}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                          {item.next_action}
+                          <div className="mt-2 text-stone-500">
+                            metadata only: {String(item.privacy_boundary.metadata_only)} / gateway called:{' '}
+                            {String(item.privacy_boundary.gateway_called)} / credentials:{' '}
+                            {String(item.privacy_boundary.credentials_included)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[360px] break-all font-mono text-[11px] leading-5 text-stone-600">
+                          {item.validation_hint}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Warning categories</h3>
+                <div className="space-y-2">
+                  {readinessWarningCategoryRows.map(([category, count]) => (
+                    <div
+                      key={category}
+                      className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-sm"
+                    >
+                      <span className="text-stone-700">{category.replace(/_/g, ' ')}</span>
+                      <Badge variant="outline" className="bg-white">
+                        {count}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
+                  Release review remains metadata-only: no prompts, raw payloads, model outputs, credentials, or
+                  gateway responses are surfaced in the readiness warning drilldown.
+                </div>
               </div>
             </div>
             <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">

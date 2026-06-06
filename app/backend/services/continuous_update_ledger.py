@@ -138,6 +138,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_gemini_model_variant_matrix.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_performance_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py tests/test_model_default_candidate_selector.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -452,6 +453,31 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("model-ops-readiness", "frontend-typecheck"),
                 user_need_ids=("safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="model-ops-readiness-warning-drilldown",
+                title="ModelOps readiness warning drilldown",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Classifies ModelOps readiness warnings into required, optional, catalog/pricing, routing, "
+                    "runtime telemetry, cost, release-evidence, and canary review categories with priority, "
+                    "next-action, validation-hint, and privacy-boundary metadata in /api/v1/aihub/models and the "
+                    "ModelOps UI without calling NewAPI/Gemini/gateways or exposing raw payloads, prompts, model "
+                    "outputs, credentials, or legal text."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODEL_OPS_READINESS.md",
+                ),
+                release_gate_links=("model-ops-readiness", "frontend-typecheck", "frontend-ui-regression"),
+                user_need_ids=("safe-ai-ops", "low-cost-routing", "reviewer-visibility"),
             ),
             LedgerEntry(
                 id="model-gateway-health-plan",

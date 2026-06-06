@@ -212,6 +212,7 @@ class ModelOpsReadinessService:
         optional_checks = [check for check in checks if not check["required"]]
         blocking = [check for check in checks if check["status"] == "fail" and check["required"]]
         warnings = [check for check in checks if check["status"] == "warn" or (check["status"] == "fail" and not check["required"])]
+        warning_drilldown = self._warning_drilldown(checks)
         return {
             "status": status,
             "release_recommendation": self._release_recommendation(status),
@@ -236,10 +237,16 @@ class ModelOpsReadinessService:
                 "optional_failure_count": sum(1 for check in optional_checks if check["status"] == "fail"),
                 "blocking_count": len(blocking),
                 "warning_count": len(warnings),
+                "warning_drilldown_count": len(warning_drilldown),
+                "p0_warning_count": sum(1 for item in warning_drilldown if item["severity"] == "p0_blocking_required"),
+                "p1_warning_count": sum(1 for item in warning_drilldown if item["severity"] == "p1_required_review"),
+                "p2_warning_count": sum(1 for item in warning_drilldown if item["severity"] == "p2_optional_review"),
             },
             "checks": checks,
             "blocking_check_ids": [check["id"] for check in blocking],
             "warning_check_ids": [check["id"] for check in warnings],
+            "warning_category_counts": self._warning_category_counts(warning_drilldown),
+            "warning_drilldown": warning_drilldown,
             "recommended_actions": self._recommended_actions(checks),
         }
 
@@ -346,6 +353,151 @@ class ModelOpsReadinessService:
         if not actions:
             actions.append("Model operations readiness is passing; keep all required checks attached to release evidence.")
         return actions
+
+    def _warning_drilldown(self, checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        rows = [self._warning_row(check) for check in checks if check["status"] != "pass"]
+        return sorted(rows, key=lambda row: (-row["priority"], row["id"]))
+
+    def _warning_row(self, check: dict[str, Any]) -> dict[str, Any]:
+        category = self._warning_category(check)
+        severity = self._warning_severity(check)
+        return {
+            "id": check["id"],
+            "label": check["label"],
+            "status": check["status"],
+            "required": check["required"],
+            "source_key": check["source_key"],
+            "component_category": check["category"],
+            "warning_category": category,
+            "severity": severity,
+            "priority": self._warning_priority(check, category, severity),
+            "reason": check["reason"],
+            "blocking_ids": check["blocking_ids"],
+            "warning_ids": check["warning_ids"],
+            "next_action": self._warning_next_action(check, category),
+            "validation_hint": self._validation_hint(check, category),
+            "privacy_boundary": {
+                "metadata_only": True,
+                "model_called": False,
+                "gateway_called": False,
+                "network_called": False,
+                "raw_payloads_included": False,
+                "raw_model_output_included": False,
+                "credentials_included": False,
+            },
+        }
+
+    def _warning_category_counts(self, warning_drilldown: list[dict[str, Any]]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for row in warning_drilldown:
+            category = str(row["warning_category"])
+            counts[category] = counts.get(category, 0) + 1
+        return dict(sorted(counts.items()))
+
+    def _warning_severity(self, check: dict[str, Any]) -> str:
+        if check["status"] == "fail" and check["required"]:
+            return "p0_blocking_required"
+        if check["required"]:
+            return "p1_required_review"
+        return "p2_optional_review"
+
+    def _warning_priority(self, check: dict[str, Any], category: str, severity: str) -> int:
+        priority = {
+            "p0_blocking_required": 100,
+            "p1_required_review": 70,
+            "p2_optional_review": 45,
+        }[severity]
+        if category in {"canary_evidence_gap", "release_evidence_review"}:
+            priority += 10
+        if category in {"catalog_pricing_review", "cost_guardrail_review", "routing_quality_review"}:
+            priority += 5
+        if check["blocking_ids"]:
+            priority += min(10, len(check["blocking_ids"]) * 2)
+        if check["warning_ids"]:
+            priority += min(6, len(check["warning_ids"]) * 2)
+        return priority
+
+    def _warning_category(self, check: dict[str, Any]) -> str:
+        source_key = str(check["source_key"])
+        category = str(check["category"])
+        if not check["required"]:
+            return "manual_evidence_gap"
+        if "canary" in source_key:
+            return "canary_evidence_gap"
+        if source_key in {
+            "catalog_source_audit",
+            "gemini_variant_matrix",
+            "observed_gemini_model_intake_queue",
+            "gemini_newapi_alias_capability_coverage",
+            "catalog_candidate_patch_plan",
+            "catalog_candidate_impact_replay",
+            "price_refresh_monitor",
+        }:
+            return "catalog_pricing_review"
+        if category == "runtime_evidence":
+            return "runtime_telemetry_review"
+        if source_key in {
+            "budget_policy",
+            "capability_matrix",
+            "runtime_router",
+            "reasoning_policy",
+            "request_policy",
+            "request_cost_bounds",
+            "cache_policy",
+            "route_quality_budget",
+        }:
+            return "routing_quality_review"
+        if category == "cost":
+            return "cost_guardrail_review"
+        if category == "release_evidence":
+            return "release_evidence_review"
+        if category == "configuration":
+            return "configuration_review"
+        if category in {"resilience", "simulation"}:
+            return "resilience_review"
+        return "general_review"
+
+    def _warning_next_action(self, check: dict[str, Any], warning_category: str) -> str:
+        if warning_category == "manual_evidence_gap":
+            return "Submit sanitized manual gateway probe evidence, or record why this optional evidence remains unavailable."
+        if warning_category == "canary_evidence_gap":
+            return "Attach aggregate canary observation, approval, rollback, and change-manifest evidence before promoting cheap-first defaults."
+        if warning_category == "catalog_pricing_review":
+            return "Review catalog, pricing, lifecycle, and alias evidence before changing Gemini/NewAPI defaults."
+        if warning_category == "runtime_telemetry_review":
+            return "Inspect route telemetry, triage, and remediation evidence for cheap-first routing drift."
+        if warning_category == "routing_quality_review":
+            return "Review task quality gates, request budgets, and cheap-start coverage before release."
+        if warning_category == "cost_guardrail_review":
+            return "Review cheap-first forecast, savings, unknown-price, and premium-ratio signals before release."
+        if warning_category == "release_evidence_review":
+            return "Attach maintainer-reviewed release evidence before treating cheap-first model changes as ready."
+        if warning_category == "configuration_review":
+            return "Resolve configuration, gateway compatibility, or template alignment warnings before release."
+        if warning_category == "resilience_review":
+            return "Review fallback, replay, and escalation evidence before relying on model routing resilience."
+        return f"Review {check['label']} before model-ops release."
+
+    def _validation_hint(self, check: dict[str, Any], warning_category: str) -> str:
+        if warning_category == "manual_evidence_gap":
+            return "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "canary_evidence_gap":
+            return "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py tests/test_model_ops_cheap_first_canary_promotion_decision.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "catalog_pricing_review":
+            return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_gemini_model_variant_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "runtime_telemetry_review":
+            return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "routing_quality_review":
+            return "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "cost_guardrail_review":
+            return "python -m pytest tests/test_model_cost_guardrails.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "release_evidence_review":
+            return "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_default_change_queue.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "configuration_review":
+            return "python -m pytest tests/test_model_configuration_audit.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "resilience_review":
+            return "python -m pytest tests/test_model_routing_replay.py tests/test_model_fallback_chains.py tests/test_model_ops_readiness.py -q"
+        return "python -m pytest tests/test_model_ops_readiness.py -q"
 
 
 def _list(value: Any) -> list[str]:
