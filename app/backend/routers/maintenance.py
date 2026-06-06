@@ -33,6 +33,7 @@ from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
+from services.gemini_newapi_alias_capability_coverage import GeminiNewapiAliasCapabilityCoverageService
 from services.gemini_newapi_model_alias_matrix import GeminiNewapiModelAliasMatrixService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
 from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplayService
@@ -914,6 +915,24 @@ async def evaluate_gemini_newapi_model_alias_matrix(payload: Any = Body(default=
     return {
         "success": True,
         "data": GeminiNewapiModelAliasMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/gemini-newapi-alias-capability-coverage")
+async def get_gemini_newapi_alias_capability_coverage():
+    """Return metadata-only Gemini/NewAPI alias capability coverage evidence."""
+    return {
+        "success": True,
+        "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(),
+    }
+
+
+@router.post("/gemini-newapi-alias-capability-coverage")
+async def evaluate_gemini_newapi_alias_capability_coverage(payload: Any = Body(default=None)):
+    """Evaluate sanitized Gemini/NewAPI aliases against local capability metadata."""
+    return {
+        "success": True,
+        "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(payload),
     }
 
 

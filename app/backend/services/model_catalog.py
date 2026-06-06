@@ -183,7 +183,18 @@ def canonical_model_id(model_id: str | None) -> str | None:
     value = (model_id or "").strip().lower()
     if not value:
         return None
+    value = value.split("?", 1)[0].split("#", 1)[0].strip()
+    if value.endswith("/generatecontent"):
+        value = value[: -len("/generatecontent")]
     catalog = _catalog_by_id()
+    suffixes = (":generatecontent", ":streamgeneratecontent", "@latest", "@stable")
+    while True:
+        for suffix in suffixes:
+            if value.endswith(suffix):
+                value = value[: -len(suffix)]
+                break
+        else:
+            break
     if value in catalog:
         return value
 

@@ -83,6 +83,7 @@ PAGE_GATES = (
             "Performance observations",
             "Gemini catalog source audit",
             "Model catalog candidate impact replay",
+            "Gemini/NewAPI alias capability coverage",
             "Cheap-first release decision",
             "Default change queue",
             "Cheap-first priority queue",
@@ -189,6 +190,7 @@ class FrontendUiRegressionGateService:
                     "Legal RAG abstention escalation gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, fixture questions, dangerous answers, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "Legal RAG retrieval diagnostics gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, raw query, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
+                    "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, raw prompts, payloads, model output, legal text, emails, or credentials.",
                     "ModelOps catalog candidate impact replay UI evidence is metadata only: no catalog/config/env writes, no NewAPI/Gemini/OpenAI/Google/gateway/network calls, and no raw prompts, payloads, model output, legal text, or credentials.",
                     "ModelOps maintainer execution checklist UI evidence is metadata only: no configuration writes, approval records, traffic shifts, gateway calls, prompts, raw model output, or credentials.",
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
@@ -229,6 +231,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini cheap-first coverage-gate panel in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked coverage-gate API checks for default, premium-exception, unknown-model, and privacy-boundary rows.",
+                },
+                {
+                    "id": "gemini-alias-capability-coverage-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini/NewAPI alias capability coverage panel in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked alias-capability API checks for yibu/NewAPI/action-suffix aliases, unknown models, external models, and privacy-boundary rows.",
                 },
                 {
                     "id": "raw-private-output-renders",

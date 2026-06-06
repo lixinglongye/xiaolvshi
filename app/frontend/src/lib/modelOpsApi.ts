@@ -411,6 +411,80 @@ export type ModelOpsObservedGeminiModelIntakeQueue = {
   validation_commands: string[];
 };
 
+export type GeminiNewApiAliasCapabilityCoverageRow = {
+  id: string;
+  source: string;
+  alias_model: string;
+  canonical_model?: string | null;
+  alias_shape: string;
+  coverage_status: string;
+  known_catalog_model: boolean;
+  model_family: string;
+  cost_tier: string;
+  latency_tier: string;
+  lifecycle_status: string;
+  capabilities: string[];
+  covered_tasks: string[];
+  covered_high_frequency_tasks: string[];
+  high_frequency_default_allowed: boolean;
+  balanced_after_precheck_allowed: boolean;
+  premium_or_media_review_required: boolean;
+  default_allowed_without_review: boolean;
+  reason_codes: string[];
+  recommended_action: string;
+};
+
+export type GeminiNewApiAliasCapabilityTaskCoverage = {
+  task: string;
+  alias_count: number;
+  high_frequency: boolean;
+  route_mode: string;
+  status: string;
+};
+
+export type GeminiNewApiAliasCapabilityCoverage = {
+  id: 'gemini-newapi-alias-capability-coverage' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    coverage_row_count: number;
+    catalog_model_count: number;
+    alias_shape_count: number;
+    known_coverage_count: number;
+    review_required_count: number;
+    external_model_count?: number;
+    blocked_count: number;
+    cheap_first_high_frequency_alias_count: number;
+    balanced_after_precheck_alias_count: number;
+    premium_or_media_review_alias_count: number;
+    text_json_capable_alias_count: number;
+    vision_ocr_capable_alias_count: number;
+    grounding_capable_alias_count: number;
+    agentic_capable_alias_count: number;
+    image_capable_alias_count: number;
+    covered_task_count: number;
+    high_frequency_task_count: number;
+    raw_payload_echoed: boolean;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+  };
+  coverage_rows: GeminiNewApiAliasCapabilityCoverageRow[];
+  capability_totals: Record<string, number>;
+  task_alias_coverage: GeminiNewApiAliasCapabilityTaskCoverage[];
+  accepted_alias_shapes: string[];
+  coverage_policy: Record<string, string>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlanRole = {
   role: string;
   model: string;
@@ -2631,6 +2705,7 @@ export type ModelOpsResponse = {
   gateway_compatibility?: ModelGatewayCompatibility;
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
+  gemini_newapi_alias_capability_coverage?: GeminiNewApiAliasCapabilityCoverage;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
   lifecycle_policy?: ModelLifecyclePolicy;
@@ -2895,6 +2970,13 @@ export async function getModelOpsObservedGeminiModelIntakeQueue(): Promise<Model
   });
 }
 
+export async function getGeminiNewApiAliasCapabilityCoverage(): Promise<GeminiNewApiAliasCapabilityCoverage> {
+  return invokeModelOpsApi<GeminiNewApiAliasCapabilityCoverage>({
+    url: '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage',
+    method: 'GET',
+  });
+}
+
 export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiCheapFirstCoverageGate> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstCoverageGate>({
     url: '/api/v1/aihub/models/gemini-cheap-first-coverage-gate',
@@ -3079,6 +3161,16 @@ export async function evaluateModelOpsObservedGeminiModelIntakeQueue(
 ): Promise<ModelOpsObservedGeminiModelIntakeQueue> {
   return invokeModelOpsApi<ModelOpsObservedGeminiModelIntakeQueue>({
     url: '/api/v1/aihub/models/observed-gemini-model-intake-queue',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function evaluateGeminiNewApiAliasCapabilityCoverage(
+  payload: Record<string, unknown>,
+): Promise<GeminiNewApiAliasCapabilityCoverage> {
+  return invokeModelOpsApi<GeminiNewApiAliasCapabilityCoverage>({
+    url: '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage',
     method: 'POST',
     data: payload,
   });

@@ -31,6 +31,7 @@ from services.aihub import (
     InvalidImageInputError,
     InvalidPdfInputError,
 )
+from services.gemini_newapi_alias_capability_coverage import GeminiNewapiAliasCapabilityCoverageService
 from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
 from services.gemini_model_variant_matrix import GeminiModelVariantMatrixService
 from services.model_capability_matrix import ModelCapabilityMatrixService
@@ -255,6 +256,9 @@ async def list_models():
     observed_gemini_model_intake_queue = ModelOpsObservedGeminiModelIntakeQueueService().build_queue(
         {"observed_models": observed_gateway_models}
     )
+    gemini_newapi_alias_capability_coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
+        {"observed_models": observed_gateway_models}
+    )
     catalog_candidate_patch_plan = ModelCatalogCandidatePatchPlanService().build_plan(
         signals={
             "gateway_probe_evaluation": gateway_probe_evaluation,
@@ -318,6 +322,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
@@ -398,6 +403,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
@@ -488,6 +494,25 @@ async def evaluate_gemini_variant_matrix(payload: dict[str, Any]):
     return {
         "success": True,
         "data": GeminiModelVariantMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/models/gemini-newapi-alias-capability-coverage")
+async def gemini_newapi_alias_capability_coverage():
+    """Return metadata-only alias capability coverage for Gemini/NewAPI model ids."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_newapi_alias_capability_coverage"],
+    }
+
+
+@router.post("/models/gemini-newapi-alias-capability-coverage")
+async def evaluate_gemini_newapi_alias_capability_coverage(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini/NewAPI aliases against local capability metadata."""
+    return {
+        "success": True,
+        "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(payload),
     }
 
 

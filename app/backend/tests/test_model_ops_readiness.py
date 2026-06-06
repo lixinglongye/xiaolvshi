@@ -167,6 +167,11 @@ def test_model_ops_route_includes_readiness():
     assert "catalog_candidate_impact_replay" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_newapi_alias_capability_coverage" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["known_coverage_count"] >= 100
+    assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["gateway_called"] is False
     replay_check = next(
         check for check in payload["model_ops_readiness"]["checks"] if check["source_key"] == "catalog_candidate_impact_replay"
     )

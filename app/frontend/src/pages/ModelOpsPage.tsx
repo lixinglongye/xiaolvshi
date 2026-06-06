@@ -25,10 +25,12 @@ import {
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
+  getGeminiNewApiAliasCapabilityCoverage,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
+  type GeminiNewApiAliasCapabilityCoverage,
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelGatewayHealthPlanRole,
@@ -114,7 +116,7 @@ function statusClass(status?: string) {
 
 function boundaryDisplayEntries(value?: Record<string, unknown>) {
   return Object.entries(value ?? {})
-    .filter(([key]) => !/(raw|prompt|payload|credential|secret|api[_-]?key|authorization)/i.test(key))
+    .filter(([key]) => !/(raw|prompt|payload|credential|secret|api[_-]?key|authorization|headers|request_body|response_body|gateway_response|email|phone)/i.test(key))
     .slice(0, 4);
 }
 
@@ -350,6 +352,9 @@ function Inner() {
   const [observedGeminiModelIntakePayloadText, setObservedGeminiModelIntakePayloadText] = useState('');
   const [observedGeminiModelIntakeLoading, setObservedGeminiModelIntakeLoading] = useState(false);
   const [observedGeminiModelIntakeError, setObservedGeminiModelIntakeError] = useState('');
+  const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
+    useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
+  const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
@@ -383,6 +388,8 @@ function Inner() {
     setGeminiVariantMatrix(null);
     setObservedGeminiModelIntakeError('');
     setObservedGeminiModelIntakeQueue(null);
+    setGeminiAliasCapabilityCoverageError('');
+    setGeminiAliasCapabilityCoverage(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
     setPerformanceError('');
@@ -398,8 +405,10 @@ function Inner() {
     setCanaryRollbackDrill(null);
     setCanaryChangeManifest(null);
     try {
-      const [modelOpsResult, geminiCheapFirstCoverageGateResult] = await Promise.allSettled([
+      const [modelOpsResult, geminiAliasCapabilityCoverageResult, geminiCheapFirstCoverageGateResult] =
+        await Promise.allSettled([
         getModelOps(),
+        getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -419,6 +428,15 @@ function Inner() {
         setGeminiDefaultCostImpact(modelOpsResult.value.gemini_default_cost_impact ?? null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
+        if (geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
+          setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
+        } else {
+          console.error(geminiAliasCapabilityCoverageResult.reason);
+          setGeminiAliasCapabilityCoverage(modelOpsResult.value.gemini_newapi_alias_capability_coverage ?? null);
+          if (!modelOpsResult.value.gemini_newapi_alias_capability_coverage) {
+            setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
+          }
+        }
         if (geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
           setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
         } else {
@@ -441,6 +459,13 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
         setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
+        setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
+        console.error(geminiAliasCapabilityCoverageResult.reason);
+        setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -789,6 +814,16 @@ function Inner() {
   const activeObservedGeminiModelIntakeQueue =
     observedGeminiModelIntakeQueue ?? data?.observed_gemini_model_intake_queue ?? null;
   const observedGeminiModelIntakeRows = activeObservedGeminiModelIntakeQueue?.queue_items ?? [];
+  const activeGeminiAliasCapabilityCoverage =
+    geminiAliasCapabilityCoverage ?? data?.gemini_newapi_alias_capability_coverage ?? null;
+  const geminiAliasCapabilityRows = activeGeminiAliasCapabilityCoverage?.coverage_rows ?? [];
+  const geminiAliasTaskCoverageRows = activeGeminiAliasCapabilityCoverage?.task_alias_coverage ?? [];
+  const geminiAliasCapabilityPrivacyEntries = boundaryDisplayEntries(
+    activeGeminiAliasCapabilityCoverage?.privacy_boundary,
+  );
+  const geminiAliasCapabilityClaimEntries = boundaryDisplayEntries(
+    activeGeminiAliasCapabilityCoverage?.claim_boundary,
+  );
   const activeGeminiCheapFirstCoverageGate =
     geminiCheapFirstCoverageGate ?? data?.gemini_cheap_first_coverage_gate ?? null;
   const geminiCheapFirstCoverageRows = activeGeminiCheapFirstCoverageGate?.coverage_rows ?? [];
@@ -3838,6 +3873,247 @@ function Inner() {
                   </TableBody>
                 </Table>
               </div>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiAliasCapabilityCoverage || geminiAliasCapabilityCoverageError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiAliasCapabilityCoverage
+                    ? `${activeGeminiAliasCapabilityCoverage.summary.coverage_row_count} alias rows / ${activeGeminiAliasCapabilityCoverage.summary.known_coverage_count} covered / ${activeGeminiAliasCapabilityCoverage.summary.review_required_count} review / ${activeGeminiAliasCapabilityCoverage.summary.blocked_count} blocked`
+                    : 'metadata-only Gemini/NewAPI alias capability review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiAliasCapabilityCoverage?.id ?? 'gemini-newapi-alias-capability-coverage'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiAliasCapabilityCoverage?.status)}>
+                {activeGeminiAliasCapabilityCoverage?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiAliasCapabilityCoverageError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiAliasCapabilityCoverageError}
+              </div>
+            )}
+
+            {activeGeminiAliasCapabilityCoverage && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.alias_shape_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">alias shapes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.cheap_first_high_frequency_alias_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first aliases</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.balanced_after_precheck_alias_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">balanced after precheck</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.premium_or_media_review_alias_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium/media review</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.text_json_capable_alias_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">text/json aliases</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiAliasCapabilityCoverage.summary.agentic_capable_alias_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">agentic aliases</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiAliasCapabilityCoverage.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway called</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiAliasCapabilityCoverage.summary.configuration_written)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">configuration written</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Alias count</TableHead>
+                          <TableHead>Route</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiAliasTaskCoverageRows.map((row) => (
+                          <TableRow key={row.task}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.task}</div>
+                              <div className="mt-1 text-xs text-stone-500">
+                                high-frequency: {String(row.high_frequency)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-2xl font-black text-stone-950">{row.alias_count}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.status)}>
+                                {row.status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.route_mode}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Accepted alias examples</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {activeGeminiAliasCapabilityCoverage.accepted_alias_shapes.slice(0, 10).map((alias) => (
+                        <Badge key={alias} variant="outline" className="bg-white font-mono text-[10px] text-stone-700">
+                          {alias}
+                        </Badge>
+                      ))}
+                    </div>
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Capability totals</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeGeminiAliasCapabilityCoverage.capability_totals).map(([key, value]) => (
+                        <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono text-stone-950">{key}</div>
+                          <div>{formatNumber(value)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Alias</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Canonical</TableHead>
+                        <TableHead>Capabilities</TableHead>
+                        <TableHead>Tasks</TableHead>
+                        <TableHead>Release posture</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiAliasCapabilityRows.slice(0, 12).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[300px]">
+                            <div className="break-all font-mono text-xs font-semibold text-stone-950">
+                              {row.alias_model}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.alias_shape}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.coverage_status)}>
+                              {row.coverage_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              known: {String(row.known_catalog_model)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                            <div className="mt-1">{row.lifecycle_status}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.capabilities.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {row.covered_tasks.join(', ') || '-'}
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              high-frequency: {row.covered_high_frequency_tasks.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <div>cheap-first default: {String(row.high_frequency_default_allowed)}</div>
+                            <div>balanced after precheck: {String(row.balanced_after_precheck_allowed)}</div>
+                            <div>premium/media review: {String(row.premium_or_media_review_required)}</div>
+                            <div className="mt-1">{row.reason_codes.join(', ') || row.recommended_action}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="text-xs leading-5 text-stone-600">
+                      Metadata-only aliases, canonical ids, local capabilities, task labels, and no-write/no-call flags.
+                    </div>
+                    <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiAliasCapabilityPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiAliasCapabilityClaimEntries.length > 0 ? (
+                        geminiAliasCapabilityClaimEntries.map(([key, value]) => (
+                          <div key={key}>
+                            {key}: {value == null ? '-' : String(value)}
+                          </div>
+                        ))
+                      ) : (
+                        <div>No live gateway, automatic default-change, benchmark, or production quality claim is made.</div>
+                      )}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeGeminiAliasCapabilityCoverage.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeGeminiAliasCapabilityCoverage.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </section>
         )}

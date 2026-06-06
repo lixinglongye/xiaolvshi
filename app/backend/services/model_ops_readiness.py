@@ -32,6 +32,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "observed_gemini_model_intake_queue",
     ),
     ReadinessComponent(
+        "gemini-newapi-alias-capability-coverage",
+        "Gemini/NewAPI alias capability coverage",
+        "configuration",
+        "gemini_newapi_alias_capability_coverage",
+    ),
+    ReadinessComponent(
         "catalog-candidate-patch-plan",
         "Model catalog candidate patch plan",
         "configuration",

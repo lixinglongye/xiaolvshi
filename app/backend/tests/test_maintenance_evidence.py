@@ -60,6 +60,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model alias matrix" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini/NewAPI alias capability coverage" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI selector replay" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI cheap-first calibration" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini model variant matrix" in profile["release_management"]["release_readiness_controls"]
@@ -130,6 +131,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md" in evidence_paths
+    assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in evidence_paths
+    assert "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py" in evidence_paths
+    assert "docs/GEMINI_NEWAPI_ALIAS_CAPABILITY_COVERAGE.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_selector_replay.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_selector_replay.py" in evidence_paths
     assert "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md" in evidence_paths
@@ -200,6 +204,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
+    assert "Gemini/NewAPI alias capability coverage evidence" in model_signal["description"]
+    assert "Gemini/NewAPI alias capability coverage review" in model_signal["responsibility"]
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
     assert "sanitized gateway model-list ingestion" in model_signal["description"]
     assert "Gemini catalog source audit" in model_signal["description"]

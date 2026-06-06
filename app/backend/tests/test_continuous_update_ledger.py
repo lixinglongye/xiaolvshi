@@ -164,6 +164,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-price-refresh-monitor-readiness-ui" in completed_ids
     assert "gemini-newapi-model-selector" in completed_ids
     assert "gemini-newapi-model-alias-matrix" in completed_ids
+    assert "gemini-newapi-alias-capability-coverage" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
     assert "modelops-cheap-first-calibration-review-form" in completed_ids
@@ -301,6 +302,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "continuous-ledger-low-resource-fixture-evidence" not in queue_ids
     assert "gemini-newapi-model-selector" not in queue_ids
     assert "gemini-newapi-model-alias-matrix" not in queue_ids
+    assert "gemini-newapi-alias-capability-coverage" not in queue_ids
     assert "gemini-newapi-selector-replay" not in queue_ids
     assert "gemini-newapi-cheap-first-calibration" not in queue_ids
     assert "modelops-cheap-first-calibration-review-form" not in queue_ids
@@ -416,6 +418,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py "
         "tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py "
+        "tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py "
+        "tests/test_model_catalog.py tests/test_model_ops_readiness.py -q && cd ../frontend && "
+        "npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
@@ -579,6 +588,29 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-model-alias-matrix" in alias_matrix_entry["release_gate_links"]
     assert "gemini-newapi-model-selector" in alias_matrix_entry["release_gate_links"]
     assert "modelops-gemini-cheap-first-coverage-gate" in alias_matrix_entry["release_gate_links"]
+    alias_capability_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-newapi-alias-capability-coverage"
+    )
+    assert alias_capability_entry["size"] == "medium"
+    assert alias_capability_entry["status"] == "shipped"
+    assert "yibuapi" in alias_capability_entry["impact"]
+    assert "Gemini native action-suffix aliases" in alias_capability_entry["impact"]
+    assert "task coverage" in alias_capability_entry["impact"]
+    assert "without gateway calls" in alias_capability_entry["impact"]
+    assert "configuration writes" in alias_capability_entry["impact"]
+    assert "credentials" in alias_capability_entry["impact"]
+    assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in alias_capability_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py" in alias_capability_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in alias_capability_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in alias_capability_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in alias_capability_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in alias_capability_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_ALIAS_CAPABILITY_COVERAGE.md" in alias_capability_entry["evidence_paths"]
+    assert "gemini-newapi-alias-capability-coverage" in alias_capability_entry["release_gate_links"]
+    assert "gemini-newapi-model-alias-matrix" in alias_capability_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in alias_capability_entry["release_gate_links"]
+    assert "model-ops-readiness" in alias_capability_entry["release_gate_links"]
+    assert "frontend-ui-regression" in alias_capability_entry["release_gate_links"]
     coverage_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-coverage-gate"
     )

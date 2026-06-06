@@ -98,6 +98,12 @@ const catalogCandidateImpactReplayPanel = sourceSection(
   'Gateway health plan',
   'model-ops catalog candidate impact replay section',
 );
+const geminiAliasCapabilityCoveragePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+  'model-ops Gemini/NewAPI alias capability coverage section',
+);
 const caseWorkbenchRiskRefreshPanel = sourceSection(
   caseWorkbenchRuntimePanel,
   'Risk refresh plan',
@@ -800,6 +806,38 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'evaluateModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue evaluation API'),
   () => assertIncludes(modelOpsApi, 'observed_gemini_model_intake_queue', 'model-ops observed Gemini intake queue response binding'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/observed-gemini-model-intake-queue', 'model-ops observed Gemini intake queue endpoint'),
+  () => assertIncludes(modelOpsApi, 'GeminiNewApiAliasCapabilityCoverage', 'model-ops Gemini/NewAPI alias capability coverage type'),
+  () => assertIncludes(modelOpsApi, 'GeminiNewApiAliasCapabilityCoverageRow', 'model-ops Gemini/NewAPI alias capability row type'),
+  () => assertIncludes(modelOpsApi, "id: 'gemini-newapi-alias-capability-coverage' | string", 'model-ops Gemini/NewAPI alias capability typed id'),
+  () => assertIncludes(modelOpsApi, 'gemini_newapi_alias_capability_coverage', 'model-ops Gemini/NewAPI alias capability response binding'),
+  () => assertIncludes(modelOpsApi, 'getGeminiNewApiAliasCapabilityCoverage', 'model-ops Gemini/NewAPI alias capability API'),
+  () => assertIncludes(modelOpsApi, 'evaluateGeminiNewApiAliasCapabilityCoverage', 'model-ops Gemini/NewAPI alias capability evaluate API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage', 'model-ops Gemini/NewAPI alias capability endpoint'),
+  () => assertIncludes(modelOpsApi, 'task_alias_coverage', 'model-ops Gemini/NewAPI alias capability task coverage payload guard'),
+  () => assertIncludes(modelOpsApi, 'accepted_alias_shapes', 'model-ops Gemini/NewAPI alias capability accepted shape payload guard'),
+  () => assertIncludes(modelOpsPage, 'Gemini/NewAPI alias capability coverage', 'model-ops Gemini/NewAPI alias capability panel'),
+  () => assertIncludes(modelOpsPage, 'geminiAliasCapabilityCoverage', 'model-ops Gemini/NewAPI alias capability state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiAliasCapabilityRows', 'model-ops Gemini/NewAPI alias capability row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiAliasTaskCoverageRows', 'model-ops Gemini/NewAPI alias task coverage binding'),
+  () => assertIncludes(modelOpsPage, 'high_frequency_default_allowed', 'model-ops Gemini/NewAPI alias high-frequency flag binding'),
+  () => assertIncludes(modelOpsPage, 'premium_or_media_review_required', 'model-ops Gemini/NewAPI alias premium/media review binding'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops Gemini/NewAPI alias no-write binding'),
+  () => assertIncludes(modelOpsPage, 'accepted_alias_shapes.slice(0, 10)', 'model-ops Gemini/NewAPI accepted alias display cap'),
+  () => assertIncludes(modelOpsPage, 'coverage_rows ?? []', 'model-ops Gemini/NewAPI alias coverage rows binding'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini variant matrix</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+      'model-ops alias capability follows variant matrix',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+      'model-ops alias capability before cheap-first gate',
+    ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate type'),
   () => assertIncludes(modelOpsApi, "id: 'modelops-gemini-cheap-first-coverage-gate' | string", 'model-ops Gemini cheap-first coverage gate typed id'),
   () => assertIncludes(modelOpsApi, 'gemini_cheap_first_coverage_gate', 'model-ops Gemini cheap-first coverage response binding'),
@@ -935,6 +973,11 @@ assertNotMatches(
   'model-ops observed Gemini intake queue no secret or raw prompt/payload/legal text field names',
 );
 assertNotMatches(
+  geminiAliasCapabilityCoveragePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|raw_legal_text|gateway_response|request_body|response_body|headers|candidate_text|generated_text|output_text|email)\b/i,
+  'model-ops Gemini/NewAPI alias capability coverage no secret or raw request/response/prompt/output fields',
+);
+assertNotMatches(
   geminiDefaultChangeReviewPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default change review no secret or raw prompt/payload field names',
@@ -981,7 +1024,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 25,
+      assertions: checks.length + 26,
     },
     null,
     2,

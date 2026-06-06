@@ -206,6 +206,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         in {
             "gemini-newapi-model-selector",
             "gemini-newapi-model-alias-matrix",
+            "gemini-newapi-alias-capability-coverage",
             "gemini-newapi-selector-replay",
             "gemini-newapi-cheap-first-calibration",
             "model-catalog-source-audit",
@@ -217,6 +218,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         {
             "gemini-newapi-model-selector": "not_run",
             "gemini-newapi-model-alias-matrix": "not_run",
+            "gemini-newapi-alias-capability-coverage": "not_run",
             "gemini-newapi-selector-replay": "not_run",
             "gemini-newapi-cheap-first-calibration": "not_run",
             "model-catalog-source-audit": "not_run",
@@ -229,6 +231,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert commands == {
         "gemini-newapi-model-selector": "python -m pytest tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
         "gemini-newapi-model-alias-matrix": "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
+        "gemini-newapi-alias-capability-coverage": "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
         "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
         "gemini-newapi-cheap-first-calibration": "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
         "model-catalog-source-audit": "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
@@ -237,6 +240,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     }
     assert checks["gemini-newapi-model-selector"]["required"] is True
     assert checks["gemini-newapi-model-alias-matrix"]["required"] is True
+    assert checks["gemini-newapi-alias-capability-coverage"]["required"] is True
     assert checks["gemini-newapi-selector-replay"]["required"] is True
     assert checks["gemini-newapi-cheap-first-calibration"]["required"] is True
     assert checks["model-catalog-source-audit"]["required"] is True
@@ -244,6 +248,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert checks["model-catalog-candidate-impact-replay"]["required"] is True
     assert checks["gemini-newapi-model-selector"]["blocks_release"] is True
     assert checks["gemini-newapi-model-alias-matrix"]["blocks_release"] is True
+    assert checks["gemini-newapi-alias-capability-coverage"]["blocks_release"] is True
     assert checks["gemini-newapi-selector-replay"]["blocks_release"] is True
     assert checks["gemini-newapi-cheap-first-calibration"]["blocks_release"] is True
     assert checks["model-catalog-source-audit"]["blocks_release"] is True
@@ -252,6 +257,10 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "does not call NewAPI" in checks["gemini-newapi-model-selector"]["manual_note"]
     assert "alias normalization evidence" in checks["gemini-newapi-model-alias-matrix"]["manual_note"]
     assert "write configuration" in checks["gemini-newapi-model-alias-matrix"]["manual_note"]
+    assert "alias capability evidence" in checks["gemini-newapi-alias-capability-coverage"]["manual_note"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in checks[
+        "gemini-newapi-alias-capability-coverage"
+    ]["manual_note"]
     assert "without NewAPI calls" in checks["gemini-newapi-selector-replay"]["manual_note"]
     assert "metadata-only cheap-first calibration" in checks["gemini-newapi-cheap-first-calibration"]["manual_note"]
     assert "does not call Google" in checks["model-catalog-source-audit"]["manual_note"]
