@@ -53,6 +53,12 @@ Known catalog models without token pricing metadata are counted separately in
 gateways, write configuration, store raw payloads, prompts, legal text, model
 outputs, credentials, or emails.
 
+Additional required evidence: `runtime-route-reason-codes` records allowlisted
+policy labels for runtime cheap-first decisions and aggregates them as
+`reason_code_counts` in the local route telemetry repository. Unknown submitted
+labels are normalized to `unknown_reason_code`; prompts, legal text, payload
+fragments, model output, credentials, and emails remain excluded.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint
@@ -88,6 +94,7 @@ POST /api/v1/maintenance/release-readiness
   "model-lifecycle-policy": "pass",
   "model-ops-readiness": "pass",
   "model-runtime-router": "pass",
+  "runtime-route-reason-codes": "pass",
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
   "model-gateway-request-compatibility-gate": "pass",

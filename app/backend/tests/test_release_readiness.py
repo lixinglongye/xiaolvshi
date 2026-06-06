@@ -793,6 +793,35 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
     assert "never writes configuration" in checks["route-telemetry-remediation-plan"]["manual_note"]
 
 
+def test_runtime_route_reason_codes_are_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands() if item["check_id"] == "runtime-route-reason-codes"
+    ]
+    result = service.evaluate({"runtime-route-reason-codes": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "runtime-route-reason-codes")
+
+    assert commands == [
+        {
+            "check_id": "runtime-route-reason-codes",
+            "command": "python -m pytest tests/test_model_runtime_router.py tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_aihub_runtime_routing.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "allowlisted runtime route reason codes" in check["manual_note"]
+    assert "sanitized repository reason-code counts" in check["manual_note"]
+    assert "without storing prompts" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/model_runtime_router.py" in check["evidence_paths"]
+    assert "app/backend/services/route_telemetry_repository.py" in check["evidence_paths"]
+    assert "app/backend/services/route_telemetry_persistence_plan.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_ROUTE_TELEMETRY.md" in check["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in check["evidence_paths"]
+
+
 def test_recent_backend_product_slices_are_optional_release_evidence():
     service = ReleaseReadinessService()
     expected_commands = {

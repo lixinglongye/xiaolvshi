@@ -18,6 +18,7 @@ Route telemetry records:
 - estimated route cost from local catalog token pricing,
 - unknown gateway model usage,
 - known catalog model usage without token pricing,
+- allowlisted route reason-code counts,
 - route success and failure counts.
 
 Text, PDF, and image route decisions all use the same telemetry shape. PDF and
@@ -40,6 +41,13 @@ The local `route_telemetry_repository` stores only allowed metadata fields after
 the persistence plan passes. It rejects prompts, raw legal text, client contact
 details, credentials, headers, request bodies, response bodies, and raw model
 outputs, then rebuilds daily task/model aggregate counters.
+
+Runtime route `reason_codes` are allowlisted policy labels such as
+`task_default_selected`, `over_task_budget`, `operator_review_required`,
+`routed_to_recommended_model`, `unknown_catalog_model`,
+`gateway_passthrough`, and `unknown_reason_code`. They are aggregated as
+`reason_code_counts` only and cannot carry free text, client identifiers,
+prompts, payload fragments, model outputs, or credentials.
 
 `route_telemetry_ops_summary` reads those sanitized daily counters and turns
 them into release-review checks for route failures, over-budget pressure,

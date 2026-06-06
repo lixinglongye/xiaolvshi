@@ -79,6 +79,13 @@ function formatUsd(value?: number | null) {
   return `$${value.toFixed(value < 0.01 ? 6 : 4)}`;
 }
 
+function formatReasonCounts(value?: Record<string, number>) {
+  const entries = Object.entries(value ?? {})
+    .sort((first, second) => second[1] - first[1])
+    .slice(0, 4);
+  return entries.length ? entries.map(([code, count]) => `${code}:${formatNumber(count)}`).join(', ') : '-';
+}
+
 function roleText(model: ModelCatalogItem) {
   return model.configured_roles.length ? model.configured_roles.join(', ') : '-';
 }
@@ -7476,13 +7483,14 @@ function Inner() {
                     <TableHead>Requests</TableHead>
                     <TableHead>Success</TableHead>
                     <TableHead>Unpriced</TableHead>
+                    <TableHead>Reasons</TableHead>
                     <TableHead>Cost</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {routeTelemetryRepositoryRows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="py-8 text-center text-stone-500">
+                      <TableCell colSpan={9} className="py-8 text-center text-stone-500">
                         No persisted route telemetry events yet.
                       </TableCell>
                     </TableRow>
@@ -7504,6 +7512,9 @@ function Inner() {
                           {formatNumber(row.success_count)}/{formatNumber(row.failure_count)}
                         </TableCell>
                         <TableCell>{formatNumber(row.unpriced_model_count)}</TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          {formatReasonCounts(row.reason_code_counts)}
+                        </TableCell>
                         <TableCell className="font-mono text-xs text-stone-700">
                           {formatUsd(row.estimated_cost_usd_sum)}
                         </TableCell>

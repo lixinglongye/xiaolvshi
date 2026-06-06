@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from core.config import settings
 from services.model_catalog import estimate_token_cost_usd, model_profile
-from services.model_runtime_router import RuntimeModelRoute
+from services.model_runtime_router import ROUTE_REASON_CODES, RuntimeModelRoute
 from services.model_task_inference import TaskInference
 from services.route_telemetry_persistence_plan import (
     ALLOWED_FIELDS,
@@ -37,6 +37,8 @@ INTEGER_FIELDS = {
 }
 
 FLOAT_FIELDS = {"estimated_cost_usd"}
+STRING_LIST_FIELDS = {"reason_codes"}
+ROUTE_REASON_CODE_SET = set(ROUTE_REASON_CODES)
 
 
 @dataclass(frozen=True)
@@ -125,6 +127,7 @@ class RouteTelemetryRepositoryService:
             "routed_to_recommended_model": route.routed_to_recommended_model,
             "is_over_budget": route.is_over_budget,
             "requires_operator_review": route.requires_operator_review,
+            "reason_codes": list(route.reason_codes),
             "allow_over_budget_model": route.allow_over_budget_model,
             "is_known_model": route.is_known_model,
             "estimated_input_tokens": input_tokens,
@@ -282,6 +285,8 @@ class RouteTelemetryRepositoryService:
                 sanitized[field] = _safe_int(value)
             elif field in FLOAT_FIELDS:
                 sanitized[field] = _safe_float(value)
+            elif field in STRING_LIST_FIELDS:
+                sanitized[field] = _safe_string_list(value)
             else:
                 sanitized[field] = _safe_string(value)
         sanitized["event_type"] = sanitized.get("event_type") or ROUTE_TELEMETRY_EVENT_TYPE
@@ -324,6 +329,7 @@ class RouteTelemetryRepositoryService:
             "operator_review_count": 0,
             "unknown_model_count": 0,
             "unpriced_model_count": 0,
+            "reason_code_counts": {},
             "estimated_cost_usd_sum": 0.0,
         }
         for event in events:
@@ -335,6 +341,7 @@ class RouteTelemetryRepositoryService:
             model = str(event.get("resolved_model") or "unknown")
             unpriced_model = known and _is_token_unpriced_catalog_model(model)
             cost = _safe_float(event.get("estimated_cost_usd"))
+            reason_codes = _safe_string_list(event.get("reason_codes"))
             key = (
                 str(event.get("day") or self._day(event.get("timestamp"))),
                 str(event.get("task") or "unknown"),
@@ -361,6 +368,7 @@ class RouteTelemetryRepositoryService:
                     "failure_count": 0,
                     "unknown_model_count": 0,
                     "unpriced_model_count": 0,
+                    "reason_code_counts": {},
                     "estimated_cost_usd_sum": 0.0,
                 },
             )
@@ -369,6 +377,7 @@ class RouteTelemetryRepositoryService:
             bucket["failure_count"] += 0 if success else 1
             bucket["unknown_model_count"] += 0 if known else 1
             bucket["unpriced_model_count"] += 1 if unpriced_model else 0
+            _increment_reason_counts(bucket["reason_code_counts"], reason_codes)
             bucket["estimated_cost_usd_sum"] = round(bucket["estimated_cost_usd_sum"] + cost, 8)
 
             totals["request_count"] += 1
@@ -379,6 +388,7 @@ class RouteTelemetryRepositoryService:
             totals["operator_review_count"] += 1 if operator_review else 0
             totals["unknown_model_count"] += 0 if known else 1
             totals["unpriced_model_count"] += 1 if unpriced_model else 0
+            _increment_reason_counts(totals["reason_code_counts"], reason_codes)
             totals["estimated_cost_usd_sum"] = round(totals["estimated_cost_usd_sum"] + cost, 8)
 
         return {
@@ -412,6 +422,35 @@ def _safe_string(value: Any) -> str:
     if isinstance(value, (dict, list, tuple, set)):
         return ""
     return str(value).strip()[:200]
+
+
+def _safe_string_list(value: Any) -> list[str]:
+    if not isinstance(value, (list, tuple, set)):
+        return []
+    result: list[str] = []
+    for item in value:
+        safe = _safe_reason_code(item)
+        if safe and safe not in result:
+            result.append(safe)
+        if len(result) >= 12:
+            break
+    return result
+
+
+def _safe_reason_code(value: Any) -> str:
+    text = str(value or "").strip().lower().replace("-", "_")[:80]
+    if not text:
+        return ""
+    allowed = "abcdefghijklmnopqrstuvwxyz0123456789_"
+    code = "".join(char for char in text if char in allowed).strip("_")
+    if not code:
+        return ""
+    return code if code in ROUTE_REASON_CODE_SET else "unknown_reason_code"
+
+
+def _increment_reason_counts(target: dict[str, int], reason_codes: list[str]) -> None:
+    for code in reason_codes:
+        target[code] = int(target.get(code, 0)) + 1
 
 
 def _safe_int(value: Any) -> int:

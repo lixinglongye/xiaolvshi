@@ -34,6 +34,18 @@ defaults to `gemini-2.5-flash-image`.
 - PDF and image routes write the same aggregate routing evidence as text routes. Their API responses are unchanged; route metadata stays in model-ops telemetry surfaces.
 - Image defaults are also checked by the price refresh monitor for per-image cost metadata.
 
+## Structured Reason Codes
+
+Each runtime route now includes bounded allowlisted `reason_codes` for maintainer review.
+Examples include `task_default_selected`, `over_task_budget`,
+`operator_review_required`, `routed_to_recommended_model`,
+`unknown_catalog_model`, and `gateway_passthrough`.
+
+These codes are policy labels only. They explain why cheap-first routing chose
+the selected model and are safe for aggregate route telemetry because they do
+not contain prompts, legal text, request payloads, model responses, user
+identity, or credentials.
+
 ## Endpoint Visibility
 
 ```http
@@ -46,13 +58,13 @@ Non-streaming text responses include `task_inference` and `budget_decision`, whi
 
 PDF and image responses do not expose routing metadata in the customer response body. Their route decisions are available through the same aggregate telemetry and local repository views.
 
-`route_telemetry` records aggregate runtime routing outcomes so maintainers can inspect auto-inference rates, downgrades, over-budget requests, and operator-review-gated requests over the current backend process.
+`route_telemetry` records aggregate runtime routing outcomes so maintainers can inspect auto-inference rates, downgrades, over-budget requests, operator-review-gated requests, and route reason-code counts over the current backend process.
 
 `callsite_audit` is exposed on the same model-ops endpoint to verify that service-layer `GenTxtRequest` calls provide explicit `task=...` metadata instead of relying only on inference.
 
 ## Safety
 
-The router records only model names, task names, cost tier metadata, and aggregate usage. It does not store prompts, PDF bytes, uploaded images, generated image URLs, raw model outputs, file names, API keys, passwords, emails, or user identifiers.
+The router records only model names, task names, cost tier metadata, bounded reason codes, and aggregate usage. It does not store prompts, PDF bytes, uploaded images, generated image URLs, raw model outputs, file names, API keys, passwords, emails, or user identifiers.
 
 ## Related files
 

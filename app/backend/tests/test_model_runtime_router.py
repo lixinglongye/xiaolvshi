@@ -19,6 +19,14 @@ def test_runtime_router_downgrades_fast_premium_without_explicit_allowance():
     assert route.is_over_budget is True
     assert route.requires_operator_review is True
     assert route.routed_to_recommended_model is True
+    assert route.reason_codes == (
+        "known_catalog_model",
+        "over_task_budget",
+        "operator_review_required",
+        "routed_to_recommended_model",
+        "resolved_to_recommended_model",
+    )
+    assert route.to_api()["reason_codes"] == list(route.reason_codes)
 
 
 def test_runtime_router_allows_over_budget_model_when_explicit():
@@ -27,6 +35,8 @@ def test_runtime_router_allows_over_budget_model_when_explicit():
     assert route.resolved_model == "gemini-2.5-pro"
     assert route.allow_over_budget_model is True
     assert route.routed_to_recommended_model is False
+    assert "explicit_over_budget_allowed" in route.reason_codes
+    assert "operator_review_required" in route.reason_codes
     assert "allowed explicitly" in route.reason
 
 
@@ -36,6 +46,9 @@ def test_runtime_router_passes_through_unknown_gateway_model_with_warning():
     assert route.resolved_model == "gateway-private-gemini"
     assert route.is_known_model is False
     assert route.routed_to_recommended_model is False
+    assert "unknown_catalog_model" in route.reason_codes
+    assert "unverified_price_tier" in route.reason_codes
+    assert "gateway_passthrough" in route.reason_codes
     assert "unverified" in route.reason
     assert "sk-" not in str(route.to_api())
 
@@ -50,6 +63,8 @@ def test_runtime_router_uses_image_default_for_auto_image_task():
     assert route.cost_tier == "low"
     assert route.is_known_model is True
     assert route.routed_to_recommended_model is False
+    assert "task_default_selected" in route.reason_codes
+    assert "within_task_budget" in route.reason_codes
 
 
 def test_runtime_router_uses_specialized_low_cost_defaults():

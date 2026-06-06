@@ -263,6 +263,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-persistence-plan" in completed_ids
     assert "route-telemetry-repository" in completed_ids
     assert "route-telemetry-catalog-cost-estimation" in completed_ids
+    assert "runtime-route-reason-codes" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
     assert "image-auto-route-default" in completed_ids
     assert "image-price-refresh-monitor" in completed_ids
@@ -496,6 +497,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-cost-impact" not in queue_ids
     assert "modelops-observed-gemini-model-intake-queue" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
+    assert "runtime-route-reason-codes" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
     assert "image-auto-route-default" not in queue_ids
     assert "image-price-refresh-monitor" not in queue_ids
@@ -676,6 +678,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_default_candidate_selector.py "
         "tests/test_gemini_newapi_model_selector.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_runtime_router.py tests/test_route_telemetry_repository.py "
+        "tests/test_route_telemetry_persistence_plan.py tests/test_aihub_runtime_routing.py "
+        "tests/test_release_readiness.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_route_telemetry_repository.py -q" in ledger["validation_commands"]
@@ -1362,6 +1370,44 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-repository" in route_telemetry_catalog_cost_entry["release_gate_links"]
     assert "route-telemetry-ops-summary" in route_telemetry_catalog_cost_entry["release_gate_links"]
     assert "model-usage" in route_telemetry_catalog_cost_entry["release_gate_links"]
+
+    route_reason_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "runtime-route-reason-codes"
+    )
+    assert route_reason_entry["category"] == "model_ops"
+    assert route_reason_entry["size"] == "medium"
+    assert route_reason_entry["status"] == "shipped"
+    assert "structured cheap-first runtime route reason codes" in route_reason_entry["impact"]
+    assert "sanitized reason-code counts" in route_reason_entry["impact"]
+    assert "unknown catalog models" in route_reason_entry["impact"]
+    assert "operator-review gates" in route_reason_entry["impact"]
+    assert "prompts" in route_reason_entry["impact"]
+    assert "raw legal text" in route_reason_entry["impact"]
+    assert "model output" in route_reason_entry["impact"]
+    assert "credentials" in route_reason_entry["impact"]
+    assert "app/backend/services/model_runtime_router.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/services/route_telemetry_repository.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/services/route_telemetry_persistence_plan.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_runtime_router.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_repository.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_persistence_plan.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in route_reason_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in route_reason_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in route_reason_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in route_reason_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in route_reason_entry["evidence_paths"]
+    assert "docs/MODEL_RUNTIME_ROUTER.md" in route_reason_entry["evidence_paths"]
+    assert "docs/MODEL_ROUTE_TELEMETRY.md" in route_reason_entry["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md" in route_reason_entry["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in route_reason_entry["evidence_paths"]
+    assert "runtime-route-reason-codes" in route_reason_entry["release_gate_links"]
+    assert "model-runtime-router" in route_reason_entry["release_gate_links"]
+    assert "route-telemetry-repository" in route_reason_entry["release_gate_links"]
+    assert "route-telemetry-persistence-plan" in route_reason_entry["release_gate_links"]
+    assert "model-ops-readiness" in route_reason_entry["release_gate_links"]
+    assert "frontend-typecheck" in route_reason_entry["release_gate_links"]
+    assert "frontend-ui-regression" in route_reason_entry["release_gate_links"]
 
     route_telemetry_ui_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-ui-regression-contract"

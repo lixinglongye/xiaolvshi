@@ -23,6 +23,7 @@ RECOMMENDED_FIELDS = (
     "routed_to_recommended_model",
     "is_over_budget",
     "requires_operator_review",
+    "reason_codes",
     "is_known_model",
 )
 
@@ -40,6 +41,7 @@ ALLOWED_FIELDS = (
     "routed_to_recommended_model",
     "is_over_budget",
     "requires_operator_review",
+    "reason_codes",
     "allow_over_budget_model",
     "is_known_model",
     "estimated_input_tokens",
@@ -211,6 +213,7 @@ class RouteTelemetryPersistencePlanService:
                 "over_budget_count",
                 "operator_review_count",
                 "unknown_model_count",
+                "reason_code_counts",
                 "estimated_cost_usd_sum",
                 "latency_ms_p50",
                 "latency_ms_p95",
@@ -344,6 +347,8 @@ class RouteTelemetryPersistencePlanService:
             return "integer"
         if field == "estimated_cost_usd":
             return "number"
+        if field == "reason_codes":
+            return "string_list"
         return "string"
 
     def _field_description(self, field: str) -> str:
@@ -361,6 +366,7 @@ class RouteTelemetryPersistencePlanService:
             "routed_to_recommended_model": "Whether the router downgraded to the recommended cheap-first default.",
             "is_over_budget": "Whether the requested route exceeded configured cost bounds.",
             "requires_operator_review": "Whether routing required human review before expensive or risky execution.",
+            "reason_codes": "Bounded allowlisted route policy reason codes such as over_task_budget or unknown_catalog_model.",
             "allow_over_budget_model": "Whether an explicit reviewed override allowed the expensive route.",
             "is_known_model": "Whether the model exists in the local catalog.",
             "estimated_input_tokens": "Estimated input token count only, not prompt text.",

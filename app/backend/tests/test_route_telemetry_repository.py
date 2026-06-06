@@ -25,6 +25,7 @@ def _event(event_id: str = "route-event-001") -> dict:
         "routed_to_recommended_model": True,
         "is_over_budget": True,
         "requires_operator_review": False,
+        "reason_codes": ["over_task_budget", "routed_to_recommended_model"],
         "allow_over_budget_model": False,
         "is_known_model": True,
         "estimated_input_tokens": 1200,
@@ -62,14 +63,18 @@ def test_route_telemetry_repository_persists_sanitized_events_and_aggregates(tmp
     assert result["totals"]["success_count"] == 1
     assert result["totals"]["failure_count"] == 1
     assert result["totals"]["downgrade_count"] == 2
+    assert result["totals"]["reason_code_counts"]["over_task_budget"] == 2
+    assert result["totals"]["reason_code_counts"]["routed_to_recommended_model"] == 2
     assert result["totals"]["estimated_cost_usd_sum"] == 0.0032
     assert len(result["daily_buckets"]) == 2
+    assert result["daily_buckets"][0]["reason_code_counts"]["over_task_budget"] == 1
     assert service.events_path.exists()
     assert service.aggregates_path.exists()
 
     stored_lines = [json.loads(line) for line in service.events_path.read_text(encoding="utf-8").splitlines()]
     assert stored_lines[0]["day"] == "2026-06-04"
     assert stored_lines[0]["resolved_model"] == "gemini-2.5-flash-lite"
+    assert stored_lines[0]["reason_codes"] == ["over_task_budget", "routed_to_recommended_model"]
     assert "raw_prompt" not in str(stored_lines)
 
 
@@ -98,8 +103,39 @@ def test_route_telemetry_repository_estimates_catalog_route_costs(tmp_path):
     assert result["accepted_events"][0]["estimated_input_tokens"] == 1000
     assert result["accepted_events"][0]["estimated_output_tokens"] == 1000
     assert result["accepted_events"][0]["estimated_cost_usd"] == expected_cost
+    assert "over_task_budget" in result["accepted_events"][0]["reason_codes"]
+    assert result["totals"]["reason_code_counts"]["over_task_budget"] == 1
+    assert result["daily_buckets"][0]["reason_code_counts"]["routed_to_recommended_model"] == 1
     assert result["totals"]["estimated_cost_usd_sum"] == expected_cost
     assert result["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
+
+
+def test_route_telemetry_repository_allowlists_reason_codes(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    event = _event()
+    event["reason_codes"] = [
+        "over-task-budget",
+        "zhang_san_case_20260607",
+        "operator_review_required",
+        "client_name_encoded",
+        "over_task_budget",
+    ]
+
+    result = service.append_events([event])
+    rendered = str(result)
+    stored = service.events_path.read_text(encoding="utf-8")
+
+    assert result["status"] == "pass"
+    assert result["accepted_events"][0]["reason_codes"] == [
+        "over_task_budget",
+        "unknown_reason_code",
+        "operator_review_required",
+    ]
+    assert result["totals"]["reason_code_counts"]["unknown_reason_code"] == 1
+    assert "zhang_san_case_20260607" not in rendered
+    assert "client_name_encoded" not in rendered
+    assert "zhang_san_case_20260607" not in stored
+    assert "client_name_encoded" not in stored
 
 
 def test_route_telemetry_repository_estimates_prefixed_catalog_route_costs(tmp_path):

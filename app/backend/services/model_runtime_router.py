@@ -8,6 +8,22 @@ from services.model_budget import TASK_GROUPS
 from services.model_task_inference import task_inference_policy_for_api
 
 
+ROUTE_REASON_CODES = (
+    "task_default_selected",
+    "known_catalog_model",
+    "unknown_catalog_model",
+    "unverified_price_tier",
+    "gateway_passthrough",
+    "over_task_budget",
+    "operator_review_required",
+    "routed_to_recommended_model",
+    "explicit_over_budget_allowed",
+    "within_task_budget",
+    "resolved_to_recommended_model",
+    "unknown_reason_code",
+)
+
+
 @dataclass(frozen=True)
 class RuntimeModelRoute:
     task: str
@@ -23,10 +39,13 @@ class RuntimeModelRoute:
     recommended_model: str
     allow_over_budget_model: bool
     routed_to_recommended_model: bool
+    reason_codes: tuple[str, ...]
     reason: str
 
     def to_api(self) -> dict[str, Any]:
-        return asdict(self)
+        data = asdict(self)
+        data["reason_codes"] = list(self.reason_codes)
+        return data
 
 
 def resolve_runtime_model(
@@ -63,6 +82,12 @@ def resolve_runtime_model(
         recommended_model=requested_decision.recommended_model,
         allow_over_budget_model=allow_over_budget_model,
         routed_to_recommended_model=should_use_recommended,
+        reason_codes=_route_reason_codes(
+            requested_decision,
+            selected_decision,
+            allow_over_budget_model=allow_over_budget_model,
+            routed_to_recommended_model=should_use_recommended,
+        ),
         reason=_route_reason(
             requested_decision,
             selected_decision,
@@ -80,6 +105,37 @@ def _should_use_recommended(
     if allow_over_budget_model:
         return False
     return decision.is_over_budget or decision.requires_operator_review
+
+
+def _route_reason_codes(
+    requested_decision: ModelBudgetDecision,
+    selected_decision: ModelBudgetDecision,
+    *,
+    allow_over_budget_model: bool,
+    routed_to_recommended_model: bool,
+) -> tuple[str, ...]:
+    codes: list[str] = []
+    if requested_decision.requested_model in {None, "", "auto"}:
+        codes.append("task_default_selected")
+    if not requested_decision.is_known_model:
+        codes.extend(["unknown_catalog_model", "unverified_price_tier", "gateway_passthrough"])
+    else:
+        codes.append("known_catalog_model")
+    if requested_decision.is_over_budget:
+        codes.append("over_task_budget")
+    if requested_decision.requires_operator_review:
+        codes.append("operator_review_required")
+    if routed_to_recommended_model:
+        codes.append("routed_to_recommended_model")
+    elif allow_over_budget_model and (
+        requested_decision.is_over_budget or requested_decision.requires_operator_review
+    ):
+        codes.append("explicit_over_budget_allowed")
+    else:
+        codes.append("within_task_budget")
+    if selected_decision.resolved_model == requested_decision.recommended_model:
+        codes.append("resolved_to_recommended_model")
+    return tuple(_dedupe(codes))
 
 
 def _route_reason(
@@ -106,6 +162,17 @@ def _route_reason(
             f"Gateway-specific model {requested_decision.resolved_model} is allowed, but price and tier are unverified."
         )
     return f"Model {selected_decision.resolved_model} is within the {selected_decision.task} budget."
+
+
+def _dedupe(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
 
 
 def runtime_router_policy_for_api() -> dict[str, Any]:

@@ -25,6 +25,7 @@ def _compliant_event() -> dict:
         "routed_to_recommended_model": True,
         "is_over_budget": True,
         "requires_operator_review": False,
+        "reason_codes": ["over_task_budget", "routed_to_recommended_model"],
         "allow_over_budget_model": False,
         "is_known_model": True,
         "estimated_input_tokens": 1200,
@@ -62,6 +63,23 @@ def test_route_telemetry_persistence_plan_passes_compliant_event():
     assert plan["persistence_checks"][0]["allowed_to_persist"] is True
     assert plan["persistence_checks"][0]["forbidden_fields_present"] == []
     assert plan["persistence_checks"][0]["sensitive_value_findings"] == []
+    schema_rows = {row["name"]: row for row in plan["event_schema"]["field_rules"]}
+    assert schema_rows["reason_codes"]["type"] == "string_list"
+    assert "reason_codes" in plan["event_schema"]["recommended_fields"]
+    assert "reason_codes" not in plan["retention_policy"]["aggregation_keys"]
+    assert "reason_code_counts" in plan["retention_policy"]["rollup_metrics"]
+
+
+def test_route_telemetry_persistence_plan_rejects_sensitive_reason_codes():
+    event = _compliant_event()
+    event["reason_codes"] = ["safe_code", "client@example.com"]
+
+    plan = _service().build_plan([event])
+    check = plan["persistence_checks"][0]
+
+    assert plan["status"] == "fail"
+    assert check["allowed_to_persist"] is False
+    assert "sensitive_values_present" in check["failures"]
 
 
 def test_route_telemetry_persistence_plan_fails_prompt_client_info_and_secret():

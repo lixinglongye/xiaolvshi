@@ -2605,6 +2605,7 @@ export type ModelRouteTelemetryRepository = {
     success_count: number;
     failure_count: number;
     unpriced_model_count: number;
+    reason_code_counts: Record<string, number>;
     estimated_cost_usd_sum: number;
   }>;
   totals: {
@@ -2616,6 +2617,7 @@ export type ModelRouteTelemetryRepository = {
     operator_review_count: number;
     unknown_model_count: number;
     unpriced_model_count: number;
+    reason_code_counts: Record<string, number>;
     estimated_cost_usd_sum: number;
   };
   persistence_plan_status: string;

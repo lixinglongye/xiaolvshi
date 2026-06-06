@@ -34,9 +34,10 @@ Recommended fields:
 - `routed_to_recommended_model`
 - `is_over_budget`
 - `requires_operator_review`
+- `reason_codes`
 - `is_known_model`
 
-Allowed metrics and metadata include route IDs, task labels, model IDs, gateway/provider labels, budget flags, success/error category, estimated token counts, estimated cost, latency, stream flag, cache flag, and coarse HTTP status.
+Allowed metrics and metadata include route IDs, task labels, model IDs, gateway/provider labels, budget flags, bounded allowlisted route reason codes, success/error category, estimated token counts, estimated cost, latency, stream flag, cache flag, and coarse HTTP status.
 
 `estimated_cost_usd` is an aggregate budget-monitoring estimate only. It uses
 stored token counts plus local catalog prices and may differ from final gateway
@@ -67,6 +68,7 @@ Durable reporting should prefer aggregate counters:
 - over-budget count
 - operator-review count
 - unknown-model count
+- reason-code counts
 - estimated cost sum
 - latency p50 and p95
 
@@ -89,7 +91,8 @@ values. Passing and warning events are normalized to allowed fields only.
 
 The AIHub model-ops payload also includes `route_telemetry_repository`, and the
 ModelOps page renders the persisted request count, daily bucket count, rejected
-latest event count, storage mode, and daily aggregate table.
+latest event count, storage mode, daily aggregate table, and the top sanitized
+allowlisted route reason-code counts for each bucket.
 
 `RouteTelemetryOpsSummaryService` consumes the repository daily buckets and
 totals to expose release-review operations checks. It does not read raw event
@@ -123,6 +126,11 @@ Before writing route telemetry to a durable sink:
 ## Privacy Boundary
 
 Route telemetry is metadata-only. It is meant to answer operational questions such as whether cheap-first routing worked, how often requests were downgraded, and where budget gates were triggered. It must not be used as a storage layer for legal text, client identity, user contact details, credentials, or model responses.
+
+`reason_codes` are accepted only as a bounded list of sanitized allowlisted
+policy labels. Unknown submitted labels are normalized to
+`unknown_reason_code`; they must not include free text, client identifiers,
+emails, prompts, request payload fragments, model output, or secret material.
 
 ## Validation
 

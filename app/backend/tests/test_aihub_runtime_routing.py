@@ -174,6 +174,8 @@ async def test_gentxt_auto_infers_legal_review_task():
     assert route_snapshot["by_inference_source"]["auto"]["models"] == {"gemini-2.5-flash": 1}
     repository = RouteTelemetryRepositoryService().build_repository()
     assert repository["daily_buckets"][0]["inference_source"] == "auto"
+    assert repository["daily_buckets"][0]["reason_code_counts"]["task_default_selected"] == 1
+    assert repository["daily_buckets"][0]["reason_code_counts"]["resolved_to_recommended_model"] == 1
     assert "Review this contract clause" not in str(repository)
 
 
@@ -212,6 +214,9 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     assert repository["totals"]["estimated_cost_usd_sum"] == expected_cost
     assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash-lite"
     assert repository["daily_buckets"][0]["routed_to_recommended_model"] is True
+    assert repository["daily_buckets"][0]["reason_code_counts"]["over_task_budget"] == 1
+    assert repository["daily_buckets"][0]["reason_code_counts"]["operator_review_required"] == 1
+    assert repository["daily_buckets"][0]["reason_code_counts"]["routed_to_recommended_model"] == 1
     assert repository["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
 
 

@@ -151,6 +151,14 @@ surface through unknown-model counters, so cheap-first cost review remains
 metadata-only and does not store prompts, legal text, model outputs, payloads,
 emails, or credentials.
 
+Current runtime route reason-code evidence:
+`runtime-route-reason-codes` adds bounded route policy labels for cheap-first
+downgrades, unknown catalog models, over-budget requests, operator-review
+gates, and explicit reviewed overrides. The repository persists only sanitized
+reason-code lists and aggregate counts, and the ModelOps table shows those
+counts without storing prompts, legal text, model outputs, payloads, emails, or
+credentials.
+
 Current ModelOps performance release evidence:
 `modelops-performance-observation-release-binding` binds sanitized
 `POST /api/v1/aihub/models/performance-budget` observations back into aggregate
