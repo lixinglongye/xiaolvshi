@@ -176,6 +176,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-load-performance-budget" in completed_ids
     assert "modelops-performance-observation-review" in completed_ids
     assert "modelops-cheap-first-quality-budget" in completed_ids
+    assert "modelops-cheap-first-escalation-budget" in completed_ids
     assert "gemini-catalog-source-audit" in completed_ids
     assert "model-catalog-candidate-patch-plan" in completed_ids
     assert "model-catalog-candidate-impact-replay" in completed_ids
@@ -518,6 +519,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_ops_readiness.py "
         "tests/test_model_default_candidate_selector.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py "
+        "tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
@@ -1101,6 +1108,27 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-default-candidate-selector" in catalog_candidate_impact_entry["release_gate_links"]
     assert "model-ops-readiness" in catalog_candidate_impact_entry["release_gate_links"]
     assert "frontend-ui-regression" in catalog_candidate_impact_entry["release_gate_links"]
+    escalation_budget_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-cheap-first-escalation-budget"
+    )
+    assert escalation_budget_entry["size"] == "medium"
+    assert escalation_budget_entry["status"] == "shipped"
+    assert "aggregate cheap-first cascade budget gate" in escalation_budget_entry["impact"]
+    assert "runaway retries" in escalation_budget_entry["impact"]
+    assert "wasted escalation spend" in escalation_budget_entry["impact"]
+    assert "operator-review coverage" in escalation_budget_entry["impact"]
+    assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in escalation_budget_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_escalation_budget.py" in escalation_budget_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in escalation_budget_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in escalation_budget_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in escalation_budget_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in escalation_budget_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in escalation_budget_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in escalation_budget_entry["evidence_paths"]
+    assert "model-ops-cheap-first-escalation-budget" in escalation_budget_entry["release_gate_links"]
+    assert "model-ops-readiness" in escalation_budget_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in escalation_budget_entry["release_gate_links"]
+    assert "frontend-ui-regression" in escalation_budget_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

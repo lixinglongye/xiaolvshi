@@ -122,6 +122,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "price_refresh_monitor",
     ),
     ReadinessComponent(
+        "cheap-first-escalation-budget",
+        "Cheap-first escalation budget",
+        "cost",
+        "cheap_first_escalation_budget",
+    ),
+    ReadinessComponent(
         "model-ops-performance-budget",
         "ModelOps performance budget",
         "runtime_evidence",
@@ -469,7 +475,7 @@ class ModelOpsReadinessService:
         if warning_category == "routing_quality_review":
             return "Review task quality gates, request budgets, and cheap-start coverage before release."
         if warning_category == "cost_guardrail_review":
-            return "Review cheap-first forecast, savings, unknown-price, and premium-ratio signals before release."
+            return "Review cheap-first forecast, savings, unknown-price, escalation budget, and premium-ratio signals before release."
         if warning_category == "release_evidence_review":
             return "Attach maintainer-reviewed release evidence before treating cheap-first model changes as ready."
         if warning_category == "configuration_review":
@@ -490,7 +496,7 @@ class ModelOpsReadinessService:
         if warning_category == "routing_quality_review":
             return "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
         if warning_category == "cost_guardrail_review":
-            return "python -m pytest tests/test_model_cost_guardrails.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_cost_guardrails.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py -q"
         if warning_category == "release_evidence_review":
             return "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_default_change_queue.py tests/test_model_ops_readiness.py -q"
         if warning_category == "configuration_review":

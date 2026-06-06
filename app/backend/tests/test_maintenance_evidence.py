@@ -74,6 +74,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps load performance budget" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps performance observation review" in profile["release_management"]["release_readiness_controls"]
     assert "Cheap-first route quality budget" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps cheap-first escalation budget" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry repository" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry operations summary" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry triage queue" in profile["release_management"]["release_readiness_controls"]
@@ -149,6 +150,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/gemini_model_variant_matrix.py" in evidence_paths
     assert "app/backend/tests/test_gemini_model_variant_matrix.py" in evidence_paths
     assert "docs/GEMINI_MODEL_VARIANT_MATRIX.md" in evidence_paths
+    assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_cheap_first_escalation_budget.py" in evidence_paths
+    assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in evidence_paths
     assert "app/backend/services/model_route_legal_benchmark_risk_queue.py" in evidence_paths
     assert "app/backend/tests/test_model_route_legal_benchmark_risk_queue.py" in evidence_paths
     assert "docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md" in evidence_paths

@@ -56,6 +56,7 @@ from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationS
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
 from services.model_ops_readiness import ModelOpsReadinessService
+from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_cheap_first_canary_approval_packet import ModelOpsCheapFirstCanaryApprovalPacketService
 from services.model_ops_cheap_first_canary_change_manifest import ModelOpsCheapFirstCanaryChangeManifestService
@@ -278,6 +279,7 @@ async def list_models():
         }
     )
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
+    cheap_first_escalation_budget = ModelOpsCheapFirstEscalationBudgetService().build_budget()
     model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
         {
             "models_payload_cache_enabled": True,
@@ -327,6 +329,7 @@ async def list_models():
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
+        "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
@@ -408,6 +411,7 @@ async def list_models():
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "route_quality_budget": route_quality_budget,
+        "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
@@ -813,6 +817,24 @@ async def evaluate_model_ops_performance_budget(payload: dict[str, Any]):
             },
             cache_ttl_seconds=MODEL_OPS_PAYLOAD_CACHE_TTL_SECONDS,
         ),
+    }
+
+
+@router.get("/models/cheap-first-escalation-budget")
+async def model_ops_cheap_first_escalation_budget():
+    """Return metadata-only cheap-first escalation budget evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsCheapFirstEscalationBudgetService().build_budget(),
+    }
+
+
+@router.post("/models/cheap-first-escalation-budget")
+async def evaluate_model_ops_cheap_first_escalation_budget(payload: dict[str, Any]):
+    """Evaluate aggregate cheap-first cascade observations without gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsCheapFirstEscalationBudgetService().build_budget(payload),
     }
 
 

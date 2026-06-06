@@ -7,8 +7,9 @@ Gemini/NewAPI cheap-first defaults.
 
 `cheap_first_release_decision` combines upstream ModelOps evidence into a
 default-promotion decision. It helps keep the current cheap-first defaults in
-place while making catalog drift, missing pricing, route-quality gaps, and
-performance warnings visible before a new model is promoted.
+place while making catalog drift, missing pricing, route-quality gaps,
+escalation-budget drift, and performance warnings visible before a new model is
+promoted.
 
 The packet is downstream of `model_ops_readiness`. It does not feed back into
 readiness and does not add another readiness component.
@@ -35,6 +36,7 @@ The service consumes existing signal metadata only:
 - `gemini_variant_matrix`
 - `catalog_source_audit`
 - `route_quality_budget`
+- `cheap_first_escalation_budget`
 - `price_refresh_monitor`
 - `model_ops_performance_budget`
 
@@ -65,7 +67,7 @@ future implementation adds separate proof for those claims.
 Maintainers can claim that the project has a metadata-only decision packet for
 reviewing cheap-first default changes. They can also claim that the packet
 aggregates existing ModelOps readiness, calibration, catalog, route-quality,
-price-refresh, and performance-budget signals.
+escalation-budget, price-refresh, and performance-budget signals.
 
 ## Must Not Claim
 
@@ -92,7 +94,7 @@ Run:
 
 ```powershell
 cd app/backend
-python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_default_candidate_selector.py -q
+python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_default_candidate_selector.py -q
 
 cd ../frontend
 npm run typecheck
@@ -103,6 +105,8 @@ Related files:
 
 - `app/backend/services/model_ops_cheap_first_release_decision.py`
 - `app/backend/tests/test_model_ops_cheap_first_release_decision.py`
+- `app/backend/services/model_ops_cheap_first_escalation_budget.py`
+- `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`

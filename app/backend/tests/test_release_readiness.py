@@ -302,7 +302,8 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
             "command": (
                 "python -m pytest tests/test_model_ops_cheap_first_release_decision.py "
                 "tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py "
-                "tests/test_model_route_quality_budget.py tests/test_model_default_candidate_selector.py -q"
+                "tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py "
+                "tests/test_model_default_candidate_selector.py -q"
             ),
         }
     ]
@@ -312,7 +313,38 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
     assert "does not call NewAPI" in check["manual_note"]
     assert "public benchmark scores" in check["manual_note"]
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in check["evidence_paths"]
+
+
+def test_model_ops_cheap_first_escalation_budget_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-escalation-budget"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-escalation-budget": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-escalation-budget")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-escalation-budget",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_escalation_budget.py "
+                "tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py "
+                "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only aggregate escalation budget evidence" in check["manual_note"]
+    assert "does not execute retries" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_escalation_budget.py" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in check["evidence_paths"]
 
 
 def test_model_ops_default_change_queue_is_required_model_ops_gate():

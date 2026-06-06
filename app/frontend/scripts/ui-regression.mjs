@@ -842,6 +842,31 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/performance-budget', 'model-ops performance budget endpoint'),
   () => assertIncludes(modelOpsApi, 'ModelRouteQualityBudget', 'model-ops route quality budget type'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/route-quality-budget', 'model-ops route quality budget endpoint'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstEscalationBudget', 'model-ops cheap-first escalation budget type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstEscalationBudgetRow', 'model-ops cheap-first escalation budget row type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstEscalationBudget', 'model-ops cheap-first escalation budget API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsCheapFirstEscalationBudget', 'model-ops cheap-first escalation budget evaluation API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-escalation-budget', 'model-ops cheap-first escalation budget endpoint'),
+  () => assertIncludes(modelOpsApi, 'cheap_first_escalation_budget', 'model-ops cheap-first escalation budget response binding'),
+  () => assertIncludes(modelOpsApi, 'budget_rows', 'model-ops cheap-first escalation budget payload guard'),
+  () => assertIncludes(modelOpsPage, 'Cheap-first escalation budget', 'model-ops cheap-first escalation budget panel'),
+  () => assertIncludes(modelOpsPage, 'activeEscalationBudget', 'model-ops cheap-first escalation budget state binding'),
+  () => assertIncludes(modelOpsPage, 'escalationBudgetRows', 'model-ops cheap-first escalation budget row binding'),
+  () => assertIncludes(modelOpsPage, 'wasted_escalation_cost_ratio', 'model-ops cheap-first escalation wasted cost binding'),
+  () => assertIncludes(modelOpsPage, 'premium_review_coverage', 'model-ops cheap-first escalation premium review binding'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenEscalationBudgetPayloadText', 'model-ops cheap-first escalation payload guard'),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first quality budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+    'model-ops escalation budget follows quality budget',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Default optimization</h2>',
+    'model-ops escalation budget precedes default optimization',
+  ),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue API'),
@@ -961,6 +986,12 @@ const cheapFirstMaintainerExecutionChecklistPanel = sourceSection(
   'ModelOps load guard',
   'model-ops cheap-first maintainer execution checklist section',
 );
+const cheapFirstEscalationBudgetPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Default optimization</h2>',
+  'model-ops cheap-first escalation budget section',
+);
 const geminiDefaultCostImpactPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini default cost impact</h2>',
@@ -1050,6 +1081,11 @@ assertNotMatches(
   cheapFirstMaintainerExecutionChecklistPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|raw_prompt|prompt_payload|raw_model_output|raw_legal_text|raw_gateway_response|candidate_text)\b/i,
   'model-ops maintainer execution checklist no secret or raw prompt/output/legal text field names',
+);
+assertNotMatches(
+  cheapFirstEscalationBudgetPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|phone|identity)\b/i,
+  'model-ops cheap-first escalation budget no secrets or raw model/payload fields',
 );
 assertNotMatches(
   geminiDefaultCostImpactPanel,

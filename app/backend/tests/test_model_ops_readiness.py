@@ -235,7 +235,11 @@ def test_model_ops_route_includes_readiness():
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 7
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 8
+    assert payload["cheap_first_escalation_budget"]["status"] == "pass"
+    assert "cheap_first_escalation_budget" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert any(
         check["source_key"] == "model_ops_readiness"
         for check in payload["cheap_first_release_decision"]["checks"]

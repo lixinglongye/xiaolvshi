@@ -9,6 +9,7 @@ REQUIRED_SIGNAL_KEYS = (
     "gemini_variant_matrix",
     "catalog_source_audit",
     "route_quality_budget",
+    "cheap_first_escalation_budget",
     "price_refresh_monitor",
     "model_ops_performance_budget",
 )
@@ -54,6 +55,13 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 data.get("route_quality_budget"),
                 fail_reason="Route quality budget has blocking cheap-first quality gaps.",
                 warn_reason="Route quality budget has maintainer-review warnings.",
+            ),
+            self._check_signal(
+                "cheap-first-escalation-budget-review",
+                "cheap_first_escalation_budget",
+                data.get("cheap_first_escalation_budget"),
+                fail_reason="Cheap-first escalation budget has runaway retry, wasted spend, or premium-review blockers.",
+                warn_reason="Cheap-first escalation budget needs maintainer review before default changes.",
             ),
             self._check_signal(
                 "price-refresh-review",

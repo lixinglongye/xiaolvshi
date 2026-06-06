@@ -19,6 +19,7 @@ import {
   evaluateGeminiVariantMatrix,
   evaluateModelGatewayProbe,
   evaluateModelOpsCheapFirstCanaryObservation,
+  evaluateModelOpsCheapFirstEscalationBudget,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
   evaluateModelOpsObservedGeminiModelIntakeQueue,
@@ -26,6 +27,7 @@ import {
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
   getGeminiNewApiAliasCapabilityCoverage,
+  getModelOpsCheapFirstEscalationBudget,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -40,6 +42,7 @@ import {
   type ModelOpsCheapFirstCanaryObservation,
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsCheapFirstCanaryRollbackDrill,
+  type ModelOpsCheapFirstEscalationBudget,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsObservedGeminiModelIntakeQueue,
@@ -241,6 +244,28 @@ function defaultPerformanceObservationPayload() {
   };
 }
 
+function defaultEscalationBudgetObservationPayload() {
+  return {
+    observations: [
+      {
+        task: 'fast',
+        phase: 'local_fixture',
+        request_count: 100,
+        primary_failure_count: 2,
+        verification_count: 3,
+        escalation_count: 2,
+        successful_after_escalation_count: 2,
+        premium_escalation_count: 0,
+        operator_review_count: 0,
+        primary_cost_usd: 0.01,
+        verification_cost_usd: 0.003,
+        escalation_cost_usd: 0.004,
+        premium_cost_usd: 0,
+      },
+    ],
+  };
+}
+
 function defaultCanaryObservationPayload() {
   return {
     observations: [
@@ -292,6 +317,18 @@ function hasForbiddenPerformancePayloadText(value: string) {
     /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers|email|legal[_ -]?text)\b/i.test(
       value,
     )
+  );
+}
+
+function hasForbiddenEscalationBudgetPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b1[3-9]\d{9}\b/.test(value) ||
+    /\b\d{17}[\dXx]\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|raw[_ -]?response|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|client[_ -]?email)\b/i.test(
+      value,
+    ) ||
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
   );
 }
 
@@ -362,6 +399,10 @@ function Inner() {
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
   const [performanceError, setPerformanceError] = useState('');
+  const [escalationBudget, setEscalationBudget] = useState<ModelOpsCheapFirstEscalationBudget | null>(null);
+  const [escalationBudgetPayloadText, setEscalationBudgetPayloadText] = useState('');
+  const [escalationBudgetLoading, setEscalationBudgetLoading] = useState(false);
+  const [escalationBudgetError, setEscalationBudgetError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -394,6 +435,8 @@ function Inner() {
     setGeminiCheapFirstCoverageGate(null);
     setPerformanceError('');
     setPerformanceBudget(null);
+    setEscalationBudgetError('');
+    setEscalationBudget(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -405,11 +448,17 @@ function Inner() {
     setCanaryRollbackDrill(null);
     setCanaryChangeManifest(null);
     try {
-      const [modelOpsResult, geminiAliasCapabilityCoverageResult, geminiCheapFirstCoverageGateResult] =
+      const [
+        modelOpsResult,
+        geminiAliasCapabilityCoverageResult,
+        geminiCheapFirstCoverageGateResult,
+        escalationBudgetResult,
+      ] =
         await Promise.allSettled([
         getModelOps(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
+        getModelOpsCheapFirstEscalationBudget(),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
@@ -419,6 +468,7 @@ function Inner() {
         setData(modelOpsResult.value);
         setProbeEvaluation(null);
         setPerformanceBudget(null);
+        setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
@@ -462,6 +512,20 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
         setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
+      }
+      if (escalationBudgetResult.status === 'fulfilled') {
+        setEscalationBudget(escalationBudgetResult.value);
+      } else {
+        console.error(escalationBudgetResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.cheap_first_escalation_budget)
+        ) {
+          setEscalationBudgetError('Cheap-first escalation budget failed to load.');
+        }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
         console.error(geminiAliasCapabilityCoverageResult.reason);
@@ -649,6 +713,42 @@ function Inner() {
     }
   };
 
+  const loadEscalationBudgetTemplate = () => {
+    setEscalationBudgetPayloadText(JSON.stringify(defaultEscalationBudgetObservationPayload(), null, 2));
+    setEscalationBudgetError('');
+  };
+
+  const evaluateEscalationBudgetPayload = async () => {
+    setEscalationBudgetLoading(true);
+    setEscalationBudgetError('');
+    try {
+      const text = escalationBudgetPayloadText.trim();
+      if (!text) {
+        setEscalationBudgetError('Escalation budget payload is empty.');
+        return;
+      }
+      if (hasForbiddenEscalationBudgetPayloadText(text)) {
+        setEscalationBudgetError(
+          'Escalation budget payload must use aggregate counts only: no keys, headers, prompts, emails, phones, IDs, legal text, raw responses, or model output.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setEscalationBudgetError('Escalation budget payload must be a JSON object.');
+        return;
+      }
+      setEscalationBudget(await evaluateModelOpsCheapFirstEscalationBudget(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setEscalationBudgetError(
+        err instanceof SyntaxError ? 'Escalation budget payload is not valid JSON.' : 'Escalation budget evaluation failed.',
+      );
+    } finally {
+      setEscalationBudgetLoading(false);
+    }
+  };
+
   const loadGeminiDefaultChangeTemplate = () => {
     setGeminiDefaultChangePayloadText(JSON.stringify(defaultGeminiDefaultChangeReviewPayload(), null, 2));
     setGeminiDefaultChangeError('');
@@ -800,6 +900,8 @@ function Inner() {
   const maintainerExecutionRows = maintainerExecutionChecklist?.execution_items ?? [];
   const activePerformanceBudget = performanceBudget ?? data?.model_ops_performance_budget ?? null;
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
+  const activeEscalationBudget = escalationBudget ?? data?.cheap_first_escalation_budget ?? null;
+  const escalationBudgetRows = activeEscalationBudget?.budget_rows ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -3241,6 +3343,166 @@ function Inner() {
             <div className="mt-3 text-xs leading-5 text-stone-500">
               raw payload echoed: {String(data.route_quality_budget.privacy_boundary.raw_payload_echoed)} / raw model output:{' '}
               {String(data.route_quality_budget.privacy_boundary.raw_model_output_included)}
+            </div>
+          </section>
+        )}
+
+        {activeEscalationBudget && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first escalation budget</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeEscalationBudget.summary.total_request_count)} requests /{' '}
+                  {formatNumber(activeEscalationBudget.summary.escalation_count)} escalations / wasted{' '}
+                  {(activeEscalationBudget.summary.wasted_escalation_cost_ratio * 100).toFixed(1)}%
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeEscalationBudget.status)}>
+                {activeEscalationBudget.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeEscalationBudget.summary.primary_failure_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">primary failures</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeEscalationBudget.summary.verification_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">verifications</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeEscalationBudget.summary.premium_escalation_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium escalations</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(activeEscalationBudget.summary.operator_review_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">operator reviews</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatUsd(activeEscalationBudget.summary.cascade_cost_usd)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cascade cost</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {(activeEscalationBudget.summary.escalation_success_rate * 100).toFixed(1)}%
+                </div>
+                <div className="mt-1 text-sm text-stone-600">escalation success</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Rates</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Premium review</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {escalationBudgetRows.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.task}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{row.phase}</div>
+                          <Badge variant="outline" className={`mt-2 ${statusClass(row.status)}`}>
+                            {row.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs leading-5 text-stone-600">
+                            primary failure {(row.primary_failure_rate * 100).toFixed(1)}%
+                          </div>
+                          <div className="text-xs leading-5 text-stone-600">
+                            escalation {(row.escalation_rate * 100).toFixed(1)}%
+                          </div>
+                          <div className="text-xs leading-5 text-stone-600">
+                            wasted_escalation_cost_ratio {(row.wasted_escalation_cost_ratio * 100).toFixed(1)}%
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-mono text-xs text-stone-700">{formatUsd(row.cascade_cost_usd)}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            wasted {formatUsd(row.wasted_escalation_cost_usd)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-mono text-xs text-stone-700">
+                            {row.premium_escalation_count} / {row.operator_review_count}
+                          </div>
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            premium_review_coverage {String(row.premium_review_coverage)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                          <div>{row.recommended_action}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {row.reason_codes.length ? row.reason_codes.join(', ') : 'no reason codes'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Aggregate observation review</div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-stone-950">{activeEscalationBudget.summary.blocking_check_count}</div>
+                    <div className="mt-1 text-stone-500">blocking checks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                    <div className="font-mono text-stone-950">{activeEscalationBudget.summary.warning_check_count}</div>
+                    <div className="mt-1 text-stone-500">warning checks</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  default observation used: {String(activeEscalationBudget.summary.default_observation_used)} / model
+                  called: {String(activeEscalationBudget.summary.model_called)} / gateway called:{' '}
+                  {String(activeEscalationBudget.summary.gateway_called)}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeEscalationBudget.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+                <Textarea
+                  value={escalationBudgetPayloadText}
+                  onChange={(event) => setEscalationBudgetPayloadText(event.target.value)}
+                  className="mt-3 min-h-[180px] font-mono text-xs"
+                  placeholder="Aggregate observation JSON"
+                />
+                {escalationBudgetError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">{escalationBudgetError}</div>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={loadEscalationBudgetTemplate}>
+                    <ClipboardList className="h-4 w-4" />
+                    Load template
+                  </Button>
+                  <Button type="button" onClick={evaluateEscalationBudgetPayload} disabled={escalationBudgetLoading}>
+                    {escalationBudgetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                    Evaluate escalation budget
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="text-xs leading-5 text-stone-500">
+              raw payload echoed: {String(activeEscalationBudget.privacy_boundary.raw_payload_echoed)} / raw model
+              output: {String(activeEscalationBudget.privacy_boundary['raw_' + 'model_output_included'])} / configuration
+              written: {String(activeEscalationBudget.privacy_boundary.configuration_written)}
             </div>
           </section>
         )}

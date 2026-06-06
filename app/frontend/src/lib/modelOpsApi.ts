@@ -2034,6 +2034,102 @@ export type ModelRouteQualityBudget = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstEscalationBudgetCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  value?: number;
+  threshold?: number;
+  warn_threshold?: number;
+  fail_threshold?: number;
+};
+
+export type ModelOpsCheapFirstEscalationBudgetRow = {
+  id: string;
+  task: string;
+  phase: string;
+  status: string;
+  request_count: number;
+  primary_failure_count: number;
+  verification_count: number;
+  escalation_count: number;
+  successful_after_escalation_count: number;
+  premium_escalation_count: number;
+  operator_review_count: number;
+  primary_failure_rate: number;
+  escalation_rate: number;
+  premium_escalation_rate: number;
+  escalation_success_rate: number;
+  primary_cost_usd: number;
+  verification_cost_usd: number;
+  escalation_cost_usd: number;
+  premium_cost_usd: number;
+  cascade_cost_usd: number;
+  wasted_escalation_cost_usd: number;
+  wasted_escalation_cost_ratio: number;
+  premium_review_coverage: boolean;
+  checks: ModelOpsCheapFirstEscalationBudgetCheck[];
+  reason_codes: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsCheapFirstEscalationBudget = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    research_basis?: Array<{
+      id: string;
+      url: string;
+      signal: string;
+    }>;
+  };
+  thresholds: Record<string, number>;
+  summary: {
+    observation_count: number;
+    default_observation_used: boolean;
+    passing_observation_count: number;
+    warning_observation_count: number;
+    failing_observation_count: number;
+    total_request_count: number;
+    primary_failure_count: number;
+    verification_count: number;
+    escalation_count: number;
+    successful_after_escalation_count: number;
+    premium_escalation_count: number;
+    operator_review_count: number;
+    cascade_cost_usd: number;
+    primary_cost_usd: number;
+    verification_cost_usd: number;
+    escalation_cost_usd: number;
+    premium_cost_usd: number;
+    wasted_escalation_cost_usd: number;
+    wasted_escalation_cost_ratio: number;
+    escalation_success_rate: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    forbidden_payload_field_count: number;
+    secret_like_value_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    raw_payload_echoed: boolean;
+  };
+  budget_rows: ModelOpsCheapFirstEscalationBudgetRow[];
+  checks: ModelOpsCheapFirstEscalationBudgetCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  blocking_observation_ids: string[];
+  warning_observation_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -2785,6 +2881,7 @@ export type ModelOpsResponse = {
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
+  cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -2841,6 +2938,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     candidate_patch_rows?: unknown;
     candidate_rows?: unknown;
     task_impact_rows?: unknown;
+    budget_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
     promotion_items?: unknown;
@@ -2865,6 +2963,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.impact_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.candidate_patch_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.candidate_rows) && Array.isArray(payload.task_impact_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.budget_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.canary_steps) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.promotion_items) && Array.isArray(payload.validation_commands))
@@ -3196,6 +3295,23 @@ export async function getModelRouteQualityBudget(): Promise<ModelRouteQualityBud
   return invokeModelOpsApi<ModelRouteQualityBudget>({
     url: '/api/v1/aihub/models/route-quality-budget',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstEscalationBudget(): Promise<ModelOpsCheapFirstEscalationBudget> {
+  return invokeModelOpsApi<ModelOpsCheapFirstEscalationBudget>({
+    url: '/api/v1/aihub/models/cheap-first-escalation-budget',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsCheapFirstEscalationBudget(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsCheapFirstEscalationBudget> {
+  return invokeModelOpsApi<ModelOpsCheapFirstEscalationBudget>({
+    url: '/api/v1/aihub/models/cheap-first-escalation-budget',
+    method: 'POST',
+    data: payload,
   });
 }
 
