@@ -40,6 +40,12 @@ POST /api/v1/legal-knowledge/grounding-quick-audit
 - Source freshness: stale legal sources reduce readiness.
 - Privacy safety: critical PII findings block release.
 
+If `expected_source_ids` or `retrieved_source_ids` are present, the answer must
+also provide `answer_citation_source_ids`. A run with retrieved legal sources but
+no answer citations now fails with `missing_answer_citations=true` and citation
+precision `0.0`; the evaluator returns only source IDs, counts, booleans, and
+review actions, not raw retrieval context or answer text.
+
 The service does not call an AI model. It scores explicit evaluation artifacts so maintainers can plug it into CI, manual review, or future benchmark runs.
 
 For release checks that need one combined signal across legal sources, risk citations, evidence plans, and RAG metrics, use [LEGAL_GROUNDING_QUICK_AUDIT.md](LEGAL_GROUNDING_QUICK_AUDIT.md).

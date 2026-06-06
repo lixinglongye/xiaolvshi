@@ -32,6 +32,7 @@ class LegalRagEvaluationService:
             ],
             "blocking_conditions": [
                 "Any unsupported critical legal claim",
+                "Answer has no cited legal source IDs when sources are expected",
                 "Citation precision below 60%",
                 "Retrieval recall below 50% for expected sources",
                 "PII finding marked critical",
@@ -58,7 +59,13 @@ class LegalRagEvaluationService:
         pii_findings = _list_dict(run.get("pii_findings"))
 
         retrieval_recall = _ratio(len(expected_sources & retrieved_sources), len(expected_sources), default=1.0)
-        citation_precision = _ratio(len(citation_sources & retrieved_sources), len(citation_sources), default=1.0)
+        citations_required = bool(expected_sources or retrieved_sources)
+        missing_answer_citations = citations_required and not citation_sources
+        citation_precision = (
+            0.0
+            if missing_answer_citations
+            else _ratio(len(citation_sources & retrieved_sources), len(citation_sources), default=1.0)
+        )
         verified_claim_count = _safe_int(run.get("verified_claim_count"), 0)
         total_claim_count = _safe_int(run.get("total_claim_count"), verified_claim_count)
         claim_verification = _ratio(verified_claim_count, total_claim_count, default=1.0)
@@ -73,7 +80,7 @@ class LegalRagEvaluationService:
             "privacy_safety": round(privacy_safety, 3),
         }
         score = self._weighted_score(metric_scores)
-        blockers = self._blockers(metric_scores, unsupported_claims, pii_findings)
+        blockers = self._blockers(metric_scores, unsupported_claims, pii_findings, missing_answer_citations)
         status = self._status(score, blockers)
 
         return {
@@ -81,11 +88,22 @@ class LegalRagEvaluationService:
             "score": score,
             "metric_scores": metric_scores,
             "blocking_reasons": blockers,
-            "recommended_actions": self._recommended_actions(metric_scores, blockers, unsupported_claims, stale_sources),
+            "recommended_actions": self._recommended_actions(
+                metric_scores,
+                blockers,
+                unsupported_claims,
+                stale_sources,
+                missing_answer_citations,
+            ),
             "coverage": {
                 "expected_source_count": len(expected_sources),
                 "retrieved_source_count": len(retrieved_sources),
                 "citation_source_count": len(citation_sources),
+                "citations_required": citations_required,
+                "missing_answer_citations": missing_answer_citations,
+                "missing_answer_citation_source_ids": sorted(retrieved_sources or expected_sources)
+                if missing_answer_citations
+                else [],
                 "missing_expected_source_ids": sorted(expected_sources - retrieved_sources),
                 "uncited_retrieved_source_ids": sorted(retrieved_sources - citation_sources),
             },
@@ -102,11 +120,14 @@ class LegalRagEvaluationService:
         metric_scores: dict[str, float],
         unsupported_claims: list[dict[str, Any]],
         pii_findings: list[dict[str, Any]],
+        missing_answer_citations: bool,
     ) -> list[str]:
         blockers: list[str] = []
         if any(_text(item.get("severity")).lower() in {"critical", "high"} for item in unsupported_claims):
             blockers.append("Unsupported high-impact legal claim.")
-        if metric_scores["citation_precision"] < 0.60:
+        if missing_answer_citations:
+            blockers.append("Answer has no cited legal source IDs when sources are expected.")
+        elif metric_scores["citation_precision"] < 0.60:
             blockers.append("Citation precision is below 60%.")
         if metric_scores["retrieval_recall"] < 0.50:
             blockers.append("Retrieval recall is below 50% for expected sources.")
@@ -129,10 +150,13 @@ class LegalRagEvaluationService:
         blockers: list[str],
         unsupported_claims: list[dict[str, Any]],
         stale_sources: set[str],
+        missing_answer_citations: bool,
     ) -> list[str]:
         actions: list[str] = []
         if metric_scores["retrieval_recall"] < 0.85:
             actions.append("Improve retrieval source recovery before relying on the generated answer.")
+        if missing_answer_citations:
+            actions.append("Add answer citation source IDs for the retrieved legal sources before release.")
         if metric_scores["citation_precision"] < 0.90:
             actions.append("Verify every cited source ID against retrieved legal sources.")
         if metric_scores["claim_verification"] < 0.90 or unsupported_claims:

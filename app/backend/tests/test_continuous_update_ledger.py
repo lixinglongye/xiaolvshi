@@ -274,6 +274,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "billing-quota-repository-implementation" in completed_ids
     assert "case-workbench-runtime-binding" in completed_ids
     assert "legal-rag-query-index-binding" in completed_ids
+    assert "legal-rag-missing-answer-citation-blocker" in completed_ids
     assert "billing-entitlement-repository-binding" in completed_ids
     assert "case-workbench-runtime-router" in completed_ids
     assert "case-workbench-risk-refresh-plan" in completed_ids
@@ -546,6 +547,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_legal_adoption_research_bridge.py -q" in ledger["validation_commands"]
+    assert "python -m pytest tests/test_legal_rag_evaluation.py -q" in ledger["validation_commands"]
     assert (
         "python -m pytest tests/test_user_need_benchmark_coverage.py tests/test_legal_public_benchmark_sampler.py "
         "tests/test_gemini_newapi_cheap_first_calibration.py -q"
@@ -1410,6 +1412,31 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-default-candidate-selector" in default_candidate_entry["release_gate_links"]
     assert "gemini-newapi-model-selector" in default_candidate_entry["release_gate_links"]
     assert "model-price-refresh-monitor" in default_candidate_entry["release_gate_links"]
+    missing_answer_citation_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-rag-missing-answer-citation-blocker"
+    )
+    assert missing_answer_citation_entry["size"] == "medium"
+    assert missing_answer_citation_entry["status"] == "shipped"
+    assert "expected or retrieved legal source IDs" in missing_answer_citation_entry["impact"]
+    assert "no citation source IDs" in missing_answer_citation_entry["impact"]
+    assert "citation precision to zero" in missing_answer_citation_entry["impact"]
+    assert "metadata-only coverage flags" in missing_answer_citation_entry["impact"]
+    assert "raw retrieval context" in missing_answer_citation_entry["impact"]
+    assert "answer text" in missing_answer_citation_entry["impact"]
+    assert "prompts" in missing_answer_citation_entry["impact"]
+    assert "model output" in missing_answer_citation_entry["impact"]
+    assert "credentials" in missing_answer_citation_entry["impact"]
+    assert "network calls" in missing_answer_citation_entry["impact"]
+    assert "app/backend/services/legal_rag_evaluation.py" in missing_answer_citation_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_evaluation.py" in missing_answer_citation_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EVALUATION.md" in missing_answer_citation_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in missing_answer_citation_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in missing_answer_citation_entry["evidence_paths"]
+    assert "legal-rag-evaluation" in missing_answer_citation_entry["release_gate_links"]
+    assert "legal-rag-index-binding" in missing_answer_citation_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in missing_answer_citation_entry["release_gate_links"]
     authority_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-authority-citation-gate"
     )

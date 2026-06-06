@@ -179,6 +179,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
                 "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
                 "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+                "python -m pytest tests/test_legal_rag_evaluation.py -q",
                 "python -m pytest tests/test_legal_adoption_research_bridge.py -q",
                 "python -m pytest tests/test_runtime_router_discovery.py -q",
                 "python -m pytest tests/test_legal_fixture_quick_suite.py tests/test_legal_review_benchmark.py -q",
@@ -3124,6 +3125,27 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("legal-rag-index-binding", "legal-source-index-repository", "legal-rag-evaluation"),
                 user_need_ids=("grounded-legal-output",),
+            ),
+            LedgerEntry(
+                id="legal-rag-missing-answer-citation-blocker",
+                title="Legal RAG missing answer citation blocker",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Blocks Legal RAG evaluations when expected or retrieved legal source IDs exist but the answer "
+                    "provides no citation source IDs, forcing citation precision to zero and returning metadata-only "
+                    "coverage flags without raw retrieval context, answer text, prompts, model output, credentials, or network calls."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_rag_evaluation.py",
+                    "app/backend/tests/test_legal_rag_evaluation.py",
+                    "docs/LEGAL_RAG_EVALUATION.md",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                ),
+                release_gate_links=("legal-rag-evaluation", "legal-rag-index-binding", "legal-rag-retrieval-diagnostics-gate"),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "safe-ai-ops"),
             ),
             LedgerEntry(
                 id="billing-entitlement-repository-binding",

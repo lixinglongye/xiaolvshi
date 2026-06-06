@@ -139,6 +139,13 @@ counters, no-config-write boundaries, and no-NewAPI-call boundaries visible
 without rendering prompts, legal text, request bodies, response bodies, headers,
 raw model output, emails, or credentials.
 
+Current Legal RAG citation blocker evidence:
+`legal-rag-missing-answer-citation-blocker` blocks local Legal RAG evaluation
+artifacts when expected or retrieved legal source IDs exist but the generated
+answer provides no citation source IDs. It forces citation precision to zero and
+returns metadata-only coverage flags without raw retrieval context, answer text,
+prompts, model output, credentials, or network calls.
+
 Current legal fixture cheap-first benchmark gate evidence:
 `modelops-legal-fixture-cheap-first-benchmark-gate` adds shipped metadata-only
 small legal-document cheap-first Gemini benchmark/risk gate evidence. It records

@@ -39,6 +39,30 @@ def test_legal_rag_evaluation_blocks_poor_retrieval_and_citations():
     assert "CIVIL-577" in result["coverage"]["missing_expected_source_ids"]
 
 
+def test_legal_rag_evaluation_blocks_missing_answer_citations():
+    result = LegalRagEvaluationService().evaluate(
+        {
+            "expected_source_ids": ["CIVIL-143"],
+            "retrieved_source_ids": ["CIVIL-143"],
+            "answer_citation_source_ids": [],
+            "verified_claim_count": 3,
+            "total_claim_count": 3,
+            "unsupported_claims": [],
+            "stale_source_ids": [],
+            "pii_findings": [],
+        }
+    )
+
+    assert result["status"] == "fail"
+    assert result["metric_scores"]["citation_precision"] == 0.0
+    assert "Answer has no cited legal source IDs when sources are expected." in result["blocking_reasons"]
+    assert result["coverage"]["citations_required"] is True
+    assert result["coverage"]["missing_answer_citations"] is True
+    assert result["coverage"]["missing_answer_citation_source_ids"] == ["CIVIL-143"]
+    assert result["coverage"]["uncited_retrieved_source_ids"] == ["CIVIL-143"]
+    assert any("Add answer citation source IDs" in action for action in result["recommended_actions"])
+
+
 def test_legal_rag_evaluation_blocks_critical_pii():
     result = LegalRagEvaluationService().evaluate(
         {
@@ -60,3 +84,4 @@ def test_legal_rag_policy_exposes_required_inputs_and_weights():
 
     assert "retrieval_recall" in policy["metric_weights"]
     assert "expected_source_ids" in policy["evaluation_inputs"]
+    assert "Answer has no cited legal source IDs when sources are expected" in policy["blocking_conditions"]
