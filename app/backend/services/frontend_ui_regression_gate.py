@@ -51,6 +51,7 @@ PAGE_GATES = (
             "partial evidence failure banner",
             "user need benchmark coverage",
             "legal document benchmark coverage",
+            "legal benchmark fixture crosswalk",
             "legal benchmark research refresh",
             "model route legal benchmark risk queue",
             "legal RAG authority citation gate",
@@ -188,6 +189,7 @@ class FrontendUiRegressionGateService:
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
                     "Deep report feedback capture evidence is metadata only: report-level feedback links to report IDs, roadmap IDs, and release gates without raw report text, prompts, model output, or external calls.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
+                    "Legal benchmark fixture crosswalk UI evidence is metadata only: no public benchmark text, fixture snippets, generated text, model output, dataset downloads, or credentials.",
                 ],
             },
             "summary": {

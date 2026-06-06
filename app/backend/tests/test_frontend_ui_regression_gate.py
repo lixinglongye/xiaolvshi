@@ -26,6 +26,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert rows["/settings"]["source_exists"] is True
     assert rows["/deep-report/:id"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
+    assert "legal benchmark fixture crosswalk" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
     assert "legal RAG authority citation gate" in rows["/maintenance"]["protected_panels"]
@@ -103,6 +104,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "prompts" in payload_text
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
+    assert "Legal benchmark fixture crosswalk UI evidence is metadata only" in payload_text
     assert "gemini-cheap-first-coverage-gate-regresses" in payload_text
     assert "feedback-capture-plan-regresses" in payload_text
     assert "deep-report-feedback-capture-regresses" in payload_text

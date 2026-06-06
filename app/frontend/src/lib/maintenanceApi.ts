@@ -2216,6 +2216,7 @@ export type LegalPublicBenchmarkSampler = {
     sample_strategy: string;
     local_fixture_ids: string[];
     benchmark_case_ids: string[];
+    document_fixture_ids?: string[];
     validation_targets: string[];
     license_gate: string;
     task_fit: string[];
@@ -2231,6 +2232,7 @@ export type LegalPublicBenchmarkSampler = {
     id: string;
     source_ids: string[];
     local_fixture_ids: string[];
+    document_fixture_ids?: string[];
     target_endpoint: string;
     run_condition: string;
   }>;
@@ -2244,6 +2246,104 @@ export type LegalPublicBenchmarkSampler = {
   validation_commands: string[];
   recommended_actions: string[];
   privacy_note: string;
+};
+
+export type LegalBenchmarkFixtureCrosswalk = {
+  status: string;
+  method: {
+    type: string;
+    purpose: string;
+    source_services: string[];
+    claim_boundary: string;
+  };
+  summary: {
+    source_count: number;
+    source_with_benchmark_case_count: number;
+    source_with_local_fixture_count: number;
+    source_with_document_fixture_count: number;
+    source_with_small_corpus_count: number;
+    gap_count: number;
+    public_benchmark_score_claimed: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  source_rows: Array<{
+    source_id: string;
+    title: string;
+    priority: string;
+    resource_profile: string;
+    sampling_state: string;
+    license_gate: string;
+    validation_targets: string[];
+    benchmark_case_ids: string[];
+    benchmark_case_rows: Array<{
+      case_id: string;
+      title: string;
+      matter_type: string;
+      task_family: string;
+      user_segment: string;
+      expected_route: string;
+      required_metrics: string[];
+      benchmark_sources: string[];
+      release_gate_links: string[];
+    }>;
+    local_fixture_ids: string[];
+    local_fixture_rows: Array<{
+      fixture_id: string;
+      title: string;
+      matter_type: string;
+      linked_case_ids: string[];
+      expected_task_count: number;
+      expected_signal_count: number;
+      source_relation: string;
+    }>;
+    document_fixture_ids: string[];
+    document_fixture_rows: Array<{
+      case_id: string;
+      title: string;
+      document_type: string;
+      matter_type: string;
+      required_section_count: number;
+      expected_citation_count: number;
+      expected_risk_label_count: number;
+      banned_pii_category_count: number;
+      local_run_fit: string;
+    }>;
+    small_corpus_item_ids: string[];
+    small_corpus_item_rows: Array<{
+      item_id: string;
+      title: string;
+      domain: string;
+      matter_type: string;
+      document_type: string;
+      source_type: string;
+      language: string;
+      task_count: number;
+      risk_tag_count: number;
+      difficulty: string;
+      local_checks: string[];
+    }>;
+    coverage_status: string;
+  }>;
+  gap_queue: Array<{
+    source_id: string;
+    priority: string;
+    gap_reasons: string[];
+    recommended_action: string;
+    validation_target: string;
+  }>;
+  privacy_boundary: {
+    returns_public_benchmark_text: boolean;
+    returns_local_fixture_snippets: boolean;
+    returns_small_corpus_excerpts: boolean;
+    returns_generated_text: boolean;
+    returns_raw_model_output: boolean;
+    returns_credentials: boolean;
+    downloads_datasets: boolean;
+    model_calls: boolean;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
 };
 
 export type LegalBenchmarkResearchRegistry = {
@@ -3538,6 +3638,11 @@ type LegalFixtureEvidenceBundleResponse = {
 type LegalPublicBenchmarkSamplerResponse = {
   success: boolean;
   data: LegalPublicBenchmarkSampler;
+};
+
+type LegalBenchmarkFixtureCrosswalkResponse = {
+  success: boolean;
+  data: LegalBenchmarkFixtureCrosswalk;
 };
 
 type LegalBenchmarkResearchRegistryResponse = {
@@ -4915,6 +5020,18 @@ export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBench
     return payload.data;
   }
   return payload as LegalPublicBenchmarkSampler;
+}
+
+export async function getLegalBenchmarkFixtureCrosswalk(): Promise<LegalBenchmarkFixtureCrosswalk> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as LegalBenchmarkFixtureCrosswalkResponse | LegalBenchmarkFixtureCrosswalk;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalBenchmarkFixtureCrosswalk;
 }
 
 export async function getLegalReviewFixtureSmoke(): Promise<LegalReviewFixtureSmoke> {

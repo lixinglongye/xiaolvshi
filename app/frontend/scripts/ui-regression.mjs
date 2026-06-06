@@ -258,6 +258,33 @@ const checks = [
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
   () => assertIncludes(maintenancePage, 'Legal document benchmark coverage', 'legal document benchmark coverage panel'),
   () => assertIncludes(maintenancePage, 'returns_raw_model_output', 'maintenance privacy boundary'),
+  () => assertIncludes(maintenanceApi, 'LegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk type'),
+  () => assertIncludes(maintenanceApi, 'getLegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk', 'legal benchmark fixture crosswalk endpoint'),
+  () => assertIncludes(maintenanceApi, 'document_fixture_ids?: string[]', 'public benchmark sampler document fixture ids type'),
+  () => assertIncludes(maintenancePage, 'getLegalBenchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk load task'),
+  () => assertIncludes(maintenancePage, 'benchmarkFixtureCrosswalk', 'legal benchmark fixture crosswalk state binding'),
+  () => assertIncludes(maintenancePage, 'Legal benchmark fixture crosswalk', 'legal benchmark fixture crosswalk panel'),
+  () => assertIncludes(maintenancePage, 'source_with_document_fixture_count', 'legal benchmark fixture crosswalk document count binding'),
+  () => assertIncludes(maintenancePage, 'source_with_small_corpus_count', 'legal benchmark fixture crosswalk corpus count binding'),
+  () => assertIncludes(maintenancePage, 'small-corpus-*', 'legal benchmark fixture crosswalk small corpus label'),
+  () => assertIncludes(maintenancePage, 'public benchmark scores claimed:', 'legal benchmark fixture crosswalk no public score claim label'),
+  () => assertIncludes(maintenancePage, 'fixture snippets returned:', 'legal benchmark fixture crosswalk fixture text boundary'),
+  () => assertIncludes(maintenancePage, 'datasets downloaded:', 'legal benchmark fixture crosswalk no dataset download boundary'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+      'crosswalk follows public sampler',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence bundle</h2>',
+      'crosswalk precedes evidence bundle',
+    ),
   () => assertIncludes(maintenancePage, 'Legal benchmark research refresh', 'legal benchmark research refresh panel'),
   () => assertIncludes(maintenancePage, 'getLegalBenchmarkResearchRefresh', 'legal benchmark research refresh route/API binding'),
   () => assertIncludes(maintenancePage, 'Metadata-only/no benchmark score claims boundary', 'legal benchmark research refresh claim boundary panel'),
@@ -788,6 +815,12 @@ const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
   'Model route legal benchmark risk queue',
   'maintenance legal fixture cheap-first default promotion packet section',
 );
+const legalBenchmarkFixtureCrosswalkPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+  'Legal fixture evidence bundle',
+  'maintenance legal benchmark fixture crosswalk section',
+);
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
 assertNotMatches(relevantSources, /raw private narrative/i, 'frontend UI regression sources');
@@ -842,6 +875,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|document_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
   'maintenance legal fixture cheap-first default promotion packet no secrets or raw fixture/output field names',
 );
+assertNotMatches(
+  legalBenchmarkFixtureCrosswalkPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|sample_text|synthetic_excerpt|input_excerpt|output_text|raw_prompt|prompt_payload|candidate_text)\b/i,
+  'maintenance legal benchmark fixture crosswalk no secrets or raw fixture/corpus/model fields',
+);
 
 console.log(
   JSON.stringify(
@@ -849,7 +887,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 22,
+      assertions: checks.length + 23,
     },
     null,
     2,

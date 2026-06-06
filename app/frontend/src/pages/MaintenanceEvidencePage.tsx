@@ -37,6 +37,7 @@ import {
   getLegalFixtureResultArchive,
   getLegalFixtureRunPlan,
   getLegalFixtureRunReport,
+  getLegalBenchmarkFixtureCrosswalk,
   getLegalDocumentBenchmarkCoverage,
   getLegalAdoptionResearchBridge,
   getLegalBenchmarkResearchRegistry,
@@ -105,6 +106,7 @@ import {
   type LegalFixtureRunPlan,
   type LegalFixtureRunReport,
   type LegalAdoptionResearchBridge,
+  type LegalBenchmarkFixtureCrosswalk,
   type LegalBenchmarkResearchRegistry,
   type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
@@ -418,6 +420,8 @@ function Inner() {
     setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ] = useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
+  const [benchmarkFixtureCrosswalk, setBenchmarkFixtureCrosswalk] =
+    useState<LegalBenchmarkFixtureCrosswalk | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
@@ -644,6 +648,11 @@ function Inner() {
           label: 'Legal public benchmark sampler',
           run: getLegalPublicBenchmarkSampler,
           apply: (value) => setPublicBenchmarkSampler(value as LegalPublicBenchmarkSampler),
+        },
+        {
+          label: 'Legal benchmark fixture crosswalk',
+          run: getLegalBenchmarkFixtureCrosswalk,
+          apply: (value) => setBenchmarkFixtureCrosswalk(value as LegalBenchmarkFixtureCrosswalk),
         },
         {
           label: 'Legal fixture evidence bundle',
@@ -5985,6 +5994,10 @@ function Inner() {
                             <div className="break-words font-mono text-[11px]">{source.local_fixture_ids.join(', ')}</div>
                             <div className="mt-2 font-semibold text-stone-950">Cases</div>
                             <div className="break-words font-mono text-[11px]">{source.benchmark_case_ids.join(', ')}</div>
+                            <div className="mt-2 font-semibold text-stone-950">Document fixtures</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {(source.document_fixture_ids ?? []).join(', ') || 'metadata only'}
+                            </div>
                           </TableCell>
                           <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
                             {source.sample_strategy}
@@ -6012,6 +6025,187 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{publicBenchmarkSampler.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {benchmarkFixtureCrosswalk && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Public benchmark source to local benchmark case, fixture, document fixture, and small corpus metadata path
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[benchmarkFixtureCrosswalk.status] ?? statusClass.ready}>
+                    {displayToken(benchmarkFixtureCrosswalk.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkFixtureCrosswalk.summary.source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkFixtureCrosswalk.summary.source_with_local_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">fixture mapped</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkFixtureCrosswalk.summary.source_with_document_fixture_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">document fixture mapped</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkFixtureCrosswalk.summary.source_with_small_corpus_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">small corpus mapped</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {benchmarkFixtureCrosswalk.summary.gap_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">mapping gaps</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Benchmark cases</TableHead>
+                        <TableHead>Local fixtures</TableHead>
+                        <TableHead>Document/corpus path</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {benchmarkFixtureCrosswalk.source_rows.map((row) => (
+                        <TableRow key={row.source_id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge variant="outline" className={priorityClass[row.priority] ?? priorityClass.low}>
+                                {displayToken(row.priority)}
+                              </Badge>
+                              <Badge variant="outline" className={statusClass[row.sampling_state] ?? statusClass.warn}>
+                                {displayToken(row.sampling_state)}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.coverage_status] ?? statusClass.review_required}>
+                              {displayToken(row.coverage_status)}
+                            </Badge>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">
+                              {row.resource_profile.replace(/_/g, ' ')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="break-words font-mono text-[11px]">
+                              {row.benchmark_case_ids.join(', ') || 'not mapped'}
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {row.validation_targets.slice(0, 4).map((target) => (
+                                <Badge key={`${row.source_id}-${target}`} variant="outline" className="bg-white text-[11px]">
+                                  {displayToken(target)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">fixture-*</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.local_fixture_ids.join(', ') || 'not mapped'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">license gate</div>
+                            <div className="break-words font-mono text-[11px]">{row.license_gate}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">ldoc-*</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.document_fixture_ids.join(', ') || 'not mapped'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">small-corpus-*</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.small_corpus_item_ids.join(', ') || 'not mapped'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Gap queue</h3>
+                    <div className="space-y-3">
+                      {benchmarkFixtureCrosswalk.gap_queue.slice(0, 5).map((gap) => (
+                        <div key={gap.source_id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className={priorityClass[gap.priority] ?? priorityClass.medium}>
+                              {displayToken(gap.priority)}
+                            </Badge>
+                            <span className="font-mono text-[11px] text-stone-500">{gap.source_id}</span>
+                          </div>
+                          <div className="text-xs leading-5 text-stone-600">{gap.recommended_action}</div>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {gap.gap_reasons.map((reason) => (
+                              <Badge key={`${gap.source_id}-${reason}`} variant="outline" className="bg-[#fbfaf6] text-[11px]">
+                                {displayToken(reason)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      {benchmarkFixtureCrosswalk.gap_queue.length === 0 && (
+                        <div className="text-sm text-stone-600">All public sources have a local metadata path.</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>public benchmark scores claimed: {String(benchmarkFixtureCrosswalk.summary.public_benchmark_score_claimed)}</div>
+                      <div>public benchmark text returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_public_benchmark_text)}</div>
+                      <div>fixture snippets returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_local_fixture_snippets)}</div>
+                      <div>small corpus excerpts returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_small_corpus_excerpts)}</div>
+                      <div>generated text returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_generated_text)}</div>
+                      <div>raw model output returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_raw_model_output)}</div>
+                      <div>credentials returned: {String(benchmarkFixtureCrosswalk.privacy_boundary.returns_credentials)}</div>
+                      <div>datasets downloaded: {String(benchmarkFixtureCrosswalk.privacy_boundary.downloads_datasets)}</div>
+                      <div>model calls: {String(benchmarkFixtureCrosswalk.privacy_boundary.model_calls)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {benchmarkFixtureCrosswalk.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {benchmarkFixtureCrosswalk.validation_commands.slice(0, 3).map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}
