@@ -61,6 +61,12 @@ document review jobs.
 - If every source passes, the packet returns `pass` and allows default changes
   after the normal release validation commands pass.
 
+Models with unconfirmed official provider or gateway pricing, lifecycle status,
+or availability must remain `unpriced` and `review-only`. The release decision
+must not hard-code costs, count those models in cheap-first savings, or approve
+default promotion until source-backed price, status, capability, and gateway
+evidence are refreshed.
+
 The frontend `/model-ops` page displays the decision, source signal table,
 default-promotion status, and privacy boundary.
 

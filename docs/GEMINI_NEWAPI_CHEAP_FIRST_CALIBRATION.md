@@ -52,6 +52,14 @@ The backend repeats the safety check and returns only counts and field paths for
 forbidden fields or secret-like values. It never echoes the raw value back to the
 page.
 
+## Official Price And Status Gate
+
+Calibration must treat models with unconfirmed official provider or gateway
+pricing, lifecycle status, or availability as `unpriced` and `review-only`.
+Those models must not receive hard-coded costs, cheap-first savings credit, or
+default-promotion support until source-backed price, status, capability, and
+gateway evidence are refreshed.
+
 ## Calibration Decisions
 
 The service emits one row for each calibrated task family:

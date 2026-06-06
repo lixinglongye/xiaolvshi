@@ -23,6 +23,12 @@ known Gemini/NewAPI-compatible catalog models use local token prices, while
 unknown gateway model IDs stay unpriced and are surfaced through the unknown
 model checks.
 
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, the route must stay `unpriced` and `review-only`.
+Operations summaries must not hard-code a cost, include the route in
+cheap-first savings claims, or support default promotion until source-backed
+price, status, capability, and gateway evidence are refreshed.
+
 An empty repository returns `ready` so local development is not blocked, but it
 is not production proof. Maintainers still need staging or production route
 events before treating telemetry as routing health evidence.

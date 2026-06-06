@@ -38,6 +38,11 @@ Other accepted metadata-only sources are `model_ids`, `gateway_models`, `models`
 - Flash-Lite catalog models are the only high-frequency defaults.
 - Flash text models are balanced retry or review models after cheap precheck.
 - Pro and preview variants require explicit exception handling.
+- Gemini 3 Flash Preview is token-priced in the local catalog but remains
+  `premium_exception` because preview lifecycle blocks default promotion.
+- Gemini 3.5 Flash is tracked as an unpriced premium-posture review row until
+  official provider or gateway pricing is confirmed, so it is not a balanced
+  retry or high-frequency cheap-first default.
 - Image variants stay on explicit media routes.
 - Gateway-prefixed IDs such as `models/...`, `google/...`, and `google:...` normalize for review.
 - Unknown Gemini-like IDs are explicit-only until catalog review confirms cost, family, stability, and default suitability.
@@ -51,6 +56,14 @@ Other accepted metadata-only sources are `model_ids`, `gateway_models`, `models`
 - `observed_model_reviews`: sanitized model-ID review rows for optional submitted observed model names.
 - `prefix_compatibility` and `unknown_model_policy`.
 - `privacy_boundary` and `validation_commands`.
+
+## Official Price And Status Gate
+
+Variant rows whose official provider or gateway pricing, lifecycle status, or
+availability has not been confirmed must stay `unpriced` and `review-only`.
+Maintainers must not hard-code costs, include them in cheap-first savings, or
+promote them into defaults until source-backed price, status, capability, and
+gateway evidence are refreshed.
 
 ## ModelOps Review Form
 
@@ -77,6 +90,7 @@ The matrix uses the shared Gemini/NewAPI observed-model extractor that is also u
 
 ```bash
 python -m pytest tests/test_gemini_model_variant_matrix.py -q
+python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py tests/test_model_catalog_source_audit.py -q
 python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q
 python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_gemini_newapi_model_selector.py -q
 npm run typecheck

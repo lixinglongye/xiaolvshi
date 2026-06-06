@@ -93,6 +93,12 @@ id, produces a canonical review placeholder or empty canonical id, marks the
 catalog status as review-required, and avoids treating the model as a verified
 cheap default.
 
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, replay scenarios must keep the model `unpriced` and
+`review-only`. They must not hard-code a cost, count it in cheap-first savings,
+or treat it as a valid default-promotion candidate until source-backed price,
+status, capability, and gateway evidence are refreshed.
+
 High-frequency explicit premium scenarios should pass when the selector blocks
 the premium request or emits a clear warning that the request conflicts with the
 cheap-first policy for fast, routing, classification, OCR, triage, quote

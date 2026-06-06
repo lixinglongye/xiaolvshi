@@ -66,6 +66,14 @@ pricing, lifecycle, capability, and gateway probe evidence are attached. Pro,
 preview, and image candidates remain explicit-only unless maintainers approve a
 narrow exception.
 
+## Official Price And Status Gate
+
+Candidate stubs whose official provider or gateway pricing, lifecycle status,
+or availability has not been confirmed must remain `unpriced` and
+`review-only`. Do not hard-code costs, claim cheap-first savings, or allow
+default promotion until source-backed price, status, capability, and gateway
+evidence are refreshed.
+
 ## Validation
 
 Run from `app/backend`:

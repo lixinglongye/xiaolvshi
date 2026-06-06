@@ -15,6 +15,10 @@ The full ModelOps payload also includes `catalog_source_audit`, and `model_ops_r
 - Each local Gemini catalog row links back to an official Google Gemini source URL.
 - Fast, classification, and OCR defaults remain on stable Flash-Lite catalog models.
 - Preview, Pro, premium, or unpriced models cannot silently become high-frequency defaults.
+- Gemini 3 Flash Preview can be catalog-known and token-priced while still
+  staying review-only because its lifecycle is preview.
+- Gemini 3.5 Flash is tracked as an unpriced premium-posture Flash variant, not
+  a cheap-first candidate.
 - Missing pricing metadata stays visible as a watchlist instead of being treated as production-ready cost evidence.
 - The audit is local and does not call Gemini, NewAPI, OpenAI, Google, or any gateway.
 
@@ -24,6 +28,14 @@ The full ModelOps payload also includes `catalog_source_audit`, and `model_ops_r
 - Gemini models: `https://ai.google.dev/gemini-api/docs/models`
 
 These links are source-review anchors. They do not prove the local catalog is current by themselves; maintainers still need to refresh catalog fields when provider or gateway metadata changes.
+
+## Official Price And Status Gate
+
+When official provider or gateway pricing, lifecycle status, or model
+availability has not been confirmed, the catalog row must remain `unpriced` and
+`review-only`. Maintainers must not hard-code a cost, count the model in
+cheap-first savings, or promote it into default routes until source-backed
+price, status, capability, and gateway evidence are refreshed.
 
 ## What It Returns
 
@@ -38,6 +50,7 @@ These links are source-review anchors. They do not prove the local catalog is cu
 
 ```bash
 python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q
+python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py tests/test_model_catalog_source_audit.py -q
 cd ../frontend && npm run typecheck && npm run ui:regression
 ```
 

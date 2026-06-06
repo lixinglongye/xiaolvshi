@@ -54,6 +54,14 @@ aggregate ratios.
 repair steps and optional `.env` suggestions without writing configuration or
 calling gateways.
 
+## Official Price And Status Gate
+
+Route telemetry must not infer cost for models whose official provider or
+gateway pricing, lifecycle status, or availability is unconfirmed. Those models
+remain `unpriced` and `review-only`, with no hard-coded cost, savings credit, or
+default-promotion signal until source-backed price, status, capability, and
+gateway evidence are refreshed.
+
 ## Endpoint
 
 ```http

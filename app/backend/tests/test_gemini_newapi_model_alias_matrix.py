@@ -15,12 +15,15 @@ def test_alias_matrix_defaults_cover_catalog_prefixes_and_cheap_first_flags():
     rows = {(row["alias_model"], row["canonical_model"]): row for row in evidence["alias_rows"]}
 
     flash_lite = rows[("yibu/gemini-2.5-flash-lite", "gemini-2.5-flash-lite")]
+    newapi_flash_lite = rows[("newapi/google/gemini-2.5-flash-lite", "gemini-2.5-flash-lite")]
+    yibuapi_flash_lite = rows[("yibuapi/google/gemini-2.5-flash-lite", "gemini-2.5-flash-lite")]
+    publishers_preview = rows[("publishers/google/models/gemini-3-flash-preview", "gemini-3-flash-preview")]
     nested_flash_lite = rows[("openrouter/google/gemini-2.5-flash-lite", "gemini-2.5-flash-lite")]
     pro = rows[("google/gemini-2.5-pro", "gemini-2.5-pro")]
 
     assert evidence["status"] == "ready"
     assert evidence["summary"]["catalog_model_count"] == len(GEMINI_MODEL_CATALOG)
-    assert evidence["summary"]["known_alias_count"] >= len(GEMINI_MODEL_CATALOG) * 6
+    assert evidence["summary"]["known_alias_count"] >= len(GEMINI_MODEL_CATALOG) * 9
     assert evidence["summary"]["raw_payload_echoed"] is False
     assert evidence["summary"]["gateway_called"] is False
     assert evidence["summary"]["credentials_included"] is False
@@ -28,6 +31,13 @@ def test_alias_matrix_defaults_cover_catalog_prefixes_and_cheap_first_flags():
     assert flash_lite["known_catalog_model"] is True
     assert flash_lite["high_frequency_default_allowed"] is True
     assert flash_lite["default_allowed_without_review"] is True
+    assert newapi_flash_lite["alias_shape"] == "nested_google_slash_prefix"
+    assert newapi_flash_lite["high_frequency_default_allowed"] is True
+    assert yibuapi_flash_lite["high_frequency_default_allowed"] is True
+    assert publishers_preview["known_catalog_model"] is True
+    assert publishers_preview["lifecycle_status"] == "preview"
+    assert publishers_preview["premium_exception"] is True
+    assert publishers_preview["default_allowed_without_review"] is False
     assert nested_flash_lite["alias_shape"] == "nested_google_slash_prefix"
     assert nested_flash_lite["high_frequency_default_allowed"] is True
     assert pro["premium_exception"] is True

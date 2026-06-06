@@ -22,6 +22,14 @@ It produces:
 It never writes configuration and never calls NewAPI, Gemini, OpenAI, or any
 gateway.
 
+## Official Price And Status Gate
+
+Remediation steps must treat models with unconfirmed official provider or
+gateway pricing, lifecycle status, or availability as `unpriced` and
+`review-only`. Suggested env changes must not hard-code costs, claim savings, or
+promote defaults for those models until source-backed price, status, capability,
+and gateway evidence are refreshed.
+
 ## Endpoints
 
 ```http

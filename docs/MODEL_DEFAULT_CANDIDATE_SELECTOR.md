@@ -22,6 +22,14 @@ This keeps runtime defaults stable while giving ModelOps evidence a way to spot 
 - It does not include prompts, legal text, payload bodies, model output, account data, or credentials.
 - Preview, unpriced, premium, and media-route models stay explicit or review-only unless their task policy allows them.
 
+## Official Price And Status Gate
+
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, the selector must keep the model `unpriced` and
+`review-only`. Do not hard-code costs, use it in cheap-first savings claims, or
+promote it as a default candidate until source-backed price, status,
+capability, and gateway evidence are refreshed.
+
 ## Current Behavior
 
 - High-frequency tasks still recommend `gemini-2.5-flash-lite`.

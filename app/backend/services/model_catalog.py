@@ -94,13 +94,30 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         id="gemini-3.5-flash",
         provider="google",
         family="gemini",
-        cost_tier="medium",
+        cost_tier="premium",
         latency_tier="fast",
         capabilities=("text", "vision", "json", "grounding", "coding", "agentic"),
         best_for=("agentic-workflows", "coding", "grounded-research", "sustained-reasoning"),
-        notes="Current stable Flash option; more capable but more expensive than Flash-Lite defaults.",
+        notes="Gateway-observed Flash-like option; keep review-only until official availability and pricing are confirmed.",
+        pricing_note=(
+            "Provider or gateway pricing is not source-confirmed in the local catalog. "
+            "Keep unpriced and review-only until refreshed."
+        ),
+        status="review",
+        context_window_tokens=1_000_000,
+    ),
+    ModelProfile(
+        id="gemini-3-flash-preview",
+        provider="google",
+        family="gemini",
+        cost_tier="medium",
+        latency_tier="fast",
+        capabilities=("text", "vision", "json", "grounding", "coding", "agentic"),
+        best_for=("preview-agentic-workflows", "coding", "grounded-research", "sustained-reasoning"),
+        notes="Preview Flash option; keep review-only until lifecycle and gateway support are confirmed.",
         input_usd_per_million_tokens=0.50,
         output_usd_per_million_tokens=3.00,
+        status="preview",
         context_window_tokens=1_000_000,
     ),
     ModelProfile(

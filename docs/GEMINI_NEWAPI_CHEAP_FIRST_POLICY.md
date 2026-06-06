@@ -58,6 +58,14 @@ Gateway ids that look Gemini-like but are not in the local catalog are not
 blocked outright. They are marked `catalog_review` with warning severity and
 remain explicit-only until tier, stability, and default suitability are checked.
 
+## Official Price And Status Gate
+
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, the policy must keep the model `unpriced` and
+`review-only`. Do not hard-code a cost, use it in cheap-first savings claims, or
+promote it into any default route until source-backed price, status, capability,
+and gateway evidence are refreshed.
+
 `docs/GEMINI_NEWAPI_MODEL_SELECTOR.md` scopes the upcoming
 `GET`/`POST` `/api/v1/maintenance/gemini-newapi-model-selector` evidence
 endpoint. That endpoint should turn catalog ids, `models/`, `google/`,

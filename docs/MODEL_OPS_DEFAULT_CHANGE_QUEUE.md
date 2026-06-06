@@ -49,6 +49,14 @@ output, raw probe payloads, or client data.
   human review.
 - `blocked`: the change must not be applied until blocking ModelOps checks pass.
 
+## Official Price And Status Gate
+
+Queue items for models with unconfirmed official provider or gateway pricing,
+lifecycle status, or availability must remain `unpriced` and `review-only`.
+The queue must not hard-code costs, claim cheap-first savings, or move those
+items to `ready` default promotion until source-backed price, status,
+capability, and gateway evidence are refreshed.
+
 ## Non-Claims
 
 This queue does not:

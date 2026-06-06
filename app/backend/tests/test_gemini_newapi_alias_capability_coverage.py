@@ -30,6 +30,7 @@ def test_alias_capability_coverage_expands_gateway_shapes_and_tasks():
         ("publishers/google/models/gemini-2.5-flash-lite:generateContent", "gemini-2.5-flash-lite")
     ]
     agentic = rows[("newapi/google/gemini-3.1-flash-lite@latest", "gemini-3.1-flash-lite")]
+    preview_flash = rows[("newapi/google/gemini-3-flash-preview@latest", "gemini-3-flash-preview")]
 
     assert yibu_flash_lite["high_frequency_default_allowed"] is True
     assert "fast" in yibu_flash_lite["covered_high_frequency_tasks"]
@@ -38,6 +39,10 @@ def test_alias_capability_coverage_expands_gateway_shapes_and_tasks():
     assert "agentic" in agentic["covered_tasks"]
     assert "grounded-research" in agentic["covered_tasks"]
     assert agentic["balanced_after_precheck_allowed"] is True
+    assert preview_flash["known_catalog_model"] is True
+    assert preview_flash["lifecycle_status"] == "preview"
+    assert preview_flash["premium_or_media_review_required"] is True
+    assert preview_flash["default_allowed_without_review"] is False
     assert canonical_model_id("models/gemini-2.5-flash-lite:generateContent") == "gemini-2.5-flash-lite"
     assert canonical_model_id("models/gemini-2.5-flash-lite:generateContent@latest") == "gemini-2.5-flash-lite"
     assert canonical_model_id("publishers/google/models/gemini-2.5-flash-lite:generateContent?alt=sse") == "gemini-2.5-flash-lite"

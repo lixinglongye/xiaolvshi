@@ -195,6 +195,14 @@ explicit or review-only. See `docs/MODEL_DEFAULT_CANDIDATE_SELECTOR.md`.
 
 `gemini-2.0-flash` 和 `gemini-2.0-flash-lite` 不再作为推荐项，因为 Google 价格页标注它们已经在 2026-06-01 停用。若某个中转网关仍提供兼容别名，仍可通过显式模型名透传，但不应作为默认配置。
 
+## Official Price And Status Gate
+
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed from current source-review evidence, the model must stay
+`unpriced` and `review-only`. Do not hard-code a cost, include it in cheap-first
+savings claims, or promote it into default routes until price, status,
+capability, and gateway evidence are refreshed.
+
 ## Operational Notes
 
 - 不要把 `APP_AI_KEY` 写入 README、issue、commit message 或截图。

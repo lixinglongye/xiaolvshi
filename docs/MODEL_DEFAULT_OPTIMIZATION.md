@@ -33,6 +33,14 @@ python -m pytest tests/test_model_default_candidate_selector.py tests/test_model
 
 A `fail` status means a configurable default is over the task cost ceiling or lacks required capabilities. A `warn` status means pricing or catalog verification needs maintainer review before relying on that default.
 
+## Official Price And Status Gate
+
+Default optimization must treat models with unconfirmed official provider or
+gateway pricing, lifecycle status, or availability as `unpriced` and
+`review-only`. It must not hard-code costs, claim savings, or recommend env-var
+default promotion until source-backed price, status, capability, and gateway
+evidence are refreshed.
+
 ## Safety
 
 The optimization plan does not read prompts, documents, user identifiers, API keys, filenames, or raw model output. It only uses model IDs, catalog metadata, task requirements, and forecast assumptions.

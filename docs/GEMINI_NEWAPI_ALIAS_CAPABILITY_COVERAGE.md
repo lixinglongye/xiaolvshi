@@ -18,6 +18,17 @@ task, lifecycle, and cost metadata.
 - Reports task coverage, high-frequency cheap-first eligibility,
   balanced-after-precheck eligibility, premium/media review boundaries, and
   unknown observed model review states.
+- Gemini 3 Flash Preview aliases such as `newapi/google/gemini-3-flash-preview@latest`
+  are covered for capability metadata but remain review-only because preview
+  models are not allowed as high-frequency defaults.
+
+## Official Price And Status Gate
+
+Aliases whose official provider or gateway pricing, lifecycle status, or
+availability has not been confirmed must remain `unpriced` and `review-only`.
+Do not hard-code costs, count those aliases in cheap-first savings, or allow
+default promotion until source-backed price, status, capability, and gateway
+evidence are refreshed.
 
 ## Safety Boundary
 
@@ -43,6 +54,7 @@ Run:
 
 ```bash
 python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q
+python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py tests/test_model_catalog_source_audit.py -q
 python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q
 cd ../frontend && npm run typecheck && npm run ui:regression
 ```

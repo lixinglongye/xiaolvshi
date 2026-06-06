@@ -42,6 +42,12 @@ Allowed metrics and metadata include route IDs, task labels, model IDs, gateway/
 stored token counts plus local catalog prices and may differ from final gateway
 billing, discounts, cache pricing, or provider-side accounting.
 
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, persisted telemetry must keep that model `unpriced` and
+`review-only`. Do not backfill guessed costs, use the route in cheap-first
+savings claims, or treat it as default-promotion evidence until source-backed
+price, status, capability, and gateway evidence are refreshed.
+
 Forbidden fields include prompt text, raw messages, raw legal documents, client names or contact details, headers, request bodies, response bodies, raw model output, passwords, secrets, and API key or bearer-token fields.
 
 ## Retention

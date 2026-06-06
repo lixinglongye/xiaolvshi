@@ -189,6 +189,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-extractor-rejection-taxonomy" in completed_ids
     assert "gemini-newapi-model-alias-matrix" in completed_ids
     assert "gemini-newapi-alias-capability-coverage" in completed_ids
+    assert "gemini-official-preview-alias-review" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
     assert "modelops-cheap-first-calibration-review-form" in completed_ids
@@ -621,6 +622,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py "
+        "tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py "
+        "tests/test_model_catalog_source_audit.py -q"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
@@ -910,6 +917,44 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-coverage-gate" in alias_capability_entry["release_gate_links"]
     assert "model-ops-readiness" in alias_capability_entry["release_gate_links"]
     assert "frontend-ui-regression" in alias_capability_entry["release_gate_links"]
+    official_preview_alias_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "gemini-official-preview-alias-review"
+    )
+    assert official_preview_alias_entry["category"] == "model_ops"
+    assert official_preview_alias_entry["size"] == "medium"
+    assert official_preview_alias_entry["status"] == "shipped"
+    assert "Gemini 3 Flash Preview" in official_preview_alias_entry["impact"]
+    assert "NewAPI/YibuAPI/publishers Google prefix compatibility" in official_preview_alias_entry["impact"]
+    assert "Gemini 3.5 Flash posture" in official_preview_alias_entry["impact"]
+    assert "stable Flash-Lite routes" in official_preview_alias_entry["impact"]
+    assert "calling gateways" in official_preview_alias_entry["impact"]
+    assert "raw legal text" in official_preview_alias_entry["impact"]
+    assert "credentials" in official_preview_alias_entry["impact"]
+    assert "app/backend/services/model_catalog.py" in official_preview_alias_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_model_alias_matrix.py" in official_preview_alias_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_newapi_alias_capability_coverage.py" in official_preview_alias_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_model_variant_matrix.py" in official_preview_alias_entry["evidence_paths"]
+    assert "app/backend/services/model_catalog_source_audit.py" in official_preview_alias_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_catalog.py" in official_preview_alias_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_newapi_model_alias_matrix.py" in official_preview_alias_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py" in official_preview_alias_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_gemini_model_variant_matrix.py" in official_preview_alias_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_catalog_source_audit.py" in official_preview_alias_entry["evidence_paths"]
+    assert "gemini-newapi-model-alias-matrix" in official_preview_alias_entry["release_gate_links"]
+    assert "gemini-newapi-alias-capability-coverage" in official_preview_alias_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in official_preview_alias_entry["release_gate_links"]
+    assert "model-catalog-source-audit" in official_preview_alias_entry["release_gate_links"]
+    assert "model-ops-readiness" in official_preview_alias_entry["release_gate_links"]
     coverage_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-coverage-gate"
     )

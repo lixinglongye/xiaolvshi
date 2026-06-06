@@ -17,6 +17,14 @@ The request policy already sets `temperature` and `max_tokens` by task. This che
 
 High-volume tasks such as `fast`, `classification`, and `ocr` fail if they drift above the lowest Gemini cost tier.
 
+## Official Price And Status Gate
+
+When official provider or gateway pricing, lifecycle status, or model
+availability has not been confirmed, request cost bounds must keep the model
+`unpriced` and `review-only`. Do not hard-code per-request costs, count the
+model in cheap-first savings, or treat it as a valid default candidate until
+source-backed price, status, capability, and gateway evidence are refreshed.
+
 ## API Surface
 
 `GET /api/v1/aihub/models` returns `request_cost_bounds`:

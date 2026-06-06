@@ -134,6 +134,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
                 "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
+                "python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py tests/test_model_catalog_source_audit.py -q",
                 "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_selector_replay.py -q",
                 "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q",
@@ -1355,6 +1356,44 @@ class ContinuousUpdateLedgerService:
                     "modelops-gemini-cheap-first-coverage-gate",
                     "model-ops-readiness",
                     "frontend-ui-regression",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="gemini-official-preview-alias-review",
+                title="Official Gemini preview alias review",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds local catalog and alias evidence for Gemini 3 Flash Preview plus NewAPI/YibuAPI/"
+                    "publishers Google prefix compatibility, corrects the high-cost Gemini 3.5 Flash posture, "
+                    "and keeps preview or premium Flash variants review-only so cheap-first defaults remain pinned "
+                    "to stable Flash-Lite routes without writing configuration, calling gateways, storing prompts, "
+                    "raw legal text, model outputs, payloads, emails, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_catalog.py",
+                    "app/backend/services/gemini_newapi_model_alias_matrix.py",
+                    "app/backend/services/gemini_newapi_alias_capability_coverage.py",
+                    "app/backend/services/gemini_model_variant_matrix.py",
+                    "app/backend/services/model_catalog_source_audit.py",
+                    "app/backend/tests/test_model_catalog.py",
+                    "app/backend/tests/test_gemini_newapi_model_alias_matrix.py",
+                    "app/backend/tests/test_gemini_newapi_alias_capability_coverage.py",
+                    "app/backend/tests/test_gemini_model_variant_matrix.py",
+                    "app/backend/tests/test_model_catalog_source_audit.py",
+                    "docs/GEMINI_NEWAPI_MODEL_ALIAS_MATRIX.md",
+                    "docs/GEMINI_NEWAPI_ALIAS_CAPABILITY_COVERAGE.md",
+                    "docs/GEMINI_MODEL_VARIANT_MATRIX.md",
+                    "docs/MODEL_CATALOG_SOURCE_AUDIT.md",
+                ),
+                release_gate_links=(
+                    "gemini-newapi-model-alias-matrix",
+                    "gemini-newapi-alias-capability-coverage",
+                    "gemini-model-variant-matrix",
+                    "model-catalog-source-audit",
+                    "model-ops-readiness",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),

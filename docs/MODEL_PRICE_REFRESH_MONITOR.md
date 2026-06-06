@@ -98,6 +98,14 @@ Observed Gemini-like models return `warn` when they are:
 Warned models should stay explicit-only until maintainers confirm tier,
 stability, and gateway price.
 
+### Official Price And Status Gate
+
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, the monitor must treat the model as `unpriced` and
+`review-only`. Do not fill in guessed token or image costs, use the model in
+savings claims, or recommend it as a default until source-backed price, status,
+capability, and gateway evidence are refreshed.
+
 ### Catalog Watchlist
 
 Preview, premium, or unpriced catalog entries are listed in `drift_signals` with

@@ -26,6 +26,13 @@ def test_model_catalog_source_audit_tracks_sources_pricing_and_defaults():
     assert "pricing-metadata-watchlist" in audit["warning_check_ids"]
     assert rows["gemini-2.5-flash-lite"]["high_frequency_default_allowed"] is True
     assert rows["gemini-2.5-flash-lite"]["pricing_status"] == "token_priced"
+    assert rows["gemini-3-flash-preview"]["catalog_status"] == "preview"
+    assert rows["gemini-3-flash-preview"]["pricing_status"] == "token_priced"
+    assert rows["gemini-3-flash-preview"]["high_frequency_default_allowed"] is False
+    assert rows["gemini-3.5-flash"]["cost_tier"] == "premium"
+    assert rows["gemini-3.5-flash"]["catalog_status"] == "review"
+    assert rows["gemini-3.5-flash"]["pricing_status"] == "missing"
+    assert rows["gemini-3.5-flash"]["high_frequency_default_allowed"] is False
     assert rows["gemini-3-pro-image"]["pricing_status"] == "missing"
     assert rows["gemini-3-pro-image"]["official_source_url"] is True
     assert audit["privacy_boundary"]["network_called"] is False

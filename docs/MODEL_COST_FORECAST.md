@@ -52,6 +52,14 @@ premium_baseline_monthly =
 
 Token prices come from `model_catalog.py`. These values follow Google Gemini paid-tier pricing where available, but actual gateway billing can differ.
 
+## Official Price And Status Gate
+
+If official provider or gateway pricing, lifecycle status, or model availability
+has not been confirmed, the forecast must keep the model `unpriced` and
+`review-only`. Do not hard-code guessed costs, include the model in
+cheap-first savings claims, or use it as default-promotion evidence until
+source-backed price, status, capability, and gateway evidence are refreshed.
+
 ## Safety
 
 The forecast stores only planning assumptions and model metadata. It never stores prompts, user documents, file names, API keys, or user identifiers.

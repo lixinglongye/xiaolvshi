@@ -35,6 +35,9 @@ def test_canonical_model_id_recognizes_gateway_prefixes():
     assert model_catalog.canonical_model_id("models/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
     assert model_catalog.canonical_model_id("google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
     assert model_catalog.canonical_model_id("openrouter/google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
+    assert model_catalog.canonical_model_id("newapi/google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
+    assert model_catalog.canonical_model_id("yibuapi/google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
+    assert model_catalog.canonical_model_id("publishers/google/models/gemini-3-flash-preview") == "gemini-3-flash-preview"
     assert model_catalog.canonical_model_id("models/gemini-3.1-pro") == "gemini-3.1-pro"
     assert model_catalog.canonical_model_id("yibu/gemini-3.1-flash-image") == "gemini-3.1-flash-image"
     assert model_catalog.canonical_model_id("provider-custom-model") is None
@@ -70,6 +73,12 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "grounded-research" in catalog["gemini-3.1-flash-lite"]["configured_roles"]
     assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
     assert catalog["gemini-3.1-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.25
+    assert catalog["gemini-3-flash-preview"]["status"] == "preview"
+    assert catalog["gemini-3-flash-preview"]["pricing"]["input_usd_per_million_tokens"] == 0.50
+    assert catalog["gemini-3.5-flash"]["cost_tier"] == "premium"
+    assert catalog["gemini-3.5-flash"]["status"] == "review"
+    assert catalog["gemini-3.5-flash"]["pricing"]["input_usd_per_million_tokens"] is None
+    assert catalog["gemini-3.5-flash"]["pricing"]["output_usd_per_million_tokens"] is None
     assert catalog["gemini-3.1-pro"]["status"] == "stable"
     assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
     assert catalog["gemini-3.1-flash-image"]["pricing"]["output_usd_per_image"] == 0.067
@@ -94,6 +103,8 @@ def test_estimate_token_cost_uses_catalog_pricing():
 
     assert cost == 0.30
     assert model_catalog.estimate_token_cost_usd("google/gemini-2.5-flash", 1_000_000, 500_000) == 1.55
+    assert model_catalog.estimate_token_cost_usd("newapi/google/gemini-3-flash-preview", 1_000_000, 500_000) == 2.0
+    assert model_catalog.estimate_token_cost_usd("gemini-3.5-flash", 1_000_000, 500_000) is None
     assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) is None
     assert model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", -100, -100) == 0.0
     assert model_catalog.estimate_token_cost_usd("provider-custom-model", 100, 100) is None

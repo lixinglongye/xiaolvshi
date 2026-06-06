@@ -72,6 +72,14 @@ passed through a gateway by a separate runtime caller, but this evidence endpoin
 must mark them as `catalog_review` until pricing, lifecycle, capability, and
 default-suitability metadata exist.
 
+## Official Price And Status Gate
+
+Selector evidence must treat any model with unconfirmed official provider or
+gateway pricing, lifecycle status, or availability as `unpriced` and
+`review-only`. It must not hard-code costs, count the model in cheap-first
+savings, or recommend it for default promotion until source-backed price,
+status, capability, and gateway evidence are refreshed.
+
 ## Cheap-First Candidate Chains
 
 The selector should emit task-specific candidate chains rather than a single

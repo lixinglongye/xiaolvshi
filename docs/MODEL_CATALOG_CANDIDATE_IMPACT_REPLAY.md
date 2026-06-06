@@ -40,6 +40,14 @@ Outputs are limited to sanitized model ids, lifecycle/cost metadata, task impact
 - `review_required`: candidates are preview, unpriced, media-specific, premium, or otherwise need maintainer review.
 - `blocked`: input contains forbidden fields, sensitive values, non-Gemini ids, or missing required metadata.
 
+## Official Price And Status Gate
+
+Impact replay must keep candidates with unconfirmed official provider or
+gateway pricing, lifecycle status, or availability as `unpriced` and
+`review-only`. It must not hard-code costs, count savings, or recommend default
+promotion until source-backed price, status, capability, and gateway evidence
+are refreshed.
+
 ## Validation
 
 Run the focused backend checks:

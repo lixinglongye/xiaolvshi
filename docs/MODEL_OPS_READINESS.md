@@ -142,6 +142,14 @@ new default promotion requires maintainer review.
 
 The readiness warning drilldown is release evidence for maintainers reviewing cheap-first model changes. It makes warning ownership visible without exposing legal text, prompts, model output, provider credentials, request bodies, response bodies, or gateway payloads.
 
+## Official Price And Status Gate
+
+ModelOps readiness must treat any model with unconfirmed official provider or
+gateway pricing, lifecycle status, or availability as `unpriced` and
+`review-only`. Such a model cannot satisfy cheap-first cost evidence, cannot be
+counted in savings claims, and cannot be promoted into defaults until
+source-backed price, status, capability, and gateway evidence are refreshed.
+
 ## Release Readiness
 
 `model-ops-readiness` is a required release-readiness check. Maintainers should run:

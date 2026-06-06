@@ -50,6 +50,14 @@ The response includes `cost_guardrails` next to:
 - Unknown-price model warning: `1`
 - Unknown-price model failure: `3`
 
+## Official Price And Status Gate
+
+Cost guardrails must treat models with unconfirmed official provider or gateway
+pricing, lifecycle status, or availability as `unpriced` and `review-only`.
+They must not accept guessed costs, count the model toward cheap-first savings,
+or allow default promotion until source-backed price, status, capability, and
+gateway evidence are refreshed.
+
 ## Safety
 
 Guardrails use only aggregate metadata. They do not store prompts, document text, file names, API keys, emails, or user identifiers.

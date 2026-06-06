@@ -7,7 +7,18 @@ from services.gemini_newapi_observed_model_extraction import extract_observed_mo
 from services.model_catalog import GEMINI_MODEL_CATALOG, canonical_model_id, model_profile
 
 
-DEFAULT_PREFIXES = ("", "models/", "google/", "google:", "yibu/", "gemini/", "openrouter/google/")
+DEFAULT_PREFIXES = (
+    "",
+    "models/",
+    "google/",
+    "google:",
+    "yibu/",
+    "yibuapi/google/",
+    "newapi/google/",
+    "gemini/",
+    "openrouter/google/",
+    "publishers/google/models/",
+)
 REJECTED_MODEL_ID_PREFIX = "redacted-sensitive-model-id"
 REJECTED_INVALID_MODEL_ID_PREFIX = "redacted-invalid-model-id"
 
@@ -59,8 +70,11 @@ class GeminiNewapiModelAliasMatrixService:
                 "google/gemini-2.5-flash-lite",
                 "google:gemini-2.5-flash-lite",
                 "yibu/gemini-2.5-flash-lite",
+                "yibuapi/google/gemini-2.5-flash-lite",
+                "newapi/google/gemini-2.5-flash-lite",
                 "gemini/gemini-2.5-flash-lite",
                 "openrouter/google/gemini-2.5-flash-lite",
+                "publishers/google/models/gemini-2.5-flash-lite",
             ],
             "default_policy": {
                 "high_frequency_default_rule": "Only stable Flash-Lite catalog aliases are high-frequency default candidates.",

@@ -20,6 +20,14 @@ Empty telemetry returns `ready` with an informational staging-event action. That
 keeps local development unblocked while making clear that production routing
 health is still unproven.
 
+## Official Price And Status Gate
+
+Triage items for models with unconfirmed official provider or gateway pricing,
+lifecycle status, or availability must keep those models `unpriced` and
+`review-only`. The queue must not treat guessed costs as evidence, count those
+models in savings claims, or recommend default promotion until source-backed
+price, status, capability, and gateway evidence are refreshed.
+
 ## Endpoints
 
 ```http
