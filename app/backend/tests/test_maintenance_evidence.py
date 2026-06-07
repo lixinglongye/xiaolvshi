@@ -103,6 +103,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first route preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps AIHub endpoint route coverage gate" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps runtime explicit model fit gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
@@ -196,6 +197,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
+    assert "app/backend/services/model_ops_runtime_explicit_model_fit_gate.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_runtime_explicit_model_fit_gate.py" in evidence_paths
+    assert "docs/MODELOPS_RUNTIME_EXPLICIT_MODEL_FIT_GATE.md" in evidence_paths
     assert "app/backend/services/modelops_legal_micro_benchmark_preflight.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py" in evidence_paths
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
@@ -246,17 +250,26 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "runtime route reason-code evidence" in model_signal["description"]
     assert "safe gateway connection profile evidence" in model_signal["description"]
     assert "observed gateway model fit matrix evidence" in model_signal["description"]
+    assert "runtime explicit model fit gate evidence" in model_signal["description"]
     assert "gateway connection profile review" in model_signal["responsibility"]
     assert "observed gateway model fit matrix review" in model_signal["responsibility"]
+    assert "runtime explicit model fit gate review" in model_signal["responsibility"]
     assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["description"]
+    assert "ModelOps runtime explicit model fit gate review" in model_signal["description"]
+    assert "runtime explicit model fit review states" in model_signal["description"]
     assert "AIHub endpoint runtime-router and route telemetry coverage evidence" in model_signal["description"]
     assert "route telemetry reason-code hotspot evidence" in model_signal["description"]
     assert "runtime route reason-code review" in model_signal["responsibility"]
     assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["responsibility"]
+    assert "ModelOps runtime explicit model fit gate review" in model_signal["responsibility"]
+    assert "runtime explicit model fit review" in model_signal["responsibility"]
     assert "AIHub endpoint runtime-router coverage review" in model_signal["responsibility"]
     assert "AIHub route telemetry coverage review" in model_signal["responsibility"]
     assert "route telemetry reason-code hotspot review" in model_signal["responsibility"]
     assert "app/backend/services/model_runtime_router.py" in model_signal["evidence_paths"]
+    assert "app/backend/services/model_ops_runtime_explicit_model_fit_gate.py" in model_signal["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_runtime_explicit_model_fit_gate.py" in model_signal["evidence_paths"]
+    assert "docs/MODELOPS_RUNTIME_EXPLICIT_MODEL_FIT_GATE.md" in model_signal["evidence_paths"]
     assert "app/backend/services/modelops_observed_gateway_model_fit_matrix.py" in model_signal["evidence_paths"]
     assert "app/backend/tests/test_modelops_observed_gateway_model_fit_matrix.py" in model_signal["evidence_paths"]
     assert "docs/MODELOPS_OBSERVED_GATEWAY_MODEL_FIT_MATRIX.md" in model_signal["evidence_paths"]
@@ -454,6 +467,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("normalizes remote bare NewAPI/Gemini hosts to /v1" in guardrail for guardrail in profile["application_guardrails"])
     assert any("key presence with placeholders only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("observed gateway model fit matrix is metadata-only inventory fit evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("runtime explicit model fit gate is metadata-only runtime route evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("unknown gateway pass-through" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("runtime behavior changes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("cheap-first task capabilities" in guardrail for guardrail in profile["application_guardrails"])
     assert any("lowest-cost observed candidates" in guardrail for guardrail in profile["application_guardrails"])
     assert any("missing task coverage" in guardrail for guardrail in profile["application_guardrails"])

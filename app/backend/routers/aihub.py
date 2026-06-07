@@ -64,6 +64,7 @@ from services.model_ops_gemini_cheap_first_route_preflight import (
 from services.model_ops_aihub_endpoint_route_coverage_gate import (
     ModelOpsAIHubEndpointRouteCoverageGateService,
 )
+from services.model_ops_runtime_explicit_model_fit_gate import ModelOpsRuntimeExplicitModelFitGateService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
@@ -305,6 +306,12 @@ async def list_models():
     observed_gateway_model_fit_matrix = ModelOpsObservedGatewayModelFitMatrixService().build_matrix(
         {"observed_models": observed_gateway_models}
     )
+    runtime_explicit_model_fit_gate = ModelOpsRuntimeExplicitModelFitGateService().build_gate(
+        {
+            "observed_models": observed_gateway_models,
+            "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
+        }
+    )
     gemini_newapi_alias_capability_coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
         {"observed_models": observed_gateway_models}
     )
@@ -383,6 +390,7 @@ async def list_models():
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
         "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
+        "runtime_explicit_model_fit_gate": runtime_explicit_model_fit_gate,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -475,6 +483,7 @@ async def list_models():
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
         "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
+        "runtime_explicit_model_fit_gate": runtime_explicit_model_fit_gate,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -669,6 +678,25 @@ async def evaluate_modelops_observed_gateway_model_fit_matrix(payload: dict[str,
     return {
         "success": True,
         "data": ModelOpsObservedGatewayModelFitMatrixService().build_matrix(payload),
+    }
+
+
+@router.get("/models/runtime-explicit-model-fit-gate")
+async def modelops_runtime_explicit_model_fit_gate():
+    """Return metadata-only runtime explicit model fit evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["runtime_explicit_model_fit_gate"],
+    }
+
+
+@router.post("/models/runtime-explicit-model-fit-gate")
+async def evaluate_modelops_runtime_explicit_model_fit_gate(payload: dict[str, Any]):
+    """Evaluate sanitized explicit runtime model scenarios before live routing reliance."""
+    return {
+        "success": True,
+        "data": ModelOpsRuntimeExplicitModelFitGateService().build_gate(payload),
     }
 
 

@@ -31,6 +31,7 @@ import {
   getGeminiNewApiAliasCapabilityCoverage,
   getModelOpsObservedGeminiCoverageGapQueue,
   getModelOpsObservedGatewayModelFitMatrix,
+  getModelOpsRuntimeExplicitModelFitGate,
   getModelOpsAIHubEndpointRouteCoverageGate,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
@@ -48,6 +49,7 @@ import {
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsObservedGatewayModelFitMatrix,
+  type ModelOpsRuntimeExplicitModelFitGate,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryApprovalPacket,
@@ -445,6 +447,9 @@ function Inner() {
   const [observedGatewayModelFitMatrix, setObservedGatewayModelFitMatrix] =
     useState<ModelOpsObservedGatewayModelFitMatrix | null>(null);
   const [observedGatewayModelFitMatrixError, setObservedGatewayModelFitMatrixError] = useState('');
+  const [runtimeExplicitModelFitGate, setRuntimeExplicitModelFitGate] =
+    useState<ModelOpsRuntimeExplicitModelFitGate | null>(null);
+  const [runtimeExplicitModelFitGateError, setRuntimeExplicitModelFitGateError] = useState('');
   const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
     useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
   const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
@@ -504,6 +509,10 @@ function Inner() {
     setObservedGeminiModelIntakeQueue(null);
     setObservedGeminiCoverageGapQueueError('');
     setObservedGeminiCoverageGapQueue(null);
+    setObservedGatewayModelFitMatrixError('');
+    setObservedGatewayModelFitMatrix(null);
+    setRuntimeExplicitModelFitGateError('');
+    setRuntimeExplicitModelFitGate(null);
     setGeminiAliasCapabilityCoverageError('');
     setGeminiAliasCapabilityCoverage(null);
     setGeminiCheapFirstCoverageGateError('');
@@ -537,6 +546,7 @@ function Inner() {
         modelOpsResult,
         observedGeminiCoverageGapQueueResult,
         observedGatewayModelFitMatrixResult,
+        runtimeExplicitModelFitGateResult,
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
         geminiCheapFirstRoutePreflightResult,
@@ -550,6 +560,7 @@ function Inner() {
         getModelOps(),
         getModelOpsObservedGeminiCoverageGapQueue(),
         getModelOpsObservedGatewayModelFitMatrix(),
+        getModelOpsRuntimeExplicitModelFitGate(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
         getGeminiCheapFirstRoutePreflight(),
@@ -582,6 +593,7 @@ function Inner() {
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
         setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
         setObservedGatewayModelFitMatrix(modelOpsResult.value.observed_gateway_model_fit_matrix ?? null);
+        setRuntimeExplicitModelFitGate(modelOpsResult.value.runtime_explicit_model_fit_gate ?? null);
         setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
         setAihubEndpointRouteCoverageGate(modelOpsResult.value.aihub_endpoint_route_coverage_gate ?? null);
         if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
@@ -600,6 +612,15 @@ function Inner() {
           setObservedGatewayModelFitMatrix(modelOpsResult.value.observed_gateway_model_fit_matrix ?? null);
           if (!modelOpsResult.value.observed_gateway_model_fit_matrix) {
             setObservedGatewayModelFitMatrixError('Observed gateway model fit matrix failed to load.');
+          }
+        }
+        if (runtimeExplicitModelFitGateResult.status === 'fulfilled') {
+          setRuntimeExplicitModelFitGate(runtimeExplicitModelFitGateResult.value);
+        } else {
+          console.error(runtimeExplicitModelFitGateResult.reason);
+          setRuntimeExplicitModelFitGate(modelOpsResult.value.runtime_explicit_model_fit_gate ?? null);
+          if (!modelOpsResult.value.runtime_explicit_model_fit_gate) {
+            setRuntimeExplicitModelFitGateError('Runtime explicit model fit gate failed to load.');
           }
         }
         if (geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
@@ -663,6 +684,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && observedGatewayModelFitMatrixResult.status === 'fulfilled') {
         setObservedGatewayModelFitMatrix(observedGatewayModelFitMatrixResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && runtimeExplicitModelFitGateResult.status === 'fulfilled') {
+        setRuntimeExplicitModelFitGate(runtimeExplicitModelFitGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
         setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
@@ -734,6 +758,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && observedGatewayModelFitMatrixResult.status === 'rejected') {
         console.error(observedGatewayModelFitMatrixResult.reason);
         setObservedGatewayModelFitMatrixError('Observed gateway model fit matrix failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && runtimeExplicitModelFitGateResult.status === 'rejected') {
+        console.error(runtimeExplicitModelFitGateResult.reason);
+        setRuntimeExplicitModelFitGateError('Runtime explicit model fit gate failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'rejected') {
         console.error(aihubEndpointRouteCoverageGateResult.reason);
@@ -1244,6 +1272,17 @@ function Inner() {
   const observedGatewayFitClaimEntries = boundaryDisplayEntries(
     activeObservedGatewayModelFitMatrix?.claim_boundary,
   );
+  const activeRuntimeExplicitModelFitGate =
+    runtimeExplicitModelFitGate ?? data?.runtime_explicit_model_fit_gate ?? null;
+  const runtimeExplicitModelFitRows = activeRuntimeExplicitModelFitGate?.request_rows ?? [];
+  const runtimeExplicitModelFitChecks = activeRuntimeExplicitModelFitGate?.checks ?? [];
+  const runtimeExplicitModelFitPrivacyEntries = boundaryDisplayEntries(
+    activeRuntimeExplicitModelFitGate?.privacy_boundary,
+  );
+  const runtimeExplicitModelFitClaimEntries = boundaryDisplayEntries(
+    activeRuntimeExplicitModelFitGate?.claim_boundary,
+  );
+  const runtimeExplicitModelFitPolicyEntries = Object.entries(activeRuntimeExplicitModelFitGate?.runtime_policy ?? {});
   const geminiNewApiRouteCoverageBridgeRows = useMemo(
     () =>
       observedGatewayFitTaskRows.map((row) => {
@@ -6247,6 +6286,234 @@ function Inner() {
                     <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                     <div className="space-y-2">
                       {activeObservedGatewayModelFitMatrix.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeRuntimeExplicitModelFitGate || runtimeExplicitModelFitGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeRuntimeExplicitModelFitGate
+                    ? `${activeRuntimeExplicitModelFitGate.summary.scenario_count} scenarios / ${activeRuntimeExplicitModelFitGate.summary.enforced_row_count} enforced / ${activeRuntimeExplicitModelFitGate.summary.review_row_count} review`
+                    : 'metadata-only runtime explicit model fit'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeRuntimeExplicitModelFitGate?.id ?? 'modelops-runtime-explicit-model-fit-gate'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeRuntimeExplicitModelFitGate?.status)}>
+                {activeRuntimeExplicitModelFitGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {runtimeExplicitModelFitGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {runtimeExplicitModelFitGateError}
+              </div>
+            )}
+
+            {activeRuntimeExplicitModelFitGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-5">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.scenario_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">scenario count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.ready_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.enforced_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">enforced rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.review_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.blocked_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.unknown_gateway_passthrough_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown_gateway_passthrough</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.explicit_over_budget_allowed_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">explicit_over_budget_allowed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.downgraded_to_recommended_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">downgraded_to_recommended_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.cheap_first_enforced_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap_first_enforced_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeRuntimeExplicitModelFitGate.summary.observed_fit_review_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">observed_fit_review_count</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Scenario</TableHead>
+                        <TableHead>Requested</TableHead>
+                        <TableHead>Resolved</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Observed fit</TableHead>
+                        <TableHead>Reason codes</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {runtimeExplicitModelFitRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.scenario_id}</div>
+                            <div className="mt-1 text-xs text-stone-500">{row.endpoint}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
+                            <div className="break-all font-mono text-stone-950">{row.requested_model ?? '-'}</div>
+                            <div>requested_resolved_model: {row.requested_resolved_model ?? '-'}</div>
+                            <div>allow_over_budget_model: {String(row.allow_over_budget_model)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="break-all font-mono text-stone-950">{row.resolved_model}</div>
+                            <div>canonical_model: {row.canonical_model ?? '-'}</div>
+                            <div>known_catalog_model: {String(row.known_catalog_model)}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier} / max {row.max_cost_tier}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.runtime_fit_status)}>
+                              {row.runtime_fit_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1">budget_mode: {row.budget_mode}</div>
+                            <div>requires_operator_review: {String(row.requires_operator_review)}</div>
+                            <div>is_over_budget: {String(row.is_over_budget)}</div>
+                            <div>routed_to_recommended_model: {String(row.routed_to_recommended_model)}</div>
+                            <div>recommended_model: {row.recommended_model}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div>observed_fit_status: {row.observed_fit_status}</div>
+                            <div className="break-all">observed_cheapest_gateway_model: {row.observed_cheapest_gateway_model ?? '-'}</div>
+                            <div>observed_cheapest_canonical_model: {row.observed_cheapest_canonical_model ?? '-'}</div>
+                            <div>cheap_first_aligned: {String(row.cheap_first_aligned)}</div>
+                            <div>unknown_gateway_passthrough: {String(row.unknown_gateway_passthrough)}</div>
+                            <div>explicit_over_budget_allowed: {String(row.explicit_over_budget_allowed)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>{row.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1 text-stone-500">route_reason_codes: {row.route_reason_codes.join(', ') || '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.next_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {runtimeExplicitModelFitChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence?.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Runtime policy</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {runtimeExplicitModelFitPolicyEntries.map(([key, value]) => (
+                        <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono text-[11px] font-semibold text-stone-950">{key}</div>
+                          <div className="mt-1">{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>gateway_called: {String(activeRuntimeExplicitModelFitGate.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeRuntimeExplicitModelFitGate.summary.network_called)}</div>
+                      <div>model_called: {String(activeRuntimeExplicitModelFitGate.summary.model_called)}</div>
+                      <div>configuration_written: {String(activeRuntimeExplicitModelFitGate.summary.configuration_written)}</div>
+                      <div>traffic_shifted: {String(activeRuntimeExplicitModelFitGate.summary.traffic_shifted)}</div>
+                      <div>credentials_included: {String(activeRuntimeExplicitModelFitGate.summary.credentials_included)}</div>
+                      <div>forbidden_payload_field_count: {activeRuntimeExplicitModelFitGate.summary.forbidden_payload_field_count}</div>
+                      <div>runtime_behavior_changed: {String(activeRuntimeExplicitModelFitGate.claim_boundary.runtime_behavior_changed)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {runtimeExplicitModelFitPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                      {runtimeExplicitModelFitClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeRuntimeExplicitModelFitGate.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

@@ -1116,6 +1116,51 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-observed-gateway-model-fit-matrix"]["evidence_paths"]
     assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-observed-gateway-model-fit-matrix"]["evidence_paths"]
     assert "docs/MODELOPS_OBSERVED_GATEWAY_MODEL_FIT_MATRIX.md" in checks["modelops-observed-gateway-model-fit-matrix"]["evidence_paths"]
+    assert checks["modelops-runtime-explicit-model-fit-gate"]["required"] is True
+    assert checks["modelops-runtime-explicit-model-fit-gate"]["blocks_release"] is True
+    assert "metadata-only runtime explicit model fit evidence" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "sanitized task/model scenarios" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "unknown gateway pass-through review" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "explicit over-budget exceptions" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "local downgrade visibility" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "cheap-first enforcement signals" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "observed gateway fit linkage" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "Gemini" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "OpenAI" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "Google" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "gateways" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "network" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "does not write configuration" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "change runtime behavior" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "change defaults" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "shift traffic" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "API keys" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "Authorization headers" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "request bodies" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "messages" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "prompts" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "raw payloads" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "model outputs" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "gateway responses" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "credentials" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "app/backend/services/model_ops_runtime_explicit_model_fit_gate.py" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_runtime_explicit_model_fit_gate.py" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/backend/services/model_budget.py" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert "docs/MODELOPS_RUNTIME_EXPLICIT_MODEL_FIT_GATE.md" in checks["modelops-runtime-explicit-model-fit-gate"]["evidence_paths"]
+    assert (
+        "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py "
+        "tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q"
+        == checks["modelops-runtime-explicit-model-fit-gate"]["validation_command"]
+    )
     assert "metadata-only Gemini/NewAPI cheap-first coverage-gate evidence" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]
     assert "Gemini-like defaults" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]
     assert "cheap-first alignment" in checks["modelops-gemini-cheap-first-coverage-gate"]["manual_note"]

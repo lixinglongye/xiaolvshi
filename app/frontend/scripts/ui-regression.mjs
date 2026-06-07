@@ -758,6 +758,37 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'uses_runtime_router', 'model-ops observed gateway bridge runtime router'),
   () => assertIncludes(modelOpsPage, 'returns_route_payloads', 'model-ops observed gateway bridge route payload boundary'),
   () => assertIncludes(modelOpsPage, 'route_gap_reason_codes', 'model-ops observed gateway bridge route gap reasons'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit gate type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsRuntimeExplicitModelFitRequestRow', 'model-ops runtime explicit model fit request row type'),
+  () => assertIncludes(modelOpsApi, 'runtime_explicit_model_fit_gate?: ModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit response binding'),
+  () => assertIncludes(modelOpsApi, 'request_rows: ModelOpsRuntimeExplicitModelFitRequestRow[]', 'model-ops runtime explicit model fit row payload type'),
+  () => assertIncludes(modelOpsApi, 'runtime_policy: Record<string, string>', 'model-ops runtime explicit model fit policy type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/runtime-explicit-model-fit-gate', 'model-ops runtime explicit model fit endpoint'),
+  () => assertIncludes(modelOpsPage, 'Runtime explicit model fit gate', 'model-ops runtime explicit model fit panel'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitGate', 'model-ops runtime explicit model fit state binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitRows', 'model-ops runtime explicit model fit rows binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitChecks', 'model-ops runtime explicit model fit checks binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitPolicyEntries', 'model-ops runtime explicit model fit policy binding'),
+  () => assertIncludes(modelOpsPage, 'unknown_gateway_passthrough_count', 'model-ops runtime explicit model fit unknown passthrough summary'),
+  () => assertIncludes(modelOpsPage, 'explicit_over_budget_allowed_count', 'model-ops runtime explicit model fit over-budget summary'),
+  () => assertIncludes(modelOpsPage, 'downgraded_to_recommended_count', 'model-ops runtime explicit model fit downgrade summary'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_enforced_count', 'model-ops runtime explicit model fit cheap-first summary'),
+  () => assertIncludes(modelOpsPage, 'observed_fit_review_count', 'model-ops runtime explicit model fit observed review summary'),
+  () => assertIncludes(modelOpsPage, 'forbidden_payload_field_count', 'model-ops runtime explicit model fit payload field summary'),
+  () => assertIncludes(modelOpsPage, 'requested_resolved_model', 'model-ops runtime explicit requested resolved model binding'),
+  () => assertIncludes(modelOpsPage, 'resolved_model', 'model-ops runtime explicit resolved model binding'),
+  () => assertIncludes(modelOpsPage, 'canonical_model', 'model-ops runtime explicit canonical model binding'),
+  () => assertIncludes(modelOpsPage, 'known_catalog_model', 'model-ops runtime explicit catalog binding'),
+  () => assertIncludes(modelOpsPage, 'allow_over_budget_model', 'model-ops runtime explicit allow over budget binding'),
+  () => assertIncludes(modelOpsPage, 'routed_to_recommended_model', 'model-ops runtime explicit route enforcement binding'),
+  () => assertIncludes(modelOpsPage, 'observed_fit_status', 'model-ops runtime explicit observed fit binding'),
+  () => assertIncludes(modelOpsPage, 'runtime_fit_status', 'model-ops runtime explicit fit status binding'),
+  () => assertIncludes(modelOpsPage, 'route_reason_codes', 'model-ops runtime explicit route reason binding'),
+  () => assertIncludes(modelOpsPage, 'runtime_behavior_changed', 'model-ops runtime explicit behavior-change claim boundary'),
+  () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops runtime explicit gateway boundary'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops runtime explicit no config-write boundary'),
   () => assertIncludes(modelOpsApi, 'ModelOpsAIHubEndpointRouteCoverageGate', 'model-ops AIHub endpoint route coverage gate type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsAIHubEndpointRouteCoverageRow', 'model-ops AIHub endpoint route coverage row type'),
   () => assertIncludes(modelOpsApi, 'aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate', 'model-ops AIHub endpoint route coverage response binding'),
@@ -819,6 +850,20 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Observed gateway model fit matrix</h2>',
+      'model-ops observed gateway model fit matrix follows route preflight',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Observed gateway model fit matrix</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
+      'model-ops runtime explicit model fit gate follows observed gateway fit matrix',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
       'model-ops AIHub endpoint route coverage follows route preflight',
     ),
@@ -1265,6 +1310,20 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'uses_runtime_router', 'model-ops observed gateway bridge runtime router binding'),
   () => assertIncludes(modelOpsPage, 'returns_route_payloads', 'model-ops observed gateway bridge route payload binding'),
   () => assertIncludes(modelOpsPage, 'route_gap_reason_codes', 'model-ops observed gateway bridge gap code binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit gate type'),
+  () => assertIncludes(modelOpsApi, 'runtime_explicit_model_fit_gate', 'model-ops runtime explicit model fit response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit evaluation API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/runtime-explicit-model-fit-gate', 'model-ops runtime explicit model fit endpoint'),
+  () => assertIncludes(modelOpsPage, 'Runtime explicit model fit gate', 'model-ops runtime explicit model fit panel'),
+  () => assertIncludes(modelOpsPage, 'activeRuntimeExplicitModelFitGate', 'model-ops runtime explicit model fit active binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitRows', 'model-ops runtime explicit model fit row binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitChecks', 'model-ops runtime explicit model fit checks binding'),
+  () => assertIncludes(modelOpsPage, 'runtimeExplicitModelFitPolicyEntries', 'model-ops runtime explicit model fit policy binding'),
+  () => assertIncludes(modelOpsPage, 'unknown_gateway_passthrough', 'model-ops runtime explicit unknown gateway binding'),
+  () => assertIncludes(modelOpsPage, 'explicit_over_budget_allowed', 'model-ops runtime explicit over-budget binding'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_aligned', 'model-ops runtime explicit cheap-first binding'),
+  () => assertIncludes(modelOpsPage, 'runtime_behavior_changed', 'model-ops runtime explicit behavior boundary binding'),
   () => assertIncludes(modelOpsPage, 'geminiAliasCapabilityCoverage', 'model-ops Gemini/NewAPI alias capability state binding'),
   () => assertIncludes(modelOpsPage, 'geminiAliasCapabilityRows', 'model-ops Gemini/NewAPI alias capability row binding'),
   () => assertIncludes(modelOpsPage, 'geminiAliasTaskCoverageRows', 'model-ops Gemini/NewAPI alias task coverage binding'),
@@ -1298,6 +1357,13 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">Observed gateway model fit matrix</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
+      'model-ops runtime explicit model fit gate follows observed gateway fit matrix',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
       'model-ops observed gateway fit matrix before AIHub endpoint coverage',
     ),
@@ -1355,8 +1421,14 @@ const geminiCheapFirstRoutePreflightPanel = sourceSection(
 const observedGatewayModelFitMatrixPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Observed gateway model fit matrix</h2>',
-  '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
   'model-ops observed gateway model fit matrix section',
+);
+const runtimeExplicitModelFitGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Runtime explicit model fit gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
+  'model-ops runtime explicit model fit gate section',
 );
 const defaultTemplateAlignmentPanel = sourceSection(
   modelOpsPage,
@@ -1616,6 +1688,11 @@ assertNotMatches(
   observedGatewayModelFitMatrixPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body_value|response_body|headers_value|client_email|phone|identity)\b/i,
   'model-ops observed gateway model fit matrix no secrets or raw request/response/prompt/model/legal fields',
+);
+assertNotMatches(
+  runtimeExplicitModelFitGatePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body_value|response_body|headers_value|gateway_response|client_email|phone|identity|messages|content)\b/i,
+  'model-ops runtime explicit model fit gate no secrets or raw request/response/prompt/model/legal fields',
 );
 
 console.log(

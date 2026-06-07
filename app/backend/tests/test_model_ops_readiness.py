@@ -120,6 +120,27 @@ def test_model_ops_readiness_warns_on_observed_gateway_fit_matrix_review():
     assert "test_modelops_observed_gateway_model_fit_matrix.py" in result["warning_drilldown"][0]["validation_hint"]
 
 
+def test_model_ops_readiness_warns_on_runtime_explicit_model_fit_gate_review():
+    signals = _signals("pass")
+    signals["runtime_explicit_model_fit_gate"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 2, "fail_count": 0, "unknown_gateway_passthrough_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["unknown-gateway-passthrough-visible", "explicit-over-budget-boundary"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "runtime-explicit-model-fit-gate" in result["warning_check_ids"]
+    assert "runtime-explicit-model-fit-gate" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["source_key"] == "runtime_explicit_model_fit_gate"
+    assert result["warning_drilldown"][0]["warning_category"] == "routing_quality_review"
+    assert "quality gates" in result["warning_drilldown"][0]["next_action"].lower()
+    assert "test_model_ops_runtime_explicit_model_fit_gate.py" in result["warning_drilldown"][0]["validation_hint"]
+
+
 def test_model_ops_readiness_warns_on_gemini_route_preflight_review():
     signals = _signals("pass")
     signals["gemini_cheap_first_route_preflight"] = {
@@ -305,8 +326,13 @@ def test_model_ops_route_includes_readiness():
     assert "observed_gemini_coverage_gap_queue" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "runtime_explicit_model_fit_gate" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["configuration_written"] is False
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["gateway_called"] is False
+    assert payload["runtime_explicit_model_fit_gate"]["summary"]["configuration_written"] is False
+    assert payload["runtime_explicit_model_fit_gate"]["summary"]["gateway_called"] is False
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["known_coverage_count"] >= 100
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["gateway_called"] is False
     replay_check = next(

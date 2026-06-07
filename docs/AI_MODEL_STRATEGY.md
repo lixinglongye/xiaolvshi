@@ -212,6 +212,17 @@ configuration, shift traffic, validate live account inventory, or include
 request/response bodies, headers, prompts, raw payloads, legal text, model
 outputs, gateway responses, credentials, emails, or user identifiers.
 
+`modelops-runtime-explicit-model-fit-gate` is the shipped metadata-only runtime
+route review gate for explicit model requests. It runs sanitized task/model
+scenarios through the local runtime router, then shows unknown gateway
+pass-through, explicit over-budget exceptions, local downgrades to the
+recommended model, cheap-first alignment, and observed gateway fit review states.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, or the network, write configuration, change runtime behavior, change
+defaults, shift traffic, validate live account inventory, or include request or
+response bodies, headers, messages, prompts, raw payloads, legal text, model
+outputs, gateway responses, credentials, emails, or user identifiers.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

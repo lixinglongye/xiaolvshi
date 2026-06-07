@@ -1250,6 +1250,57 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    runtime_explicit_fit_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-runtime-explicit-model-fit-gate"
+    )
+    assert runtime_explicit_fit_entry["size"] == "medium"
+    assert runtime_explicit_fit_entry["status"] == "shipped"
+    assert "runtime explicit model fit evidence" in runtime_explicit_fit_entry["impact"]
+    assert "sanitized task/model scenarios" in runtime_explicit_fit_entry["impact"]
+    assert "runtime router" in runtime_explicit_fit_entry["impact"]
+    assert "unknown gateway pass-through" in runtime_explicit_fit_entry["impact"]
+    assert "explicit over-budget exceptions" in runtime_explicit_fit_entry["impact"]
+    assert "local downgrade enforcement" in runtime_explicit_fit_entry["impact"]
+    assert "cheap-first alignment" in runtime_explicit_fit_entry["impact"]
+    assert "observed gateway fit review states" in runtime_explicit_fit_entry["impact"]
+    assert "live gateway calls" in runtime_explicit_fit_entry["impact"]
+    assert "model calls" in runtime_explicit_fit_entry["impact"]
+    assert "account inventory validation" in runtime_explicit_fit_entry["impact"]
+    assert "configuration writes" in runtime_explicit_fit_entry["impact"]
+    assert "runtime behavior changes" in runtime_explicit_fit_entry["impact"]
+    assert "default changes" in runtime_explicit_fit_entry["impact"]
+    assert "traffic shifts" in runtime_explicit_fit_entry["impact"]
+    assert "API keys" in runtime_explicit_fit_entry["impact"]
+    assert "Authorization headers" in runtime_explicit_fit_entry["impact"]
+    assert "request bodies" in runtime_explicit_fit_entry["impact"]
+    assert "messages" in runtime_explicit_fit_entry["impact"]
+    assert "prompts" in runtime_explicit_fit_entry["impact"]
+    assert "raw payloads" in runtime_explicit_fit_entry["impact"]
+    assert "model outputs" in runtime_explicit_fit_entry["impact"]
+    assert "gateway responses" in runtime_explicit_fit_entry["impact"]
+    assert "credentials" in runtime_explicit_fit_entry["impact"]
+    assert "app/backend/services/model_ops_runtime_explicit_model_fit_gate.py" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_runtime_explicit_model_fit_gate.py" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/backend/services/model_budget.py" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "docs/MODELOPS_RUNTIME_EXPLICIT_MODEL_FIT_GATE.md" in runtime_explicit_fit_entry["evidence_paths"]
+    assert "modelops-runtime-explicit-model-fit-gate" in runtime_explicit_fit_entry["release_gate_links"]
+    assert "modelops-observed-gateway-model-fit-matrix" in runtime_explicit_fit_entry["release_gate_links"]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in runtime_explicit_fit_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in runtime_explicit_fit_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py "
+        "tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     legal_micro_preflight_entry = next(
         entry
         for entry in ledger["completed_updates"]

@@ -686,6 +686,75 @@ export type ModelOpsObservedGatewayModelFitMatrix = {
   validation_commands: string[];
 };
 
+export type ModelOpsRuntimeExplicitModelFitRequestRow = {
+  id: string;
+  scenario_id: string;
+  endpoint: string;
+  task: string;
+  requested_model?: string | null;
+  requested_resolved_model?: string | null;
+  resolved_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  max_cost_tier: string;
+  budget_mode: string;
+  allow_over_budget_model: boolean;
+  requires_operator_review: boolean;
+  is_over_budget: boolean;
+  routed_to_recommended_model: boolean;
+  recommended_model: string;
+  unknown_gateway_passthrough: boolean;
+  explicit_over_budget_allowed: boolean;
+  cheap_first_aligned: boolean;
+  observed_fit_status: string;
+  observed_cheapest_gateway_model?: string | null;
+  observed_cheapest_canonical_model?: string | null;
+  runtime_fit_status: string;
+  reason_codes: string[];
+  route_reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsRuntimeExplicitModelFitGate = {
+  id: 'modelops-runtime-explicit-model-fit-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    scenario_count: number;
+    ready_row_count: number;
+    enforced_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    unknown_gateway_passthrough_count: number;
+    explicit_over_budget_allowed_count: number;
+    downgraded_to_recommended_count: number;
+    cheap_first_enforced_count: number;
+    observed_fit_review_count: number;
+    forbidden_payload_field_count: number;
+    raw_payload_echoed: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    credentials_included: boolean;
+  };
+  request_rows: ModelOpsRuntimeExplicitModelFitRequestRow[];
+  checks: Array<{ id: string; status: string; reason: string; evidence_count?: number; evidence?: string[] }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  runtime_policy: Record<string, string>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlanRole = {
   role: string;
   model: string;
@@ -3658,6 +3727,7 @@ export type ModelOpsResponse = {
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
   observed_gateway_model_fit_matrix?: ModelOpsObservedGatewayModelFitMatrix;
+  runtime_explicit_model_fit_gate?: ModelOpsRuntimeExplicitModelFitGate;
   gemini_newapi_alias_capability_coverage?: GeminiNewApiAliasCapabilityCoverage;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
@@ -3991,6 +4061,23 @@ export async function evaluateModelOpsObservedGatewayModelFitMatrix(
 ): Promise<ModelOpsObservedGatewayModelFitMatrix> {
   return invokeModelOpsApi<ModelOpsObservedGatewayModelFitMatrix>({
     url: '/api/v1/aihub/models/observed-gateway-model-fit-matrix',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsRuntimeExplicitModelFitGate(): Promise<ModelOpsRuntimeExplicitModelFitGate> {
+  return invokeModelOpsApi<ModelOpsRuntimeExplicitModelFitGate>({
+    url: '/api/v1/aihub/models/runtime-explicit-model-fit-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsRuntimeExplicitModelFitGate(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsRuntimeExplicitModelFitGate> {
+  return invokeModelOpsApi<ModelOpsRuntimeExplicitModelFitGate>({
+    url: '/api/v1/aihub/models/runtime-explicit-model-fit-gate',
     method: 'POST',
     data: payload,
   });

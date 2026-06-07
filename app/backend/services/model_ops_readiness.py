@@ -97,6 +97,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),
     ReadinessComponent("runtime-router", "Runtime router", "routing", "runtime_router"),
+    ReadinessComponent(
+        "runtime-explicit-model-fit-gate",
+        "Runtime explicit model fit gate",
+        "routing",
+        "runtime_explicit_model_fit_gate",
+    ),
     ReadinessComponent("reasoning-policy", "Reasoning policy", "routing", "reasoning_policy"),
     ReadinessComponent("request-policy", "Request policy", "routing", "request_policy"),
     ReadinessComponent(
@@ -497,6 +503,7 @@ class ModelOpsReadinessService:
             "budget_policy",
             "capability_matrix",
             "runtime_router",
+            "runtime_explicit_model_fit_gate",
             "reasoning_policy",
             "request_policy",
             "gateway_request_compatibility_gate",
@@ -547,7 +554,7 @@ class ModelOpsReadinessService:
         if warning_category == "runtime_telemetry_review":
             return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":
-            return "python -m pytest tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
         if warning_category == "cost_guardrail_review":
             return "python -m pytest tests/test_model_cost_guardrails.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py -q"
         if warning_category == "release_evidence_review":

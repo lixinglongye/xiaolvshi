@@ -104,6 +104,7 @@ PAGE_GATES = (
                 "Gemini cheap-first coverage gate",
                 "Gemini cheap-first route preflight",
                 "Observed gateway model fit matrix",
+                "Runtime explicit model fit gate",
                 "AIHub endpoint route coverage gate",
                 "Gateway connection profile",
             "Cheap-first quality budget",
@@ -210,6 +211,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
                     "ModelOps Gemini cheap-first route preflight UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw model output, legal text, emails, or credentials.",
                     "ModelOps observed gateway model fit matrix UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, credentials, or user identifiers.",
+                    "ModelOps runtime explicit model fit gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, gateway responses, emails, credentials, or user identifiers.",
                     "ModelOps AIHub endpoint route coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, or credentials.",
                     "ModelOps gateway connection profile UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, credentials, or user identifiers.",
                     "ModelOps observed Gemini coverage gap queue UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, raw prompts, payloads, model output, legal text, emails, or credentials.",
@@ -279,6 +281,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the observed gateway model fit matrix panel, route bridge, task rows, model rows, checks, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked observed-gateway fit checks for cheap-first task coverage, review-only model boundaries, missing task gaps, and forbidden raw request/model fields.",
+                },
+                {
+                    "id": "runtime-explicit-model-fit-gate-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the runtime explicit model fit gate panel, request rows, checks, runtime policy, and privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked runtime explicit model fit checks for unknown gateway pass-through, explicit over-budget exceptions, local downgrades, observed fit warnings, and forbidden raw request/model fields.",
                 },
                 {
                     "id": "user-need-gemini-route-coverage-regresses",

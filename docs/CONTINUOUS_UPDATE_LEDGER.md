@@ -189,6 +189,17 @@ include API keys, Authorization headers, request bodies, response bodies,
 prompts, raw payloads, legal text, model outputs, gateway responses, emails, or
 user identifiers.
 
+Current runtime explicit model fit evidence:
+`modelops-runtime-explicit-model-fit-gate` adds shipped metadata-only runtime
+route evidence for sanitized explicit task/model scenarios. It exposes unknown
+gateway pass-through, explicit over-budget exceptions, local downgrade
+enforcement, cheap-first alignment, observed gateway fit review states, and
+privacy/claim boundaries without live gateway calls, model calls, account
+inventory validation, configuration writes, runtime behavior changes, default
+changes, traffic shifts, API keys, Authorization headers, request bodies,
+response bodies, headers, messages, prompts, raw payloads, legal text, model
+outputs, gateway responses, credentials, emails, or user identifiers.
+
 Current AIHub endpoint route coverage evidence:
 `modelops-aihub-endpoint-route-coverage-gate` adds shipped metadata-only
 endpoint route coverage evidence for text, streaming text, PDF, image, video,
