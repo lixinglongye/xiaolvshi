@@ -916,8 +916,8 @@ class ReleaseReadinessService:
                     "app/frontend/src/pages/ModelOpsPage.tsx",
                     "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md",
                 ),
-                validation_command="python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q",
-                manual_note="This summarizes sanitized persisted telemetry only; empty repositories are ready for local development but not proof that production routing is healthy, and prompts, legal text, credentials, raw payloads, and raw model outputs remain excluded.",
+                validation_command="python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q",
+                manual_note="This summarizes sanitized persisted telemetry and route reason-code hotspots only; empty repositories are ready for local development but not proof that production routing is healthy, and prompts, legal text, credentials, raw payloads, and raw model outputs remain excluded.",
             ),
             ReleaseCheck(
                 id="route-telemetry-triage-queue",
@@ -935,7 +935,7 @@ class ReleaseReadinessService:
                     "docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md",
                 ),
                 validation_command="python -m pytest tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py -q",
-                manual_note="This converts sanitized route telemetry operations checks into maintainer actions; it is not production health proof when no route events exist and it excludes prompts, legal text, credentials, raw payloads, emails, and raw model outputs.",
+                manual_note="This converts sanitized route telemetry operations checks and reason-code hotspots into maintainer actions; it is not production health proof when no route events exist and it excludes prompts, legal text, credentials, raw payloads, emails, and raw model outputs.",
             ),
             ReleaseCheck(
                 id="route-telemetry-remediation-plan",

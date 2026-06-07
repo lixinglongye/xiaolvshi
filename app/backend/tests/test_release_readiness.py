@@ -766,7 +766,7 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
     assert commands == {
         "route-telemetry-persistence-plan": "python -m pytest tests/test_route_telemetry_persistence_plan.py -q",
         "route-telemetry-repository": "python -m pytest tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_model_route_telemetry.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q",
-        "route-telemetry-ops-summary": "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q",
+        "route-telemetry-ops-summary": "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q",
         "route-telemetry-triage-queue": "python -m pytest tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py -q",
         "route-telemetry-remediation-plan": "python -m pytest tests/test_route_telemetry_remediation_plan.py tests/test_route_telemetry_triage_queue.py tests/test_model_default_optimization.py -q",
     }
@@ -785,9 +785,11 @@ def test_route_telemetry_repository_is_required_model_ops_gate():
     assert "local catalog token pricing" in checks["route-telemetry-repository"]["manual_note"]
     assert "unknown gateway models unpriced" in checks["route-telemetry-repository"]["manual_note"]
     assert "raw model outputs" in checks["route-telemetry-repository"]["manual_note"]
-    assert "summarizes sanitized persisted telemetry only" in checks["route-telemetry-ops-summary"]["manual_note"]
+    assert "summarizes sanitized persisted telemetry" in checks["route-telemetry-ops-summary"]["manual_note"]
+    assert "route reason-code hotspots" in checks["route-telemetry-ops-summary"]["manual_note"]
     assert "not proof that production routing is healthy" in checks["route-telemetry-ops-summary"]["manual_note"]
-    assert "converts sanitized route telemetry operations checks into maintainer actions" in checks["route-telemetry-triage-queue"]["manual_note"]
+    assert "converts sanitized route telemetry operations checks" in checks["route-telemetry-triage-queue"]["manual_note"]
+    assert "reason-code hotspots" in checks["route-telemetry-triage-queue"]["manual_note"]
     assert "no route events exist" in checks["route-telemetry-triage-queue"]["manual_note"]
     assert "operator-reviewed remediation suggestions only" in checks["route-telemetry-remediation-plan"]["manual_note"]
     assert "never writes configuration" in checks["route-telemetry-remediation-plan"]["manual_note"]

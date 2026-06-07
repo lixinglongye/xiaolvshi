@@ -7,6 +7,18 @@ from services.model_catalog import model_profile
 from services.route_telemetry_repository import RouteTelemetryRepositoryService
 
 
+REASON_CODE_HOTSPOT_LABELS = {
+    "over_task_budget": "over-budget route pressure",
+    "operator_review_required": "operator-review route pressure",
+    "routed_to_recommended_model": "cheap-first downgrade pressure",
+    "resolved_to_recommended_model": "recommended-model resolution pressure",
+    "unknown_catalog_model": "unknown catalog model pressure",
+    "unverified_price_tier": "unverified price-tier pressure",
+    "gateway_passthrough": "gateway passthrough pressure",
+    "unknown_reason_code": "unknown route reason-code pressure",
+}
+
+
 @dataclass(frozen=True)
 class RouteTelemetryOpsThresholds:
     warn_failure_rate: float = 0.08
@@ -21,6 +33,10 @@ class RouteTelemetryOpsThresholds:
     fail_unknown_model_count: int = 3
     warn_unpriced_model_count: int = 1
     fail_unpriced_model_count: int = 3
+    warn_unknown_reason_code_count: int = 1
+    fail_unknown_reason_code_count: int = 3
+    warn_reason_code_hotspot_ratio: float = 0.10
+    fail_reason_code_hotspot_ratio: float = 0.25
 
     def to_api(self) -> dict[str, Any]:
         return asdict(self)
@@ -49,7 +65,7 @@ class RouteTelemetryOpsSummaryService:
                 "type": "persisted-route-telemetry-ops-summary",
                 "notes": [
                     "Consumes sanitized route telemetry repository aggregates only.",
-                    "Highlights cheap-first downgrades, premium drift, over-budget pressure, failures, unknown models, and catalog models without token prices.",
+                    "Highlights cheap-first downgrades, premium drift, over-budget pressure, failures, unknown models, reason-code hotspots, unknown reason codes, and catalog models without token prices.",
                     "Does not read prompts, legal text, request bodies, response bodies, credentials, emails, or raw model outputs.",
                 ],
             },
@@ -105,6 +121,7 @@ class RouteTelemetryOpsSummaryService:
                     "unpriced_model_count": 0,
                     "estimated_cost_usd_sum": 0.0,
                     "models": {},
+                    "reason_code_counts": {},
                 },
             )
             requests = _int(bucket.get("request_count"))
@@ -120,10 +137,12 @@ class RouteTelemetryOpsSummaryService:
             row["unpriced_model_count"] += _int(bucket.get("unpriced_model_count"))
             row["estimated_cost_usd_sum"] = round(row["estimated_cost_usd_sum"] + _float(bucket.get("estimated_cost_usd_sum")), 8)
             row["models"][model] = row["models"].get(model, 0) + requests
+            _increment_counts(row["reason_code_counts"], _dict(bucket.get("reason_code_counts")))
 
         rows = []
         for row in grouped.values():
             requests = max(0, row["request_count"])
+            reason_code_counts = _sorted_counts(row["reason_code_counts"])
             rows.append(
                 {
                     **row,
@@ -133,6 +152,9 @@ class RouteTelemetryOpsSummaryService:
                     "operator_review_ratio": _ratio(row["operator_review_count"], requests),
                     "premium_request_ratio": _ratio(row["premium_request_count"], requests),
                     "models": dict(sorted(row["models"].items())),
+                    "reason_code_counts": reason_code_counts,
+                    "top_reason_codes": _top_reason_codes(reason_code_counts, requests),
+                    "reason_code_hotspots": self._reason_code_hotspots(reason_code_counts, requests),
                 }
             )
         return sorted(rows, key=lambda item: item["day"])
@@ -149,6 +171,12 @@ class RouteTelemetryOpsSummaryService:
         estimated_cost = round(sum(_float(row.get("estimated_cost_usd_sum")) for row in daily_rows), 8)
         unknown_model_count = sum(_int(row.get("unknown_model_count")) for row in daily_rows)
         unpriced_model_count = sum(_int(row.get("unpriced_model_count")) for row in daily_rows)
+        reason_code_counts: dict[str, int] = {}
+        for row in daily_rows:
+            _increment_counts(reason_code_counts, _dict(row.get("reason_code_counts")))
+        if not reason_code_counts:
+            _increment_counts(reason_code_counts, _dict(repo_totals.get("reason_code_counts")))
+        reason_code_counts = _sorted_counts(reason_code_counts)
         return {
             "stored_event_count": _int(repo_summary.get("stored_event_count")),
             "daily_bucket_count": _int(repo_summary.get("daily_bucket_count")),
@@ -161,6 +189,10 @@ class RouteTelemetryOpsSummaryService:
             "premium_request_count": premium_count,
             "unknown_model_count": unknown_model_count or _int(repo_totals.get("unknown_model_count")),
             "unpriced_model_count": unpriced_model_count or _int(repo_totals.get("unpriced_model_count")),
+            "unknown_reason_code_count": _int(reason_code_counts.get("unknown_reason_code")),
+            "reason_code_counts": reason_code_counts,
+            "top_reason_codes": _top_reason_codes(reason_code_counts, request_count),
+            "reason_code_hotspots": self._reason_code_hotspots(reason_code_counts, request_count),
             "estimated_cost_usd_sum": estimated_cost,
             "failure_rate": _ratio(failure_count, request_count),
             "downgrade_ratio": _ratio(downgrade_count, request_count),
@@ -183,6 +215,12 @@ class RouteTelemetryOpsSummaryService:
             self._ratio_check("premium-request-ratio", totals["premium_request_ratio"], totals["request_count"], self.thresholds.warn_premium_ratio, self.thresholds.fail_premium_ratio),
             self._count_check("unknown-model-count", totals["unknown_model_count"], self.thresholds.warn_unknown_model_count, self.thresholds.fail_unknown_model_count),
             self._count_check("unpriced-model-count", totals["unpriced_model_count"], self.thresholds.warn_unpriced_model_count, self.thresholds.fail_unpriced_model_count),
+            self._count_check(
+                "unknown-reason-code-count",
+                totals["unknown_reason_code_count"],
+                self.thresholds.warn_unknown_reason_code_count,
+                self.thresholds.fail_unknown_reason_code_count,
+            ),
         ]
 
     def _status_check(self, check_id: str, status: str, reason: str) -> dict[str, Any]:
@@ -230,6 +268,7 @@ class RouteTelemetryOpsSummaryService:
         return {
             "unknown-model-count": "Unknown gateway models should be cataloged before release evidence relies on them.",
             "unpriced-model-count": "Catalog models without token pricing should be priced or explicitly excluded before release evidence relies on them.",
+            "unknown-reason-code-count": "Unknown route reason codes should be allowlisted or fixed before telemetry labels are used as release evidence.",
         }.get(check_id, "Route telemetry count check.")
 
     def _status(self, checks: list[dict[str, Any]], totals: dict[str, Any]) -> str:
@@ -244,6 +283,46 @@ class RouteTelemetryOpsSummaryService:
             return ["Collect sanitized staging route events before using telemetry as production operations evidence."]
         actions = [f"Review {check['id']} before changing model defaults." for check in checks if check["status"] != "pass"]
         return actions or ["Route telemetry operations are within cheap-first guardrails."]
+
+    def _reason_code_hotspots(self, counts: dict[str, int], requests: int) -> list[dict[str, Any]]:
+        hotspots: list[dict[str, Any]] = []
+        for code, count in counts.items():
+            if code not in REASON_CODE_HOTSPOT_LABELS:
+                continue
+            ratio = _ratio(count, requests)
+            if code == "unknown_reason_code":
+                severity = (
+                    "fail"
+                    if count >= self.thresholds.fail_unknown_reason_code_count
+                    else "warn" if count >= self.thresholds.warn_unknown_reason_code_count else "pass"
+                )
+            else:
+                severity = (
+                    "fail"
+                    if requests > 0 and ratio >= self.thresholds.fail_reason_code_hotspot_ratio
+                    else "warn" if requests > 0 and ratio >= self.thresholds.warn_reason_code_hotspot_ratio else "pass"
+                )
+            if severity == "pass":
+                continue
+            hotspots.append(
+                {
+                    "reason_code": code,
+                    "count": count,
+                    "ratio": ratio,
+                    "severity": severity,
+                    "label": REASON_CODE_HOTSPOT_LABELS[code],
+                }
+            )
+        severity_rank = {"fail": 0, "warn": 1}
+        return sorted(
+            hotspots,
+            key=lambda item: (
+                severity_rank.get(str(item["severity"]), 2),
+                -_float(item["ratio"]),
+                -_int(item["count"]),
+                str(item["reason_code"]),
+            ),
+        )
 
 
 def _cost_tier(model: str) -> str:
@@ -281,3 +360,24 @@ def _ratio(value: int, total: int) -> float:
     if total <= 0:
         return 0.0
     return round(max(0, value) / total, 4)
+
+
+def _increment_counts(target: dict[str, int], source: dict[str, Any]) -> None:
+    for key, value in source.items():
+        code = str(key or "").strip()[:80]
+        count = _int(value)
+        if not code or count <= 0:
+            continue
+        target[code] = _int(target.get(code)) + count
+
+
+def _sorted_counts(counts: dict[str, Any]) -> dict[str, int]:
+    normalized = ((str(key), _int(value)) for key, value in counts.items())
+    return dict(sorted(((key, value) for key, value in normalized if key and value > 0), key=lambda item: (-item[1], item[0])))
+
+
+def _top_reason_codes(counts: dict[str, int], requests: int, limit: int = 5) -> list[dict[str, Any]]:
+    return [
+        {"reason_code": code, "count": count, "ratio": _ratio(count, requests)}
+        for code, count in list(counts.items())[:limit]
+    ]

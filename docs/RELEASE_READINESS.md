@@ -59,6 +59,15 @@ policy labels for runtime cheap-first decisions and aggregates them as
 labels are normalized to `unknown_reason_code`; prompts, legal text, payload
 fragments, model output, credentials, and emails remain excluded.
 
+Additional required evidence: route telemetry reason-code hotspots are reviewed
+through the required `route-telemetry-ops-summary` and
+`route-telemetry-triage-queue` gates. They turn sanitized aggregate labels such
+as `over_task_budget`, `operator_review_required`, `unknown_catalog_model`,
+`gateway_passthrough`, and `unknown_reason_code` into daily maintainer actions.
+This is release-review evidence only; it is not production health proof when no
+route events exist and it does not call gateways, write configuration, or store
+prompts, legal text, payloads, emails, credentials, or model output.
+
 The project now has a deterministic release readiness checklist for maintainer-driven releases.
 
 ## Endpoint

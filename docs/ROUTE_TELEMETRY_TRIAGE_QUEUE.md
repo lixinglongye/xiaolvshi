@@ -13,6 +13,8 @@ output only. It does not read raw route events. The queue prioritizes:
 - operator-review route load,
 - premium-model drift,
 - unknown gateway model cataloging,
+- unpriced catalog model pricing gaps,
+- route reason-code hotspots,
 - daily route telemetry hotspots,
 - missing staging telemetry when no route events exist.
 
@@ -27,6 +29,20 @@ lifecycle status, or availability must keep those models `unpriced` and
 `review-only`. The queue must not treat guessed costs as evidence, count those
 models in savings claims, or recommend default promotion until source-backed
 price, status, capability, and gateway evidence are refreshed.
+
+## Reason-Code Hotspot Actions
+
+The queue consumes `reason_code_hotspots` from the operations summary daily
+rows. It creates `check_id: "reason-code-hotspot"` items with the bounded
+`reason_code`, source day, hotspot ratio, and sanitized aggregate
+`reason_code_counts`.
+
+These actions cover cheap-first/Gemini routing labels such as
+`over_task_budget`, `operator_review_required`,
+`routed_to_recommended_model`, `unknown_catalog_model`,
+`unverified_price_tier`, `gateway_passthrough`, and `unknown_reason_code`.
+They do not include prompts, legal text, payload fragments, model output,
+emails, credentials, or arbitrary free text.
 
 ## Endpoints
 
@@ -73,8 +89,8 @@ Each triage item includes:
 ## Release Checks
 
 `route-telemetry-triage-queue` is a required `model_ops` release-readiness
-gate. Blocking queue items should be reviewed before changing Gemini/NewAPI
-defaults.
+gate. Blocking queue items and reason-code hotspots should be reviewed before
+changing Gemini/NewAPI defaults.
 
 Run:
 

@@ -7596,13 +7596,14 @@ function Inner() {
                     <TableHead>Over budget</TableHead>
                     <TableHead>Premium</TableHead>
                     <TableHead>Unpriced</TableHead>
+                    <TableHead>Reasons</TableHead>
                     <TableHead>Models</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {routeTelemetryOpsRows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="py-8 text-center text-stone-500">
+                      <TableCell colSpan={9} className="py-8 text-center text-stone-500">
                         No persisted route telemetry events yet.
                       </TableCell>
                     </TableRow>
@@ -7616,6 +7617,9 @@ function Inner() {
                         <TableCell>{Math.round(row.over_budget_ratio * 100)}%</TableCell>
                         <TableCell>{Math.round(row.premium_request_ratio * 100)}%</TableCell>
                         <TableCell>{formatNumber(row.unpriced_model_count)}</TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          {formatReasonCounts(row.reason_code_counts)}
+                        </TableCell>
                         <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
                           {Object.entries(row.models).map(([model, count]) => `${model}:${count}`).join(', ')}
                         </TableCell>
@@ -7693,13 +7697,14 @@ function Inner() {
                     <TableHead>Action</TableHead>
                     <TableHead>Metric</TableHead>
                     <TableHead>Owner</TableHead>
+                    <TableHead>Reasons</TableHead>
                     <TableHead>Reason</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {routeTelemetryTriageRows.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-8 text-center text-stone-500">
+                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
                         No route telemetry triage actions.
                       </TableCell>
                     </TableRow>
@@ -7725,6 +7730,11 @@ function Inner() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-stone-700">{item.owner}</TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          <div>{item.reason_code ?? '-'}</div>
+                          {item.hotspot_ratio != null && <div>{Math.round(item.hotspot_ratio * 100)}% hotspot</div>}
+                          <div>{formatReasonCounts(item.reason_code_counts)}</div>
+                        </TableCell>
                         <TableCell className="max-w-[420px] break-words text-xs leading-5 text-stone-600">
                           {item.reason}
                         </TableCell>

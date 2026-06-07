@@ -276,6 +276,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness-warning-drilldown" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
     assert "route-telemetry-triage-queue" in completed_ids
+    assert "route-telemetry-reason-code-hotspots" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
     assert "route-telemetry-ui-regression-contract" in completed_ids
     assert "legal-source-freshness-policy" in completed_ids
@@ -510,6 +511,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness-warning-drilldown" not in queue_ids
     assert "route-telemetry-ops-summary" not in queue_ids
     assert "route-telemetry-triage-queue" not in queue_ids
+    assert "route-telemetry-reason-code-hotspots" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
     assert "route-telemetry-ui-regression-contract" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
@@ -1408,6 +1410,41 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness" in route_reason_entry["release_gate_links"]
     assert "frontend-typecheck" in route_reason_entry["release_gate_links"]
     assert "frontend-ui-regression" in route_reason_entry["release_gate_links"]
+
+    reason_hotspot_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-reason-code-hotspots"
+    )
+    assert reason_hotspot_entry["category"] == "model_ops"
+    assert reason_hotspot_entry["size"] == "medium"
+    assert reason_hotspot_entry["status"] == "shipped"
+    assert "sanitized route reason_code_counts" in reason_hotspot_entry["impact"]
+    assert "cheap-first/Gemini route hotspots" in reason_hotspot_entry["impact"]
+    assert "over_task_budget" in reason_hotspot_entry["impact"]
+    assert "operator_review_required" in reason_hotspot_entry["impact"]
+    assert "unknown_catalog_model" in reason_hotspot_entry["impact"]
+    assert "unknown_reason_code" in reason_hotspot_entry["impact"]
+    assert "prompts" in reason_hotspot_entry["impact"]
+    assert "raw legal text" in reason_hotspot_entry["impact"]
+    assert "payloads" in reason_hotspot_entry["impact"]
+    assert "credentials" in reason_hotspot_entry["impact"]
+    assert "model output" in reason_hotspot_entry["impact"]
+    assert "app/backend/services/route_telemetry_ops_summary.py" in reason_hotspot_entry["evidence_paths"]
+    assert "app/backend/services/route_telemetry_triage_queue.py" in reason_hotspot_entry["evidence_paths"]
+    assert "app/backend/services/route_telemetry_repository.py" in reason_hotspot_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_ops_summary.py" in reason_hotspot_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_triage_queue.py" in reason_hotspot_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in reason_hotspot_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in reason_hotspot_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in reason_hotspot_entry["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md" in reason_hotspot_entry["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md" in reason_hotspot_entry["evidence_paths"]
+    assert "docs/MODEL_ROUTE_TELEMETRY.md" in reason_hotspot_entry["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in reason_hotspot_entry["evidence_paths"]
+    assert "route-telemetry-ops-summary" in reason_hotspot_entry["release_gate_links"]
+    assert "route-telemetry-triage-queue" in reason_hotspot_entry["release_gate_links"]
+    assert "route-telemetry-repository" in reason_hotspot_entry["release_gate_links"]
+    assert "runtime-route-reason-codes" in reason_hotspot_entry["release_gate_links"]
+    assert "frontend-ui-regression" in reason_hotspot_entry["release_gate_links"]
 
     route_telemetry_ui_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-ui-regression-contract"

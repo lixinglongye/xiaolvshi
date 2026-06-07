@@ -15,6 +15,7 @@ calculates operational checks for:
 - operator-review load,
 - premium model drift,
 - unknown model usage,
+- route reason-code hotspots,
 - downgrade evidence for cheap-first routing,
 - persisted estimated cost totals.
 
@@ -28,6 +29,22 @@ has not been confirmed, the route must stay `unpriced` and `review-only`.
 Operations summaries must not hard-code a cost, include the route in
 cheap-first savings claims, or support default promotion until source-backed
 price, status, capability, and gateway evidence are refreshed.
+
+## Reason-Code Hotspots
+
+The summary now rolls repository `reason_code_counts` into both
+`summary.reason_code_counts` and each `daily_rows[].reason_code_counts`. It
+also returns `top_reason_codes` for quick inspection and
+`reason_code_hotspots` for operational labels such as `over_task_budget`,
+`operator_review_required`, `routed_to_recommended_model`,
+`unknown_catalog_model`, `unverified_price_tier`, `gateway_passthrough`, and
+`unknown_reason_code`.
+
+Known healthy labels such as `known_catalog_model` and `within_task_budget`
+remain visible in top counts but do not become hotspot actions. Unknown labels
+are normalized upstream to `unknown_reason_code` and produce an
+`unknown-reason-code-count` check so maintainers fix the producer or extend the
+allowlist before relying on the label for release evidence.
 
 An empty repository returns `ready` so local development is not blocked, but it
 is not production proof. Maintainers still need staging or production route
@@ -60,14 +77,14 @@ maintainer actions for release review.
 
 `route-telemetry-ops-summary` is a required `model_ops` release-readiness gate.
 It fails when repository status is unavailable or when persisted aggregates
-exceed failure, over-budget, operator-review, premium-model, or unknown-model
-thresholds.
+exceed failure, over-budget, operator-review, premium-model, unknown-model,
+unknown-reason-code, or reason-code-hotspot thresholds.
 
 Run:
 
 ```powershell
 cd D:\小律师\app\backend
-python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
+python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_repository.py tests/test_model_route_telemetry.py -q
 python -m pytest tests/test_route_telemetry_repository.py tests/test_aihub_runtime_routing.py tests/test_model_usage.py -q
 ```
 

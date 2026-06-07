@@ -51,12 +51,14 @@ prompts, payload fragments, model outputs, or credentials.
 
 `route_telemetry_ops_summary` reads those sanitized daily counters and turns
 them into release-review checks for route failures, over-budget pressure,
-operator-review load, premium model drift, unknown models, and cheap-first
-downgrade evidence.
+operator-review load, premium model drift, unknown models, reason-code
+hotspots, and cheap-first downgrade evidence.
 
 `route_telemetry_triage` converts the operations summary checks into prioritized
-maintainer actions so cheap-first drift is visible as a queue rather than just
-aggregate ratios.
+maintainer actions, including bounded reason-code hotspot actions for labels
+such as `over_task_budget`, `operator_review_required`,
+`unknown_catalog_model`, `gateway_passthrough`, and `unknown_reason_code`, so
+cheap-first drift is visible as a queue rather than just aggregate ratios.
 
 `route_telemetry_remediation` maps triage actions to reviewed cheap-first
 repair steps and optional `.env` suggestions without writing configuration or

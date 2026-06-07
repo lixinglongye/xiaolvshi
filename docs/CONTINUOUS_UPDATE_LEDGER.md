@@ -159,6 +159,15 @@ reason-code lists and aggregate counts, and the ModelOps table shows those
 counts without storing prompts, legal text, model outputs, payloads, emails, or
 credentials.
 
+Current route telemetry reason-code hotspot evidence:
+`route-telemetry-reason-code-hotspots` turns sanitized aggregate
+`reason_code_counts` into ops summary top reason codes, daily hotspot rows, and
+triage actions for `over_task_budget`, `operator_review_required`,
+`unknown_catalog_model`, `gateway_passthrough`, and `unknown_reason_code`.
+The evidence remains metadata-only and does not call NewAPI/Gemini/gateways,
+write configuration, or store prompts, legal text, model outputs, payloads,
+emails, or credentials.
+
 Current ModelOps performance release evidence:
 `modelops-performance-observation-release-binding` binds sanitized
 `POST /api/v1/aihub/models/performance-budget` observations back into aggregate

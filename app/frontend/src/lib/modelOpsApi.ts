@@ -2650,6 +2650,16 @@ export type ModelRouteTelemetryOpsSummary = {
     premium_request_count: number;
     unknown_model_count: number;
     unpriced_model_count: number;
+    unknown_reason_code_count: number;
+    reason_code_counts: Record<string, number>;
+    top_reason_codes: Array<{ reason_code: string; count: number; ratio: number }>;
+    reason_code_hotspots: Array<{
+      reason_code: string;
+      count: number;
+      ratio: number;
+      severity: string;
+      label: string;
+    }>;
     estimated_cost_usd_sum: number;
     failure_rate: number;
     downgrade_ratio: number;
@@ -2670,7 +2680,17 @@ export type ModelRouteTelemetryOpsSummary = {
     over_budget_count: number;
     operator_review_count: number;
     premium_request_count: number;
+    unknown_model_count: number;
     unpriced_model_count: number;
+    reason_code_counts: Record<string, number>;
+    top_reason_codes: Array<{ reason_code: string; count: number; ratio: number }>;
+    reason_code_hotspots: Array<{
+      reason_code: string;
+      count: number;
+      ratio: number;
+      severity: string;
+      label: string;
+    }>;
     estimated_cost_usd_sum: number;
     models: Record<string, number>;
     failure_rate: number;
@@ -2711,6 +2731,10 @@ export type ModelRouteTelemetryTriageItem = {
   release_gate_links: string[];
   evidence_paths: string[];
   validation_commands: string[];
+  reason_code?: string;
+  reason_code_counts?: Record<string, number>;
+  hotspot_ratio?: number;
+  source_day?: string;
 };
 
 export type ModelRouteTelemetryTriage = {

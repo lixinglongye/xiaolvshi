@@ -36,6 +36,16 @@ CHECK_GUIDANCE: dict[str, dict[str, str]] = {
         "action": "Add pricing, lifecycle, and capability metadata before using unknown Gemini-like models in release claims.",
         "owner": "engineering",
     },
+    "unpriced-model-count": {
+        "title": "Price or exclude unpriced catalog models",
+        "action": "Refresh official provider and gateway pricing before using unpriced catalog models in cost or savings evidence.",
+        "owner": "engineering",
+    },
+    "unknown-reason-code-count": {
+        "title": "Review unknown route reason codes",
+        "action": "Review route reason-code producers and keep telemetry labels on the allowlist before relying on reason-code hotspots.",
+        "owner": "model_ops",
+    },
 }
 
 CHEAP_FIRST_CHECK_IDS = {
@@ -43,7 +53,10 @@ CHEAP_FIRST_CHECK_IDS = {
     "operator-review-ratio",
     "premium-request-ratio",
     "unknown-model-count",
+    "unpriced-model-count",
+    "unknown-reason-code-count",
     "daily-route-hotspot",
+    "reason-code-hotspot",
 }
 
 
@@ -58,6 +71,7 @@ class RouteTelemetryTriageQueueService:
         source_summary = _dict(summary_payload.get("summary"))
         items = self._items_from_checks(summary_payload)
         items.extend(self._daily_hotspots(summary_payload))
+        items.extend(self._reason_code_hotspots(summary_payload))
         if _bool(source_summary.get("empty_repository")):
             items.append(self._empty_repository_item(summary_payload))
 
@@ -73,7 +87,7 @@ class RouteTelemetryTriageQueueService:
                 "type": "route-telemetry-triage-queue",
                 "notes": [
                     "Consumes RouteTelemetryOpsSummaryService output only.",
-                    "Turns failures, premium drift, over-budget pressure, operator review load, and unknown models into maintainer actions.",
+                    "Turns failures, premium drift, over-budget pressure, operator review load, unknown models, and unknown reason-code hotspots into maintainer actions.",
                     "Does not read prompts, legal text, request bodies, response bodies, credentials, emails, or raw model outputs.",
                 ],
             },
@@ -209,6 +223,54 @@ class RouteTelemetryTriageQueueService:
             )
         return items
 
+    def _reason_code_hotspots(self, summary_payload: dict[str, Any]) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        for row in _list(summary_payload.get("daily_rows")):
+            if not isinstance(row, dict):
+                continue
+            day = str(row.get("day") or "unknown")
+            reason_counts = _dict(row.get("reason_code_counts"))
+            for hotspot in _list(row.get("reason_code_hotspots")):
+                if not isinstance(hotspot, dict):
+                    continue
+                code = str(hotspot.get("reason_code") or "unknown_reason_code")
+                severity = "fail" if str(hotspot.get("severity")) == "fail" else "warn"
+                ratio = _float(hotspot.get("ratio"))
+                count = _int(hotspot.get("count"))
+                items.append(
+                    {
+                        "id": f"route-telemetry-reason-code-hotspot-{day}-{_slug(code)}",
+                        "title": f"Review route reason-code hotspot: {code}",
+                        "severity": severity,
+                        "priority": self._priority(severity, "reason-code-hotspot") - 2,
+                        "check_id": "reason-code-hotspot",
+                        "metric": "reason_code_ratio",
+                        "value": ratio,
+                        "threshold": "reason-code hotspot thresholds",
+                        "reason": f"{code} appeared {count} times on {day} ({round(ratio * 100)}% of persisted requests).",
+                        "action": _reason_code_action(code),
+                        "owner": "model_ops",
+                        "reason_code": code,
+                        "reason_code_counts": reason_counts,
+                        "hotspot_ratio": ratio,
+                        "source_day": day,
+                        "release_gate_links": [
+                            "route-telemetry-triage-queue",
+                            "route-telemetry-ops-summary",
+                            "route-telemetry-repository",
+                        ],
+                        "evidence_paths": [
+                            "app/backend/services/route_telemetry_triage_queue.py",
+                            "app/backend/services/route_telemetry_ops_summary.py",
+                            "docs/ROUTE_TELEMETRY_TRIAGE_QUEUE.md",
+                        ],
+                        "validation_commands": [
+                            "python -m pytest tests/test_route_telemetry_triage_queue.py -q",
+                        ],
+                    }
+                )
+        return items
+
     def _empty_repository_item(self, summary_payload: dict[str, Any]) -> dict[str, Any]:
         return {
             "id": "route-telemetry-collect-staging-events",
@@ -241,7 +303,9 @@ class RouteTelemetryTriageQueueService:
             return base + 8
         if check_id in {"premium-request-ratio", "over-budget-ratio"}:
             return base + 6
-        if check_id == "unknown-model-count":
+        if check_id == "reason-code-hotspot":
+            return base + 5
+        if check_id in {"unknown-model-count", "unpriced-model-count", "unknown-reason-code-count"}:
             return base + 4
         return base
 
@@ -289,3 +353,20 @@ def _float(value: Any) -> float:
 
 def _bool(value: Any) -> bool:
     return bool(value)
+
+
+def _slug(value: str) -> str:
+    return "".join(char if char.isalnum() else "-" for char in value.lower()).strip("-")[:80] or "unknown"
+
+
+def _reason_code_action(code: str) -> str:
+    return {
+        "over_task_budget": "Audit task budgets and explicit model overrides, then move routine routes back under cheap-first limits.",
+        "operator_review_required": "Confirm operator-review routes are intentional exceptions and document the quality or safety reason.",
+        "routed_to_recommended_model": "Review repeated downgrades to ensure user-facing quality remains acceptable under cheap-first defaults.",
+        "resolved_to_recommended_model": "Review recommendation resolution pressure before promoting or removing model defaults.",
+        "unknown_catalog_model": "Catalog the model lifecycle, capabilities, and pricing before using these routes in release evidence.",
+        "unverified_price_tier": "Refresh official provider and gateway pricing before relying on cost or savings claims.",
+        "gateway_passthrough": "Review gateway passthrough routes and bind them to known catalog models where possible.",
+        "unknown_reason_code": "Fix reason-code producers or extend the allowlist before treating these telemetry labels as evidence.",
+    }.get(code, "Review this route reason-code hotspot before changing model defaults.")

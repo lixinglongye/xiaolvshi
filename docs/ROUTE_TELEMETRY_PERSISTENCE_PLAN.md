@@ -131,6 +131,9 @@ Route telemetry is metadata-only. It is meant to answer operational questions su
 policy labels. Unknown submitted labels are normalized to
 `unknown_reason_code`; they must not include free text, client identifiers,
 emails, prompts, request payload fragments, model output, or secret material.
+Downstream ops summary and triage services consume only those aggregate counts
+for top-code and hotspot review; they must not reinterpret arbitrary text as a
+route reason.
 
 ## Validation
 
