@@ -244,6 +244,16 @@ Google, and does not include prompts, PDF bytes, image bytes, audio,
 transcripts, output URLs, raw payloads, request/response bodies, headers, model
 outputs, credentials, emails, or user identifiers.
 
+Current gentxt routing guard evidence:
+`gentxt-routing-media-guard` adds metadata-only evidence that media and speech
+routing labels are rejected for the text endpoint and remain scoped to media
+endpoints. It adds service integration coverage that gentxt does not call media
+default models, and surfaces guard counts and aliases in ModelOps without
+calling NewAPI, Gemini, OpenAI, Google, providers, gateways, app AI endpoints,
+models, or the network. It does not write configuration, shift traffic, or
+include request/response bodies, headers, prompts, raw payloads, legal text,
+model outputs, gateway responses, credentials, emails, or user identifiers.
+
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
 low-resource legal benchmark run-planning evidence for cheap-first Gemini

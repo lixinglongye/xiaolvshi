@@ -14,6 +14,9 @@ Explicit task values are honored first.
 
 When `task=auto`, the service inspects message metadata and keyword signals:
 
+- media or speech task values on gentxt, such as `image`, `video`, `audio`,
+  `transcription`, `tts`, or `speech-to-text`, are rejected for the text endpoint
+  and routed to the `review` text budget
 - classification keywords plus JSON response format -> `classification`
 - OCR or visible-text extraction prompts, especially with image input -> `ocr`
 - contract, legal review, litigation, evidence, citation, risk, or clause terms -> `review`
@@ -47,5 +50,7 @@ Task inference stores only matched metadata signals. It does not store prompt te
 - `app/backend/services/model_runtime_router.py`
 - `app/backend/services/aihub.py`
 - `app/backend/schemas/aihub.py`
+- `app/backend/services/model_ops_gentxt_task_guard.py`
+- `app/backend/tests/test_model_ops_gentxt_task_guard.py`
 - `app/backend/tests/test_model_task_inference.py`
 - `app/backend/tests/test_aihub_runtime_routing.py`

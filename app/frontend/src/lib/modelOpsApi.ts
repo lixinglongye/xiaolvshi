@@ -1560,6 +1560,83 @@ export type ModelOpsAIHubEndpointRouteCoverageGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsGenTxtRoutingGuardMediaRow = {
+  id: string;
+  requested_task: string;
+  normalized_task: string;
+  resolved_text_task: string;
+  expected_text_task: string;
+  inference_source: string;
+  expected_signal: string;
+  signal_present: boolean;
+  guard_status: string;
+  model_default_if_media_endpoint: string;
+  reason_code: string;
+};
+
+export type ModelOpsGenTxtRoutingGuardTextRow = {
+  id: string;
+  requested_task: string;
+  resolved_text_task: string;
+  expected_text_task: string;
+  inference_source: string;
+  guard_status: string;
+  reason_code: string;
+};
+
+export type ModelOpsGenTxtRoutingGuardAliasRow = {
+  alias: string;
+  task: string;
+  default_model: string;
+  alias_status: string;
+  gentxt_allowed: boolean;
+  endpoint_scope: string;
+};
+
+export type ModelOpsGenTxtRoutingGuardCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsGenTxtRoutingGuard = {
+  id: 'modelops-gentxt-routing-guard' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    media_task_case_count: number;
+    media_task_blocked_count: number;
+    text_task_case_count: number;
+    text_task_allowed_count: number;
+    media_alias_count: number;
+    media_alias_default_count: number;
+    blocking_count: number;
+    warning_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+  };
+  media_task_rows: ModelOpsGenTxtRoutingGuardMediaRow[];
+  text_task_rows: ModelOpsGenTxtRoutingGuardTextRow[];
+  media_alias_rows: ModelOpsGenTxtRoutingGuardAliasRow[];
+  checks: ModelOpsGenTxtRoutingGuardCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -3769,6 +3846,7 @@ export type ModelOpsResponse = {
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   gemini_cheap_first_route_preflight?: ModelOpsGeminiCheapFirstRoutePreflight;
   aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate;
+  gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
@@ -4117,6 +4195,13 @@ export async function getGeminiCheapFirstRoutePreflight(): Promise<ModelOpsGemin
 export async function getModelOpsAIHubEndpointRouteCoverageGate(): Promise<ModelOpsAIHubEndpointRouteCoverageGate> {
   return invokeModelOpsApi<ModelOpsAIHubEndpointRouteCoverageGate>({
     url: '/api/v1/aihub/models/aihub-endpoint-route-coverage-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsGenTxtRoutingGuard(): Promise<ModelOpsGenTxtRoutingGuard> {
+  return invokeModelOpsApi<ModelOpsGenTxtRoutingGuard>({
+    url: '/api/v1/aihub/models/gentxt-routing-guard',
     method: 'GET',
   });
 }

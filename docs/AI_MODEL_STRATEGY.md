@@ -402,3 +402,18 @@ lifecycle, and gateway behavior are documented.
 This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network, and it does not claim that media/speech
 defaults are price-benchmarked.
+
+## Gentxt Routing Guard
+
+`modelops-gentxt-routing-guard` is the shipped metadata-only boundary evidence
+for the text endpoint. It verifies that media and speech routing labels are
+rejected for `POST /api/v1/aihub/gentxt` and routed to the review text budget
+instead of `APP_AI_VIDEO_MODEL`, `APP_AI_AUDIO_MODEL`, or
+`APP_AI_TRANSCRIPTION_MODEL`. The media aliases remain visible through
+`GET /api/v1/aihub/models` for media endpoint review, but gentxt does not use
+them as text defaults.
+
+The guard is deterministic and local-only. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, or the network, and it does
+not return prompts, request bodies, response bodies, raw payloads, legal text,
+model outputs, gateway responses, credentials, emails, or user identifiers.

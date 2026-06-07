@@ -94,6 +94,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "routing",
         "aihub_endpoint_route_coverage_gate",
     ),
+    ReadinessComponent(
+        "gentxt-routing-guard",
+        "AIHub gentxt routing guard",
+        "routing",
+        "gentxt_routing_guard",
+    ),
     ReadinessComponent("budget-policy", "Budget policy", "routing", "budget_policy"),
     ReadinessComponent("capability-matrix", "Capability matrix", "routing", "capability_matrix"),
     ReadinessComponent("runtime-router", "Runtime router", "routing", "runtime_router"),

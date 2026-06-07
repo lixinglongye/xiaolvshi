@@ -370,6 +370,9 @@ def test_model_ops_route_includes_readiness():
     assert "aihub_endpoint_route_coverage_gate" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gentxt_routing_guard" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["gemini_cheap_first_coverage_gate"]["summary"]["coverage_row_count"] == 8
     assert payload["gemini_cheap_first_route_preflight"]["summary"]["route_task_count"] == 10
     assert payload["gemini_cheap_first_route_preflight"]["summary"]["gateway_called"] is False
@@ -377,6 +380,9 @@ def test_model_ops_route_includes_readiness():
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 7
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 0
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["gateway_called"] is False
+    assert payload["gentxt_routing_guard"]["summary"]["media_task_blocked_count"] == 6
+    assert payload["gentxt_routing_guard"]["summary"]["text_task_allowed_count"] == 5
+    assert payload["gentxt_routing_guard"]["summary"]["gateway_called"] is False
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"

@@ -175,6 +175,14 @@ and media/speech catalog review gaps. It does not call providers, gateways,
 app AI endpoints, models, or the network, and it does not claim that
 media/speech defaults are price-benchmarked.
 
+`gentxt-routing-guard` is required metadata-only evidence for the text endpoint
+task boundary. It verifies that media and speech routing aliases are rejected
+for `POST /api/v1/aihub/gentxt` and remain scoped to media endpoints. It does
+not call providers, gateways, app AI endpoints, models, or the network, write
+configuration, shift traffic, or return prompts, request bodies, response
+bodies, raw payloads, legal text, model output, gateway responses, credentials,
+emails, or user identifiers.
+
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
 `route-telemetry-repository` and downstream route telemetry summaries estimate

@@ -2240,6 +2240,51 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
+                id="gentxt-routing-media-guard",
+                title="Gentxt routing media guard",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only gentxt routing guard evidence that proves image, video, audio, transcription, "
+                    "TTS, and speech recognition routing labels are rejected for the text endpoint and remain scoped to "
+                    "media endpoints, adds service integration coverage that gentxt does not call media default models, "
+                    "and surfaces guard counts and aliases in ModelOps without provider calls, gateway calls, "
+                    "NewAPI/Gemini/OpenAI/Google calls, configuration writes, traffic shifts, request bodies, response "
+                    "bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, "
+                    "emails, or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_gentxt_task_guard.py",
+                    "app/backend/services/model_task_inference.py",
+                    "app/backend/services/aihub.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_ops_gentxt_task_guard.py",
+                    "app/backend/tests/test_model_task_inference.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_GENTXT_ROUTING_GUARD.md",
+                    "docs/MODEL_TASK_INFERENCE.md",
+                    "docs/MODEL_RUNTIME_ROUTER.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-gentxt-routing-guard",
+                    "model-task-inference",
+                    "modelops-aihub-endpoint-route-coverage-gate",
+                    "model-ops-readiness",
+                    "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="model-gateway-request-compatibility-gate",
                 title="Model gateway request compatibility gate",
                 category="model_ops",

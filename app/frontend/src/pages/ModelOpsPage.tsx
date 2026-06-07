@@ -1261,6 +1261,10 @@ function Inner() {
   const aihubEndpointRouteClaimEntries = boundaryDisplayEntries(
     activeAihubEndpointRouteCoverageGate?.claim_boundary,
   );
+  const activeGenTxtRoutingGuard = data?.gentxt_routing_guard ?? null;
+  const genTxtRoutingGuardMediaRows = activeGenTxtRoutingGuard?.media_task_rows ?? [];
+  const genTxtRoutingGuardAliasRows = activeGenTxtRoutingGuard?.media_alias_rows ?? [];
+  const genTxtRoutingGuardChecks = activeGenTxtRoutingGuard?.checks ?? [];
   const activeObservedGatewayModelFitMatrix =
     observedGatewayModelFitMatrix ?? data?.observed_gateway_model_fit_matrix ?? null;
   const observedGatewayFitTaskRows = activeObservedGatewayModelFitMatrix?.task_fit_rows ?? [];
@@ -6746,6 +6750,130 @@ function Inner() {
                 </div>
               </>
             )}
+          </section>
+        )}
+
+        {activeGenTxtRoutingGuard && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGenTxtRoutingGuard.summary.media_task_blocked_count} media route requests blocked /{' '}
+                  {activeGenTxtRoutingGuard.summary.text_task_allowed_count} text routes allowed /{' '}
+                  {activeGenTxtRoutingGuard.summary.media_alias_default_count} media aliases visible
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">{activeGenTxtRoutingGuard.id}</div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGenTxtRoutingGuard.status)}>
+                {activeGenTxtRoutingGuard.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGenTxtRoutingGuard.summary.media_task_case_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">media_task_case_count</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGenTxtRoutingGuard.summary.media_task_blocked_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">media_task_blocked_count</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGenTxtRoutingGuard.summary.text_task_allowed_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">text_task_allowed_count</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeGenTxtRoutingGuard.summary.media_alias_default_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">media_alias_default_count</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeGenTxtRoutingGuard.summary.gateway_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">gateway_called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeGenTxtRoutingGuard.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">configuration_written</div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 xl:grid-cols-[1.4fr_1fr_1fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Requested task</TableHead>
+                      <TableHead>Resolved text task</TableHead>
+                      <TableHead>Media default</TableHead>
+                      <TableHead>Guard status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {genTxtRoutingGuardMediaRows.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell>
+                          <div className="font-mono text-xs font-semibold text-stone-950">{row.requested_task}</div>
+                          <div className="mt-1 text-xs text-stone-500">{row.normalized_task}</div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-600">{row.resolved_text_task}</TableCell>
+                        <TableCell className="font-mono text-xs text-stone-600">
+                          {row.model_default_if_media_endpoint}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(row.signal_present ? 'pass' : 'fail')}>
+                            {row.guard_status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Media aliases</h3>
+                <div className="space-y-2">
+                  {genTxtRoutingGuardAliasRows.map((row) => (
+                    <div key={row.alias} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="font-mono text-[11px] font-semibold text-stone-950">{row.alias}</div>
+                      <div className="mt-1 text-xs text-stone-600">{row.default_model}</div>
+                      <div className="mt-1 text-xs text-stone-500">
+                        gentxt_allowed: {String(row.gentxt_allowed)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                <div className="space-y-2">
+                  {genTxtRoutingGuardChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
         )}
 

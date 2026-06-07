@@ -258,6 +258,57 @@ async def test_gentxt_auto_infers_legal_review_task():
     assert "Review this contract clause" not in str(repository)
 
 
+@pytest.mark.parametrize(
+    ("requested_task", "normalized_task", "forbidden_model"),
+    [
+        ("image", "image", "gemini-2.5-flash-image"),
+        ("video", "video", "wan2.6-t2v"),
+        ("audio", "audio", "qwen3-tts-flash"),
+        ("transcription", "transcription", "scribe_v2"),
+        ("tts", "audio", "qwen3-tts-flash"),
+        ("speech-to-text", "transcription", "scribe_v2"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_gentxt_blocks_media_tasks_from_media_defaults(requested_task, normalized_task, forbidden_model):
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.gentxt(
+        GenTxtRequest(
+            messages=[ChatMessage(role="user", content="Generate text only.")],
+            task=requested_task,
+            temperature=0,
+        )
+    )
+
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash"
+    assert fake_client.chat.completions.calls[0]["model"] != forbidden_model
+    assert response.model == "gemini-2.5-flash"
+    assert response.task == "review"
+    assert response.task_inference["task"] == "review"
+    assert response.task_inference["source"] == "explicit"
+    assert f"unsupported_for_gentxt:{normalized_task}" in response.task_inference["signals"]
+    assert response.budget_decision["budget_mode"] == "balanced"
+    assert response.budget_decision["requested_model"] is None
+    assert response.budget_decision["explicit_model_requested"] is False
+    assert response.budget_decision["explicit_model_fit_status"] == "default"
+    assert "task_default_selected" in response.budget_decision["reason_codes"]
+    assert "sk-" not in str(response.model_dump())
+
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["by_task"]["review"]["explicit_task"] == 1
+    assert route_snapshot["by_task"].get(normalized_task) is None
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["daily_buckets"][0]["task"] == "review"
+    assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash"
+    assert forbidden_model not in str(repository)
+    assert "Generate text only." not in str(repository)
+
+
 @pytest.mark.asyncio
 async def test_gentxt_downgrades_fast_premium_request_by_default():
     model_usage_registry.reset()
