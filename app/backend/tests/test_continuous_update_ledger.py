@@ -1239,6 +1239,39 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-task-inference" in gentxt_routing_guard_entry["release_gate_links"]
     assert "modelops-aihub-endpoint-route-coverage-gate" in gentxt_routing_guard_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in gentxt_routing_guard_entry["release_gate_links"]
+    gentxt_stream_metadata_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gentxt-stream-route-metadata"
+    )
+    assert gentxt_stream_metadata_entry["size"] == "medium"
+    assert gentxt_stream_metadata_entry["status"] == "shipped"
+    assert gentxt_stream_metadata_entry["category"] == "model_ops"
+    assert "metadata-first SSE route evidence" in gentxt_stream_metadata_entry["impact"]
+    assert "gentxt streaming responses" in gentxt_stream_metadata_entry["impact"]
+    assert "stream route payload and task inference coverage gap" in gentxt_stream_metadata_entry["impact"]
+    assert "legacy content-only service wrapper" in gentxt_stream_metadata_entry["impact"]
+    assert "ModelOps coverage counts" in gentxt_stream_metadata_entry["impact"]
+    assert "provider calls" in gentxt_stream_metadata_entry["impact"]
+    assert "gateway calls" in gentxt_stream_metadata_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google calls" in gentxt_stream_metadata_entry["impact"]
+    assert "configuration writes" in gentxt_stream_metadata_entry["impact"]
+    assert "traffic shifts" in gentxt_stream_metadata_entry["impact"]
+    assert "request bodies" in gentxt_stream_metadata_entry["impact"]
+    assert "response bodies" in gentxt_stream_metadata_entry["impact"]
+    assert "headers" in gentxt_stream_metadata_entry["impact"]
+    assert "prompts" in gentxt_stream_metadata_entry["impact"]
+    assert "raw payloads" in gentxt_stream_metadata_entry["impact"]
+    assert "model outputs" in gentxt_stream_metadata_entry["impact"]
+    assert "credentials" in gentxt_stream_metadata_entry["impact"]
+    assert "app/backend/services/aihub.py" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in gentxt_stream_metadata_entry["evidence_paths"]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in gentxt_stream_metadata_entry["release_gate_links"]
+    assert "aihub-route-payload-usage-units" in gentxt_stream_metadata_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in gentxt_stream_metadata_entry["release_gate_links"]
     assert "modelops-aihub-endpoint-route-coverage-gate" in media_speech_entry["release_gate_links"]
     assert "runtime-router" in media_speech_entry["release_gate_links"]
     gateway_request_gate_entry = next(

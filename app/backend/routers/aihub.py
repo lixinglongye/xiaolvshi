@@ -1153,14 +1153,14 @@ async def generate_text(
 
         # Decide response mode based on the `stream` parameter
         if request.stream:
-            # Streaming response - wrap content in JSON for SSE
+            # Streaming response - emit metadata first, then content chunks.
             async def event_generator():
                 try:
-                    async for content in service.gentxt_stream(request):
-                        yield json.dumps({"content": content})
+                    async for event in service.gentxt_stream_events(request):
+                        yield json.dumps(event)
                 except Exception as e:
                     logger.error(f"Stream error: {e}")
-                    yield json.dumps({"content": f"[ERROR] {extract_error_message(e)}"})
+                    yield json.dumps({"type": "error", "content": f"[ERROR] {extract_error_message(e)}"})
                 finally:
                     yield "[DONE]"
 

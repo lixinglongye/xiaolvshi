@@ -25,8 +25,8 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
     assert gate["summary"]["budget_decision_count"] == 7
     assert gate["summary"]["route_telemetry_count"] == 7
     assert gate["summary"]["usage_recorded_count"] == 7
-    assert gate["summary"]["returns_route_payload_count"] == 6
-    assert gate["summary"]["returns_task_inference_count"] == 6
+    assert gate["summary"]["returns_route_payload_count"] == 7
+    assert gate["summary"]["returns_task_inference_count"] == 7
     assert gate["summary"]["returns_usage_units_count"] == 4
     assert gate["summary"]["legacy_unrouted_count"] == 0
     assert gate["summary"]["model_called"] is False
@@ -37,8 +37,8 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
     assert gate["blocking_check_ids"] == []
     assert "runtime-router-coverage" not in gate["warning_check_ids"]
     assert "route-telemetry-coverage" not in gate["warning_check_ids"]
-    assert "response-route-payload-coverage" in gate["warning_check_ids"]
-    assert "response-routing-metadata-coverage" in gate["warning_check_ids"]
+    assert "response-route-payload-coverage" not in gate["warning_check_ids"]
+    assert "response-routing-metadata-coverage" not in gate["warning_check_ids"]
     assert "media-usage-unit-coverage" not in gate["warning_check_ids"]
     assert "legacy-media-budget-route-gap" not in gate["warning_check_ids"]
     assert "local-catalog-coverage" in gate["warning_check_ids"]
@@ -51,8 +51,9 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
 
     assert rows["aihub-gentxt-stream"]["uses_runtime_router"] is True
     assert rows["aihub-gentxt-stream"]["records_route_telemetry"] is True
-    assert rows["aihub-gentxt-stream"]["returns_route_payloads"] is False
-    assert "stream_metadata_not_returned" in rows["aihub-gentxt-stream"]["route_gap_reason_codes"]
+    assert rows["aihub-gentxt-stream"]["returns_route_payloads"] is True
+    assert rows["aihub-gentxt-stream"]["returns_task_inference"] is True
+    assert rows["aihub-gentxt-stream"]["route_gap_reason_codes"] == ["endpoint_route_coverage_ready"]
 
     assert rows["aihub-genimg"]["route_mode"] == "explicit_media_runtime"
     assert rows["aihub-genimg"]["returns_route_payloads"] is True
@@ -86,8 +87,8 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
     assert matrix["uses_runtime_router"]["gap_endpoint_ids"] == []
     assert matrix["records_route_telemetry"]["gap_endpoint_ids"] == []
     assert "aihub-transcribe" not in matrix["returns_route_payloads"]["gap_endpoint_ids"]
-    assert matrix["returns_route_payloads"]["gap_endpoint_ids"] == ["aihub-gentxt-stream"]
-    assert matrix["returns_task_inference"]["gap_endpoint_ids"] == ["aihub-gentxt-stream"]
+    assert matrix["returns_route_payloads"]["gap_endpoint_ids"] == []
+    assert matrix["returns_task_inference"]["gap_endpoint_ids"] == []
     assert matrix["returns_usage_units"]["covered_endpoint_count"] == 4
     assert matrix["returns_usage_units"]["gap_endpoint_ids"] == [
         "aihub-gentxt",

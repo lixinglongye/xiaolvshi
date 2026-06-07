@@ -67,6 +67,11 @@ The response includes `runtime_router` with request fields, enforcement rules, a
 
 Non-streaming text responses include `task_inference` and `budget_decision`, which record the inferred task, selected model, requested model, over-budget status, and whether the request was routed to the recommended model.
 
+Streaming text responses emit a first SSE metadata event with `model`, `task`,
+`budget_decision`, `task_inference`, `reasoning_policy`, and `request_policy`
+before content chunks. The service-level `gentxt_stream()` wrapper still yields
+content-only chunks for older internal callers.
+
 Non-streaming PDF, image, video, audio, and transcription responses expose sanitized route/task/budget metadata where the response shape allows it. Image, video, audio, and transcription responses also expose sanitized usage units for ModelOps review without raw payloads.
 
 `route_telemetry` records aggregate runtime routing outcomes so maintainers can inspect auto-inference rates, downgrades, over-budget requests, operator-review-gated requests, and route reason-code counts over the current backend process.

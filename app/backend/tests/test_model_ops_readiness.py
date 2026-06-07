@@ -166,9 +166,9 @@ def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
         "status": "review_required",
-        "summary": {"warn_count": 2, "fail_count": 0, "legacy_unrouted_count": 0},
+        "summary": {"warn_count": 1, "fail_count": 0, "legacy_unrouted_count": 0},
         "blocking_check_ids": [],
-        "warning_check_ids": ["response-route-payload-coverage", "local-catalog-coverage"],
+        "warning_check_ids": ["local-catalog-coverage"],
     }
 
     result = ModelOpsReadinessService().evaluate(signals)

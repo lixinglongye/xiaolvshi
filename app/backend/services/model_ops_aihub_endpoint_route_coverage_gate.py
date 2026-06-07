@@ -40,11 +40,11 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "uses_budget_decision": True,
         "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
-        "returns_task_inference": False,
+        "returns_route_payloads": True,
+        "returns_task_inference": True,
         "returns_usage_units": False,
         "route_mode": "cheap_first_runtime_stream",
-        "route_gap_reason_codes": ("stream_metadata_not_returned",),
+        "route_gap_reason_codes": (),
     },
     {
         "id": "aihub-analyzepdf",
@@ -326,7 +326,7 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
             self._check(
                 "response-routing-metadata-coverage",
                 "warn" if task_inference_gaps else "pass",
-                "Non-streaming responses should expose sanitized task_inference metadata for review.",
+                "Responses should expose sanitized task_inference metadata for review where the response shape allows it.",
                 task_inference_gaps,
             ),
             self._check(
@@ -368,7 +368,7 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
         if any(not row["uses_runtime_router"] for row in endpoint_rows):
             actions.append("Migrate any remaining endpoints to resolve_runtime_model before promoting route evidence.")
         if any(not row["returns_route_payloads"] for row in endpoint_rows):
-            actions.append("Extend streaming response shapes with route/task/budget metadata where practical.")
+            actions.append("Extend response shapes with route/task/budget metadata where practical.")
         if any(
             row["task"] in {"image", "video", "audio", "transcription"} and not row["returns_usage_units"]
             for row in endpoint_rows

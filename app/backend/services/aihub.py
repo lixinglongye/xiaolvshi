@@ -11,7 +11,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Optional
 
 try:
     import fitz
@@ -319,15 +319,15 @@ class AIHubService:
             logger.error(f"gentxt error: {e}")
             raise
 
-    async def gentxt_stream(self, request: GenTxtRequest) -> AsyncGenerator[str, None]:
+    async def gentxt_stream_events(self, request: GenTxtRequest) -> AsyncGenerator[dict[str, Any], None]:
         """
-        Generate Text API (streaming), supports text and image input.
+        Generate Text API (streaming), supports text and image input with metadata events.
 
         Args:
             request: Generate text request parameters.
 
         Yields:
-            str: Generated text content chunk (plain text, not JSON).
+            dict: Metadata and content events without prompts, documents, or credentials.
         """
         task_inference = infer_gentxt_task(
             request.task,
@@ -352,6 +352,18 @@ class AIHubService:
             response_format=request.response_format,
         )
         started_at = time.time()
+        yield {
+            "type": "metadata",
+            "content": "",
+            "metadata": {
+                "model": model,
+                "task": route.task,
+                "budget_decision": route.to_api(),
+                "task_inference": task_inference.to_api(),
+                "reasoning_policy": reasoning_policy.to_api(),
+                "request_policy": request_policy.to_api(),
+            },
+        }
         try:
             client = self._require_ai_client()
             messages = [self._convert_message(msg) for msg in request.messages]
@@ -372,7 +384,10 @@ class AIHubService:
 
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
+                    yield {
+                        "type": "content",
+                        "content": chunk.choices[0].delta.content,
+                    }
             self._record_model_usage(model=model, task=f"{route.task}_stream", started_at=started_at, success=True)
             model_route_telemetry_registry.record(
                 route=route,
@@ -406,6 +421,20 @@ class AIHubService:
             )
             logger.error(f"gentxt_stream error: {e}")
             raise
+
+    async def gentxt_stream(self, request: GenTxtRequest) -> AsyncGenerator[str, None]:
+        """
+        Generate Text API (streaming), supports text and image input.
+
+        Args:
+            request: Generate text request parameters.
+
+        Yields:
+            str: Generated text content chunk (plain text, not JSON).
+        """
+        async for event in self.gentxt_stream_events(request):
+            if event.get("type") == "content":
+                yield str(event.get("content") or "")
 
     @staticmethod
     def _extract_image_ref(item: object) -> str:

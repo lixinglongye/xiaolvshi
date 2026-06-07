@@ -391,13 +391,15 @@ catalog review gaps.
 The current gate keeps endpoint-level state visible in
 `GET /api/v1/aihub/models`: text, streaming text, PDF, image, video, audio,
 and transcription routes are runtime-routed and telemetry-backed. Non-streaming
-text, PDF, image, video, audio, and transcription responses expose sanitized
-route/task/budget metadata where the response shape allows it. Image, video,
-audio, and transcription responses also expose sanitized usage units so
-cheap-first cost review can reason about generated images, generated seconds,
-input characters, and audio counts without storing raw payloads. Video, audio,
-and transcription defaults remain review-only catalog items until pricing,
-lifecycle, and gateway behavior are documented.
+text, streaming text, PDF, image, video, audio, and transcription responses
+expose sanitized route/task/budget metadata where the response shape allows it.
+Streaming text sends the metadata as the first SSE event with empty content so
+legacy content concatenation remains compatible. Image, video, audio, and
+transcription responses also expose sanitized usage units so cheap-first cost
+review can reason about generated images, generated seconds, input characters,
+and audio counts without storing raw payloads. Video, audio, and transcription
+defaults remain review-only catalog items until pricing, lifecycle, and gateway
+behavior are documented.
 
 This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network, and it does not claim that media/speech

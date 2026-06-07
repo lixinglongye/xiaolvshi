@@ -1,4 +1,5 @@
 import io
+import json
 
 import pytest
 
@@ -40,6 +41,26 @@ class _FakeResponse:
     usage = _FakeUsage()
 
 
+class _FakeStreamDelta:
+    def __init__(self, content: str | None) -> None:
+        self.content = content
+
+
+class _FakeStreamChoice:
+    def __init__(self, content: str | None) -> None:
+        self.delta = _FakeStreamDelta(content)
+
+
+class _FakeStreamChunk:
+    def __init__(self, content: str | None) -> None:
+        self.choices = [_FakeStreamChoice(content)]
+
+
+async def _fake_stream_chunks():
+    for content in ("hello", " stream"):
+        yield _FakeStreamChunk(content)
+
+
 class _FakeImageItem:
     url = "https://cdn.example.test/generated-private-output.png"
     revised_prompt = "sanitized revised prompt"
@@ -72,6 +93,15 @@ class _FakeCompletions:
     async def create(self, **params):
         self.calls.append(params)
         return _FakeResponse()
+
+
+class _FakeStreamingCompletions:
+    def __init__(self) -> None:
+        self.calls: list[dict] = []
+
+    async def create(self, **params):
+        self.calls.append(params)
+        return _fake_stream_chunks()
 
 
 class _FailingCompletions:
@@ -144,6 +174,11 @@ class _FakeChat:
         self.completions = _FakeCompletions()
 
 
+class _FakeStreamingChat:
+    def __init__(self) -> None:
+        self.completions = _FakeStreamingCompletions()
+
+
 class _FailingChat:
     def __init__(self) -> None:
         self.completions = _FailingCompletions()
@@ -155,6 +190,12 @@ class _FakeClient:
         self.images = _FakeImages()
         self.videos = _FakeVideos()
         self.audio = _FakeAudio()
+
+
+class _FakeStreamingClient(_FakeClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.chat = _FakeStreamingChat()
 
 
 class _FailingClient:
@@ -307,6 +348,113 @@ async def test_gentxt_blocks_media_tasks_from_media_defaults(requested_task, nor
     assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash"
     assert forbidden_model not in str(repository)
     assert "Generate text only." not in str(repository)
+
+
+@pytest.mark.asyncio
+async def test_gentxt_stream_events_emit_sanitized_route_metadata_before_content():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeStreamingClient()
+    service.client = fake_client
+
+    events = [
+        event
+        async for event in service.gentxt_stream_events(
+            GenTxtRequest(
+                messages=[ChatMessage(role="user", content="Review this contract clause for risk.")],
+                stream=True,
+                temperature=0,
+            )
+        )
+    ]
+
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash"
+    assert fake_client.chat.completions.calls[0]["stream"] is True
+    assert events[0]["type"] == "metadata"
+    assert events[0]["content"] == ""
+    assert events[0]["metadata"]["model"] == "gemini-2.5-flash"
+    assert events[0]["metadata"]["task"] == "review"
+    assert events[0]["metadata"]["budget_decision"]["budget_mode"] == "balanced"
+    assert events[0]["metadata"]["task_inference"]["task"] == "review"
+    assert events[0]["metadata"]["request_policy"]["effective_temperature"] == 0
+    assert [event["content"] for event in events[1:]] == ["hello", " stream"]
+    serialized = json.dumps(events, ensure_ascii=False)
+    assert "Review this contract clause" not in serialized
+    assert "sk-" not in serialized
+
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["totals"]["stream_requests"] == 1
+    assert route_snapshot["by_task"]["review"]["stream_requests"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["daily_buckets"][0]["task"] == "review"
+    assert "Review this contract clause" not in str(repository)
+
+
+@pytest.mark.asyncio
+async def test_gentxt_stream_legacy_wrapper_returns_content_only():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeStreamingClient()
+    service.client = fake_client
+
+    chunks = [
+        chunk
+        async for chunk in service.gentxt_stream(
+            GenTxtRequest(
+                messages=[ChatMessage(role="user", content="Review this contract clause for risk.")],
+                stream=True,
+            )
+        )
+    ]
+
+    assert chunks == ["hello", " stream"]
+    assert all("metadata" not in chunk for chunk in chunks)
+    assert all("budget_decision" not in chunk for chunk in chunks)
+    assert model_route_telemetry_registry.snapshot()["totals"]["stream_requests"] == 1
+
+
+def test_gentxt_stream_route_emits_metadata_sse_before_content(monkeypatch):
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    import routers.aihub as aihub_router
+
+    class FakeStreamService:
+        async def gentxt_stream_events(self, request):
+            yield {
+                "type": "metadata",
+                "content": "",
+                "metadata": {
+                    "model": "gemini-2.5-flash-lite",
+                    "task": "fast",
+                    "budget_decision": {"budget_mode": "cheap-first"},
+                    "task_inference": {"task": "fast", "source": "auto"},
+                },
+            }
+            yield {"type": "content", "content": "hello"}
+
+    monkeypatch.setattr(aihub_router, "AIHubService", FakeStreamService)
+    app = fastapi.FastAPI()
+    app.include_router(aihub_router.router)
+
+    response = testclient.TestClient(app).post(
+        "/api/v1/aihub/gentxt",
+        json={
+            "messages": [{"role": "user", "content": "hello"}],
+            "stream": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.text
+    assert '"type": "metadata"' in body
+    assert '"metadata": {"model": "gemini-2.5-flash-lite"' in body
+    assert '"type": "content"' in body
+    assert '"content": "hello"' in body
+    assert "[DONE]" in body
 
 
 @pytest.mark.asyncio

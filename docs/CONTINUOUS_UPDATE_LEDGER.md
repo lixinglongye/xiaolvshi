@@ -254,6 +254,16 @@ models, or the network. It does not write configuration, shift traffic, or
 include request/response bodies, headers, prompts, raw payloads, legal text,
 model outputs, gateway responses, credentials, emails, or user identifiers.
 
+Current gentxt stream route metadata evidence:
+`gentxt-stream-route-metadata` adds a metadata-first SSE event for gentxt
+streaming responses, closes the AIHub stream route payload and task inference
+coverage gap, and preserves the legacy content-only service wrapper for
+internal callers. It updates ModelOps coverage counts without calling NewAPI,
+Gemini, OpenAI, Google, providers, gateways, app AI endpoints, models, or the
+network, and without writing configuration, shifting traffic, or including
+request/response bodies, headers, prompts, raw payloads, legal text, model
+outputs, gateway responses, credentials, emails, or user identifiers.
+
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
 low-resource legal benchmark run-planning evidence for cheap-first Gemini

@@ -38,8 +38,10 @@ Each row reports `uses_runtime_router`, `uses_budget_decision`,
 
 Text, streaming text, PDF analysis, image generation, video generation, audio
 generation, and transcription use runtime routing and route telemetry.
-Non-streaming text, PDF analysis, image generation, video generation, audio
+Text, streaming text, PDF analysis, image generation, video generation, audio
 generation, and transcription currently return route payload metadata to
+callers. Streaming text emits a metadata SSE event before content chunks, while
+the legacy service wrapper still yields content-only chunks for internal
 callers. Image, video, audio, and transcription responses also expose sanitized
 usage units for cost review without returning prompts, PDF bytes, image bytes,
 audio, transcripts, output URLs, request bodies, response bodies, headers,
@@ -52,8 +54,8 @@ Video generation, audio generation, and transcription now use explicit media/spe
 This is metadata-only evidence. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network. It does not write configuration, shift traffic, or return request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.
 
 The gate does not claim that default routes changed or that media/speech
-defaults are price-benchmarked. It exposes route coverage status, remaining
-stream metadata gaps, usage-unit coverage, and local catalog review items.
+defaults are price-benchmarked. It exposes route coverage status, usage-unit
+coverage, and local catalog review items.
 
 ## Validation
 
