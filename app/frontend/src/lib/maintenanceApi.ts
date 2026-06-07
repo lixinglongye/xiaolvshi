@@ -3734,6 +3734,138 @@ export type LegalRagRetrievalDiagnosticsGate = {
   validation_commands: string[];
 };
 
+export type LegalRagIndexCoverageGateRow = {
+  id: string;
+  query_intent: string;
+  index_binding_status: string;
+  release_action: string;
+  filter_validation_status: string;
+  source_coverage_status: string;
+  locator_status: string;
+  jurisdiction_status: string;
+  freshness_status: string;
+  candidate_source_count: number;
+  selected_source_count: number;
+  requested_source_count: number;
+  missing_requested_source_count: number;
+  stale_source_count: number;
+  missing_locator_count: number;
+  forbidden_filter_count: number;
+  cheap_first_action: {
+    task: string;
+    decision: string;
+    starts_cheap: boolean;
+    recommended_model_alias: string;
+    requires_operator_review: boolean;
+    signals: string[];
+    model_called: boolean;
+    gateway_called: boolean;
+    [key: string]: unknown;
+  };
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_query_returned: boolean;
+    retrieved_context_returned: boolean;
+    raw_legal_text_returned: boolean;
+    prompt_returned: boolean;
+    model_output_returned: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagIndexCoverageGate = {
+  id: 'legal-rag-index-coverage-gate' | string;
+  title?: string;
+  status: string;
+  summary: {
+    index_plan_row_count: number;
+    ready_plan_count: number;
+    review_plan_count: number;
+    blocked_plan_count: number;
+    candidate_source_total: number;
+    selected_source_total: number;
+    missing_requested_source_total: number;
+    stale_source_total: number;
+    missing_locator_total: number;
+    forbidden_filter_total: number;
+    jurisdiction_gap_count: number;
+    freshness_gap_count: number;
+    cheap_first_continue_count: number;
+    cheap_first_verify_or_escalate_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    source_ids_returned: boolean;
+    raw_query_included: boolean;
+    raw_retrieved_context_included: boolean;
+    raw_legal_text_included: boolean;
+    prompt_included: boolean;
+    model_output_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  index_plan_rows: LegalRagIndexCoverageGateRow[];
+  index_binding_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  source_coverage_counts: Record<string, number>;
+  locator_status_counts: Record<string, number>;
+  index_plan_policy: {
+    method: string;
+    minimum_selected_source_count: number;
+    requires_locator_for_selected_sources: boolean;
+    requires_jurisdiction_filter: boolean;
+    review_due_sources_require_reviewer_review: boolean;
+    blocks_on_forbidden_query_filters: boolean;
+    blocks_on_empty_index_coverage: boolean;
+    blocks_on_missing_retrieval_locator: boolean;
+    premium_exception_default_allowed: boolean;
+    cheap_first_default: boolean;
+    [key: string]: unknown;
+  };
+  linked_gate_summary: Record<string, string>;
+  input_contract: {
+    accepted_plan_fields: string[];
+    raw_text_fields_ignored: string[];
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    index_quality_claimed: boolean;
+    live_gateway_quality_claimed: boolean;
+    automatic_client_delivery_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -4335,6 +4467,11 @@ type LegalRagAbstentionEscalationGateResponse = {
 type LegalRagRetrievalDiagnosticsGateResponse = {
   success: boolean;
   data: LegalRagRetrievalDiagnosticsGate;
+};
+
+type LegalRagIndexCoverageGateResponse = {
+  success: boolean;
+  data: LegalRagIndexCoverageGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -5775,6 +5912,14 @@ export async function getLegalRagRetrievalDiagnosticsGate(): Promise<LegalRagRet
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagRetrievalDiagnosticsGateResponse['data']>(resp);
+}
+
+export async function getLegalRagIndexCoverageGate(): Promise<LegalRagIndexCoverageGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-index-coverage-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagIndexCoverageGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(

@@ -452,6 +452,36 @@ const checks = [
   () => assertIncludes(maintenancePage, 'false / not included', 'legal RAG abstention false/not-included boundary copy'),
   () => assertIncludes(maintenancePage, 'gate.validation_commands', 'legal RAG abstention validation binding'),
   () => assertIncludes(maintenancePage, 'Legal RAG retrieval diagnostics gate', 'legal RAG retrieval diagnostics gate panel'),
+  () => assertIncludes(maintenancePage, 'Legal RAG index coverage gate', 'legal RAG index coverage gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagIndexCoverageGate', 'legal RAG index coverage API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagIndexCoverageGate', 'legal RAG index coverage state binding'),
+  () => assertIncludes(maintenancePage, 'index plan rows', 'legal RAG index coverage row count summary'),
+  () => assertIncludes(maintenancePage, 'ready plans', 'legal RAG index coverage ready summary'),
+  () => assertIncludes(maintenancePage, 'review plans', 'legal RAG index coverage review summary'),
+  () => assertIncludes(maintenancePage, 'blocked plans', 'legal RAG index coverage blocked summary'),
+  () => assertIncludes(maintenancePage, 'missing locators', 'legal RAG index coverage missing locator summary'),
+  () => assertIncludes(maintenancePage, 'forbidden filters', 'legal RAG index coverage forbidden filter summary'),
+  () => assertIncludes(maintenancePage, 'index_binding_status_counts', 'legal RAG index coverage status distribution'),
+  () => assertIncludes(maintenancePage, 'locator_status_counts', 'legal RAG index coverage locator distribution'),
+  () => assertIncludes(maintenancePage, 'index_plan_policy', 'legal RAG index coverage policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_plan_fields', 'legal RAG index coverage input fields'),
+  () => assertIncludes(maintenancePage, 'raw_text_fields_ignored', 'legal RAG index coverage raw fields ignored'),
+  () => assertIncludes(maintenancePage, 'source ids returned', 'legal RAG index coverage source-id boundary label'),
+  () => assertIncludes(maintenancePage, 'index quality claimed', 'legal RAG index coverage claim boundary label'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG authority citation gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>',
+      'authority citation gate precedes index coverage gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+      'index coverage gate precedes retrieval diagnostics',
+    ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
   () => assertIncludes(maintenancePage, 'diagnostic rows', 'legal RAG retrieval diagnostics row count summary'),
@@ -643,6 +673,15 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'decision_rows', 'legal RAG abstention decision rows type'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-abstention-escalation-gate', 'legal RAG abstention escalation endpoint'),
   () => assertIncludes(maintenanceApi, 'LegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate type'),
+  () => assertIncludes(maintenanceApi, 'LegalRagIndexCoverageGate', 'legal RAG index coverage gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-index-coverage-gate' | string", 'legal RAG index coverage gate id'),
+  () => assertIncludes(maintenanceApi, 'index_plan_rows', 'legal RAG index coverage rows type'),
+  () => assertIncludes(maintenanceApi, 'index_binding_status_counts', 'legal RAG index coverage status counts type'),
+  () => assertIncludes(maintenanceApi, 'locator_status_counts', 'legal RAG index coverage locator counts type'),
+  () => assertIncludes(maintenanceApi, 'accepted_plan_fields', 'legal RAG index coverage input contract type'),
+  () => assertIncludes(maintenanceApi, 'returns_source_ids', 'legal RAG index coverage no source id return boundary'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagIndexCoverageGate', 'legal RAG index coverage getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-index-coverage-gate', 'legal RAG index coverage endpoint'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1581,6 +1620,12 @@ const retrievalDiagnosticsPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
   'maintenance Legal RAG retrieval diagnostics section',
 );
+const legalRagIndexCoveragePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG index coverage section',
+);
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
@@ -1766,6 +1811,11 @@ assertNotMatches(
   retrievalDiagnosticsPanel,
   /\b(raw_query|raw_context|raw_legal_text|unsafe_answer)(_text|_content|s)?\b/i,
   'maintenance Legal RAG retrieval diagnostics no raw query/context/legal text or unsafe answer fields',
+);
+assertNotMatches(
+  legalRagIndexCoveragePanel,
+  /\b(UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|sk-[A-Za-z0-9]{20,}|client@example\.invalid)\b/i,
+  'maintenance Legal RAG index coverage no raw sample text, secrets, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

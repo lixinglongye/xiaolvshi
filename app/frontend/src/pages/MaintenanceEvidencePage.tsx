@@ -52,6 +52,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
+  getLegalRagIndexCoverageGate,
   getMaintenanceLegalRagExportReadinessPacket,
   getLegalRagHallucinationTriageGate,
   getLegalRagRetrievalDiagnosticsGate,
@@ -123,6 +124,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type LegalRagIndexCoverageGate,
   type LegalRagRetrievalObservationGate,
   type MaintenanceLegalRagExportReadinessPacket,
   type LegalRagHallucinationTriageGate,
@@ -447,6 +449,8 @@ function Inner() {
   const [ragPolicy, setRagPolicy] = useState<LegalRagEvaluationPolicy | null>(null);
   const [legalRagAuthorityCitationGate, setLegalRagAuthorityCitationGate] =
     useState<LegalRagAuthorityCitationGate | null>(null);
+  const [legalRagIndexCoverageGate, setLegalRagIndexCoverageGate] =
+    useState<LegalRagIndexCoverageGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -843,6 +847,11 @@ function Inner() {
           label: 'Legal RAG authority citation gate',
           run: getLegalRagAuthorityCitationGate,
           apply: (value) => setLegalRagAuthorityCitationGate(value as LegalRagAuthorityCitationGate),
+        },
+        {
+          label: 'Legal RAG index coverage gate',
+          run: getLegalRagIndexCoverageGate,
+          apply: (value) => setLegalRagIndexCoverageGate(value as LegalRagIndexCoverageGate),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -9181,6 +9190,225 @@ function Inner() {
                 </div>
               </section>
             )}
+
+            {legalRagIndexCoverageGate &&
+              (() => {
+                const gate = legalRagIndexCoverageGate;
+                const rows = gate.index_plan_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const summaryCounts = [
+                  { label: 'index plan rows', value: summary.index_plan_row_count },
+                  { label: 'ready plans', value: summary.ready_plan_count },
+                  { label: 'review plans', value: summary.review_plan_count },
+                  { label: 'blocked plans', value: summary.blocked_plan_count },
+                  { label: 'selected sources', value: summary.selected_source_total },
+                  { label: 'missing requested', value: summary.missing_requested_source_total },
+                  { label: 'missing locators', value: summary.missing_locator_total },
+                  { label: 'forbidden filters', value: summary.forbidden_filter_total },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'query content returned', value: privacy.returns_raw_query || privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'NewAPI called', value: privacy.calls_newapi },
+                  { label: 'index quality claimed', value: claim.index_quality_claimed },
+                  { label: 'automatic client delivery claimed', value: claim.automatic_client_delivery_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only index binding plan coverage before retrieval diagnostics and answer release
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Index plan</TableHead>
+                            <TableHead>Binding / release</TableHead>
+                            <TableHead>Coverage</TableHead>
+                            <TableHead>Filter / locator</TableHead>
+                            <TableHead>Jurisdiction / freshness</TableHead>
+                            <TableHead>Cheap-first action</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.query_intent)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge variant="outline" className={statusClass[row.index_binding_status] ?? statusClass.review_required}>
+                                  {displayToken(row.index_binding_status)}
+                                </Badge>
+                                <div className="mt-2">{displayToken(row.release_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>coverage: {displayToken(row.source_coverage_status)}</div>
+                                <div>candidate: {row.candidate_source_count}</div>
+                                <div>selected: {row.selected_source_count}</div>
+                                <div>requested missing: {row.missing_requested_source_count}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>filter: {displayToken(row.filter_validation_status)}</div>
+                                <div>locator: {displayToken(row.locator_status)}</div>
+                                <div>missing locator: {row.missing_locator_count}</div>
+                                <div>forbidden filters: {row.forbidden_filter_count}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>jurisdiction: {displayToken(row.jurisdiction_status)}</div>
+                                <div>freshness: {displayToken(row.freshness_status)}</div>
+                                <div>stale excluded: {row.stale_source_count}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>{displayToken(row.cheap_first_action.decision)}</div>
+                                <div>{displayToken(row.cheap_first_action.recommended_model_alias)}</div>
+                                <div>review: {String(row.cheap_first_action.requires_operator_review)}</div>
+                              </TableCell>
+                              <TableCell className="max-w-[300px]">
+                                <div className="flex flex-wrap gap-1">
+                                  {(row.reason_codes ?? []).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['index_binding_status_counts', gate.index_binding_status_counts],
+                            ['release_action_counts', gate.release_action_counts],
+                            ['source_coverage_counts', gate.source_coverage_counts],
+                            ['locator_status_counts', gate.locator_status_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Index plan policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.index_plan_policy.method}</div>
+                          <div>minimum selected: {gate.index_plan_policy.minimum_selected_source_count}</div>
+                          <div>locator required: {String(gate.index_plan_policy.requires_locator_for_selected_sources)}</div>
+                          <div>forbidden filters blocked: {String(gate.index_plan_policy.blocks_on_forbidden_query_filters)}</div>
+                          <div>empty coverage blocked: {String(gate.index_plan_policy.blocks_on_empty_index_coverage)}</div>
+                          <div>premium exception allowed: {String(gate.index_plan_policy.premium_exception_default_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_plan_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(gate.input_contract.accepted_plan_fields ?? []).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">raw_text_fields_ignored</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(gate.input_contract.raw_text_fields_ignored ?? []).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
 
             {legalRagRetrievalDiagnosticsGate &&
               (() => {

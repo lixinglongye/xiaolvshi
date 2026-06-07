@@ -73,6 +73,7 @@ from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEsca
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
+from services.legal_rag_index_coverage_gate import LegalRagIndexCoverageGateService
 from services.legal_rag_retrieval_diagnostics_gate import LegalRagRetrievalDiagnosticsGateService
 from services.legal_rag_retrieval_observation_gate import LegalRagRetrievalObservationGateService
 from services.legal_rag_selected_source_validation import LegalRagSelectedSourceValidationService
@@ -1314,6 +1315,15 @@ async def get_legal_rag_authority_citation_gate():
     return {
         "success": True,
         "data": LegalRagAuthorityCitationGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-index-coverage-gate")
+async def get_legal_rag_index_coverage_gate():
+    """Return metadata-only Legal RAG index binding coverage evidence."""
+    return {
+        "success": True,
+        "data": LegalRagIndexCoverageGateService().build_gate(),
     }
 
 

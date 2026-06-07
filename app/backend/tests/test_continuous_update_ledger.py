@@ -419,6 +419,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
+    assert "legal-rag-index-coverage-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -609,6 +610,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
+    assert "legal-rag-index-coverage-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -2655,6 +2657,62 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q"
+        in ledger["validation_commands"]
+    )
+    index_coverage_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-index-coverage-gate"
+    )
+    assert index_coverage_entry["category"] == "benchmark"
+    assert index_coverage_entry["size"] == "medium"
+    assert index_coverage_entry["status"] == "shipped"
+    assert "Legal RAG index coverage gate" in index_coverage_entry["impact"]
+    assert "index binding plan rows" in index_coverage_entry["impact"]
+    assert "filter validation" in index_coverage_entry["impact"]
+    assert "source coverage" in index_coverage_entry["impact"]
+    assert "retrieval locator coverage" in index_coverage_entry["impact"]
+    assert "jurisdiction/freshness gaps" in index_coverage_entry["impact"]
+    assert "missing or stale source counts" in index_coverage_entry["impact"]
+    assert "forbidden filters" in index_coverage_entry["impact"]
+    assert "cheap-first review actions" in index_coverage_entry["impact"]
+    assert "typed maintenance API helpers" in index_coverage_entry["impact"]
+    assert "maintenance UI review" in index_coverage_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in index_coverage_entry["impact"]
+    assert "gateway calls" in index_coverage_entry["impact"]
+    assert "network calls" in index_coverage_entry["impact"]
+    assert "dataset downloads" in index_coverage_entry["impact"]
+    assert "source-id echoing" in index_coverage_entry["impact"]
+    assert "raw query" in index_coverage_entry["impact"]
+    assert "raw retrieved context" in index_coverage_entry["impact"]
+    assert "raw legal text" in index_coverage_entry["impact"]
+    assert "prompts" in index_coverage_entry["impact"]
+    assert "model outputs" in index_coverage_entry["impact"]
+    assert "gateway payloads" in index_coverage_entry["impact"]
+    assert "credentials" in index_coverage_entry["impact"]
+    assert "client-delivery or index-quality claims" in index_coverage_entry["impact"]
+    assert "app/backend/services/legal_rag_index_coverage_gate.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_index_coverage_gate.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_index_binding.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in index_coverage_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in index_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in index_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in index_coverage_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in index_coverage_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_INDEX_COVERAGE_GATE.md" in index_coverage_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in index_coverage_entry["evidence_paths"]
+    assert "legal-rag-index-coverage-gate" in index_coverage_entry["release_gate_links"]
+    assert "legal-rag-index-binding" in index_coverage_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in index_coverage_entry["release_gate_links"]
+    assert "legal-rag-retrieval-observation-gate" in index_coverage_entry["release_gate_links"]
+    assert "frontend-typecheck" in index_coverage_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in index_coverage_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_index_binding.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     benchmark_alignment_entry = next(

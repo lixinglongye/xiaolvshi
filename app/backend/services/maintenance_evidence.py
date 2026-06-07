@@ -207,6 +207,7 @@ class MaintenanceEvidenceService:
                 "Legal RAG hallucination triage gate",
                 "Legal RAG abstention escalation gate",
                 "Legal RAG retrieval diagnostics gate",
+                "Legal RAG index coverage gate",
                 "Legal RAG retrieval observation gate",
                 "Legal adoption research bridge",
                 "Feedback lifecycle policy",

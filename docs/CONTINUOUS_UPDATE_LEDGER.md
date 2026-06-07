@@ -1,5 +1,15 @@
 # Continuous Update Ledger
 
+Current Legal RAG index coverage slice:
+`legal-rag-index-coverage-gate` exposes a metadata-only index binding coverage
+gate in the maintenance evidence API and UI. It reviews index plan rows, filter
+validation, source coverage, locator coverage, jurisdiction/freshness gaps,
+missing or stale source counts, forbidden filters, and cheap-first actions
+without calling models, gateways, NewAPI, Gemini, or the network; it does not
+download datasets or return source ids, raw query, retrieved context, legal
+text, prompts, model outputs, gateway payloads, credentials, or index-quality
+claims.
+
 Current Legal RAG retrieval observation UI slice:
 `legal-rag-retrieval-observation-ui-binding` exposes the metadata-only
 retrieval observation gate in the maintenance evidence page with a typed POST
