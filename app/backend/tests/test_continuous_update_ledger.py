@@ -176,6 +176,30 @@ def test_continuous_update_ledger_includes_modelops_legal_benchmark_risk_bridge_
     assert "traceable-legal-review" in entry["user_need_ids"]
 
 
+def test_continuous_update_ledger_tracks_case_workbench_risk_state_badges():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "case-workbench-risk-state-badges"
+    )
+
+    assert entry["category"] == "product_planning"
+    assert entry["size"] == "medium"
+    assert entry["status"] == "shipped"
+    assert "risk-state badge projection" in entry["impact"]
+    assert "critical task, deadline, evidence, and runtime-event signals" in entry["impact"]
+    assert "without writing risk state" in entry["impact"]
+    assert "refreshing evidence graphs" in entry["impact"]
+    assert "sending notifications" in entry["impact"]
+    assert "raw case text" in entry["impact"]
+    assert "credentials" in entry["impact"]
+    assert "app/backend/services/case_workbench_risk_refresh_plan.py" in entry["evidence_paths"]
+    assert "app/frontend/src/components/cases/CaseWorkbenchRuntimePanel.tsx" in entry["evidence_paths"]
+    assert "docs/CASE_WORKBENCH_RISK_REFRESH_PLAN.md" in entry["evidence_paths"]
+    assert "case-workbench-risk-refresh-plan" in entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in entry["release_gate_links"]
+
+
 def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     queue_ids = {entry["id"] for entry in ledger["next_update_queue"]}
@@ -312,6 +336,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "billing-entitlement-repository-binding" in completed_ids
     assert "case-workbench-runtime-router" in completed_ids
     assert "case-workbench-risk-refresh-plan" in completed_ids
+    assert "case-workbench-risk-state-badges" in completed_ids
     assert "legal-rag-index-route" in completed_ids
     assert "billing-quota-consumption-route" in completed_ids
     assert "frontend-runtime-api-client-bindings" in completed_ids

@@ -80,6 +80,9 @@ export type CaseWorkbenchRiskRefreshPlan = {
     deadline_urgent_count: number;
     evidence_graph_blocking_gap_count: number;
     review_required_count: number;
+    risk_state_badge_count: number;
+    critical_badge_count: number;
+    warning_badge_count: number;
     raw_text_returned: boolean;
     event_payloads_returned: boolean;
     risk_state_written: boolean;
@@ -102,10 +105,34 @@ export type CaseWorkbenchRiskRefreshPlan = {
     writes_graph: boolean;
     action: string;
   };
+  risk_state_badges: CaseWorkbenchRiskStateBadge[];
+  risk_state_badge_summary: {
+    badge_count: number;
+    critical_count: number;
+    warning_count: number;
+    ready_count: number;
+    watch_count: number;
+    writes_risk_state: boolean;
+    writes_evidence_graph: boolean;
+    raw_content_returned: boolean;
+  };
   recommended_actions: string[];
   privacy_boundary: Record<string, boolean | string>;
   claim_boundary: Record<string, boolean | string>;
   validation_commands: string[];
+};
+
+export type CaseWorkbenchRiskStateBadge = {
+  id: string;
+  label: string;
+  severity: 'critical' | 'warning' | 'watch' | 'ready' | string;
+  source: string;
+  count: number;
+  reason_codes: string[];
+  action: string;
+  writes_risk_state: boolean;
+  writes_evidence_graph: boolean;
+  raw_content_returned: boolean;
 };
 
 export type CaseWorkbenchStateEvent = {

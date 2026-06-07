@@ -68,6 +68,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "app/frontend/src/components/billing/BillingUsageBadge.tsx" in gaps["billing-entitlements"]["evidence_paths"]
     assert "privacy-safe material/evidence/fact/task edit event binding" in gaps["case-workbench"]["current_state"]
     assert "metadata-only risk/evidence refresh planning from runtime event deltas" in gaps["case-workbench"]["current_state"]
+    assert "runtime risk-state badge projection" in gaps["case-workbench"]["current_state"]
     assert "task runtime notification policy summaries" in gaps["case-workbench"]["current_state"]
     assert "localStorage summary cache" in gaps["legal-knowledge-rag"]["current_state"]
     assert "selected-source request metadata propagation" in gaps["legal-knowledge-rag"]["current_state"]
@@ -193,7 +194,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "validation event evidence normalizer" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert "max-gap, commit-window, credential-scan" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert any("risk refresh plan" in action for action in gaps["case-workbench"]["next_actions"])
-    assert any("live risk-state badges" in action for action in gaps["case-workbench"]["next_actions"])
+    assert any("projected badges" in action for action in gaps["case-workbench"]["next_actions"])
     assert any("live deep-review persistence" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
     assert any("account plan review" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])

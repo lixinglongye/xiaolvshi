@@ -9,6 +9,10 @@ def test_risk_refresh_plan_is_empty_without_runtime_state():
     assert plan["id"] == "case-workbench-risk-refresh-plan"
     assert plan["status"] == "empty"
     assert plan["summary"]["refresh_required_count"] == 0
+    assert plan["summary"]["risk_state_badge_count"] == 1
+    assert plan["risk_state_badge_summary"]["watch_count"] == 1
+    assert plan["risk_state_badges"][0]["id"] == "risk-state-empty"
+    assert plan["risk_state_badges"][0]["writes_risk_state"] is False
     assert plan["summary"]["risk_state_written"] is False
     assert plan["summary"]["evidence_graph_written"] is False
     assert plan["privacy_boundary"]["returns_raw_event_payload"] is False
@@ -72,6 +76,15 @@ def test_risk_refresh_plan_flags_blocking_task_and_fact_event_without_echoing_ra
     assert "event-fact-002" in plan["evidence_graph_affecting_event_ids"]
     assert plan["summary"]["task_blocked_count"] == 1
     assert plan["summary"]["risk_affecting_event_count"] == 1
+    assert plan["risk_state_badge_summary"]["critical_count"] == 1
+    assert plan["risk_state_badge_summary"]["warning_count"] == 1
+    badge_ids = {badge["id"] for badge in plan["risk_state_badges"]}
+    assert "blocked-task-review" in badge_ids
+    assert "runtime-event-risk-refresh" in badge_ids
+    blocked_badge = next(badge for badge in plan["risk_state_badges"] if badge["id"] == "blocked-task-review")
+    assert blocked_badge["severity"] == "critical"
+    assert blocked_badge["source"] == "tasks"
+    assert blocked_badge["raw_content_returned"] is False
     assert plan["evidence_graph_plan"]["status"] == "refresh_required"
     assert "raw text must not leak" not in serialized
     assert "output_text" not in serialized
@@ -94,7 +107,12 @@ def test_risk_refresh_plan_keeps_privacy_and_claim_boundaries_closed():
     )
 
     assert plan["status"] == "blocked"
+    badge = next(item for item in plan["risk_state_badges"] if item["id"] == "blocking-evidence-gap")
+    assert badge["severity"] == "critical"
+    assert badge["count"] == 1
+    assert badge["writes_evidence_graph"] is False
     assert plan["privacy_boundary"]["returns_raw_evidence_text"] is False
+    assert plan["privacy_boundary"]["returns_risk_state_badges"] is True
     assert plan["privacy_boundary"]["writes_evidence_graph"] is False
     assert plan["privacy_boundary"]["sends_notifications"] is False
     assert plan["claim_boundary"]["evidence_graph_refreshed"] is False

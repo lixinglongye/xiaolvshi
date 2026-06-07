@@ -177,6 +177,8 @@ async def test_runtime_binding_returns_empty_state_payload_for_case_workspace():
         assert payload["sections"]["parties"]["collection_counts"] == {"party_states": 0}
         assert payload["risk_refresh_plan"]["status"] == "empty"
         assert payload["risk_refresh_plan"]["summary"]["refresh_required_count"] == 0
+        assert payload["risk_refresh_plan"]["risk_state_badges"][0]["id"] == "risk-state-empty"
+        assert payload["risk_refresh_plan"]["risk_state_badge_summary"]["watch_count"] == 1
         assert payload["risk_refresh_plan"]["privacy_boundary"]["returns_raw_event_payload"] is False
         assert "user_hash_runtime_abcdefghijkl" not in json.dumps(payload)
 
@@ -356,6 +358,8 @@ async def test_runtime_binding_payload_includes_risk_refresh_plan_for_task_event
         assert "tasks" in plan["blocking_section_ids"]
         assert event["event_id"] in plan["risk_affecting_event_ids"]
         assert plan["summary"]["task_blocked_count"] == 1
+        assert plan["risk_state_badge_summary"]["critical_count"] == 1
+        assert any(badge["id"] == "blocked-task-review" for badge in plan["risk_state_badges"])
         assert plan["summary"]["risk_state_written"] is False
         assert plan["privacy_boundary"]["returns_raw_event_payload"] is False
         assert "event_json" not in serialized_plan

@@ -9,6 +9,8 @@ the workbench runtime binding. It returns:
 - section ids that should refresh live risk state;
 - event ids and changed field names that affect risk or evidence graph state;
 - blocking/review counts for tasks, deadlines, facts, and evidence graph gaps;
+- `risk_state_badges` with bounded severity, source, count, reason codes, and
+  no-write flags for the runtime panel;
 - privacy and claim boundaries showing that no write or notification happened.
 
 It does not return raw event payloads, party names, client contact details,
@@ -17,8 +19,9 @@ It also does not write risk state, refresh the evidence graph, send
 notifications, complete lawyer review, or make legal advice claims.
 
 The frontend case workbench runtime panel renders the plan as a compact
-reviewer surface so maintainers can see which runtime deltas need follow-up
-without exposing legal matter content.
+reviewer surface. It now shows risk state badges before the lower-level refresh
+rows so lawyers can see critical task, deadline, evidence, and runtime-event
+signals without exposing legal matter content.
 
 Validation:
 

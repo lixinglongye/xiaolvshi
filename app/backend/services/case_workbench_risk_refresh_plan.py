@@ -53,6 +53,7 @@ class CaseWorkbenchRiskRefreshPlanService:
             if row["blocking_gap_count"] > 0 or row["blocked_count"] > 0 or row["urgent_count"] > 0
         ]
         review_rows = [row for row in section_rows if row["review_required_count"] > 0]
+        risk_state_badges = self._risk_state_badges(section_rows, trigger_rows)
 
         return {
             "id": RISK_REFRESH_PLAN_ID,
@@ -79,6 +80,9 @@ class CaseWorkbenchRiskRefreshPlanService:
                 "deadline_urgent_count": self._sum_summary(section_rows, "urgent_count"),
                 "evidence_graph_blocking_gap_count": self._sum_summary(section_rows, "blocking_gap_count"),
                 "review_required_count": self._sum_summary(section_rows, "review_required_count"),
+                "risk_state_badge_count": len(risk_state_badges),
+                "critical_badge_count": sum(1 for badge in risk_state_badges if badge["severity"] == "critical"),
+                "warning_badge_count": sum(1 for badge in risk_state_badges if badge["severity"] == "warning"),
                 "raw_text_returned": False,
                 "event_payloads_returned": False,
                 "risk_state_written": False,
@@ -93,12 +97,15 @@ class CaseWorkbenchRiskRefreshPlanService:
             "blocking_section_ids": [row["section"] for row in blocking_rows],
             "review_section_ids": [row["section"] for row in review_rows],
             "evidence_graph_plan": self._evidence_graph_plan(section_rows, graph_triggers),
+            "risk_state_badges": risk_state_badges,
+            "risk_state_badge_summary": self._risk_state_badge_summary(risk_state_badges),
             "recommended_actions": self._recommended_actions(refresh_rows, blocking_rows, review_rows, graph_triggers),
             "privacy_boundary": {
                 "metadata_only": True,
                 "returns_section_ids": True,
                 "returns_event_ids": True,
                 "returns_changed_field_names": True,
+                "returns_risk_state_badges": True,
                 "returns_raw_event_payload": False,
                 "returns_raw_fact_text": False,
                 "returns_raw_evidence_text": False,
@@ -274,6 +281,163 @@ class CaseWorkbenchRiskRefreshPlanService:
                 if needs_refresh
                 else "Keep watching runtime events; no evidence graph write is performed here."
             ),
+        }
+
+    def _risk_state_badges(
+        self,
+        section_rows: list[dict[str, Any]],
+        trigger_rows: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        rows = {row["section"]: row for row in section_rows}
+        badges: list[dict[str, Any]] = []
+
+        tasks = rows.get("tasks", {})
+        blocked_tasks = self._safe_int(tasks.get("blocked_count"))
+        review_tasks = self._safe_int(tasks.get("review_required_count"))
+        active_tasks = self._safe_int(tasks.get("active_count"))
+        if blocked_tasks:
+            badges.append(
+                self._badge(
+                    "blocked-task-review",
+                    "Blocked task review",
+                    "critical",
+                    "tasks",
+                    blocked_tasks,
+                    ("blocked-task-state", "lawyer-review-required"),
+                    "Resolve blocked task dependencies before delivery.",
+                )
+            )
+        elif review_tasks or active_tasks:
+            badges.append(
+                self._badge(
+                    "active-lawyer-review",
+                    "Active lawyer review",
+                    "warning",
+                    "tasks",
+                    max(review_tasks, active_tasks),
+                    ("active-task-state",),
+                    "Complete or reassign active lawyer review tasks.",
+                )
+            )
+
+        deadlines = rows.get("deadlines", {})
+        urgent_deadlines = self._safe_int(deadlines.get("urgent_count"))
+        if urgent_deadlines:
+            badges.append(
+                self._badge(
+                    "urgent-deadline-risk",
+                    "Urgent deadline risk",
+                    "critical",
+                    "deadlines",
+                    urgent_deadlines,
+                    ("urgent-deadline-state",),
+                    "Review urgent or overdue deadlines before client delivery.",
+                )
+            )
+
+        evidence_graph = rows.get("evidence_graph", {})
+        blocking_gaps = self._safe_int(evidence_graph.get("blocking_gap_count"))
+        warning_gaps = self._safe_int(evidence_graph.get("summary", {}).get("gap_count")) or self._safe_int(
+            evidence_graph.get("summary", {}).get("warning_gap_count")
+        )
+        if blocking_gaps:
+            badges.append(
+                self._badge(
+                    "blocking-evidence-gap",
+                    "Blocking evidence gap",
+                    "critical",
+                    "evidence_graph",
+                    blocking_gaps,
+                    ("blocking-evidence-gap",),
+                    "Link required evidence before relying on risk conclusions.",
+                )
+            )
+        elif warning_gaps:
+            badges.append(
+                self._badge(
+                    "evidence-gap-review",
+                    "Evidence gap review",
+                    "warning",
+                    "evidence_graph",
+                    warning_gaps,
+                    ("evidence-graph-gap-review",),
+                    "Review evidence graph gaps and decide whether they block delivery.",
+                )
+            )
+
+        risk_events = [row for row in trigger_rows if row["requires_risk_state_refresh"]]
+        if risk_events:
+            badges.append(
+                self._badge(
+                    "runtime-event-risk-refresh",
+                    "Runtime event risk refresh",
+                    "warning",
+                    "runtime_events",
+                    len(risk_events),
+                    ("runtime-event-affects-risk-state",),
+                    "Recompute visible risk badges from recent runtime event deltas.",
+                )
+            )
+
+        if badges:
+            return badges
+        if any(row["status"] != "empty" for row in section_rows):
+            return [
+                self._badge(
+                    "risk-state-watch",
+                    "Risk state watch",
+                    "ready",
+                    "workbench",
+                    0,
+                    ("risk-state-no-blocking-badges",),
+                    "No blocking risk badge is projected from current metadata.",
+                )
+            ]
+        return [
+            self._badge(
+                "risk-state-empty",
+                "Risk state empty",
+                "watch",
+                "workbench",
+                0,
+                ("risk-state-metadata-empty",),
+                "Collect workbench section events before projecting risk badges.",
+            )
+        ]
+
+    def _badge(
+        self,
+        badge_id: str,
+        label: str,
+        severity: str,
+        source: str,
+        count: int,
+        reason_codes: tuple[str, ...],
+        action: str,
+    ) -> dict[str, Any]:
+        return {
+            "id": badge_id,
+            "label": label,
+            "severity": severity,
+            "source": source,
+            "count": self._safe_int(count),
+            "reason_codes": list(reason_codes),
+            "action": action,
+            "writes_risk_state": False,
+            "writes_evidence_graph": False,
+            "raw_content_returned": False,
+        }
+
+    def _risk_state_badge_summary(self, badges: list[dict[str, Any]]) -> dict[str, Any]:
+        return {
+            "badge_count": len(badges),
+            "critical_count": sum(1 for badge in badges if badge["severity"] == "critical"),
+            "warning_count": sum(1 for badge in badges if badge["severity"] == "warning"),
+            "ready_count": sum(1 for badge in badges if badge["severity"] == "ready"),
+            "watch_count": sum(1 for badge in badges if badge["severity"] == "watch"),
+            "writes_risk_state": False,
+            "writes_evidence_graph": False,
+            "raw_content_returned": False,
         }
 
     def _recommended_actions(

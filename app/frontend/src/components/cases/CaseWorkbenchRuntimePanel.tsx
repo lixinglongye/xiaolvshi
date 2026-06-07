@@ -86,6 +86,13 @@ function statusBadgeClass(status?: string) {
   return 'border-amber-200 bg-amber-50 text-amber-700';
 }
 
+function riskBadgeClass(severity?: string) {
+  if (severity === 'critical') return 'border-red-200 bg-red-50 text-red-700';
+  if (severity === 'warning') return 'border-amber-200 bg-amber-50 text-amber-700';
+  if (severity === 'ready') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  return 'border-slate-200 bg-slate-50 text-slate-600';
+}
+
 function buildTaskEvent(params: {
   runtimeCaseId: string;
   workspaceId?: string;
@@ -207,6 +214,7 @@ export function CaseWorkbenchRuntimePanel({
 
   const taskSection = state?.sections?.tasks;
   const riskRefreshPlan = state?.risk_refresh_plan;
+  const riskStateBadges = riskRefreshPlan?.risk_state_badges ?? [];
   const riskRefreshRows = riskRefreshPlan?.section_refresh_rows?.filter((row) => row.refresh_required) ?? [];
   const riskTriggerRows =
     riskRefreshPlan?.event_trigger_rows?.filter(
@@ -343,6 +351,42 @@ export function CaseWorkbenchRuntimePanel({
                   <span>blocking_sections: {riskRefreshPlan.summary.blocking_section_count}</span>
                   <span>risk_events: {riskRefreshPlan.summary.risk_affecting_event_count}</span>
                   <span>graph_events: {riskRefreshPlan.summary.evidence_graph_affecting_event_count}</span>
+                </div>
+                <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Risk state badges
+                    </div>
+                    <div className="flex flex-wrap gap-1 text-[11px] text-slate-500">
+                      <span>critical: {riskRefreshPlan.risk_state_badge_summary?.critical_count ?? 0}</span>
+                      <span>warning: {riskRefreshPlan.risk_state_badge_summary?.warning_count ?? 0}</span>
+                      <span>watch: {riskRefreshPlan.risk_state_badge_summary?.watch_count ?? 0}</span>
+                    </div>
+                  </div>
+                  {riskStateBadges.length ? (
+                    <div className="grid gap-2 md:grid-cols-2">
+                      {riskStateBadges.slice(0, 4).map((badge) => (
+                        <div key={badge.id} className="rounded-md bg-white p-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className={riskBadgeClass(badge.severity)}>
+                              {badge.severity}
+                            </Badge>
+                            <span className="text-sm font-medium text-slate-800">{badge.label}</span>
+                            <span className="text-xs text-slate-500">count: {badge.count}</span>
+                          </div>
+                          <div className="mt-1 text-xs text-slate-600">source: {badge.source}</div>
+                          <div className="mt-1 text-xs text-slate-500">
+                            reasons: {badge.reason_codes.slice(0, 3).join(', ') || 'none'}
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500">
+                            writes_risk_state: {String(badge.writes_risk_state)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState>No risk state badges.</EmptyState>
+                  )}
                 </div>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">

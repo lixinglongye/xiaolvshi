@@ -96,7 +96,7 @@ class ProductFeatureGapRadarService:
                 id="case-workbench",
                 title="Case workbench",
                 module="case_management",
-                current_state="Case primitives, dashboard payload contract, notification policy, persistence plan, validated state repository, runtime binding facade, authenticated runtime routes, typed frontend API helper, route discovery smoke, a case overview runtime state/event panel, metadata-only risk/evidence refresh planning from runtime event deltas, privacy-safe material/evidence/fact/task edit event binding, and task runtime notification policy summaries exist, but collaborative editing, notification dispatch, escalation persistence, and actual live risk-state/evidence graph writes are not complete.",
+                current_state="Case primitives, dashboard payload contract, notification policy, persistence plan, validated state repository, runtime binding facade, authenticated runtime routes, typed frontend API helper, route discovery smoke, a case overview runtime state/event panel, metadata-only risk/evidence refresh planning from runtime event deltas, runtime risk-state badge projection, privacy-safe material/evidence/fact/task edit event binding, and task runtime notification policy summaries exist, but collaborative editing, notification dispatch, escalation persistence, and actual live risk-state/evidence graph writes are not complete.",
                 target_capability="A lawyer-grade case workspace that ties facts, parties, tasks, documents, risks, and review decisions together.",
                 user_segments=("lawyer", "legal_ops"),
                 impact=10,
@@ -144,7 +144,7 @@ class ProductFeatureGapRadarService:
                 next_actions=(
                     "Wire runtime task notification policy summaries into durable escalation review queues.",
                     "Add explicit notification dispatch review and audit flows before sending messages.",
-                    "Connect the risk refresh plan to actual live risk-state badges and evidence graph writes.",
+                    "Connect the risk refresh plan and projected badges to actual live risk-state and evidence graph writes.",
                 ),
             ),
             ProductFeatureGap(

@@ -344,6 +344,12 @@ section counts and event deltas, lists section/event ids that need follow-up,
 and keeps live risk-state writes, evidence graph refreshes, notifications, raw
 event payloads, legal text, and client contact details outside the ledger claim.
 
+`case-workbench-risk-state-badges` adds shipped metadata-only badge projection
+on top of the same runtime payload. The frontend runtime panel can show
+critical, warning, watch, and ready badges for task blockers, urgent deadlines,
+evidence gaps, and runtime-event deltas without writing risk state, refreshing
+evidence graphs, sending notifications, or exposing raw matter content.
+
 `POST` accepts the same compact low-resource fixture payload used by
 `/legal-review-benchmark/local-run-review`, either directly or under
 `low_resource_fixture_review`. The ledger internally builds the local run review
