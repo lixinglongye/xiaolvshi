@@ -158,14 +158,14 @@ model output, gateway responses, credentials, emails, or user identifiers.
 
 `runtime-explicit-model-fit-gate` is required metadata-only evidence for
 explicit runtime model requests. It runs sanitized task/model scenarios through
-the local runtime router to surface unknown gateway pass-through, explicit
-over-budget exceptions, local downgrades, cheap-first alignment, and observed
-gateway fit review states before maintainers rely on a route. It does not call
-providers, gateways, app AI endpoints, models, or the network, write
-configuration, change runtime behavior, change defaults, shift traffic, or
-return request/response bodies, headers, messages, prompts, raw payloads, legal
-text, model output, gateway responses, credentials, emails, or user
-identifiers.
+the local runtime router to surface unknown gateway guards, reviewed gateway
+pass-through exceptions, explicit over-budget exceptions, local downgrades,
+cheap-first alignment, and observed gateway fit review states before
+maintainers rely on a route. It does not call providers, gateways, app AI
+endpoints, models, or the network, write configuration, change defaults, shift
+traffic, or return request/response bodies, headers, messages, prompts, raw
+payloads, legal text, model output, gateway responses, credentials, emails, or
+user identifiers.
 
 `aihub-endpoint-route-coverage-gate` is required metadata-only evidence for
 AIHub endpoint wiring. It inventories text, streaming text, PDF, image, video,

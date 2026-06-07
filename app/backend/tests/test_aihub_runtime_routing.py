@@ -234,6 +234,75 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
 
 
 @pytest.mark.asyncio
+async def test_gentxt_downgrades_unknown_gateway_model_by_default():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.gentxt(
+        GenTxtRequest(
+            messages=[ChatMessage(role="user", content="classify this")],
+            task="classification",
+            model="yibu/gemini-9.9-flash-lite",
+        )
+    )
+
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash-lite"
+    assert response.model == "gemini-2.5-flash-lite"
+    assert response.budget_decision["requested_resolved_model"] == "yibu/gemini-9.9-flash-lite"
+    assert response.budget_decision["requested_model_status"] == "unknown"
+    assert response.budget_decision["explicit_model_fit_status"] == "enforced"
+    assert response.budget_decision["routed_to_recommended_model"] is True
+    assert "unknown_gateway_routed_to_recommended" in response.budget_decision["reason_codes"]
+    assert "gateway_passthrough" not in response.budget_decision["reason_codes"]
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["downgrade_ratio"] == 1.0
+    assert route_snapshot["summary"]["operator_review_request_count"] == 1
+    assert route_snapshot["summary"]["unknown_price_model_count"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["totals"]["downgrade_count"] == 1
+    assert repository["totals"]["unknown_model_count"] == 1
+    assert repository["daily_buckets"][0]["reason_code_counts"]["unknown_gateway_routed_to_recommended"] == 1
+    assert "classify this" not in str(repository)
+
+
+@pytest.mark.asyncio
+async def test_gentxt_allows_unknown_gateway_model_with_explicit_review_flag():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.gentxt(
+        GenTxtRequest(
+            messages=[ChatMessage(role="user", content="classify this")],
+            task="classification",
+            model="yibu/gemini-9.9-flash-lite",
+            allow_over_budget_model=True,
+        )
+    )
+
+    assert fake_client.chat.completions.calls[0]["model"] == "yibu/gemini-9.9-flash-lite"
+    assert response.model == "yibu/gemini-9.9-flash-lite"
+    assert response.budget_decision["explicit_model_fit_status"] == "allowed_review_exception"
+    assert response.budget_decision["routed_to_recommended_model"] is False
+    assert "gateway_passthrough" in response.budget_decision["reason_codes"]
+    assert "explicit_gateway_passthrough_allowed" in response.budget_decision["reason_codes"]
+    assert "within_task_budget" not in response.budget_decision["reason_codes"]
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["downgrade_ratio"] == 0.0
+    assert route_snapshot["summary"]["operator_review_request_count"] == 1
+    assert route_snapshot["summary"]["allowed_over_budget_count"] == 0
+    assert route_snapshot["summary"]["unknown_price_model_count"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    assert repository["totals"]["unknown_model_count"] == 1
+    assert repository["daily_buckets"][0]["reason_code_counts"]["explicit_gateway_passthrough_allowed"] == 1
+
+
+@pytest.mark.asyncio
 async def test_gentxt_persists_sanitized_route_failure_without_prompt_text():
     model_usage_registry.reset()
     model_route_telemetry_registry.reset()

@@ -25,10 +25,10 @@ def test_runtime_explicit_model_fit_gate_surfaces_unknown_and_explicit_exception
     rows = {row["scenario_id"]: row for row in gate["request_rows"]}
 
     assert gate["status"] == "review_required"
-    assert gate["summary"]["scenario_count"] >= 8
+    assert gate["summary"]["scenario_count"] >= 9
     assert gate["summary"]["unknown_gateway_passthrough_count"] == 1
     assert gate["summary"]["explicit_over_budget_allowed_count"] == 1
-    assert gate["summary"]["downgraded_to_recommended_count"] >= 1
+    assert gate["summary"]["downgraded_to_recommended_count"] >= 2
     assert gate["summary"]["model_called"] is False
     assert gate["summary"]["gateway_called"] is False
     assert gate["summary"]["configuration_written"] is False
@@ -36,12 +36,23 @@ def test_runtime_explicit_model_fit_gate_surfaces_unknown_and_explicit_exception
     assert rows["fast-premium-downgrade"]["resolved_model"] == "gemini-2.5-flash-lite"
     assert rows["fast-premium-explicit-allow"]["runtime_fit_status"] == "review_required"
     assert rows["fast-premium-explicit-allow"]["explicit_over_budget_allowed"] is True
-    assert rows["classification-unknown-gateway"]["unknown_gateway_passthrough"] is True
-    assert rows["classification-unknown-gateway"]["runtime_fit_status"] == "review_required"
-    assert "unknown_gateway_runtime_passthrough" in rows["classification-unknown-gateway"]["reason_codes"]
+    assert rows["classification-unknown-gateway"]["unknown_gateway_passthrough"] is False
+    assert rows["classification-unknown-gateway"]["routed_to_recommended_model"] is True
+    assert rows["classification-unknown-gateway"]["runtime_fit_status"] == "enforced"
+    assert rows["classification-unknown-gateway"]["requested_model_status"] == "unknown"
+    assert rows["classification-unknown-gateway"]["explicit_model_requested"] is True
+    assert rows["classification-unknown-gateway"]["explicit_model_fit_status"] == "enforced"
+    assert "unknown_gateway_routed_to_recommended" in rows["classification-unknown-gateway"]["reason_codes"]
+    assert "unknown_gateway_routed_to_recommended" in rows["classification-unknown-gateway"]["explicit_model_fit_reason_codes"]
+    assert "unknown_gateway_runtime_passthrough" not in rows["classification-unknown-gateway"]["reason_codes"]
+    assert rows["classification-unknown-gateway-explicit-allow"]["unknown_gateway_passthrough"] is True
+    assert rows["classification-unknown-gateway-explicit-allow"]["runtime_fit_status"] == "review_required"
+    assert rows["classification-unknown-gateway-explicit-allow"]["explicit_model_fit_status"] == "allowed_review_exception"
+    assert "explicit_gateway_passthrough_allowed" in rows["classification-unknown-gateway-explicit-allow"]["reason_codes"]
+    assert "unknown_gateway_runtime_passthrough" in rows["classification-unknown-gateway-explicit-allow"]["reason_codes"]
     assert "unknown-gateway-passthrough-visible" in gate["warning_check_ids"]
     assert gate["privacy_boundary"]["request_body_included"] is False
-    assert gate["claim_boundary"]["runtime_behavior_changed"] is False
+    assert gate["claim_boundary"]["runtime_behavior_changed"] is True
 
 
 def test_runtime_explicit_model_fit_gate_custom_safe_scenarios_can_be_ready():

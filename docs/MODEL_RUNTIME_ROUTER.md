@@ -29,7 +29,9 @@ defaults to `gemini-2.5-flash-image`.
 - Omitted model + `task=review` -> `gemini-2.5-flash`.
 - Explicit premium model + `task=fast` -> downgraded to `gemini-2.5-flash-lite` unless `allow_over_budget_model=true`.
 - `model=auto` + `task=image` -> `gemini-2.5-flash-image` unless `APP_AI_IMAGE_MODEL` is configured.
-- Gateway-specific model names still pass through, but the route metadata marks pricing as unverified.
+- Unknown gateway-specific explicit model names are downgraded to the task recommendation unless `allow_over_budget_model=true`.
+- Catalog models with `preview`, `review`, or other non-stable lifecycle states are downgraded to stable task recommendations unless `allow_over_budget_model=true`.
+- Explicitly allowed unknown or non-stable models remain review exceptions and are marked with pass-through or lifecycle reason codes.
 - Usage counters record the normalized task, not prompts or document content.
 - PDF and image routes write the same aggregate routing evidence as text routes. Their API responses are unchanged; route metadata stays in model-ops telemetry surfaces.
 - Image defaults are also checked by the price refresh monitor for per-image cost metadata.
@@ -39,7 +41,9 @@ defaults to `gemini-2.5-flash-image`.
 Each runtime route now includes bounded allowlisted `reason_codes` for maintainer review.
 Examples include `task_default_selected`, `over_task_budget`,
 `operator_review_required`, `routed_to_recommended_model`,
-`unknown_catalog_model`, and `gateway_passthrough`.
+`unknown_catalog_model`, `unknown_gateway_routed_to_recommended`,
+`lifecycle_preview`, `non_stable_model_routed_to_recommended`,
+`gateway_passthrough`, and `explicit_gateway_passthrough_allowed`.
 
 These codes are policy labels only. They explain why cheap-first routing chose
 the selected model and are safe for aggregate route telemetry because they do

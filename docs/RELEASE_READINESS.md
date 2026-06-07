@@ -100,6 +100,8 @@ Additional required evidence: route telemetry reason-code hotspots are reviewed
 through the required `route-telemetry-ops-summary` and
 `route-telemetry-triage-queue` gates. They turn sanitized aggregate labels such
 as `over_task_budget`, `operator_review_required`, `unknown_catalog_model`,
+`unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated
 `gateway_passthrough`, and `unknown_reason_code` into daily maintainer actions.
 This is release-review evidence only; it is not production health proof when no
 route events exist and it does not call gateways, write configuration, or store

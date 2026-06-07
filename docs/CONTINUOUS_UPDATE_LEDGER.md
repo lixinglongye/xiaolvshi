@@ -192,13 +192,22 @@ user identifiers.
 Current runtime explicit model fit evidence:
 `modelops-runtime-explicit-model-fit-gate` adds shipped metadata-only runtime
 route evidence for sanitized explicit task/model scenarios. It exposes unknown
-gateway pass-through, explicit over-budget exceptions, local downgrade
-enforcement, cheap-first alignment, observed gateway fit review states, and
-privacy/claim boundaries without live gateway calls, model calls, account
-inventory validation, configuration writes, runtime behavior changes, default
+gateway guards, reviewed gateway pass-through exceptions, explicit over-budget
+exceptions, local downgrade enforcement, cheap-first alignment, observed gateway
+fit review states, and privacy/claim boundaries without live gateway calls,
+model calls, account inventory validation, configuration writes, default
 changes, traffic shifts, API keys, Authorization headers, request bodies,
 response bodies, headers, messages, prompts, raw payloads, legal text, model
 outputs, gateway responses, credentials, emails, or user identifiers.
+
+Current runtime explicit unknown/lifecycle guard evidence:
+`model-runtime-explicit-unknown-lifecycle-guard` changes local routing so
+explicit unknown gateway models and non-stable preview/review lifecycle catalog
+models route to stable task recommendations by default. Reviewed exceptions
+must set `allow_over_budget_model=true` and remain visible through route reason
+codes and route telemetry without live gateway calls, model calls, default
+changes, configuration writes, prompts, raw legal text, API keys, Authorization
+headers, gateway responses, or credentials.
 
 Current AIHub endpoint route coverage evidence:
 `modelops-aihub-endpoint-route-coverage-gate` adds shipped metadata-only
@@ -249,7 +258,9 @@ Current route telemetry reason-code hotspot evidence:
 `route-telemetry-reason-code-hotspots` turns sanitized aggregate
 `reason_code_counts` into ops summary top reason codes, daily hotspot rows, and
 triage actions for `over_task_budget`, `operator_review_required`,
-`unknown_catalog_model`, `gateway_passthrough`, and `unknown_reason_code`.
+`unknown_catalog_model`, `unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated `gateway_passthrough`, and
+`unknown_reason_code`.
 The evidence remains metadata-only and does not call NewAPI/Gemini/gateways,
 write configuration, or store prompts, legal text, model outputs, payloads,
 emails, or credentials.

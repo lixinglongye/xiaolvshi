@@ -9,7 +9,7 @@ Cheap-first routing should not only pick cheaper models; it should also avoid un
 - `fast`, `ocr`, and `classification`: disable or minimize thinking when the Gemini model supports it.
 - `review`: use low reasoning effort for balanced legal review quality and cost.
 - `pdf` and complex review paths: use high reasoning effort because these are already premium-exception tasks.
-- unknown gateway-specific models: omit `reasoning_effort` to preserve pass-through compatibility.
+- reviewed unknown gateway-specific pass-through exceptions: omit `reasoning_effort` to preserve gateway compatibility.
 
 Unsupported requested efforts are coerced to the cheapest supported safe effort. For example, `reasoning_effort=none` is not sent to Gemini Pro models that cannot disable thinking; the policy coerces it to `low`.
 

@@ -24,7 +24,7 @@ HIGH_FREQUENCY_TASKS = {"fast", "ocr", "classification"}
 
 
 class ModelOpsRuntimeExplicitModelFitGateService:
-    """Expose runtime explicit-model fit risks without changing live routing."""
+    """Expose runtime explicit-model fit risks using the current local routing policy."""
 
     def build_gate(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         data = payload if isinstance(payload, dict) else {}
@@ -51,7 +51,7 @@ class ModelOpsRuntimeExplicitModelFitGateService:
                 "type": "metadata-only-runtime-explicit-model-fit-gate",
                 "notes": [
                     "Runs local runtime routing decisions against sanitized explicit-model scenarios without sending provider requests.",
-                    "Highlights unknown gateway pass-through, explicit over-budget allowance, premium review, and cheap-first downgrade behavior before release.",
+                    "Highlights unknown gateway guardrails, explicit gateway pass-through exceptions, explicit over-budget allowance, premium review, and cheap-first downgrade behavior before release.",
                     "Links each task to observed gateway model-fit status when sanitized inventory evidence is available.",
                     "Does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network.",
                 ],
@@ -81,7 +81,7 @@ class ModelOpsRuntimeExplicitModelFitGateService:
             "blocking_check_ids": blocking,
             "warning_check_ids": warnings,
             "runtime_policy": {
-                "unknown_model_policy": "Unknown gateway models may remain explicit pass-through at runtime, but they are review-required and cannot satisfy cheap-first release evidence.",
+                "unknown_model_policy": "Unknown gateway models route to the task recommendation by default; allow_over_budget_model=True is required for explicit reviewed pass-through.",
                 "over_budget_policy": "Known over-budget models route to the task recommendation unless allow_over_budget_model is explicitly true.",
                 "cheap_first_policy": "High-frequency tasks must resolve to stable lowest-cost defaults or a local downgrade before release.",
                 "observed_fit_policy": "Observed gateway fit status is advisory metadata and never validates live account inventory.",
@@ -106,7 +106,7 @@ class ModelOpsRuntimeExplicitModelFitGateService:
                 "live_gateway_execution_claimed": False,
                 "actual_gateway_inventory_claimed": False,
                 "automatic_default_change_claimed": False,
-                "runtime_behavior_changed": False,
+                "runtime_behavior_changed": True,
                 "pricing_accuracy_claimed": False,
                 "model_quality_claimed": False,
             },
@@ -146,6 +146,13 @@ class ModelOpsRuntimeExplicitModelFitGateService:
                 "model": "yibu/gemini-9.9-flash-lite",
                 "endpoint": "gentxt",
             },
+            {
+                "id": "classification-unknown-gateway-explicit-allow",
+                "task": "classification",
+                "model": "yibu/gemini-9.9-flash-lite",
+                "allow_over_budget_model": True,
+                "endpoint": "gentxt",
+            },
             {"id": "review-balanced-default", "task": "review", "model": "auto", "endpoint": "gentxt"},
             {"id": "pdf-premium-exception", "task": "pdf", "model": "auto", "endpoint": "analyzepdf"},
             {"id": "image-explicit-media", "task": "image", "model": "auto", "endpoint": "genimg"},
@@ -182,6 +189,9 @@ class ModelOpsRuntimeExplicitModelFitGateService:
             "task": route.task,
             "requested_model": route.requested_model,
             "requested_resolved_model": route.requested_resolved_model,
+            "requested_canonical_model": route.requested_canonical_model,
+            "requested_cost_tier": route.requested_cost_tier,
+            "requested_model_status": route.requested_model_status,
             "resolved_model": route.resolved_model,
             "canonical_model": canonical,
             "known_catalog_model": route.is_known_model,
@@ -193,6 +203,9 @@ class ModelOpsRuntimeExplicitModelFitGateService:
             "is_over_budget": route.is_over_budget,
             "routed_to_recommended_model": route.routed_to_recommended_model,
             "recommended_model": route.recommended_model,
+            "explicit_model_requested": route.explicit_model_requested,
+            "explicit_model_fit_status": route.explicit_model_fit_status,
+            "explicit_model_fit_reason_codes": list(route.explicit_model_fit_reason_codes),
             "unknown_gateway_passthrough": "gateway_passthrough" in route.reason_codes,
             "explicit_over_budget_allowed": "explicit_over_budget_allowed" in route.reason_codes,
             "cheap_first_aligned": self._cheap_first_aligned(route),
@@ -210,8 +223,10 @@ class ModelOpsRuntimeExplicitModelFitGateService:
         observed_status = str(observed.get("gateway_fit_status") or "")
         if route.task in HIGH_FREQUENCY_TASKS and not self._cheap_first_aligned(route):
             codes.append("high_frequency_not_cheap_first_aligned")
-        if route.allow_over_budget_model and (route.is_over_budget or route.requires_operator_review):
+        if route.allow_over_budget_model and route.is_over_budget:
             codes.append("explicit_over_budget_runtime_exception")
+        elif route.allow_over_budget_model and route.requires_operator_review:
+            codes.append("explicit_runtime_guard_exception")
         if "gateway_passthrough" in route.reason_codes:
             codes.append("unknown_gateway_runtime_passthrough")
         if profile and getattr(profile, "status", "") != "stable":
@@ -230,6 +245,7 @@ class ModelOpsRuntimeExplicitModelFitGateService:
             return "enforced"
         review = {
             "unknown_gateway_runtime_passthrough",
+            "explicit_runtime_guard_exception",
             "explicit_over_budget_runtime_exception",
             "high_frequency_not_cheap_first_aligned",
             "observed_gateway_fit_missing",
@@ -307,7 +323,7 @@ class ModelOpsRuntimeExplicitModelFitGateService:
             ]
         if any(row["unknown_gateway_passthrough"] for row in rows):
             return [
-                "Keep unknown gateway pass-through models explicit-only until catalog price, lifecycle, task fit, and gateway behavior are reviewed.",
+                "Keep reviewed gateway pass-through exceptions explicit-only until catalog price, lifecycle, task fit, and gateway behavior are reviewed.",
                 "Use cheap-first defaults for high-frequency traffic and reserve allow_over_budget_model for reviewed exceptions.",
             ]
         if any(row["explicit_over_budget_allowed"] for row in rows):

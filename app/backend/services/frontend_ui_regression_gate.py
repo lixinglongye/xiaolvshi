@@ -286,7 +286,7 @@ class FrontendUiRegressionGateService:
                     "id": "runtime-explicit-model-fit-gate-regresses",
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the runtime explicit model fit gate panel, request rows, checks, runtime policy, and privacy boundary in the ModelOps source contract.",
-                    "regression_target": "Add browser-level mocked runtime explicit model fit checks for unknown gateway pass-through, explicit over-budget exceptions, local downgrades, observed fit warnings, and forbidden raw request/model fields.",
+                    "regression_target": "Add browser-level mocked runtime explicit model fit checks for unknown gateway guards, reviewed pass-through exceptions, explicit over-budget exceptions, local downgrades, observed fit warnings, and forbidden raw request/model fields.",
                 },
                 {
                     "id": "user-need-gemini-route-coverage-regresses",

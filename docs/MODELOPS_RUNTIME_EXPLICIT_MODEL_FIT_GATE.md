@@ -7,7 +7,8 @@ blocked.
 
 ## Purpose
 
-- Surfaces unknown gateway model pass-through before maintainers rely on it.
+- Surfaces unknown gateway model guards before maintainers rely on a new model id.
+- Separates reviewed gateway pass-through exceptions from default routing.
 - Shows explicit over-budget exceptions separately from default routing.
 - Confirms high-frequency tasks either stay cheap-first or are locally
   downgraded to the task recommendation.
@@ -29,10 +30,14 @@ POST /api/v1/aihub/models/runtime-explicit-model-fit-gate
 
 The gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network. It does not write configuration, change
-runtime behavior, change defaults, shift traffic, validate account inventory,
-or return request bodies, response bodies, headers, messages, prompts, raw
-payloads, legal text, model outputs, gateway responses, credentials, emails, or
-user identifiers.
+defaults, shift traffic, validate account inventory, or return request bodies,
+response bodies, headers, messages, prompts, raw payloads, legal text, model
+outputs, gateway responses, credentials, emails, or user identifiers.
+
+Current runtime behavior guards explicit unknown gateway models and non-stable
+preview/review lifecycle models by routing them to task recommendations by
+default. `allow_over_budget_model=true` is required for reviewed pass-through or
+non-stable exceptions, and those exceptions remain visible in route telemetry.
 
 ## Validation
 

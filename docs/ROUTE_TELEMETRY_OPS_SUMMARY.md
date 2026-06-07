@@ -37,8 +37,10 @@ The summary now rolls repository `reason_code_counts` into both
 also returns `top_reason_codes` for quick inspection and
 `reason_code_hotspots` for operational labels such as `over_task_budget`,
 `operator_review_required`, `routed_to_recommended_model`,
-`unknown_catalog_model`, `unverified_price_tier`, `gateway_passthrough`, and
-`unknown_reason_code`.
+`unknown_catalog_model`, `unverified_price_tier`,
+`unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated
+`gateway_passthrough`, and `unknown_reason_code`.
 
 Known healthy labels such as `known_catalog_model` and `within_task_budget`
 remain visible in top counts but do not become hotspot actions. Unknown labels

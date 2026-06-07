@@ -165,9 +165,10 @@ def test_route_telemetry_repository_estimates_prefixed_catalog_route_costs(tmp_p
     assert result["totals"]["unpriced_model_count"] == 0
 
 
-def test_route_telemetry_repository_keeps_unknown_gateway_route_unpriced(tmp_path):
+def test_route_telemetry_repository_keeps_guarded_unknown_gateway_route_observable(tmp_path):
     service = RouteTelemetryRepositoryService(tmp_path)
     route = resolve_runtime_model("gateway/custom-unknown", task="fast")
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash-lite", 1000, 1000)
     result = service.append_route_decision(
         route=route,
         task_inference=TaskInference(
@@ -184,16 +185,45 @@ def test_route_telemetry_repository_keeps_unknown_gateway_route_unpriced(tmp_pat
     )
 
     assert result["status"] == "pass"
+    assert result["accepted_events"][0]["resolved_model"] == "gemini-2.5-flash-lite"
+    assert result["accepted_events"][0]["is_known_model"] is True
+    assert result["accepted_events"][0]["estimated_cost_usd"] == expected_cost
+    assert result["totals"]["estimated_cost_usd_sum"] == expected_cost
+    assert result["totals"]["unknown_model_count"] == 1
+    assert result["totals"]["unpriced_model_count"] == 0
+    assert result["daily_buckets"][0]["reason_code_counts"]["unknown_gateway_routed_to_recommended"] == 1
+
+
+def test_route_telemetry_repository_keeps_explicit_unknown_gateway_passthrough_unpriced(tmp_path):
+    service = RouteTelemetryRepositoryService(tmp_path)
+    route = resolve_runtime_model("gateway/custom-unknown", task="fast", allow_over_budget_model=True)
+    result = service.append_route_decision(
+        route=route,
+        task_inference=TaskInference(
+            requested_task="fast",
+            task="fast",
+            source="explicit",
+            confidence=1.0,
+            signals=("requested:fast",),
+            reason="test",
+        ),
+        success=True,
+        usage={"prompt_tokens": 1000, "completion_tokens": 1000, "total_tokens": 2000},
+        latency_ms=50,
+    )
+
+    assert result["status"] == "pass"
+    assert result["accepted_events"][0]["resolved_model"] == "gateway/custom-unknown"
     assert result["accepted_events"][0]["is_known_model"] is False
     assert result["accepted_events"][0]["estimated_cost_usd"] == 0.0
     assert result["totals"]["estimated_cost_usd_sum"] == 0.0
     assert result["totals"]["unknown_model_count"] == 1
-    assert result["totals"]["unpriced_model_count"] == 0
+    assert result["daily_buckets"][0]["reason_code_counts"]["explicit_gateway_passthrough_allowed"] == 1
 
 
 def test_route_telemetry_repository_counts_known_catalog_models_without_token_prices(tmp_path):
     service = RouteTelemetryRepositoryService(tmp_path)
-    route = resolve_runtime_model("gemini-3-pro-image", task="image")
+    route = resolve_runtime_model("gemini-3-pro-image", task="image", allow_over_budget_model=True)
     result = service.append_route_decision(
         route=route,
         task_inference=TaskInference(

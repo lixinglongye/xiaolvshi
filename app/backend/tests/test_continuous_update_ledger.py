@@ -1260,7 +1260,8 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "runtime explicit model fit evidence" in runtime_explicit_fit_entry["impact"]
     assert "sanitized task/model scenarios" in runtime_explicit_fit_entry["impact"]
     assert "runtime router" in runtime_explicit_fit_entry["impact"]
-    assert "unknown gateway pass-through" in runtime_explicit_fit_entry["impact"]
+    assert "unknown gateway guards" in runtime_explicit_fit_entry["impact"]
+    assert "reviewed gateway pass-through exceptions" in runtime_explicit_fit_entry["impact"]
     assert "explicit over-budget exceptions" in runtime_explicit_fit_entry["impact"]
     assert "local downgrade enforcement" in runtime_explicit_fit_entry["impact"]
     assert "cheap-first alignment" in runtime_explicit_fit_entry["impact"]
@@ -1269,7 +1270,6 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model calls" in runtime_explicit_fit_entry["impact"]
     assert "account inventory validation" in runtime_explicit_fit_entry["impact"]
     assert "configuration writes" in runtime_explicit_fit_entry["impact"]
-    assert "runtime behavior changes" in runtime_explicit_fit_entry["impact"]
     assert "default changes" in runtime_explicit_fit_entry["impact"]
     assert "traffic shifts" in runtime_explicit_fit_entry["impact"]
     assert "API keys" in runtime_explicit_fit_entry["impact"]
@@ -1301,6 +1301,34 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+
+    explicit_guard_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "model-runtime-explicit-unknown-lifecycle-guard"
+    )
+    assert explicit_guard_entry["category"] == "model_ops"
+    assert explicit_guard_entry["size"] == "medium"
+    assert explicit_guard_entry["status"] == "shipped"
+    assert "explicit unknown gateway models" in explicit_guard_entry["impact"]
+    assert "non-stable preview/review lifecycle catalog models" in explicit_guard_entry["impact"]
+    assert "stable task recommendations by default" in explicit_guard_entry["impact"]
+    assert "allow_over_budget_model=True" in explicit_guard_entry["impact"]
+    assert "reason codes" in explicit_guard_entry["impact"]
+    assert "route telemetry visibility" in explicit_guard_entry["impact"]
+    assert "live gateway calls" in explicit_guard_entry["impact"]
+    assert "default changes" in explicit_guard_entry["impact"]
+    assert "prompts" in explicit_guard_entry["impact"]
+    assert "raw legal text" in explicit_guard_entry["impact"]
+    assert "API keys" in explicit_guard_entry["impact"]
+    assert "credentials" in explicit_guard_entry["impact"]
+    assert "app/backend/services/model_runtime_router.py" in explicit_guard_entry["evidence_paths"]
+    assert "app/backend/services/model_route_telemetry.py" in explicit_guard_entry["evidence_paths"]
+    assert "app/backend/services/route_telemetry_repository.py" in explicit_guard_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_runtime_router.py" in explicit_guard_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in explicit_guard_entry["evidence_paths"]
+    assert "modelops-runtime-explicit-model-fit-gate" in explicit_guard_entry["release_gate_links"]
+    assert "route-telemetry-repository" in explicit_guard_entry["release_gate_links"]
     legal_micro_preflight_entry = next(
         entry
         for entry in ledger["completed_updates"]
@@ -1766,6 +1794,9 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "over_task_budget" in reason_hotspot_entry["impact"]
     assert "operator_review_required" in reason_hotspot_entry["impact"]
     assert "unknown_catalog_model" in reason_hotspot_entry["impact"]
+    assert "unknown_gateway_routed_to_recommended" in reason_hotspot_entry["impact"]
+    assert "non_stable_model_routed_to_recommended" in reason_hotspot_entry["impact"]
+    assert "allow-gated gateway_passthrough" in reason_hotspot_entry["impact"]
     assert "unknown_reason_code" in reason_hotspot_entry["impact"]
     assert "prompts" in reason_hotspot_entry["impact"]
     assert "raw legal text" in reason_hotspot_entry["impact"]

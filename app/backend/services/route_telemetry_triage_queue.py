@@ -368,5 +368,12 @@ def _reason_code_action(code: str) -> str:
         "unknown_catalog_model": "Catalog the model lifecycle, capabilities, and pricing before using these routes in release evidence.",
         "unverified_price_tier": "Refresh official provider and gateway pricing before relying on cost or savings claims.",
         "gateway_passthrough": "Review gateway passthrough routes and bind them to known catalog models where possible.",
+        "unknown_gateway_routed_to_recommended": "Catalog the gateway model before considering it for runtime use; keep cheap-first guarded routing active.",
+        "explicit_gateway_passthrough_allowed": "Confirm the explicit gateway passthrough exception has reviewer approval, pricing notes, and rollback coverage.",
+        "lifecycle_preview": "Keep preview lifecycle models out of defaults until lifecycle and gateway behavior are reviewed.",
+        "lifecycle_review": "Complete review-status model validation before using this route as release evidence.",
+        "lifecycle_non_stable": "Review non-stable model lifecycle status before changing defaults or release claims.",
+        "non_stable_model_routed_to_recommended": "Keep non-stable explicit models guarded by stable task recommendations until reviewed.",
+        "explicit_non_stable_model_allowed": "Confirm explicit non-stable model exceptions are reviewed and do not become defaults.",
         "unknown_reason_code": "Fix reason-code producers or extend the allowlist before treating these telemetry labels as evidence.",
     }.get(code, "Review this route reason-code hotspot before changing model defaults.")

@@ -15,6 +15,13 @@ REASON_CODE_HOTSPOT_LABELS = {
     "unknown_catalog_model": "unknown catalog model pressure",
     "unverified_price_tier": "unverified price-tier pressure",
     "gateway_passthrough": "gateway passthrough pressure",
+    "unknown_gateway_routed_to_recommended": "unknown gateway cheap-first guard pressure",
+    "explicit_gateway_passthrough_allowed": "explicit gateway passthrough exception pressure",
+    "lifecycle_preview": "preview lifecycle route pressure",
+    "lifecycle_review": "review lifecycle route pressure",
+    "lifecycle_non_stable": "non-stable lifecycle route pressure",
+    "non_stable_model_routed_to_recommended": "non-stable model cheap-first guard pressure",
+    "explicit_non_stable_model_allowed": "explicit non-stable model exception pressure",
     "unknown_reason_code": "unknown route reason-code pressure",
 }
 

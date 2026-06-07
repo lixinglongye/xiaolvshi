@@ -693,6 +693,9 @@ export type ModelOpsRuntimeExplicitModelFitRequestRow = {
   task: string;
   requested_model?: string | null;
   requested_resolved_model?: string | null;
+  requested_canonical_model?: string | null;
+  requested_cost_tier?: string | null;
+  requested_model_status: string;
   resolved_model: string;
   canonical_model?: string | null;
   known_catalog_model: boolean;
@@ -704,6 +707,9 @@ export type ModelOpsRuntimeExplicitModelFitRequestRow = {
   is_over_budget: boolean;
   routed_to_recommended_model: boolean;
   recommended_model: string;
+  explicit_model_requested: boolean;
+  explicit_model_fit_status: string;
+  explicit_model_fit_reason_codes: string[];
   unknown_gateway_passthrough: boolean;
   explicit_over_budget_allowed: boolean;
   cheap_first_aligned: boolean;

@@ -214,9 +214,10 @@ outputs, gateway responses, credentials, emails, or user identifiers.
 
 `modelops-runtime-explicit-model-fit-gate` is the shipped metadata-only runtime
 route review gate for explicit model requests. It runs sanitized task/model
-scenarios through the local runtime router, then shows unknown gateway
-pass-through, explicit over-budget exceptions, local downgrades to the
-recommended model, cheap-first alignment, and observed gateway fit review states.
+scenarios through the local runtime router, then shows unknown gateway guards,
+reviewed gateway pass-through exceptions, explicit over-budget exceptions,
+local downgrades to the recommended model, cheap-first alignment, and observed
+gateway fit review states.
 It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
 models, or the network, write configuration, change runtime behavior, change
 defaults, shift traffic, validate live account inventory, or include request or
@@ -346,8 +347,9 @@ watchlist entries before a maintainer treats a Gemini/NewAPI model as a default.
 
 The `/model-ops` page displays this monitor beside cheap-first calibration and
 lifecycle policy. Unknown Gemini-like gateway ids, premium or preview observed
-models, and missing price metadata stay visible as drift signals. The monitor is
-local metadata only: it does not call NewAPI/Gemini and does not return API
+models, missing price metadata, and reviewed pass-through exceptions stay
+visible as drift signals. The monitor is local metadata only: it does not call
+NewAPI/Gemini and does not return API
 keys, prompts, legal text, client data, or raw model output.
 
 The monitor also checks the image default as media pricing metadata. `APP_AI_IMAGE_MODEL`

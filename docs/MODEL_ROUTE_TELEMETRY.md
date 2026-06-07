@@ -45,6 +45,8 @@ outputs, then rebuilds daily task/model aggregate counters.
 Runtime route `reason_codes` are allowlisted policy labels such as
 `task_default_selected`, `over_task_budget`, `operator_review_required`,
 `routed_to_recommended_model`, `unknown_catalog_model`,
+`unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated
 `gateway_passthrough`, and `unknown_reason_code`. They are aggregated as
 `reason_code_counts` only and cannot carry free text, client identifiers,
 prompts, payload fragments, model outputs, or credentials.
@@ -57,8 +59,10 @@ hotspots, and cheap-first downgrade evidence.
 `route_telemetry_triage` converts the operations summary checks into prioritized
 maintainer actions, including bounded reason-code hotspot actions for labels
 such as `over_task_budget`, `operator_review_required`,
-`unknown_catalog_model`, `gateway_passthrough`, and `unknown_reason_code`, so
-cheap-first drift is visible as a queue rather than just aggregate ratios.
+`unknown_catalog_model`, `unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated
+`gateway_passthrough`, and `unknown_reason_code`, so cheap-first drift is
+visible as a queue rather than just aggregate ratios.
 
 `route_telemetry_remediation` maps triage actions to reviewed cheap-first
 repair steps and optional `.env` suggestions without writing configuration or

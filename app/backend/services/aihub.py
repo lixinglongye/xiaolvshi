@@ -795,7 +795,7 @@ User instruction:
             endpoint="analyzepdf",
             signals=(f"mode:{request.mode}",),
         )
-        route = resolve_runtime_model(settings.app_ai_pdf_model, task=task_inference.task)
+        route = resolve_runtime_model(None, task=task_inference.task)
         model = route.resolved_model
         started_at = time.time()
         try:

@@ -1120,7 +1120,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert checks["modelops-runtime-explicit-model-fit-gate"]["blocks_release"] is True
     assert "metadata-only runtime explicit model fit evidence" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "sanitized task/model scenarios" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
-    assert "unknown gateway pass-through review" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "unknown gateway guard review" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "reviewed gateway pass-through exceptions" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "explicit over-budget exceptions" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "local downgrade visibility" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "cheap-first enforcement signals" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
@@ -1132,7 +1133,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "gateways" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "network" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "does not write configuration" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
-    assert "change runtime behavior" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
+    assert "guards unknown and non-stable explicit models by default" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "change defaults" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "shift traffic" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]
     assert "API keys" in checks["modelops-runtime-explicit-model-fit-gate"]["manual_note"]

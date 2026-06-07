@@ -342,6 +342,7 @@ class RouteTelemetryRepositoryService:
             unpriced_model = known and _is_token_unpriced_catalog_model(model)
             cost = _safe_float(event.get("estimated_cost_usd"))
             reason_codes = _safe_string_list(event.get("reason_codes"))
+            unknown_model = (not known) or ("unknown_catalog_model" in reason_codes)
             key = (
                 str(event.get("day") or self._day(event.get("timestamp"))),
                 str(event.get("task") or "unknown"),
@@ -375,7 +376,7 @@ class RouteTelemetryRepositoryService:
             bucket["request_count"] += 1
             bucket["success_count"] += 1 if success else 0
             bucket["failure_count"] += 0 if success else 1
-            bucket["unknown_model_count"] += 0 if known else 1
+            bucket["unknown_model_count"] += 1 if unknown_model else 0
             bucket["unpriced_model_count"] += 1 if unpriced_model else 0
             _increment_reason_counts(bucket["reason_code_counts"], reason_codes)
             bucket["estimated_cost_usd_sum"] = round(bucket["estimated_cost_usd_sum"] + cost, 8)
@@ -386,7 +387,7 @@ class RouteTelemetryRepositoryService:
             totals["downgrade_count"] += 1 if downgraded else 0
             totals["over_budget_count"] += 1 if over_budget else 0
             totals["operator_review_count"] += 1 if operator_review else 0
-            totals["unknown_model_count"] += 0 if known else 1
+            totals["unknown_model_count"] += 1 if unknown_model else 0
             totals["unpriced_model_count"] += 1 if unpriced_model else 0
             _increment_reason_counts(totals["reason_code_counts"], reason_codes)
             totals["estimated_cost_usd_sum"] = round(totals["estimated_cost_usd_sum"] + cost, 8)

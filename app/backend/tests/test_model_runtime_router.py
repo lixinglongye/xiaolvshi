@@ -8,6 +8,8 @@ def test_runtime_router_uses_review_default_when_task_declared():
     assert route.resolved_model == "gemini-2.5-flash"
     assert route.budget_mode == "balanced"
     assert route.routed_to_recommended_model is False
+    assert route.explicit_model_requested is False
+    assert route.explicit_model_fit_status == "default"
 
 
 def test_runtime_router_downgrades_fast_premium_without_explicit_allowance():
@@ -19,6 +21,8 @@ def test_runtime_router_downgrades_fast_premium_without_explicit_allowance():
     assert route.is_over_budget is True
     assert route.requires_operator_review is True
     assert route.routed_to_recommended_model is True
+    assert route.explicit_model_requested is True
+    assert route.explicit_model_fit_status == "enforced"
     assert route.reason_codes == (
         "known_catalog_model",
         "over_task_budget",
@@ -35,22 +39,59 @@ def test_runtime_router_allows_over_budget_model_when_explicit():
     assert route.resolved_model == "gemini-2.5-pro"
     assert route.allow_over_budget_model is True
     assert route.routed_to_recommended_model is False
+    assert route.explicit_model_fit_status == "allowed_review_exception"
     assert "explicit_over_budget_allowed" in route.reason_codes
     assert "operator_review_required" in route.reason_codes
     assert "allowed explicitly" in route.reason
 
 
-def test_runtime_router_passes_through_unknown_gateway_model_with_warning():
+def test_runtime_router_downgrades_unknown_gateway_model_by_default():
     route = resolve_runtime_model("gateway-private-gemini", task="classification")
+
+    assert route.requested_resolved_model == "gateway-private-gemini"
+    assert route.resolved_model == "gemini-2.5-flash-lite"
+    assert route.requested_model_status == "unknown"
+    assert route.is_known_model is True
+    assert route.requires_operator_review is True
+    assert route.routed_to_recommended_model is True
+    assert route.explicit_model_requested is True
+    assert route.explicit_model_fit_status == "enforced"
+    assert "unknown_catalog_model" in route.reason_codes
+    assert "unverified_price_tier" in route.reason_codes
+    assert "unknown_gateway_routed_to_recommended" in route.reason_codes
+    assert "gateway_passthrough" not in route.reason_codes
+    assert "routed to gemini-2.5-flash-lite" in route.reason
+    assert "sk-" not in str(route.to_api())
+
+
+def test_runtime_router_allows_unknown_gateway_model_when_explicitly_reviewed():
+    route = resolve_runtime_model("gateway-private-gemini", task="classification", allow_over_budget_model=True)
 
     assert route.resolved_model == "gateway-private-gemini"
     assert route.is_known_model is False
+    assert route.requires_operator_review is True
     assert route.routed_to_recommended_model is False
-    assert "unknown_catalog_model" in route.reason_codes
-    assert "unverified_price_tier" in route.reason_codes
+    assert route.explicit_model_fit_status == "allowed_review_exception"
     assert "gateway_passthrough" in route.reason_codes
-    assert "unverified" in route.reason
+    assert "explicit_gateway_passthrough_allowed" in route.reason_codes
+    assert "explicit_over_budget_allowed" not in route.reason_codes
+    assert "within_task_budget" not in route.reason_codes
     assert "sk-" not in str(route.to_api())
+
+
+def test_runtime_router_downgrades_preview_lifecycle_model_by_default():
+    route = resolve_runtime_model("gemini-3-flash-preview", task="review")
+
+    assert route.requested_canonical_model == "gemini-3-flash-preview"
+    assert route.requested_model_status == "preview"
+    assert route.requested_cost_tier == "medium"
+    assert route.resolved_model == "gemini-2.5-flash"
+    assert route.requires_operator_review is True
+    assert route.routed_to_recommended_model is True
+    assert route.explicit_model_fit_status == "enforced"
+    assert "lifecycle_preview" in route.reason_codes
+    assert "non_stable_model_routed_to_recommended" in route.reason_codes
+    assert "gateway_passthrough" not in route.reason_codes
 
 
 def test_runtime_router_uses_image_default_for_auto_image_task():
@@ -63,6 +104,8 @@ def test_runtime_router_uses_image_default_for_auto_image_task():
     assert route.cost_tier == "low"
     assert route.is_known_model is True
     assert route.routed_to_recommended_model is False
+    assert route.explicit_model_requested is False
+    assert route.explicit_model_fit_status == "default"
     assert "task_default_selected" in route.reason_codes
     assert "within_task_budget" in route.reason_codes
 
@@ -87,6 +130,8 @@ def test_runtime_router_policy_lists_task_defaults_without_secrets():
     assert policy["status"] == "ready"
     assert "task" in policy["request_fields"]
     assert policy["auto_task_inference"]["default_task"] == "auto"
+    assert any("Unknown gateway-specific explicit model names" in item for item in policy["enforcement"])
+    assert any("Preview or review-lifecycle explicit models" in item for item in policy["enforcement"])
     assert {item["task"] for item in policy["task_defaults"]} >= {
         "fast",
         "classification",

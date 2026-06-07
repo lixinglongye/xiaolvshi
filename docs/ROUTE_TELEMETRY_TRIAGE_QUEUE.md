@@ -40,7 +40,9 @@ rows. It creates `check_id: "reason-code-hotspot"` items with the bounded
 These actions cover cheap-first/Gemini routing labels such as
 `over_task_budget`, `operator_review_required`,
 `routed_to_recommended_model`, `unknown_catalog_model`,
-`unverified_price_tier`, `gateway_passthrough`, and `unknown_reason_code`.
+`unverified_price_tier`, `unknown_gateway_routed_to_recommended`,
+`non_stable_model_routed_to_recommended`, allow-gated
+`gateway_passthrough`, and `unknown_reason_code`.
 They do not include prompts, legal text, payload fragments, model output,
 emails, credentials, or arbitrary free text.
 

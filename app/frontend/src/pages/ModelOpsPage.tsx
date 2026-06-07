@@ -6416,6 +6416,9 @@ function Inner() {
                           <TableCell className="max-w-[240px] text-xs leading-5 text-stone-600">
                             <div className="break-all font-mono text-stone-950">{row.requested_model ?? '-'}</div>
                             <div>requested_resolved_model: {row.requested_resolved_model ?? '-'}</div>
+                            <div>requested_canonical_model: {row.requested_canonical_model ?? '-'}</div>
+                            <div>requested_model_status: {row.requested_model_status}</div>
+                            <div>requested_cost_tier: {row.requested_cost_tier ?? '-'}</div>
                             <div>allow_over_budget_model: {String(row.allow_over_budget_model)}</div>
                           </TableCell>
                           <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
@@ -6435,6 +6438,8 @@ function Inner() {
                             <div>is_over_budget: {String(row.is_over_budget)}</div>
                             <div>routed_to_recommended_model: {String(row.routed_to_recommended_model)}</div>
                             <div>recommended_model: {row.recommended_model}</div>
+                            <div>explicit_model_requested: {String(row.explicit_model_requested)}</div>
+                            <div>explicit_model_fit_status: {row.explicit_model_fit_status}</div>
                           </TableCell>
                           <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
                             <div>observed_fit_status: {row.observed_fit_status}</div>
@@ -6446,6 +6451,9 @@ function Inner() {
                           </TableCell>
                           <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
                             <div>{row.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1 text-stone-500">
+                              explicit_fit_reason_codes: {row.explicit_model_fit_reason_codes.join(', ') || '-'}
+                            </div>
                             <div className="mt-1 text-stone-500">route_reason_codes: {row.route_reason_codes.join(', ') || '-'}</div>
                           </TableCell>
                           <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">

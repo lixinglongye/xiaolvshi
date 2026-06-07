@@ -104,8 +104,9 @@ class ModelRouteTelemetryRegistry:
         downgraded = bool(route.routed_to_recommended_model)
         over_budget = bool(route.is_over_budget)
         operator_review = bool(route.requires_operator_review)
-        allowed_over_budget = bool(route.allow_over_budget_model and (over_budget or operator_review))
-        unknown_price = not bool(route.is_known_model)
+        reason_codes = set(getattr(route, "reason_codes", ()) or ())
+        allowed_over_budget = bool(route.allow_over_budget_model and "explicit_over_budget_allowed" in reason_codes)
+        unknown_price = not bool(route.is_known_model) or "unknown_catalog_model" in reason_codes
 
         with self._lock:
             buckets = [
