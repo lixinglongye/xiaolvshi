@@ -75,6 +75,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ),
     ReadinessComponent("catalog-source-audit", "Gemini catalog source audit", "configuration", "catalog_source_audit"),
     ReadinessComponent(
+        "gemini-official-model-family-roadmap-evidence",
+        "Gemini official model family roadmap evidence",
+        "configuration",
+        "gemini_official_model_family_roadmap_evidence",
+    ),
+    ReadinessComponent(
         "gateway-probe-evaluation",
         "Gateway probe evaluation",
         "manual_evidence",
@@ -511,6 +517,7 @@ class ModelOpsReadinessService:
             "observed_gateway_model_fit_matrix",
             "gemini_newapi_alias_capability_coverage",
             "gemini_cheap_first_route_preflight",
+            "gemini_official_model_family_roadmap_evidence",
             "catalog_candidate_patch_plan",
             "catalog_candidate_impact_replay",
             "price_refresh_monitor",

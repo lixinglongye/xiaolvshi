@@ -39,6 +39,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
+    assert "Gemini official model family roadmap evidence" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini model intake queue" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini coverage gap queue" in rows["/model-ops"]["protected_panels"]
     assert "Model catalog candidate patch plan" in rows["/model-ops"]["protected_panels"]
@@ -131,9 +132,11 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps runtime explicit model fit gate UI evidence is metadata only" in payload_text
     assert "ModelOps AIHub endpoint route coverage gate UI evidence is metadata only" in payload_text
     assert "ModelOps gateway connection profile UI evidence is metadata only" in payload_text
+    assert "ModelOps Gemini official model family roadmap evidence UI evidence is metadata only" in payload_text
     assert "aihub-endpoint-route-coverage-gate-regresses" in payload_text
     assert "observed-gateway-model-fit-matrix-regresses" in payload_text
     assert "runtime-explicit-model-fit-gate-regresses" in payload_text
+    assert "gemini-official-model-family-roadmap-evidence-regresses" in payload_text
     assert "explicit over-budget exceptions" in payload_text
     assert "media/speech catalog review gaps" in payload_text
     assert "review-only model boundaries" in payload_text

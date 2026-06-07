@@ -196,6 +196,12 @@ emails, or user identifiers.
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
+`gemini-official-model-family-roadmap-evidence` is required evidence for
+official Gemini family coverage. It keeps Gemini 2.5 stable Flash-Lite
+cheap-first defaults, Gemini 3 and image review/explicit-route boundaries, and
+Live/audio, embedding, and TTS gap queues visible before maintainers claim
+support for additional Gemini families.
+
 `route-telemetry-repository` and downstream route telemetry summaries estimate
 `estimated_cost_usd` for known Gemini/NewAPI catalog model routes from local
 catalog token pricing. Unknown gateway model ids remain at `0` estimated cost
@@ -244,6 +250,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_gateway_probe_evaluation.py`
 - `app/backend/services/model_lifecycle_policy.py`
 - `app/backend/services/model_catalog_source_audit.py`
+- `app/backend/services/model_ops_gemini_official_model_family_roadmap.py`
 - `app/backend/services/model_request_cost_bounds.py`
 - `app/backend/services/model_cache_policy.py`
 - `app/backend/services/route_telemetry_repository.py`
@@ -281,6 +288,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_gateway_probe_evaluation.py`
 - `app/backend/tests/test_model_lifecycle_policy.py`
 - `app/backend/tests/test_model_catalog_source_audit.py`
+- `app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py`
 - `app/backend/tests/test_model_request_cost_bounds.py`
 - `app/backend/tests/test_model_cache_policy.py`
 - `app/backend/tests/test_route_telemetry_repository.py`
@@ -292,5 +300,6 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`
 - `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
+- `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `docs/MODELOPS_LEGAL_MICRO_BENCHMARK_PREFLIGHT.md`

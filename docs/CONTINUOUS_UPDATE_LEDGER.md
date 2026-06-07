@@ -1,5 +1,15 @@
 # Continuous Update Ledger
 
+Current ModelOps official Gemini roadmap slice:
+`modelops-gemini-official-model-family-roadmap-evidence` exposes
+metadata-only official Gemini family coverage evidence in the AIHub ModelOps
+payload and UI. It keeps stable Gemini 2.5 Flash-Lite cheap-first text defaults
+separate from Gemini 3 review rows, explicit image rows, and Live/audio,
+embedding, and TTS roadmap gaps. It does not call providers, gateways, app AI
+endpoints, models, or the network; write configuration; change defaults; or
+return request bodies, response bodies, headers, prompts, raw payloads, legal
+text, model outputs, emails, credentials, or user identifiers.
+
 Current legal document fixture UI slice:
 `legal-document-benchmark-fixture-ui` exposes the local synthetic legal-document
 fixture suite and empty-prediction evaluator on the maintenance evidence page.
@@ -690,6 +700,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
+- `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
 - `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
@@ -738,6 +749,8 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/services/model_ops_gemini_official_model_family_roadmap.py`
+- `app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py`
 - `app/backend/services/route_telemetry_repository.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`

@@ -41,6 +41,7 @@ import {
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalMicroBenchmarkPreflight,
+  getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -67,6 +68,7 @@ import {
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalMicroBenchmarkPreflight,
+  type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsObservedGeminiModelIntakeQueue,
@@ -486,6 +488,10 @@ function Inner() {
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
+  const [geminiOfficialModelFamilyRoadmapEvidence, setGeminiOfficialModelFamilyRoadmapEvidence] =
+    useState<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence | null>(null);
+  const [geminiOfficialModelFamilyRoadmapEvidenceError, setGeminiOfficialModelFamilyRoadmapEvidenceError] =
+    useState('');
   const [geminiCheapFirstRoutePreflight, setGeminiCheapFirstRoutePreflight] =
     useState<ModelOpsGeminiCheapFirstRoutePreflight | null>(null);
   const [geminiCheapFirstRoutePreflightPayloadText, setGeminiCheapFirstRoutePreflightPayloadText] = useState(
@@ -566,6 +572,7 @@ function Inner() {
     setObservedGatewayModelFitMatrix(payload.observed_gateway_model_fit_matrix ?? null);
     setRuntimeExplicitModelFitGate(payload.runtime_explicit_model_fit_gate ?? null);
     setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
+    setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
   };
 
@@ -588,6 +595,8 @@ function Inner() {
     setGeminiAliasCapabilityCoverage(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
+    setGeminiOfficialModelFamilyRoadmapEvidenceError('');
+    setGeminiOfficialModelFamilyRoadmapEvidence(null);
     setGeminiCheapFirstRoutePreflightError('');
     setGeminiCheapFirstRoutePreflight(null);
     setAihubEndpointRouteCoverageGateError('');
@@ -639,6 +648,7 @@ function Inner() {
         runtimeExplicitModelFitGateResult,
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
+        geminiOfficialModelFamilyRoadmapEvidenceResult,
         geminiCheapFirstRoutePreflightResult,
         aihubEndpointRouteCoverageGateResult,
         escalationBudgetResult,
@@ -654,6 +664,10 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.runtime_explicit_model_fit_gate, getModelOpsRuntimeExplicitModelFitGate),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_alias_capability_coverage, getGeminiNewApiAliasCapabilityCoverage),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_coverage_gate, getGeminiCheapFirstCoverageGate),
+        aggregateOrRequest(
+          aggregatePayload?.gemini_official_model_family_roadmap_evidence,
+          getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
+        ),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_route_preflight, getGeminiCheapFirstRoutePreflight),
         aggregateOrRequest(aggregatePayload?.aihub_endpoint_route_coverage_gate, getModelOpsAIHubEndpointRouteCoverageGate),
         aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
@@ -722,6 +736,19 @@ function Inner() {
             setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
           }
         }
+        if (geminiOfficialModelFamilyRoadmapEvidenceResult.status === 'fulfilled') {
+          setGeminiOfficialModelFamilyRoadmapEvidence(geminiOfficialModelFamilyRoadmapEvidenceResult.value);
+        } else {
+          console.error(geminiOfficialModelFamilyRoadmapEvidenceResult.reason);
+          setGeminiOfficialModelFamilyRoadmapEvidence(
+            modelOpsResult.value.gemini_official_model_family_roadmap_evidence ?? null,
+          );
+          if (!modelOpsResult.value.gemini_official_model_family_roadmap_evidence) {
+            setGeminiOfficialModelFamilyRoadmapEvidenceError(
+              'Gemini official model family roadmap evidence failed to load.',
+            );
+          }
+        }
         if (geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
           setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
         } else {
@@ -753,6 +780,12 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
         setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (
+        modelOpsResult.status === 'rejected'
+        && geminiOfficialModelFamilyRoadmapEvidenceResult.status === 'fulfilled'
+      ) {
+        setGeminiOfficialModelFamilyRoadmapEvidence(geminiOfficialModelFamilyRoadmapEvidenceResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
         setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
@@ -888,6 +921,15 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
         setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
+      }
+      if (
+        modelOpsResult.status === 'rejected'
+        && geminiOfficialModelFamilyRoadmapEvidenceResult.status === 'rejected'
+      ) {
+        console.error(geminiOfficialModelFamilyRoadmapEvidenceResult.reason);
+        setGeminiOfficialModelFamilyRoadmapEvidenceError(
+          'Gemini official model family roadmap evidence failed to load.',
+        );
       }
     } catch (err) {
       console.error(err);
@@ -1489,6 +1531,15 @@ function Inner() {
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
   const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
   const catalogSourceReviewRows = data?.catalog_source_audit?.source_review_records ?? [];
+  const activeGeminiOfficialModelFamilyRoadmapEvidence =
+    geminiOfficialModelFamilyRoadmapEvidence ?? data?.gemini_official_model_family_roadmap_evidence ?? null;
+  const geminiOfficialModelFamilyRows = activeGeminiOfficialModelFamilyRoadmapEvidence?.family_rows ?? [];
+  const geminiOfficialRoadmapItems = activeGeminiOfficialModelFamilyRoadmapEvidence?.roadmap_items ?? [];
+  const geminiOfficialCheapFirstEvidenceRows =
+    activeGeminiOfficialModelFamilyRoadmapEvidence?.cheap_first_evidence_rows ?? [];
+  const geminiOfficialRoadmapPrivacyEntries = boundaryDisplayEntries(
+    activeGeminiOfficialModelFamilyRoadmapEvidence?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email)/i.test(key));
   const catalogCandidatePatchPlan = data?.catalog_candidate_patch_plan ?? null;
   const catalogCandidatePatchRows = catalogCandidatePatchPlan?.candidate_patch_rows ?? [];
   const catalogCandidatePatchChecks = catalogCandidatePatchPlan?.checks ?? [];
@@ -7633,6 +7684,244 @@ function Inner() {
                 </TableBody>
               </Table>
             </div>
+          </section>
+        )}
+
+        {(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">
+                  Gemini official model family roadmap evidence
+                </h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiOfficialModelFamilyRoadmapEvidence
+                    ? `${activeGeminiOfficialModelFamilyRoadmapEvidence.summary.official_family_count} official families / ${activeGeminiOfficialModelFamilyRoadmapEvidence.summary.covered_family_count} covered / ${activeGeminiOfficialModelFamilyRoadmapEvidence.summary.gap_family_count} roadmap gaps`
+                    : 'metadata-only Gemini official family roadmap'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiOfficialModelFamilyRoadmapEvidence?.id
+                    ?? 'modelops-gemini-official-model-family-roadmap-evidence'}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass(activeGeminiOfficialModelFamilyRoadmapEvidence?.status)}
+              >
+                {activeGeminiOfficialModelFamilyRoadmapEvidence?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiOfficialModelFamilyRoadmapEvidenceError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiOfficialModelFamilyRoadmapEvidenceError}
+              </div>
+            )}
+
+            {activeGeminiOfficialModelFamilyRoadmapEvidence && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.official_family_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">official families</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.covered_family_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">covered</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.review_family_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review families</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.gap_family_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">roadmap gaps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.cheap_first_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.summary.explicit_only_family_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">explicit-only</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiOfficialModelFamilyRoadmapEvidence.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway called</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Official family</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Cheap-first</TableHead>
+                        <TableHead>Policy</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiOfficialModelFamilyRows.map((row) => (
+                        <TableRow key={row.family_id}>
+                          <TableCell className="max-w-[300px]">
+                            <div className="font-semibold text-stone-950">{row.display_name}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.family_id}</div>
+                            <div className="mt-1 text-xs leading-5 text-stone-600">{row.official_scope}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={statusClass(row.coverage_status === 'covered' ? 'pass' : 'warn')}
+                            >
+                              {row.coverage_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-500">
+                              catalog rows: {row.catalog_model_count}
+                            </div>
+                            <div className="mt-1 max-w-[260px] break-all font-mono text-[11px] text-stone-500">
+                              {row.catalog_models.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.preferred_cheap_first_model ?? '-'}</div>
+                            <div>{row.preferred_model_catalog_status} / {row.preferred_model_cost_tier}</div>
+                            <div>allowed: {String(row.high_frequency_default_allowed)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div>{row.route_policy}</div>
+                            <div className="mt-1 text-stone-500">{row.default_claim}</div>
+                            <div className="mt-1">
+                              missing: {row.missing_capabilities.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.recommended_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 xl:grid-cols-[1.2fr_1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <div className="border-b border-stone-950/10 px-4 py-3">
+                      <h3 className="text-sm font-black uppercase text-stone-500">Roadmap queue</h3>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Family</TableHead>
+                          <TableHead>Priority</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Next action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiOfficialRoadmapItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{item.family_id}</div>
+                              <div className="mt-1 text-xs text-stone-500">{item.action_type}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={priorityClass[item.priority] ?? priorityClass.P3}>
+                                {item.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass(item.status === 'covered' ? 'pass' : 'warn')}
+                              >
+                                {item.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                              {item.next_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Cheap-first evidence</h3>
+                    <div className="space-y-2">
+                      {geminiOfficialCheapFirstEvidenceRows.map((row) => (
+                        <div key={row.task} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-semibold text-stone-950">{row.task}</div>
+                            <Badge
+                              variant="outline"
+                              className={row.cheap_first_allowed ? statusClass('pass') : statusClass('warn')}
+                            >
+                              {row.cheap_first_allowed ? 'cheap-first' : 'review'}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{row.canonical_model ?? '-'}</div>
+                          <div className="mt-1 text-xs text-stone-600">{row.recommended_action}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Sources and boundary</h3>
+                    <div className="space-y-2">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.official_source_rows.map((source) => (
+                        <a
+                          key={source.id}
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600 hover:border-stone-950/30"
+                        >
+                          <div className="font-semibold text-stone-950">{source.title}</div>
+                          <div className="break-all font-mono text-[11px] text-stone-500">{source.url}</div>
+                          <div className="mt-1">{source.tracked_signal}</div>
+                        </a>
+                      ))}
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      {geminiOfficialRoadmapPrivacyEntries.slice(0, 8).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeGeminiOfficialModelFamilyRoadmapEvidence.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
         )}
 

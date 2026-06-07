@@ -383,6 +383,15 @@ defaults. This remains metadata-only: it does not call Google, Gemini, NewAPI,
 OpenAI, gateways, or the network, and it does not include prompts, payloads,
 legal text, model outputs, credentials, or real environment values.
 
+`modelops-gemini-official-model-family-roadmap-evidence` maps official Gemini
+family coverage into local catalog rows, roadmap gaps, and cheap-first evidence.
+Gemini 2.5 text/vision remains the covered stable Flash-Lite default path,
+Gemini 3 and image families remain review or explicit-route evidence, and
+Live/audio, embedding, and TTS stay gap-queued until catalog, pricing, request
+policy, and route boundaries exist. This also remains metadata-only: no
+provider, gateway, app AI, model, or network calls are made, and no defaults are
+changed automatically.
+
 ## PDF and Image Route Evidence
 
 `POST /api/v1/aihub/analyzepdf` and `POST /api/v1/aihub/genimg` now use the same

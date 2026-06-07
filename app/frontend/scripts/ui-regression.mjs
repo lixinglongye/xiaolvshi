@@ -92,6 +92,12 @@ const catalogCandidatePatchPlanPanel = sourceSection(
   'Model catalog candidate impact replay',
   'model-ops catalog candidate patch plan section',
 );
+const geminiOfficialModelFamilyRoadmapEvidencePanel = sourceSection(
+  modelOpsPage,
+  '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+  '{catalogCandidatePatchPlan && (',
+  'model-ops Gemini official model family roadmap evidence section',
+);
 const catalogCandidateImpactReplayPanel = sourceSection(
   modelOpsPage,
   'Model catalog candidate impact replay',
@@ -1277,6 +1283,40 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'default_promotion_source_block_count', 'model-ops Gemini source default-promotion block summary'),
   () => assertIncludes(modelOpsPage, 'catalogSourceRows', 'model-ops Gemini catalog source row binding'),
   () => assertIncludes(modelOpsPage, 'catalog_source_audit', 'model-ops Gemini catalog source audit response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official model family roadmap evidence type'),
+  () => assertIncludes(modelOpsApi, 'gemini_official_model_family_roadmap_evidence', 'model-ops Gemini official model family roadmap evidence response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official model family roadmap evidence API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-official-model-family-roadmap-evidence', 'model-ops Gemini official model family roadmap evidence endpoint'),
+  () => assertIncludes(modelOpsApi, 'roadmap_items', 'model-ops Gemini official roadmap items payload guard'),
+  () => assertIncludes(modelOpsApi, 'cheap_first_evidence_rows', 'model-ops Gemini official cheap-first rows payload guard'),
+  () => assertIncludes(modelOpsPage, 'Gemini official model family roadmap evidence', 'model-ops Gemini official roadmap evidence panel'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official roadmap evidence state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialModelFamilyRows', 'model-ops Gemini official family row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialRoadmapItems', 'model-ops Gemini official roadmap item binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialCheapFirstEvidenceRows', 'model-ops Gemini official cheap-first evidence row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialRoadmapPrivacyEntries', 'model-ops Gemini official roadmap privacy binding'),
+  () => assertIncludes(modelOpsPage, 'Roadmap queue', 'model-ops Gemini official roadmap queue panel'),
+  () => assertIncludes(modelOpsPage, 'Cheap-first evidence', 'model-ops Gemini official cheap-first evidence panel'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '{data?.catalog_source_audit && (',
+      '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+      'model-ops Gemini official roadmap evidence follows catalog source audit',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+      '{catalogCandidatePatchPlan && (',
+      'model-ops catalog candidate patch plan follows Gemini official roadmap evidence',
+    ),
+  () =>
+    assertNotMatches(
+      geminiOfficialModelFamilyRoadmapEvidencePanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|email)\b/i,
+      'model-ops Gemini official roadmap evidence no secrets or raw request/prompt/output fields',
+    ),
   () => assertIncludes(modelOpsPage, 'Prefix compatibility', 'model-ops Gemini prefix compatibility panel'),
   () => assertIncludes(modelOpsPage, 'Observed model review', 'model-ops Gemini observed model review form'),
   () => assertIncludes(modelOpsPage, 'models_response', 'model-ops Gemini model-list response template'),

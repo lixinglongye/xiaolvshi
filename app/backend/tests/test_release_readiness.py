@@ -282,6 +282,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
             "gemini-newapi-selector-replay",
             "gemini-newapi-cheap-first-calibration",
             "model-catalog-source-audit",
+            "modelops-gemini-official-model-family-roadmap-evidence",
             "model-catalog-candidate-patch-plan",
             "model-catalog-candidate-impact-replay",
         }
@@ -295,6 +296,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
             "gemini-newapi-selector-replay": "not_run",
             "gemini-newapi-cheap-first-calibration": "not_run",
             "model-catalog-source-audit": "not_run",
+            "modelops-gemini-official-model-family-roadmap-evidence": "not_run",
             "model-catalog-candidate-patch-plan": "not_run",
             "model-catalog-candidate-impact-replay": "not_run",
         }
@@ -309,6 +311,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
         "gemini-newapi-cheap-first-calibration": "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
         "model-catalog-source-audit": "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
+        "modelops-gemini-official-model-family-roadmap-evidence": "python -m pytest tests/test_model_ops_gemini_official_model_family_roadmap.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "model-catalog-candidate-patch-plan": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py -q",
         "model-catalog-candidate-impact-replay": "python -m pytest tests/test_model_catalog_candidate_impact_replay.py tests/test_model_default_candidate_selector.py tests/test_model_capability_matrix.py tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_readiness.py -q",
     }
@@ -319,6 +322,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert checks["gemini-newapi-selector-replay"]["required"] is True
     assert checks["gemini-newapi-cheap-first-calibration"]["required"] is True
     assert checks["model-catalog-source-audit"]["required"] is True
+    assert checks["modelops-gemini-official-model-family-roadmap-evidence"]["required"] is True
     assert checks["model-catalog-candidate-patch-plan"]["required"] is True
     assert checks["model-catalog-candidate-impact-replay"]["required"] is True
     assert checks["gemini-newapi-model-selector"]["blocks_release"] is True
@@ -328,6 +332,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert checks["gemini-newapi-selector-replay"]["blocks_release"] is True
     assert checks["gemini-newapi-cheap-first-calibration"]["blocks_release"] is True
     assert checks["model-catalog-source-audit"]["blocks_release"] is True
+    assert checks["modelops-gemini-official-model-family-roadmap-evidence"]["blocks_release"] is True
     assert checks["model-catalog-candidate-patch-plan"]["blocks_release"] is True
     assert checks["model-catalog-candidate-impact-replay"]["blocks_release"] is True
     assert "does not call NewAPI" in checks["gemini-newapi-model-selector"]["manual_note"]
@@ -351,6 +356,35 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "does not call Google" in checks["model-catalog-source-audit"]["manual_note"]
     assert "source review freshness" in checks["model-catalog-source-audit"]["manual_note"]
     assert "default-promotion source blocks" in checks["model-catalog-source-audit"]["manual_note"]
+    assert "official Gemini model family roadmap evidence" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["manual_note"]
+    assert "cheap-first Flash-Lite defaults" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["manual_note"]
+    assert "live/audio/embedding/TTS gap queues" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["manual_note"]
+    assert "does not call NewAPI" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["manual_note"]
+    assert "request bodies" in checks["modelops-gemini-official-model-family-roadmap-evidence"]["manual_note"]
+    assert "credentials" in checks["modelops-gemini-official-model-family-roadmap-evidence"]["manual_note"]
+    assert "app/backend/services/model_ops_gemini_official_model_family_roadmap.py" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
     assert "catalog candidate patch plan" in checks["model-catalog-candidate-patch-plan"]["manual_note"]
     assert "does not edit model_catalog.py" in checks["model-catalog-candidate-patch-plan"]["manual_note"]
     assert "virtual catalog impact replay" in checks["model-catalog-candidate-impact-replay"]["manual_note"]

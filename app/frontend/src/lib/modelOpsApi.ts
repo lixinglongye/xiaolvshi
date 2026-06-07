@@ -1222,6 +1222,98 @@ export type ModelCatalogSourceAudit = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiOfficialModelFamilyRoadmapFamilyRow = {
+  family_id: string;
+  display_name: string;
+  official_scope: string;
+  required_capabilities: string[];
+  coverage_status: string;
+  catalog_model_count: number;
+  catalog_models: string[];
+  missing_capabilities: string[];
+  preferred_cheap_first_model?: string | null;
+  preferred_model_catalog_status: string;
+  preferred_model_cost_tier: string;
+  fallback_model?: string | null;
+  fallback_model_catalog_status: string;
+  premium_exception_model?: string | null;
+  premium_model_catalog_status: string;
+  route_policy: string;
+  default_claim: string;
+  high_frequency_default_allowed: boolean;
+  recommended_action: string;
+};
+
+export type ModelOpsGeminiOfficialModelFamilyRoadmapItem = {
+  id: string;
+  family_id: string;
+  priority: string;
+  action_type: string;
+  owner: string;
+  status: string;
+  route_policy: string;
+  next_action: string;
+  claim_boundary: string;
+};
+
+export type ModelOpsGeminiOfficialCheapFirstRoadmapEvidenceRow = {
+  task: string;
+  default_model: string;
+  canonical_model?: string | null;
+  catalog_status: string;
+  cost_tier: string;
+  cheap_first_allowed: boolean;
+  review_required: boolean;
+  recommended_action: string;
+};
+
+export type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence = {
+  id: 'modelops-gemini-official-model-family-roadmap-evidence' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    official_family_count: number;
+    covered_family_count: number;
+    review_family_count: number;
+    gap_family_count: number;
+    catalog_model_count: number;
+    cheap_first_candidate_count: number;
+    explicit_only_family_count: number;
+    roadmap_item_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: Array<{
+    id: string;
+    title: string;
+    url: string;
+    tracked_signal: string;
+  }>;
+  family_rows: ModelOpsGeminiOfficialModelFamilyRoadmapFamilyRow[];
+  roadmap_items: ModelOpsGeminiOfficialModelFamilyRoadmapItem[];
+  cheap_first_evidence_rows: ModelOpsGeminiOfficialCheapFirstRoadmapEvidenceRow[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelCatalogCandidatePatchRow = {
   id: string;
   row_type: string;
@@ -3916,6 +4008,7 @@ export type ModelOpsResponse = {
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
+  gemini_official_model_family_roadmap_evidence?: ModelOpsGeminiOfficialModelFamilyRoadmapEvidence;
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
@@ -4000,6 +4093,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     route_task_rows?: unknown;
     variant_preflight_rows?: unknown;
     official_source_rows?: unknown;
+    roadmap_items?: unknown;
+    cheap_first_evidence_rows?: unknown;
     endpoint_rows?: unknown;
     coverage_matrix?: unknown;
     route_reviews?: unknown;
@@ -4042,6 +4137,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
+      || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.roadmap_items) && Array.isArray(payload.cheap_first_evidence_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
@@ -4305,6 +4401,13 @@ export async function getModelDefaultTemplateAudit(): Promise<ModelDefaultTempla
 export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAudit> {
   return invokeModelOpsApi<ModelCatalogSourceAudit>({
     url: '/api/v1/aihub/models/catalog-source-audit',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiOfficialModelFamilyRoadmapEvidence(): Promise<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence> {
+  return invokeModelOpsApi<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence>({
+    url: '/api/v1/aihub/models/gemini-official-model-family-roadmap-evidence',
     method: 'GET',
   });
 }

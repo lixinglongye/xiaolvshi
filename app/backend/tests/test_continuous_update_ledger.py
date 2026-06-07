@@ -305,6 +305,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-cost-impact" in completed_ids
     assert "modelops-observed-gemini-model-intake-queue" in completed_ids
     assert "modelops-observed-gemini-coverage-gap-queue" in completed_ids
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -579,6 +580,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-cost-impact" not in queue_ids
     assert "modelops-observed-gemini-model-intake-queue" not in queue_ids
     assert "modelops-observed-gemini-coverage-gap-queue" not in queue_ids
+    assert "modelops-gemini-official-model-family-roadmap-evidence" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "runtime-route-reason-codes" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
@@ -719,6 +721,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py "
         "tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py "
         "tests/test_model_catalog_source_audit.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_gemini_official_model_family_roadmap.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
@@ -2045,6 +2054,47 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-alias-capability-coverage" in coverage_gap_entry["release_gate_links"]
     assert "model-ops-readiness" in coverage_gap_entry["release_gate_links"]
     assert "frontend-ui-regression" in coverage_gap_entry["release_gate_links"]
+
+    gemini_official_roadmap_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-gemini-official-model-family-roadmap-evidence"
+    )
+    assert gemini_official_roadmap_entry["category"] == "model_ops"
+    assert gemini_official_roadmap_entry["size"] == "medium"
+    assert gemini_official_roadmap_entry["status"] == "shipped"
+    assert "metadata-only official Gemini family roadmap evidence" in gemini_official_roadmap_entry["impact"]
+    assert "cheap-first Flash-Lite defaults" in gemini_official_roadmap_entry["impact"]
+    assert "review-only Gemini 3/image rows" in gemini_official_roadmap_entry["impact"]
+    assert "live/audio/embedding/TTS gap queues" in gemini_official_roadmap_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in gemini_official_roadmap_entry["impact"]
+    assert "configuration writes" in gemini_official_roadmap_entry["impact"]
+    assert "default changes" in gemini_official_roadmap_entry["impact"]
+    assert "request bodies" in gemini_official_roadmap_entry["impact"]
+    assert "response bodies" in gemini_official_roadmap_entry["impact"]
+    assert "headers" in gemini_official_roadmap_entry["impact"]
+    assert "model outputs" in gemini_official_roadmap_entry["impact"]
+    assert "credentials" in gemini_official_roadmap_entry["impact"]
+    assert "app/backend/services/model_ops_gemini_official_model_family_roadmap.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in gemini_official_roadmap_entry["evidence_paths"]
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "model-catalog-source-audit" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "modelops-observed-gemini-coverage-gap-queue" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "model-ops-readiness" in gemini_official_roadmap_entry["release_gate_links"]
+    assert "frontend-ui-regression" in gemini_official_roadmap_entry["release_gate_links"]
 
     route_telemetry_catalog_cost_entry = next(
         entry

@@ -45,6 +45,16 @@ unknown observed Gemini-like model ids. It does not edit `model_catalog.py`,
 write configuration, call gateways or the network, shift traffic, or store raw
 payloads, prompts, legal text, model outputs, credentials, or emails.
 
+Additional required evidence:
+`modelops-gemini-official-model-family-roadmap-evidence` records
+metadata-only official Gemini family roadmap coverage. It maps official source
+anchors to local catalog rows, cheap-first Flash-Lite defaults, review-only
+Gemini 3/image boundaries, and Live/audio/embedding/TTS gap queues. It does not
+call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the network,
+write configuration, change defaults, shift traffic, or store request bodies,
+response bodies, headers, prompts, raw payloads, legal text, model outputs,
+emails, credentials, or user identifiers.
+
 Additional optional evidence: `modelops-observed-gemini-coverage-gap-queue`
 records metadata-only Gemini family and high-frequency cheap-first task coverage
 gaps from sanitized observed model ids. It joins the observed intake queue with
@@ -406,6 +416,9 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
+- `app/backend/services/model_ops_gemini_official_model_family_roadmap.py`
+- `app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py`
+- `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`

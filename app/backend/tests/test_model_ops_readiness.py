@@ -184,6 +184,28 @@ def test_model_ops_readiness_warns_on_gemini_route_preflight_review():
     assert result["warning_drilldown"][0]["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_gemini_official_family_roadmap_review():
+    signals = _signals("pass")
+    signals["gemini_official_model_family_roadmap_evidence"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 2, "fail_count": 0, "gap_family_count": 3},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["official-family-gap-queue", "preview-and-review-family-boundary"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gemini-official-model-family-roadmap-evidence" in result["warning_check_ids"]
+    assert "gemini-official-model-family-roadmap-evidence" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "gemini_official_model_family_roadmap_evidence"
+    assert drilldown["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in drilldown["next_action"].lower()
+    assert drilldown["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
@@ -339,6 +361,9 @@ def test_model_ops_route_includes_readiness():
     assert "catalog_source_audit" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_official_model_family_roadmap_evidence" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert "catalog_candidate_impact_replay" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
@@ -410,6 +435,8 @@ def test_model_ops_route_includes_readiness():
     assert payload["gentxt_routing_guard"]["summary"]["gateway_called"] is False
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
+    assert payload["gemini_official_model_family_roadmap_evidence"]["summary"]["official_family_count"] == 6
+    assert payload["gemini_official_model_family_roadmap_evidence"]["summary"]["gateway_called"] is False
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6

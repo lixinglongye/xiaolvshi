@@ -39,6 +39,7 @@ The `/model-ops` page carries evidence for:
 - ModelOps load guard
 - Performance observations
 - Gemini catalog source audit
+- Gemini official model family roadmap evidence
 - Cheap-first release decision
 - Default change queue
 - Cheap-first canary plan
@@ -89,6 +90,10 @@ This gate does not:
 - call NewAPI, Gemini, gateways, download datasets, expose raw legal text,
   prompts, model outputs, or credentials for the Legal RAG authority citation
   gate
+- call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
+  the network, write configuration, change defaults, or expose request bodies,
+  response bodies, headers, prompts, raw payloads, legal text, model outputs,
+  emails, or credentials for the Gemini official model family roadmap evidence
 - prove production model routing health
 - prove that route telemetry remediation suggestions have been applied, write
   configuration, call NewAPI/Gemini/gateways, or expose route prompts, request
