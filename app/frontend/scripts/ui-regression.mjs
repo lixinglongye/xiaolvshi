@@ -674,6 +674,37 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Claim boundary', 'model-ops Gemini cheap-first claim boundary panel'),
   () => assertIncludes(modelOpsPage, 'Metadata only; no prompt text, request bodies, secrets, or model/gateway calls are included.', 'model-ops Gemini cheap-first privacy copy'),
   () => assertIncludes(modelOpsPage, 'Validation commands', 'model-ops Gemini cheap-first validation commands panel'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstRoutePreflight', 'model-ops Gemini cheap-first route preflight type'),
+  () => assertIncludes(modelOpsApi, 'gemini_cheap_first_route_preflight', 'model-ops Gemini cheap-first route preflight response binding'),
+  () => assertIncludes(modelOpsApi, 'route_task_rows', 'model-ops Gemini cheap-first route preflight task rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'variant_preflight_rows', 'model-ops Gemini cheap-first route preflight variant rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'official_source_rows', 'model-ops Gemini cheap-first route preflight source rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'getGeminiCheapFirstRoutePreflight', 'model-ops Gemini cheap-first route preflight getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-cheap-first-route-preflight', 'model-ops Gemini cheap-first route preflight endpoint'),
+  () => assertIncludes(modelOpsPage, 'Gemini cheap-first route preflight', 'model-ops Gemini cheap-first route preflight panel'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstRoutePreflight', 'model-ops Gemini cheap-first route preflight state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstRouteRows', 'model-ops Gemini cheap-first route row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstVariantRows', 'model-ops Gemini cheap-first variant row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiCheapFirstSourceRows', 'model-ops Gemini cheap-first source row binding'),
+  () => assertIncludes(modelOpsPage, 'default_allowed_without_review', 'model-ops Gemini cheap-first route default boundary'),
+  () => assertIncludes(modelOpsPage, 'accepted_alias_examples', 'model-ops Gemini cheap-first route alias examples'),
+  () => assertIncludes(modelOpsPage, 'source_signal_summary', 'model-ops Gemini cheap-first route source signal summary type'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops Gemini cheap-first route no-write boundary'),
+  () => assertIncludes(modelOpsPage, 'credentials_included', 'model-ops Gemini cheap-first route credential boundary'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>',
+      'model-ops route preflight follows cheap-first coverage gate',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini catalog source audit</h2>',
+      'model-ops route preflight precedes catalog source audit',
+    ),
   () => assertIncludes(modelOpsApi, 'ModelGatewayRequestCompatibilityGate', 'model-ops gateway request compatibility gate type'),
   () => assertIncludes(modelOpsApi, 'ModelGatewayRequestCompatibilityRow', 'model-ops gateway request compatibility row type'),
   () => assertIncludes(modelOpsApi, 'gateway_request_compatibility_gate', 'model-ops gateway request compatibility response binding'),
@@ -1154,8 +1185,14 @@ const retrievalDiagnosticsPanel = sourceSection(
 const geminiCheapFirstCoveragePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
-  'Gemini catalog source audit',
+  '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>',
   'model-ops Gemini cheap-first coverage gate section',
+);
+const geminiCheapFirstRoutePreflightPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>',
+  'Gemini catalog source audit',
+  'model-ops Gemini cheap-first route preflight section',
 );
 const defaultTemplateAlignmentPanel = sourceSection(
   modelOpsPage,
@@ -1390,6 +1427,11 @@ assertNotMatches(
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|sample_text|synthetic_excerpt|input_excerpt|output_text|raw_prompt|prompt_payload|candidate_text)\b/i,
   'maintenance legal benchmark fixture crosswalk no secrets or raw fixture/corpus/model fields',
 );
+assertNotMatches(
+  geminiCheapFirstRoutePreflightPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|request_body|response_body|headers|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|email|phone|identity)\b/i,
+  'model-ops Gemini cheap-first route preflight no secrets or raw model/payload/legal fields',
+);
 
 console.log(
   JSON.stringify(
@@ -1397,7 +1439,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 31,
+      assertions: checks.length + 32,
     },
     null,
     2,

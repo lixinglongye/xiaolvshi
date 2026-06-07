@@ -99,6 +99,27 @@ def test_model_ops_readiness_warns_on_observed_gemini_coverage_gaps():
     assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
 
 
+def test_model_ops_readiness_warns_on_gemini_route_preflight_review():
+    signals = _signals("pass")
+    signals["gemini_cheap_first_route_preflight"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 1, "fail_count": 0, "review_variant_count": 3},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["preview-premium-review-boundary"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gemini-cheap-first-route-preflight" in result["warning_check_ids"]
+    assert "gemini-cheap-first-route-preflight" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["source_key"] == "gemini_cheap_first_route_preflight"
+    assert result["warning_drilldown"][0]["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
+    assert result["warning_drilldown"][0]["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_fails_on_blocking_component():
     signals = _signals("pass")
     signals["cost_guardrails"] = {
@@ -254,13 +275,18 @@ def test_model_ops_route_includes_readiness():
     assert "gemini_cheap_first_coverage_gate" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_cheap_first_route_preflight" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["gemini_cheap_first_coverage_gate"]["summary"]["coverage_row_count"] == 8
+    assert payload["gemini_cheap_first_route_preflight"]["summary"]["route_task_count"] == 10
+    assert payload["gemini_cheap_first_route_preflight"]["summary"]["gateway_called"] is False
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 9
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 10
     assert payload["cheap_first_escalation_budget"]["status"] == "pass"
     assert payload["failure_upgrade_budget"]["status"] == "pass"
     assert "cheap_first_escalation_budget" in {

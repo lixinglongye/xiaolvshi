@@ -57,6 +57,9 @@ from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationS
 from services.model_gateway_request_compatibility_gate import ModelGatewayRequestCompatibilityGateService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
+from services.model_ops_gemini_cheap_first_route_preflight import (
+    ModelOpsGeminiCheapFirstRoutePreflightService,
+)
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
@@ -314,6 +317,14 @@ async def list_models():
             "gateway_compatibility": gateway_compatibility,
         }
     )
+    gemini_cheap_first_route_preflight = ModelOpsGeminiCheapFirstRoutePreflightService().build_preflight(
+        {
+            "observed_models": observed_gateway_models,
+            "gemini_variant_matrix": gemini_variant_matrix,
+            "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
+            "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
+        }
+    )
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     cheap_first_escalation_budget = ModelOpsCheapFirstEscalationBudgetService().build_budget()
     default_model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
@@ -364,6 +375,7 @@ async def list_models():
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
+        "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -452,6 +464,7 @@ async def list_models():
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
+        "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -681,6 +694,25 @@ async def modelops_gemini_cheap_first_coverage_gate():
     return {
         "success": True,
         "data": ModelOpsGeminiCheapFirstCoverageGateService().build_gate(),
+    }
+
+
+@router.get("/models/gemini-cheap-first-route-preflight")
+async def modelops_gemini_cheap_first_route_preflight():
+    """Return metadata-only Gemini cheap-first route preflight evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_cheap_first_route_preflight"],
+    }
+
+
+@router.post("/models/gemini-cheap-first-route-preflight")
+async def evaluate_modelops_gemini_cheap_first_route_preflight(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini route preflight metadata without gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiCheapFirstRoutePreflightService().build_preflight(payload),
     }
 
 

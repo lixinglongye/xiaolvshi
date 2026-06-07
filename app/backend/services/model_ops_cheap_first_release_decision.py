@@ -7,6 +7,7 @@ REQUIRED_SIGNAL_KEYS = (
     "model_ops_readiness",
     "cheap_first_calibration",
     "gemini_variant_matrix",
+    "gemini_cheap_first_route_preflight",
     "catalog_source_audit",
     "route_quality_budget",
     "cheap_first_escalation_budget",
@@ -42,6 +43,13 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 data.get("gemini_variant_matrix"),
                 fail_reason="Gemini variant matrix is failing or missing.",
                 warn_reason="Gemini variant matrix has catalog-review or unpriced-model warnings.",
+            ),
+            self._check_signal(
+                "gemini-cheap-first-route-preflight-review",
+                "gemini_cheap_first_route_preflight",
+                data.get("gemini_cheap_first_route_preflight"),
+                fail_reason="Gemini cheap-first route preflight has unknown, blocked, or unsafe default-route findings.",
+                warn_reason="Gemini cheap-first route preflight needs maintainer review for preview, premium, media, alias, or pricing boundaries.",
             ),
             self._check_signal(
                 "catalog-source-audit-review",

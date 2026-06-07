@@ -98,6 +98,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps Gemini cheap-first route preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
@@ -273,6 +274,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["description"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["description"]
+    assert "ModelOps Gemini cheap-first route preflight review" in model_signal["description"]
     assert "ModelOps legal micro benchmark preflight review" in model_signal["description"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["description"]
     assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["description"]
@@ -304,6 +306,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
+    assert "ModelOps Gemini cheap-first route preflight review" in model_signal["responsibility"]
     assert "ModelOps legal micro benchmark preflight review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["responsibility"]
@@ -330,6 +333,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_approval_packet.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
+    assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
@@ -340,6 +344,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_approval_packet.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
@@ -350,6 +355,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_APPROVAL_PACKET.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md" in evidence_paths
+    assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
@@ -414,6 +420,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini cheap-first route preflight is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("official source refresh notes, local task defaults, variant review states" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("gateway responses, credentials, emails, or user identifiers" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal micro benchmark preflight is metadata-only low-resource legal benchmark run-planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("fixture ids, document case ids, fact-consistency case ids, serial run order" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])

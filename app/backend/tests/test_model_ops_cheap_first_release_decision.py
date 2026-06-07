@@ -7,6 +7,7 @@ from services.model_catalog_source_audit import ModelCatalogSourceAuditService
 from services.model_failure_upgrade_budget import ModelFailureUpgradeBudgetService
 from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
+from services.model_ops_gemini_cheap_first_route_preflight import ModelOpsGeminiCheapFirstRoutePreflightService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_route_quality_budget import ModelRouteQualityBudgetService
@@ -19,6 +20,7 @@ def _current_signals() -> dict:
     signals = {
         "cheap_first_calibration": GeminiNewapiCheapFirstCalibrationService().build_calibration(),
         "gemini_variant_matrix": GeminiModelVariantMatrixService().build_matrix(),
+        "gemini_cheap_first_route_preflight": ModelOpsGeminiCheapFirstRoutePreflightService().build_preflight(),
         "catalog_source_audit": ModelCatalogSourceAuditService().build_audit(),
         "route_quality_budget": ModelRouteQualityBudgetService().build_budget(),
         "cheap_first_escalation_budget": ModelOpsCheapFirstEscalationBudgetService().build_budget(),
@@ -54,8 +56,11 @@ def test_cheap_first_release_decision_requires_review_for_current_catalog_watchl
     assert decision["summary"]["default_promotion_blocked"] is False
     assert decision["summary"]["maintainer_review_required"] is True
     assert "catalog_source_audit" in checks
+    assert "gemini_cheap_first_route_preflight" in checks
     assert checks["catalog_source_audit"]["status"] == "warn"
+    assert checks["gemini_cheap_first_route_preflight"]["status"] == "warn"
     assert "catalog-source-audit-review" in decision["warning_check_ids"]
+    assert "gemini-cheap-first-route-preflight-review" in decision["warning_check_ids"]
     assert decision["privacy_boundary"]["network_called"] is False
     assert decision["claim_boundary"]["public_benchmark_scores_included"] is False
     assert decision["claim_boundary"]["twenty_four_hour_completion_claimed"] is False
@@ -67,6 +72,7 @@ def test_cheap_first_release_decision_passes_when_all_source_signals_pass():
         "cheap_first_calibration",
         "model_ops_readiness",
         "gemini_variant_matrix",
+        "gemini_cheap_first_route_preflight",
         "catalog_source_audit",
         "route_quality_budget",
         "cheap_first_escalation_budget",
@@ -79,7 +85,7 @@ def test_cheap_first_release_decision_passes_when_all_source_signals_pass():
 
     assert decision["status"] == "pass"
     assert decision["release_decision"]["status"] == "ready"
-    assert decision["summary"]["passing_signal_count"] == 9
+    assert decision["summary"]["passing_signal_count"] == 10
     assert decision["summary"]["default_promotion_blocked"] is False
     assert decision["blocking_check_ids"] == []
     assert decision["warning_check_ids"] == []
@@ -90,6 +96,7 @@ def test_cheap_first_release_decision_blocks_when_required_source_signal_fails()
         "cheap_first_calibration",
         "model_ops_readiness",
         "gemini_variant_matrix",
+        "gemini_cheap_first_route_preflight",
         "catalog_source_audit",
         "route_quality_budget",
         "cheap_first_escalation_budget",
@@ -128,13 +135,17 @@ def test_cheap_first_release_decision_route_and_model_ops_payload_include_readin
     assert decision_response.status_code == 200
     decision_payload = decision_response.json()
     assert decision_payload["success"] is True
-    assert decision_payload["data"]["summary"]["required_signal_count"] == 9
+    assert decision_payload["data"]["summary"]["required_signal_count"] == 10
 
     models_response = client.get("/api/v1/aihub/models")
     assert models_response.status_code == 200
     payload = models_response.json()
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 9
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 10
     assert any(
         check["source_key"] == "model_ops_readiness"
+        for check in payload["cheap_first_release_decision"]["checks"]
+    )
+    assert any(
+        check["source_key"] == "gemini_cheap_first_route_preflight"
         for check in payload["cheap_first_release_decision"]["checks"]
     )

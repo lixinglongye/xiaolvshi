@@ -145,6 +145,18 @@ call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write
 configuration, shift traffic, or include headers, request bodies, prompts, raw
 legal text, model outputs, payloads, emails, or credentials.
 
+Current Gemini cheap-first route preflight evidence:
+`modelops-gemini-cheap-first-route-preflight` adds shipped metadata-only route
+preflight evidence for official source refresh notes, local Gemini task
+defaults, variant review states, alias capability coverage, and cheap-first
+coverage-gate status. It keeps high-frequency work on stable Flash-Lite routes
+while preview, premium, media, unknown, unpriced, or retired variants remain
+review/explicit-only. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, or the network, write configuration, shift traffic,
+claim live model quality, or include request/response bodies, headers, prompts,
+raw payloads, legal text, model outputs, gateway responses, credentials, emails,
+or user identifiers.
+
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
 low-resource legal benchmark run-planning evidence for cheap-first Gemini
@@ -476,6 +488,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
+- `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`
@@ -521,6 +534,8 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `app/backend/services/feedback_lifecycle_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_policy.py`
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
+- `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/services/route_telemetry_repository.py`
 - `app/backend/services/legal_document_benchmark_fixtures.py`
 - `app/backend/services/legal_rag_failure_fixtures.py`

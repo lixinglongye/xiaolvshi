@@ -1145,6 +1145,101 @@ export type ModelOpsGeminiCheapFirstCoverageGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiCheapFirstRoutePreflightSourceRow = {
+  id: string;
+  url: string;
+  tracked_signal: string;
+  refresh_action: string;
+};
+
+export type ModelOpsGeminiCheapFirstRoutePreflightTaskRow = {
+  id: string;
+  task: string;
+  route_mode: string;
+  default_model: string;
+  canonical_model?: string | null;
+  model_status: string;
+  cost_tier: string;
+  capabilities: string[];
+  high_frequency_task: boolean;
+  cheap_first_required: boolean;
+  cheap_first_aligned: boolean;
+  premium_exception_required: boolean;
+  default_allowed_without_review: boolean;
+  alias_coverage_status: string;
+  coverage_status: string;
+  release_action: string;
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsGeminiCheapFirstRoutePreflightVariantRow = {
+  model_id: string;
+  family: string;
+  catalog_status: string;
+  cost_tier: string;
+  pricing_status: string;
+  route_role: string;
+  high_frequency_default_allowed: boolean;
+  balanced_retry_allowed: boolean;
+  premium_exception_required: boolean;
+  media_route_only: boolean;
+  default_allowed_without_review: boolean;
+  default_promotion_state: string;
+  accepted_alias_examples: string[];
+  supported_request_shapes: string[];
+  reason_codes: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsGeminiCheapFirstRoutePreflightCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsGeminiCheapFirstRoutePreflight = {
+  id: 'modelops-gemini-cheap-first-route-preflight' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    official_source_count: number;
+    catalog_model_count: number;
+    route_task_count: number;
+    cheap_first_route_count: number;
+    balanced_route_count: number;
+    premium_exception_count: number;
+    variant_row_count: number;
+    default_allowed_variant_count: number;
+    review_variant_count: number;
+    blocked_variant_count: number;
+    observed_model_count: number;
+    alias_shape_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: ModelOpsGeminiCheapFirstRoutePreflightSourceRow[];
+  route_task_rows: ModelOpsGeminiCheapFirstRoutePreflightTaskRow[];
+  variant_preflight_rows: ModelOpsGeminiCheapFirstRoutePreflightVariantRow[];
+  checks: ModelOpsGeminiCheapFirstRoutePreflightCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  source_signal_summary: Record<string, unknown>;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -3349,6 +3444,7 @@ export type ModelOpsResponse = {
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
+  gemini_cheap_first_route_preflight?: ModelOpsGeminiCheapFirstRoutePreflight;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
@@ -3422,6 +3518,9 @@ function hasModelOpsPayload(value: unknown): boolean {
     execution_items?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
+    route_task_rows?: unknown;
+    variant_preflight_rows?: unknown;
+    official_source_rows?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     fixture_run_items?: unknown;
@@ -3460,6 +3559,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
@@ -3627,6 +3727,13 @@ export async function getGeminiNewApiAliasCapabilityCoverage(): Promise<GeminiNe
 export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiCheapFirstCoverageGate> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstCoverageGate>({
     url: '/api/v1/aihub/models/gemini-cheap-first-coverage-gate',
+    method: 'GET',
+  });
+}
+
+export async function getGeminiCheapFirstRoutePreflight(): Promise<ModelOpsGeminiCheapFirstRoutePreflight> {
+  return invokeModelOpsApi<ModelOpsGeminiCheapFirstRoutePreflight>({
+    url: '/api/v1/aihub/models/gemini-cheap-first-route-preflight',
     method: 'GET',
   });
 }

@@ -862,6 +862,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "modelops-gemini-cheap-first-route-preflight": "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-legal-micro-benchmark-preflight": "python -m pytest tests/test_modelops_legal_micro_benchmark_preflight.py tests/test_legal_fixture_local_run_package.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_model_ops_readiness.py -q",
         "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-legal-fixture-cheap-first-default-promotion-packet": "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -1043,6 +1044,38 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
+    assert "metadata-only Gemini cheap-first route preflight evidence" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "official source refresh notes" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "task defaults" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "alias coverage" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "Flash-Lite cheap-first routing" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "premium/preview/media boundaries" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "Gemini" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "OpenAI" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "Google" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "gateways" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "network" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "does not write configuration" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "shift traffic" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "request bodies" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "response bodies" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "headers" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "raw payloads" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "model outputs" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "gateway responses" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "credentials" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "emails" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "user identifiers" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
     assert "metadata-only low-resource legal benchmark preflight evidence" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]
     assert "cheap-first Gemini fixture selection" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]
     assert "document case ids" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]

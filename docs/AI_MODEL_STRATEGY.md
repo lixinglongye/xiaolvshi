@@ -190,6 +190,17 @@ roles. It never writes configuration, calls NewAPI, Gemini, OpenAI, Google,
 gateways, or the network, shifts traffic, or claims that a default has been
 approved.
 
+`modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
+preflight for Gemini cheap-first defaults. It joins official source refresh
+notes, local task defaults, the Gemini variant matrix, gateway alias capability
+coverage, and the cheap-first coverage gate so high-frequency work stays on
+stable Flash-Lite routes while preview, premium, media, unknown, unpriced, or
+retired variants remain review/explicit-only. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, or the network, does not write
+configuration or shift traffic, and does not include request/response bodies,
+headers, prompts, raw payloads, legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

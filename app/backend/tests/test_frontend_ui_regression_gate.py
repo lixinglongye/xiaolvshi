@@ -56,6 +56,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Cheap-first canary change manifest" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first maintainer execution checklist" in rows["/model-ops"]["protected_panels"]
     assert "Gemini cheap-first coverage gate" in rows["/model-ops"]["protected_panels"]
+    assert "Gemini cheap-first route preflight" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert "Model failure upgrade budget" in rows["/model-ops"]["protected_panels"]
     assert "Legal micro benchmark preflight" in rows["/model-ops"]["protected_panels"]
@@ -121,6 +122,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "prompts" in payload_text
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
+    assert "ModelOps Gemini cheap-first route preflight UI evidence is metadata only" in payload_text
     assert "ModelOps observed Gemini coverage gap queue UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only" in payload_text
     assert "ModelOps gateway request compatibility gate UI evidence is metadata only" in payload_text
@@ -154,6 +156,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "hard-stop signals" in payload_text
     assert "Legal benchmark fixture crosswalk UI evidence is metadata only" in payload_text
     assert "gemini-cheap-first-coverage-gate-regresses" in payload_text
+    assert "gemini-cheap-first-route-preflight-regresses" in payload_text
     assert "gemini-alias-capability-coverage-regresses" in payload_text
     assert "feedback-capture-plan-regresses" in payload_text
     assert "deep-report-feedback-capture-regresses" in payload_text

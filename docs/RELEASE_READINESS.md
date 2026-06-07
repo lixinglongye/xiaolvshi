@@ -52,6 +52,17 @@ bounds. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the
 network, write configuration, shift traffic, or store headers, request bodies,
 prompts, raw legal text, model outputs, payloads, emails, or credentials.
 
+Additional optional evidence: `modelops-gemini-cheap-first-route-preflight`
+records metadata-only Gemini route preflight checks for official source refresh
+notes, local task defaults, variant review states, alias capability coverage,
+and cheap-first coverage-gate status. It keeps high-frequency tasks on stable
+Flash-Lite routes while preview, premium, media, unknown, unpriced, or retired
+variants remain review/explicit-only. It does not call NewAPI, Gemini, OpenAI,
+Google, gateways, app AI endpoints, or the network, write configuration, shift
+traffic, claim live route quality, or store request/response bodies, headers,
+prompts, raw payloads, legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 Additional optional evidence: `modelops-legal-micro-benchmark-preflight`
 records metadata-only low-resource legal benchmark preflight checks for
 cheap-first fixture selection, document case ids, fact-consistency case ids,
@@ -124,6 +135,7 @@ POST /api/v1/maintenance/release-readiness
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
   "model-gateway-request-compatibility-gate": "pass",
+  "modelops-gemini-cheap-first-route-preflight": "pass",
   "model-request-cost-bounds": "pass",
   "model-cache-policy": "pass",
   "model-route-telemetry": "pass",
@@ -217,6 +229,9 @@ The service does not run shell commands itself. It only evaluates results suppli
 - ModelOps cheap-first canary change manifest coverage, requiring external
   change-set metadata, prerequisites, operator steps, rollback-drill status, and
   no-write/no-secret boundaries before any manual default edit is release-ready.
+- ModelOps Gemini cheap-first route preflight coverage, requiring reviewable
+  source-refresh notes, task defaults, alias coverage, variant states, and
+  no-call/no-write boundaries before any Gemini default route change is claimed.
 
 Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases. The route telemetry repository, operations summary, triage queue, and remediation plan are required because they provide the reviewable runtime evidence, maintainer actions, and operator-reviewed repair plan needed before model-routing release claims.
 
@@ -371,6 +386,9 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/services/model_ops_cheap_first_canary_change_manifest.py`
 - `app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
+- `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
+- `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`

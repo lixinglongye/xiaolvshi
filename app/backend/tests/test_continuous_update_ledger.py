@@ -239,6 +239,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" in completed_ids
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
+    assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
@@ -490,6 +491,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-rollback-drill" not in queue_ids
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
+    assert "modelops-gemini-cheap-first-route-preflight" not in queue_ids
     assert "model-gateway-request-compatibility-gate" not in queue_ids
     assert "modelops-legal-micro-benchmark-preflight" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
@@ -1011,6 +1013,60 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "payloads" in coverage_gate_entry["impact"]
     assert "model outputs" in coverage_gate_entry["impact"]
     assert "credentials" in coverage_gate_entry["impact"]
+    route_preflight_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-gemini-cheap-first-route-preflight"
+    )
+    assert route_preflight_entry["size"] == "medium"
+    assert route_preflight_entry["status"] == "shipped"
+    assert "Gemini cheap-first route preflight evidence" in route_preflight_entry["impact"]
+    assert "official source refresh notes" in route_preflight_entry["impact"]
+    assert "local task defaults" in route_preflight_entry["impact"]
+    assert "variant review states" in route_preflight_entry["impact"]
+    assert "alias capability coverage" in route_preflight_entry["impact"]
+    assert "cheap-first coverage-gate signals" in route_preflight_entry["impact"]
+    assert "stable Flash-Lite defaults" in route_preflight_entry["impact"]
+    assert "review/explicit-only" in route_preflight_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls" in route_preflight_entry["impact"]
+    assert "configuration writes" in route_preflight_entry["impact"]
+    assert "traffic shifts" in route_preflight_entry["impact"]
+    assert "request or response bodies" in route_preflight_entry["impact"]
+    assert "headers" in route_preflight_entry["impact"]
+    assert "prompts" in route_preflight_entry["impact"]
+    assert "raw payloads" in route_preflight_entry["impact"]
+    assert "legal text" in route_preflight_entry["impact"]
+    assert "model outputs" in route_preflight_entry["impact"]
+    assert "gateway responses" in route_preflight_entry["impact"]
+    assert "credentials" in route_preflight_entry["impact"]
+    assert "emails" in route_preflight_entry["impact"]
+    assert "user identifiers" in route_preflight_entry["impact"]
+    assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in route_preflight_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in route_preflight_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in route_preflight_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in route_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in route_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in route_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in route_preflight_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in route_preflight_entry["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in route_preflight_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in route_preflight_entry["evidence_paths"]
+    assert "modelops-gemini-cheap-first-route-preflight" in route_preflight_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in route_preflight_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in route_preflight_entry["release_gate_links"]
+    assert "gemini-newapi-alias-capability-coverage" in route_preflight_entry["release_gate_links"]
+    assert "model-gateway-request-compatibility-gate" in route_preflight_entry["release_gate_links"]
+    assert "model-ops-readiness" in route_preflight_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in route_preflight_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in route_preflight_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py "
+        "tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     gateway_request_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-request-compatibility-gate"
     )

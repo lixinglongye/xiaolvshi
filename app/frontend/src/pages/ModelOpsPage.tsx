@@ -27,6 +27,7 @@ import {
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
+  getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
   getModelOpsObservedGeminiCoverageGapQueue,
   getModelOpsCheapFirstEscalationBudget,
@@ -41,6 +42,7 @@ import {
   type GeminiNewApiAliasCapabilityCoverage,
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
+  type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
@@ -442,6 +444,9 @@ function Inner() {
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
+  const [geminiCheapFirstRoutePreflight, setGeminiCheapFirstRoutePreflight] =
+    useState<ModelOpsGeminiCheapFirstRoutePreflight | null>(null);
+  const [geminiCheapFirstRoutePreflightError, setGeminiCheapFirstRoutePreflightError] = useState('');
   const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
@@ -493,6 +498,8 @@ function Inner() {
     setGeminiAliasCapabilityCoverage(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
+    setGeminiCheapFirstRoutePreflightError('');
+    setGeminiCheapFirstRoutePreflight(null);
     setPerformanceError('');
     setPerformanceBudget(null);
     setEscalationBudgetError('');
@@ -519,6 +526,7 @@ function Inner() {
         observedGeminiCoverageGapQueueResult,
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
+        geminiCheapFirstRoutePreflightResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
@@ -529,6 +537,7 @@ function Inner() {
         getModelOpsObservedGeminiCoverageGapQueue(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
+        getGeminiCheapFirstRoutePreflight(),
         getModelOpsCheapFirstEscalationBudget(),
         getModelFailureUpgradeBudget(),
         getModelOpsLegalBenchmarkRiskBridge(),
@@ -556,6 +565,7 @@ function Inner() {
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
         setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
+        setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
         if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
           setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
         } else {
@@ -583,6 +593,15 @@ function Inner() {
             setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
           }
         }
+        if (geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
+          setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
+        } else {
+          console.error(geminiCheapFirstRoutePreflightResult.reason);
+          setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
+          if (!modelOpsResult.value.gemini_cheap_first_route_preflight) {
+            setGeminiCheapFirstRoutePreflightError('Gemini cheap-first route preflight failed to load.');
+          }
+        }
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
         } else {
@@ -596,6 +615,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
         setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
+        setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
         setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
@@ -1140,6 +1162,15 @@ function Inner() {
   const geminiCheapFirstCoverageRows = activeGeminiCheapFirstCoverageGate?.coverage_rows ?? [];
   const geminiCheapFirstCoverageClaimBoundaryEntries = boundaryDisplayEntries(
     activeGeminiCheapFirstCoverageGate?.claim_boundary,
+  );
+  const activeGeminiCheapFirstRoutePreflight =
+    geminiCheapFirstRoutePreflight ?? data?.gemini_cheap_first_route_preflight ?? null;
+  const geminiCheapFirstRouteRows = activeGeminiCheapFirstRoutePreflight?.route_task_rows ?? [];
+  const geminiCheapFirstVariantRows = activeGeminiCheapFirstRoutePreflight?.variant_preflight_rows ?? [];
+  const geminiCheapFirstSourceRows = activeGeminiCheapFirstRoutePreflight?.official_source_rows ?? [];
+  const geminiCheapFirstRouteChecks = activeGeminiCheapFirstRoutePreflight?.checks ?? [];
+  const geminiCheapFirstRouteBoundaryEntries = boundaryDisplayEntries(
+    activeGeminiCheapFirstRoutePreflight?.privacy_boundary,
   );
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
@@ -5629,6 +5660,260 @@ function Inner() {
                     <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                     <div className="space-y-2">
                       {activeGeminiCheapFirstCoverageGate.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiCheapFirstRoutePreflight || geminiCheapFirstRoutePreflightError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini cheap-first route preflight</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiCheapFirstRoutePreflight
+                    ? `${activeGeminiCheapFirstRoutePreflight.summary.route_task_count} tasks / ${activeGeminiCheapFirstRoutePreflight.summary.variant_row_count} variants / ${activeGeminiCheapFirstRoutePreflight.warning_check_ids.length} warnings`
+                    : 'metadata-only Gemini route preflight'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiCheapFirstRoutePreflight?.id ?? 'modelops-gemini-cheap-first-route-preflight'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiCheapFirstRoutePreflight?.status)}>
+                {activeGeminiCheapFirstRoutePreflight?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiCheapFirstRoutePreflightError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiCheapFirstRoutePreflightError}
+              </div>
+            )}
+
+            {activeGeminiCheapFirstRoutePreflight && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.cheap_first_route_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap routes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.balanced_route_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">balanced routes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.premium_exception_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">exception routes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.default_allowed_variant_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default candidates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.review_variant_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review variants</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiCheapFirstRoutePreflight.summary.alias_shape_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">alias shapes</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiCheapFirstRoutePreflight.summary.configuration_written)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">config written</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Route</TableHead>
+                        <TableHead>Default</TableHead>
+                        <TableHead>Alignment</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiCheapFirstRouteRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.task}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.release_action === 'keep_default_route' ? 'pass' : 'warn')}>
+                              {row.route_mode.replace(/_/g, ' ')}
+                            </Badge>
+                            {row.premium_exception_required && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className={statusClass('warn')}>
+                                  reviewed exception
+                                </Badge>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.default_model}</div>
+                            <div className="mt-1">{row.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={row.cheap_first_aligned ? statusClass('pass') : statusClass('warn')}>
+                              {row.cheap_first_aligned ? 'aligned' : 'review'}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-500">
+                              allowed: {String(row.default_allowed_without_review)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>coverage_status: {row.coverage_status}</div>
+                            <div>alias_coverage_status: {row.alias_coverage_status}</div>
+                            <div>reason_codes: {row.reason_codes.join(', ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">{row.release_action}</div>
+                            <div className="mt-1">{row.next_action}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Variant</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>State</TableHead>
+                        <TableHead>Aliases</TableHead>
+                        <TableHead>Reasons</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiCheapFirstVariantRows.slice(0, 8).map((row) => (
+                        <TableRow key={row.model_id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                            <div className="mt-1 text-xs text-stone-500">{row.family}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.route_role}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                            <div className="mt-1">{row.catalog_status} / {row.pricing_status}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.default_promotion_state === 'ready' ? 'pass' : row.default_promotion_state === 'blocked' ? 'fail' : 'warn')}>
+                              {row.default_promotion_state.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-500">
+                              default_allowed_without_review: {String(row.default_allowed_without_review)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.accepted_alias_examples.length ? row.accepted_alias_examples.join(', ') : '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.reason_codes.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.recommended_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Official source refresh</h3>
+                    <div className="space-y-2">
+                      {geminiCheapFirstSourceRows.map((row) => (
+                        <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono text-[11px] font-semibold text-stone-950">{row.id}</div>
+                          <div className="mt-1 break-all text-[11px] text-stone-500">{row.url}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{row.refresh_action}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {geminiCheapFirstRouteChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="mb-3 text-xs leading-5 text-stone-600">
+                      source_signal_summary:{' '}
+                      {Object.entries(activeGeminiCheapFirstRoutePreflight.source_signal_summary)
+                        .slice(0, 3)
+                        .map(([key, value]) => `${key}:${String(value)}`)
+                        .join(', ')}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>model_called: {String(activeGeminiCheapFirstRoutePreflight.summary.model_called)}</div>
+                      <div>gateway_called: {String(activeGeminiCheapFirstRoutePreflight.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeGeminiCheapFirstRoutePreflight.summary.network_called)}</div>
+                      <div>credentials_included: {String(activeGeminiCheapFirstRoutePreflight.summary.credentials_included)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiCheapFirstRouteBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeGeminiCheapFirstRoutePreflight.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

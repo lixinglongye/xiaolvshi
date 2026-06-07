@@ -101,6 +101,7 @@ PAGE_GATES = (
             "Cheap-first canary change manifest",
             "Cheap-first maintainer execution checklist",
             "Gemini cheap-first coverage gate",
+            "Gemini cheap-first route preflight",
             "Cheap-first quality budget",
             "Model failure upgrade budget",
             "Legal micro benchmark preflight",
@@ -203,6 +204,7 @@ class FrontendUiRegressionGateService:
                     "Legal RAG abstention escalation gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, fixture questions, dangerous answers, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "Legal RAG retrieval diagnostics gate UI evidence is metadata only: no model/gateway/network calls, dataset downloads, raw query, raw retrieved context, raw legal text, prompts, model output, or credentials.",
                     "ModelOps Gemini cheap-first coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls and no raw prompts, payloads, model output, or credentials.",
+                    "ModelOps Gemini cheap-first route preflight UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw model output, legal text, emails, or credentials.",
                     "ModelOps observed Gemini coverage gap queue UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, raw prompts, payloads, model output, legal text, emails, or credentials.",
                     "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, raw prompts, payloads, model output, legal text, emails, or credentials.",
                     "ModelOps gateway request compatibility gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, headers, request bodies, prompts, raw legal text, model output, payloads, emails, or credentials.",
@@ -252,6 +254,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini cheap-first coverage-gate panel in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked coverage-gate API checks for default, premium-exception, unknown-model, and privacy-boundary rows.",
+                },
+                {
+                    "id": "gemini-cheap-first-route-preflight-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini cheap-first route preflight panel, endpoint binding, official-source rows, route-task rows, variant rows, checks, and privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked route-preflight API checks for Flash-Lite defaults, preview and premium review rows, blocked variant boundaries, source-signal summaries, and forbidden raw request/model fields.",
                 },
                 {
                     "id": "gemini-alias-capability-coverage-regresses",

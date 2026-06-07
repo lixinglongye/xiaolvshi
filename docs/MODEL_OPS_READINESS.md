@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -25,10 +25,10 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 53,
-      "required_component_count": 52,
+      "component_count": 55,
+      "required_component_count": 54,
       "optional_component_count": 1,
-      "pass_count": 53,
+      "pass_count": 55,
       "warn_count": 0,
       "fail_count": 0,
       "required_warning_count": 0,
@@ -82,6 +82,7 @@ The readiness service checks:
 - reasoning policy,
 - request policy,
 - gateway request compatibility gate,
+- Gemini cheap-first route preflight,
 - request cost bounds,
 - cache policy,
 - callsite audit,
@@ -129,6 +130,17 @@ without calling models or gateways, writing configuration, shifting traffic, or
 returning headers, request bodies, prompts, raw legal text, model output,
 payloads, emails, or credentials.
 
+`gemini-cheap-first-route-preflight` is required metadata-only evidence for the
+Gemini route plan before default changes. It joins official source refresh
+notes, local task defaults, the Gemini variant matrix, alias capability
+coverage, and the cheap-first coverage gate so high-frequency tasks stay on
+stable Flash-Lite defaults while preview, premium, media, unknown, unpriced, or
+retired variants remain review/explicit-only. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, or the network, write
+configuration, shift traffic, or return request/response bodies, headers,
+prompts, raw payloads, legal text, model output, gateway responses,
+credentials, emails, or user identifiers.
+
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
 `route-telemetry-repository` and downstream route telemetry summaries estimate
@@ -140,7 +152,7 @@ pricing gaps separate from unknown gateway model traffic.
 
 `cheap_first_release_decision` is a downstream release decision packet that uses
 readiness plus cheap-first calibration, Gemini variant review, catalog source
-audit, route quality, failure upgrade budget, escalation budget, price refresh, and ModelOps performance
+audit, route preflight, route quality, failure upgrade budget, escalation budget, price refresh, and ModelOps performance
 signals to decide whether current cheap-first defaults can remain and whether
 new default promotion requires maintainer review.
 
@@ -189,6 +201,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_ops_performance_budget.py`
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/services/model_failure_upgrade_budget.py`
+- `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/services/modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/services/model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
@@ -200,6 +213,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_ops_performance_budget.py`
 - `app/backend/tests/test_model_route_quality_budget.py`
 - `app/backend/tests/test_model_failure_upgrade_budget.py`
+- `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`
@@ -219,4 +233,5 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`
 - `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
+- `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `docs/MODELOPS_LEGAL_MICRO_BENCHMARK_PREFLIGHT.md`
