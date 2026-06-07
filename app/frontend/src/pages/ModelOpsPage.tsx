@@ -1417,6 +1417,7 @@ function Inner() {
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
   const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
+  const catalogSourceReviewRows = data?.catalog_source_audit?.source_review_records ?? [];
   const catalogCandidatePatchPlan = data?.catalog_candidate_patch_plan ?? null;
   const catalogCandidatePatchRows = catalogCandidatePatchPlan?.candidate_patch_rows ?? [];
   const catalogCandidatePatchChecks = catalogCandidatePatchPlan?.checks ?? [];
@@ -7334,7 +7335,8 @@ function Inner() {
                 <div className="mt-1 text-sm text-stone-600">
                   {data.catalog_source_audit.summary.official_source_url_count} official source URLs /{' '}
                   {data.catalog_source_audit.summary.priced_model_count} priced models /{' '}
-                  {data.catalog_source_audit.summary.high_frequency_aligned_count} cheap-first defaults aligned
+                  {data.catalog_source_audit.summary.high_frequency_aligned_count} cheap-first defaults aligned /{' '}
+                  {data.catalog_source_audit.summary.source_review_stale_count} stale source reviews
                 </div>
               </div>
               <Badge variant="outline" className={statusClass(data.catalog_source_audit.status)}>
@@ -7359,8 +7361,10 @@ function Inner() {
                 <div className="mt-1 text-sm text-stone-600">preview rows</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
-                <div className="text-2xl font-black text-stone-950">{data.catalog_source_audit.summary.warning_check_count}</div>
-                <div className="mt-1 text-sm text-stone-600">warning checks</div>
+                <div className="text-2xl font-black text-stone-950">
+                  {data.catalog_source_audit.summary.default_promotion_source_block_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">source blocks</div>
               </div>
             </div>
 
@@ -7379,6 +7383,9 @@ function Inner() {
                       <div className="font-semibold text-stone-950">{source.title}</div>
                       <div className="font-mono text-[11px] text-stone-500">{source.url}</div>
                       <div className="mt-1">{source.review_purpose}</div>
+                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                        reviewed {source.last_reviewed_on} / max age {source.max_review_age_days}d
+                      </div>
                     </a>
                   ))}
                 </div>
@@ -7422,6 +7429,41 @@ function Inner() {
                   </TableBody>
                 </Table>
               </div>
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Source freshness</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Default promotion</TableHead>
+                    <TableHead>Review scope</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {catalogSourceReviewRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{row.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          reviewed {row.last_reviewed_on} / as of {row.as_of_date} / age {row.review_age_days}d
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.freshness_status === 'current' ? 'pass' : 'warn')}>
+                          {row.freshness_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        <div>{row.default_promotion_allowed ? 'allowed' : 'blocked'}</div>
+                        <div className="text-stone-500">{row.required_action}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{row.review_scope}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
 
             <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">

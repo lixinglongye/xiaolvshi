@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from services.model_catalog import GEMINI_MODEL_CATALOG, catalog_for_api, canonical_model_id, task_default_model
@@ -11,25 +12,34 @@ OFFICIAL_GEMINI_SOURCE_REFERENCES = (
         "title": "Gemini Developer API pricing",
         "url": "https://ai.google.dev/gemini-api/docs/pricing",
         "review_purpose": "Refresh paid-tier token and image pricing before changing defaults.",
+        "last_reviewed_on": "2026-06-08",
+        "max_review_age_days": 30,
+        "review_scope": "paid-tier token pricing, image pricing, lifecycle-sensitive pricing notes, and cheap-first defaults",
     },
     {
         "id": "google-gemini-models",
         "title": "Gemini API model list",
         "url": "https://ai.google.dev/gemini-api/docs/models",
         "review_purpose": "Check model availability, lifecycle, capabilities, and naming before catalog promotion.",
+        "last_reviewed_on": "2026-06-08",
+        "max_review_age_days": 30,
+        "review_scope": "model names, stable/preview/latest lifecycle posture, capabilities, and catalog promotion safety",
     },
 )
 HIGH_FREQUENCY_TASKS = ("fast", "classification", "ocr")
 HIGH_FREQUENCY_ROLE_NAMES = {"cheap", "fast", "ocr", "classification", "classifier"}
 SOURCE_HOST = "https://ai.google.dev/"
+SOURCE_REVIEW_SNAPSHOT_AS_OF = "2026-06-08"
 
 
 class ModelCatalogSourceAuditService:
     """Audit local Gemini catalog source and default-role metadata without network calls."""
 
-    def build_audit(self) -> dict[str, Any]:
+    def build_audit(self, *, as_of_date: str | date | None = None) -> dict[str, Any]:
         rows = [self._catalog_row(item) for item in catalog_for_api()]
+        source_review_records = self._source_review_records(as_of_date)
         checks = self._checks(rows)
+        checks.append(self._source_freshness_check(source_review_records))
         blocking = [check for check in checks if check["status"] == "fail"]
         warnings = [check for check in checks if check["status"] == "warn"]
         status = "fail" if blocking else ("warn" if warnings else "pass")
@@ -66,11 +76,18 @@ class ModelCatalogSourceAuditService:
                 "high_frequency_aligned_count": sum(
                     1 for item in high_frequency_defaults if self._high_frequency_default_is_aligned(item["default_model"])
                 ),
+                "source_review_current_count": sum(1 for item in source_review_records if item["freshness_status"] == "current"),
+                "source_review_stale_count": sum(1 for item in source_review_records if item["freshness_status"] == "stale"),
+                "default_promotion_source_block_count": sum(
+                    1 for item in source_review_records if item["default_promotion_allowed"] is False
+                ),
                 "blocking_check_count": len(blocking),
                 "warning_check_count": len(warnings),
                 "raw_payload_echoed": False,
             },
             "source_references": list(OFFICIAL_GEMINI_SOURCE_REFERENCES),
+            "source_review_snapshot_as_of": self._as_of_date(as_of_date).isoformat(),
+            "source_review_records": source_review_records,
             "high_frequency_defaults": high_frequency_defaults,
             "catalog_rows": rows,
             "checks": checks,
@@ -87,10 +104,56 @@ class ModelCatalogSourceAuditService:
                 "output_scope": "catalog model ids, official source URLs, pricing/source status, default roles, and check ids only",
             },
             "validation_commands": [
-                "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py -q",
-                "python -m pytest tests/test_model_ops_readiness.py -q",
+                "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
+                "python -m compileall services/model_catalog_source_audit.py tests/test_model_catalog_source_audit.py",
                 "cd ../frontend && npm run typecheck && npm run ui:regression",
             ],
+        }
+
+    def _source_review_records(self, as_of_date: str | date | None) -> list[dict[str, Any]]:
+        as_of = self._as_of_date(as_of_date)
+        rows: list[dict[str, Any]] = []
+        for source in OFFICIAL_GEMINI_SOURCE_REFERENCES:
+            reviewed_on = date.fromisoformat(str(source["last_reviewed_on"]))
+            max_age_days = int(source["max_review_age_days"])
+            age_days = max(0, (as_of - reviewed_on).days)
+            is_current = age_days <= max_age_days
+            rows.append(
+                {
+                    "id": source["id"],
+                    "title": source["title"],
+                    "url": source["url"],
+                    "last_reviewed_on": reviewed_on.isoformat(),
+                    "as_of_date": as_of.isoformat(),
+                    "review_age_days": age_days,
+                    "max_review_age_days": max_age_days,
+                    "freshness_status": "current" if is_current else "stale",
+                    "default_promotion_allowed": is_current,
+                    "review_scope": source["review_scope"],
+                    "required_action": "No source refresh required for catalog default changes."
+                    if is_current
+                    else "Refresh the official Gemini source review before promoting a default model.",
+                }
+            )
+        return rows
+
+    def _as_of_date(self, value: str | date | None) -> date:
+        if isinstance(value, date):
+            return value
+        if value:
+            return date.fromisoformat(str(value))
+        return date.fromisoformat(SOURCE_REVIEW_SNAPSHOT_AS_OF)
+
+    def _source_freshness_check(self, source_review_records: list[dict[str, Any]]) -> dict[str, Any]:
+        stale = [item["id"] for item in source_review_records if item["freshness_status"] == "stale"]
+        return {
+            "id": "official-source-review-freshness",
+            "status": "warn" if stale else "pass",
+            "reason": "Official Gemini pricing/model source reviews are current for default-promotion decisions."
+            if not stale
+            else "Official Gemini source reviews are stale and must block default model promotion: "
+            + ", ".join(stale)
+            + ".",
         }
 
     def _catalog_row(self, item: dict[str, Any]) -> dict[str, Any]:
@@ -209,6 +272,8 @@ class ModelCatalogSourceAuditService:
         if blocking:
             actions.append("Restore catalog source URLs and cheap-first defaults before changing Gemini route defaults.")
         if warnings:
+            if any(check["id"] == "official-source-review-freshness" for check in warnings):
+                actions.append("Refresh official Gemini pricing and model-list source review before promoting default model changes.")
             missing = [row["model_id"] for row in rows if row["pricing_status"] == "missing"]
             if missing:
                 actions.append("Refresh local price metadata or keep explicit-only for: " + ", ".join(missing[:6]) + ".")

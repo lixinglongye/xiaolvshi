@@ -374,7 +374,11 @@ class ReleaseReadinessService:
                     "docs/MODEL_CATALOG_SOURCE_AUDIT.md",
                 ),
                 validation_command="python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
-                manual_note="This audits local Gemini catalog source URLs, pricing metadata, and cheap-first defaults only; it does not call Google, Gemini, NewAPI, OpenAI, or any gateway.",
+                manual_note=(
+                    "This audits local Gemini catalog source URLs, source review freshness, pricing metadata, "
+                    "default-promotion source blocks, and cheap-first defaults only; it does not call Google, "
+                    "Gemini, NewAPI, OpenAI, or any gateway."
+                ),
             ),
             ReleaseCheck(
                 id="model-catalog-candidate-patch-plan",

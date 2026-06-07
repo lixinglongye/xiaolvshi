@@ -349,6 +349,8 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "without NewAPI calls" in checks["gemini-newapi-selector-replay"]["manual_note"]
     assert "metadata-only cheap-first calibration" in checks["gemini-newapi-cheap-first-calibration"]["manual_note"]
     assert "does not call Google" in checks["model-catalog-source-audit"]["manual_note"]
+    assert "source review freshness" in checks["model-catalog-source-audit"]["manual_note"]
+    assert "default-promotion source blocks" in checks["model-catalog-source-audit"]["manual_note"]
     assert "catalog candidate patch plan" in checks["model-catalog-candidate-patch-plan"]["manual_note"]
     assert "does not edit model_catalog.py" in checks["model-catalog-candidate-patch-plan"]["manual_note"]
     assert "virtual catalog impact replay" in checks["model-catalog-candidate-impact-replay"]["manual_note"]

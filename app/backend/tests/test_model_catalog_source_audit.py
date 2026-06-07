@@ -9,9 +9,10 @@ SENSITIVE_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}|password|secret|api[_-]?key
 
 
 def test_model_catalog_source_audit_tracks_sources_pricing_and_defaults():
-    audit = ModelCatalogSourceAuditService().build_audit()
+    audit = ModelCatalogSourceAuditService().build_audit(as_of_date="2026-06-08")
     checks = {check["id"]: check for check in audit["checks"]}
     rows = {row["model_id"]: row for row in audit["catalog_rows"]}
+    source_reviews = {row["id"]: row for row in audit["source_review_records"]}
 
     assert audit["status"] == "warn"
     assert audit["summary"]["catalog_model_count"] >= 8
@@ -23,7 +24,16 @@ def test_model_catalog_source_audit_tracks_sources_pricing_and_defaults():
     assert checks["high-frequency-defaults-cheap-first"]["status"] == "pass"
     assert checks["stable-defaults-not-preview-or-premium"]["status"] == "pass"
     assert checks["pricing-metadata-watchlist"]["status"] == "warn"
+    assert checks["official-source-review-freshness"]["status"] == "pass"
     assert "pricing-metadata-watchlist" in audit["warning_check_ids"]
+    assert audit["source_review_snapshot_as_of"] == "2026-06-08"
+    assert audit["summary"]["source_review_current_count"] == 2
+    assert audit["summary"]["source_review_stale_count"] == 0
+    assert audit["summary"]["default_promotion_source_block_count"] == 0
+    assert source_reviews["google-gemini-pricing"]["freshness_status"] == "current"
+    assert source_reviews["google-gemini-pricing"]["default_promotion_allowed"] is True
+    assert source_reviews["google-gemini-pricing"]["review_age_days"] == 0
+    assert source_reviews["google-gemini-models"]["review_scope"].startswith("model names")
     assert rows["gemini-2.5-flash-lite"]["high_frequency_default_allowed"] is True
     assert rows["gemini-2.5-flash-lite"]["pricing_status"] == "token_priced"
     assert rows["gemini-3-flash-preview"]["catalog_status"] == "preview"
@@ -37,6 +47,23 @@ def test_model_catalog_source_audit_tracks_sources_pricing_and_defaults():
     assert rows["gemini-3-pro-image"]["official_source_url"] is True
     assert audit["privacy_boundary"]["network_called"] is False
     assert not SENSITIVE_PATTERN.search(json.dumps(audit, ensure_ascii=False))
+
+
+def test_model_catalog_source_audit_warns_when_official_source_review_is_stale():
+    audit = ModelCatalogSourceAuditService().build_audit(as_of_date="2026-07-20")
+    checks = {check["id"]: check for check in audit["checks"]}
+    source_reviews = {row["id"]: row for row in audit["source_review_records"]}
+
+    assert audit["status"] == "warn"
+    assert checks["official-source-review-freshness"]["status"] == "warn"
+    assert "official-source-review-freshness" in audit["warning_check_ids"]
+    assert audit["summary"]["source_review_current_count"] == 0
+    assert audit["summary"]["source_review_stale_count"] == 2
+    assert audit["summary"]["default_promotion_source_block_count"] == 2
+    assert source_reviews["google-gemini-pricing"]["freshness_status"] == "stale"
+    assert source_reviews["google-gemini-pricing"]["default_promotion_allowed"] is False
+    assert source_reviews["google-gemini-pricing"]["review_age_days"] == 42
+    assert any("Refresh official Gemini pricing" in action for action in audit["recommended_actions"])
 
 
 def test_model_catalog_source_audit_fails_when_high_frequency_default_drifts(monkeypatch):

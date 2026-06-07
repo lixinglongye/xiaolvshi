@@ -271,6 +271,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-escalation-budget" in completed_ids
     assert "model-failure-upgrade-budget" in completed_ids
     assert "gemini-catalog-source-audit" in completed_ids
+    catalog_source_audit_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "gemini-catalog-source-audit"
+    )
+    assert "source review freshness" in catalog_source_audit_entry["impact"]
+    assert "default-promotion source blocks" in catalog_source_audit_entry["impact"]
+    assert "Flash-Lite cheap-first alignment" in catalog_source_audit_entry["impact"]
     assert "model-catalog-candidate-patch-plan" in completed_ids
     assert "model-catalog-candidate-impact-replay" in completed_ids
     assert "modelops-cheap-first-release-decision" in completed_ids

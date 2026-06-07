@@ -1151,6 +1151,9 @@ export type ModelCatalogSourceAudit = {
     preview_model_count: number;
     high_frequency_default_count: number;
     high_frequency_aligned_count: number;
+    source_review_current_count: number;
+    source_review_stale_count: number;
+    default_promotion_source_block_count: number;
     blocking_check_count: number;
     warning_check_count: number;
     raw_payload_echoed: boolean;
@@ -1160,6 +1163,23 @@ export type ModelCatalogSourceAudit = {
     title: string;
     url: string;
     review_purpose: string;
+    last_reviewed_on: string;
+    max_review_age_days: number;
+    review_scope: string;
+  }>;
+  source_review_snapshot_as_of: string;
+  source_review_records: Array<{
+    id: string;
+    title: string;
+    url: string;
+    last_reviewed_on: string;
+    as_of_date: string;
+    review_age_days: number;
+    max_review_age_days: number;
+    freshness_status: string;
+    default_promotion_allowed: boolean;
+    review_scope: string;
+    required_action: string;
   }>;
   high_frequency_defaults: Array<{
     task: string;

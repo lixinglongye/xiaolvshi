@@ -1,5 +1,14 @@
 # Continuous Update Ledger
 
+Current ModelOps source freshness slice:
+`modelops-catalog-source-freshness-gate` extends the Gemini catalog source
+audit with official pricing/model source review freshness, stale-source counts,
+default-promotion source blocks, ModelOps UI visibility, release readiness
+wording, and local regression checks. It remains metadata-only: it does not call
+Google, Gemini, NewAPI, OpenAI, gateways, app AI endpoints, or the network, and
+it does not include prompts, payloads, legal text, model outputs, credentials,
+emails, gateway responses, or real environment values.
+
 Current Legal RAG index coverage slice:
 `legal-rag-index-coverage-gate` exposes a metadata-only index binding coverage
 gate in the maintenance evidence API and UI. It reviews index plan rows, filter

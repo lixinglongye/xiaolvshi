@@ -372,6 +372,16 @@ The monitor also checks the image default as media pricing metadata. `APP_AI_IMA
 must stay on a known, stable, per-image-priced Gemini image model before image
 usage is scaled beyond explicit local testing.
 
+`model-catalog-source-audit` now also exposes official source review freshness
+for the Gemini pricing and model-list pages. Each source record includes the
+last reviewed date, max allowed review age, current/stale status, review scope,
+and whether default model promotion is allowed from that source state. If source
+review freshness is stale, default-promotion source blocks must be cleared by
+refreshing the official Gemini pricing/model review before changing cheap-first
+defaults. This remains metadata-only: it does not call Google, Gemini, NewAPI,
+OpenAI, gateways, or the network, and it does not include prompts, payloads,
+legal text, model outputs, credentials, or real environment values.
+
 ## PDF and Image Route Evidence
 
 `POST /api/v1/aihub/analyzepdf` and `POST /api/v1/aihub/genimg` now use the same

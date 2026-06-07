@@ -1793,7 +1793,11 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds source-backed Gemini catalog audit evidence so official source URLs, price metadata gaps, preview/premium defaults, and Flash-Lite cheap-first alignment are visible before model defaults change.",
+                impact=(
+                    "Adds source-backed Gemini catalog audit evidence so official source URLs, source review "
+                    "freshness, default-promotion source blocks, price metadata gaps, preview/premium defaults, "
+                    "and Flash-Lite cheap-first alignment are visible before model defaults change."
+                ),
                 evidence_paths=(
                     "app/backend/services/model_catalog_source_audit.py",
                     "app/backend/tests/test_model_catalog_source_audit.py",
