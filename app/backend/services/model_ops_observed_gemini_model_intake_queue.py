@@ -32,6 +32,28 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
         cheap_first_ready = [item for item in queue_items if item["cheap_first_default_candidate"]]
         unknown_gemini = [item for item in queue_items if item["intake_action"] == "catalog_metadata_review"]
         external = [item for item in queue_items if item["intake_action"] == "ignore_non_gemini"]
+        safety_checks = self._promotion_safety_checks(
+            blocked=blocked,
+            review=review,
+            ready=ready,
+            cheap_first_ready=cheap_first_ready,
+            rejected_model_count=rejected_model_count,
+            rejected_sensitive_count=rejected_sensitive_count,
+            rejected_invalid_count=rejected_invalid_count,
+        )
+        blocking_checks = [check for check in safety_checks if check["status"] == "fail"]
+        warning_checks = [check for check in safety_checks if check["status"] == "warn"]
+        intake_runbook_steps = self._intake_runbook_steps(
+            status=(
+                "blocked"
+                if blocked or rejected_model_count
+                else ("review_required" if review else ("ready" if queue_items else "not_run"))
+            ),
+            blocked=blocked,
+            review=review,
+            cheap_first_ready=cheap_first_ready,
+            rejected_model_count=rejected_model_count,
+        )
 
         return {
             "status": (
@@ -61,6 +83,10 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
                 "source_rejected_sensitive_observed_model_count": rejected_sensitive_count,
                 "source_rejected_invalid_observed_model_count": rejected_invalid_count,
                 "source_rejected_observed_model_count": rejected_model_count,
+                "promotion_safety_check_count": len(safety_checks),
+                "promotion_safety_blocking_count": len(blocking_checks),
+                "promotion_safety_warning_count": len(warning_checks),
+                "intake_runbook_step_count": len(intake_runbook_steps),
                 "configuration_written": False,
                 "gateway_called": False,
                 "network_called": False,
@@ -70,6 +96,19 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
             "ready_model_ids": [item["raw_model"] for item in ready],
             "review_model_ids": [item["raw_model"] for item in review],
             "blocked_model_ids": [item["raw_model"] for item in blocked],
+            "cheap_first_candidate_summary": {
+                "candidate_model_ids": [item["raw_model"] for item in cheap_first_ready],
+                "candidate_count": len(cheap_first_ready),
+                "default_task_scope": list(HIGH_FREQUENCY_DEFAULT_TASKS),
+                "review_required_model_ids": [item["raw_model"] for item in review],
+                "blocked_model_ids": [item["raw_model"] for item in blocked],
+                "external_model_ids": [item["raw_model"] for item in external],
+                "safe_to_enter_default_change_queue": bool(cheap_first_ready) and not blocked and not rejected_model_count,
+            },
+            "promotion_safety_checks": safety_checks,
+            "blocking_check_ids": [check["id"] for check in blocking_checks],
+            "warning_check_ids": [check["id"] for check in warning_checks],
+            "intake_runbook_steps": intake_runbook_steps,
             "recommended_actions": self._recommended_actions(
                 blocked,
                 review,
@@ -99,6 +138,7 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
                 "pricing_accuracy_claimed": False,
                 "model_quality_claimed": False,
                 "public_benchmark_scores_included": False,
+                "ready_candidates_are_auto_promoted": False,
             },
             "validation_commands": [
                 "python -m pytest tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_gemini_model_variant_matrix.py -q",
@@ -136,6 +176,144 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
             "reason_codes": reason_codes,
             "warnings": [str(item) for item in row.get("warnings", []) if item],
         }
+
+    def _promotion_safety_checks(
+        self,
+        *,
+        blocked: list[dict[str, Any]],
+        review: list[dict[str, Any]],
+        ready: list[dict[str, Any]],
+        cheap_first_ready: list[dict[str, Any]],
+        rejected_model_count: int,
+        rejected_sensitive_count: int,
+        rejected_invalid_count: int,
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": "sanitized-model-id-intake",
+                "status": "fail" if rejected_model_count else "pass",
+                "reason": (
+                    "Rejected sensitive or malformed model metadata is present; do not promote defaults."
+                    if rejected_model_count
+                    else "Observed model ids passed the shared metadata-only sanitizer."
+                ),
+                "evidence": [
+                    f"rejected_sensitive:{rejected_sensitive_count}",
+                    f"rejected_invalid:{rejected_invalid_count}",
+                ],
+            },
+            {
+                "id": "unknown-gemini-default-block",
+                "status": "fail" if blocked else "pass",
+                "reason": (
+                    "Unknown or unpriced Gemini-like models remain explicit-only until catalog metadata exists."
+                    if blocked
+                    else "No unknown Gemini-like model is eligible for default promotion."
+                ),
+                "evidence": [item["id"] for item in blocked],
+            },
+            {
+                "id": "review-only-model-boundary",
+                "status": "warn" if review else "pass",
+                "reason": (
+                    "Preview, premium, media, balanced, or non-Gemini rows require maintainer review before default work."
+                    if review
+                    else "No review-only observed model is queued for default promotion."
+                ),
+                "evidence": [item["id"] for item in review],
+            },
+            {
+                "id": "cheap-first-candidate-boundary",
+                "status": "pass" if cheap_first_ready or not ready else "warn",
+                "reason": (
+                    "Ready candidates are limited to stable low-cost Gemini models for high-frequency task scope."
+                    if cheap_first_ready
+                    else (
+                        "Ready rows exist but none are cheap-first default candidates."
+                        if ready
+                        else "No ready observed Gemini candidates were submitted."
+                    )
+                ),
+                "evidence": [item["id"] for item in cheap_first_ready],
+            },
+        ]
+
+    def _intake_runbook_steps(
+        self,
+        *,
+        status: str,
+        blocked: list[dict[str, Any]],
+        review: list[dict[str, Any]],
+        cheap_first_ready: list[dict[str, Any]],
+        rejected_model_count: int,
+    ) -> list[dict[str, Any]]:
+        steps = [
+            {
+                "id": "submit-sanitized-model-list",
+                "step_order": 1,
+                "owner": "maintainer",
+                "step_status": "blocked" if rejected_model_count else "ready",
+                "action": "Paste only sanitized /v1/models ids or model-list JSON into the observed Gemini intake evaluator.",
+                "depends_on": [],
+                "release_gate_links": ["gemini-variant-matrix", "observed-gemini-model-intake-queue"],
+                "validation_commands": [
+                    "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py -q",
+                ],
+            },
+            {
+                "id": "catalog-metadata-review",
+                "step_order": 2,
+                "owner": "model-ops",
+                "step_status": "blocked" if blocked else ("review_required" if review else "ready"),
+                "action": (
+                    "Add or refresh source-backed catalog metadata before any unknown, preview, premium, or media model is used as a default."
+                    if blocked or review
+                    else "Catalog metadata is sufficient for the submitted observed Gemini defaults."
+                ),
+                "depends_on": ["submit-sanitized-model-list"],
+                "release_gate_links": ["catalog-source-audit", "catalog-candidate-patch-plan"],
+                "validation_commands": [
+                    "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog_candidate_patch_plan.py -q",
+                ],
+            },
+            {
+                "id": "selector-replay-before-default-change",
+                "step_order": 3,
+                "owner": "model-ops",
+                "step_status": "blocked" if blocked or rejected_model_count else ("ready" if cheap_first_ready else "review_required"),
+                "action": (
+                    "Run selector replay and impact replay before moving cheap-first candidates into default-change review."
+                    if cheap_first_ready
+                    else "Keep observed models in review until at least one stable low-cost Gemini candidate exists."
+                ),
+                "depends_on": ["catalog-metadata-review"],
+                "release_gate_links": ["gemini-newapi-selector-replay", "catalog-candidate-impact-replay"],
+                "validation_commands": [
+                    "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_model_catalog_candidate_impact_replay.py -q",
+                ],
+            },
+            {
+                "id": "default-change-and-canary-review",
+                "step_order": 4,
+                "owner": "maintainer",
+                "step_status": "blocked" if status == "blocked" else ("ready" if cheap_first_ready and not review else "review_required"),
+                "action": (
+                    "Only after replay passes, use the default-change queue, canary plan, approval packet, rollback drill, and change manifest."
+                    if cheap_first_ready
+                    else "Do not edit defaults; rerun intake after catalog and selector evidence is ready."
+                ),
+                "depends_on": ["selector-replay-before-default-change"],
+                "release_gate_links": [
+                    "default-change-queue",
+                    "cheap-first-canary-plan",
+                    "cheap-first-maintainer-execution-checklist",
+                ],
+                "validation_commands": [
+                    "python -m pytest tests/test_model_ops_default_change_queue.py tests/test_model_ops_cheap_first_maintainer_execution_checklist.py -q",
+                ],
+            },
+        ]
+        return steps
 
     def _intake_action(self, row: dict[str, Any], profile: Any) -> str:
         raw_model = str(row.get("raw_model") or "")

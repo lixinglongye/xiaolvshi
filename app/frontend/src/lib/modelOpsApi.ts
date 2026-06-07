@@ -392,6 +392,24 @@ export type ModelOpsObservedGeminiModelIntakeQueueItem = {
   warnings: string[];
 };
 
+export type ModelOpsObservedGeminiPromotionSafetyCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsObservedGeminiIntakeRunbookStep = {
+  id: string;
+  step_order: number;
+  owner: string;
+  step_status: string;
+  action: string;
+  depends_on: string[];
+  release_gate_links: string[];
+  validation_commands: string[];
+};
+
 export type ModelOpsObservedGeminiModelIntakeQueue = {
   status: string;
   method: {
@@ -412,6 +430,10 @@ export type ModelOpsObservedGeminiModelIntakeQueue = {
     source_rejected_sensitive_observed_model_count?: number;
     source_rejected_invalid_observed_model_count?: number;
     source_rejected_observed_model_count?: number;
+    promotion_safety_check_count: number;
+    promotion_safety_blocking_count: number;
+    promotion_safety_warning_count: number;
+    intake_runbook_step_count: number;
     configuration_written: boolean;
     gateway_called: boolean;
     network_called: boolean;
@@ -421,6 +443,19 @@ export type ModelOpsObservedGeminiModelIntakeQueue = {
   ready_model_ids: string[];
   review_model_ids: string[];
   blocked_model_ids: string[];
+  cheap_first_candidate_summary: {
+    candidate_model_ids: string[];
+    candidate_count: number;
+    default_task_scope: string[];
+    review_required_model_ids: string[];
+    blocked_model_ids: string[];
+    external_model_ids: string[];
+    safe_to_enter_default_change_queue: boolean;
+  };
+  promotion_safety_checks: ModelOpsObservedGeminiPromotionSafetyCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  intake_runbook_steps: ModelOpsObservedGeminiIntakeRunbookStep[];
   recommended_actions: string[];
   source_summaries: Record<string, unknown>;
   privacy_boundary: Record<string, boolean | string>;

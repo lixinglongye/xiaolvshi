@@ -677,11 +677,18 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'Observed Gemini model intake queue', 'model-ops observed Gemini intake queue panel'),
   () => assertIncludes(modelOpsPage, 'activeObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake active binding'),
   () => assertIncludes(modelOpsPage, 'observedGeminiModelIntakeRows', 'model-ops observed Gemini intake row binding'),
+  () => assertIncludes(modelOpsPage, 'observedGeminiPromotionSafetyChecks', 'model-ops observed Gemini intake safety checks binding'),
+  () => assertIncludes(modelOpsPage, 'observedGeminiIntakeRunbookSteps', 'model-ops observed Gemini intake runbook binding'),
   () => assertIncludes(modelOpsPage, 'defaultObservedGeminiModelIntakePayload', 'model-ops observed Gemini intake template payload'),
   () => assertIncludes(modelOpsPage, 'yibu/gemini-3.1-flash-image', 'model-ops observed Gemini image route intake example'),
   () => assertIncludes(modelOpsPage, 'hasForbiddenObservedGeminiModelIntakePayloadText', 'model-ops observed Gemini intake payload guard'),
   () => assertIncludes(modelOpsPage, 'Evaluate intake queue', 'model-ops observed Gemini intake submit button'),
   () => assertIncludes(modelOpsPage, 'cheap_first_default_candidate', 'model-ops observed Gemini intake cheap-first candidate binding'),
+  () => assertIncludes(modelOpsPage, 'Promotion safety checks', 'model-ops observed Gemini intake safety checks panel'),
+  () => assertIncludes(modelOpsPage, 'Intake runbook', 'model-ops observed Gemini intake runbook panel'),
+  () => assertIncludes(modelOpsPage, 'promotion_safety_blocking_count', 'model-ops observed Gemini intake safety blocker summary'),
+  () => assertIncludes(modelOpsPage, 'intake_runbook_step_count', 'model-ops observed Gemini intake runbook summary'),
+  () => assertIncludes(modelOpsPage, 'safe_to_enter_default_change_queue', 'model-ops observed Gemini intake default queue safety summary'),
   () => assertIncludes(modelOpsPage, 'automatic_default_change_claimed', 'model-ops observed Gemini intake no automatic default change claim'),
   () => assertIncludes(modelOpsPage, 'raw payload echoed', 'model-ops observed Gemini intake raw payload boundary'),
   () => assertIncludes(modelOpsPage, 'Observed Gemini coverage gap queue', 'model-ops observed Gemini coverage gap queue panel'),
@@ -1334,6 +1341,10 @@ const checks = [
   ),
   () => assertIncludes(modelOpsApi, 'GeminiVariantMatrix', 'model-ops Gemini variant matrix type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsObservedGeminiPromotionSafetyCheck', 'model-ops observed Gemini intake safety check type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsObservedGeminiIntakeRunbookStep', 'model-ops observed Gemini intake runbook step type'),
+  () => assertIncludes(modelOpsApi, 'promotion_safety_checks: ModelOpsObservedGeminiPromotionSafetyCheck[]', 'model-ops observed Gemini intake safety checks response type'),
+  () => assertIncludes(modelOpsApi, 'intake_runbook_steps: ModelOpsObservedGeminiIntakeRunbookStep[]', 'model-ops observed Gemini intake runbook response type'),
   () => assertIncludes(modelOpsApi, 'getModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue API'),
   () => assertIncludes(modelOpsApi, 'evaluateModelOpsObservedGeminiModelIntakeQueue', 'model-ops observed Gemini intake queue evaluation API'),
   () => assertIncludes(modelOpsApi, 'observed_gemini_model_intake_queue', 'model-ops observed Gemini intake queue response binding'),
@@ -1506,6 +1517,21 @@ const observedGeminiModelIntakePanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Observed Gemini model intake queue</h2>',
   'Gemini variant matrix',
   'model-ops observed Gemini intake queue section',
+);
+assertIncludes(
+  observedGeminiModelIntakePanel,
+  'Promotion safety checks',
+  'model-ops observed Gemini intake safety checks inside intake panel',
+);
+assertIncludes(
+  observedGeminiModelIntakePanel,
+  'Intake runbook',
+  'model-ops observed Gemini intake runbook inside intake panel',
+);
+assertIncludes(
+  observedGeminiModelIntakePanel,
+  'safe_to_enter_default_change_queue',
+  'model-ops observed Gemini intake safety flag inside intake panel',
 );
 const geminiDefaultChangeReviewPanel = sourceSection(
   modelOpsPage,

@@ -135,10 +135,15 @@ or credentials.
 intake queue evidence for OpenAI-compatible gateway `/models` or manually
 observed Gemini-like model ids before they enter default candidates. The queue
 scope normalizes ids and records known/unknown status, price, lifecycle, cost
-tier, cheap-first eligibility, and default-promotion block/review/ready state.
-It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
-not write real environment values, and does not include raw prompts, payloads,
-model outputs, or credentials.
+tier, cheap-first eligibility, default-promotion block/review/ready state,
+promotion safety checks, cheap-first candidate summaries, and maintainer runbook
+steps. Unknown Gemini-like ids block default promotion, review-only rows stay
+outside default queues, and ready Flash-Lite-style candidates still require
+selector replay, catalog impact replay, default-change queue, canary, approval,
+rollback, and maintainer checklist evidence before any configuration edit. It
+does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does not
+write real environment values or shift traffic, and does not include raw
+prompts, payloads, model outputs, legal text, emails, or credentials.
 
 `modelops-observed-gemini-coverage-gap-queue` is the shipped metadata-only
 coverage queue for observed Gemini-like model ids. It joins the observed intake

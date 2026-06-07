@@ -2771,7 +2771,15 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only observed Gemini model intake queue evidence so OpenAI-compatible gateway /models or manually observed Gemini-like model ids can be normalized through shared observed-model extraction and marked with known or unknown status, price, lifecycle, cost tier, cheap-first eligibility, and default-promotion block/review/ready state before they enter default candidates, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real environment writes, raw prompts, payloads, model outputs, or credentials.",
+                impact=(
+                    "Adds metadata-only observed Gemini model intake queue evidence so OpenAI-compatible gateway /models "
+                    "or manually observed Gemini-like model ids can be normalized through shared observed-model extraction "
+                    "and marked with known or unknown status, price, lifecycle, cost tier, cheap-first eligibility, "
+                    "default-promotion block/review/ready state, promotion safety checks, cheap-first candidate summaries, "
+                    "and maintainer runbook steps before they enter default candidates, without "
+                    "NewAPI/Gemini/OpenAI/Google/gateway/network calls, real environment writes, configuration writes, "
+                    "traffic shifts, raw prompts, payloads, model outputs, legal text, emails, or credentials."
+                ),
                 evidence_paths=(
                     "app/backend/services/gemini_newapi_observed_model_extraction.py",
                     "app/backend/services/model_ops_observed_gemini_model_intake_queue.py",
@@ -2783,11 +2791,18 @@ class ContinuousUpdateLedgerService:
                     "app/backend/tests/test_release_readiness.py",
                     "app/backend/tests/test_continuous_update_ledger.py",
                     "app/backend/tests/test_maintenance_evidence.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "docs/AI_MODEL_STRATEGY.md",
                     "docs/CONTINUOUS_UPDATE_LEDGER.md",
                 ),
                 release_gate_links=(
                     "modelops-observed-gemini-model-intake-queue",
+                    "gemini-newapi-selector-replay",
+                    "model-catalog-candidate-impact-replay",
+                    "modelops-default-change-queue",
+                    "modelops-cheap-first-maintainer-execution-checklist",
                     "modelops-gemini-default-change-review",
                     "modelops-gemini-default-cost-impact",
                     "modelops-gemini-cheap-first-coverage-gate",

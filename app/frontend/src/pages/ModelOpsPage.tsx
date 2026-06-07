@@ -1214,6 +1214,8 @@ function Inner() {
   const activeObservedGeminiModelIntakeQueue =
     observedGeminiModelIntakeQueue ?? data?.observed_gemini_model_intake_queue ?? null;
   const observedGeminiModelIntakeRows = activeObservedGeminiModelIntakeQueue?.queue_items ?? [];
+  const observedGeminiPromotionSafetyChecks = activeObservedGeminiModelIntakeQueue?.promotion_safety_checks ?? [];
+  const observedGeminiIntakeRunbookSteps = activeObservedGeminiModelIntakeQueue?.intake_runbook_steps ?? [];
   const activeObservedGeminiCoverageGapQueue =
     observedGeminiCoverageGapQueue ?? data?.observed_gemini_coverage_gap_queue ?? null;
   const observedGeminiCoverageGapFamilyRows = activeObservedGeminiCoverageGapQueue?.family_rows ?? [];
@@ -4658,21 +4660,21 @@ function Inner() {
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {String(activeObservedGeminiModelIntakeQueue.summary.gateway_called)}
+                  {activeObservedGeminiModelIntakeQueue.summary.promotion_safety_blocking_count}
                 </div>
-                <div className="mt-1 text-sm text-stone-600">gateway called</div>
+                <div className="mt-1 text-sm text-stone-600">safety blockers</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {String(activeObservedGeminiModelIntakeQueue.summary.configuration_written)}
+                  {activeObservedGeminiModelIntakeQueue.summary.intake_runbook_step_count}
                 </div>
-                <div className="mt-1 text-sm text-stone-600">configuration written</div>
+                <div className="mt-1 text-sm text-stone-600">runbook steps</div>
               </div>
               <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                 <div className="text-2xl font-black text-stone-950">
-                  {String(activeObservedGeminiModelIntakeQueue.summary.raw_payload_echoed)}
+                  {String(activeObservedGeminiModelIntakeQueue.cheap_first_candidate_summary.safe_to_enter_default_change_queue)}
                 </div>
-                <div className="mt-1 text-sm text-stone-600">raw payload echoed</div>
+                <div className="mt-1 text-sm text-stone-600">default queue safe</div>
               </div>
             </div>
 
@@ -4743,6 +4745,80 @@ function Inner() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-2">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="border-b border-stone-950/10 px-4 py-3">
+                  <div className="text-sm font-black uppercase text-stone-500">Promotion safety checks</div>
+                  <div className="mt-1 text-xs leading-5 text-stone-600">
+                    Blocks unknown or unsafe Gemini-like ids before they enter default-change review.
+                  </div>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Check</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {observedGeminiPromotionSafetyChecks.map((check) => (
+                      <TableRow key={check.id}>
+                        <TableCell className="font-mono text-xs text-stone-700">{check.id}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(check.status)}>
+                            {check.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <div className="border-b border-stone-950/10 px-4 py-3">
+                  <div className="text-sm font-black uppercase text-stone-500">Intake runbook</div>
+                  <div className="mt-1 text-xs leading-5 text-stone-600">
+                    Maintainer sequence from sanitized model-list intake to canary-gated default review.
+                  </div>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Step</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {observedGeminiIntakeRunbookSteps.map((step) => (
+                      <TableRow key={step.id}>
+                        <TableCell>
+                          <div className="text-xs font-semibold text-stone-950">
+                            {step.step_order}. {step.id}
+                          </div>
+                          <div className="mt-1 text-[11px] text-stone-500">{step.owner}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(step.step_status)}>
+                            {step.step_status.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                          {step.action}
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            gates {step.release_gate_links.slice(0, 3).join(', ') || '-'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </div>
 

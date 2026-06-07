@@ -33,6 +33,14 @@ def test_observed_gemini_model_intake_queue_ranks_ready_blocked_and_review_model
     assert queue["summary"]["observed_model_count"] == 6
     assert queue["summary"]["cheap_first_candidate_count"] == 1
     assert queue["summary"]["unknown_gemini_count"] == 1
+    assert queue["summary"]["promotion_safety_check_count"] == 4
+    assert queue["summary"]["promotion_safety_blocking_count"] == 1
+    assert queue["summary"]["promotion_safety_warning_count"] == 1
+    assert queue["summary"]["intake_runbook_step_count"] == 4
+    assert queue["blocking_check_ids"] == ["unknown-gemini-default-block"]
+    assert queue["warning_check_ids"] == ["review-only-model-boundary"]
+    assert queue["cheap_first_candidate_summary"]["candidate_model_ids"] == ["models/gemini-2.5-flash-lite"]
+    assert queue["cheap_first_candidate_summary"]["safe_to_enter_default_change_queue"] is False
     assert rows["models/gemini-2.5-flash-lite"]["intake_status"] == "ready"
     assert rows["models/gemini-2.5-flash-lite"]["cheap_first_default_candidate"] is True
     assert rows["models/gemini-2.5-flash-lite"]["allowed_default_tasks"] == [
@@ -50,6 +58,16 @@ def test_observed_gemini_model_intake_queue_ranks_ready_blocked_and_review_model
     assert rows["gemini-3.1-pro-preview"]["intake_status"] == "review_required"
     assert "lifecycle-preview" in rows["gemini-3.1-pro-preview"]["reason_codes"]
     assert rows["provider/not-gemini"]["release_action"] == "exclude_from_gemini_default_candidates"
+    safety_checks = {check["id"]: check for check in queue["promotion_safety_checks"]}
+    assert safety_checks["sanitized-model-id-intake"]["status"] == "pass"
+    assert safety_checks["unknown-gemini-default-block"]["status"] == "fail"
+    assert safety_checks["review-only-model-boundary"]["status"] == "warn"
+    assert safety_checks["cheap-first-candidate-boundary"]["status"] == "pass"
+    runbook = {step["id"]: step for step in queue["intake_runbook_steps"]}
+    assert runbook["submit-sanitized-model-list"]["step_status"] == "ready"
+    assert runbook["catalog-metadata-review"]["step_status"] == "blocked"
+    assert runbook["selector-replay-before-default-change"]["step_status"] == "blocked"
+    assert "gemini-newapi-selector-replay" in runbook["selector-replay-before-default-change"]["release_gate_links"]
 
 
 def test_observed_gemini_model_intake_queue_metadata_only_boundaries():
@@ -66,6 +84,9 @@ def test_observed_gemini_model_intake_queue_metadata_only_boundaries():
     assert queue["privacy_boundary"]["raw_model_output_included"] is False
     assert queue["claim_boundary"]["automatic_default_change_claimed"] is False
     assert queue["claim_boundary"]["pricing_accuracy_claimed"] is False
+    assert queue["claim_boundary"]["ready_candidates_are_auto_promoted"] is False
+    assert queue["cheap_first_candidate_summary"]["safe_to_enter_default_change_queue"] is True
+    assert all(check["status"] == "pass" for check in queue["promotion_safety_checks"])
     assert not SENSITIVE_PATTERN.search(serialized)
 
 
@@ -81,6 +102,8 @@ def test_observed_gemini_model_intake_queue_blocks_rejected_only_payloads_withou
     assert queue["status"] == "blocked"
     assert queue["summary"]["observed_model_count"] == 0
     assert queue["summary"]["blocked_count"] == 3
+    assert queue["summary"]["promotion_safety_blocking_count"] == 1
+    assert queue["blocking_check_ids"] == ["sanitized-model-id-intake"]
     assert queue["summary"]["source_rejected_sensitive_observed_model_count"] == 2
     assert queue["summary"]["source_rejected_invalid_observed_model_count"] == 1
     assert queue["summary"]["source_rejected_observed_model_count"] == 3
@@ -89,6 +112,8 @@ def test_observed_gemini_model_intake_queue_blocks_rejected_only_payloads_withou
     assert extraction["rejected_invalid_count"] == 1
     assert extraction["rejected_model_count"] == 3
     assert extraction["raw_rejected_values_echoed"] is False
+    assert queue["intake_runbook_steps"][0]["step_status"] == "blocked"
+    assert queue["cheap_first_candidate_summary"]["safe_to_enter_default_change_queue"] is False
     assert secret not in serialized
     assert "client@example.com" not in serialized
     assert invalid_marker not in serialized
