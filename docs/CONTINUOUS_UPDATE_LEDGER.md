@@ -1,5 +1,13 @@
 # Continuous Update Ledger
 
+Current legal document fixture UI slice:
+`legal-document-benchmark-fixture-ui` exposes the local synthetic legal-document
+fixture suite and empty-prediction evaluator on the maintenance evidence page.
+It shows case ids, document types, expected-check counts, field keys, snippet
+lengths, scoring state, local resource policy, and validation commands while
+deliberately not rendering raw fixture snippets, prompts, model responses,
+gateway payloads, credentials, emails, or client material.
+
 Current ModelOps source freshness slice:
 `modelops-catalog-source-freshness-gate` extends the Gemini catalog source
 audit with official pricing/model source review freshness, stale-source counts,

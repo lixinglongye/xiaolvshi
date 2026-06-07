@@ -315,6 +315,27 @@ const checks = [
   () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
   () => assertIncludes(maintenancePage, 'Legal document benchmark coverage', 'legal document benchmark coverage panel'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkEvaluation', 'legal document benchmark evaluation type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkFixtures', 'legal document benchmark evaluation API binding'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-fixtures',
+      'legal document benchmark fixtures endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures load task'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkFixtures({})', 'legal document benchmark not-run evaluation load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkFixtures', 'legal document benchmark fixtures state binding'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkEvaluation', 'legal document benchmark evaluation state binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark fixtures', 'legal document benchmark fixtures panel'),
+  () => assertIncludes(maintenancePage, 'raw snippet rendered: false', 'legal document benchmark raw snippet UI boundary'),
+  () => assertIncludes(maintenancePage, 'maintenance_ui_renders_raw_fixture_snippets', 'legal document benchmark explicit UI raw snippet boundary'),
+  () => assertIncludes(maintenancePage, 'public_benchmark_score_claimed', 'legal document benchmark public score claim boundary'),
+  () => assertIncludes(maintenancePage, 'expected_fields', 'legal document benchmark expected fields binding'),
+  () => assertIncludes(maintenancePage, 'model_call_policy', 'legal document benchmark model call policy binding'),
   () => assertIncludes(maintenancePage, 'returns_raw_model_output', 'maintenance privacy boundary'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentFactConsistencyBenchmark', 'legal document fact consistency benchmark type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentFactConsistencyEvaluation', 'legal document fact consistency evaluation type'),
@@ -337,8 +358,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       'Legal document benchmark coverage',
+      'Legal document benchmark fixtures',
+      'document fixture suite follows document coverage',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Legal document benchmark fixtures',
       'Legal document fact consistency benchmark',
-      'fact consistency follows document coverage',
+      'fact consistency follows document fixture suite',
     ),
   () =>
     assertBefore(

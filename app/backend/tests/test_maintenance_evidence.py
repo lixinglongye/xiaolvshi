@@ -506,6 +506,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal document fact consistency benchmark is metadata-only amount/date/fact consistency evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("case ids, counts, and reason codes only" in guardrail for guardrail in profile["application_guardrails"])
+    assert any(
+        "legal document benchmark fixture UI" in guardrail and "does not render raw fixture snippets" in guardrail
+        for guardrail in profile["application_guardrails"]
+    )
     assert any("does not write configuration" in guardrail for guardrail in profile["application_guardrails"])
     assert any("shift traffic" in guardrail for guardrail in profile["application_guardrails"])
     assert any("agentic grounded defaults evidence is metadata-only/default routing evidence" in guardrail for guardrail in profile["application_guardrails"])

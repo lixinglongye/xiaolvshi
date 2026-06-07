@@ -4220,6 +4220,98 @@ export type LegalDocumentBenchmarkCoverage = {
   privacy_note: string;
 };
 
+export type LegalDocumentBenchmarkExpectedTask = {
+  id: string;
+  title: string;
+  output_type: string;
+  local_check: string;
+  required_for: string[];
+};
+
+export type LegalDocumentBenchmarkCase = {
+  id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  snippet: string;
+  expected_tasks: string[];
+  expected_fields: Record<string, string>;
+  expected_risk_labels: string[];
+  expected_classification_labels: string[];
+};
+
+export type LegalDocumentBenchmarkPrediction = {
+  document_type?: string;
+  classification_labels?: string[];
+  task_labels?: string[];
+  risk_labels?: string[];
+  extracted_fields?: Record<string, string>;
+};
+
+export type LegalDocumentBenchmarkEvaluationPlan = {
+  type: string;
+  model_call_policy: string;
+  network_access: string;
+  resource_profile: {
+    max_cases: number;
+    max_snippet_chars: number;
+    parallelism: number;
+    storage: string;
+  };
+  steps: Array<{
+    order: number;
+    id: string;
+    check: string;
+  }>;
+  metrics: Record<string, string>;
+  pass_thresholds: Record<string, number>;
+};
+
+export type LegalDocumentBenchmarkFixtures = {
+  status: string;
+  summary: {
+    benchmark_case_count: number;
+    expected_task_count: number;
+    max_snippet_chars: number;
+    language: string;
+    model_calls: string;
+    network_access: string;
+  };
+  benchmark_cases: LegalDocumentBenchmarkCase[];
+  expected_tasks: LegalDocumentBenchmarkExpectedTask[];
+  evaluation_plan: LegalDocumentBenchmarkEvaluationPlan;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  privacy_note: string;
+  validation_commands: string[];
+};
+
+export type LegalDocumentBenchmarkCaseResult = {
+  case_id: string;
+  title: string;
+  status: string;
+  score: number;
+  metric_scores: Record<string, number>;
+  missing_tasks: string[];
+  missing_risk_labels: string[];
+  missing_fields: string[];
+};
+
+export type LegalDocumentBenchmarkEvaluation = {
+  status: string;
+  score: number;
+  case_count: number;
+  passed_case_count: number;
+  warning_case_count: number;
+  failed_case_count: number;
+  not_run_case_count: number;
+  case_results: LegalDocumentBenchmarkCaseResult[];
+  blocking_case_ids: string[];
+  evaluation_plan: LegalDocumentBenchmarkEvaluationPlan;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+};
+
 export type LegalDocumentFactConsistencyAmountExpectation = {
   id: string;
   value: number;
@@ -4319,6 +4411,16 @@ type LegalReviewBenchmarkResponse = {
 type LegalDocumentBenchmarkCoverageResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkCoverage;
+};
+
+type LegalDocumentBenchmarkFixturesResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkFixtures;
+};
+
+type LegalDocumentBenchmarkEvaluationResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkEvaluation;
 };
 
 type LegalDocumentFactConsistencyBenchmarkResponse = {
@@ -5770,6 +5872,37 @@ export async function getLegalDocumentBenchmarkCoverage(): Promise<LegalDocument
     return payload.data;
   }
   return payload as LegalDocumentBenchmarkCoverage;
+}
+
+export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-fixtures',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkFixturesResponse
+    | LegalDocumentBenchmarkFixtures;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkFixtures;
+}
+
+export async function evaluateLegalDocumentBenchmarkFixtures(
+  predictions: Record<string, LegalDocumentBenchmarkPrediction> = {},
+): Promise<LegalDocumentBenchmarkEvaluation> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-fixtures',
+    method: 'POST',
+    data: predictions,
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkEvaluationResponse
+    | LegalDocumentBenchmarkEvaluation;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkEvaluation;
 }
 
 export async function getLegalDocumentFactConsistencyBenchmark(): Promise<LegalDocumentFactConsistencyBenchmark> {

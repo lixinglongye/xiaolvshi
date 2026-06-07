@@ -59,6 +59,8 @@ import {
   getLegalResearchBacklog,
   getLegalReviewFixtureSmoke,
   getLegalReviewBenchmark,
+  getLegalDocumentBenchmarkFixtures,
+  evaluateLegalDocumentBenchmarkFixtures,
   getLegalBenchmarkResearchRefresh,
   getModelRouteLegalBenchmarkRiskQueue,
   getLegalRagEvaluationPolicy,
@@ -117,6 +119,8 @@ import {
   type LegalBenchmarkResearchRegistry,
   type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
+  type LegalDocumentBenchmarkEvaluation,
+  type LegalDocumentBenchmarkFixtures,
   type LegalDocumentFactConsistencyBenchmark,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkLicenseGate,
@@ -531,6 +535,10 @@ function Inner() {
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [legalDocumentBenchmarkCoverage, setLegalDocumentBenchmarkCoverage] =
     useState<LegalDocumentBenchmarkCoverage | null>(null);
+  const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
+    useState<LegalDocumentBenchmarkFixtures | null>(null);
+  const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
+    useState<LegalDocumentBenchmarkEvaluation | null>(null);
   const [legalDocumentFactConsistencyBenchmark, setLegalDocumentFactConsistencyBenchmark] =
     useState<LegalDocumentFactConsistencyBenchmark | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
@@ -714,6 +722,16 @@ function Inner() {
           label: 'Legal document benchmark coverage',
           run: getLegalDocumentBenchmarkCoverage,
           apply: (value) => setLegalDocumentBenchmarkCoverage(value as LegalDocumentBenchmarkCoverage),
+        },
+        {
+          label: 'Legal document benchmark fixtures',
+          run: getLegalDocumentBenchmarkFixtures,
+          apply: (value) => setLegalDocumentBenchmarkFixtures(value as LegalDocumentBenchmarkFixtures),
+        },
+        {
+          label: 'Legal document benchmark fixture evaluation',
+          run: () => evaluateLegalDocumentBenchmarkFixtures({}),
+          apply: (value) => setLegalDocumentBenchmarkEvaluation(value as LegalDocumentBenchmarkEvaluation),
         },
         {
           label: 'Legal document fact consistency benchmark',
@@ -6541,6 +6559,171 @@ function Inner() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkFixtures && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkFixtures.summary.benchmark_case_count} local cases /{' '}
+                      {legalDocumentBenchmarkFixtures.summary.expected_task_count} expected tasks /{' '}
+                      {legalDocumentBenchmarkFixtures.summary.model_calls} model calls
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalDocumentBenchmarkFixtures.status] ?? statusClass.ready}
+                  >
+                    {legalDocumentBenchmarkFixtures.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    { label: 'fixture cases', value: legalDocumentBenchmarkFixtures.summary.benchmark_case_count },
+                    { label: 'expected tasks', value: legalDocumentBenchmarkFixtures.summary.expected_task_count },
+                    { label: 'max snippet chars', value: legalDocumentBenchmarkFixtures.summary.max_snippet_chars },
+                    { label: 'parallelism', value: legalDocumentBenchmarkFixtures.evaluation_plan.resource_profile.parallelism },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Expected checks</TableHead>
+                          <TableHead>Fixture boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkFixtures.benchmark_cases.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[340px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className="bg-white font-mono text-[11px]">
+                                {row.document_type}
+                              </Badge>
+                              <div className="mt-2">{row.matter_type}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{row.expected_tasks.length} tasks</div>
+                              <div>{row.expected_risk_labels.length} risk labels</div>
+                              <div>{row.expected_classification_labels.length} classification labels</div>
+                              <div>fields: {Object.keys(row.expected_fields).join(', ')}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>snippet chars: {row.snippet.length}</div>
+                              <div>raw snippet rendered: false</div>
+                              <div>source: synthetic local fixture</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Local evaluation</h3>
+                    <div className="mb-3 grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'status', value: legalDocumentBenchmarkEvaluation?.status ?? 'not_loaded' },
+                        { label: 'score', value: legalDocumentBenchmarkEvaluation?.score ?? 0 },
+                        { label: 'not run', value: legalDocumentBenchmarkEvaluation?.not_run_case_count ?? 0 },
+                        { label: 'blocking', value: legalDocumentBenchmarkEvaluation?.blocking_case_ids.length ?? 0 },
+                      ].map((metric) => (
+                        <div key={metric.label} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="text-lg font-black text-stone-950">{metric.value}</div>
+                          <div className="mt-1 text-xs text-stone-500">{metric.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Evaluation plan</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>type: {legalDocumentBenchmarkFixtures.evaluation_plan.type}</div>
+                      <div>model policy: {legalDocumentBenchmarkFixtures.evaluation_plan.model_call_policy}</div>
+                      <div>network: {legalDocumentBenchmarkFixtures.evaluation_plan.network_access}</div>
+                      <div>storage: {legalDocumentBenchmarkFixtures.evaluation_plan.resource_profile.storage}</div>
+                      <div>
+                        returns synthetic snippets:{' '}
+                        {formatInline(legalDocumentBenchmarkFixtures.privacy_boundary.returns_synthetic_fixture_snippets)}
+                      </div>
+                      <div>
+                        UI renders raw snippets:{' '}
+                        {formatInline(
+                          legalDocumentBenchmarkFixtures.privacy_boundary.maintenance_ui_renders_raw_fixture_snippets,
+                        )}
+                      </div>
+                      <div>
+                        public score claim:{' '}
+                        {formatInline(legalDocumentBenchmarkFixtures.claim_boundary.public_benchmark_score_claimed)}
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">
+                      {legalDocumentBenchmarkFixtures.privacy_note}
+                    </div>
+                  </div>
+                </div>
+
+                {legalDocumentBenchmarkEvaluation && (
+                  <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Evaluation case</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>Missing metadata</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkEvaluation.case_results.map((row) => (
+                          <TableRow key={row.case_id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[row.status] ?? statusClass.warn}>
+                                {row.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">{row.score}</TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>tasks: {row.missing_tasks.length}</div>
+                              <div>risks: {row.missing_risk_labels.length}</div>
+                              <div>fields: {row.missing_fields.length}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="space-y-2">
+                    {legalDocumentBenchmarkFixtures.validation_commands.map((command) => (
+                      <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-xs text-stone-700">
+                        {command}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             )}

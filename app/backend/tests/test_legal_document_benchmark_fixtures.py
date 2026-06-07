@@ -21,6 +21,11 @@ def test_legal_document_benchmark_fixtures_build_small_chinese_suite():
     assert suite["summary"]["network_access"] == "disabled"
     assert suite["benchmark_cases"]
     assert all(0 < len(case["snippet"]) <= 500 for case in suite["benchmark_cases"])
+    assert suite["privacy_boundary"]["returns_synthetic_fixture_snippets"] is True
+    assert suite["privacy_boundary"]["maintenance_ui_renders_raw_fixture_snippets"] is False
+    assert suite["privacy_boundary"]["model_calls"] is False
+    assert suite["claim_boundary"]["public_benchmark_score_claimed"] is False
+    assert suite["claim_boundary"]["real_client_document_coverage_claimed"] is False
 
 
 def test_legal_document_benchmark_fixtures_cover_core_document_types():
@@ -69,6 +74,8 @@ def test_legal_document_benchmark_evaluation_plan_is_local_only():
     assert plan["model_call_policy"] == "never_call_external_models"
     assert plan["network_access"] == "disabled"
     assert plan["resource_profile"]["parallelism"] == 1
+    assert suite["privacy_boundary"]["dataset_downloads"] is False
+    assert suite["privacy_boundary"]["credentials_included"] is False
     assert suite["validation_commands"] == [
         "cd app/backend && python -m pytest tests/test_legal_document_benchmark_fixtures.py -q"
     ]
@@ -81,6 +88,9 @@ def test_legal_document_benchmark_default_evaluation_is_not_run():
     assert result["score"] == 0
     assert result["not_run_case_count"] == result["case_count"]
     assert result["blocking_case_ids"] == []
+    assert result["privacy_boundary"]["prediction_payload_returned"] is False
+    assert result["privacy_boundary"]["raw_model_output_returned"] is False
+    assert result["claim_boundary"]["live_model_accuracy_claimed"] is False
 
 
 def test_legal_document_benchmark_passes_complete_predictions():

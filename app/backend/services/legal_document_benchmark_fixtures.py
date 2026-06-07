@@ -61,6 +61,8 @@ class LegalDocumentBenchmarkFixturesService:
             "benchmark_cases": cases,
             "expected_tasks": tasks,
             "evaluation_plan": self._evaluation_plan(),
+            "privacy_boundary": self._privacy_boundary(),
+            "claim_boundary": self._claim_boundary(),
             "privacy_note": (
                 "All snippets are synthetic Chinese legal-document fixtures with generic party names only. "
                 "Do not add real client documents, identity numbers, phone numbers, emails, addresses, API keys, "
@@ -95,6 +97,13 @@ class LegalDocumentBenchmarkFixturesService:
             "case_results": case_results,
             "blocking_case_ids": [result["case_id"] for result in case_results if result["status"] == "fail"],
             "evaluation_plan": self._evaluation_plan(),
+            "privacy_boundary": {
+                **self._privacy_boundary(),
+                "prediction_payload_returned": False,
+                "raw_prediction_text_returned": False,
+                "raw_model_output_returned": False,
+            },
+            "claim_boundary": self._claim_boundary(),
         }
 
     def _evaluate_case(self, case: dict[str, Any], prediction: dict[str, Any]) -> dict[str, Any]:
@@ -244,6 +253,36 @@ class LegalDocumentBenchmarkFixturesService:
                 "warn": WARN_THRESHOLD,
                 "fail": 0,
             },
+        }
+
+    def _privacy_boundary(self) -> dict[str, Any]:
+        return {
+            "fixture_source": "synthetic_inline_fixtures",
+            "returns_synthetic_fixture_snippets": True,
+            "maintenance_ui_renders_raw_fixture_snippets": False,
+            "real_client_documents_included": False,
+            "identity_numbers_included": False,
+            "phone_numbers_included": False,
+            "emails_included": False,
+            "addresses_included": False,
+            "prompts_included": False,
+            "raw_model_outputs_included": False,
+            "gateway_payloads_included": False,
+            "credentials_included": False,
+            "model_calls": False,
+            "network_access": False,
+            "dataset_downloads": False,
+        }
+
+    def _claim_boundary(self) -> dict[str, Any]:
+        return {
+            "public_benchmark_score_claimed": False,
+            "live_model_accuracy_claimed": False,
+            "production_accuracy_claimed": False,
+            "real_client_document_coverage_claimed": False,
+            "universal_document_support_claimed": False,
+            "legal_advice_claimed": False,
+            "allowed_claim": "Tiny synthetic local fixture smoke tests for deterministic document labels and fields.",
         }
 
     def _expected_tasks(self) -> tuple[ExpectedTask, ...]:

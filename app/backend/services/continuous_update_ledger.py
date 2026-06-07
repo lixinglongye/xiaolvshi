@@ -4554,6 +4554,34 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="legal-document-benchmark-fixture-ui",
+                title="Legal document benchmark fixture UI",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Exposes the local synthetic legal-document fixture suite and empty-prediction evaluator on "
+                    "the maintenance evidence page with case metadata, expected-check counts, scoring state, "
+                    "resource policy, validation commands, and a raw-snippet rendering boundary."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_fixtures.py",
+                    "app/backend/tests/test_legal_document_benchmark_fixtures.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-fixtures",
+                    "legal-document-benchmark-fixture-ui",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="legal-document-coverage-claim-policy",
                 title="Legal document coverage claim policy",
                 category="safety",

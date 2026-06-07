@@ -416,6 +416,20 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage" in template_benchmark_alignment_entry["release_gate_links"]
     assert "legal-document-coverage-claim-policy" in template_benchmark_alignment_entry["release_gate_links"]
     assert "legal-document-benchmark-coverage-ui" in completed_ids
+    assert "legal-document-benchmark-fixture-ui" in completed_ids
+    legal_document_benchmark_fixture_ui_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-document-benchmark-fixture-ui"
+    )
+    assert legal_document_benchmark_fixture_ui_entry["size"] == "medium"
+    assert legal_document_benchmark_fixture_ui_entry["status"] == "shipped"
+    assert "empty-prediction evaluator" in legal_document_benchmark_fixture_ui_entry["impact"]
+    assert "raw-snippet rendering boundary" in legal_document_benchmark_fixture_ui_entry["impact"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_fixture_ui_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/scripts/ui-regression.mjs" in legal_document_benchmark_fixture_ui_entry["evidence_paths"]
+    assert "legal-document-benchmark-fixtures" in legal_document_benchmark_fixture_ui_entry["release_gate_links"]
+    assert "frontend-ui-regression" in legal_document_benchmark_fixture_ui_entry["release_gate_links"]
     assert "legal-document-coverage-claim-policy" in completed_ids
     assert "legal-benchmark-research-registry" in completed_ids
     assert "legal-benchmark-research-refresh" in completed_ids
@@ -607,6 +621,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids
     assert "legal-document-benchmark-coverage-ui" not in queue_ids
+    assert "legal-document-benchmark-fixture-ui" not in queue_ids
     assert "legal-document-coverage-claim-policy" not in queue_ids
     assert "legal-benchmark-research-registry" not in queue_ids
     assert "legal-benchmark-research-refresh" not in queue_ids

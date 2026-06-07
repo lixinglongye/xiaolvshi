@@ -23,8 +23,18 @@ All fixtures are synthetic. They use generic names such as `A公司`, `张某`, 
 - `benchmark_cases`: 4 synthetic Chinese snippets with expected document type, expected fields, expected task labels, and expected risk labels.
 - `expected_tasks`: task definitions for classification, extraction, deadline extraction, and risk labeling.
 - `evaluation_plan`: a local-only scoring plan with disabled network access and no model calls.
+- `privacy_boundary`: explicit flags for synthetic fixture snippets, UI raw-snippet rendering, no model calls, no network access, no credentials, no prompts, no gateway payloads, and no dataset downloads.
+- `claim_boundary`: explicit non-claims for public benchmark scores, live model accuracy, production accuracy, real-client document coverage, universal document support, and legal advice.
 - `privacy_note`: repository safety guidance for fixture maintenance.
 - `validation_commands`: the pytest command for this module.
+
+The Maintenance Evidence page now exposes a fixture-suite panel that displays
+case IDs, document types, matter types, expected-check counts, field keys,
+snippet length, the empty-prediction evaluation state, and validation commands.
+The UI deliberately does not render raw fixture snippets even though the backend
+fixture API returns short synthetic snippets for local pytest and evaluator
+workflows. Use the coverage, gate, and promotion-packet evidence when a strictly
+metadata-only review surface is required.
 
 `evaluate_predictions(predictions)` accepts local structured predictions keyed by fixture ID:
 
@@ -63,6 +73,8 @@ The evaluator scores classification, task-label coverage, risk-label coverage, a
 - No downloaded public datasets.
 - No real client documents, identity numbers, phone numbers, emails, addresses, gateway keys, or raw model outputs.
 - Keep snippets short enough for laptop pytest runs.
+- Maintenance UI panels must not render raw fixture snippets, prompt text,
+  candidate generated text, gateway payloads, credentials, or client material.
 
 ## Validation
 
@@ -71,4 +83,7 @@ Run from the repository root:
 ```powershell
 cd app/backend
 python -m pytest tests/test_legal_document_benchmark_fixtures.py -q
+cd ../frontend
+npm run typecheck
+npm run ui:regression
 ```

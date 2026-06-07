@@ -2610,6 +2610,31 @@ class ReleaseReadinessService:
                 manual_note="This exposes fixture coverage gaps on the maintenance evidence page without rendering raw fixture snippets, prompts, model responses, or client material.",
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-fixture-ui",
+                title="Legal document benchmark fixture UI",
+                category="frontend_ui",
+                required=False,
+                owner="frontend",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_fixtures.py",
+                    "app/backend/tests/test_legal_document_benchmark_fixtures.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_fixtures.py "
+                    "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+                ),
+                manual_note=(
+                    "This exposes the synthetic legal document fixture suite and empty-prediction evaluator on "
+                    "the maintenance evidence page while deliberately not rendering raw fixture snippets, prompts, "
+                    "model responses, gateway payloads, credentials, or client material."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-fact-consistency-benchmark",
                 title="Legal document fact consistency benchmark",
                 category="quality",

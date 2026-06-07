@@ -857,6 +857,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-gap-fixtures": "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
         "legal-document-benchmark-coverage": "python -m pytest tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py -q",
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
+        "legal-document-benchmark-fixture-ui": "python -m pytest tests/test_legal_document_benchmark_fixtures.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-fact-consistency-benchmark": "python -m pytest tests/test_legal_document_fact_consistency_benchmark.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
         "legal-benchmark-research-registry": "python -m pytest tests/test_legal_benchmark_research_registry.py -q",
@@ -954,6 +955,10 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "real client-document coverage" in checks["legal-document-benchmark-gap-fixtures"]["manual_note"]
     assert "metadata-only coverage matrix" in checks["legal-document-benchmark-coverage"]["manual_note"]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
+    assert "synthetic legal document fixture suite" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
+    assert "empty-prediction evaluator" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
+    assert "not rendering raw fixture snippets" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-document-benchmark-fixture-ui"]["evidence_paths"]
     assert "metadata-only amount, deadline, and fact-consistency benchmark evidence" in checks[
         "legal-document-fact-consistency-benchmark"
     ]["manual_note"]
