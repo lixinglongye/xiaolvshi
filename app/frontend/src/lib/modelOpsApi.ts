@@ -1,4 +1,17 @@
 import { client } from '@/lib/api';
+import type {
+  ModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
+  ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem,
+} from './maintenanceApi';
+
+export type {
+  ModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
+  ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem,
+};
 
 export type RoutingAliases = Record<string, string>;
 
@@ -3887,6 +3900,8 @@ export type ModelOpsResponse = {
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
   legal_benchmark_risk_bridge?: ModelOpsLegalBenchmarkRiskBridge;
   legal_micro_benchmark_preflight?: ModelOpsLegalMicroBenchmarkPreflight;
+  legal_fixture_cheap_first_benchmark_gate?: ModelOpsLegalFixtureCheapFirstBenchmarkGate;
+  legal_fixture_cheap_first_default_promotion_packet?: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -3963,6 +3978,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     fixture_run_items?: unknown;
+    gate_rows?: unknown;
     document_check_items?: unknown;
     fact_consistency_items?: unknown;
     run_sequence?: unknown;
@@ -4002,6 +4018,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
+      || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
@@ -4473,6 +4490,20 @@ export async function getModelOpsLegalBenchmarkRiskBridge(): Promise<ModelOpsLeg
 export async function getModelOpsLegalMicroBenchmarkPreflight(): Promise<ModelOpsLegalMicroBenchmarkPreflight> {
   return invokeModelOpsApi<ModelOpsLegalMicroBenchmarkPreflight>({
     url: '/api/v1/aihub/models/legal-micro-benchmark-preflight',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalFixtureCheapFirstBenchmarkGate(): Promise<ModelOpsLegalFixtureCheapFirstBenchmarkGate> {
+  return invokeModelOpsApi<ModelOpsLegalFixtureCheapFirstBenchmarkGate>({
+    url: '/api/v1/aihub/models/legal-fixture-cheap-first-benchmark-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(): Promise<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket> {
+  return invokeModelOpsApi<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket>({
+    url: '/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet',
     method: 'GET',
   });
 }

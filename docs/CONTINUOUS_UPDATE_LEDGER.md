@@ -1,5 +1,14 @@
 # Continuous Update Ledger
 
+Current ModelOps UI binding slice:
+`modelops-legal-fixture-modelops-ui-binding` exposes the legal fixture
+cheap-first benchmark gate and default promotion packet through AIHub ModelOps
+payloads, direct ModelOps endpoints, TypeScript helpers, and ModelOps main-page
+panels. The panels show linked calibration task IDs, calibration decisions,
+document benchmark samples, promotion evidence, and default-change boundaries
+without raw legal text, prompts, request/response bodies, calibration payloads,
+model outputs, credentials, emails, gateway calls, or traffic shifts.
+
 Current ModelOps legal-fixture calibration slice:
 `modelops-legal-fixture-cheap-first-calibration-binding` links the legal fixture
 cheap-first benchmark gate and default promotion packet to Gemini/NewAPI

@@ -1284,6 +1284,16 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'document_check_items', 'model-ops legal micro benchmark document rows payload guard'),
   () => assertIncludes(modelOpsApi, 'fact_consistency_items', 'model-ops legal micro benchmark fact rows payload guard'),
   () => assertIncludes(modelOpsApi, 'run_sequence', 'model-ops legal micro benchmark run order payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGate', 'model-ops legal fixture benchmark gate type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'model-ops legal fixture promotion packet type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalFixtureCheapFirstBenchmarkGate', 'model-ops legal fixture benchmark gate API'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'model-ops legal fixture promotion packet API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-fixture-cheap-first-benchmark-gate', 'model-ops legal fixture benchmark gate endpoint'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet', 'model-ops legal fixture promotion packet endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_fixture_cheap_first_benchmark_gate', 'model-ops legal fixture benchmark gate response binding'),
+  () => assertIncludes(modelOpsApi, 'legal_fixture_cheap_first_default_promotion_packet', 'model-ops legal fixture promotion packet response binding'),
+  () => assertIncludes(modelOpsApi, 'gate_rows', 'model-ops legal fixture benchmark gate payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGateRow', 'model-ops legal fixture benchmark gate row type export'),
   () => assertIncludes(modelOpsPage, 'Model failure upgrade budget', 'model-ops model failure upgrade budget panel'),
   () => assertIncludes(modelOpsPage, 'activeFailureUpgradeBudget', 'model-ops model failure upgrade budget state binding'),
   () => assertIncludes(modelOpsPage, 'failureUpgradeChecks', 'model-ops model failure upgrade budget check binding'),
@@ -1301,6 +1311,18 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'legalMicroRunSteps', 'model-ops legal micro benchmark run order rows'),
   () => assertIncludes(modelOpsPage, 'max_parallel_requests', 'model-ops legal micro benchmark serial cap binding'),
   () => assertIncludes(modelOpsPage, 'benchmark_gate_required', 'model-ops legal micro benchmark gate binding'),
+  () => assertIncludes(modelOpsPage, 'Legal fixture cheap-first benchmark gate', 'model-ops legal fixture benchmark gate panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalFixtureCheapFirstBenchmarkGate', 'model-ops legal fixture benchmark gate active binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureBenchmarkGateRows', 'model-ops legal fixture benchmark gate row binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureBenchmarkDocumentRows', 'model-ops legal fixture benchmark document row binding'),
+  () => assertIncludes(modelOpsPage, 'linked_calibration_task_count', 'model-ops legal fixture linked calibration count binding'),
+  () => assertIncludes(modelOpsPage, 'linked_calibration_task_ids', 'model-ops legal fixture linked calibration row binding'),
+  () => assertIncludes(modelOpsPage, 'calibration_decisions', 'model-ops legal fixture calibration decision binding'),
+  () => assertIncludes(modelOpsPage, 'Legal fixture cheap-first default promotion packet', 'model-ops legal fixture promotion packet panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalFixtureCheapFirstDefaultPromotionPacket', 'model-ops legal fixture promotion packet active binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureDefaultPromotionRows', 'model-ops legal fixture promotion packet row binding'),
+  () => assertIncludes(modelOpsPage, 'default_change_allowed_by_packet', 'model-ops legal fixture promotion packet decision binding'),
+  () => assertIncludes(modelOpsPage, 'requires_cheap_first_calibration_pass', 'model-ops legal fixture calibration requirement binding'),
   () => assertIncludes(modelOpsPage, 'ModelOps legal benchmark risk bridge', 'model-ops legal benchmark risk bridge panel'),
   () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge active binding'),
   () => assertIncludes(modelOpsPage, 'legalBenchmarkRiskRouteReviews', 'model-ops legal benchmark risk bridge route rows'),
@@ -1330,8 +1352,20 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first benchmark gate</h2>',
+    'model-ops legal fixture gate follows legal micro benchmark preflight',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first benchmark gate</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
+    'model-ops legal fixture promotion packet follows fixture gate',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
     '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
-    'model-ops legal benchmark bridge follows legal micro benchmark preflight',
+    'model-ops legal benchmark bridge follows legal fixture promotion packet',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -1596,8 +1630,20 @@ const modelFailureUpgradeBudgetPanel = sourceSection(
 const modelOpsLegalMicroBenchmarkPreflightPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
-  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first benchmark gate</h2>',
   'model-ops legal micro benchmark preflight section',
+);
+const modelOpsLegalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first benchmark gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
+  'model-ops legal fixture cheap-first benchmark gate section',
+);
+const modelOpsLegalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  'model-ops legal fixture cheap-first default promotion packet section',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
@@ -1737,6 +1783,16 @@ assertNotMatches(
   modelOpsLegalMicroBenchmarkPreflightPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
   'model-ops legal micro benchmark preflight no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
+  modelOpsLegalFixtureCheapFirstBenchmarkGatePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|input_excerpt|output_text)\b/i,
+  'model-ops legal fixture cheap-first benchmark gate no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
+  modelOpsLegalFixtureCheapFirstDefaultPromotionPacketPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|input_excerpt|output_text)\b/i,
+  'model-ops legal fixture cheap-first default promotion packet no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
   modelOpsLegalBenchmarkRiskBridgePanel,

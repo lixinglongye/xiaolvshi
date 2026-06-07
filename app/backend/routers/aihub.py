@@ -90,6 +90,12 @@ from services.model_ops_performance_budget import (
     model_ops_performance_budget_registry,
 )
 from services.modelops_observed_gateway_model_fit_matrix import ModelOpsObservedGatewayModelFitMatrixService
+from services.modelops_legal_fixture_cheap_first_benchmark_gate import (
+    ModelOpsLegalFixtureCheapFirstBenchmarkGateService,
+)
+from services.modelops_legal_fixture_default_promotion_packet import (
+    ModelOpsLegalFixtureDefaultPromotionPacketService,
+)
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -354,6 +360,12 @@ async def list_models():
         model_ops_performance_budget_registry.latest() or default_model_ops_performance_budget
     )
     legal_micro_benchmark_preflight = ModelOpsLegalMicroBenchmarkPreflightService().build_packet()
+    legal_fixture_cheap_first_benchmark_gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate()
+    legal_fixture_cheap_first_default_promotion_packet = (
+        ModelOpsLegalFixtureDefaultPromotionPacketService().build_packet(
+            {"source_gate": legal_fixture_cheap_first_benchmark_gate}
+        )
+    )
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -404,6 +416,8 @@ async def list_models():
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
+        "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
+        "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     model_ops_signals["model_ops_readiness"] = base_model_ops_readiness
@@ -501,6 +515,8 @@ async def list_models():
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
+        "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
+        "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
@@ -879,6 +895,26 @@ async def model_ops_legal_micro_benchmark_preflight():
     return {
         "success": True,
         "data": ModelOpsLegalMicroBenchmarkPreflightService().build_packet(),
+    }
+
+
+@router.get("/models/legal-fixture-cheap-first-benchmark-gate")
+async def model_ops_legal_fixture_cheap_first_benchmark_gate():
+    """Return metadata-only legal fixture cheap-first default gate evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_fixture_cheap_first_benchmark_gate"],
+    }
+
+
+@router.get("/models/legal-fixture-cheap-first-default-promotion-packet")
+async def model_ops_legal_fixture_cheap_first_default_promotion_packet():
+    """Return metadata-only legal fixture cheap-first default promotion packet."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_fixture_cheap_first_default_promotion_packet"],
     }
 
 

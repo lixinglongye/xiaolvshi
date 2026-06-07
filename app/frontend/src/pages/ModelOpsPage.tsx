@@ -37,6 +37,8 @@ import {
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
   getModelOpsLegalBenchmarkRiskBridge,
+  getModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelGatewayProbeTemplate,
   getModelOps,
@@ -60,6 +62,8 @@ import {
   type ModelOpsCheapFirstEscalationBudget,
   type ModelFailureUpgradeBudget,
   type ModelOpsLegalBenchmarkRiskBridge,
+  type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
+  type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
@@ -481,6 +485,13 @@ function Inner() {
   const [legalMicroBenchmarkPreflight, setLegalMicroBenchmarkPreflight] =
     useState<ModelOpsLegalMicroBenchmarkPreflight | null>(null);
   const [legalMicroBenchmarkPreflightError, setLegalMicroBenchmarkPreflightError] = useState('');
+  const [legalFixtureCheapFirstBenchmarkGate, setLegalFixtureCheapFirstBenchmarkGate] =
+    useState<ModelOpsLegalFixtureCheapFirstBenchmarkGate | null>(null);
+  const [legalFixtureCheapFirstBenchmarkGateError, setLegalFixtureCheapFirstBenchmarkGateError] = useState('');
+  const [legalFixtureCheapFirstDefaultPromotionPacket, setLegalFixtureCheapFirstDefaultPromotionPacket] =
+    useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
+  const [legalFixtureCheapFirstDefaultPromotionPacketError, setLegalFixtureCheapFirstDefaultPromotionPacketError] =
+    useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -531,6 +542,10 @@ function Inner() {
     setLegalBenchmarkRiskBridge(null);
     setLegalMicroBenchmarkPreflightError('');
     setLegalMicroBenchmarkPreflight(null);
+    setLegalFixtureCheapFirstBenchmarkGateError('');
+    setLegalFixtureCheapFirstBenchmarkGate(null);
+    setLegalFixtureCheapFirstDefaultPromotionPacketError('');
+    setLegalFixtureCheapFirstDefaultPromotionPacket(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -555,6 +570,8 @@ function Inner() {
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
         legalMicroBenchmarkPreflightResult,
+        legalFixtureCheapFirstBenchmarkGateResult,
+        legalFixtureCheapFirstDefaultPromotionPacketResult,
       ] =
         await Promise.allSettled([
         getModelOps(),
@@ -569,6 +586,8 @@ function Inner() {
         getModelFailureUpgradeBudget(),
         getModelOpsLegalBenchmarkRiskBridge(),
         getModelOpsLegalMicroBenchmarkPreflight(),
+        getModelOpsLegalFixtureCheapFirstBenchmarkGate(),
+        getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
@@ -582,6 +601,12 @@ function Inner() {
         setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
         setLegalBenchmarkRiskBridge(modelOpsResult.value.legal_benchmark_risk_bridge ?? null);
         setLegalMicroBenchmarkPreflight(modelOpsResult.value.legal_micro_benchmark_preflight ?? null);
+        setLegalFixtureCheapFirstBenchmarkGate(
+          modelOpsResult.value.legal_fixture_cheap_first_benchmark_gate ?? null,
+        );
+        setLegalFixtureCheapFirstDefaultPromotionPacket(
+          modelOpsResult.value.legal_fixture_cheap_first_default_promotion_packet ?? null,
+        );
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
@@ -745,6 +770,43 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_micro_benchmark_preflight)
         ) {
           setLegalMicroBenchmarkPreflightError('Legal micro benchmark preflight failed to load.');
+        }
+      }
+      if (legalFixtureCheapFirstBenchmarkGateResult.status === 'fulfilled') {
+        setLegalFixtureCheapFirstBenchmarkGate(legalFixtureCheapFirstBenchmarkGateResult.value);
+      } else {
+        console.error(legalFixtureCheapFirstBenchmarkGateResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalFixtureCheapFirstBenchmarkGate(
+            modelOpsResult.value.legal_fixture_cheap_first_benchmark_gate ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_fixture_cheap_first_benchmark_gate)
+        ) {
+          setLegalFixtureCheapFirstBenchmarkGateError('Legal fixture cheap-first benchmark gate failed to load.');
+        }
+      }
+      if (legalFixtureCheapFirstDefaultPromotionPacketResult.status === 'fulfilled') {
+        setLegalFixtureCheapFirstDefaultPromotionPacket(legalFixtureCheapFirstDefaultPromotionPacketResult.value);
+      } else {
+        console.error(legalFixtureCheapFirstDefaultPromotionPacketResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalFixtureCheapFirstDefaultPromotionPacket(
+            modelOpsResult.value.legal_fixture_cheap_first_default_promotion_packet ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_fixture_cheap_first_default_promotion_packet
+          )
+        ) {
+          setLegalFixtureCheapFirstDefaultPromotionPacketError(
+            'Legal fixture cheap-first default promotion packet failed to load.',
+          );
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -1198,6 +1260,17 @@ function Inner() {
   const legalMicroDocumentRows = activeLegalMicroBenchmarkPreflight?.document_check_items ?? [];
   const legalMicroFactRows = activeLegalMicroBenchmarkPreflight?.fact_consistency_items ?? [];
   const legalMicroRunSteps = activeLegalMicroBenchmarkPreflight?.run_sequence ?? [];
+  const activeLegalFixtureCheapFirstBenchmarkGate =
+    legalFixtureCheapFirstBenchmarkGate ?? data?.legal_fixture_cheap_first_benchmark_gate ?? null;
+  const legalFixtureBenchmarkGateRows = activeLegalFixtureCheapFirstBenchmarkGate?.gate_rows ?? [];
+  const legalFixtureBenchmarkDocumentRows =
+    activeLegalFixtureCheapFirstBenchmarkGate?.document_benchmark_rows ?? [];
+  const activeLegalFixtureCheapFirstDefaultPromotionPacket =
+    legalFixtureCheapFirstDefaultPromotionPacket
+    ?? data?.legal_fixture_cheap_first_default_promotion_packet
+    ?? null;
+  const legalFixtureDefaultPromotionRows =
+    activeLegalFixtureCheapFirstDefaultPromotionPacket?.promotion_items ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -4078,6 +4151,275 @@ function Inner() {
                   {String(activeLegalMicroBenchmarkPreflight.privacy_boundary['returns_' + 'fixture_' + 'excerpt'])} / model output returned:{' '}
                   {String(activeLegalMicroBenchmarkPreflight.privacy_boundary['returns_' + 'raw_' + 'model_' + 'output'])}
                 </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalFixtureCheapFirstBenchmarkGate || legalFixtureCheapFirstBenchmarkGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first benchmark gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalFixtureCheapFirstBenchmarkGate?.summary.selected_fixture_count)} fixtures /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstBenchmarkGate?.summary.linked_calibration_task_count)} calibration tasks /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstBenchmarkGate?.summary.document_benchmark_case_count)} document cases
+                </div>
+              </div>
+              {activeLegalFixtureCheapFirstBenchmarkGate && (
+                <Badge variant="outline" className={statusClass(activeLegalFixtureCheapFirstBenchmarkGate.status)}>
+                  {activeLegalFixtureCheapFirstBenchmarkGate.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalFixtureCheapFirstBenchmarkGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstBenchmarkGate.summary.calibration_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">calibration status</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstBenchmarkGate.summary.linked_calibration_task_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">linked calibration</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstBenchmarkGate.summary.document_benchmark_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">document benchmark</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.default_change_evidence_allowed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default evidence</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Gate</TableHead>
+                          <TableHead>Cheap-first</TableHead>
+                          <TableHead>Calibration</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalFixtureBenchmarkGateRows.slice(0, 6).map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">{row.matter_type}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.gate_status)}>
+                                {row.gate_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs leading-5 text-stone-600">
+                                signals {row.matched_signal_count}/{row.expected_signal_count}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-700">{row.cheap_first_model ?? '-'}</div>
+                              <div>cost tier {row.cheap_first_cost_tier ?? '-'}</div>
+                              <div>known {String(row.cheap_first_known_model)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className={statusClass(row.calibration_status)}>
+                                {row.calibration_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.linked_calibration_task_ids.join(', ') || '-'}
+                              </div>
+                              <div>{row.calibration_decisions.join(', ') || '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>{row.release_action.replace(/_/g, ' ')}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.reason_codes.slice(0, 3).join(', ') || 'fixture gate ready'}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-sm font-black uppercase text-stone-500">Document benchmark sample</div>
+                    <div className="mt-3 space-y-2">
+                      {legalFixtureBenchmarkDocumentRows.slice(0, 4).map((row) => (
+                        <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.case_id}</div>
+                            <Badge variant="outline" className={statusClass(row.gate_status)}>
+                              {row.gate_status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">
+                            {row.document_type} / score {formatNumber(row.score)}
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">
+                            missing citations {formatNumber(row.missing_citation_count)} / risk labels{' '}
+                            {formatNumber(row.missing_risk_label_count)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xs leading-5 text-stone-600">
+                      {activeLegalFixtureCheapFirstBenchmarkGate.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                    {legalFixtureCheapFirstBenchmarkGateError && (
+                      <div className="mt-2 text-xs font-semibold text-red-700">
+                        {legalFixtureCheapFirstBenchmarkGateError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs leading-5 text-stone-500">
+                  network called: {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.network_called)} / NewAPI called:{' '}
+                  {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.newapi_called)} / configuration written:{' '}
+                  {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.configuration_written)} / traffic shifted:{' '}
+                  {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.traffic_shifted)} / calibration payloads returned:{' '}
+                  {String(activeLegalFixtureCheapFirstBenchmarkGate.summary.calibration_payload_returned)}
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalFixtureCheapFirstDefaultPromotionPacket || legalFixtureCheapFirstDefaultPromotionPacketError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalFixtureCheapFirstDefaultPromotionPacket?.summary.promotion_item_count)} items /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstDefaultPromotionPacket?.summary.ready_for_review_count)} ready /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstDefaultPromotionPacket?.summary.blocked_count)} blocked
+                </div>
+              </div>
+              {activeLegalFixtureCheapFirstDefaultPromotionPacket && (
+                <Badge variant="outline" className={statusClass(activeLegalFixtureCheapFirstDefaultPromotionPacket.status)}>
+                  {activeLegalFixtureCheapFirstDefaultPromotionPacket.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalFixtureCheapFirstDefaultPromotionPacket && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstDefaultPromotionPacket.decision.status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">packet decision</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstDefaultPromotionPacket.summary.calibration_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">calibration status</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstDefaultPromotionPacket.summary.linked_calibration_task_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">linked calibration</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.decision.default_change_allowed_by_packet)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Promotion</TableHead>
+                        <TableHead>Proposed default</TableHead>
+                        <TableHead>Calibration</TableHead>
+                        <TableHead>Evidence</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalFixtureDefaultPromotionRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.matter_type}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.promotion_status)}>
+                              {row.promotion_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs leading-5 text-stone-600">
+                              gate {row.gate_status} / fact {row.fact_consistency_status}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-[11px] text-stone-700">{row.proposed_default_model ?? '-'}</div>
+                            <div>cost tier {row.proposed_cost_tier ?? '-'}</div>
+                            <div>default evidence {String(row.default_change_evidence_allowed)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.calibration_status)}>
+                              {row.calibration_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.linked_calibration_task_ids.join(', ') || '-'}
+                            </div>
+                            <div>{row.calibration_decisions.join(', ') || '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                            <div>{row.required_evidence.slice(0, 3).join(', ') || '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.slice(0, 3).join(', ') || 'promotion packet ready'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mb-3 grid gap-3 md:grid-cols-3">
+                  {activeLegalFixtureCheapFirstDefaultPromotionPacket.evidence_checklist.slice(0, 6).map((item) => (
+                    <div key={item.id} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{item.id}</div>
+                        <Badge variant="outline" className={item.passed ? statusClass('pass') : statusClass('warn')}>
+                          {item.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">source {item.source_status}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs leading-5 text-stone-500">
+                  requires_cheap_first_calibration_pass:{' '}
+                  {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.decision.requires_cheap_first_calibration_pass)} / configuration written:{' '}
+                  {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.summary.configuration_written)} / gateway called:{' '}
+                  {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.summary.gateway_called)} / traffic shifted:{' '}
+                  {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.summary.traffic_shifted)} / calibration payloads returned:{' '}
+                  {String(activeLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary.returns_calibration_payloads ?? false)}
+                </div>
+                {legalFixtureCheapFirstDefaultPromotionPacketError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalFixtureCheapFirstDefaultPromotionPacketError}
+                  </div>
+                )}
               </>
             )}
           </section>

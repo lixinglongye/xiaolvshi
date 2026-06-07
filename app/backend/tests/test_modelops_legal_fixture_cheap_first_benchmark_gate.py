@@ -165,6 +165,35 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
     assert all("known-low-cost-gemini-cheap-first" in row["reason_codes"] for row in gate["gate_rows"])
 
 
+def test_legal_fixture_cheap_first_gate_aihub_route_and_models_payload_include_signal():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router as aihub_router
+
+    app = fastapi.FastAPI()
+    app.include_router(aihub_router)
+    client = testclient.TestClient(app)
+
+    direct_response = client.get("/api/v1/aihub/models/legal-fixture-cheap-first-benchmark-gate")
+    assert direct_response.status_code == 200
+    direct_payload = direct_response.json()
+    assert direct_payload["success"] is True
+    assert direct_payload["data"]["summary"]["calibration_status"] == "pass"
+    assert direct_payload["data"]["summary"]["linked_calibration_task_count"] == 4
+    assert direct_payload["data"]["privacy_boundary"]["returns_calibration_payloads"] is False
+
+    models_response = client.get("/api/v1/aihub/models")
+    assert models_response.status_code == 200
+    models_payload = models_response.json()
+    gate = models_payload["legal_fixture_cheap_first_benchmark_gate"]
+    assert gate["summary"]["calibration_status"] == "pass"
+    assert gate["summary"]["linked_calibration_task_count"] == 4
+    assert all(row["linked_calibration_task_ids"] for row in gate["gate_rows"])
+    assert not SENSITIVE_PATTERN.search(json.dumps(gate, ensure_ascii=False))
+
+
 def test_legal_fixture_cheap_first_gate_blocks_default_evidence_when_linked_calibration_fails():
     class FailingCalibrationService:
         def build_calibration(self, payload=None):

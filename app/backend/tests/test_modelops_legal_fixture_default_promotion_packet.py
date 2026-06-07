@@ -127,6 +127,35 @@ def test_legal_fixture_default_promotion_packet_ready_after_gate_and_document_be
     assert packet["source_gate_links"]["cheap_first_calibration"] == "/api/v1/aihub/models/cheap-first-calibration"
 
 
+def test_legal_fixture_default_promotion_packet_aihub_route_and_models_payload_include_signal():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router as aihub_router
+
+    app = fastapi.FastAPI()
+    app.include_router(aihub_router)
+    client = testclient.TestClient(app)
+
+    direct_response = client.get("/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet")
+    assert direct_response.status_code == 200
+    direct_payload = direct_response.json()
+    assert direct_payload["success"] is True
+    assert direct_payload["data"]["summary"]["calibration_status"] == "pass"
+    assert direct_payload["data"]["decision"]["requires_cheap_first_calibration_pass"] is True
+    assert direct_payload["data"]["privacy_boundary"]["returns_calibration_payloads"] is False
+
+    models_response = client.get("/api/v1/aihub/models")
+    assert models_response.status_code == 200
+    models_payload = models_response.json()
+    packet = models_payload["legal_fixture_cheap_first_default_promotion_packet"]
+    assert packet["summary"]["linked_calibration_task_count"] == 4
+    assert packet["decision"]["configuration_change_allowed"] is False
+    assert all(item["linked_calibration_task_ids"] for item in packet["promotion_items"])
+    assert not SENSITIVE_PATTERN.search(json.dumps(packet, ensure_ascii=False))
+
+
 def test_legal_fixture_default_promotion_packet_blocks_document_pii_failure():
     document_outputs = _passing_document_outputs()
     target_case = LegalDocumentBenchmarkSuiteService().build_suite()["benchmark_cases"][0]

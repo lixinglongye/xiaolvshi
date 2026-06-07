@@ -1,6 +1,10 @@
 # ModelOps Legal Fixture Default Promotion Packet
 
 This packet turns the legal fixture cheap-first benchmark gate into a maintainer-review artifact for default model promotion decisions.
+It is exposed through the maintenance endpoints, the AIHub ModelOps aggregate
+payload, `/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet`,
+and the ModelOps main page so maintainers can review fixture promotion evidence
+next to cheap-first calibration and release queues.
 
 It is intentionally non-mutating:
 
@@ -36,6 +40,7 @@ The packet accepts a prebuilt source gate through `source_gate`, `gate`, `cheap_
 - `GET /api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet`
 - `POST /api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet`
 - Backward-compatible alias: `/api/v1/maintenance/legal-review-benchmark/default-promotion-packet`
+- `GET /api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet`
 
 ## Validation
 

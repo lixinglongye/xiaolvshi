@@ -271,6 +271,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
     assert "modelops-legal-fixture-cheap-first-calibration-binding" in completed_ids
+    assert "modelops-legal-fixture-modelops-ui-binding" in completed_ids
     assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
@@ -527,6 +528,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
     assert "legal-document-fact-consistency-benchmark" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" not in queue_ids
+    assert "modelops-legal-fixture-modelops-ui-binding" not in queue_ids
     assert "modelops-agentic-grounded-defaults" not in queue_ids
     assert "modelops-default-template-alignment" not in queue_ids
     assert "modelops-gemini-default-change-review" not in queue_ids
@@ -1536,6 +1538,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert legal_fixture_gate_entry["size"] == "medium"
     assert legal_fixture_gate_entry["status"] == "shipped"
     assert "small legal-document cheap-first Gemini benchmark/risk gate evidence" in legal_fixture_gate_entry["impact"]
+    assert "AIHub ModelOps payload/UI" in legal_fixture_gate_entry["impact"]
     assert "redacted fixture ids" in legal_fixture_gate_entry["impact"]
     assert "document case ids" in legal_fixture_gate_entry["impact"]
     assert "fact-consistency case ids" in legal_fixture_gate_entry["impact"]
@@ -1564,7 +1567,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/backend/tests/test_gemini_newapi_selector_replay.py" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in legal_fixture_gate_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in legal_fixture_gate_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in legal_fixture_gate_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/frontend/src/lib/maintenanceApi.ts" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_fixture_gate_entry["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in legal_fixture_gate_entry["evidence_paths"]
@@ -1626,6 +1632,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert legal_fixture_promotion_packet_entry["size"] == "medium"
     assert legal_fixture_promotion_packet_entry["status"] == "shipped"
     assert "maintainer review packet evidence" in legal_fixture_promotion_packet_entry["impact"]
+    assert "AIHub ModelOps payload/UI" in legal_fixture_promotion_packet_entry["impact"]
     assert "cheap-first legal fixture default promotion" in legal_fixture_promotion_packet_entry["impact"]
     assert "fixture ids" in legal_fixture_promotion_packet_entry["impact"]
     assert "document case ids" in legal_fixture_promotion_packet_entry["impact"]
@@ -1653,7 +1660,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_document_fact_consistency_benchmark.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in legal_fixture_promotion_packet_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/frontend/src/lib/maintenanceApi.ts" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_fixture_promotion_packet_entry["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in legal_fixture_promotion_packet_entry["evidence_paths"]
@@ -1675,6 +1685,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert calibration_binding_entry["size"] == "medium"
     assert calibration_binding_entry["status"] == "shipped"
     assert "cheap-first calibration rows" in calibration_binding_entry["impact"]
+    assert "ModelOps UI" in calibration_binding_entry["impact"]
     assert "calibration decisions" in calibration_binding_entry["impact"]
     assert "release gates" in calibration_binding_entry["impact"]
     assert "default promotion packet" in calibration_binding_entry["impact"]
@@ -1694,8 +1705,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in calibration_binding_entry["evidence_paths"]
     )
     assert "app/backend/services/gemini_newapi_cheap_first_calibration.py" in calibration_binding_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in calibration_binding_entry["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in calibration_binding_entry["evidence_paths"]
     assert "app/frontend/vite.config.ts" in calibration_binding_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in calibration_binding_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in calibration_binding_entry["evidence_paths"]
     assert "app/frontend/src/lib/maintenanceApi.ts" in calibration_binding_entry["evidence_paths"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in calibration_binding_entry["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in calibration_binding_entry["evidence_paths"]
@@ -1715,6 +1729,50 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     )
     assert "gemini-newapi-cheap-first-calibration" in calibration_binding_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in calibration_binding_entry["release_gate_links"]
+    modelops_ui_binding_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-legal-fixture-modelops-ui-binding"
+    )
+    assert modelops_ui_binding_entry["size"] == "medium"
+    assert modelops_ui_binding_entry["status"] == "shipped"
+    assert "AIHub ModelOps payload" in modelops_ui_binding_entry["impact"]
+    assert "direct ModelOps endpoints" in modelops_ui_binding_entry["impact"]
+    assert "ModelOps main-page panels" in modelops_ui_binding_entry["impact"]
+    assert "linked calibration task ids" in modelops_ui_binding_entry["impact"]
+    assert "default-change safety boundaries" in modelops_ui_binding_entry["impact"]
+    assert "configuration writes" in modelops_ui_binding_entry["impact"]
+    assert "traffic shifts" in modelops_ui_binding_entry["impact"]
+    assert "calibration payloads" in modelops_ui_binding_entry["impact"]
+    assert "credentials" in modelops_ui_binding_entry["impact"]
+    assert "emails" in modelops_ui_binding_entry["impact"]
+    assert "app/backend/routers/aihub.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert (
+        "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py"
+        in modelops_ui_binding_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/services/modelops_legal_fixture_default_promotion_packet.py"
+        in modelops_ui_binding_entry["evidence_paths"]
+    )
+    assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in modelops_ui_binding_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in modelops_ui_binding_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in modelops_ui_binding_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in modelops_ui_binding_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in modelops_ui_binding_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in modelops_ui_binding_entry["evidence_paths"]
+    assert "modelops-legal-fixture-modelops-ui-binding" in modelops_ui_binding_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in modelops_ui_binding_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in modelops_ui_binding_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-calibration" in modelops_ui_binding_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in modelops_ui_binding_entry["release_gate_links"]
     agentic_defaults_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-agentic-grounded-defaults"
     )

@@ -188,8 +188,10 @@ ids, expected issue counts, document benchmark pass/fail counts, coverage-gap
 counts, linked Gemini/NewAPI cheap-first calibration task ids, calibration
 decisions, calibration release gates, cost metadata, and escalation metadata to
 decide whether a cheap-first result remains acceptable or needs
-review/escalation. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or
-the network, and it does not include real legal text, fixture snippets,
+review/escalation. It is visible through maintenance evidence, direct AIHub
+ModelOps endpoints, the aggregate `/api/v1/aihub/models` payload, and the
+ModelOps main page. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
+or the network, and it does not include real legal text, fixture snippets,
 candidate generated text, prompts, calibration payloads, model outputs,
 credentials, or emails.
 
@@ -201,7 +203,9 @@ exposes only ids, statuses, counts, calibration decisions/release gates, cost
 tiers, reason codes, and signoff roles. It never writes configuration, calls
 NewAPI, Gemini, OpenAI, Google,
 gateways, or the network, shifts traffic, or claims that a default has been
-approved.
+approved. The ModelOps main page now displays it next to the legal fixture gate
+so maintainers can review promotion readiness without opening maintenance-only
+evidence pages.
 
 `modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
 preflight for Gemini cheap-first defaults. It joins official source refresh
