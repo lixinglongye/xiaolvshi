@@ -139,6 +139,11 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
     assert "Public benchmark license gate UI evidence is metadata only" in payload_text
     assert "public-benchmark-license-gate-regresses" in payload_text
+    assert "user need Gemini route coverage" in payload_text
+    assert "user-need-gemini-route-coverage-regresses" in payload_text
+    assert "Flash-Lite protected needs" in payload_text
+    assert "unmapped route blockers" in payload_text
+    assert "forbidden raw route payload fields" in payload_text
     assert "public benchmark sample text" in payload_text
     assert "public score claims" in payload_text
     assert "modelops-legal-benchmark-risk-bridge-regresses" in payload_text

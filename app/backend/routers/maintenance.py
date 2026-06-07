@@ -102,6 +102,7 @@ from services.route_telemetry_remediation_plan import RouteTelemetryRemediationP
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
+from services.user_need_gemini_route_coverage import UserNeedGeminiRouteCoverageService
 from services.user_need_implementation_priority_queue import UserNeedImplementationPriorityQueueService
 from services.admin_audit_policy import AdminAuditPolicyService
 from services.validation_event_evidence import ValidationEventEvidenceService
@@ -196,6 +197,15 @@ async def get_user_need_benchmark_coverage():
     return {
         "success": True,
         "data": UserNeedBenchmarkCoverageService().build_coverage(),
+    }
+
+
+@router.get("/user-needs/gemini-route-coverage")
+async def get_user_need_gemini_route_coverage():
+    """Return metadata-only coverage between user needs and Gemini route evidence."""
+    return {
+        "success": True,
+        "data": UserNeedGeminiRouteCoverageService().build_coverage(),
     }
 
 

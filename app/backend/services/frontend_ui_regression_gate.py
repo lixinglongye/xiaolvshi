@@ -50,6 +50,7 @@ PAGE_GATES = (
         "protected_panels": (
             "partial evidence failure banner",
             "user need benchmark coverage",
+            "user need Gemini route coverage",
             "legal document benchmark coverage",
             "public benchmark license gate",
             "legal benchmark fixture crosswalk",
@@ -260,6 +261,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini cheap-first route preflight panel, endpoint binding, official-source rows, route-task rows, variant rows, checks, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked route-preflight API checks for Flash-Lite defaults, preview and premium review rows, blocked variant boundaries, source-signal summaries, and forbidden raw request/model fields.",
+                },
+                {
+                    "id": "user-need-gemini-route-coverage-regresses",
+                    "page": "/maintenance",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the user need Gemini route coverage panel, endpoint binding, linked route tasks, default models, official-source URLs, claim boundary, and privacy boundary in the maintenance source contract.",
+                    "regression_target": "Add browser-level mocked route-coverage API checks for Flash-Lite protected needs, premium review rows, unmapped route blockers, no default route changes, and forbidden raw route payload fields.",
                 },
                 {
                     "id": "gemini-alias-capability-coverage-regresses",

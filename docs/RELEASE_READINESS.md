@@ -15,6 +15,15 @@ user-need coverage. It does not call gateways, write model defaults, download
 datasets, claim public benchmark scores, store raw legal text, or handle
 credentials.
 
+Additional optional evidence: `user-need-gemini-route-coverage` records
+metadata-only user-need route coverage against benchmark coverage, cheap-first
+calibration tasks, and Gemini route preflight rows. It shows Flash-Lite
+protected needs, premium/benchmark/license review gaps, and unmapped route
+blockers without calling models or gateways, importing public benchmark samples,
+writing configuration, changing default routes, shifting traffic, or storing raw
+legal text, prompts, route payloads, model outputs, credentials, emails, or user
+identifiers.
+
 Additional optional evidence: `legal-rag-authority-citation-gate` records
 metadata-only Legal RAG source authority and citation quality checks. It does
 not call NewAPI, Gemini, or gateways, download datasets, store raw legal text,
@@ -232,6 +241,9 @@ The service does not run shell commands itself. It only evaluates results suppli
 - ModelOps Gemini cheap-first route preflight coverage, requiring reviewable
   source-refresh notes, task defaults, alias coverage, variant states, and
   no-call/no-write boundaries before any Gemini default route change is claimed.
+- User need Gemini route coverage, requiring reviewable mapping between
+  high-priority user needs, benchmark coverage, cheap-first calibration tasks,
+  and Gemini route preflight rows before any route change is claimed.
 
 Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases. The route telemetry repository, operations summary, triage queue, and remediation plan are required because they provide the reviewable runtime evidence, maintainer actions, and operator-reviewed repair plan needed before model-routing release claims.
 
@@ -335,6 +347,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/services/continuous_update_ledger.py`
 - `app/backend/services/continuous_session_run_monitor.py`
 - `app/backend/services/model_route_legal_benchmark_risk_queue.py`
+- `app/backend/services/user_need_gemini_route_coverage.py`
 - `app/backend/services/legal_rag_authority_citation_gate.py`
 - `app/backend/services/legal_benchmark_research_refresh.py`
 - `app/backend/services/legal_adoption_research_bridge.py`
@@ -399,6 +412,7 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/tests/test_release_readiness.py`
 - `app/backend/tests/test_continuous_update_ledger.py`
 - `app/backend/tests/test_model_route_legal_benchmark_risk_queue.py`
+- `app/backend/tests/test_user_need_gemini_route_coverage.py`
 - `app/backend/tests/test_legal_rag_authority_citation_gate.py`
 - `app/backend/tests/test_legal_benchmark_research_refresh.py`
 - `app/backend/tests/test_billing_entitlement_gap.py`
@@ -477,6 +491,7 @@ approver identity, apply the change, or shift traffic.
 - `docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
+- `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
 - `docs/LEGAL_RAG_AUTHORITY_CITATION_GATE.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`

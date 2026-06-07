@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -83,6 +83,7 @@ The readiness service checks:
 - request policy,
 - gateway request compatibility gate,
 - Gemini cheap-first route preflight,
+- user-need Gemini route coverage,
 - request cost bounds,
 - cache policy,
 - callsite audit,

@@ -42,6 +42,21 @@ Gemini, OpenAI, Google, gateways, or the network, write real env values, or
 include raw legal text, prompts, payloads, model outputs, credentials, or public
 benchmark samples.
 
+## Gemini Route Coverage
+
+`user-need-gemini-route-coverage` is the release/ledger/maintenance evidence id
+for mapping user needs to Gemini cheap-first route evidence. It joins this
+benchmark coverage map, cheap-first calibration task IDs, and
+`modelops-gemini-cheap-first-route-preflight` rows so maintainers can see
+Flash-Lite protected needs, premium/benchmark/license review gaps, and unmapped
+route blockers.
+
+This route coverage view is metadata-only. It does not download public
+datasets, import public benchmark samples, call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, or the network, write configuration, change default
+routes, shift traffic, or return raw legal text, prompts, route payloads, model
+outputs, credentials, emails, or user identifiers.
+
 ## Safety
 
 The service does not call NewAPI, Gemini, OpenAI, public benchmark sources, or a gateway. It does not return fixture snippets, raw benchmark samples, public benchmark text, calibration payloads, raw model output, user feedback text, credentials, emails, phone numbers, identity numbers, prompts, or client documents. It returns IDs, counts, release-gate links, decisions, and metadata-only status fields.
@@ -62,5 +77,7 @@ python -m pytest tests/test_user_needs_radar.py tests/test_legal_review_benchmar
 - `app/backend/services/legal_document_benchmark_coverage.py`
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
+- `app/backend/services/user_need_gemini_route_coverage.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
+- `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`

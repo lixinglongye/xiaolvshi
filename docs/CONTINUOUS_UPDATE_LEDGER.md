@@ -27,6 +27,15 @@ public datasets, call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
 write real env values, or include raw legal text, prompts, payloads, model
 outputs, or credentials.
 
+Current user-need Gemini route slice: `user-need-gemini-route-coverage` adds
+metadata-only route coverage evidence that joins user-need benchmark coverage,
+cheap-first calibration tasks, and Gemini route preflight rows. It shows
+Flash-Lite protected needs, premium/benchmark/license review gaps, and unmapped
+route blockers without public dataset downloads, benchmark sample imports,
+NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls, configuration writes,
+default route changes, traffic shifts, raw legal text, prompts, route payloads,
+model outputs, credentials, emails, or user identifiers.
+
 Current Legal RAG authority slice: `legal-rag-authority-citation-gate` adds a
 metadata-only authority and citation gate for selected-source ids, authority
 tiers, jurisdiction/date/freshness metadata, and citation-map source ids. It
@@ -489,6 +498,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md`
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
+- `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md`

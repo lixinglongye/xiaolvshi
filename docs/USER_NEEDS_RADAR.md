@@ -19,6 +19,7 @@ Legal AI improvements can easily become scattered feature work. The user-needs r
 ```http
 GET /api/v1/maintenance/user-needs
 GET /api/v1/maintenance/user-needs/benchmark-coverage
+GET /api/v1/maintenance/user-needs/gemini-route-coverage
 ```
 
 The endpoint returns `status`, `method`, `summary`, `needs`, `roadmap`, and `maintenance_actions`.
@@ -32,6 +33,14 @@ implementation queue. It is release/ledger/maintenance evidence only: it does
 not download public datasets, call NewAPI, Gemini, OpenAI, Google, gateways, or
 the network, write real env values, or include raw legal text, prompts,
 payloads, model outputs, or credentials.
+
+`GET /user-needs/gemini-route-coverage` joins user needs to benchmark coverage,
+cheap-first calibration tasks, and Gemini route preflight rows. It shows which
+needs are protected by cheap-first Flash-Lite routes, which need premium or
+public-benchmark/license review, and which still lack route task mappings. It
+does not call models or gateways, change defaults, import benchmark samples, or
+return raw legal text, prompts, route payloads, model outputs, credentials,
+emails, or user identifiers.
 
 Related legal-AI research planning is exposed at:
 
@@ -80,6 +89,7 @@ The score is a planning signal, not product analytics. It does not use private u
 
 - `app/backend/services/user_needs_radar.py`
 - `app/backend/services/user_need_benchmark_coverage.py`
+- `app/backend/services/user_need_gemini_route_coverage.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `app/backend/tests/test_user_needs_radar.py`
@@ -88,3 +98,4 @@ The score is a planning signal, not product analytics. It does not use private u
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `docs/LEGAL_RESEARCH_BACKLOG.md`
 - `docs/USER_NEED_BENCHMARK_COVERAGE.md`
+- `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`

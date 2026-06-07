@@ -454,6 +454,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-benchmark-coverage" in completed_ids
     assert "user-need-public-benchmark-mapping" in completed_ids
     assert "user-need-implementation-priority-queue" in completed_ids
+    assert "user-need-gemini-route-coverage" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -568,6 +569,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-benchmark-coverage" not in queue_ids
     assert "user-need-public-benchmark-mapping" not in queue_ids
     assert "user-need-implementation-priority-queue" not in queue_ids
+    assert "user-need-gemini-route-coverage" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
@@ -1863,6 +1865,59 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    route_coverage_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "user-need-gemini-route-coverage"
+    )
+    assert route_coverage_entry["size"] == "medium"
+    assert route_coverage_entry["status"] == "shipped"
+    assert "metadata-only user-need to Gemini route coverage evidence" in route_coverage_entry["impact"]
+    assert "user-need benchmark coverage" in route_coverage_entry["impact"]
+    assert "cheap-first calibration tasks" in route_coverage_entry["impact"]
+    assert "Gemini cheap-first route preflight rows" in route_coverage_entry["impact"]
+    assert "Flash-Lite protected needs" in route_coverage_entry["impact"]
+    assert "premium/benchmark/license gaps" in route_coverage_entry["impact"]
+    assert "unmapped route blockers" in route_coverage_entry["impact"]
+    assert "without public dataset downloads" in route_coverage_entry["impact"]
+    assert "public benchmark sample imports" in route_coverage_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls" in route_coverage_entry["impact"]
+    assert "configuration writes" in route_coverage_entry["impact"]
+    assert "default route changes" in route_coverage_entry["impact"]
+    assert "traffic shifts" in route_coverage_entry["impact"]
+    assert "raw legal text" in route_coverage_entry["impact"]
+    assert "prompts" in route_coverage_entry["impact"]
+    assert "route payloads" in route_coverage_entry["impact"]
+    assert "request/response bodies" in route_coverage_entry["impact"]
+    assert "headers" in route_coverage_entry["impact"]
+    assert "model outputs" in route_coverage_entry["impact"]
+    assert "gateway responses" in route_coverage_entry["impact"]
+    assert "credentials" in route_coverage_entry["impact"]
+    assert "emails" in route_coverage_entry["impact"]
+    assert "user identifiers" in route_coverage_entry["impact"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in route_coverage_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in route_coverage_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in route_coverage_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in route_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in route_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in route_coverage_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in route_coverage_entry["evidence_paths"]
+    assert "docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md" in route_coverage_entry["evidence_paths"]
+    assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in route_coverage_entry["evidence_paths"]
+    assert "docs/USER_NEEDS_RADAR.md" in route_coverage_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in route_coverage_entry["evidence_paths"]
+    assert "user-need-gemini-route-coverage" in route_coverage_entry["release_gate_links"]
+    assert "user-needs-radar" in route_coverage_entry["release_gate_links"]
+    assert "user-need-benchmark-coverage" in route_coverage_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-calibration" in route_coverage_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in route_coverage_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in route_coverage_entry["release_gate_links"]
+    assert "model-route-legal-benchmark-risk-queue" in route_coverage_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in route_coverage_entry["release_gate_links"]
     default_candidate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-candidate-selector"
     )

@@ -74,6 +74,7 @@ import {
   getProductFeatureGapRadar,
   getReleaseReadiness,
   getUserNeedBenchmarkCoverage,
+  getUserNeedGeminiRouteCoverage,
   getUserNeedImplementationPriorityQueue,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
@@ -141,6 +142,7 @@ import {
   type ReleaseReadinessResult,
   type ReleaseValidationCommand,
   type UserNeedBenchmarkCoverage,
+  type UserNeedGeminiRouteCoverage,
   type UserNeedImplementationPriorityQueue,
   type UserNeedsRadar,
 } from '@/lib/maintenanceApi';
@@ -378,6 +380,8 @@ function Inner() {
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
+  const [userNeedGeminiRouteCoverage, setUserNeedGeminiRouteCoverage] =
+    useState<UserNeedGeminiRouteCoverage | null>(null);
   const [userNeedImplementationQueue, setUserNeedImplementationQueue] =
     useState<UserNeedImplementationPriorityQueue | null>(null);
   const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
@@ -494,6 +498,11 @@ function Inner() {
           label: 'User need benchmark coverage',
           run: getUserNeedBenchmarkCoverage,
           apply: (value) => setUserNeedBenchmarkCoverage(value as UserNeedBenchmarkCoverage),
+        },
+        {
+          label: 'User need Gemini route coverage',
+          run: getUserNeedGeminiRouteCoverage,
+          apply: (value) => setUserNeedGeminiRouteCoverage(value as UserNeedGeminiRouteCoverage),
         },
         {
           label: 'User need implementation priority queue',
@@ -3558,6 +3567,233 @@ function Inner() {
                   <div className="grid gap-2 md:grid-cols-2">
                     {userNeedBenchmarkCoverage.validation_commands.map((command) => (
                       <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600">
+                        {command}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {userNeedGeminiRouteCoverage && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User need Gemini route coverage</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {userNeedGeminiRouteCoverage.summary.high_priority_route_protected_count} high-priority route protected /{' '}
+                      {userNeedGeminiRouteCoverage.summary.review_required_need_count} reviews /{' '}
+                      {userNeedGeminiRouteCoverage.summary.blocked_need_count} blocked
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[userNeedGeminiRouteCoverage.status] ?? statusClass.warn}
+                  >
+                    {displayToken(userNeedGeminiRouteCoverage.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-9">
+                  {[
+                    { label: 'needs', value: userNeedGeminiRouteCoverage.summary.need_count },
+                    { label: 'high priority', value: userNeedGeminiRouteCoverage.summary.high_priority_need_count },
+                    {
+                      label: 'route protected',
+                      value: userNeedGeminiRouteCoverage.summary.high_priority_route_protected_count,
+                    },
+                    { label: 'cheap-first needs', value: userNeedGeminiRouteCoverage.summary.cheap_first_route_need_count },
+                    { label: 'balanced needs', value: userNeedGeminiRouteCoverage.summary.balanced_route_need_count },
+                    { label: 'premium needs', value: userNeedGeminiRouteCoverage.summary.premium_exception_need_count },
+                    { label: 'route tasks', value: userNeedGeminiRouteCoverage.summary.route_task_count },
+                    { label: 'official sources', value: userNeedGeminiRouteCoverage.summary.official_source_count },
+                    { label: 'raw text returned', value: String(userNeedGeminiRouteCoverage.summary.raw_text_returned) },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Need</TableHead>
+                          <TableHead>Route coverage</TableHead>
+                          <TableHead>Gemini routes</TableHead>
+                          <TableHead>Models / costs</TableHead>
+                          <TableHead>Evidence state</TableHead>
+                          <TableHead>Next action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {userNeedGeminiRouteCoverage.coverage_rows.slice(0, 8).map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[320px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                              <div className="mt-2 text-xs text-stone-600">{displayToken(row.category)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.route_coverage_status] ?? statusClass.warn}
+                              >
+                                {displayToken(row.route_coverage_status)}
+                              </Badge>
+                              <div className="mt-2">
+                                <Badge
+                                  variant="outline"
+                                  className={priorityClass[row.priority_band] ?? priorityClass.medium}
+                                >
+                                  {row.priority_band} / {row.priority_score}
+                                </Badge>
+                              </div>
+                              <div className="mt-2">source: {displayToken(row.route_task_source)}</div>
+                              <div>HF ready: {String(row.high_frequency_route_ready)}</div>
+                              <div>default without review: {String(row.default_allowed_without_review)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>tasks: {row.linked_route_tasks.join(', ') || '-'}</div>
+                              <div>modes: {row.route_modes.map(displayToken).join(', ') || '-'}</div>
+                              <div>cheap-first: {row.cheap_first_route_count}</div>
+                              <div>balanced: {row.balanced_route_count}</div>
+                              <div>premium exception: {row.premium_exception_route_count}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>models: {row.linked_default_models.join(', ') || '-'}</div>
+                              <div>costs: {row.cost_tiers.map(displayToken).join(', ') || '-'}</div>
+                              <div>calibration tasks: {row.linked_calibration_task_ids.join(', ') || '-'}</div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                decisions:{' '}
+                                {Object.entries(row.calibration_decisions)
+                                  .map(([taskId, decision]) => `${taskId}:${displayToken(decision)}`)
+                                  .join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              <div>benchmark: {displayToken(row.benchmark_coverage_status)}</div>
+                              <div>public: {displayToken(row.public_benchmark_status)}</div>
+                              <div>calibration: {displayToken(row.calibration_status)}</div>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                blocked: {row.blocked_reason_codes.join(', ') || 'none'}
+                              </div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                review: {row.review_reason_codes.join(', ') || 'none'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                              {row.next_actions[0] || '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Route coverage boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>coverage endpoint: {userNeedGeminiRouteCoverage.source_boundaries.coverage_endpoint}</div>
+                      <div>
+                        route preflight endpoint: {userNeedGeminiRouteCoverage.source_boundaries.route_preflight_endpoint}
+                      </div>
+                      <div>
+                        public sample import:{' '}
+                        {String(userNeedGeminiRouteCoverage.source_boundaries.imports_public_benchmark_samples)}
+                      </div>
+                      <div>changes defaults: {String(userNeedGeminiRouteCoverage.source_boundaries.changes_default_routes)}</div>
+                      <div>model calls: {userNeedGeminiRouteCoverage.summary.model_calls}</div>
+                      <div>network: {userNeedGeminiRouteCoverage.summary.network_access}</div>
+                      <div>configuration written: {String(userNeedGeminiRouteCoverage.summary.configuration_written)}</div>
+                      <div>
+                        claims_default_route_changed:{' '}
+                        {String(userNeedGeminiRouteCoverage.claim_boundary.claims_default_route_changed)}
+                      </div>
+                      <div>
+                        claims_public_benchmark_scores:{' '}
+                        {String(userNeedGeminiRouteCoverage.claim_boundary.claims_public_benchmark_scores)}
+                      </div>
+                      <div>
+                        claims_live_gateway_execution:{' '}
+                        {String(userNeedGeminiRouteCoverage.claim_boundary.claims_live_gateway_execution)}
+                      </div>
+                      <div>metadata only: {String(userNeedGeminiRouteCoverage.privacy_boundary.metadata_only)}</div>
+                      <div>route payloads: {String(userNeedGeminiRouteCoverage.privacy_boundary.returns_route_payloads)}</div>
+                      <div>prompts: {String(userNeedGeminiRouteCoverage.privacy_boundary.returns_prompts)}</div>
+                      <div>credentials: {String(userNeedGeminiRouteCoverage.privacy_boundary.returns_credentials)}</div>
+                      <div>emails: {String(userNeedGeminiRouteCoverage.privacy_boundary.returns_emails)}</div>
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Official source refresh</h3>
+                    <div className="space-y-2">
+                      {userNeedGeminiRouteCoverage.source_boundaries.official_source_urls.map((url) => (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 break-all rounded-[8px] border border-stone-950/10 bg-white p-2 text-xs text-stone-700 hover:bg-stone-50"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                          <span>{url}</span>
+                        </a>
+                      ))}
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Review ids</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="mb-1 text-xs font-semibold uppercase text-stone-500">Blocked</div>
+                        <div className="flex flex-wrap gap-2">
+                          {userNeedGeminiRouteCoverage.blocked_need_ids.length === 0 ? (
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-800">
+                              none
+                            </Badge>
+                          ) : (
+                            userNeedGeminiRouteCoverage.blocked_need_ids.map((needId) => (
+                              <Badge key={needId} variant="outline" className="bg-red-50 font-mono text-[11px] text-red-800">
+                                {needId}
+                              </Badge>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-1 text-xs font-semibold uppercase text-stone-500">Review</div>
+                        <div className="flex flex-wrap gap-2">
+                          {userNeedGeminiRouteCoverage.review_need_ids.slice(0, 8).map((needId) => (
+                            <Badge key={needId} variant="outline" className="bg-amber-50 font-mono text-[11px] text-amber-900">
+                              {needId}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Next actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {userNeedGeminiRouteCoverage.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {userNeedGeminiRouteCoverage.validation_commands.map((command) => (
+                      <div
+                        key={command}
+                        className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                      >
                         {command}
                       </div>
                     ))}

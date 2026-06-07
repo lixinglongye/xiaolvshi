@@ -267,6 +267,33 @@ const checks = [
   () => assertIncludes(maintenancePage, 'Calibration attention gaps', 'user need benchmark calibration attention panel'),
   () => assertIncludes(maintenancePage, 'cheap-first calibration', 'user need benchmark calibration summary'),
   () => assertIncludes(maintenancePage, 'linked_calibration_task_ids', 'user need benchmark calibration task binding'),
+  () => assertIncludes(maintenancePage, 'User need Gemini route coverage', 'user need Gemini route coverage panel'),
+  () => assertIncludes(maintenancePage, 'userNeedGeminiRouteCoverage', 'user need Gemini route coverage state binding'),
+  () => assertIncludes(maintenancePage, 'getUserNeedGeminiRouteCoverage', 'user need Gemini route coverage API binding'),
+  () => assertIncludes(maintenancePage, 'route_task_source', 'user need Gemini route task source binding'),
+  () => assertIncludes(maintenancePage, 'linked_route_tasks', 'user need Gemini linked route tasks binding'),
+  () => assertIncludes(maintenancePage, 'linked_default_models', 'user need Gemini linked default models binding'),
+  () => assertIncludes(maintenancePage, 'returns_route_payloads', 'user need Gemini route payload boundary binding'),
+  () => assertIncludes(maintenancePage, 'changes_default_routes', 'user need Gemini default route change boundary'),
+  () => assertIncludes(maintenancePage, 'claims_default_route_changed', 'user need Gemini no default route change claim binding'),
+  () => assertIncludes(maintenancePage, 'claims_public_benchmark_scores', 'user need Gemini no public benchmark score claim binding'),
+  () => assertIncludes(maintenancePage, 'claims_live_gateway_execution', 'user need Gemini no live gateway claim binding'),
+  () => assertIncludes(maintenancePage, 'route preflight endpoint', 'user need Gemini route preflight endpoint label'),
+  () => assertIncludes(maintenancePage, 'official_source_urls', 'user need Gemini official source URL binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need benchmark coverage</h2>',
+      '<h2 className="text-xl font-black text-stone-950">User need Gemini route coverage</h2>',
+      'user need Gemini route coverage follows benchmark coverage',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need Gemini route coverage</h2>',
+      '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
+      'user need Gemini route coverage precedes implementation queue',
+    ),
   () => assertIncludes(maintenancePage, 'User need implementation priority queue', 'user need implementation priority queue panel'),
   () => assertIncludes(maintenancePage, 'userNeedImplementationQueue', 'user need implementation queue state binding'),
   () => assertIncludes(maintenancePage, 'getUserNeedImplementationPriorityQueue', 'user need implementation queue API binding'),
@@ -449,6 +476,14 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'linked_calibration_task_ids', 'user need benchmark calibration task type'),
   () => assertIncludes(maintenanceApi, 'returns_calibration_payloads', 'user need benchmark calibration payload boundary type'),
   () => assertIncludes(maintenanceApi, 'cheap_first_calibration_mapped_need_count', 'user need benchmark calibration summary type'),
+  () => assertIncludes(maintenanceApi, 'UserNeedGeminiRouteCoverage', 'user need Gemini route coverage type'),
+  () => assertIncludes(maintenanceApi, 'UserNeedGeminiRouteCoverageRow', 'user need Gemini route coverage row type'),
+  () => assertIncludes(maintenanceApi, 'getUserNeedGeminiRouteCoverage', 'user need Gemini route coverage API'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/user-needs/gemini-route-coverage', 'user need Gemini route coverage endpoint'),
+  () => assertIncludes(maintenanceApi, 'linked_route_tasks: string[]', 'user need Gemini linked route task type'),
+  () => assertIncludes(maintenanceApi, 'linked_default_models: string[]', 'user need Gemini linked default model type'),
+  () => assertIncludes(maintenanceApi, 'returns_route_payloads: boolean', 'user need Gemini route payload boundary type'),
+  () => assertIncludes(maintenanceApi, 'claims_default_route_changed: boolean', 'user need Gemini default route claim boundary type'),
   () => assertIncludes(maintenanceApi, 'UserNeedImplementationPriorityQueue', 'user need implementation queue type'),
   () => assertIncludes(maintenanceApi, 'getUserNeedImplementationPriorityQueue', 'user need implementation queue API'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/user-needs/implementation-priority-queue', 'user need implementation queue endpoint'),
@@ -1278,6 +1313,12 @@ const userNeedImplementationQueuePanel = sourceSection(
   'Product feature gap radar',
   'maintenance user need implementation priority queue section',
 );
+const userNeedGeminiRouteCoveragePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">User need Gemini route coverage</h2>',
+  '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
+  'maintenance user need Gemini route coverage section',
+);
 const legalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
   maintenancePage,
   'Small legal-document fixture gate for cheap Gemini default evidence before routing changes.',
@@ -1396,6 +1437,11 @@ assertNotMatches(
   geminiDefaultCostImpactPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output)\b/i,
   'model-ops Gemini default cost impact no secret or raw prompt/payload field names',
+);
+assertNotMatches(
+  userNeedGeminiRouteCoveragePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text|document_text|fixture_snippet|sample_text|input_excerpt|output_text|generated_text|candidate_text|request_body|response_body|headers)\b/i,
+  'maintenance user need Gemini route coverage no secret or raw prompt/payload/legal text field names',
 );
 assertNotMatches(
   userNeedImplementationQueuePanel,

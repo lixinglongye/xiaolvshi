@@ -59,6 +59,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need implementation priority queue" in profile["release_management"]["release_readiness_controls"]
+    assert "User need Gemini route coverage" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
@@ -219,11 +220,21 @@ def test_maintenance_profile_links_reviewable_evidence():
     priority_signal = next(
         signal for signal in profile["signals"] if signal["id"] == "user-need-implementation-priority-queue"
     )
+    route_coverage_signal = next(
+        signal for signal in profile["signals"] if signal["id"] == "user-need-gemini-route-coverage"
+    )
     assert "high-priority user needs" in priority_signal["description"]
     assert "legal benchmark coverage gaps" in priority_signal["description"]
     assert "cheap-first calibration/model routing risk" in priority_signal["description"]
     assert "product execution actions" in priority_signal["description"]
     assert "priority queue" in priority_signal["responsibility"]
+    assert "cheap-first calibration tasks" in route_coverage_signal["description"]
+    assert "Gemini route preflight rows" in route_coverage_signal["description"]
+    assert "Flash-Lite protection" in route_coverage_signal["description"]
+    assert "premium exceptions" in route_coverage_signal["description"]
+    assert "public benchmark/license gaps" in route_coverage_signal["description"]
+    assert "unmapped route blockers" in route_coverage_signal["description"]
+    assert "user-need route coverage" in route_coverage_signal["responsibility"]
     assert "runtime route reason-code evidence" in model_signal["description"]
     assert "route telemetry reason-code hotspot evidence" in model_signal["description"]
     assert "runtime route reason-code review" in model_signal["responsibility"]
@@ -237,6 +248,17 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_release_readiness.py" in priority_signal["evidence_paths"]
     assert "app/backend/tests/test_continuous_update_ledger.py" in priority_signal["evidence_paths"]
     assert "app/backend/tests/test_maintenance_evidence.py" in priority_signal["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in route_coverage_signal["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in route_coverage_signal["evidence_paths"]
+    assert "app/backend/services/user_need_benchmark_coverage.py" in route_coverage_signal["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in route_coverage_signal["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in route_coverage_signal["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in route_coverage_signal["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in route_coverage_signal["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in route_coverage_signal["evidence_paths"]
+    assert "docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md" in route_coverage_signal["evidence_paths"]
+    assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in route_coverage_signal["evidence_paths"]
+    assert "docs/USER_NEEDS_RADAR.md" in route_coverage_signal["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in priority_signal["evidence_paths"]
     assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in priority_signal["evidence_paths"]
     assert "docs/USER_NEEDS_RADAR.md" in priority_signal["evidence_paths"]

@@ -250,6 +250,129 @@ type UserNeedBenchmarkCoverageResponse = {
   data: UserNeedBenchmarkCoverage;
 };
 
+export type UserNeedGeminiRouteCoverageRow = {
+  id: string;
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  priority_score: number;
+  benchmark_coverage_status: string;
+  public_benchmark_status: string;
+  calibration_status: string;
+  route_coverage_status: string;
+  linked_calibration_task_ids: string[];
+  linked_route_tasks: string[];
+  route_task_source: string;
+  linked_default_models: string[];
+  route_modes: string[];
+  cost_tiers: string[];
+  cheap_first_route_count: number;
+  balanced_route_count: number;
+  premium_exception_route_count: number;
+  high_frequency_route_ready: boolean;
+  default_allowed_without_review: boolean;
+  calibration_decisions: Record<string, string>;
+  blocked_reason_codes: string[];
+  review_reason_codes: string[];
+  next_actions: string[];
+  release_gate_links: string[];
+};
+
+export type UserNeedGeminiRouteCoverage = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    need_count: number;
+    high_priority_need_count: number;
+    ready_need_count: number;
+    review_required_need_count: number;
+    blocked_need_count: number;
+    unmapped_need_count: number;
+    high_priority_route_protected_count: number;
+    cheap_first_route_need_count: number;
+    balanced_route_need_count: number;
+    premium_exception_need_count: number;
+    source_user_need_coverage_status: string;
+    source_route_preflight_status: string;
+    source_calibration_status: string;
+    official_source_count: number;
+    route_task_count: number;
+    model_calls: string;
+    network_access: string;
+    configuration_written: boolean;
+    raw_text_returned: boolean;
+  };
+  coverage_rows: UserNeedGeminiRouteCoverageRow[];
+  blocked_need_ids: string[];
+  review_need_ids: string[];
+  unmapped_need_ids: string[];
+  recommended_actions: string[];
+  source_summaries: {
+    user_need_benchmark_coverage: UserNeedBenchmarkCoverage['summary'];
+    gemini_route_preflight: {
+      official_source_count: number;
+      route_task_count: number;
+      cheap_first_route_count: number;
+      balanced_route_count: number;
+      premium_exception_count: number;
+      model_called: boolean;
+      gateway_called: boolean;
+      network_called: boolean;
+      configuration_written: boolean;
+      credentials_included: boolean;
+      raw_payload_echoed: boolean;
+    };
+    cheap_first_calibration: UserNeedBenchmarkCoverage['source_summaries']['cheap_first_calibration'];
+  };
+  source_boundaries: {
+    coverage_endpoint: string;
+    route_preflight_endpoint: string;
+    official_source_urls: string[];
+    uses_public_benchmark_metadata: boolean;
+    imports_public_benchmark_samples: boolean;
+    uses_route_preflight_metadata: boolean;
+    changes_default_routes: boolean;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_raw_benchmark_samples: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_fixture_snippets: boolean;
+    returns_calibration_payloads: boolean;
+    returns_route_payloads: boolean;
+    returns_raw_legal_text: boolean;
+    returns_prompts: boolean;
+    returns_raw_model_output: boolean;
+    returns_user_feedback_text: boolean;
+    returns_credentials: boolean;
+    returns_emails: boolean;
+    model_calls: boolean;
+    gateway_calls: boolean;
+    network_access: boolean;
+    configuration_written: boolean;
+  };
+  claim_boundary: {
+    claims_24h_completion: boolean;
+    claims_public_benchmark_scores: boolean;
+    claims_live_gateway_execution: boolean;
+    claims_production_quality: boolean;
+    claims_default_route_changed: boolean;
+    allowed_claim: string;
+  };
+  validation_commands: string[];
+};
+
+type UserNeedGeminiRouteCoverageResponse = {
+  success: boolean;
+  data: UserNeedGeminiRouteCoverage;
+};
+
 export type UserNeedImplementationPriorityQueueItem = {
   id: string;
   need_id: string;
@@ -4832,6 +4955,18 @@ export async function getUserNeedBenchmarkCoverage(): Promise<UserNeedBenchmarkC
     return payload.data;
   }
   return payload as UserNeedBenchmarkCoverage;
+}
+
+export async function getUserNeedGeminiRouteCoverage(): Promise<UserNeedGeminiRouteCoverage> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs/gemini-route-coverage',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as UserNeedGeminiRouteCoverageResponse | UserNeedGeminiRouteCoverage;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as UserNeedGeminiRouteCoverage;
 }
 
 export async function getUserNeedImplementationPriorityQueue(): Promise<UserNeedImplementationPriorityQueue> {
