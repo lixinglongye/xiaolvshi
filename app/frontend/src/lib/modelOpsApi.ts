@@ -2377,6 +2377,123 @@ export type ModelOpsLegalBenchmarkRiskBridge = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalMicroBenchmarkPreflightFixtureItem = {
+  id: string;
+  order: number;
+  fixture_id: string;
+  title: string;
+  matter_type: string;
+  task: string;
+  model: string;
+  model_cost_tier: string;
+  estimated_request_cost_usd: number | null;
+  prompt_tokens_estimate?: number | null;
+  completion_tokens_budget?: number | null;
+  expected_route_count: number;
+  expected_task_count: number;
+  expected_signal_count: number;
+  public_source_count: number;
+  result_template_target: string;
+  release_action: string;
+  raw_fixture_text_returned: boolean;
+  request_body_returned: boolean;
+  gateway_called: boolean;
+};
+
+export type ModelOpsLegalMicroBenchmarkPreflightDocumentItem = {
+  id: string;
+  order: number;
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  required_section_count: number;
+  expected_citation_count: number;
+  expected_risk_label_count: number;
+  check_ids: string[];
+  release_action: string;
+  raw_document_snippet_returned?: boolean;
+  raw_document_text_returned?: boolean;
+  candidate_text_returned: boolean;
+};
+
+export type ModelOpsLegalMicroBenchmarkPreflightFactItem = {
+  id: string;
+  order: number;
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  amount_expectation_count: number;
+  deadline_expectation_count: number;
+  required_fact_count: number;
+  contradiction_pair_count: number;
+  check_ids: string[];
+  release_action: string;
+  raw_document_text_returned: boolean;
+  candidate_text_returned: boolean;
+};
+
+export type ModelOpsLegalMicroBenchmarkPreflightRunStep = {
+  order: number;
+  id: string;
+  action: string;
+  endpoint?: string;
+  fixture_ids?: string[];
+  case_ids?: string[];
+  item_count?: number;
+  max_parallel_requests?: number;
+  model_call: boolean | string;
+};
+
+export type ModelOpsLegalMicroBenchmarkPreflightCheck = {
+  id: string;
+  status: string;
+  reason: string;
+};
+
+export type ModelOpsLegalMicroBenchmarkPreflight = {
+  id: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    fixture_limit: number;
+    document_case_limit: number;
+    fact_case_limit: number;
+    selected_fixture_count: number;
+    document_case_count: number;
+    fact_consistency_case_count: number;
+    request_file_count: number;
+    max_parallel_requests: number;
+    estimated_cheap_first_cost_usd: number | null;
+    cheap_first_model_count: number;
+    follow_up_endpoint_count: number;
+    gate_status_before_run: string;
+    benchmark_gate_required: boolean;
+    default_change_allowed: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+  };
+  fixture_run_items: ModelOpsLegalMicroBenchmarkPreflightFixtureItem[];
+  document_check_items: ModelOpsLegalMicroBenchmarkPreflightDocumentItem[];
+  fact_consistency_items: ModelOpsLegalMicroBenchmarkPreflightFactItem[];
+  run_sequence: ModelOpsLegalMicroBenchmarkPreflightRunStep[];
+  follow_up_endpoints: string[];
+  checks: ModelOpsLegalMicroBenchmarkPreflightCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  cheap_first_policy: Record<string, boolean | string | number | string[] | null>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelReasoningDecision = {
   task: string;
   model: string;
@@ -3236,6 +3353,7 @@ export type ModelOpsResponse = {
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
   legal_benchmark_risk_bridge?: ModelOpsLegalBenchmarkRiskBridge;
+  legal_micro_benchmark_preflight?: ModelOpsLegalMicroBenchmarkPreflight;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -3306,6 +3424,10 @@ function hasModelOpsPayload(value: unknown): boolean {
     coverage_rows?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
+    fixture_run_items?: unknown;
+    document_check_items?: unknown;
+    fact_consistency_items?: unknown;
+    run_sequence?: unknown;
     rows?: unknown;
     task_rows?: unknown;
     default_targets?: unknown;
@@ -3339,6 +3461,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
@@ -3733,6 +3856,13 @@ export async function evaluateModelFailureUpgradeBudget(
 export async function getModelOpsLegalBenchmarkRiskBridge(): Promise<ModelOpsLegalBenchmarkRiskBridge> {
   return invokeModelOpsApi<ModelOpsLegalBenchmarkRiskBridge>({
     url: '/api/v1/aihub/models/legal-benchmark-risk-bridge',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalMicroBenchmarkPreflight(): Promise<ModelOpsLegalMicroBenchmarkPreflight> {
+  return invokeModelOpsApi<ModelOpsLegalMicroBenchmarkPreflight>({
+    url: '/api/v1/aihub/models/legal-micro-benchmark-preflight',
     method: 'GET',
   });
 }

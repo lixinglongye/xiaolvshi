@@ -33,6 +33,7 @@ import {
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
   getModelOpsLegalBenchmarkRiskBridge,
+  getModelOpsLegalMicroBenchmarkPreflight,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -51,6 +52,7 @@ import {
   type ModelOpsCheapFirstEscalationBudget,
   type ModelFailureUpgradeBudget,
   type ModelOpsLegalBenchmarkRiskBridge,
+  type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsObservedGeminiModelIntakeQueue,
@@ -456,6 +458,9 @@ function Inner() {
   const [legalBenchmarkRiskBridge, setLegalBenchmarkRiskBridge] =
     useState<ModelOpsLegalBenchmarkRiskBridge | null>(null);
   const [legalBenchmarkRiskBridgeError, setLegalBenchmarkRiskBridgeError] = useState('');
+  const [legalMicroBenchmarkPreflight, setLegalMicroBenchmarkPreflight] =
+    useState<ModelOpsLegalMicroBenchmarkPreflight | null>(null);
+  const [legalMicroBenchmarkPreflightError, setLegalMicroBenchmarkPreflightError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -496,6 +501,8 @@ function Inner() {
     setFailureUpgradeBudget(null);
     setLegalBenchmarkRiskBridgeError('');
     setLegalBenchmarkRiskBridge(null);
+    setLegalMicroBenchmarkPreflightError('');
+    setLegalMicroBenchmarkPreflight(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -515,6 +522,7 @@ function Inner() {
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
+        legalMicroBenchmarkPreflightResult,
       ] =
         await Promise.allSettled([
         getModelOps(),
@@ -524,6 +532,7 @@ function Inner() {
         getModelOpsCheapFirstEscalationBudget(),
         getModelFailureUpgradeBudget(),
         getModelOpsLegalBenchmarkRiskBridge(),
+        getModelOpsLegalMicroBenchmarkPreflight(),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
@@ -536,6 +545,7 @@ function Inner() {
         setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
         setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
         setLegalBenchmarkRiskBridge(modelOpsResult.value.legal_benchmark_risk_bridge ?? null);
+        setLegalMicroBenchmarkPreflight(modelOpsResult.value.legal_micro_benchmark_preflight ?? null);
         setCanaryObservation(null);
         setCanaryPromotionDecision(null);
         setCanaryApprovalPacket(null);
@@ -633,6 +643,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_benchmark_risk_bridge)
         ) {
           setLegalBenchmarkRiskBridgeError('Legal benchmark risk bridge failed to load.');
+        }
+      }
+      if (legalMicroBenchmarkPreflightResult.status === 'fulfilled') {
+        setLegalMicroBenchmarkPreflight(legalMicroBenchmarkPreflightResult.value);
+      } else {
+        console.error(legalMicroBenchmarkPreflightResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalMicroBenchmarkPreflight(modelOpsResult.value.legal_micro_benchmark_preflight ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_micro_benchmark_preflight)
+        ) {
+          setLegalMicroBenchmarkPreflightError('Legal micro benchmark preflight failed to load.');
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -1068,6 +1092,12 @@ function Inner() {
     legalBenchmarkRiskBridge ?? data?.legal_benchmark_risk_bridge ?? null;
   const legalBenchmarkRiskRouteReviews = activeLegalBenchmarkRiskBridge?.route_reviews ?? [];
   const legalBenchmarkRiskUserNeedReviews = activeLegalBenchmarkRiskBridge?.user_need_reviews ?? [];
+  const activeLegalMicroBenchmarkPreflight =
+    legalMicroBenchmarkPreflight ?? data?.legal_micro_benchmark_preflight ?? null;
+  const legalMicroFixtureRows = activeLegalMicroBenchmarkPreflight?.fixture_run_items ?? [];
+  const legalMicroDocumentRows = activeLegalMicroBenchmarkPreflight?.document_check_items ?? [];
+  const legalMicroFactRows = activeLegalMicroBenchmarkPreflight?.fact_consistency_items ?? [];
+  const legalMicroRunSteps = activeLegalMicroBenchmarkPreflight?.run_sequence ?? [];
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -3666,6 +3696,206 @@ function Inner() {
               output: {String(activeFailureUpgradeBudget.privacy_boundary['raw_' + 'model_output_included'])} / configuration
               written: {String(activeFailureUpgradeBudget.privacy_boundary.configuration_written)}
             </div>
+          </section>
+        )}
+
+        {(activeLegalMicroBenchmarkPreflight || legalMicroBenchmarkPreflightError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalMicroBenchmarkPreflight?.summary.selected_fixture_count)} fixtures /{' '}
+                  {formatNumber(activeLegalMicroBenchmarkPreflight?.summary.document_case_count)} document cases /{' '}
+                  {formatNumber(activeLegalMicroBenchmarkPreflight?.summary.fact_consistency_case_count)} fact cases
+                </div>
+              </div>
+              {activeLegalMicroBenchmarkPreflight && (
+                <Badge variant="outline" className={statusClass(activeLegalMicroBenchmarkPreflight.status)}>
+                  {activeLegalMicroBenchmarkPreflight.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalMicroBenchmarkPreflight && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalMicroBenchmarkPreflight.summary.request_file_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">request files</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalMicroBenchmarkPreflight.summary.max_parallel_requests)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">parallel cap</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {formatUsd(activeLegalMicroBenchmarkPreflight.summary.estimated_cheap_first_cost_usd)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">estimated cheap-first</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalMicroBenchmarkPreflight.summary.follow_up_endpoint_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">follow-up gates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalMicroBenchmarkPreflight.summary.benchmark_gate_required)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gate required</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalMicroBenchmarkPreflight.summary.default_change_allowed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Signals</TableHead>
+                          <TableHead>Cost</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalMicroFixtureRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">{row.matter_type}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{row.model}</div>
+                              <Badge variant="outline" className={`mt-2 ${costClass[row.model_cost_tier] ?? statusClass(row.model_cost_tier)}`}>
+                                {row.model_cost_tier}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>routes {row.expected_route_count}</div>
+                              <div>tasks {row.expected_task_count}</div>
+                              <div>signals {row.expected_signal_count}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">
+                              {formatUsd(row.estimated_request_cost_usd)}
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {row.release_action.replace(/_/g, ' ')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-sm font-black uppercase text-stone-500">Run order</div>
+                    <div className="mt-3 space-y-2">
+                      {legalMicroRunSteps.map((step) => (
+                        <div key={step.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{step.id}</div>
+                            <div className="font-mono text-[11px] text-stone-500">#{step.order}</div>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{step.action}</div>
+                          {step.endpoint && (
+                            <div className="mt-1 break-all font-mono text-[11px] text-stone-500">{step.endpoint}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalMicroBenchmarkPreflight.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                    {legalMicroBenchmarkPreflightError && (
+                      <div className="mt-2 text-xs font-semibold text-red-700">
+                        {legalMicroBenchmarkPreflightError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Document case</TableHead>
+                          <TableHead>Expected counts</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalMicroDocumentRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.document_type}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>sections {row.required_section_count}</div>
+                              <div>citations {row.expected_citation_count}</div>
+                              <div>risk labels {row.expected_risk_label_count}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {row.release_action.replace(/_/g, ' ')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fact case</TableHead>
+                          <TableHead>Expected counts</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalMicroFactRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.document_type}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>amounts {row.amount_expectation_count}</div>
+                              <div>deadlines {row.deadline_expectation_count}</div>
+                              <div>facts {row.required_fact_count}</div>
+                              <div>conflicts {row.contradiction_pair_count}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {row.release_action.replace(/_/g, ' ')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+                <div className="text-xs leading-5 text-stone-500">
+                  network called: {String(activeLegalMicroBenchmarkPreflight.summary.network_called)} / gateway called:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.summary.gateway_called)} / configuration written:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.summary.configuration_written)} / traffic shifted:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.summary.traffic_shifted)} / request bodies returned:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.privacy_boundary['returns_' + 'request_' + 'body'])} / source text returned:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.privacy_boundary['returns_' + 'fixture_' + 'excerpt'])} / model output returned:{' '}
+                  {String(activeLegalMicroBenchmarkPreflight.privacy_boundary['returns_' + 'raw_' + 'model_' + 'output'])}
+                </div>
+              </>
+            )}
           </section>
         )}
 

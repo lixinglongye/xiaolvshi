@@ -145,6 +145,16 @@ call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write
 configuration, shift traffic, or include headers, request bodies, prompts, raw
 legal text, model outputs, payloads, emails, or credentials.
 
+Current legal micro benchmark preflight evidence:
+`modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
+low-resource legal benchmark run-planning evidence for cheap-first Gemini
+fixture ids, document case ids, fact-consistency case ids, serial run order,
+cost estimates, and follow-up gate bindings. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, or the network, write
+configuration, shift traffic, claim live model quality, or include request
+bodies, messages, prompts, fixture excerpts, legal text, generated document
+text, model outputs, gateway responses, credentials, or emails.
+
 Current route telemetry UI regression evidence:
 `route-telemetry-ui-regression-contract` hardens the `/model-ops` source
 contract for route telemetry repository, operations summary, triage queue, and

@@ -85,6 +85,7 @@ from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyS
 from services.model_route_legal_benchmark_risk_queue import ModelRouteLegalBenchmarkRiskQueueService
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsLegalFixtureCheapFirstBenchmarkGateService
 from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
+from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
@@ -1535,6 +1536,23 @@ async def get_legal_review_fixture_local_run_package(
     return {
         "success": True,
         "data": LegalFixtureLocalRunPackageService().build_package(fixture_limit),
+    }
+
+
+@router.get("/legal-review-benchmark/micro-benchmark-preflight")
+async def get_legal_review_micro_benchmark_preflight(
+    fixture_limit: int = Query(default=2, ge=1, le=4, description="Number of cheap-first fixture rows."),
+    document_case_limit: int = Query(default=2, ge=1, le=7, description="Number of document benchmark case rows."),
+    fact_case_limit: int = Query(default=1, ge=1, le=4, description="Number of fact-consistency case rows."),
+):
+    """Return the smallest cheap-first legal benchmark preflight packet."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalMicroBenchmarkPreflightService().build_packet(
+            fixture_limit,
+            document_case_limit,
+            fact_case_limit,
+        ),
     }
 
 

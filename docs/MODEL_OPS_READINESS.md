@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, and maintainer execution evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -25,10 +25,10 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 52,
-      "required_component_count": 51,
+      "component_count": 53,
+      "required_component_count": 52,
       "optional_component_count": 1,
-      "pass_count": 52,
+      "pass_count": 53,
       "warn_count": 0,
       "fail_count": 0,
       "required_warning_count": 0,
@@ -93,6 +93,7 @@ The readiness service checks:
 - route guardrails,
 - cheap-first route quality budget,
 - model failure upgrade budget,
+- legal micro benchmark preflight,
 - cheap-first escalation budget,
 - routing replay,
 - fallback chains,
@@ -117,6 +118,8 @@ Slow rows become review warnings or blockers without storing raw payloads.
 `cheap-first-escalation-budget` is required evidence for cheap-first cascade cost control. It checks aggregate failure, verification, escalation, premium escalation, operator review, and wasted escalation spend rates before a cheap Gemini/NewAPI default can be promoted.
 
 `model-failure-upgrade-budget` is required evidence for single-request failure handling. It checks sanitized failure metadata, attempt budget, hard-stop signals, incremental cost, task budget tier, premium quota, and operator approval before any retry-up or premium exception is allowed.
+
+`legal-micro-benchmark-preflight` is required metadata-only evidence for the smallest cheap-first legal benchmark run. It selects fixture ids, document case ids, fact-consistency case ids, a serial run order, cheap-first cost estimates, and follow-up gate endpoints without calling models or gateways, writing configuration, shifting traffic, or returning request bodies, messages, prompts, legal text, model output, gateway responses, credentials, or emails.
 
 `gateway-request-compatibility-gate` is required metadata-only evidence for
 OpenAI-compatible Gemini/NewAPI request shapes. It checks task default model
@@ -186,6 +189,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_ops_performance_budget.py`
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/services/model_failure_upgrade_budget.py`
+- `app/backend/services/modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/services/model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/tests/test_model_ops_readiness.py`
@@ -196,6 +200,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_ops_performance_budget.py`
 - `app/backend/tests/test_model_route_quality_budget.py`
 - `app/backend/tests/test_model_failure_upgrade_budget.py`
+- `app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`
 - `app/backend/tests/test_model_gateway_compatibility.py`
@@ -214,3 +219,4 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`
 - `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
+- `docs/MODELOPS_LEGAL_MICRO_BENCHMARK_PREFLIGHT.md`

@@ -103,6 +103,7 @@ PAGE_GATES = (
             "Gemini cheap-first coverage gate",
             "Cheap-first quality budget",
             "Model failure upgrade budget",
+            "Legal micro benchmark preflight",
             "ModelOps legal benchmark risk bridge",
             "Cheap-first escalation budget",
             "selector replay",
@@ -208,6 +209,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps catalog candidate impact replay UI evidence is metadata only: no catalog/config/env writes, no NewAPI/Gemini/OpenAI/Google/gateway/network calls, and no raw prompts, payloads, model output, legal text, or credentials.",
                     "ModelOps maintainer execution checklist UI evidence is metadata only: no configuration writes, approval records, traffic shifts, gateway calls, prompts, raw model output, or credentials.",
                     "Model failure upgrade budget UI evidence is metadata only: no automatic retries, premium quota consumption, gateway calls, traffic shifts, configuration writes, prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
+                    "ModelOps legal micro benchmark preflight UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, configuration writes, traffic shifts, request bodies, messages, prompt text, fixture excerpts, legal text, generated document text, model output, gateway responses, or credentials.",
                     "ModelOps legal benchmark risk bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, routing writes, dataset downloads, public benchmark scores, raw legal text, model output, prompts, or credentials.",
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps route telemetry UI evidence is metadata only: repository, ops summary, triage queue, and remediation panels use sanitized route counters and never render prompts, legal text, request bodies, response bodies, headers, raw model output, emails, or credentials.",
@@ -280,6 +282,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the model failure upgrade budget panel, sanitized payload guard, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked failure-upgrade-budget API checks for retry-up decisions, premium approval blocks, attempt exhaustion, hard-stop signals, and forbidden raw fields.",
+                },
+                {
+                    "id": "modelops-legal-micro-benchmark-preflight-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the legal micro benchmark preflight panel, endpoint binding, serial run cap, and metadata-only privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked legal-micro-benchmark-preflight API checks for fixture rows, document rows, fact rows, run sequence, no gateway calls, and no raw legal/model/payload fields.",
                 },
                 {
                     "id": "modelops-legal-benchmark-risk-bridge-regresses",

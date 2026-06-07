@@ -240,6 +240,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
+    assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
@@ -490,6 +491,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
     assert "model-gateway-request-compatibility-gate" not in queue_ids
+    assert "modelops-legal-micro-benchmark-preflight" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
     assert "legal-document-fact-consistency-benchmark" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" not in queue_ids
@@ -832,6 +834,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert (
+        "python -m pytest tests/test_modelops_legal_micro_benchmark_preflight.py "
+        "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
         "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
@@ -1047,6 +1056,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    legal_micro_preflight_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-legal-micro-benchmark-preflight"
+    )
+    assert legal_micro_preflight_entry["size"] == "medium"
+    assert legal_micro_preflight_entry["status"] == "shipped"
+    assert "low-resource legal benchmark preflight evidence" in legal_micro_preflight_entry["impact"]
+    assert "cheap-first Gemini fixture ids" in legal_micro_preflight_entry["impact"]
+    assert "document case ids" in legal_micro_preflight_entry["impact"]
+    assert "fact-consistency case ids" in legal_micro_preflight_entry["impact"]
+    assert "serial run order" in legal_micro_preflight_entry["impact"]
+    assert "cost estimates" in legal_micro_preflight_entry["impact"]
+    assert "follow-up gate bindings" in legal_micro_preflight_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network/app-AI calls" in legal_micro_preflight_entry["impact"]
+    assert "configuration writes" in legal_micro_preflight_entry["impact"]
+    assert "traffic shifts" in legal_micro_preflight_entry["impact"]
+    assert "request bodies" in legal_micro_preflight_entry["impact"]
+    assert "messages" in legal_micro_preflight_entry["impact"]
+    assert "prompt text" in legal_micro_preflight_entry["impact"]
+    assert "fixture excerpts" in legal_micro_preflight_entry["impact"]
+    assert "legal text" in legal_micro_preflight_entry["impact"]
+    assert "generated document text" in legal_micro_preflight_entry["impact"]
+    assert "model outputs" in legal_micro_preflight_entry["impact"]
+    assert "gateway responses" in legal_micro_preflight_entry["impact"]
+    assert "credentials" in legal_micro_preflight_entry["impact"]
+    assert "emails" in legal_micro_preflight_entry["impact"]
+    assert "app/backend/services/modelops_legal_micro_benchmark_preflight.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/services/legal_fixture_local_run_package.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/services/legal_document_fact_consistency_benchmark.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in legal_micro_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in legal_micro_preflight_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_MICRO_BENCHMARK_PREFLIGHT.md" in legal_micro_preflight_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in legal_micro_preflight_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in legal_micro_preflight_entry["evidence_paths"]
+    assert "modelops-legal-micro-benchmark-preflight" in legal_micro_preflight_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in legal_micro_preflight_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in legal_micro_preflight_entry["release_gate_links"]
+    assert "legal-document-fact-consistency-benchmark" in legal_micro_preflight_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in legal_micro_preflight_entry["release_gate_links"]
     legal_fixture_gate_entry = next(
         entry
         for entry in ledger["completed_updates"]

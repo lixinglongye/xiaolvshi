@@ -153,6 +153,16 @@ does not edit `model_catalog.py`, write configuration, call a gateway or the
 network, shift traffic, or include raw payloads, prompts, legal text, model
 outputs, credentials, or emails.
 
+`modelops-legal-micro-benchmark-preflight` is the shipped metadata-only
+low-resource run-planning packet for the smallest cheap-first legal benchmark.
+It selects synthetic fixture ids, document case ids, fact-consistency case ids,
+serial run order, cost estimates, and follow-up gate endpoints before any
+maintainer treats a cheap Gemini result as default-promotion evidence. It does
+not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the
+network, write configuration, shift traffic, or include request bodies,
+messages, prompts, fixture excerpts, legal text, generated document text, model
+outputs, gateway responses, credentials, or emails.
+
 `gemini-newapi-model-alias-matrix` is the shipped metadata-only alias evidence
 for gateway-specific Gemini model names. It maps canonical, `models/`,
 `google/`, `google:`, `yibu/`, and nested provider aliases back to local catalog

@@ -80,6 +80,7 @@ from services.model_ops_performance_budget import (
     ModelOpsPerformanceBudgetService,
     model_ops_performance_budget_registry,
 )
+from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
 from services.model_request_cost_bounds import ModelRequestCostBoundsService
@@ -322,6 +323,7 @@ async def list_models():
     model_ops_performance_budget = (
         model_ops_performance_budget_registry.latest() or default_model_ops_performance_budget
     )
+    legal_micro_benchmark_preflight = ModelOpsLegalMicroBenchmarkPreflightService().build_packet()
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -365,6 +367,7 @@ async def list_models():
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
+        "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     model_ops_signals["model_ops_readiness"] = base_model_ops_readiness
@@ -452,6 +455,7 @@ async def list_models():
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
+        "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
@@ -707,6 +711,15 @@ async def model_ops_legal_benchmark_risk_bridge():
     return {
         "success": True,
         "data": models_payload["legal_benchmark_risk_bridge"],
+    }
+
+
+@router.get("/models/legal-micro-benchmark-preflight")
+async def model_ops_legal_micro_benchmark_preflight():
+    """Return metadata-only low-resource legal benchmark preflight packet."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalMicroBenchmarkPreflightService().build_packet(),
     }
 
 

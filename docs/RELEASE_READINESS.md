@@ -52,6 +52,15 @@ bounds. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the
 network, write configuration, shift traffic, or store headers, request bodies,
 prompts, raw legal text, model outputs, payloads, emails, or credentials.
 
+Additional optional evidence: `modelops-legal-micro-benchmark-preflight`
+records metadata-only low-resource legal benchmark preflight checks for
+cheap-first fixture selection, document case ids, fact-consistency case ids,
+serial run order, cost estimates, and follow-up gate bindings. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the network,
+write configuration, shift traffic, claim live benchmark quality, or store
+request bodies, messages, prompts, fixture excerpts, legal text, generated
+document text, model outputs, gateway responses, credentials, or emails.
+
 Additional required evidence: `route-telemetry-repository` records sanitized
 route decisions and derives `estimated_cost_usd` only for known Gemini/NewAPI
 catalog model routes using local catalog token pricing. Unknown gateway model

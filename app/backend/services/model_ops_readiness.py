@@ -152,6 +152,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "model_ops_performance_budget",
     ),
     ReadinessComponent(
+        "legal-micro-benchmark-preflight",
+        "Legal micro benchmark preflight",
+        "release_evidence",
+        "legal_micro_benchmark_preflight",
+    ),
+    ReadinessComponent(
         "cheap-first-release-decision",
         "Cheap-first release decision",
         "release_evidence",

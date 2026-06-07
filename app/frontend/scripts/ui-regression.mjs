@@ -992,6 +992,15 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-risk-bridge', 'model-ops legal benchmark risk bridge endpoint'),
   () => assertIncludes(modelOpsApi, 'legal_benchmark_risk_bridge', 'model-ops legal benchmark risk bridge response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalMicroBenchmarkPreflight', 'model-ops legal micro benchmark preflight type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalMicroBenchmarkPreflightFixtureItem', 'model-ops legal micro benchmark fixture row type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalMicroBenchmarkPreflight', 'model-ops legal micro benchmark preflight API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-micro-benchmark-preflight', 'model-ops legal micro benchmark preflight endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_micro_benchmark_preflight', 'model-ops legal micro benchmark preflight response binding'),
+  () => assertIncludes(modelOpsApi, 'fixture_run_items', 'model-ops legal micro benchmark fixture rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'document_check_items', 'model-ops legal micro benchmark document rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'fact_consistency_items', 'model-ops legal micro benchmark fact rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'run_sequence', 'model-ops legal micro benchmark run order payload guard'),
   () => assertIncludes(modelOpsPage, 'Model failure upgrade budget', 'model-ops model failure upgrade budget panel'),
   () => assertIncludes(modelOpsPage, 'activeFailureUpgradeBudget', 'model-ops model failure upgrade budget state binding'),
   () => assertIncludes(modelOpsPage, 'failureUpgradeChecks', 'model-ops model failure upgrade budget check binding'),
@@ -1001,6 +1010,14 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'operator_approved', 'model-ops model failure upgrade budget approval binding'),
   () => assertIncludes(modelOpsPage, 'hasForbiddenFailureUpgradePayloadText', 'model-ops model failure upgrade budget payload guard'),
   () => assertIncludes(modelOpsPage, 'Evaluate failure upgrade budget', 'model-ops model failure upgrade budget submit button'),
+  () => assertIncludes(modelOpsPage, 'Legal micro benchmark preflight', 'model-ops legal micro benchmark preflight panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalMicroBenchmarkPreflight', 'model-ops legal micro benchmark active binding'),
+  () => assertIncludes(modelOpsPage, 'legalMicroFixtureRows', 'model-ops legal micro benchmark fixture rows'),
+  () => assertIncludes(modelOpsPage, 'legalMicroDocumentRows', 'model-ops legal micro benchmark document rows'),
+  () => assertIncludes(modelOpsPage, 'legalMicroFactRows', 'model-ops legal micro benchmark fact rows'),
+  () => assertIncludes(modelOpsPage, 'legalMicroRunSteps', 'model-ops legal micro benchmark run order rows'),
+  () => assertIncludes(modelOpsPage, 'max_parallel_requests', 'model-ops legal micro benchmark serial cap binding'),
+  () => assertIncludes(modelOpsPage, 'benchmark_gate_required', 'model-ops legal micro benchmark gate binding'),
   () => assertIncludes(modelOpsPage, 'ModelOps legal benchmark risk bridge', 'model-ops legal benchmark risk bridge panel'),
   () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge active binding'),
   () => assertIncludes(modelOpsPage, 'legalBenchmarkRiskRouteReviews', 'model-ops legal benchmark risk bridge route rows'),
@@ -1024,8 +1041,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
+    'model-ops legal micro benchmark preflight follows failure budget',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
     '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
-    'model-ops legal benchmark bridge follows failure budget',
+    'model-ops legal benchmark bridge follows legal micro benchmark preflight',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -1185,8 +1208,14 @@ const cheapFirstMaintainerExecutionChecklistPanel = sourceSection(
 const modelFailureUpgradeBudgetPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Model failure upgrade budget</h2>',
-  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
   'model-ops model failure upgrade budget section',
+);
+const modelOpsLegalMicroBenchmarkPreflightPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal micro benchmark preflight</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  'model-ops legal micro benchmark preflight section',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
@@ -1312,6 +1341,11 @@ assertNotMatches(
   'model-ops model failure upgrade budget no secrets or raw model/payload fields',
 );
 assertNotMatches(
+  modelOpsLegalMicroBenchmarkPreflightPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
+  'model-ops legal micro benchmark preflight no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
   modelOpsLegalBenchmarkRiskBridgePanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
   'model-ops legal benchmark risk bridge no secrets or raw benchmark/model/payload fields',
@@ -1363,7 +1397,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 30,
+      assertions: checks.length + 31,
     },
     null,
     2,

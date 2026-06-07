@@ -98,6 +98,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps agentic grounded defaults" in profile["release_management"]["release_readiness_controls"]
@@ -185,6 +186,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
+    assert "app/backend/services/modelops_legal_micro_benchmark_preflight.py" in evidence_paths
+    assert "app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py" in evidence_paths
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
@@ -270,6 +273,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["description"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["description"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["description"]
+    assert "ModelOps legal micro benchmark preflight review" in model_signal["description"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["description"]
     assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["description"]
     assert "ModelOps agentic/grounded default routing evidence" in model_signal["description"]
@@ -300,6 +304,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary rollback drill review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
+    assert "ModelOps legal micro benchmark preflight review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["responsibility"]
     assert "ModelOps agentic/grounded defaults review" in model_signal["responsibility"]
@@ -409,6 +414,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("rollback drill is rehearsal metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("change manifest is proposed-change metadata only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("legal micro benchmark preflight is metadata-only low-resource legal benchmark run-planning evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("fixture ids, document case ids, fact-consistency case ids, serial run order" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("sanitized model ids to canonical catalog ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
