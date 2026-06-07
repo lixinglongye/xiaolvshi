@@ -168,6 +168,10 @@ class GenVideoRequest(BaseModel):
         ),
     )
     model: str = Field(default="wan2.6-t2v", description="Video generation model name.")
+    allow_over_budget_model: bool = Field(
+        default=False,
+        description="Allow explicit media models that require runtime review instead of routing to the task default.",
+    )
     size: str = Field(default="1280x720", description="Resolution (720p). Do NOT change unless specifically required.")
     seconds: str = Field(default="4", description="Duration in seconds. Do NOT change unless specifically required.")
 
@@ -177,6 +181,11 @@ class GenVideoResponse(BaseModel):
 
     url: str = Field(..., description="CDN URL of the generated video file.")
     model: str = Field(..., description="Name of the model used.")
+    task: str = Field(default="video", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without prompts, media, or credentials.",
+    )
     duration: int = Field(..., description="Video duration in seconds.")
     revised_prompt: Optional[str] = Field(default=None, description="Refined prompt used for generation.")
 
@@ -192,6 +201,10 @@ class GenAudioRequest(BaseModel):
         default="qwen3-tts-flash",
         description="TTS model name.",
     )
+    allow_over_budget_model: bool = Field(
+        default=False,
+        description="Allow explicit speech models that require runtime review instead of routing to the task default.",
+    )
     gender: Literal["male", "female"] = Field(
         default="female",
         description="Voice gender: male or female.",
@@ -203,6 +216,11 @@ class GenAudioResponse(BaseModel):
 
     url: str = Field(..., description="CDN URL of the generated audio file.")
     model: str = Field(..., description="Name of the model used.")
+    task: str = Field(default="audio", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without text input, media, or credentials.",
+    )
     gender: str = Field(..., description="Voice gender used for generation.")
     voice: str = Field(..., description="Actual voice used for generation.")
 
@@ -257,6 +275,10 @@ class TranscribeAudioRequest(BaseModel):
         default="scribe_v2",
         description="Speech transcription model name.",
     )
+    allow_over_budget_model: bool = Field(
+        default=False,
+        description="Allow explicit transcription models that require runtime review instead of routing to the task default.",
+    )
 
 
 class TranscribeAudioResponse(BaseModel):
@@ -264,6 +286,11 @@ class TranscribeAudioResponse(BaseModel):
 
     text: str = Field(..., description="Transcribed text.")
     model: str = Field(..., description="Name of the model used.")
+    task: str = Field(default="transcription", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without audio, transcript text, or credentials.",
+    )
     source_name: Optional[str] = Field(
         default=None,
         description="Readable source name extracted from the input audio reference.",

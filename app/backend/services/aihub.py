@@ -33,7 +33,6 @@ from schemas.aihub import (
     TranscribeAudioRequest,
     TranscribeAudioResponse,
 )
-from services.model_catalog import resolve_model
 from services.model_gateway_connection_profile import normalize_openai_compatible_base_url
 from services.model_request_policy import resolve_generation_request_policy
 from services.model_reasoning_policy import resolve_reasoning_effort
@@ -1015,7 +1014,19 @@ User instruction:
         Flow: 1) Create task -> 2) Poll until complete -> 3) Return CDN URL.
         Note: Different models have different `seconds` param support.
         """
-        model = resolve_model(request.model, task="video")
+        task_inference = self._endpoint_task_inference(
+            requested_task="video",
+            task="video",
+            endpoint="genvideo",
+            signals=("mode:image-to-video" if request.image else "mode:text-to-video",),
+        )
+        requested_model = request.model if "model" in request.model_fields_set else None
+        route = resolve_runtime_model(
+            requested_model,
+            task=task_inference.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -1061,16 +1072,31 @@ User instruction:
 
             logger.info(f"Video generated: {cdn_url}")
             self._record_model_usage(model=model, task="video", started_at=started_at, success=True)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
 
             return GenVideoResponse(
                 url=cdn_url,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
                 duration=actual_duration,
                 revised_prompt=getattr(video, "revised_prompt", None),
             )
 
         except Exception as e:
             self._record_model_usage(model=model, task="video", started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
             logger.error(f"genvideo error: {e}")
             raise
 
@@ -1084,7 +1110,19 @@ User instruction:
 
     async def genaudio(self, request: GenAudioRequest) -> GenAudioResponse:
         """Generate Audio (TTS) API using OpenAI-compatible endpoint."""
-        model = resolve_model(request.model, task="audio")
+        task_inference = self._endpoint_task_inference(
+            requested_task="audio",
+            task="audio",
+            endpoint="genaudio",
+            signals=(f"voice_gender:{request.gender}",),
+        )
+        requested_model = request.model if "model" in request.model_fields_set else None
+        route = resolve_runtime_model(
+            requested_model,
+            task=task_inference.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
         started_at = time.time()
         try:
             client = self._require_ai_client()
@@ -1111,27 +1149,54 @@ User instruction:
 
             logger.info(f"Audio generated: {cdn_url}")
             self._record_model_usage(model=model, task="audio", started_at=started_at, success=True)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
 
             return GenAudioResponse(
                 url=cdn_url,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
                 gender=request.gender,
                 voice=voice,
             )
 
         except Exception as e:
             self._record_model_usage(model=model, task="audio", started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
             logger.error(f"genaudio error: {e}")
             raise
 
     async def transcribe(self, request: TranscribeAudioRequest) -> TranscribeAudioResponse:
         """Transcribe audio to text using OpenAI-compatible speech transcription endpoint."""
+        task_inference = self._endpoint_task_inference(
+            requested_task="transcription",
+            task="transcription",
+            endpoint="transcribe",
+        )
+        requested_model = request.model if "model" in request.model_fields_set else None
+        route = resolve_runtime_model(
+            requested_model,
+            task=task_inference.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
         source_name = self._get_source_name(request.audio, fallback="input_audio")
-        audio_file = await self._audio_str_to_upload_file(request.audio, name_prefix="input_audio")
-        model = resolve_model(request.model, task="transcription")
+        audio_file: io.BytesIO | None = None
         started_at = time.time()
 
         try:
+            audio_file = await self._audio_str_to_upload_file(request.audio, name_prefix="input_audio")
             client = self._require_ai_client()
             logger.info(f"Audio transcription started: model={model}, source={source_name}")
             resp = await client.audio.transcriptions.create(
@@ -1146,15 +1211,31 @@ User instruction:
 
             logger.info(f"Audio transcribed: {source_name}")
             self._record_model_usage(model=model, task="transcription", started_at=started_at, success=True)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
 
             return TranscribeAudioResponse(
                 text=text,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
                 source_name=source_name,
             )
         except Exception as e:
             self._record_model_usage(model=model, task="transcription", started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
             logger.error(f"transcribe error: {e}")
             raise
         finally:
-            audio_file.close()
+            if audio_file is not None:
+                audio_file.close()

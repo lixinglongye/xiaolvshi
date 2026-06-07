@@ -7,6 +7,9 @@ from services.model_budget import TASK_GROUPS, normalize_budget_task
 from services.model_catalog import task_default_model
 
 
+MEDIA_ENDPOINT_TASKS = {"image", "video", "audio", "transcription"}
+
+
 ReasoningEffort = Literal["auto", "none", "minimal", "low", "medium", "high"]
 
 SUPPORTED_REASONING_EFFORTS: tuple[ReasoningEffort, ...] = (
@@ -94,7 +97,7 @@ def reasoning_policy_for_api() -> dict[str, Any]:
     decisions = [
         resolve_reasoning_effort(model=task_default_model(task), task=task).to_api()
         for task in TASK_GROUPS
-        if task != "image"
+        if task not in MEDIA_ENDPOINT_TASKS
     ]
     return {
         "status": "ready",

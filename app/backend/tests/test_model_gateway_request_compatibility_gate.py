@@ -20,6 +20,7 @@ def test_gateway_request_compatibility_gate_covers_cheap_first_defaults():
     assert gate["summary"]["cheap_first_ready_count"] == 3
     assert gate["summary"]["gateway_called"] is False
     assert gate["summary"]["configuration_written"] is False
+    assert not {"image", "video", "audio", "transcription"} & set(rows)
     assert rows["fast"]["model"] == "gemini-2.5-flash-lite"
     assert rows["fast"]["gateway_request_shape"]["max_tokens"] <= 4096
     assert rows["fast"]["gateway_request_shape"]["reasoning_effort"] in {"none", "minimal", "low"}

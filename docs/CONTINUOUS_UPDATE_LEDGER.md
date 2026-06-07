@@ -214,11 +214,19 @@ Current AIHub endpoint route coverage evidence:
 endpoint route coverage evidence for text, streaming text, PDF, image, video,
 audio, and transcription AIHub routes. It shows runtime-router coverage,
 budget-decision coverage, route telemetry coverage, response route-payload
-coverage, and legacy media route gaps without calling NewAPI, Gemini, OpenAI,
+coverage, and media/speech catalog review gaps without calling NewAPI, Gemini, OpenAI,
 Google, gateways, app AI endpoints, models, or the network, writing
 configuration, shifting traffic, or including request/response bodies, headers,
 prompts, raw payloads, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
+
+Current AIHub media/speech runtime routing evidence:
+`aihub-media-speech-runtime-routing` adds shipped runtime routing for video,
+audio, and transcription AIHub routes. The endpoints now use explicit
+media/speech budget tasks, record sanitized route telemetry, return route
+payload metadata where the response shape allows it, and keep non-catalog
+gateway defaults review-only until pricing, lifecycle, and gateway behavior are
+documented.
 
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only

@@ -77,6 +77,9 @@ def test_model_ops_route_includes_model_configuration_audit():
     assert payload["model_configuration_audit"]["status"] in {"pass", "warn", "fail"}
     assert payload["model_configuration_audit"]["checks"]
     assert payload["routing_aliases"]["auto-image"] == "gemini-2.5-flash-image"
+    assert payload["routing_aliases"]["auto-video"] == "wan2.6-t2v"
+    assert payload["routing_aliases"]["auto-audio"] == "qwen3-tts-flash"
+    assert payload["routing_aliases"]["auto-transcription"] == "scribe_v2"
     assert any(
         check["id"] == "image-route-model"
         for check in payload["model_configuration_audit"]["checks"]

@@ -1,6 +1,6 @@
 # Model Runtime Router
 
-The project now routes text, PDF, and image generation requests through a deterministic runtime model router before calling the OpenAI-compatible gateway.
+The project now routes text, PDF, image, video, audio, and transcription requests through a deterministic runtime model router before calling the OpenAI-compatible gateway.
 
 ## Purpose
 
@@ -22,6 +22,11 @@ This helps keep high-volume legal workflows on cheaper Gemini models while still
 `model=auto` and `model=auto-image` resolve to `APP_AI_IMAGE_MODEL`, which
 defaults to `gemini-2.5-flash-image`.
 
+`POST /api/v1/aihub/genvideo`, `/genaudio`, and `/transcribe` use explicit
+media/speech tasks. `model=auto-video`, `model=auto-audio`, and
+`model=auto-transcription` resolve to `APP_AI_VIDEO_MODEL`,
+`APP_AI_AUDIO_MODEL`, and `APP_AI_TRANSCRIPTION_MODEL`.
+
 ## Runtime Behavior
 
 - Omitted model + `task=auto` -> deterministic task inference before model routing.
@@ -29,11 +34,12 @@ defaults to `gemini-2.5-flash-image`.
 - Omitted model + `task=review` -> `gemini-2.5-flash`.
 - Explicit premium model + `task=fast` -> downgraded to `gemini-2.5-flash-lite` unless `allow_over_budget_model=true`.
 - `model=auto` + `task=image` -> `gemini-2.5-flash-image` unless `APP_AI_IMAGE_MODEL` is configured.
+- Omitted model + `task=video`, `task=audio`, or `task=transcription` -> the explicit media/speech task default, with non-catalog gateway ids remaining review-only until pricing and lifecycle are documented.
 - Unknown gateway-specific explicit model names are downgraded to the task recommendation unless `allow_over_budget_model=true`.
 - Catalog models with `preview`, `review`, or other non-stable lifecycle states are downgraded to stable task recommendations unless `allow_over_budget_model=true`.
 - Explicitly allowed unknown or non-stable models remain review exceptions and are marked with pass-through or lifecycle reason codes.
 - Usage counters record the normalized task, not prompts or document content.
-- PDF and image routes write the same aggregate routing evidence as text routes. Their API responses are unchanged; route metadata stays in model-ops telemetry surfaces.
+- PDF, image, video, audio, and transcription routes write the same aggregate routing evidence as text routes. Video, audio, and transcription responses also expose sanitized route payload metadata.
 - Image defaults are also checked by the price refresh monitor for per-image cost metadata.
 
 ## Structured Reason Codes

@@ -171,9 +171,9 @@ user identifiers.
 AIHub endpoint wiring. It inventories text, streaming text, PDF, image, video,
 audio, and transcription endpoints for runtime-router coverage, budget-decision
 coverage, route telemetry coverage, usage recording, response route payloads,
-and legacy media route gaps. It does not call providers, gateways, app AI
-endpoints, models, or the network, and it does not claim that legacy media
-routes have already been migrated.
+and media/speech catalog review gaps. It does not call providers, gateways,
+app AI endpoints, models, or the network, and it does not claim that
+media/speech defaults are price-benchmarked.
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 

@@ -56,6 +56,21 @@ TASK_GROUPS: dict[str, dict[str, Any]] = {
         "max_cost_tier": "premium",
         "reason": "Media generation models are selected explicitly and priced differently from text tokens.",
     },
+    "video": {
+        "budget_mode": "explicit-video-media",
+        "max_cost_tier": "premium",
+        "reason": "Video generation routes through explicit media defaults; provider pricing and duration units must be reviewed separately.",
+    },
+    "audio": {
+        "budget_mode": "explicit-speech-media",
+        "max_cost_tier": "premium",
+        "reason": "Speech generation routes through explicit speech defaults; voice and audio billing units must be reviewed separately.",
+    },
+    "transcription": {
+        "budget_mode": "explicit-transcription",
+        "max_cost_tier": "premium",
+        "reason": "Speech-to-text routes through explicit transcription defaults; audio duration billing must be reviewed separately.",
+    },
 }
 
 COST_TIER_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3}
@@ -103,6 +118,12 @@ def normalize_budget_task(task: str | None) -> str:
         return "pdf"
     if value in {"genimg", "visual", "image-edit"}:
         return "image"
+    if value in {"genvideo", "visual-video", "image-to-video"}:
+        return "video"
+    if value in {"tts", "speech", "speech-generation"}:
+        return "audio"
+    if value in {"transcribe", "speech-to-text", "stt"}:
+        return "transcription"
     if value in {"grounded_research", "research", "rag-research"}:
         return "grounded-research"
     if value in {"agentic-routing", "workflow-planning"}:
@@ -124,7 +145,7 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
     requires_operator_review = (
         premium_requires_review
         and cost_tier == "premium"
-        and normalized_task not in {"pdf", "image"}
+        and normalized_task not in {"pdf", "image", "video", "audio", "transcription"}
     )
 
     reason = str(policy["reason"])
@@ -151,7 +172,19 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
 def budget_policy_for_api() -> dict[str, Any]:
     decisions = [
         model_budget_decision(None, task=task).to_api()
-        for task in ("fast", "ocr", "classification", "review", "grounded-research", "agentic", "pdf", "image")
+        for task in (
+            "fast",
+            "ocr",
+            "classification",
+            "review",
+            "grounded-research",
+            "agentic",
+            "pdf",
+            "image",
+            "video",
+            "audio",
+            "transcription",
+        )
     ]
     return {
         "premium_requires_review": bool(getattr(settings, "app_ai_premium_requires_review", True)),

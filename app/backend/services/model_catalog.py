@@ -252,6 +252,18 @@ def image_model() -> str:
     return _configured_model(getattr(settings, "app_ai_image_model", None), "gemini-2.5-flash-image")
 
 
+def video_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_video_model", None), "wan2.6-t2v")
+
+
+def audio_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_audio_model", None), "qwen3-tts-flash")
+
+
+def transcription_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_transcription_model", None), "scribe_v2")
+
+
 def agentic_text_model() -> str:
     return _configured_model(getattr(settings, "app_ai_agentic_model", None), "gemini-3.1-flash-lite")
 
@@ -281,6 +293,12 @@ def task_default_model(task: str) -> str:
         return _configured_model(getattr(settings, "app_ai_pdf_model", None), premium_text_model())
     if task in {"image", "genimg", "visual", "image-edit"}:
         return image_model()
+    if task in {"video", "genvideo", "image-to-video"}:
+        return video_model()
+    if task in {"audio", "tts", "speech"}:
+        return audio_model()
+    if task in {"transcription", "transcribe", "speech-to-text", "stt"}:
+        return transcription_model()
     return balanced_text_model()
 
 
@@ -303,6 +321,9 @@ def resolve_model(model: str | None, *, task: str = "fast") -> str:
         "auto-review": task_default_model("review"),
         "auto-pdf": task_default_model("pdf"),
         "auto-image": task_default_model("image"),
+        "auto-video": task_default_model("video"),
+        "auto-audio": task_default_model("audio"),
+        "auto-transcription": task_default_model("transcription"),
         "auto-agentic": task_default_model("agentic"),
         "auto-grounded-research": task_default_model("grounded-research"),
         "cheap": cheap_text_model(),
@@ -346,6 +367,9 @@ def catalog_for_api() -> list[dict[str, object]]:
         "review": task_default_model("review"),
         "pdf": task_default_model("pdf"),
         "image": task_default_model("image"),
+        "video": task_default_model("video"),
+        "audio": task_default_model("audio"),
+        "transcription": task_default_model("transcription"),
         "agentic": task_default_model("agentic"),
         "grounded-research": task_default_model("grounded-research"),
     }

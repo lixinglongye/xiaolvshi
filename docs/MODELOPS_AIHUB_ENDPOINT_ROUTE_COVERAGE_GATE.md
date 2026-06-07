@@ -33,15 +33,15 @@ Each row reports `uses_runtime_router`, `uses_budget_decision`, `records_route_t
 
 ## Current Findings
 
-Text, streaming text, PDF analysis, and image generation already use runtime routing and route telemetry. Only non-streaming text currently returns full route payload metadata to callers.
+Text, streaming text, PDF analysis, image generation, video generation, audio generation, and transcription use runtime routing and route telemetry. Non-streaming text, video, audio, and transcription currently return route payload metadata to callers.
 
-Video generation, audio generation, and transcription are marked `legacy_media_unrouted`. They still record usage, but they do not yet use `resolve_runtime_model`, do not emit route telemetry, and do not have explicit media/speech budget tasks.
+Video generation, audio generation, and transcription now use explicit media/speech budget tasks. Their default gateway model ids remain `model_not_in_local_catalog` review items until pricing, lifecycle, and gateway behavior are documented.
 
 ## Boundary
 
 This is metadata-only evidence. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network. It does not write configuration, shift traffic, or return request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.
 
-The gate does not claim that legacy media routes are fixed or that default routes changed. It only exposes the route coverage status and the next migration actions.
+The gate does not claim that default routes changed or that media/speech defaults are price-benchmarked. It exposes route coverage status, remaining response payload gaps, and local catalog review items.
 
 ## Validation
 

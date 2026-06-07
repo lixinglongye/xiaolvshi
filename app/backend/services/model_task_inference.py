@@ -6,7 +6,7 @@ from typing import Any
 from services.model_budget import normalize_budget_task
 
 
-EXPLICIT_TASKS = {"fast", "ocr", "classification", "review", "pdf", "image"}
+GENTXT_TEXT_OUTPUT_TASKS = {"fast", "ocr", "classification", "review", "pdf", "grounded-research", "agentic"}
 
 CLASSIFICATION_KEYWORDS = (
     "classify",
@@ -122,6 +122,15 @@ def infer_gentxt_task(
     normalized_request = (requested_task or "auto").strip().lower()
     if normalized_request and normalized_request != "auto":
         normalized = normalize_budget_task(normalized_request)
+        if normalized not in GENTXT_TEXT_OUTPUT_TASKS:
+            return TaskInference(
+                requested_task=requested_task,
+                task="review",
+                source="explicit",
+                confidence=0.7,
+                signals=(f"requested:{normalized_request}", f"unsupported_for_gentxt:{normalized}"),
+                reason="Caller provided a media or unsupported routing task for text generation; using the review text budget.",
+            )
         return TaskInference(
             requested_task=requested_task,
             task=normalized,
@@ -178,6 +187,7 @@ def task_inference_policy_for_api() -> dict[str, Any]:
             "OCR keywords or image text extraction prompts route to ocr.",
             "Legal review, contract, litigation, evidence, or citation terms route to review.",
             "Planning, preflight, summary, rewrite, and JSON repair terms stay on fast routing.",
+            "Media tasks such as image, video, audio, and transcription are rejected for gentxt and routed to the review text budget.",
             "Unmatched requests stay on fast routing.",
         ],
         "safeguards": [

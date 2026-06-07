@@ -86,20 +86,15 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "service_method": "AIHubService.genvideo",
         "response_model": "GenVideoResponse",
         "task": "video",
-        "default_model": "wan2.6-t2v",
-        "model_source": "request.model video default",
-        "uses_runtime_router": False,
-        "uses_budget_decision": False,
-        "records_route_telemetry": False,
+        "default_model": task_default_model("video"),
+        "model_source": "request.model explicit video default",
+        "uses_runtime_router": True,
+        "uses_budget_decision": True,
+        "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
-        "route_mode": "legacy_media_unrouted",
-        "route_gap_reason_codes": (
-            "runtime_router_missing",
-            "budget_task_missing",
-            "route_telemetry_missing",
-            "response_route_payload_missing",
-        ),
+        "returns_route_payloads": True,
+        "route_mode": "explicit_video_media_runtime",
+        "route_gap_reason_codes": (),
     },
     {
         "id": "aihub-genaudio",
@@ -109,20 +104,15 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "service_method": "AIHubService.genaudio",
         "response_model": "GenAudioResponse",
         "task": "audio",
-        "default_model": "qwen3-tts-flash",
-        "model_source": "request.model audio default",
-        "uses_runtime_router": False,
-        "uses_budget_decision": False,
-        "records_route_telemetry": False,
+        "default_model": task_default_model("audio"),
+        "model_source": "request.model explicit audio default",
+        "uses_runtime_router": True,
+        "uses_budget_decision": True,
+        "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
-        "route_mode": "legacy_media_unrouted",
-        "route_gap_reason_codes": (
-            "runtime_router_missing",
-            "budget_task_missing",
-            "route_telemetry_missing",
-            "response_route_payload_missing",
-        ),
+        "returns_route_payloads": True,
+        "route_mode": "explicit_speech_media_runtime",
+        "route_gap_reason_codes": (),
     },
     {
         "id": "aihub-transcribe",
@@ -132,20 +122,15 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "service_method": "AIHubService.transcribe",
         "response_model": "TranscribeAudioResponse",
         "task": "transcription",
-        "default_model": "scribe_v2",
-        "model_source": "request.model transcription default",
-        "uses_runtime_router": False,
-        "uses_budget_decision": False,
-        "records_route_telemetry": False,
+        "default_model": task_default_model("transcription"),
+        "model_source": "request.model explicit transcription default",
+        "uses_runtime_router": True,
+        "uses_budget_decision": True,
+        "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
-        "route_mode": "legacy_media_unrouted",
-        "route_gap_reason_codes": (
-            "runtime_router_missing",
-            "budget_task_missing",
-            "route_telemetry_missing",
-            "response_route_payload_missing",
-        ),
+        "returns_route_payloads": True,
+        "route_mode": "explicit_transcription_runtime",
+        "route_gap_reason_codes": (),
     },
 )
 
@@ -216,13 +201,13 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
                 "output_scope": "endpoint ids, route task labels, default model ids, booleans, gap codes, checks, and validation commands only",
             },
             "claim_boundary": {
-                "runtime_route_migration_completed": False,
-                "legacy_media_routes_fixed": False,
+                "runtime_route_migration_completed": True,
+                "legacy_media_routes_fixed": True,
                 "automatic_default_change_claimed": False,
                 "claims_default_route_changed": False,
                 "live_gateway_execution_claimed": False,
                 "public_benchmark_score_claimed": False,
-                "allowed_claim": "The repository exposes metadata-only AIHub endpoint route coverage evidence and flags known route gaps.",
+                "allowed_claim": "The repository exposes metadata-only AIHub endpoint route coverage evidence; all inventoried endpoints are runtime-routed, while non-catalog media and speech defaults remain explicit review-only.",
             },
             "validation_commands": [
                 "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py -q",
@@ -315,7 +300,7 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
             self._check(
                 "legacy-media-budget-route-gap",
                 "warn" if legacy_media else "pass",
-                "Video, audio, and transcription routes need explicit budget tasks before runtime router migration.",
+                "Video, audio, and transcription routes should stay attached to explicit media/speech budget tasks after runtime router migration.",
                 legacy_media,
             ),
             self._check(
@@ -343,19 +328,18 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
     def _recommended_actions(self, endpoint_rows: list[dict[str, Any]]) -> list[str]:
         actions: list[str] = []
         if any(not row["uses_runtime_router"] for row in endpoint_rows):
-            actions.append("Add video, audio, and transcription budget tasks before migrating those endpoints to resolve_runtime_model.")
-            actions.append("Record route telemetry and repository events for genvideo, genaudio, and transcribe after budget tasks exist.")
+            actions.append("Migrate any remaining endpoints to resolve_runtime_model before promoting route evidence.")
         if any(not row["returns_route_payloads"] for row in endpoint_rows):
-            actions.append("Extend image, PDF, media, transcription, and streaming response shapes with route/task/budget metadata where practical.")
+            actions.append("Extend image, PDF, and streaming response shapes with route/task/budget metadata where practical.")
         if any(row["model_status"] == "unknown" for row in endpoint_rows):
-            actions.append("Keep non-catalog media and speech models explicit review-only until pricing, lifecycle, and gateway behavior are documented.")
+            actions.append("Catalog non-catalog media and speech defaults before using them for price, lifecycle, or benchmark claims.")
         if not actions:
             actions.append("All AIHub endpoints expose runtime route coverage; keep this gate attached to ModelOps release evidence.")
         return actions
 
     def _next_action(self, spec: dict[str, Any], gap_codes: list[str]) -> str:
         if "runtime_router_missing" in gap_codes:
-            return "Define the task budget, then migrate this endpoint from resolve_model to resolve_runtime_model and route telemetry."
+            return "Migrate this endpoint from resolve_model to resolve_runtime_model and route telemetry."
         if "response_route_payload_missing" in gap_codes:
             return "Consider returning sanitized task_inference and budget_decision fields in the endpoint response."
         if "media_usage_units_missing" in gap_codes:

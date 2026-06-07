@@ -135,7 +135,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "observed-gateway-model-fit-matrix-regresses" in payload_text
     assert "runtime-explicit-model-fit-gate-regresses" in payload_text
     assert "explicit over-budget exceptions" in payload_text
-    assert "legacy media route gaps" in payload_text
+    assert "media/speech catalog review gaps" in payload_text
     assert "review-only model boundaries" in payload_text
     assert "ModelOps observed Gemini coverage gap queue UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only" in payload_text

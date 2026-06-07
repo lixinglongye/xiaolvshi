@@ -13,6 +13,26 @@ def test_task_inference_honors_explicit_task():
     assert result.confidence == 1.0
 
 
+def test_task_inference_blocks_media_tasks_on_gentxt():
+    for requested_task, normalized in (
+        ("image", "image"),
+        ("video", "video"),
+        ("audio", "audio"),
+        ("transcription", "transcription"),
+        ("tts", "audio"),
+        ("speech-to-text", "transcription"),
+    ):
+        result = infer_gentxt_task(
+            requested_task,
+            [ChatMessage(role="user", content="Generate text only.")],
+        )
+
+        assert result.task == "review"
+        assert result.source == "explicit"
+        assert f"unsupported_for_gentxt:{normalized}" in result.signals
+        assert "media" in result.reason
+
+
 def test_task_inference_routes_structured_classification_to_cheap_task():
     result = infer_gentxt_task(
         "auto",

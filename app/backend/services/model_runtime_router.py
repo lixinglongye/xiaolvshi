@@ -366,7 +366,7 @@ def runtime_router_policy_for_api() -> dict[str, Any]:
             "Explicit over-budget models are downgraded to the task recommended model unless allow_over_budget_model is true.",
             "Unknown gateway-specific explicit model names are downgraded to the task recommended model unless allow_over_budget_model is true.",
             "Preview or review-lifecycle explicit models are downgraded to stable task recommendations unless allow_over_budget_model is true.",
-            "Premium models outside PDF/image exception paths require explicit allowance before runtime use.",
+            "Premium models outside PDF, image, video, audio, and transcription exception paths require explicit allowance before runtime use.",
             "Usage counters record the normalized task, not prompt text or document content.",
         ],
         "auto_task_inference": task_inference_policy_for_api(),

@@ -274,7 +274,7 @@ class FrontendUiRegressionGateService:
                     "id": "aihub-endpoint-route-coverage-gate-regresses",
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the AIHub endpoint route coverage panel, endpoint rows, coverage matrix, checks, and privacy boundary in the ModelOps source contract.",
-                    "regression_target": "Add browser-level mocked AIHub route-coverage API checks for runtime-router flags, route telemetry gaps, legacy media route gaps, response payload boundaries, and forbidden raw request/model fields.",
+                    "regression_target": "Add browser-level mocked AIHub route-coverage API checks for runtime-router flags, route telemetry, media/speech catalog review gaps, response payload boundaries, and forbidden raw request/model fields.",
                 },
                 {
                     "id": "observed-gateway-model-fit-matrix-regresses",

@@ -1223,7 +1223,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "runtime-router coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
     assert "budget-decision coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
     assert "route telemetry coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
-    assert "legacy media route gaps" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "media/speech catalog review gaps" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
     assert "Gemini" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
     assert "OpenAI" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]

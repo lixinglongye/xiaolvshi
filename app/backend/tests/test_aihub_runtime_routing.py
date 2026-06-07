@@ -1,6 +1,16 @@
+import io
+
 import pytest
 
-from schemas.aihub import AnalyzePdfRequest, ChatMessage, GenImgRequest, GenTxtRequest
+from schemas.aihub import (
+    AnalyzePdfRequest,
+    ChatMessage,
+    GenAudioRequest,
+    GenImgRequest,
+    GenTxtRequest,
+    GenVideoRequest,
+    TranscribeAudioRequest,
+)
 from services import route_telemetry_repository
 from services.model_catalog import estimate_token_cost_usd
 from services.model_route_telemetry import model_route_telemetry_registry
@@ -39,6 +49,22 @@ class _FakeImageResponse:
     data = [_FakeImageItem()]
 
 
+class _FakeVideoResponse:
+    id = "video-1"
+    status = "completed"
+    url = "https://cdn.example.test/generated-private-video.mp4"
+    seconds = "4"
+    revised_prompt = "sanitized video prompt"
+
+
+class _FakeSpeechResponse:
+    url = "https://cdn.example.test/generated-private-audio.mp3"
+
+
+class _FakeTranscriptionResponse:
+    text = "TRANSCRIBED_OUTPUT_SHOULD_NOT_PERSIST"
+
+
 class _FakeCompletions:
     def __init__(self) -> None:
         self.calls: list[dict] = []
@@ -67,6 +93,44 @@ class _FakeImages:
         return _FakeImageResponse()
 
 
+class _FakeVideos:
+    def __init__(self) -> None:
+        self.create_calls: list[dict] = []
+        self.retrieve_calls: list[str] = []
+
+    async def create(self, **params):
+        self.create_calls.append(params)
+        return _FakeVideoResponse()
+
+    async def retrieve(self, video_id):
+        self.retrieve_calls.append(video_id)
+        return _FakeVideoResponse()
+
+
+class _FakeSpeech:
+    def __init__(self) -> None:
+        self.create_calls: list[dict] = []
+
+    async def create(self, **params):
+        self.create_calls.append(params)
+        return _FakeSpeechResponse()
+
+
+class _FakeTranscriptions:
+    def __init__(self) -> None:
+        self.create_calls: list[dict] = []
+
+    async def create(self, **params):
+        self.create_calls.append(params)
+        return _FakeTranscriptionResponse()
+
+
+class _FakeAudio:
+    def __init__(self) -> None:
+        self.speech = _FakeSpeech()
+        self.transcriptions = _FakeTranscriptions()
+
+
 class _FailingImages:
     async def generate(self, **params):
         raise RuntimeError("provider leaked raw image prompt")
@@ -89,6 +153,8 @@ class _FakeClient:
     def __init__(self) -> None:
         self.chat = _FakeChat()
         self.images = _FakeImages()
+        self.videos = _FakeVideos()
+        self.audio = _FakeAudio()
 
 
 class _FailingClient:
@@ -420,6 +486,116 @@ async def test_genimg_auto_model_uses_gemini_image_default():
     assert repository["daily_buckets"][0]["task"] == "image"
     assert repository["daily_buckets"][0]["resolved_model"] == "gemini-2.5-flash-image"
     assert "PRIVATE AUTO IMAGE PROMPT" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_genvideo_records_sanitized_runtime_route_telemetry():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.genvideo(
+        GenVideoRequest(
+            prompt="PRIVATE VIDEO PROMPT SHOULD NOT PERSIST",
+        )
+    )
+
+    assert fake_client.videos.create_calls[0]["model"] == "wan2.6-t2v"
+    assert fake_client.videos.create_calls[0]["seconds"] == "4"
+    assert response.model == "wan2.6-t2v"
+    assert response.task == "video"
+    assert response.budget_decision["requested_model"] is None
+    assert response.budget_decision["explicit_model_requested"] is False
+    assert response.budget_decision["explicit_model_fit_status"] == "default"
+    assert "unknown_catalog_model" in response.budget_decision["reason_codes"]
+    assert "gateway_passthrough" in response.budget_decision["reason_codes"]
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["by_task"]["video"]["explicit_task"] == 1
+    assert route_snapshot["summary"]["unknown_price_model_count"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["daily_buckets"][0]["task"] == "video"
+    assert repository["daily_buckets"][0]["resolved_model"] == "wan2.6-t2v"
+    assert repository["daily_buckets"][0]["unknown_model_count"] == 1
+    assert "PRIVATE VIDEO PROMPT" not in rendered
+    assert "generated-private-video" not in rendered
+    assert "sanitized video prompt" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_genaudio_records_sanitized_runtime_route_telemetry():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.genaudio(
+        GenAudioRequest(
+            text="PRIVATE AUDIO TEXT SHOULD NOT PERSIST",
+            gender="male",
+        )
+    )
+
+    assert fake_client.audio.speech.create_calls[0]["model"] == "qwen3-tts-flash"
+    assert fake_client.audio.speech.create_calls[0]["voice"] == response.voice
+    assert response.model == "qwen3-tts-flash"
+    assert response.task == "audio"
+    assert response.gender == "male"
+    assert response.budget_decision["budget_mode"] == "explicit-speech-media"
+    assert response.budget_decision["requested_model"] is None
+    assert "unknown_catalog_model" in response.budget_decision["reason_codes"]
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["by_task"]["audio"]["explicit_task"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["daily_buckets"][0]["task"] == "audio"
+    assert repository["daily_buckets"][0]["resolved_model"] == "qwen3-tts-flash"
+    assert repository["daily_buckets"][0]["unknown_model_count"] == 1
+    assert "PRIVATE AUDIO TEXT" not in rendered
+    assert "generated-private-audio" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_transcribe_records_sanitized_runtime_route_telemetry(monkeypatch):
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    async def fake_audio_str_to_upload_file(audio: str, name_prefix: str = "input_audio"):
+        audio_file = io.BytesIO(b"private audio bytes")
+        audio_file.name = "private-client-call.mp3"
+        return audio_file
+
+    monkeypatch.setattr(service, "_audio_str_to_upload_file", fake_audio_str_to_upload_file)
+
+    response = await service.transcribe(
+        TranscribeAudioRequest(
+            audio="data:audio/mp3;base64,AA==",
+        )
+    )
+
+    assert fake_client.audio.transcriptions.create_calls[0]["model"] == "scribe_v2"
+    assert fake_client.audio.transcriptions.create_calls[0]["response_format"] == "json"
+    assert response.model == "scribe_v2"
+    assert response.task == "transcription"
+    assert response.source_name == "input_audio"
+    assert response.text == "TRANSCRIBED_OUTPUT_SHOULD_NOT_PERSIST"
+    assert response.budget_decision["budget_mode"] == "explicit-transcription"
+    assert response.budget_decision["requested_model"] is None
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["by_task"]["transcription"]["explicit_task"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["daily_buckets"][0]["task"] == "transcription"
+    assert repository["daily_buckets"][0]["resolved_model"] == "scribe_v2"
+    assert repository["daily_buckets"][0]["unknown_model_count"] == 1
+    assert "private-client-call" not in rendered
+    assert "TRANSCRIBED_OUTPUT_SHOULD_NOT_PERSIST" not in rendered
 
 
 @pytest.mark.asyncio

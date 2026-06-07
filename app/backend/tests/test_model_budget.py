@@ -49,6 +49,34 @@ def test_budget_policy_uses_gemini_image_default(monkeypatch):
     assert not decision.is_over_budget
 
 
+def test_budget_policy_uses_media_and_speech_defaults(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_video_model", "wan2.6-t2v", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_audio_model", "qwen3-tts-flash", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_transcription_model", "scribe_v2", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_premium_requires_review", True, raising=False)
+
+    video = model_budget.model_budget_decision(None, task="genvideo")
+    audio = model_budget.model_budget_decision("auto-audio", task="tts")
+    transcription = model_budget.model_budget_decision(None, task="speech-to-text")
+
+    assert video.task == "video"
+    assert video.budget_mode == "explicit-video-media"
+    assert video.resolved_model == "wan2.6-t2v"
+    assert video.recommended_model == "wan2.6-t2v"
+    assert video.max_cost_tier == "premium"
+    assert not video.requires_operator_review
+    assert audio.task == "audio"
+    assert audio.budget_mode == "explicit-speech-media"
+    assert audio.resolved_model == "qwen3-tts-flash"
+    assert audio.recommended_model == "qwen3-tts-flash"
+    assert not audio.requires_operator_review
+    assert transcription.task == "transcription"
+    assert transcription.budget_mode == "explicit-transcription"
+    assert transcription.resolved_model == "scribe_v2"
+    assert transcription.recommended_model == "scribe_v2"
+    assert not transcription.requires_operator_review
+
+
 def test_budget_policy_uses_low_cost_agentic_and_grounded_defaults(monkeypatch):
     monkeypatch.setattr(model_budget.settings, "app_ai_agentic_model", "gemini-3.1-flash-lite", raising=False)
     monkeypatch.setattr(model_budget.settings, "app_ai_grounded_research_model", "gemini-3.1-flash-lite", raising=False)
@@ -74,5 +102,17 @@ def test_budget_policy_for_api_lists_all_core_tasks():
     payload = model_budget.budget_policy_for_api()
     tasks = {item["task"] for item in payload["task_decisions"]}
 
-    assert tasks == {"fast", "ocr", "classification", "review", "grounded-research", "agentic", "pdf", "image"}
+    assert tasks == {
+        "fast",
+        "ocr",
+        "classification",
+        "review",
+        "grounded-research",
+        "agentic",
+        "pdf",
+        "image",
+        "video",
+        "audio",
+        "transcription",
+    }
     assert payload["premium_requires_review"] in {True, False}

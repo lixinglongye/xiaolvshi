@@ -1082,7 +1082,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "budget-decision coverage" in aihub_route_coverage_entry["impact"]
     assert "route telemetry coverage" in aihub_route_coverage_entry["impact"]
     assert "response route-payload coverage" in aihub_route_coverage_entry["impact"]
-    assert "legacy media route gaps" in aihub_route_coverage_entry["impact"]
+    assert "media/speech catalog review gaps" in aihub_route_coverage_entry["impact"]
     assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in aihub_route_coverage_entry["impact"]
     assert "configuration writes" in aihub_route_coverage_entry["impact"]
     assert "traffic shifts" in aihub_route_coverage_entry["impact"]
@@ -1121,6 +1121,34 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    media_speech_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "aihub-media-speech-runtime-routing"
+    )
+    assert media_speech_entry["size"] == "medium"
+    assert media_speech_entry["status"] == "shipped"
+    assert media_speech_entry["category"] == "model_ops"
+    assert "video generation, audio generation, and transcription" in media_speech_entry["impact"]
+    assert "explicit media/speech budget tasks" in media_speech_entry["impact"]
+    assert "runtime model policy" in media_speech_entry["impact"]
+    assert "sanitized route telemetry" in media_speech_entry["impact"]
+    assert "response route payload metadata" in media_speech_entry["impact"]
+    assert "review-only" in media_speech_entry["impact"]
+    assert "without provider calls" in media_speech_entry["impact"]
+    assert "gateway calls" in media_speech_entry["impact"]
+    assert "prompts" in media_speech_entry["impact"]
+    assert "audio" in media_speech_entry["impact"]
+    assert "transcripts" in media_speech_entry["impact"]
+    assert "output URLs" in media_speech_entry["impact"]
+    assert "revised prompts" in media_speech_entry["impact"]
+    assert "headers" in media_speech_entry["impact"]
+    assert "payloads" in media_speech_entry["impact"]
+    assert "credentials" in media_speech_entry["impact"]
+    assert "app/backend/services/aihub.py" in media_speech_entry["evidence_paths"]
+    assert "app/backend/services/model_task_inference.py" in media_speech_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_task_inference.py" in media_speech_entry["evidence_paths"]
+    assert "docs/MODEL_RUNTIME_ROUTER.md" in media_speech_entry["evidence_paths"]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in media_speech_entry["release_gate_links"]
+    assert "runtime-router" in media_speech_entry["release_gate_links"]
     gateway_request_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-request-compatibility-gate"
     )

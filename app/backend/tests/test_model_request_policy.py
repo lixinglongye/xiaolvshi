@@ -76,6 +76,9 @@ def test_generation_request_policy_for_api_is_safe():
     assert any(item["task"] == "classification" for item in payload["task_policies"])
     assert any(item["task"] == "agentic" for item in payload["task_policies"])
     assert any(item["task"] == "grounded-research" for item in payload["task_policies"])
+    assert not {"image", "video", "audio", "transcription"} & {
+        item["task"] for item in payload["task_defaults"]
+    }
     assert "sk-" not in str(payload)
 
 

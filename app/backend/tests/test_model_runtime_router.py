@@ -110,6 +110,31 @@ def test_runtime_router_uses_image_default_for_auto_image_task():
     assert "within_task_budget" in route.reason_codes
 
 
+def test_runtime_router_uses_media_and_speech_defaults_as_non_explicit_requests():
+    video = resolve_runtime_model(None, task="video")
+    audio = resolve_runtime_model(None, task="audio")
+    transcription = resolve_runtime_model(None, task="transcription")
+
+    assert video.task == "video"
+    assert video.resolved_model == "wan2.6-t2v"
+    assert video.budget_mode == "explicit-video-media"
+    assert video.explicit_model_requested is False
+    assert video.explicit_model_fit_status == "default"
+    assert video.routed_to_recommended_model is False
+    assert "unknown_catalog_model" in video.reason_codes
+    assert "gateway_passthrough" in video.reason_codes
+    assert audio.task == "audio"
+    assert audio.resolved_model == "qwen3-tts-flash"
+    assert audio.budget_mode == "explicit-speech-media"
+    assert audio.explicit_model_requested is False
+    assert audio.routed_to_recommended_model is False
+    assert transcription.task == "transcription"
+    assert transcription.resolved_model == "scribe_v2"
+    assert transcription.budget_mode == "explicit-transcription"
+    assert transcription.explicit_model_requested is False
+    assert transcription.routed_to_recommended_model is False
+
+
 def test_runtime_router_uses_specialized_low_cost_defaults():
     agentic = resolve_runtime_model(None, task="workflow-planning")
     grounded = resolve_runtime_model(None, task="rag-research")
@@ -140,9 +165,16 @@ def test_runtime_router_policy_lists_task_defaults_without_secrets():
         "agentic",
         "pdf",
         "image",
+        "video",
+        "audio",
+        "transcription",
     }
     image_default = next(item for item in policy["task_defaults"] if item["task"] == "image")
+    video_default = next(item for item in policy["task_defaults"] if item["task"] == "video")
     agentic_default = next(item for item in policy["task_defaults"] if item["task"] == "agentic")
     assert image_default["resolved_model"] == "gemini-2.5-flash-image"
+    assert video_default["resolved_model"] == "wan2.6-t2v"
+    assert video_default["budget_mode"] == "explicit-video-media"
     assert agentic_default["resolved_model"] == "gemini-3.1-flash-lite"
+    assert any("video, audio, and transcription exception paths" in item for item in policy["enforcement"])
     assert "sk-" not in str(policy)

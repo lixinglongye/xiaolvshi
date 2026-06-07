@@ -2746,7 +2746,7 @@ class ReleaseReadinessService:
                     "docs/AI_MODEL_STRATEGY.md",
                 ),
                 validation_command="python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py tests/test_frontend_ui_regression_gate.py -q",
-                manual_note="This is metadata-only AIHub endpoint route coverage gate evidence for endpoint inventory, runtime-router coverage, budget-decision coverage, route telemetry coverage, response route payload coverage, and legacy media route gaps; it does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network, does not write configuration or shift traffic, and does not include request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
+                manual_note="This is metadata-only AIHub endpoint route coverage gate evidence for endpoint inventory, runtime-router coverage, budget-decision coverage, route telemetry coverage, response route payload coverage, and media/speech catalog review gaps; it does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network, does not write configuration or shift traffic, and does not include request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
             ),
             ReleaseCheck(
                 id="modelops-legal-micro-benchmark-preflight",

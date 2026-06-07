@@ -9,6 +9,9 @@ def test_resolve_model_prefers_cost_first_aliases(monkeypatch):
     monkeypatch.setattr(model_catalog.settings, "app_ai_review_model", "review-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_pdf_model", "pdf-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_image_model", "image-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_video_model", "video-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_audio_model", "audio-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_transcription_model", "transcription-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_agentic_model", "agentic-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_grounded_research_model", "grounded-model", raising=False)
 
@@ -24,6 +27,12 @@ def test_resolve_model_prefers_cost_first_aliases(monkeypatch):
     assert model_catalog.resolve_model("auto-pdf", task="fast") == "pdf-model"
     assert model_catalog.resolve_model("auto", task="image") == "image-model"
     assert model_catalog.resolve_model("auto-image", task="fast") == "image-model"
+    assert model_catalog.resolve_model(None, task="video") == "video-model"
+    assert model_catalog.resolve_model("auto-video", task="fast") == "video-model"
+    assert model_catalog.resolve_model(None, task="audio") == "audio-model"
+    assert model_catalog.resolve_model("auto-audio", task="fast") == "audio-model"
+    assert model_catalog.resolve_model(None, task="transcription") == "transcription-model"
+    assert model_catalog.resolve_model("auto-transcription", task="fast") == "transcription-model"
 
 
 def test_resolve_model_passes_gateway_specific_names_through():

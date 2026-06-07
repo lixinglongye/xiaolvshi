@@ -75,6 +75,9 @@ def test_reasoning_policy_for_api_is_safe():
     assert payload["status"] == "ready"
     assert payload["request_field"]["default"] == "auto"
     assert len(payload["task_defaults"]) >= 5
+    assert not {"image", "video", "audio", "transcription"} & {
+        item["task"] for item in payload["task_defaults"]
+    }
     assert "sk-" not in str(payload)
 
 

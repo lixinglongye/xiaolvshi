@@ -166,9 +166,9 @@ def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
         "status": "review_required",
-        "summary": {"warn_count": 4, "fail_count": 0, "legacy_unrouted_count": 3},
+        "summary": {"warn_count": 2, "fail_count": 0, "legacy_unrouted_count": 0},
         "blocking_check_ids": [],
-        "warning_check_ids": ["runtime-router-coverage", "route-telemetry-coverage"],
+        "warning_check_ids": ["response-route-payload-coverage", "local-catalog-coverage"],
     }
 
     result = ModelOpsReadinessService().evaluate(signals)
@@ -374,7 +374,8 @@ def test_model_ops_route_includes_readiness():
     assert payload["gemini_cheap_first_route_preflight"]["summary"]["route_task_count"] == 10
     assert payload["gemini_cheap_first_route_preflight"]["summary"]["gateway_called"] is False
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["endpoint_count"] == 7
-    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 3
+    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 7
+    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 0
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["gateway_called"] is False
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2

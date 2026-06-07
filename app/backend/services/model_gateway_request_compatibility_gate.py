@@ -21,6 +21,7 @@ SENSITIVE_VALUE_PATTERN = re.compile(
 )
 HIGH_FREQUENCY_TASKS = {"cheap", "fast", "ocr", "classification"}
 JSON_TASKS = {"cheap", "fast", "ocr", "classification", "review", "document-generation", "grounded-research", "agentic"}
+MEDIA_ENDPOINT_TASKS = {"image", "video", "audio", "transcription"}
 
 
 class ModelGatewayRequestCompatibilityGateService:
@@ -107,7 +108,7 @@ class ModelGatewayRequestCompatibilityGateService:
         supplied = data.get("tasks")
         if isinstance(supplied, list) and supplied:
             return [item if isinstance(item, dict) else {"task": item} for item in supplied[:40]]
-        return [{"task": task} for task in TASK_GROUPS if task != "image"]
+        return [{"task": task} for task in TASK_GROUPS if task not in MEDIA_ENDPOINT_TASKS]
 
     def _task_row(self, item: dict[str, Any]) -> dict[str, Any]:
         task = normalize_budget_task(str(item.get("task") or "fast"))

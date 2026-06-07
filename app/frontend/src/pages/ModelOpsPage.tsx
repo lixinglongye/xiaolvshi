@@ -6600,7 +6600,7 @@ function Inner() {
                     <div className="text-2xl font-black text-stone-950">
                       {activeAihubEndpointRouteCoverageGate.summary.legacy_unrouted_count}
                     </div>
-                    <div className="mt-1 text-sm text-stone-600">legacy_media_unrouted</div>
+                    <div className="mt-1 text-sm text-stone-600">media_speech_review</div>
                   </div>
                   <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                     <div className="text-2xl font-black text-stone-950">

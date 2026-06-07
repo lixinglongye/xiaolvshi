@@ -462,7 +462,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("AIHub endpoint route coverage gate is metadata-only endpoint wiring evidence" in guardrail for guardrail in profile["application_guardrails"])
-    assert any("legacy media route gaps" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("media/speech catalog review gaps" in guardrail for guardrail in profile["application_guardrails"])
     assert any("gateway connection profile is metadata-only OpenAI-compatible URL-shape evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("normalizes remote bare NewAPI/Gemini hosts to /v1" in guardrail for guardrail in profile["application_guardrails"])
     assert any("key presence with placeholders only" in guardrail for guardrail in profile["application_guardrails"])

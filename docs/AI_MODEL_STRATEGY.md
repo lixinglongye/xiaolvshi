@@ -20,6 +20,9 @@ APP_AI_GROUNDED_RESEARCH_MODEL=gemini-3.1-flash-lite
 APP_AI_REVIEW_MODEL=gemini-2.5-flash
 APP_AI_PDF_MODEL=gemini-2.5-pro
 APP_AI_IMAGE_MODEL=gemini-2.5-flash-image
+APP_AI_VIDEO_MODEL=wan2.6-t2v
+APP_AI_AUDIO_MODEL=qwen3-tts-flash
+APP_AI_TRANSCRIPTION_MODEL=scribe_v2
 APP_AI_PREMIUM_REQUIRES_REVIEW=true
 ```
 
@@ -382,14 +385,14 @@ same route.
 AIHub endpoint coverage gate. It inventories text, streaming text, PDF, image,
 video, audio, and transcription endpoints for runtime-router coverage,
 budget-decision coverage, route telemetry coverage, response route payloads,
-and legacy media route gaps.
+and media/speech catalog review gaps.
 
 The current gate keeps endpoint-level state visible in
-`GET /api/v1/aihub/models`: text, streaming text, PDF, and image routes are
-runtime-routed and telemetry-backed; video, audio, and transcription remain
-legacy media routes until explicit media/speech budget tasks and route
-telemetry are added.
+`GET /api/v1/aihub/models`: text, streaming text, PDF, image, video, audio,
+and transcription routes are runtime-routed and telemetry-backed. Video,
+audio, and transcription defaults remain review-only catalog items until
+pricing, lifecycle, and gateway behavior are documented.
 
 This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
-endpoints, models, or the network, and it does not claim that legacy media
-routes have already been migrated.
+endpoints, models, or the network, and it does not claim that media/speech
+defaults are price-benchmarked.

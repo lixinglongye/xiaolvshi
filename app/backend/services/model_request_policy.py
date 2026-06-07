@@ -6,6 +6,9 @@ from typing import Any
 from services.model_budget import TASK_GROUPS, normalize_budget_task
 
 
+MEDIA_ENDPOINT_TASKS = {"image", "video", "audio", "transcription"}
+
+
 @dataclass(frozen=True)
 class GenerationTaskPolicy:
     task: str
@@ -156,7 +159,7 @@ def generation_request_policy_for_api() -> dict[str, Any]:
     decisions = [
         resolve_generation_request_policy(task=task).to_api()
         for task in TASK_GROUPS
-        if task != "image"
+        if task not in MEDIA_ENDPOINT_TASKS
     ]
     return {
         "status": "ready",
@@ -172,7 +175,11 @@ def generation_request_policy_for_api() -> dict[str, Any]:
             "JSON response_format lowers the temperature ceiling to reduce malformed structured output and retries.",
         ],
         "task_defaults": decisions,
-        "task_policies": [policy.to_api() for policy in TASK_PARAMETER_POLICIES.values() if policy.task != "image"],
+        "task_policies": [
+            policy.to_api()
+            for policy in TASK_PARAMETER_POLICIES.values()
+            if policy.task not in MEDIA_ENDPOINT_TASKS
+        ],
     }
 
 
