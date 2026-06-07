@@ -1,5 +1,14 @@
 # Continuous Update Ledger
 
+Current ModelOps first-paint slice:
+`modelops-first-paint-aggregate-binding` lets the `/model-ops` browser page
+render as soon as the aggregate `/api/v1/aihub/models` payload returns, then
+keeps narrower evidence endpoints as missing-signal or aggregate-failure
+fallbacks. This avoids long local 127.0.0.1 blank/default states while preserving legal fixture
+cheap-first gate and default promotion packet evidence boundaries: no raw legal
+text, prompts, payloads, model outputs, credentials, emails, provider calls,
+gateway calls, configuration writes, or traffic shifts.
+
 Current ModelOps UI binding slice:
 `modelops-legal-fixture-modelops-ui-binding` exposes the legal fixture
 cheap-first benchmark gate and default promotion packet through AIHub ModelOps

@@ -25,6 +25,7 @@ registry is cleared in tests.
 - The frontend ModelOps API helper has a single wall-clock timeout and abort path.
 - A fetch timeout does not continue into a second SDK timeout window.
 - The ModelOps page reuses the cheap-first calibration embedded in `/models` instead of fetching it twice on first load.
+- The ModelOps page paints from the aggregate `/api/v1/aihub/models` payload as soon as it returns, while narrower evidence endpoints remain available only as missing-signal or aggregate-failure fallbacks.
 - Optional timing observations can be reviewed against first-load and cache-hit budgets without storing raw payloads.
 - Repeated slow timing observations fail the performance budget instead of remaining a soft warning.
 
@@ -41,6 +42,13 @@ registry is cleared in tests.
 ## Frontend Guard
 
 `modelOpsApi.ts` uses same-origin `fetch` first for local `/api/v1/aihub/*` calls, guarded by `MODEL_OPS_TOTAL_TIMEOUT_MS` and `AbortController`. If the fetch path times out, the helper raises that timeout directly instead of waiting for SDK fallback. The SDK path remains as a fallback for non-timeout environments and is wrapped in the same timeout race.
+
+`ModelOpsPage.tsx` now shares the initial `getModelOps()` request and applies
+that aggregate payload immediately with `applyModelOpsPayload`. Secondary
+ModelOps evidence requests still run through `Promise.allSettled` for fallback
+handling, but the normal path reuses the aggregate signal through
+`aggregateOrRequest`; narrower endpoint requests only run when the aggregate
+payload is missing a signal or the aggregate request fails.
 
 ## Observation Review
 

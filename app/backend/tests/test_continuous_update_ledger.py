@@ -223,6 +223,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-load-performance-budget" in completed_ids
     assert "modelops-performance-observation-review" in completed_ids
     assert "modelops-performance-observation-release-binding" in completed_ids
+    assert "modelops-first-paint-aggregate-binding" in completed_ids
     performance_release_binding_entry = next(
         entry
         for entry in ledger["completed_updates"]
@@ -246,6 +247,26 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-performance-observation-review" in performance_release_binding_entry["release_gate_links"]
     assert "model-ops-readiness" in performance_release_binding_entry["release_gate_links"]
     assert "modelops-cheap-first-release-decision" in performance_release_binding_entry["release_gate_links"]
+    first_paint_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-first-paint-aggregate-binding"
+    )
+    assert first_paint_entry["size"] == "medium"
+    assert first_paint_entry["status"] == "shipped"
+    assert "aggregate /api/v1/aihub/models payload returns" in first_paint_entry["impact"]
+    assert "legal fixture cheap-first gate evidence" in first_paint_entry["impact"]
+    assert "default promotion packet evidence" in first_paint_entry["impact"]
+    assert "provider calls" in first_paint_entry["impact"]
+    assert "traffic shifts" in first_paint_entry["impact"]
+    assert "raw payloads" in first_paint_entry["impact"]
+    assert "credentials" in first_paint_entry["impact"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in first_paint_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in first_paint_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_PERFORMANCE_BUDGET.md" in first_paint_entry["evidence_paths"]
+    assert "modelops-load-performance-budget" in first_paint_entry["release_gate_links"]
+    assert "modelops-legal-fixture-modelops-ui-binding" in first_paint_entry["release_gate_links"]
+    assert "frontend-ui-regression" in first_paint_entry["release_gate_links"]
     assert "modelops-cheap-first-quality-budget" in completed_ids
     assert "modelops-cheap-first-escalation-budget" in completed_ids
     assert "model-failure-upgrade-budget" in completed_ids
@@ -507,6 +528,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-load-performance-budget" not in queue_ids
     assert "modelops-performance-observation-review" not in queue_ids
     assert "modelops-performance-observation-release-binding" not in queue_ids
+    assert "modelops-first-paint-aggregate-binding" not in queue_ids
     assert "modelops-cheap-first-quality-budget" not in queue_ids
     assert "gemini-catalog-source-audit" not in queue_ids
     assert "model-catalog-candidate-patch-plan" not in queue_ids

@@ -509,6 +509,36 @@ function Inner() {
   const [canaryObservationLoading, setCanaryObservationLoading] = useState(false);
   const [canaryObservationError, setCanaryObservationError] = useState('');
 
+  const applyModelOpsPayload = (payload: ModelOpsResponse) => {
+    setData(payload);
+    setProbeEvaluation(null);
+    setPerformanceBudget(null);
+    setEscalationBudget(payload.cheap_first_escalation_budget ?? null);
+    setFailureUpgradeBudget(payload.failure_upgrade_budget ?? null);
+    setLegalBenchmarkRiskBridge(payload.legal_benchmark_risk_bridge ?? null);
+    setLegalMicroBenchmarkPreflight(payload.legal_micro_benchmark_preflight ?? null);
+    setLegalFixtureCheapFirstBenchmarkGate(
+      payload.legal_fixture_cheap_first_benchmark_gate ?? null,
+    );
+    setLegalFixtureCheapFirstDefaultPromotionPacket(
+      payload.legal_fixture_cheap_first_default_promotion_packet ?? null,
+    );
+    setCanaryObservation(null);
+    setCanaryPromotionDecision(null);
+    setCanaryApprovalPacket(null);
+    setCanaryRollbackDrill(null);
+    setCanaryChangeManifest(null);
+    setGeminiDefaultChangeReview(payload.gemini_default_change_review ?? null);
+    setGeminiDefaultCostImpact(payload.gemini_default_cost_impact ?? null);
+    setGeminiVariantMatrix(payload.gemini_variant_matrix ?? null);
+    setObservedGeminiModelIntakeQueue(payload.observed_gemini_model_intake_queue ?? null);
+    setObservedGeminiCoverageGapQueue(payload.observed_gemini_coverage_gap_queue ?? null);
+    setObservedGatewayModelFitMatrix(payload.observed_gateway_model_fit_matrix ?? null);
+    setRuntimeExplicitModelFitGate(payload.runtime_explicit_model_fit_gate ?? null);
+    setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
+    setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
+  };
+
   const load = async () => {
     setLoading(true);
     setError('');
@@ -556,9 +586,24 @@ function Inner() {
     setCanaryApprovalPacket(null);
     setCanaryRollbackDrill(null);
     setCanaryChangeManifest(null);
+    let initialModelOpsApplied = false;
+    const modelOpsRequest = getModelOps();
+    void modelOpsRequest
+      .then((payload) => {
+        initialModelOpsApplied = true;
+        applyModelOpsPayload(payload);
+        setLoading(false);
+      })
+      .catch(() => undefined);
     try {
+      const modelOpsResult: PromiseSettledResult<ModelOpsResponse> = await modelOpsRequest.then(
+        (value) => ({ status: 'fulfilled', value }),
+        (reason) => ({ status: 'rejected', reason }),
+      );
+      const aggregatePayload = modelOpsResult.status === 'fulfilled' ? modelOpsResult.value : null;
+      const aggregateOrRequest = <T,>(aggregateValue: T | null | undefined, request: () => Promise<T>) =>
+        aggregatePayload && aggregateValue ? Promise.resolve(aggregateValue) : request();
       const [
-        modelOpsResult,
         observedGeminiCoverageGapQueueResult,
         observedGatewayModelFitMatrixResult,
         runtimeExplicitModelFitGateResult,
@@ -574,53 +619,34 @@ function Inner() {
         legalFixtureCheapFirstDefaultPromotionPacketResult,
       ] =
         await Promise.allSettled([
-        getModelOps(),
-        getModelOpsObservedGeminiCoverageGapQueue(),
-        getModelOpsObservedGatewayModelFitMatrix(),
-        getModelOpsRuntimeExplicitModelFitGate(),
-        getGeminiNewApiAliasCapabilityCoverage(),
-        getGeminiCheapFirstCoverageGate(),
-        getGeminiCheapFirstRoutePreflight(),
-        getModelOpsAIHubEndpointRouteCoverageGate(),
-        getModelOpsCheapFirstEscalationBudget(),
-        getModelFailureUpgradeBudget(),
-        getModelOpsLegalBenchmarkRiskBridge(),
-        getModelOpsLegalMicroBenchmarkPreflight(),
-        getModelOpsLegalFixtureCheapFirstBenchmarkGate(),
-        getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(),
+        aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
+        aggregateOrRequest(aggregatePayload?.observed_gateway_model_fit_matrix, getModelOpsObservedGatewayModelFitMatrix),
+        aggregateOrRequest(aggregatePayload?.runtime_explicit_model_fit_gate, getModelOpsRuntimeExplicitModelFitGate),
+        aggregateOrRequest(aggregatePayload?.gemini_newapi_alias_capability_coverage, getGeminiNewApiAliasCapabilityCoverage),
+        aggregateOrRequest(aggregatePayload?.gemini_cheap_first_coverage_gate, getGeminiCheapFirstCoverageGate),
+        aggregateOrRequest(aggregatePayload?.gemini_cheap_first_route_preflight, getGeminiCheapFirstRoutePreflight),
+        aggregateOrRequest(aggregatePayload?.aihub_endpoint_route_coverage_gate, getModelOpsAIHubEndpointRouteCoverageGate),
+        aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
+        aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
+        aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
+        aggregateOrRequest(aggregatePayload?.legal_micro_benchmark_preflight, getModelOpsLegalMicroBenchmarkPreflight),
+        aggregateOrRequest(
+          aggregatePayload?.legal_fixture_cheap_first_benchmark_gate,
+          getModelOpsLegalFixtureCheapFirstBenchmarkGate,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet,
+          getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+        ),
       ]);
       if (modelOpsResult.status === 'rejected') {
         console.error(modelOpsResult.reason);
         setError('Model telemetry failed to load.');
         setData(null);
       } else {
-        setData(modelOpsResult.value);
-        setProbeEvaluation(null);
-        setPerformanceBudget(null);
-        setEscalationBudget(modelOpsResult.value.cheap_first_escalation_budget ?? null);
-        setFailureUpgradeBudget(modelOpsResult.value.failure_upgrade_budget ?? null);
-        setLegalBenchmarkRiskBridge(modelOpsResult.value.legal_benchmark_risk_bridge ?? null);
-        setLegalMicroBenchmarkPreflight(modelOpsResult.value.legal_micro_benchmark_preflight ?? null);
-        setLegalFixtureCheapFirstBenchmarkGate(
-          modelOpsResult.value.legal_fixture_cheap_first_benchmark_gate ?? null,
-        );
-        setLegalFixtureCheapFirstDefaultPromotionPacket(
-          modelOpsResult.value.legal_fixture_cheap_first_default_promotion_packet ?? null,
-        );
-        setCanaryObservation(null);
-        setCanaryPromotionDecision(null);
-        setCanaryApprovalPacket(null);
-        setCanaryRollbackDrill(null);
-        setCanaryChangeManifest(null);
-        setGeminiDefaultChangeReview(modelOpsResult.value.gemini_default_change_review ?? null);
-        setGeminiDefaultCostImpact(modelOpsResult.value.gemini_default_cost_impact ?? null);
-        setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
-        setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
-        setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
-        setObservedGatewayModelFitMatrix(modelOpsResult.value.observed_gateway_model_fit_matrix ?? null);
-        setRuntimeExplicitModelFitGate(modelOpsResult.value.runtime_explicit_model_fit_gate ?? null);
-        setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
-        setAihubEndpointRouteCoverageGate(modelOpsResult.value.aihub_endpoint_route_coverage_gate ?? null);
+        if (!initialModelOpsApplied) {
+          applyModelOpsPayload(modelOpsResult.value);
+        }
         if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
           setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
         } else {

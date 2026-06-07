@@ -1661,6 +1661,38 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="modelops-first-paint-aggregate-binding",
+                title="ModelOps first-paint aggregate binding",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Unblocks the ModelOps browser page as soon as the aggregate /api/v1/aihub/models payload returns, "
+                    "then keeps narrower evidence endpoints as missing-signal or aggregate-failure fallbacks, so local 127.0.0.1 users "
+                    "see routing aliases, readiness, legal fixture cheap-first gate evidence, and default promotion "
+                    "packet evidence before slower secondary requests finish without provider calls, gateway calls, "
+                    "configuration writes, traffic shifts, raw payloads, prompts, legal text, model outputs, credentials, "
+                    "emails, or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/MODEL_OPS_PERFORMANCE_BUDGET.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-load-performance-budget",
+                    "modelops-performance-observation-review",
+                    "modelops-legal-fixture-modelops-ui-binding",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                    "frontend-build",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="modelops-cheap-first-quality-budget",
                 title="Cheap-first route quality budget",
                 category="model_ops",
