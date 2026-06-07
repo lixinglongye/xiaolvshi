@@ -438,6 +438,28 @@ This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network, and it does not claim that media/speech
 defaults are price-benchmarked.
 
+## AIHub Media/Speech Default Catalog Gate
+
+`modelops-aihub-media-speech-default-catalog-gate` is the required
+metadata-only release gate for AIHub media and speech default review. It is
+available at
+`/api/v1/aihub/models/aihub-media-speech-default-catalog-gate` and in the
+aggregate `/api/v1/aihub/models` payload as
+`aihub_media_speech_default_catalog_gate`.
+
+The gate reviews image, video, audio, transcription, future Live audio, and
+embedding default coverage against local catalog status, explicit media/speech
+budget modes, endpoint route coverage, official Gemini/Veo/TTS source anchors,
+default release actions, and review items. Non-catalog and future-route defaults
+remain explicit-review only until pricing, lifecycle, gateway behavior, and
+route policy evidence is attached.
+
+This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network. It does not write configuration, change
+defaults, shift traffic, or include request/response bodies, headers, prompts,
+raw payloads, audio, transcripts, legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 ## Default Recommendation Readiness Binding
 
 `model-ops-default-recommendation-readiness-binding` promotes

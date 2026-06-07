@@ -291,6 +291,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" in completed_ids
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
+    assert "modelops-aihub-media-speech-default-catalog-gate" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
     assert "modelops-observed-gateway-model-fit-matrix" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
@@ -1208,6 +1209,92 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py "
         "tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    media_speech_default_catalog_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-aihub-media-speech-default-catalog-gate"
+    )
+    assert media_speech_default_catalog_entry["size"] == "medium"
+    assert media_speech_default_catalog_entry["status"] == "shipped"
+    assert media_speech_default_catalog_entry["category"] == "model_ops"
+    assert "required metadata-only release evidence" in media_speech_default_catalog_entry["impact"]
+    assert "/api/v1/aihub/models/aihub-media-speech-default-catalog-gate" in media_speech_default_catalog_entry["impact"]
+    assert "image, video, audio, transcription, future Live audio, and embedding" in media_speech_default_catalog_entry["impact"]
+    assert "endpoint route coverage" in media_speech_default_catalog_entry["impact"]
+    assert "local catalog status" in media_speech_default_catalog_entry["impact"]
+    assert "explicit media/speech budget modes" in media_speech_default_catalog_entry["impact"]
+    assert "official Gemini/Veo/TTS source anchors" in media_speech_default_catalog_entry["impact"]
+    assert "default release actions" in media_speech_default_catalog_entry["impact"]
+    assert "explicit-review only" in media_speech_default_catalog_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in media_speech_default_catalog_entry["impact"]
+    assert "configuration writes" in media_speech_default_catalog_entry["impact"]
+    assert "default changes" in media_speech_default_catalog_entry["impact"]
+    assert "traffic shifts" in media_speech_default_catalog_entry["impact"]
+    assert "request or response bodies" in media_speech_default_catalog_entry["impact"]
+    assert "headers" in media_speech_default_catalog_entry["impact"]
+    assert "prompts" in media_speech_default_catalog_entry["impact"]
+    assert "raw payloads" in media_speech_default_catalog_entry["impact"]
+    assert "audio" in media_speech_default_catalog_entry["impact"]
+    assert "transcripts" in media_speech_default_catalog_entry["impact"]
+    assert "model outputs" in media_speech_default_catalog_entry["impact"]
+    assert "gateway responses" in media_speech_default_catalog_entry["impact"]
+    assert "credentials" in media_speech_default_catalog_entry["impact"]
+    assert "emails" in media_speech_default_catalog_entry["impact"]
+    assert "user identifiers" in media_speech_default_catalog_entry["impact"]
+    assert "app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_aihub_media_speech_default_catalog_gate.py" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_readiness.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/backend/tests/test_frontend_ui_regression_gate.py" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_MEDIA_SPEECH_DEFAULT_CATALOG_GATE.md" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in media_speech_default_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "docs/MODEL_OPS_READINESS.md" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "docs/FRONTEND_UI_REGRESSION_GATE.md" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in media_speech_default_catalog_entry["evidence_paths"]
+    assert "modelops-aihub-media-speech-default-catalog-gate" in media_speech_default_catalog_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in media_speech_default_catalog_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in media_speech_default_catalog_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-gemini-cheap-first-route-preflight" in media_speech_default_catalog_entry[
+        "release_gate_links"
+    ]
+    assert "model-ops-readiness" in media_speech_default_catalog_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in media_speech_default_catalog_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_aihub_media_speech_default_catalog_gate.py "
+        "tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )

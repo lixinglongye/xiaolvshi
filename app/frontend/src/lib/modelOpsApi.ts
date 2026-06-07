@@ -1727,6 +1727,100 @@ export type ModelOpsAIHubEndpointRouteCoverageGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsAIHubMediaSpeechDefaultCatalogSourceRow = {
+  id: string;
+  title: string;
+  url: string;
+  tracked_signal: string;
+};
+
+export type ModelOpsAIHubMediaSpeechDefaultCatalogDefaultRow = {
+  task: string;
+  display_name: string;
+  route_kind: string;
+  endpoint_ids: string[];
+  endpoint_count: number;
+  endpoint_route_statuses: string[];
+  default_model?: string | null;
+  canonical_model?: string | null;
+  default_catalog_status: string;
+  default_cost_tier: string;
+  default_pricing_status: string;
+  budget_mode: string;
+  is_known_model: boolean;
+  requires_operator_review: boolean;
+  official_family: string;
+  official_candidate_models: string[];
+  official_candidate_catalog_known_count: number;
+  official_candidate_catalog_models: string[];
+  required_capabilities: string[];
+  cheap_first_policy: string;
+  default_change_policy: string;
+  endpoint_gap_codes: string[];
+  default_release_action: string;
+  recommended_action: string;
+};
+
+export type ModelOpsAIHubMediaSpeechDefaultCatalogReviewItem = {
+  id: string;
+  task: string;
+  priority: string;
+  status: string;
+  release_action: string;
+  owner: string;
+  next_action: string;
+  release_gate_links: string[];
+};
+
+export type ModelOpsAIHubMediaSpeechDefaultCatalogCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsAIHubMediaSpeechDefaultCatalogGate = {
+  id: 'modelops-aihub-media-speech-default-catalog-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls?: string[];
+  };
+  summary: {
+    target_count: number;
+    default_task_count: number;
+    endpoint_bound_target_count: number;
+    explicit_route_count: number;
+    catalog_known_default_count: number;
+    missing_catalog_default_count: number;
+    catalog_gap_count: number;
+    official_candidate_count: number;
+    candidate_catalog_known_count: number;
+    explicit_review_target_count: number;
+    review_required_default_count: number;
+    future_route_count: number;
+    future_family_gap_count: number;
+    endpoint_gate_status: string;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    default_changed: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: ModelOpsAIHubMediaSpeechDefaultCatalogSourceRow[];
+  default_rows: ModelOpsAIHubMediaSpeechDefaultCatalogDefaultRow[];
+  review_items: ModelOpsAIHubMediaSpeechDefaultCatalogReviewItem[];
+  checks: ModelOpsAIHubMediaSpeechDefaultCatalogCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGenTxtRoutingGuardMediaRow = {
   id: string;
   requested_task: string;
@@ -4014,6 +4108,7 @@ export type ModelOpsResponse = {
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   gemini_cheap_first_route_preflight?: ModelOpsGeminiCheapFirstRoutePreflight;
   aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate;
+  aihub_media_speech_default_catalog_gate?: ModelOpsAIHubMediaSpeechDefaultCatalogGate;
   gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
@@ -4097,6 +4192,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     cheap_first_evidence_rows?: unknown;
     endpoint_rows?: unknown;
     coverage_matrix?: unknown;
+    default_rows?: unknown;
+    review_items?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     fixture_run_items?: unknown;
@@ -4139,6 +4236,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.roadmap_items) && Array.isArray(payload.cheap_first_evidence_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.default_rows) && Array.isArray(payload.review_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
@@ -4380,6 +4478,13 @@ export async function evaluateGeminiCheapFirstRoutePreflight(
 export async function getModelOpsAIHubEndpointRouteCoverageGate(): Promise<ModelOpsAIHubEndpointRouteCoverageGate> {
   return invokeModelOpsApi<ModelOpsAIHubEndpointRouteCoverageGate>({
     url: '/api/v1/aihub/models/aihub-endpoint-route-coverage-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsAIHubMediaSpeechDefaultCatalogGate(): Promise<ModelOpsAIHubMediaSpeechDefaultCatalogGate> {
+  return invokeModelOpsApi<ModelOpsAIHubMediaSpeechDefaultCatalogGate>({
+    url: '/api/v1/aihub/models/aihub-media-speech-default-catalog-gate',
     method: 'GET',
   });
 }

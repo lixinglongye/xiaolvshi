@@ -83,6 +83,20 @@ route quality, or store request/response bodies, headers, prompts, raw payloads,
 legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
+Additional required evidence:
+`modelops-aihub-media-speech-default-catalog-gate` records metadata-only AIHub
+media/speech default catalog review at
+`/api/v1/aihub/models/aihub-media-speech-default-catalog-gate`. It links image,
+video, audio, transcription, future Live audio, and embedding default coverage
+to endpoint route coverage, local catalog status, explicit media/speech budget
+modes, official Gemini/Veo/TTS source anchors, default release actions, review
+items, and privacy/claim boundaries. Non-catalog and future-route defaults stay
+explicit-review only; the gate does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network, write configuration, change
+defaults, shift traffic, or store request/response bodies, headers, prompts,
+raw payloads, audio, transcripts, legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 Additional optional evidence: `modelops-legal-micro-benchmark-preflight`
 records metadata-only low-resource legal benchmark preflight checks for
 cheap-first fixture selection, document case ids, fact-consistency case ids,

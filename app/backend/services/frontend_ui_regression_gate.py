@@ -107,6 +107,7 @@ PAGE_GATES = (
                 "Observed gateway model fit matrix",
                 "Runtime explicit model fit gate",
                 "AIHub endpoint route coverage gate",
+                "AIHub media/speech default catalog gate",
                 "Gateway connection profile",
             "Cheap-first quality budget",
             "Model failure upgrade budget",
@@ -214,6 +215,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps observed gateway model fit matrix UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, credentials, or user identifiers.",
                     "ModelOps runtime explicit model fit gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, gateway responses, emails, credentials, or user identifiers.",
                     "ModelOps AIHub endpoint route coverage gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, or credentials.",
+                    "ModelOps AIHub media/speech default catalog gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, default changes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, audio, transcripts, raw legal text, raw model output, gateway responses, emails, credentials, or user identifiers.",
                     "ModelOps gateway connection profile UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, credentials, or user identifiers.",
                     "ModelOps observed Gemini coverage gap queue UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, raw prompts, payloads, model output, legal text, emails, or credentials.",
                     "ModelOps Gemini official model family roadmap evidence UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, prompts, raw payloads, model output, legal text, emails, or credentials.",
@@ -277,6 +279,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the AIHub endpoint route coverage panel, endpoint rows, coverage matrix, checks, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked AIHub route-coverage API checks for runtime-router flags, route telemetry, media/speech catalog review gaps, response payload boundaries, and forbidden raw request/model fields.",
+                },
+                {
+                    "id": "aihub-media-speech-default-catalog-gate-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the AIHub media/speech default catalog gate panel, default rows, official source rows, review items, checks, endpoint binding, and privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked media/speech default-catalog checks for image, video, audio, transcription, future Live audio, embedding, explicit-review actions, and forbidden raw request/model/audio fields.",
                 },
                 {
                     "id": "observed-gateway-model-fit-matrix-regresses",

@@ -34,6 +34,7 @@ import {
   getModelOpsObservedGatewayModelFitMatrix,
   getModelOpsRuntimeExplicitModelFitGate,
   getModelOpsAIHubEndpointRouteCoverageGate,
+  getModelOpsAIHubMediaSpeechDefaultCatalogGate,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
@@ -52,6 +53,7 @@ import {
   type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsGeminiCheapFirstRoutePreflightPayload,
   type ModelOpsAIHubEndpointRouteCoverageGate,
+  type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsObservedGatewayModelFitMatrix,
   type ModelOpsRuntimeExplicitModelFitGate,
@@ -502,6 +504,9 @@ function Inner() {
   const [aihubEndpointRouteCoverageGate, setAihubEndpointRouteCoverageGate] =
     useState<ModelOpsAIHubEndpointRouteCoverageGate | null>(null);
   const [aihubEndpointRouteCoverageGateError, setAihubEndpointRouteCoverageGateError] = useState('');
+  const [aihubMediaSpeechDefaultCatalogGate, setAihubMediaSpeechDefaultCatalogGate] =
+    useState<ModelOpsAIHubMediaSpeechDefaultCatalogGate | null>(null);
+  const [aihubMediaSpeechDefaultCatalogGateError, setAihubMediaSpeechDefaultCatalogGateError] = useState('');
   const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
@@ -574,6 +579,7 @@ function Inner() {
     setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
+    setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
   };
 
   const load = async () => {
@@ -601,6 +607,8 @@ function Inner() {
     setGeminiCheapFirstRoutePreflight(null);
     setAihubEndpointRouteCoverageGateError('');
     setAihubEndpointRouteCoverageGate(null);
+    setAihubMediaSpeechDefaultCatalogGateError('');
+    setAihubMediaSpeechDefaultCatalogGate(null);
     setPerformanceError('');
     setPerformanceBudget(null);
     setEscalationBudgetError('');
@@ -651,6 +659,7 @@ function Inner() {
         geminiOfficialModelFamilyRoadmapEvidenceResult,
         geminiCheapFirstRoutePreflightResult,
         aihubEndpointRouteCoverageGateResult,
+        aihubMediaSpeechDefaultCatalogGateResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
@@ -670,6 +679,10 @@ function Inner() {
         ),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_route_preflight, getGeminiCheapFirstRoutePreflight),
         aggregateOrRequest(aggregatePayload?.aihub_endpoint_route_coverage_gate, getModelOpsAIHubEndpointRouteCoverageGate),
+        aggregateOrRequest(
+          aggregatePayload?.aihub_media_speech_default_catalog_gate,
+          getModelOpsAIHubMediaSpeechDefaultCatalogGate,
+        ),
         aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
         aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
@@ -767,6 +780,19 @@ function Inner() {
             setAihubEndpointRouteCoverageGateError('AIHub endpoint route coverage gate failed to load.');
           }
         }
+        if (aihubMediaSpeechDefaultCatalogGateResult.status === 'fulfilled') {
+          setAihubMediaSpeechDefaultCatalogGate(aihubMediaSpeechDefaultCatalogGateResult.value);
+        } else {
+          console.error(aihubMediaSpeechDefaultCatalogGateResult.reason);
+          setAihubMediaSpeechDefaultCatalogGate(
+            modelOpsResult.value.aihub_media_speech_default_catalog_gate ?? null,
+          );
+          if (!modelOpsResult.value.aihub_media_speech_default_catalog_gate) {
+            setAihubMediaSpeechDefaultCatalogGateError(
+              'AIHub media/speech default catalog gate failed to load.',
+            );
+          }
+        }
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
         } else {
@@ -792,6 +818,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'fulfilled') {
         setAihubEndpointRouteCoverageGate(aihubEndpointRouteCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && aihubMediaSpeechDefaultCatalogGateResult.status === 'fulfilled') {
+        setAihubMediaSpeechDefaultCatalogGate(aihubMediaSpeechDefaultCatalogGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
         setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
@@ -917,6 +946,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'rejected') {
         console.error(aihubEndpointRouteCoverageGateResult.reason);
         setAihubEndpointRouteCoverageGateError('AIHub endpoint route coverage gate failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && aihubMediaSpeechDefaultCatalogGateResult.status === 'rejected') {
+        console.error(aihubMediaSpeechDefaultCatalogGateResult.reason);
+        setAihubMediaSpeechDefaultCatalogGateError('AIHub media/speech default catalog gate failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -1475,6 +1508,19 @@ function Inner() {
   const aihubEndpointRouteClaimEntries = boundaryDisplayEntries(
     activeAihubEndpointRouteCoverageGate?.claim_boundary,
   );
+  const activeAihubMediaSpeechDefaultCatalogGate =
+    aihubMediaSpeechDefaultCatalogGate ?? data?.aihub_media_speech_default_catalog_gate ?? null;
+  const aihubMediaSpeechDefaultCatalogDefaultRows =
+    activeAihubMediaSpeechDefaultCatalogGate?.default_rows ?? [];
+  const aihubMediaSpeechDefaultCatalogReviewItems =
+    activeAihubMediaSpeechDefaultCatalogGate?.review_items ?? [];
+  const aihubMediaSpeechDefaultCatalogChecks = activeAihubMediaSpeechDefaultCatalogGate?.checks ?? [];
+  const aihubMediaSpeechDefaultCatalogBoundaryEntries = boundaryDisplayEntries(
+    activeAihubMediaSpeechDefaultCatalogGate?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url)/i.test(key));
+  const aihubMediaSpeechDefaultCatalogClaimEntries = boundaryDisplayEntries(
+    activeAihubMediaSpeechDefaultCatalogGate?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url)/i.test(key));
   const activeGenTxtRoutingGuard = data?.gentxt_routing_guard ?? null;
   const genTxtRoutingGuardMediaRows = activeGenTxtRoutingGuard?.media_task_rows ?? [];
   const genTxtRoutingGuardAliasRows = activeGenTxtRoutingGuard?.media_alias_rows ?? [];
@@ -7370,6 +7416,206 @@ function Inner() {
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
                         >
                           {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeAihubMediaSpeechDefaultCatalogGate || aihubMediaSpeechDefaultCatalogGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeAihubMediaSpeechDefaultCatalogGate
+                    ? `${activeAihubMediaSpeechDefaultCatalogGate.summary.default_task_count} defaults / ${activeAihubMediaSpeechDefaultCatalogGate.summary.missing_catalog_default_count} catalog gaps / ${activeAihubMediaSpeechDefaultCatalogGate.summary.future_family_gap_count} future gaps`
+                    : 'metadata-only AIHub media/speech default catalog review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeAihubMediaSpeechDefaultCatalogGate?.id
+                    ?? 'modelops-aihub-media-speech-default-catalog-gate'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeAihubMediaSpeechDefaultCatalogGate?.status)}>
+                {activeAihubMediaSpeechDefaultCatalogGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {aihubMediaSpeechDefaultCatalogGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {aihubMediaSpeechDefaultCatalogGateError}
+              </div>
+            )}
+
+            {activeAihubMediaSpeechDefaultCatalogGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaSpeechDefaultCatalogGate.summary.default_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default_task_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaSpeechDefaultCatalogGate.summary.catalog_known_default_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">catalog_known_default_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaSpeechDefaultCatalogGate.summary.missing_catalog_default_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">missing_catalog_default_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaSpeechDefaultCatalogGate.summary.review_required_default_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review_required_default_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaSpeechDefaultCatalogGate.summary.future_family_gap_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">future_family_gap_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeAihubMediaSpeechDefaultCatalogGate.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway_called</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Default model</TableHead>
+                        <TableHead>Catalog</TableHead>
+                        <TableHead>Budget</TableHead>
+                        <TableHead>Review</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {aihubMediaSpeechDefaultCatalogDefaultRows.map((row) => (
+                        <TableRow key={row.task}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.display_name}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.task}</div>
+                            <div className="mt-1 text-xs text-stone-500">
+                              {row.endpoint_ids.join(', ') || row.route_kind}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.default_model ?? '-'}</div>
+                            <div className="mt-1">{row.canonical_model ?? '-'}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.default_catalog_status)}>
+                              {row.default_catalog_status}
+                            </Badge>
+                            <div className="mt-1">{row.default_pricing_status}</div>
+                            <div className="mt-1">{row.default_cost_tier}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.budget_mode)}>
+                              {row.budget_mode}
+                            </Badge>
+                            <div className="mt-1">known: {String(row.is_known_model)}</div>
+                            <div>operator_review: {String(row.requires_operator_review)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div>{row.default_release_action}</div>
+                            <div className="mt-1">{row.official_family}</div>
+                            <div className="mt-1">{row.endpoint_gap_codes.join(', ') || '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.recommended_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review items</h3>
+                    <div className="space-y-2">
+                      {aihubMediaSpeechDefaultCatalogReviewItems.map((item) => (
+                        <div key={item.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{item.id}</div>
+                            <Badge variant="outline" className={priorityClass[item.priority] ?? 'bg-white'}>
+                              {item.priority}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.release_action}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.next_action}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {aihubMediaSpeechDefaultCatalogChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>
+                        privacy_boundary:{' '}
+                        {String(activeAihubMediaSpeechDefaultCatalogGate.privacy_boundary.metadata_only)}
+                      </div>
+                      <div>gateway_called: {String(activeAihubMediaSpeechDefaultCatalogGate.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeAihubMediaSpeechDefaultCatalogGate.summary.network_called)}</div>
+                      <div>configuration_written: {String(activeAihubMediaSpeechDefaultCatalogGate.summary.configuration_written)}</div>
+                      <div>default_changed: {String(activeAihubMediaSpeechDefaultCatalogGate.summary.default_changed)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {aihubMediaSpeechDefaultCatalogBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                      {aihubMediaSpeechDefaultCatalogClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeAihubMediaSpeechDefaultCatalogGate.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          validation_commands: {command}
                         </div>
                       ))}
                     </div>

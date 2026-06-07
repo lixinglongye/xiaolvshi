@@ -116,6 +116,12 @@ const geminiAliasCapabilityCoveragePanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
   'model-ops Gemini/NewAPI alias capability coverage section',
 );
+const aihubMediaSpeechDefaultCatalogGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
+  'model-ops AIHub media/speech default catalog gate section',
+);
 const observedGeminiCoverageGapQueuePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
@@ -1004,6 +1010,28 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'claims_default_route_changed', 'model-ops AIHub endpoint route default-change claim boundary'),
   () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops AIHub endpoint route gateway boundary'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops AIHub endpoint route no config-write boundary'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsAIHubMediaSpeechDefaultCatalogGate', 'model-ops AIHub media/speech default catalog gate type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsAIHubMediaSpeechDefaultCatalogDefaultRow', 'model-ops AIHub media/speech default catalog default row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsAIHubMediaSpeechDefaultCatalogReviewItem', 'model-ops AIHub media/speech default catalog review item type'),
+  () => assertIncludes(modelOpsApi, 'aihub_media_speech_default_catalog_gate?: ModelOpsAIHubMediaSpeechDefaultCatalogGate', 'model-ops AIHub media/speech default catalog response binding'),
+  () => assertIncludes(modelOpsApi, 'default_rows?: unknown', 'model-ops AIHub media/speech default catalog payload guard default rows'),
+  () => assertIncludes(modelOpsApi, 'review_items?: unknown', 'model-ops AIHub media/speech default catalog payload guard review items'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsAIHubMediaSpeechDefaultCatalogGate', 'model-ops AIHub media/speech default catalog getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/aihub-media-speech-default-catalog-gate', 'model-ops AIHub media/speech default catalog endpoint'),
+  () => assertIncludes(modelOpsPage, 'AIHub media/speech default catalog gate', 'model-ops AIHub media/speech default catalog panel'),
+  () => assertIncludes(modelOpsPage, 'activeAihubMediaSpeechDefaultCatalogGate', 'model-ops AIHub media/speech default catalog active binding'),
+  () => assertIncludes(modelOpsPage, 'aihubMediaSpeechDefaultCatalogDefaultRows', 'model-ops AIHub media/speech default catalog default row binding'),
+  () => assertIncludes(modelOpsPage, 'aihubMediaSpeechDefaultCatalogReviewItems', 'model-ops AIHub media/speech default catalog review item binding'),
+  () => assertIncludes(modelOpsPage, 'aihubMediaSpeechDefaultCatalogChecks', 'model-ops AIHub media/speech default catalog checks binding'),
+  () => assertIncludes(modelOpsPage, 'privacy_boundary', 'model-ops AIHub media/speech default catalog privacy boundary'),
+  () => assertIncludes(modelOpsPage, 'validation_commands', 'model-ops AIHub media/speech default catalog validation binding'),
+  () => assertIncludes(modelOpsPage, 'missing_catalog_default_count', 'model-ops AIHub media/speech default catalog gap summary'),
+  () => assertIncludes(modelOpsPage, 'future_family_gap_count', 'model-ops AIHub media/speech default catalog future gap summary'),
+  () => assertNotMatches(
+    aihubMediaSpeechDefaultCatalogGatePanel,
+    /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|request_body_value|response_body_value|headers_value|client_email|email|phone|identity|messages|content|file_url|media_url|download_url|signed_url|sample_text|input_excerpt|audio_bytes|image_bytes|video_bytes|binary_payload|base64|raw_audio|raw_image|audio_transcript|transcript_text|voice_sample)\b/i,
+    'model-ops AIHub media/speech default catalog gate no secrets or raw media/speech/request/model fields',
+  ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard type'),
   () => assertIncludes(modelOpsApi, 'gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard response binding'),
   () => assertIncludes(modelOpsApi, 'getModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard getter'),
@@ -1075,8 +1103,15 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
+      'model-ops AIHub media/speech default catalog follows AIHub endpoint route coverage',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
-      'model-ops gentxt routing guard follows AIHub endpoint route coverage',
+      'model-ops gentxt routing guard follows AIHub media/speech default catalog',
     ),
   () =>
     assertBefore(
@@ -1663,8 +1698,15 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
+      'model-ops AIHub media/speech default catalog follows AIHub endpoint coverage',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
-      'model-ops gentxt routing guard follows AIHub endpoint coverage',
+      'model-ops gentxt routing guard follows AIHub media/speech default catalog',
     ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate type'),
   () => assertIncludes(modelOpsApi, "id: 'modelops-gemini-cheap-first-coverage-gate' | string", 'model-ops Gemini cheap-first coverage gate typed id'),

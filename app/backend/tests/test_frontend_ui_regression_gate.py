@@ -61,6 +61,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Observed gateway model fit matrix" in rows["/model-ops"]["protected_panels"]
     assert "Runtime explicit model fit gate" in rows["/model-ops"]["protected_panels"]
     assert "AIHub endpoint route coverage gate" in rows["/model-ops"]["protected_panels"]
+    assert "AIHub media/speech default catalog gate" in rows["/model-ops"]["protected_panels"]
     assert "Gateway connection profile" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert "Model failure upgrade budget" in rows["/model-ops"]["protected_panels"]
@@ -131,14 +132,20 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps observed gateway model fit matrix UI evidence is metadata only" in payload_text
     assert "ModelOps runtime explicit model fit gate UI evidence is metadata only" in payload_text
     assert "ModelOps AIHub endpoint route coverage gate UI evidence is metadata only" in payload_text
+    assert "ModelOps AIHub media/speech default catalog gate UI evidence is metadata only" in payload_text
     assert "ModelOps gateway connection profile UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini official model family roadmap evidence UI evidence is metadata only" in payload_text
     assert "aihub-endpoint-route-coverage-gate-regresses" in payload_text
+    assert "aihub-media-speech-default-catalog-gate-regresses" in payload_text
     assert "observed-gateway-model-fit-matrix-regresses" in payload_text
     assert "runtime-explicit-model-fit-gate-regresses" in payload_text
     assert "gemini-official-model-family-roadmap-evidence-regresses" in payload_text
     assert "explicit over-budget exceptions" in payload_text
     assert "media/speech catalog review gaps" in payload_text
+    assert "future Live audio" in payload_text
+    assert "embedding" in payload_text
+    assert "explicit-review actions" in payload_text
+    assert "forbidden raw request/model/audio fields" in payload_text
     assert "review-only model boundaries" in payload_text
     assert "ModelOps observed Gemini coverage gap queue UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only" in payload_text

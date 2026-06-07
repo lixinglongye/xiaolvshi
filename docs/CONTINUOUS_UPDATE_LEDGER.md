@@ -313,6 +313,20 @@ configuration, shifting traffic, or including request/response bodies, headers,
 prompts, raw payloads, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
+Current AIHub media/speech default catalog evidence:
+`modelops-aihub-media-speech-default-catalog-gate` adds shipped required
+metadata-only release evidence at
+`/api/v1/aihub/models/aihub-media-speech-default-catalog-gate`. It reviews
+image, video, audio, transcription, future Live audio, and embedding default
+coverage against endpoint route coverage, local catalog status, explicit
+media/speech budget modes, official Gemini/Veo/TTS source anchors, default
+release actions, and review items. Non-catalog and future-route defaults remain
+explicit-review only without NewAPI, Gemini, OpenAI, Google, gateway, app-AI,
+model, or network calls, configuration writes, default changes, traffic shifts,
+request/response bodies, headers, prompts, raw payloads, audio, transcripts,
+legal text, model outputs, gateway responses, credentials, emails, or user
+identifiers.
+
 Current AIHub media/speech runtime routing evidence:
 `aihub-media-speech-runtime-routing` adds shipped runtime routing for video,
 audio, and transcription AIHub routes. The endpoints now use explicit

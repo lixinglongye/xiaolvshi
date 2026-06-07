@@ -43,6 +43,73 @@ def test_release_readiness_blocks_failed_required_check():
     assert result["failed_check_ids"] == ["frontend-typecheck"]
 
 
+def test_aihub_media_speech_default_catalog_gate_is_required_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-aihub-media-speech-default-catalog-gate"
+    ]
+    result = service.evaluate({"modelops-aihub-media-speech-default-catalog-gate": "not_run"})
+    checks = {check["id"]: check for check in result["checks"]}
+    check = checks["modelops-aihub-media-speech-default-catalog-gate"]
+
+    assert commands == [
+        {
+            "check_id": "modelops-aihub-media-speech-default-catalog-gate",
+            "command": "python -m pytest tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only AIHub media/speech default catalog gate evidence" in check["manual_note"]
+    assert "/api/v1/aihub/models/aihub-media-speech-default-catalog-gate" in check["manual_note"]
+    assert "future Live audio" in check["manual_note"]
+    assert "embedding default-review coverage" in check["manual_note"]
+    assert "official Gemini/Veo/TTS source anchors" in check["manual_note"]
+    assert "explicit-review only" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "Gemini" in check["manual_note"]
+    assert "OpenAI" in check["manual_note"]
+    assert "Google" in check["manual_note"]
+    assert "gateways" in check["manual_note"]
+    assert "app AI endpoints" in check["manual_note"]
+    assert "models" in check["manual_note"]
+    assert "network" in check["manual_note"]
+    assert "does not write configuration" in check["manual_note"]
+    assert "change defaults" in check["manual_note"]
+    assert "shift traffic" in check["manual_note"]
+    assert "request bodies" in check["manual_note"]
+    assert "response bodies" in check["manual_note"]
+    assert "headers" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "raw payloads" in check["manual_note"]
+    assert "audio" in check["manual_note"]
+    assert "transcripts" in check["manual_note"]
+    assert "model outputs" in check["manual_note"]
+    assert "gateway responses" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "emails" in check["manual_note"]
+    assert "user identifiers" in check["manual_note"]
+    assert "app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_aihub_media_speech_default_catalog_gate.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in check["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in check["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in check["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in check["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_MEDIA_SPEECH_DEFAULT_CATALOG_GATE.md" in check["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in check["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in check["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in check["evidence_paths"]
+
+
 def test_runtime_router_discovery_smoke_is_optional_release_evidence():
     service = ReleaseReadinessService()
     discovery_commands = [
