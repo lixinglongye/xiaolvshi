@@ -483,6 +483,35 @@ const checks = [
   () => assertIncludes(maintenancePage, 'credentials', 'legal RAG retrieval diagnostics credential boundary label'),
   () => assertIncludes(maintenancePage, 'includedBoundaryLabel(item.value)', 'legal RAG retrieval diagnostics false/not-included boundary binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate.validation_commands', 'legal RAG retrieval diagnostics validation binding'),
+  () => assertIncludes(maintenancePage, 'Legal RAG retrieval observation gate', 'legal RAG retrieval observation gate panel'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalRagRetrievalObservationGate', 'legal RAG retrieval observation API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagRetrievalObservationGate', 'legal RAG retrieval observation state binding'),
+  () => assertIncludes(maintenancePage, 'defaultLegalRagRetrievalObservationPayload', 'legal RAG retrieval observation sample payload'),
+  () => assertIncludes(maintenancePage, 'retrievalObservationPayloadText', 'legal RAG retrieval observation payload editor'),
+  () => assertIncludes(maintenancePage, 'Evaluate observations', 'legal RAG retrieval observation submit button'),
+  () => assertIncludes(maintenancePage, 'observation rows', 'legal RAG retrieval observation row count summary'),
+  () => assertIncludes(maintenancePage, 'retrieval_status_counts', 'legal RAG retrieval observation status distribution'),
+  () => assertIncludes(maintenancePage, 'release_action_counts', 'legal RAG retrieval observation release distribution'),
+  () => assertIncludes(maintenancePage, 'accepted_container_keys', 'legal RAG retrieval observation input contract'),
+  () => assertIncludes(maintenancePage, 'source_validation_counts', 'legal RAG retrieval observation source validation counts'),
+  () => assertIncludes(maintenancePage, 'hasForbiddenRetrievalObservationPayloadText', 'legal RAG retrieval observation forbidden key guard'),
+  () => assertIncludes(maintenancePage, 'source ids are accepted as inputs but are not returned', 'legal RAG retrieval observation source-id boundary copy'),
+  () => assertIncludes(maintenancePage, 'query content returned', 'legal RAG retrieval observation query boundary label'),
+  () => assertIncludes(maintenancePage, 'gateway payloads returned', 'legal RAG retrieval observation gateway payload boundary label'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
+      'retrieval diagnostics precedes retrieval observation gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG benchmark alignment scorecard</h2>',
+      'retrieval observation gate precedes benchmark alignment',
+    ),
   () => assertIncludes(maintenancePage, 'Legal RAG benchmark alignment scorecard', 'legal RAG benchmark alignment panel'),
   () => assertIncludes(maintenancePage, 'getLegalRagBenchmarkAlignment', 'legal RAG benchmark alignment API binding'),
   () => assertIncludes(maintenancePage, 'legalRagBenchmarkAlignment', 'legal RAG benchmark alignment state binding'),
@@ -625,6 +654,16 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'legal_rag_abstention_escalation_gate_status', 'legal RAG retrieval diagnostics abstention linkage type'),
   () => assertIncludes(maintenanceApi, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-retrieval-diagnostics-gate', 'legal RAG retrieval diagnostics endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagRetrievalObservationGate', 'legal RAG retrieval observation gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-observation-gate' | string", 'legal RAG retrieval observation gate id'),
+  () => assertIncludes(maintenanceApi, 'observation_rows', 'legal RAG retrieval observation rows type'),
+  () => assertIncludes(maintenanceApi, 'source_validation_counts', 'legal RAG retrieval observation source validation type'),
+  () => assertIncludes(maintenanceApi, 'retrieval_status_counts', 'legal RAG retrieval observation status counts type'),
+  () => assertIncludes(maintenanceApi, 'release_action_counts', 'legal RAG retrieval observation release counts type'),
+  () => assertIncludes(maintenanceApi, 'accepted_container_keys', 'legal RAG retrieval observation input contract type'),
+  () => assertIncludes(maintenanceApi, 'returns_source_ids', 'legal RAG retrieval observation no source id return boundary'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalRagRetrievalObservationGate', 'legal RAG retrieval observation POST helper'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-retrieval-observation-gate', 'legal RAG retrieval observation endpoint'),
   () => assertIncludes(maintenanceApi, 'LegalRagBenchmarkAlignment', 'legal RAG benchmark alignment type'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-benchmark-alignment' | string", 'legal RAG benchmark alignment id'),
   () => assertIncludes(maintenanceApi, 'alignment_rows', 'legal RAG benchmark alignment rows type'),
@@ -1539,8 +1578,14 @@ for (const check of checks) {
 const retrievalDiagnosticsPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-  'Legal RAG hallucination triage gate',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
   'maintenance Legal RAG retrieval diagnostics section',
+);
+const retrievalObservationPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG benchmark alignment scorecard</h2>',
+  'maintenance Legal RAG retrieval observation section',
 );
 const geminiCheapFirstCoveragePanel = sourceSection(
   modelOpsPage,
@@ -1697,7 +1742,7 @@ const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
 );
 const legalDocumentFactConsistencyPanel = sourceSection(
   maintenancePage,
-  'Legal document fact consistency benchmark',
+  '{legalDocumentFactConsistencyBenchmark && (',
   '<h2 className="text-xl font-black text-stone-950">Public benchmark sampler</h2>',
   'maintenance legal document fact consistency section',
 );
@@ -1721,6 +1766,11 @@ assertNotMatches(
   retrievalDiagnosticsPanel,
   /\b(raw_query|raw_context|raw_legal_text|unsafe_answer)(_text|_content|s)?\b/i,
   'maintenance Legal RAG retrieval diagnostics no raw query/context/legal text or unsafe answer fields',
+);
+assertNotMatches(
+  retrievalObservationPanel,
+  /\b(RAW_QUERY_SHOULD_NOT_LEAK|RAW_CONTEXT|sk-[A-Za-z0-9]{20,}|client@example\.com)\b/i,
+  'maintenance Legal RAG retrieval observation no raw sample text, secrets, or emails',
 );
 assertNotMatches(
   maintenancePage,
@@ -1839,7 +1889,7 @@ assertNotMatches(
 );
 assertNotMatches(
   legalDocumentFactConsistencyPanel,
-  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_output|raw_response|raw_prompt|prompt_payload|request_body|response_body|headers|document_text|fixture_text|sample_text|input_excerpt|output_text|generated_text|candidate_text)\b/i,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_output|raw_response|raw_prompt|prompt_payload|request_body|response_body|headers|document_text|fixture_text|sample_text|input_excerpt|output_text|candidate_text)\b/i,
   'maintenance legal document fact consistency no secrets or raw document/model fields',
 );
 assertNotMatches(

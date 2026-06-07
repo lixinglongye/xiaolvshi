@@ -67,10 +67,34 @@ prompts, model outputs, gateway payloads, account data, credentials, client
 material, or emails. It must not call NewAPI, Gemini, OpenAI, models, gateways,
 crawlers, or the network, and it must not download datasets.
 
+## Maintenance UI
+
+The maintenance evidence page exposes the gate through
+`evaluateLegalRagRetrievalObservationGate` and a review panel titled
+`Legal RAG retrieval observation gate`.
+
+The panel includes:
+
+- summary counts for ready, review, blocked, citation-gap, and top-k-gap rows
+- retrieval status and release action distributions
+- source-validation counts and per-row cheap-first action metadata
+- the accepted input contract and ignored raw-text fields
+- a sanitized sample payload editor for local maintainer review
+- explicit privacy and claim boundary booleans
+
+The UI path is review-only. It posts local metadata rows to the maintenance
+endpoint and must not display source ids, raw query text, retrieved context,
+raw legal text, prompts, model outputs, gateway payloads, credentials, emails,
+or client material.
+
 ## Validation
 
 ```bash
 cd app/backend
 python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py -q
 python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q
+
+cd ../frontend
+npm run typecheck
+npm run ui:regression
 ```

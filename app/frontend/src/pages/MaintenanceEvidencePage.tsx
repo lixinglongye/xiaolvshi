@@ -48,6 +48,7 @@ import {
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
+  evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
@@ -122,6 +123,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type LegalRagRetrievalObservationGate,
   type MaintenanceLegalRagExportReadinessPacket,
   type LegalRagHallucinationTriageGate,
   type LegalRagRetrievalDiagnosticsGate,
@@ -320,6 +322,52 @@ function validationEventCount(data: MaintenanceValidationEventEvidence | null, e
     .reduce((total, review) => total + (typeof review.count === 'number' ? review.count : 1), 0);
 }
 
+function defaultLegalRagRetrievalObservationPayload() {
+  return {
+    retrieval_observations: [
+      {
+        id: 'obs-ready',
+        query_intent: 'contract_primary_authority',
+        expected_source_count: 2,
+        selected_source_ids: ['src-contract-1', 'src-contract-2'],
+        citation_source_ids: ['src-contract-1', 'src-contract-2'],
+        top_k_depth: 4,
+        jurisdiction_match: true,
+        freshness_status: 'fresh',
+      },
+      {
+        id: 'obs-review',
+        query_intent: 'local_rule_review_due',
+        expected_source_count: 3,
+        selected_source_ids: ['src-local-1', 'src-local-2'],
+        citation_source_ids: ['src-local-1', 'src-local-2'],
+        top_k_depth: 2,
+        jurisdiction_match: false,
+        freshness_status: 'review_due',
+        signals: ['weak_citations'],
+      },
+      {
+        id: 'obs-blocked',
+        query_intent: 'empty_index_coverage',
+        expected_source_count: 2,
+        selected_source_ids: [],
+        citation_source_ids: ['src-unknown-1'],
+        top_k_depth: 0,
+        jurisdiction_match: false,
+        freshness_status: 'unknown',
+        unknown_source_ids: ['src-unknown-1'],
+        retrieval_gap: true,
+      },
+    ],
+  };
+}
+
+function hasForbiddenRetrievalObservationPayloadText(value: string) {
+  return /"(query|question|retrieved_context|raw_legal_text|prompt|model_output|gateway_response|headers|authorization|api_key|email)"\s*:/i.test(
+    value,
+  );
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 type MaintenanceLoadFailure = {
@@ -405,6 +453,8 @@ function Inner() {
     useState<LegalRagAbstentionEscalationGate | null>(null);
   const [legalRagRetrievalDiagnosticsGate, setLegalRagRetrievalDiagnosticsGate] =
     useState<LegalRagRetrievalDiagnosticsGate | null>(null);
+  const [legalRagRetrievalObservationGate, setLegalRagRetrievalObservationGate] =
+    useState<LegalRagRetrievalObservationGate | null>(null);
   const [legalRagBenchmarkAlignment, setLegalRagBenchmarkAlignment] =
     useState<LegalRagBenchmarkAlignment | null>(null);
   const [legalRagExportReadinessPacket, setLegalRagExportReadinessPacket] =
@@ -495,6 +545,11 @@ function Inner() {
   const [fixtureReviewPayloadText, setFixtureReviewPayloadText] = useState('');
   const [fixtureReviewError, setFixtureReviewError] = useState('');
   const [fixtureReviewLoading, setFixtureReviewLoading] = useState(false);
+  const [retrievalObservationPayloadText, setRetrievalObservationPayloadText] = useState(
+    JSON.stringify(defaultLegalRagRetrievalObservationPayload(), null, 2),
+  );
+  const [retrievalObservationError, setRetrievalObservationError] = useState('');
+  const [retrievalObservationLoading, setRetrievalObservationLoading] = useState(false);
   const [fixtureRunPlan, setFixtureRunPlan] = useState<LegalFixtureRunPlan | null>(null);
   const [fixtureRunReport, setFixtureRunReport] = useState<LegalFixtureRunReport | null>(null);
   const [fixtureResultArchive, setFixtureResultArchive] = useState<LegalFixtureResultArchive | null>(null);
@@ -793,6 +848,11 @@ function Inner() {
           label: 'Legal RAG retrieval diagnostics gate',
           run: getLegalRagRetrievalDiagnosticsGate,
           apply: (value) => setLegalRagRetrievalDiagnosticsGate(value as LegalRagRetrievalDiagnosticsGate),
+        },
+        {
+          label: 'Legal RAG retrieval observation gate',
+          run: () => evaluateLegalRagRetrievalObservationGate(defaultLegalRagRetrievalObservationPayload()),
+          apply: (value) => setLegalRagRetrievalObservationGate(value as LegalRagRetrievalObservationGate),
         },
         {
           label: 'Legal RAG benchmark alignment',
@@ -1139,6 +1199,46 @@ function Inner() {
       setNormalizerError(err instanceof SyntaxError ? 'Normalizer payload is not valid JSON.' : 'Response normalization failed.');
     } finally {
       setNormalizerLoading(false);
+    }
+  };
+
+  const loadRetrievalObservationSample = () => {
+    setRetrievalObservationError('');
+    setRetrievalObservationPayloadText(JSON.stringify(defaultLegalRagRetrievalObservationPayload(), null, 2));
+  };
+
+  const evaluateRetrievalObservationPayload = async () => {
+    setRetrievalObservationLoading(true);
+    setRetrievalObservationError('');
+    try {
+      const text = retrievalObservationPayloadText.trim();
+      if (!text) {
+        setRetrievalObservationError('Retrieval observation payload is empty.');
+        return;
+      }
+      if (hasForbiddenRetrievalObservationPayloadText(text)) {
+        setRetrievalObservationError(
+          'Observation payload must use metadata only: remove raw query, question, context, prompts, model output, headers, credentials, and emails.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text) as unknown;
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setRetrievalObservationError('Retrieval observation payload must be a JSON object.');
+        return;
+      }
+      setLegalRagRetrievalObservationGate(
+        await evaluateLegalRagRetrievalObservationGate(payload as Record<string, unknown>),
+      );
+    } catch (err) {
+      console.error(err);
+      setRetrievalObservationError(
+        err instanceof SyntaxError
+          ? 'Retrieval observation payload is not valid JSON.'
+          : 'Retrieval observation gate evaluation failed.',
+      );
+    } finally {
+      setRetrievalObservationLoading(false);
     }
   };
 
@@ -9368,6 +9468,238 @@ function Inner() {
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(legalRagRetrievalDiagnosticsGate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagRetrievalObservationGate &&
+              (() => {
+                const gate = legalRagRetrievalObservationGate;
+                const rows = gate.observation_rows ?? [];
+                const summary = gate.summary;
+                const statusCounts = Object.entries(gate.retrieval_status_counts ?? {});
+                const releaseCounts = Object.entries(gate.release_action_counts ?? {});
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'query content returned', value: privacy.returns_raw_query || privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'NewAPI called', value: privacy.calls_newapi },
+                  { label: 'retrieval quality claimed', value: claim.retrieval_quality_claimed },
+                  { label: 'automatic client delivery claimed', value: claim.automatic_client_delivery_claimed },
+                ];
+                const summaryCounts = [
+                  { label: 'observation rows', value: summary.observation_row_count },
+                  { label: 'ready rows', value: summary.ready_row_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'unexpected citations', value: summary.unexpected_cited_source_total },
+                  { label: 'missing selected', value: summary.missing_selected_source_total },
+                  { label: 'top-k gaps', value: summary.top_k_gap_count },
+                  { label: 'verify/escalate', value: summary.cheap_first_verify_or_escalate_count },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG retrieval observation gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only observed retrieval rows for source coverage, citation validation, release actions, and cheap-first routing
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Observation</TableHead>
+                            <TableHead>Retrieval / release</TableHead>
+                            <TableHead>Coverage</TableHead>
+                            <TableHead>Source validation</TableHead>
+                            <TableHead>Top-k / quality</TableHead>
+                            <TableHead>Cheap-first action</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.slice(0, 8).map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.query_intent)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1">
+                                <Badge variant="outline" className={statusClass[row.retrieval_status] ?? statusClass.not_run}>
+                                  {displayToken(row.retrieval_status)}
+                                </Badge>
+                                <div className="text-xs text-stone-600">release action: {displayToken(row.release_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>source coverage status: {displayToken(row.source_coverage_status)}</div>
+                                <div>score: {formatInline(row.source_coverage_score)}</div>
+                                <div>
+                                  selected/cited/expected: {formatInline(row.selected_source_count)} / {formatInline(row.cited_source_count)} /{' '}
+                                  {formatInline(row.expected_source_count)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>source validation: {displayToken(row.source_validation_status)}</div>
+                                <div>
+                                  unexpected:{' '}
+                                  {formatInline(row.source_validation_counts?.unexpected_source_count ?? 0)} / missing:{' '}
+                                  {formatInline(row.source_validation_counts?.missing_selected_source_count ?? 0)}
+                                </div>
+                                <div>
+                                  stale:{' '}
+                                  {formatInline(row.source_validation_counts?.stale_source_count ?? 0)} / unknown:{' '}
+                                  {formatInline(row.source_validation_counts?.unknown_source_count ?? 0)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>top_k_depth: {formatInline(row.top_k_depth)}</div>
+                                <div>top_k_depth_status: {displayToken(row.top_k_depth_status)}</div>
+                                <div>jurisdiction_status: {displayToken(row.jurisdiction_status)}</div>
+                                <div>freshness_status: {displayToken(row.freshness_status)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>decision: {displayToken(row.cheap_first_action.decision)}</div>
+                                <div>starts cheap: {String(row.cheap_first_action.starts_cheap)}</div>
+                                <div>operator review: {String(row.cheap_first_action.requires_operator_review)}</div>
+                                <div>model alias: {displayToken(row.cheap_first_action.recommended_model_alias)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[280px] flex-wrap gap-1.5">
+                                  {(row.reason_codes ?? []).slice(0, 6).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Status distributions</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div className="font-semibold text-stone-950">retrieval_status_counts</div>
+                          {statusCounts.map(([key, value]) => (
+                            <div key={key}>{displayToken(key)}: {formatInline(value)}</div>
+                          ))}
+                          <div className="pt-2 font-semibold text-stone-950">release_action_counts</div>
+                          {releaseCounts.map(([key, value]) => (
+                            <div key={key}>{displayToken(key)}: {formatInline(value)}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>accepted_container_keys: {(gate.input_contract.accepted_container_keys ?? []).join(', ')}</div>
+                          <div>accepted_row_fields: {(gate.input_contract.accepted_row_fields ?? []).slice(0, 10).join(', ')}</div>
+                          <div>raw_text_fields_ignored: {(gate.input_contract.raw_text_fields_ignored ?? []).join(', ')}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>{item.label}: {includedBoundaryLabel(item.value)}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).slice(0, 5).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <h3 className="text-sm font-black uppercase text-stone-500">Observation payload review</h3>
+                            <div className="mt-1 text-xs leading-5 text-stone-600">
+                              Submit sanitized retrieval metadata only; source ids are accepted as inputs but are not returned in the result rows.
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Button type="button" variant="outline" className="soft-button" onClick={loadRetrievalObservationSample}>
+                              <Clipboard className="h-4 w-4" />
+                              Load sample
+                            </Button>
+                            <Button
+                              type="button"
+                              className="law-button"
+                              onClick={evaluateRetrievalObservationPayload}
+                              disabled={retrievalObservationLoading}
+                            >
+                              {retrievalObservationLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
+                              Evaluate observations
+                            </Button>
+                          </div>
+                        </div>
+                        {retrievalObservationError && (
+                          <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                            {retrievalObservationError}
+                          </div>
+                        )}
+                        <Textarea
+                          value={retrievalObservationPayloadText}
+                          onChange={(event) => setRetrievalObservationPayloadText(event.target.value)}
+                          rows={14}
+                          className="font-mono text-xs"
+                        />
+                        <div className="mt-2 text-xs leading-5 text-stone-500">
+                          Blocked keys: query, question, retrieved_context, raw_legal_text, prompt, model_output, gateway_response, headers, authorization, api_key, email.
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div
                               key={command}
                               className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"

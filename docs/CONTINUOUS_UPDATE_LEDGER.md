@@ -1,5 +1,15 @@
 # Continuous Update Ledger
 
+Current Legal RAG retrieval observation UI slice:
+`legal-rag-retrieval-observation-ui-binding` exposes the metadata-only
+retrieval observation gate in the maintenance evidence page with a typed POST
+helper, sanitized sample payload, status/release distributions,
+source-validation counts, cheap-first action review, and explicit
+privacy/claim boundaries. It does not call models, gateways, NewAPI, Gemini, or
+the network; it does not download datasets or return source ids, raw query,
+retrieved context, legal text, prompts, model outputs, gateway payloads, or
+credentials.
+
 Current ModelOps first-paint slice:
 `modelops-first-paint-aggregate-binding` lets the `/model-ops` browser page
 render as soon as the aggregate `/api/v1/aihub/models` payload returns, then
