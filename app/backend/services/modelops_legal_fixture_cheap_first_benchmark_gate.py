@@ -10,6 +10,7 @@ from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
+from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
 from services.model_budget import COST_TIER_RANK
 
 
@@ -44,6 +45,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         document_benchmark_service: LegalDocumentBenchmarkSuiteService | None = None,
         document_coverage_service: LegalDocumentBenchmarkCoverageService | None = None,
         fact_consistency_service: LegalDocumentFactConsistencyBenchmarkService | None = None,
+        calibration_service: GeminiNewapiCheapFirstCalibrationService | None = None,
     ) -> None:
         self.quick_suite_service = quick_suite_service or LegalFixtureQuickSuiteService()
         self.model_matrix_service = model_matrix_service or LegalFixtureModelMatrixService()
@@ -52,6 +54,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         self.document_benchmark_service = document_benchmark_service or LegalDocumentBenchmarkSuiteService()
         self.document_coverage_service = document_coverage_service or LegalDocumentBenchmarkCoverageService()
         self.fact_consistency_service = fact_consistency_service or LegalDocumentFactConsistencyBenchmarkService()
+        self.calibration_service = calibration_service or GeminiNewapiCheapFirstCalibrationService()
 
     def build_gate(self, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         quick_suite = self.quick_suite_service.build_suite()
@@ -63,6 +66,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             self._fact_consistency_outputs(payload)
         )
         document_coverage = self.document_coverage_service.build_matrix()
+        calibration = self.calibration_service.build_calibration(self._calibration_payload(payload))
+        calibration_by_fixture = self._calibration_by_fixture(calibration)
         matrix_by_fixture = {
             row["fixture_id"]: row
             for row in model_matrix.get("fixtures", [])
@@ -75,9 +80,26 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         }
         source_by_fixture = self._source_by_fixture(quick_suite)
         gate_rows = [
-            self._gate_row(fixture, matrix_by_fixture.get(fixture["fixture_id"]), report_by_fixture.get(fixture["fixture_id"]), source_by_fixture)
+            self._gate_row(
+                fixture,
+                matrix_by_fixture.get(fixture["fixture_id"]),
+                report_by_fixture.get(fixture["fixture_id"]),
+                source_by_fixture,
+                calibration_by_fixture,
+            )
             for fixture in quick_suite.get("selected_fixtures", [])
             if isinstance(fixture, dict)
+        ]
+        linked_calibration_rows = self._linked_calibration_rows(calibration_by_fixture, gate_rows)
+        calibration_blocking_rows = [
+            row
+            for row in linked_calibration_rows
+            if row["status"] == "fail" or row["calibration_decision"] in {"hold_default_change"}
+        ]
+        calibration_warning_rows = [
+            row
+            for row in linked_calibration_rows
+            if row["status"] == "warn" or row["calibration_decision"] in {"hold_for_fixture_evidence"}
         ]
         blocking_rows = [row for row in gate_rows if row["gate_status"] == "blocked"]
         warning_rows = [row for row in gate_rows if row["gate_status"] in {"review_required", "not_run"}]
@@ -105,6 +127,9 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             and fact_consistency_status == "pass"
             and document_coverage["status"] == "ready"
             and document_coverage["summary"]["missing_document_type_count"] == 0
+            and not calibration_blocking_rows
+            and not calibration_warning_rows
+            and all(row["calibration_status"] == "pass" for row in gate_rows)
         )
         raw_input_field_count = self._raw_input_field_count(payload)
 
@@ -166,6 +191,13 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "fact_consistency_amount_mismatch_count": fact_consistency_evaluation["amount_mismatch_count"],
                 "fact_consistency_deadline_mismatch_count": fact_consistency_evaluation["deadline_mismatch_count"],
                 "fact_consistency_contradiction_count": fact_consistency_evaluation["contradiction_count"],
+                "calibration_status": calibration["status"],
+                "calibration_task_count": len(calibration.get("calibration_rows", [])),
+                "linked_calibration_task_count": len(linked_calibration_rows),
+                "calibration_blocking_count": len(calibration_blocking_rows),
+                "calibration_warning_count": len(calibration_warning_rows),
+                "calibration_pass_count": sum(1 for row in linked_calibration_rows if row["status"] == "pass"),
+                "calibration_payload_returned": False,
                 "document_coverage_status": document_coverage["status"],
                 "document_coverage_target_type_count": document_coverage["summary"]["target_document_type_count"],
                 "document_coverage_covered_type_count": document_coverage["summary"]["covered_document_type_count"],
@@ -242,6 +274,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                     "legal document fact consistency status pass",
                     "no document benchmark PII hard block",
                     "no amount, deadline, or contradiction blockers",
+                    "linked cheap-first calibration rows pass",
                     "known low-cost cheap-first model ladder",
                     "release evidence bundle reviewed",
                 ],
@@ -255,6 +288,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "max_parallel_requests": quick_suite["summary"]["max_parallel_requests"],
                 "document_benchmark_required_for_default_change": True,
                 "fact_consistency_required_for_default_change": True,
+                "calibration_required_for_default_change": True,
                 "default_change_evidence_allowed": default_change_evidence_allowed,
                 "configuration_write_allowed": False,
                 "gateway_call_allowed": False,
@@ -274,7 +308,9 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
                 "returns_fact_consistency_case_ids": True,
+                "returns_calibration_task_ids": True,
                 "returns_expected_signal_counts": True,
+                "returns_calibration_payloads": False,
                 "returns_raw_fixture_text": False,
                 "returns_fixture_excerpt": False,
                 "returns_document_snippets": False,
@@ -302,7 +338,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "legal_advice_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py -q",
+                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py -q",
                 "npm run typecheck",
                 "npm run ui:regression",
             ],
@@ -314,10 +350,19 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         matrix_row: dict[str, Any] | None,
         report_row: dict[str, Any] | None,
         source_by_fixture: dict[str, list[dict[str, str]]],
+        calibration_by_fixture: dict[str, list[dict[str, Any]]],
     ) -> dict[str, Any]:
         cheap_first = self._cheap_first_candidate(matrix_row)
         report_row = report_row or {}
-        reason_codes = self._reason_codes(fixture, matrix_row, report_row, cheap_first, source_by_fixture)
+        linked_calibration_rows = calibration_by_fixture.get(str(fixture["fixture_id"]), [])
+        reason_codes = self._reason_codes(
+            fixture,
+            matrix_row,
+            report_row,
+            cheap_first,
+            source_by_fixture,
+            linked_calibration_rows,
+        )
         gate_status = self._gate_status(report_row, reason_codes)
         return {
             "id": f"{fixture['fixture_id']}-cheap-first-benchmark-gate",
@@ -337,6 +382,16 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 source["sampling_state"]
                 for source in source_by_fixture.get(str(fixture["fixture_id"]), [])
             ],
+            "linked_calibration_task_ids": [row["id"] for row in linked_calibration_rows],
+            "calibration_status": self._calibration_status(linked_calibration_rows),
+            "calibration_decisions": [row["calibration_decision"] for row in linked_calibration_rows],
+            "calibration_release_gates": sorted(
+                {
+                    gate
+                    for row in linked_calibration_rows
+                    for gate in row.get("release_gate_links", [])
+                }
+            ),
             "model_matrix_status": (matrix_row or {}).get("status", "missing"),
             "run_report_status": report_row.get("smoke_status", "not_run"),
             "run_report_score": report_row.get("score"),
@@ -379,6 +434,16 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             if isinstance(value, dict):
                 return value
         return None
+
+    def _calibration_payload(self, payload: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        data = {}
+        for key in ("fixture_report", "selector_replay"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                data[key] = value
+        return data or None
 
     def _document_benchmark_rows(
         self,
@@ -557,6 +622,51 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 )
         return rows
 
+    def _calibration_by_fixture(self, calibration: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+        rows: dict[str, list[dict[str, Any]]] = {}
+        for row in calibration.get("calibration_rows", []):
+            if not isinstance(row, dict):
+                continue
+            row_data = {
+                "id": str(row.get("id") or "unknown-calibration-task"),
+                "status": str(row.get("status") or "missing"),
+                "calibration_decision": str(row.get("calibration_decision") or "unknown"),
+                "release_gate_links": [str(item) for item in row.get("release_gate_links", []) if str(item).strip()],
+            }
+            for fixture_id in row.get("fixture_ids", []):
+                fixture_key = str(fixture_id)
+                if fixture_key:
+                    rows.setdefault(fixture_key, []).append(row_data)
+        return rows
+
+    def _linked_calibration_rows(
+        self,
+        calibration_by_fixture: dict[str, list[dict[str, Any]]],
+        gate_rows: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        seen: set[str] = set()
+        rows: list[dict[str, Any]] = []
+        for gate_row in gate_rows:
+            for row in calibration_by_fixture.get(str(gate_row.get("fixture_id") or ""), []):
+                task_id = str(row.get("id") or "")
+                if not task_id or task_id in seen:
+                    continue
+                seen.add(task_id)
+                rows.append(row)
+        return rows
+
+    def _calibration_status(self, linked_rows: list[dict[str, Any]]) -> str:
+        if not linked_rows:
+            return "not_mapped"
+        if any(row["status"] == "fail" or row["calibration_decision"] == "hold_default_change" for row in linked_rows):
+            return "fail"
+        if any(
+            row["status"] == "warn" or row["calibration_decision"] == "hold_for_fixture_evidence"
+            for row in linked_rows
+        ):
+            return "warn"
+        return "pass"
+
     def _cheap_first_candidate(self, matrix_row: dict[str, Any] | None) -> dict[str, Any] | None:
         for candidate in (matrix_row or {}).get("candidate_ladder", []):
             if isinstance(candidate, dict) and candidate.get("role") == "cheap_first":
@@ -576,6 +686,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         report_row: dict[str, Any],
         cheap_first: dict[str, Any] | None,
         source_by_fixture: dict[str, list[dict[str, str]]],
+        linked_calibration_rows: list[dict[str, Any]],
     ) -> list[str]:
         codes: list[str] = []
         if not report_row or report_row.get("smoke_status") == "not_run":
@@ -605,12 +716,26 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             for source in source_by_fixture.get(str(fixture["fixture_id"]), [])
         ):
             codes.append("public-source-license-review")
+        calibration_status = self._calibration_status(linked_calibration_rows)
+        if calibration_status == "not_mapped":
+            codes.append("cheap-first-calibration-missing")
+        elif calibration_status == "fail":
+            codes.append("cheap-first-calibration-blocked")
+        elif calibration_status == "warn":
+            codes.append("cheap-first-calibration-attention-required")
+        else:
+            codes.append("cheap-first-calibration-pass")
         return _dedupe(codes) or ["fixture-gate-ready"]
 
     def _gate_status(self, report_row: dict[str, Any], reason_codes: list[str]) -> str:
         if not report_row or "fixture-not-run" in reason_codes:
             return "not_run"
-        blocking = {"fixture-smoke-failed", "high-priority-fixture-improvement", "missing-cheap-first-model"}
+        blocking = {
+            "fixture-smoke-failed",
+            "high-priority-fixture-improvement",
+            "missing-cheap-first-model",
+            "cheap-first-calibration-blocked",
+        }
         if any(code in blocking for code in reason_codes):
             return "blocked"
         review = {
@@ -619,6 +744,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             "cheap-first-cost-tier-review",
             "fixture-smoke-warning",
             "missing-expected-signals",
+            "cheap-first-calibration-attention-required",
+            "cheap-first-calibration-missing",
         }
         if any(code in review for code in reason_codes):
             return "review_required"

@@ -333,6 +333,7 @@ type MaintenanceLoadTask = {
 };
 
 const MAINTENANCE_TASK_TIMEOUT_MS = 45000;
+const MAINTENANCE_LOAD_CONCURRENCY = 6;
 
 function maintenanceLoadFailureMessage(reason: unknown) {
   const status =
@@ -356,6 +357,29 @@ function runMaintenanceLoadTask(task: MaintenanceLoadTask) {
   return Promise.race([task.run(), timeout]).finally(() => {
     if (timeoutId) clearTimeout(timeoutId);
   });
+}
+
+async function runMaintenanceLoadTasks(
+  tasks: MaintenanceLoadTask[],
+  onFailure: (failure: MaintenanceLoadFailure) => void,
+) {
+  const failures: MaintenanceLoadFailure[] = [];
+  for (let index = 0; index < tasks.length; index += MAINTENANCE_LOAD_CONCURRENCY) {
+    const batch = tasks.slice(index, index + MAINTENANCE_LOAD_CONCURRENCY);
+    await Promise.all(
+      batch.map(async (task) => {
+        try {
+          task.apply(await runMaintenanceLoadTask(task));
+        } catch (reason) {
+          console.error(`Maintenance evidence failed: ${task.label}`, reason);
+          const failure = { label: task.label, message: maintenanceLoadFailureMessage(reason) };
+          failures.push(failure);
+          onFailure(failure);
+        }
+      }),
+    );
+  }
+  return failures;
 }
 
 export default function MaintenanceEvidencePage() {
@@ -797,19 +821,9 @@ function Inner() {
         },
       ];
 
-      const failures: MaintenanceLoadFailure[] = [];
-      await Promise.all(
-        tasks.map(async (task) => {
-          try {
-            task.apply(await runMaintenanceLoadTask(task));
-          } catch (reason) {
-            console.error(`Maintenance evidence failed: ${task.label}`, reason);
-            const failure = { label: task.label, message: maintenanceLoadFailureMessage(reason) };
-            failures.push(failure);
-            setLoadFailures((current) => [...current, failure]);
-          }
-        }),
-      );
+      const failures = await runMaintenanceLoadTasks(tasks, (failure) => {
+        setLoadFailures((current) => [...current, failure]);
+      });
       setLoadFailures(failures);
     } catch (err) {
       console.error(err);
@@ -5043,6 +5057,20 @@ function Inner() {
                       value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.document_coverage_missing_type_count,
                     },
                     {
+                      label: 'calibration',
+                      value: displayToken(modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.calibration_status),
+                    },
+                    {
+                      label: 'linked calibration',
+                      value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.linked_calibration_task_count,
+                    },
+                    {
+                      label: 'calibration blockers',
+                      value:
+                        modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.calibration_blocking_count +
+                        modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.calibration_warning_count,
+                    },
+                    {
                       label: 'max parallel',
                       value: modelOpsLegalFixtureCheapFirstBenchmarkGate.summary.max_parallel_requests,
                     },
@@ -5066,6 +5094,7 @@ function Inner() {
                           <TableHead>Fixture</TableHead>
                           <TableHead>Gate</TableHead>
                           <TableHead>Cheap-first</TableHead>
+                          <TableHead>Calibration</TableHead>
                           <TableHead>Evidence signals</TableHead>
                           <TableHead>Release action</TableHead>
                         </TableRow>
@@ -5096,6 +5125,19 @@ function Inner() {
                               <div>tier {row.cheap_first_cost_tier ?? '-'}</div>
                               <div>known {String(row.cheap_first_known_model)}</div>
                               <div>premium escalation {String(row.premium_escalation_candidate)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.calibration_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.calibration_status)}
+                              </Badge>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                linked_calibration_task_ids: {row.linked_calibration_task_ids.join(', ') || '-'}
+                              </div>
+                              <div>calibration_decisions: {row.calibration_decisions.join(', ') || '-'}</div>
+                              <div>release gates: {row.calibration_release_gates.join(', ') || '-'}</div>
                             </TableCell>
                             <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
                               expected signals {row.expected_signal_count} / tasks {row.expected_task_count}
@@ -5131,6 +5173,14 @@ function Inner() {
                       <div>
                         gateway payloads:{' '}
                         {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_gateway_payloads ?? false)}
+                      </div>
+                      <div>
+                        calibration task ids:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_calibration_task_ids ?? false)}
+                      </div>
+                      <div>
+                        calibration payloads:{' '}
+                        {String(modelOpsLegalFixtureCheapFirstBenchmarkGate.privacy_boundary.returns_calibration_payloads ?? false)}
                       </div>
                       <div>
                         credentials:{' '}
@@ -5179,6 +5229,13 @@ function Inner() {
                         {String(
                           modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy
                             .fact_consistency_required_for_default_change,
+                        )}
+                      </div>
+                      <div>
+                        calibration required:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstBenchmarkGate.routing_policy
+                            .calibration_required_for_default_change,
                         )}
                       </div>
                       <div>
@@ -5491,6 +5548,20 @@ function Inner() {
                       ),
                     },
                     {
+                      label: 'fact status',
+                      value: displayToken(
+                        modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.fact_consistency_status,
+                      ),
+                    },
+                    {
+                      label: 'calibration',
+                      value: displayToken(modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.calibration_status),
+                    },
+                    {
+                      label: 'linked calibration',
+                      value: modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary.linked_calibration_task_count,
+                    },
+                    {
                       label: 'coverage gaps',
                       value:
                         modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.summary
@@ -5512,6 +5583,7 @@ function Inner() {
                           <TableHead>Fixture</TableHead>
                           <TableHead>Promotion</TableHead>
                           <TableHead>Proposed default</TableHead>
+                          <TableHead>Calibration</TableHead>
                           <TableHead>Review evidence</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -5537,7 +5609,8 @@ function Inner() {
                                 {displayToken(row.document_benchmark_status)}
                               </div>
                               <div className="text-xs leading-5 text-stone-500">
-                                coverage {displayToken(row.document_coverage_status)}
+                                coverage {displayToken(row.document_coverage_status)} / fact{' '}
+                                {displayToken(row.fact_consistency_status)}
                               </div>
                             </TableCell>
                             <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
@@ -5547,6 +5620,19 @@ function Inner() {
                               <div>tier {row.proposed_cost_tier ?? '-'}</div>
                               <div>default evidence {String(row.default_change_evidence_allowed ?? false)}</div>
                               <div>premium escalation {String(row.premium_escalation_candidate ?? false)}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.calibration_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.calibration_status)}
+                              </Badge>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                                linked_calibration_task_ids: {row.linked_calibration_task_ids.join(', ') || '-'}
+                              </div>
+                              <div>calibration_decisions: {row.calibration_decisions.join(', ') || '-'}</div>
+                              <div>release gates: {row.calibration_release_gates.join(', ') || '-'}</div>
                             </TableCell>
                             <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
                               <div>{row.action}</div>
@@ -5591,6 +5677,20 @@ function Inner() {
                         )}
                       </div>
                       <div>
+                        requires_fact_consistency_pass:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision
+                            .requires_fact_consistency_pass ?? false,
+                        )}
+                      </div>
+                      <div>
+                        requires_cheap_first_calibration_pass:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.decision
+                            .requires_cheap_first_calibration_pass ?? false,
+                        )}
+                      </div>
+                      <div>
                         automatic default change:{' '}
                         {String(
                           modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.claim_boundary
@@ -5617,6 +5717,20 @@ function Inner() {
                         {String(
                           modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary
                             .returns_document_snippets ?? false,
+                        )}
+                      </div>
+                      <div>
+                        calibration task ids:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary
+                            .returns_calibration_task_ids ?? false,
+                        )}
+                      </div>
+                      <div>
+                        calibration payloads:{' '}
+                        {String(
+                          modelOpsLegalFixtureCheapFirstDefaultPromotionPacket.privacy_boundary
+                            .returns_calibration_payloads ?? false,
                         )}
                       </div>
                       <div>

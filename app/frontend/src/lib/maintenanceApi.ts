@@ -2937,6 +2937,10 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGateRow = {
   public_source_sampling_states: string[];
   model_matrix_status: string;
   run_report_status: string;
+  linked_calibration_task_ids: string[];
+  calibration_status: string;
+  calibration_decisions: string[];
+  calibration_release_gates: string[];
   run_report_score?: number | null;
   matched_signal_count: number;
   missing_signal_count: number;
@@ -3051,6 +3055,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
   returns_fixture_ids: boolean;
   returns_document_case_ids?: boolean;
   returns_fact_consistency_case_ids?: boolean;
+  returns_calibration_task_ids?: boolean;
   returns_expected_signal_counts: boolean;
   returns_raw_fixture_text: boolean;
   returns_fixture_excerpt: boolean;
@@ -3062,6 +3067,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGatePrivacyBoundary = {
   returns_raw_model_output: boolean;
   returns_gateway_payloads: boolean;
   returns_credentials: boolean;
+  returns_calibration_payloads?: boolean;
   external_dataset_downloads?: boolean;
   model_calls?: boolean;
   network_called: boolean;
@@ -3123,6 +3129,13 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     fact_consistency_amount_mismatch_count?: number;
     fact_consistency_deadline_mismatch_count?: number;
     fact_consistency_contradiction_count?: number;
+    calibration_status: string;
+    calibration_task_count: number;
+    linked_calibration_task_count: number;
+    calibration_blocking_count: number;
+    calibration_warning_count: number;
+    calibration_pass_count: number;
+    calibration_payload_returned: boolean;
     document_coverage_status: string;
     document_coverage_target_type_count: number;
     document_coverage_covered_type_count: number;
@@ -3158,6 +3171,7 @@ export type ModelOpsLegalFixtureCheapFirstBenchmarkGate = {
     max_parallel_requests: number;
     document_benchmark_required_for_default_change?: boolean;
     fact_consistency_required_for_default_change?: boolean;
+    calibration_required_for_default_change?: boolean;
     default_change_evidence_allowed?: boolean;
     configuration_write_allowed: boolean;
     gateway_call_allowed: boolean;
@@ -3180,6 +3194,11 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem = {
   gate_status: string;
   document_benchmark_status: string;
   document_coverage_status: string;
+  fact_consistency_status: string;
+  calibration_status: string;
+  linked_calibration_task_ids: string[];
+  calibration_decisions: string[];
+  calibration_release_gates: string[];
   promotion_status: string;
   default_change_evidence_allowed: boolean;
   premium_escalation_candidate: boolean;
@@ -3204,6 +3223,8 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
     default_change_allowed_by_packet: boolean;
     requires_gate_ready: boolean;
     requires_document_benchmark_pass: boolean;
+    requires_fact_consistency_pass?: boolean;
+    requires_cheap_first_calibration_pass: boolean;
     requires_document_coverage_ready: boolean;
   };
   method: {
@@ -3224,6 +3245,19 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
     document_benchmark_score: number;
     document_coverage_status: string;
     document_coverage_missing_type_count: number;
+    fact_consistency_status: string;
+    fact_consistency_score: number;
+    fact_consistency_case_count: number;
+    fact_consistency_blocking_case_count: number;
+    fact_consistency_amount_mismatch_count: number;
+    fact_consistency_deadline_mismatch_count: number;
+    fact_consistency_contradiction_count: number;
+    calibration_status: string;
+    calibration_task_count: number;
+    linked_calibration_task_count: number;
+    calibration_blocking_count: number;
+    calibration_warning_count: number;
+    calibration_pass_count: number;
     privacy_boundary_passed: boolean;
     raw_input_field_count: number;
     configuration_written: boolean;
@@ -3250,7 +3284,10 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
     metadata_only: boolean;
     returns_fixture_ids: boolean;
     returns_document_case_ids: boolean;
+    returns_fact_consistency_case_ids?: boolean;
+    returns_calibration_task_ids?: boolean;
     returns_raw_fixture_text: boolean;
+    returns_calibration_payloads?: boolean;
     returns_document_snippets: boolean;
     returns_candidate_text: boolean;
     returns_prompt_text: boolean;

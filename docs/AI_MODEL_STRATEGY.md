@@ -183,19 +183,23 @@ outputs, credentials, or emails.
 
 `modelops-legal-fixture-cheap-first-benchmark-gate` is the shipped
 metadata-only small legal-document cheap-first Gemini benchmark/risk gate
-evidence. It uses redacted fixture ids, document case ids, expected issue
-counts, document benchmark pass/fail counts, coverage-gap counts, cost metadata,
-and escalation metadata to decide whether a cheap-first result remains
-acceptable or needs review/escalation. It does not call NewAPI, Gemini, OpenAI,
-Google, gateways, or the network, and it does not include real legal text,
-fixture snippets, candidate generated text, prompts, model outputs, credentials,
-or emails.
+evidence. It uses redacted fixture ids, document case ids, fact-consistency case
+ids, expected issue counts, document benchmark pass/fail counts, coverage-gap
+counts, linked Gemini/NewAPI cheap-first calibration task ids, calibration
+decisions, calibration release gates, cost metadata, and escalation metadata to
+decide whether a cheap-first result remains acceptable or needs
+review/escalation. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or
+the network, and it does not include real legal text, fixture snippets,
+candidate generated text, prompts, calibration payloads, model outputs,
+credentials, or emails.
 
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
-promotion. It consumes the legal fixture gate and document benchmark metadata,
-then exposes only ids, statuses, counts, cost tiers, reason codes, and signoff
-roles. It never writes configuration, calls NewAPI, Gemini, OpenAI, Google,
+promotion. It consumes the legal fixture gate, document benchmark metadata,
+fact-consistency metadata, and linked cheap-first calibration metadata, then
+exposes only ids, statuses, counts, calibration decisions/release gates, cost
+tiers, reason codes, and signoff roles. It never writes configuration, calls
+NewAPI, Gemini, OpenAI, Google,
 gateways, or the network, shifts traffic, or claims that a default has been
 approved.
 

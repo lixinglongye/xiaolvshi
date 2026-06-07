@@ -192,6 +192,14 @@ async def get_oss_maintenance_evidence(
     }
 
 
+@router.get("/evidence")
+async def get_legacy_maintenance_evidence(
+    language: Literal["en", "zh"] = Query(default="en", description="Form answer language."),
+):
+    """Return OSS maintenance evidence for legacy clients that used /evidence."""
+    return await get_oss_maintenance_evidence(language)
+
+
 @router.get("/user-needs")
 async def get_user_needs_radar():
     """Return deterministic user-need priorities for roadmap and release planning."""

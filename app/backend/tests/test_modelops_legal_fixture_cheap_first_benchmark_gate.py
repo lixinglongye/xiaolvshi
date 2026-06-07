@@ -70,6 +70,11 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["summary"]["fact_consistency_status"] == "not_run"
     assert gate["summary"]["fact_consistency_case_count"] == 4
     assert gate["summary"]["fact_consistency_not_run_case_count"] == 4
+    assert gate["summary"]["calibration_status"] == "pass"
+    assert gate["summary"]["calibration_task_count"] == 6
+    assert gate["summary"]["linked_calibration_task_count"] == 4
+    assert gate["summary"]["calibration_blocking_count"] == 0
+    assert gate["summary"]["calibration_warning_count"] == 0
     assert gate["summary"]["default_change_evidence_allowed"] is False
     assert gate["document_benchmark_summary"]["raw_document_snippets_returned"] is False
     assert gate["document_benchmark_summary"]["raw_candidate_text_returned"] is False
@@ -81,7 +86,11 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["routing_policy"]["gateway_call_allowed"] is False
     assert gate["routing_policy"]["document_benchmark_required_for_default_change"] is True
     assert gate["routing_policy"]["fact_consistency_required_for_default_change"] is True
+    assert gate["routing_policy"]["calibration_required_for_default_change"] is True
+    assert "linked cheap-first calibration rows pass" in gate["routing_policy"]["default_evidence_requires"]
     assert all(row["gate_status"] == "not_run" for row in gate["gate_rows"])
+    assert all(row["calibration_status"] == "pass" for row in gate["gate_rows"])
+    assert all(row["linked_calibration_task_ids"] for row in gate["gate_rows"])
     assert all(row["gate_status"] == "not_run" for row in gate["document_benchmark_rows"])
     assert all(row["gate_status"] == "not_run" for row in gate["fact_consistency_rows"])
     assert all(row["raw_fixture_text_returned"] is False for row in gate["gate_rows"])
@@ -132,6 +141,10 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
     assert gate["summary"]["pass_count"] == 3
     assert gate["summary"]["default_evidence_allowed_count"] == 3
     assert gate["summary"]["default_change_evidence_allowed"] is True
+    assert gate["summary"]["calibration_status"] == "pass"
+    assert gate["summary"]["linked_calibration_task_count"] == 4
+    assert gate["summary"]["calibration_pass_count"] == 4
+    assert gate["summary"]["calibration_payload_returned"] is False
     assert gate["summary"]["document_benchmark_status"] == "pass"
     assert gate["summary"]["document_benchmark_score"] == 100
     assert gate["summary"]["document_benchmark_passed_case_count"] == 7
@@ -145,9 +158,58 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
         "fixture-low-text-pdf-page-small",
     ]
     assert all(row["default_change_evidence_allowed"] is True for row in gate["gate_rows"])
+    assert all(row["calibration_status"] == "pass" for row in gate["gate_rows"])
+    assert all("cheap-first-calibration-pass" in row["reason_codes"] for row in gate["gate_rows"])
     assert all(row["gate_status"] == "pass" for row in gate["document_benchmark_rows"])
     assert all(row["gate_status"] == "pass" for row in gate["fact_consistency_rows"])
     assert all("known-low-cost-gemini-cheap-first" in row["reason_codes"] for row in gate["gate_rows"])
+
+
+def test_legal_fixture_cheap_first_gate_blocks_default_evidence_when_linked_calibration_fails():
+    class FailingCalibrationService:
+        def build_calibration(self, payload=None):
+            return {
+                "status": "fail",
+                "calibration_rows": [
+                    {
+                        "id": "legal-review-balanced",
+                        "status": "fail",
+                        "calibration_decision": "hold_default_change",
+                        "fixture_ids": ["fixture-service-agreement-small", "fixture-lease-dispute-notice-small"],
+                        "release_gate_links": ["gemini-newapi-selector-replay"],
+                    },
+                    {
+                        "id": "ocr-assist",
+                        "status": "pass",
+                        "calibration_decision": "keep_cheap_first_default",
+                        "fixture_ids": ["fixture-low-text-pdf-page-small"],
+                        "release_gate_links": ["gemini-newapi-selector-replay"],
+                    },
+                ],
+            }
+
+    gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService(
+        calibration_service=FailingCalibrationService()
+    ).build_gate(
+        {
+            "observations": _passing_observations(),
+            "document_benchmark_outputs": _passing_document_outputs(),
+            "document_fact_consistency_outputs": _passing_fact_consistency_outputs(),
+        }
+    )
+    rows = {row["fixture_id"]: row for row in gate["gate_rows"]}
+
+    assert gate["status"] == "blocked"
+    assert gate["summary"]["calibration_status"] == "fail"
+    assert gate["summary"]["linked_calibration_task_count"] == 2
+    assert gate["summary"]["calibration_blocking_count"] == 1
+    assert gate["summary"]["default_change_evidence_allowed"] is False
+    assert gate["default_change_evidence_allowed"] is False
+    assert rows["fixture-service-agreement-small"]["gate_status"] == "blocked"
+    assert rows["fixture-service-agreement-small"]["calibration_status"] == "fail"
+    assert rows["fixture-service-agreement-small"]["linked_calibration_task_ids"] == ["legal-review-balanced"]
+    assert "cheap-first-calibration-blocked" in rows["fixture-service-agreement-small"]["reason_codes"]
+    assert rows["fixture-low-text-pdf-page-small"]["calibration_status"] == "pass"
 
 
 def test_legal_fixture_cheap_first_gate_blocks_failed_selected_fixture():

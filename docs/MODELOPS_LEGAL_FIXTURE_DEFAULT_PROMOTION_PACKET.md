@@ -15,18 +15,21 @@ It is intentionally non-mutating:
 - `ModelOpsLegalFixtureCheapFirstBenchmarkGateService`
 - Legal fixture smoke observations, when supplied by local tests
 - Legal document benchmark status and coverage metadata
+- Legal document fact-consistency status and blocker metadata
+- Gemini/NewAPI cheap-first calibration status, linked task IDs, release gates,
+  and decisions
 - Privacy and claim-boundary flags from the source gate
 
 The packet accepts a prebuilt source gate through `source_gate`, `gate`, `cheap_first_benchmark_gate`, or `legal_fixture_cheap_first_benchmark_gate`. When no source gate is provided, it builds one from the submitted metadata payload.
 
 ## Status Rules
 
-- `ready_for_maintainer_review`: every promotion item has passing fixture evidence, document benchmark pass evidence, ready coverage, and metadata-only privacy boundaries.
+- `ready_for_maintainer_review`: every promotion item has passing fixture evidence, document benchmark pass evidence, fact-consistency pass evidence, cheap-first calibration pass evidence, ready coverage, and metadata-only privacy boundaries.
 - `review_required`: evidence exists but has watchlist or incomplete promotion readiness.
 - `blocked`: fixture evidence, document benchmark evidence, coverage, or privacy checks block default-promotion review.
 - `not_ready`: no usable fixture or document benchmark evidence has been supplied.
 
-`ready_for_maintainer_review` is not approval. It means a maintainer can review the packet and decide whether to apply a configuration change outside this service.
+`ready_for_maintainer_review` is not approval. It means a maintainer can review the packet and decide whether to apply a configuration change outside this service. The packet returns calibration task IDs, release gates, and decisions only; it never returns calibration payloads, prompts, gateway responses, or model output.
 
 ## API
 
@@ -37,7 +40,7 @@ The packet accepts a prebuilt source gate through `source_gate`, `gate`, `cheap_
 ## Validation
 
 ```bash
-python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py -q
+python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_legal_document_fact_consistency_benchmark.py -q
 python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q
 cd ../frontend && npm run typecheck && npm run ui:regression
 ```

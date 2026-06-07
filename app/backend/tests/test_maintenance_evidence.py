@@ -501,6 +501,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("sanitized model ids to canonical catalog ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("linked cheap-first calibration task ids" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal document fact consistency benchmark is metadata-only amount/date/fact consistency evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("case ids, counts, and reason codes only" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not write configuration" in guardrail for guardrail in profile["application_guardrails"])
@@ -544,6 +546,24 @@ def test_unknown_language_falls_back_to_english():
     service = MaintenanceEvidenceService()
 
     assert service.build_profile("fr")["form_answer"] == service.build_form_answer("en")
+
+
+def test_legacy_maintenance_evidence_alias_returns_profile():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.maintenance import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+
+    response = testclient.TestClient(app).get("/api/v1/maintenance/evidence?language=en")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["data"]["project"]["repository_url"] == REPOSITORY_URL
 
 
 def test_maintenance_evidence_route_returns_bilingual_form_answer():

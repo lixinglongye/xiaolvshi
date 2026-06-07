@@ -61,13 +61,14 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "requires_document_benchmark_pass": True,
                 "requires_document_coverage_ready": True,
                 "requires_fact_consistency_pass": True,
+                "requires_cheap_first_calibration_pass": True,
             },
             "method": {
                 "type": "modelops-legal-fixture-default-promotion-packet",
                 "notes": [
                     "Consumes the metadata-only legal fixture cheap-first benchmark gate.",
                     "Creates maintainer review items for cheap-first default evidence but never applies configuration.",
-                    "Requires fixture gate pass, document benchmark pass, fact consistency pass, ready document coverage, and privacy-safe boundaries.",
+                    "Requires fixture gate pass, document benchmark pass, fact consistency pass, cheap-first calibration pass, ready document coverage, and privacy-safe boundaries.",
                     "Does not call NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -119,6 +120,12 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                     fact_consistency_summary.get("contradiction_count")
                     or summary.get("fact_consistency_contradiction_count")
                 ),
+                "calibration_status": str(summary.get("calibration_status") or "not_run"),
+                "calibration_task_count": self._safe_int(summary.get("calibration_task_count")),
+                "linked_calibration_task_count": self._safe_int(summary.get("linked_calibration_task_count")),
+                "calibration_blocking_count": self._safe_int(summary.get("calibration_blocking_count")),
+                "calibration_warning_count": self._safe_int(summary.get("calibration_warning_count")),
+                "calibration_pass_count": self._safe_int(summary.get("calibration_pass_count")),
                 "privacy_boundary_passed": self._privacy_boundary_passed(privacy_boundary),
                 "raw_input_field_count": self._safe_int(summary.get("raw_input_field_count")),
                 "configuration_written": False,
@@ -142,6 +149,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "recommended_actions": self._recommended_actions(status, promotion_items),
             "source_gate_links": {
                 "cheap_first_benchmark_gate": "/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate",
+                "cheap_first_calibration": "/api/v1/aihub/models/cheap-first-calibration",
                 "document_benchmark_suite": "/api/v1/maintenance/legal-review-benchmark/document-fixtures",
                 "document_coverage": "/api/v1/maintenance/legal-review-benchmark/document-coverage",
                 "document_fact_consistency": "/api/v1/maintenance/legal-review-benchmark/document-fact-consistency",
@@ -151,7 +159,9 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
                 "returns_fact_consistency_case_ids": True,
+                "returns_calibration_task_ids": True,
                 "returns_raw_fixture_text": False,
+                "returns_calibration_payloads": False,
                 "returns_document_snippets": False,
                 "returns_candidate_text": False,
                 "returns_prompt_text": False,
@@ -176,7 +186,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "legal_advice_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py -q",
+                "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py -q",
                 "cd ../frontend && npm run typecheck && npm run ui:regression",
             ],
         }
@@ -234,6 +244,10 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "document_benchmark_status": document_status,
             "document_coverage_status": coverage_status,
             "fact_consistency_status": fact_consistency_status,
+            "calibration_status": str(row.get("calibration_status") or "not_mapped"),
+            "linked_calibration_task_ids": [str(item) for item in row.get("linked_calibration_task_ids", [])],
+            "calibration_decisions": [str(item) for item in row.get("calibration_decisions", [])],
+            "calibration_release_gates": [str(item) for item in row.get("calibration_release_gates", [])],
             "promotion_status": promotion_status,
             "default_change_evidence_allowed": bool(row.get("default_change_evidence_allowed"))
             and bool(gate.get("default_change_evidence_allowed")),
@@ -242,6 +256,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "legal fixture cheap-first gate pass",
                 "document benchmark pass",
                 "fact consistency pass",
+                "cheap-first calibration pass",
                 "document coverage ready",
                 "metadata-only privacy boundary pass",
                 "maintainer signoff outside this service",
@@ -271,6 +286,8 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             codes.append("document-benchmark-not-pass")
         if fact_consistency_status != "pass":
             codes.append("fact-consistency-not-pass")
+        if row.get("calibration_status") != "pass":
+            codes.append("cheap-first-calibration-not-pass")
         if coverage_status != "ready":
             codes.append("document-coverage-not-ready")
         if row.get("premium_escalation_candidate"):
@@ -291,6 +308,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "premium-escalation-review-required",
                 "promotion-packet-ready",
                 "public-source-license-review",
+                "cheap-first-calibration-pass",
             }
             if reason_codes == ["promotion-packet-ready"] or all(
                 code in review_ready_reason_codes
@@ -361,6 +379,13 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 str(fact_consistency_summary.get("status") or summary.get("fact_consistency_status") or "not_run"),
             ),
             (
+                "cheap-first-calibration-pass",
+                summary.get("calibration_status") == "pass"
+                and self._safe_int(summary.get("calibration_blocking_count")) == 0
+                and self._safe_int(summary.get("calibration_warning_count")) == 0,
+                str(summary.get("calibration_status") or "not_run"),
+            ),
+            (
                 "metadata-only-boundary",
                 self._privacy_boundary_passed(privacy_boundary),
                 "metadata_only",
@@ -381,6 +406,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             return False
         forbidden_flags = (
             "returns_raw_fixture_text",
+            "returns_calibration_payloads",
             "returns_document_snippets",
             "returns_candidate_text",
             "returns_prompt_text",

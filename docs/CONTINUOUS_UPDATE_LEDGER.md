@@ -1,5 +1,13 @@
 # Continuous Update Ledger
 
+Current ModelOps legal-fixture calibration slice:
+`modelops-legal-fixture-cheap-first-calibration-binding` links the legal fixture
+cheap-first benchmark gate and default promotion packet to Gemini/NewAPI
+cheap-first calibration evidence. Gate and promotion rows now show linked
+calibration task IDs, status, release gates, and decisions, and the maintenance
+page uses limited-concurrency evidence loading plus a legacy `/maintenance/evidence`
+alias so stale local links do not surface as a broken maintenance page.
+
 Latest product-quality slice: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, and `legal-document-coverage-claim-policy` add a metadata-only legal document coverage matrix, maintenance route, tests, UI panel, and claim-review gate for low-resource fixture planning. The claim policy keeps broad, real-client, public-benchmark, and unsupported document coverage wording blocked.
 
 Follow-up slice: `legal-document-benchmark-gap-fixtures` adds synthetic evidence-catalog, settlement-agreement, legal-opinion, and defense-answer fixtures so the current local coverage matrix reaches 7/7 target document types. This still does not prove broad real-world document coverage or live model accuracy.
