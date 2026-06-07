@@ -74,6 +74,7 @@ from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueSe
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
+from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
 from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
 from services.model_ops_performance_budget import (
     ModelOpsPerformanceBudgetService,
@@ -209,6 +210,15 @@ def _model_ops_performance_budget_input(observations: Any = None) -> dict[str, A
     return data
 
 
+def _observed_gateway_model_ids(gateway_compatibility: dict[str, Any] | None = None) -> list[Any]:
+    gateway_compatibility = gateway_compatibility or ModelGatewayCompatibilityService().evaluate()
+    return [
+        item.get("model")
+        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
+        if item.get("model")
+    ]
+
+
 @router.get("/models")
 async def list_models():
     """
@@ -260,11 +270,7 @@ async def list_models():
         default_optimization,
     )
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
-    observed_gateway_models = [
-        item.get("model")
-        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
-        if item.get("model")
-    ]
+    observed_gateway_models = _observed_gateway_model_ids(gateway_compatibility)
     default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     gateway_probe_evaluation = model_gateway_probe_evaluation_registry.latest()
@@ -281,6 +287,9 @@ async def list_models():
         forecast,
     )
     observed_gemini_model_intake_queue = ModelOpsObservedGeminiModelIntakeQueueService().build_queue(
+        {"observed_models": observed_gateway_models}
+    )
+    observed_gemini_coverage_gap_queue = ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
         {"observed_models": observed_gateway_models}
     )
     gemini_newapi_alias_capability_coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
@@ -348,6 +357,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -434,6 +444,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
+        "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -566,6 +577,27 @@ async def evaluate_model_ops_observed_gemini_model_intake_queue(payload: dict[st
     return {
         "success": True,
         "data": ModelOpsObservedGeminiModelIntakeQueueService().build_queue(payload),
+    }
+
+
+@router.get("/models/observed-gemini-coverage-gap-queue")
+async def model_ops_observed_gemini_coverage_gap_queue():
+    """Return metadata-only Gemini family and cheap-first task coverage gaps."""
+    observed_gateway_models = _observed_gateway_model_ids()
+    return {
+        "success": True,
+        "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
+            {"observed_models": observed_gateway_models}
+        ),
+    }
+
+
+@router.post("/models/observed-gemini-coverage-gap-queue")
+async def evaluate_model_ops_observed_gemini_coverage_gap_queue(payload: dict[str, Any]):
+    """Evaluate sanitized observed Gemini ids into family and cheap-first task coverage gaps."""
+    return {
+        "success": True,
+        "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(payload),
     }
 
 

@@ -79,6 +79,26 @@ def test_model_ops_readiness_warns_on_review_required_gemini_variant_matrix():
     assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
 
 
+def test_model_ops_readiness_warns_on_observed_gemini_coverage_gaps():
+    signals = _signals("pass")
+    signals["observed_gemini_coverage_gap_queue"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 1, "fail_count": 0, "gap_item_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["observed-gemini-coverage-gap"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "observed-gemini-coverage-gap-queue" in result["warning_check_ids"]
+    assert "observed-gemini-coverage-gap-queue" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["source_key"] == "observed_gemini_coverage_gap_queue"
+    assert result["warning_drilldown"][0]["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
+
+
 def test_model_ops_readiness_fails_on_blocking_component():
     signals = _signals("pass")
     signals["cost_guardrails"] = {
@@ -198,6 +218,11 @@ def test_model_ops_route_includes_readiness():
     assert "gemini_newapi_alias_capability_coverage" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "observed_gemini_coverage_gap_queue" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert payload["observed_gemini_coverage_gap_queue"]["summary"]["configuration_written"] is False
+    assert payload["observed_gemini_coverage_gap_queue"]["summary"]["gateway_called"] is False
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["known_coverage_count"] >= 100
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["gateway_called"] is False
     replay_check = next(

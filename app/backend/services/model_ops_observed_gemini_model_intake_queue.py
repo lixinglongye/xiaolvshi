@@ -173,11 +173,14 @@ class ModelOpsObservedGeminiModelIntakeQueueService:
         return _dedupe(codes) or ["intake-ready"]
 
     def _intake_status(self, reason_codes: list[str]) -> str:
-        blocking = {"unknown-gemini-catalog-metadata", "price-metadata-missing"}
-        if any(code in blocking for code in reason_codes):
+        if "unknown-gemini-catalog-metadata" in reason_codes:
+            return "blocked"
+        if "price-metadata-missing" in reason_codes and "cheap-first-default-candidate" in reason_codes:
             return "blocked"
         review_only = {
             "lifecycle-preview",
+            "lifecycle-review",
+            "price-metadata-missing",
             "not-cheap-first-default",
             "variant-matrix-warning",
             "non-gemini-model-ignored",

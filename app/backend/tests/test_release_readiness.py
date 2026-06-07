@@ -869,6 +869,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-cost-impact": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-observed-gemini-model-intake-queue": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-observed-gemini-coverage-gap-queue": "python -m pytest tests/test_model_ops_observed_gemini_coverage_gap_queue.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_gemini_model_variant_matrix.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -1247,6 +1248,55 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/tests/test_maintenance_evidence.py" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-observed-gemini-model-intake-queue"]["evidence_paths"]
+    assert "metadata-only ModelOps observed Gemini coverage gap evidence" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["manual_note"]
+    assert "Gemini family coverage" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "high-frequency cheap-first task coverage" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["manual_note"]
+    assert "unknown/unpriced/preview/media risk" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["manual_note"]
+    assert "default-promotion review actions" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "Gemini" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "OpenAI" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "Google" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "gateways" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "network" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "real environment values" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "raw prompts" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "payloads" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "model outputs" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "credentials" in checks["modelops-observed-gemini-coverage-gap-queue"]["manual_note"]
+    assert "app/backend/services/model_ops_observed_gemini_coverage_gap_queue.py" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_ops_observed_gemini_model_intake_queue.py" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "app/backend/services/gemini_model_variant_matrix.py" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_observed_gemini_coverage_gap_queue.py" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GEMINI_COVERAGE_GAP_QUEUE.md" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-observed-gemini-coverage-gap-queue"]["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks[
+        "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
     assert "metadata-only Legal RAG authority and citation gate evidence" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "Gemini" in checks["legal-rag-authority-citation-gate"]["manual_note"]

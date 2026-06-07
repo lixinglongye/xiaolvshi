@@ -28,6 +28,7 @@ import {
   getCheapFirstCalibration,
   getGeminiCheapFirstCoverageGate,
   getGeminiNewApiAliasCapabilityCoverage,
+  getModelOpsObservedGeminiCoverageGapQueue,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
@@ -39,6 +40,7 @@ import {
   type GeminiNewApiAliasCapabilityCoverage,
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
+  type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryApprovalPacket,
@@ -429,6 +431,9 @@ function Inner() {
   const [observedGeminiModelIntakePayloadText, setObservedGeminiModelIntakePayloadText] = useState('');
   const [observedGeminiModelIntakeLoading, setObservedGeminiModelIntakeLoading] = useState(false);
   const [observedGeminiModelIntakeError, setObservedGeminiModelIntakeError] = useState('');
+  const [observedGeminiCoverageGapQueue, setObservedGeminiCoverageGapQueue] =
+    useState<ModelOpsObservedGeminiCoverageGapQueue | null>(null);
+  const [observedGeminiCoverageGapQueueError, setObservedGeminiCoverageGapQueueError] = useState('');
   const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
     useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
   const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
@@ -477,6 +482,8 @@ function Inner() {
     setGeminiVariantMatrix(null);
     setObservedGeminiModelIntakeError('');
     setObservedGeminiModelIntakeQueue(null);
+    setObservedGeminiCoverageGapQueueError('');
+    setObservedGeminiCoverageGapQueue(null);
     setGeminiAliasCapabilityCoverageError('');
     setGeminiAliasCapabilityCoverage(null);
     setGeminiCheapFirstCoverageGateError('');
@@ -502,6 +509,7 @@ function Inner() {
     try {
       const [
         modelOpsResult,
+        observedGeminiCoverageGapQueueResult,
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
         escalationBudgetResult,
@@ -510,6 +518,7 @@ function Inner() {
       ] =
         await Promise.allSettled([
         getModelOps(),
+        getModelOpsObservedGeminiCoverageGapQueue(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
         getModelOpsCheapFirstEscalationBudget(),
@@ -536,6 +545,16 @@ function Inner() {
         setGeminiDefaultCostImpact(modelOpsResult.value.gemini_default_cost_impact ?? null);
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
+        setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
+        if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
+          setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
+        } else {
+          console.error(observedGeminiCoverageGapQueueResult.reason);
+          setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
+          if (!modelOpsResult.value.observed_gemini_coverage_gap_queue) {
+            setObservedGeminiCoverageGapQueueError('Observed Gemini coverage gap queue failed to load.');
+          }
+        }
         if (geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
           setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
         } else {
@@ -567,6 +586,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
         setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
+        setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
         setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
@@ -616,6 +638,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
         console.error(geminiAliasCapabilityCoverageResult.reason);
         setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'rejected') {
+        console.error(observedGeminiCoverageGapQueueResult.reason);
+        setObservedGeminiCoverageGapQueueError('Observed Gemini coverage gap queue failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -1058,6 +1084,17 @@ function Inner() {
   const activeObservedGeminiModelIntakeQueue =
     observedGeminiModelIntakeQueue ?? data?.observed_gemini_model_intake_queue ?? null;
   const observedGeminiModelIntakeRows = activeObservedGeminiModelIntakeQueue?.queue_items ?? [];
+  const activeObservedGeminiCoverageGapQueue =
+    observedGeminiCoverageGapQueue ?? data?.observed_gemini_coverage_gap_queue ?? null;
+  const observedGeminiCoverageGapFamilyRows = activeObservedGeminiCoverageGapQueue?.family_rows ?? [];
+  const observedGeminiCoverageGapTaskRows = activeObservedGeminiCoverageGapQueue?.high_frequency_task_rows ?? [];
+  const observedGeminiCoverageGapItems = activeObservedGeminiCoverageGapQueue?.gap_items ?? [];
+  const observedGeminiCoverageGapPrivacyEntries = boundaryDisplayEntries(
+    activeObservedGeminiCoverageGapQueue?.privacy_boundary,
+  );
+  const observedGeminiCoverageGapClaimEntries = boundaryDisplayEntries(
+    activeObservedGeminiCoverageGapQueue?.claim_boundary,
+  );
   const activeGeminiAliasCapabilityCoverage =
     geminiAliasCapabilityCoverage ?? data?.gemini_newapi_alias_capability_coverage ?? null;
   const geminiAliasCapabilityRows = activeGeminiAliasCapabilityCoverage?.coverage_rows ?? [];
@@ -4640,6 +4677,264 @@ function Inner() {
                   </TableBody>
                 </Table>
               </div>
+            )}
+          </section>
+        )}
+
+        {(activeObservedGeminiCoverageGapQueue || observedGeminiCoverageGapQueueError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeObservedGeminiCoverageGapQueue
+                    ? `${activeObservedGeminiCoverageGapQueue.summary.gap_item_count} gaps / ${activeObservedGeminiCoverageGapQueue.summary.blocking_gap_count} blocking / ${activeObservedGeminiCoverageGapQueue.summary.family_gap_count} family gaps / ${activeObservedGeminiCoverageGapQueue.summary.cheap_first_task_gap_count} task gaps`
+                    : 'metadata-only observed Gemini coverage gap review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  observed-gemini-coverage-gap-queue
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeObservedGeminiCoverageGapQueue?.status)}>
+                {activeObservedGeminiCoverageGapQueue?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {observedGeminiCoverageGapQueueError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {observedGeminiCoverageGapQueueError}
+              </div>
+            )}
+
+            {activeObservedGeminiCoverageGapQueue && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.observed_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">observed models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.family_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">family rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.family_gap_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">family gaps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.high_frequency_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high-frequency tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.ready_cheap_first_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready cheap-first candidates</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.blocking_gap_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocking gaps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.review_gap_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review gaps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGeminiCoverageGapQueue.summary.unknown_gemini_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown Gemini ids</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Family</TableHead>
+                          <TableHead>Coverage</TableHead>
+                          <TableHead>Observed</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {observedGeminiCoverageGapFamilyRows.map((row) => (
+                          <TableRow key={row.family}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.family}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">
+                                high-frequency default: {String(row.high_frequency_default_allowed)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.coverage_status)}>
+                                {row.coverage_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.default_use}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {row.observed_model_count} observed / {row.catalog_model_count} catalog
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.observed_models.slice(0, 4).join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.recommended_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Coverage</TableHead>
+                          <TableHead>Candidates</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {observedGeminiCoverageGapTaskRows.map((row) => (
+                          <TableRow key={row.task}>
+                            <TableCell className="font-semibold text-stone-950">{row.task}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.coverage_status)}>
+                                {row.coverage_status.replace(/_/g, ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {row.ready_candidate_count} ready / {row.catalog_candidate_count} catalog
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.candidate_models.slice(0, 4).join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.recommended_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Gap</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Models</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Release links</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {observedGeminiCoverageGapItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="max-w-[320px]">
+                            <div className="font-semibold text-stone-950">{item.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              P{item.priority} / {item.severity} / {item.gap_type} / {item.scope}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(item.coverage_status)}>
+                              {item.coverage_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">owner: {item.owner}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] font-mono text-[11px] leading-5 text-stone-600">
+                            {item.model_ids.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                            <div>{item.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1">{item.recommended_action}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                            <div>{item.release_gate_links.join(', ') || '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {item.evidence_paths.slice(0, 2).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="text-xs leading-5 text-stone-600">
+                      Metadata-only model ids, family/task labels, local coverage gaps, and no-write/no-call flags.
+                    </div>
+                    <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                      {observedGeminiCoverageGapPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-xs leading-5 text-stone-600">
+                      configuration_written: {String(activeObservedGeminiCoverageGapQueue.summary.configuration_written)} / gateway_called:{' '}
+                      {String(activeObservedGeminiCoverageGapQueue.summary.gateway_called)} / network_called:{' '}
+                      {String(activeObservedGeminiCoverageGapQueue.summary.network_called)} / raw_payload_echoed:{' '}
+                      {String(activeObservedGeminiCoverageGapQueue.summary.raw_payload_echoed)}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {observedGeminiCoverageGapClaimEntries.length > 0 ? (
+                        observedGeminiCoverageGapClaimEntries.map(([key, value]) => (
+                          <div key={key}>
+                            {key}: {value == null ? '-' : String(value)}
+                          </div>
+                        ))
+                      ) : (
+                        <div>No live gateway, automatic default-change, benchmark, or production quality claim is made.</div>
+                      )}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeObservedGeminiCoverageGapQueue.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeObservedGeminiCoverageGapQueue.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </section>
         )}

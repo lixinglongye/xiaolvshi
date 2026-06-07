@@ -40,6 +40,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini model intake queue" in rows["/model-ops"]["protected_panels"]
+    assert "Observed Gemini coverage gap queue" in rows["/model-ops"]["protected_panels"]
     assert "Model catalog candidate patch plan" in rows["/model-ops"]["protected_panels"]
     assert "Model catalog candidate impact replay" in rows["/model-ops"]["protected_panels"]
     assert "Gemini/NewAPI alias capability coverage" in rows["/model-ops"]["protected_panels"]
@@ -119,6 +120,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "prompts" in payload_text
     assert "model output" in payload_text
     assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in payload_text
+    assert "ModelOps observed Gemini coverage gap queue UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only" in payload_text
     assert "ModelOps gateway request compatibility gate UI evidence is metadata only" in payload_text
     assert "request bodies" in payload_text

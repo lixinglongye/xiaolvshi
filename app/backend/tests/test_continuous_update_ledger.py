@@ -248,6 +248,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-change-review" in completed_ids
     assert "modelops-gemini-default-cost-impact" in completed_ids
     assert "modelops-observed-gemini-model-intake-queue" in completed_ids
+    assert "modelops-observed-gemini-coverage-gap-queue" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -497,6 +498,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-change-review" not in queue_ids
     assert "modelops-gemini-default-cost-impact" not in queue_ids
     assert "modelops-observed-gemini-model-intake-queue" not in queue_ids
+    assert "modelops-observed-gemini-coverage-gap-queue" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "runtime-route-reason-codes" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
@@ -1337,6 +1339,49 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-catalog-source-audit" in intake_queue_entry["release_gate_links"]
     assert "model-gateway-compatibility" in intake_queue_entry["release_gate_links"]
     assert "model-lifecycle-policy" in intake_queue_entry["release_gate_links"]
+    coverage_gap_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-observed-gemini-coverage-gap-queue"
+    )
+    assert coverage_gap_entry["size"] == "medium"
+    assert coverage_gap_entry["status"] == "shipped"
+    assert "metadata-only observed Gemini coverage gap queue evidence" in coverage_gap_entry["impact"]
+    assert "observed model intake queue" in coverage_gap_entry["impact"]
+    assert "Gemini variant matrix" in coverage_gap_entry["impact"]
+    assert "family coverage gaps" in coverage_gap_entry["impact"]
+    assert "high-frequency cheap-first task gaps" in coverage_gap_entry["impact"]
+    assert "unknown/unpriced/preview/media risk" in coverage_gap_entry["impact"]
+    assert "default-promotion review actions" in coverage_gap_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in coverage_gap_entry["impact"]
+    assert "configuration writes" in coverage_gap_entry["impact"]
+    assert "raw prompts" in coverage_gap_entry["impact"]
+    assert "payloads" in coverage_gap_entry["impact"]
+    assert "model outputs" in coverage_gap_entry["impact"]
+    assert "credentials" in coverage_gap_entry["impact"]
+    assert "app/backend/services/model_ops_observed_gemini_coverage_gap_queue.py" in coverage_gap_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_observed_gemini_model_intake_queue.py" in coverage_gap_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_model_variant_matrix.py" in coverage_gap_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_observed_gemini_coverage_gap_queue.py" in coverage_gap_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in coverage_gap_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in coverage_gap_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in coverage_gap_entry["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GEMINI_COVERAGE_GAP_QUEUE.md" in coverage_gap_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in coverage_gap_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in coverage_gap_entry["evidence_paths"]
+    assert "modelops-observed-gemini-coverage-gap-queue" in coverage_gap_entry["release_gate_links"]
+    assert "modelops-observed-gemini-model-intake-queue" in coverage_gap_entry["release_gate_links"]
+    assert "gemini-model-variant-matrix" in coverage_gap_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in coverage_gap_entry["release_gate_links"]
+    assert "gemini-newapi-alias-capability-coverage" in coverage_gap_entry["release_gate_links"]
+    assert "model-ops-readiness" in coverage_gap_entry["release_gate_links"]
+    assert "frontend-ui-regression" in coverage_gap_entry["release_gate_links"]
 
     route_telemetry_catalog_cost_entry = next(
         entry

@@ -32,6 +32,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "observed_gemini_model_intake_queue",
     ),
     ReadinessComponent(
+        "observed-gemini-coverage-gap-queue",
+        "Observed Gemini coverage gap queue",
+        "configuration",
+        "observed_gemini_coverage_gap_queue",
+    ),
+    ReadinessComponent(
         "gemini-newapi-alias-capability-coverage",
         "Gemini/NewAPI alias capability coverage",
         "configuration",
@@ -446,6 +452,7 @@ class ModelOpsReadinessService:
             "catalog_source_audit",
             "gemini_variant_matrix",
             "observed_gemini_model_intake_queue",
+            "observed_gemini_coverage_gap_queue",
             "gemini_newapi_alias_capability_coverage",
             "catalog_candidate_patch_plan",
             "catalog_candidate_impact_replay",

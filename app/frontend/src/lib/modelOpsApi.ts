@@ -428,6 +428,88 @@ export type ModelOpsObservedGeminiModelIntakeQueue = {
   validation_commands: string[];
 };
 
+export type ModelOpsObservedGeminiCoverageGapFamilyRow = {
+  family: string;
+  coverage_status: string;
+  catalog_model_count: number;
+  observed_model_count: number;
+  ready_cheap_first_candidate_count: number;
+  blocked_model_count: number;
+  review_required_model_count: number;
+  high_frequency_default_allowed: boolean;
+  default_use: string;
+  observed_models: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsObservedGeminiCoverageGapTaskRow = {
+  task: string;
+  coverage_status: string;
+  ready_candidate_count: number;
+  catalog_candidate_count: number;
+  candidate_models: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsObservedGeminiCoverageGapItem = {
+  id: string;
+  title: string;
+  severity: string;
+  priority: number;
+  gap_type: string;
+  scope: string;
+  coverage_status: string;
+  model_ids: string[];
+  reason_codes: string[];
+  recommended_action: string;
+  owner: string;
+  release_gate_links: string[];
+  evidence_paths: string[];
+  validation_commands: string[];
+};
+
+export type ModelOpsObservedGeminiCoverageGapQueue = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observed_model_count: number;
+    family_row_count: number;
+    covered_family_count: number;
+    family_gap_count: number;
+    high_frequency_task_count: number;
+    cheap_first_task_covered_count: number;
+    cheap_first_task_gap_count: number;
+    gap_item_count: number;
+    blocking_gap_count: number;
+    review_gap_count: number;
+    ready_cheap_first_candidate_count: number;
+    blocked_model_count: number;
+    review_model_count: number;
+    unknown_gemini_count: number;
+    unpriced_model_count: number;
+    preview_model_count: number;
+    media_review_count: number;
+    external_non_gemini_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  family_rows: ModelOpsObservedGeminiCoverageGapFamilyRow[];
+  high_frequency_task_rows: ModelOpsObservedGeminiCoverageGapTaskRow[];
+  gap_items: ModelOpsObservedGeminiCoverageGapItem[];
+  blocking_gap_ids: string[];
+  review_gap_ids: string[];
+  recommended_actions: string[];
+  source_summaries: Record<string, unknown>;
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type GeminiNewApiAliasCapabilityCoverageRow = {
   id: string;
   source: string;
@@ -3120,6 +3202,7 @@ export type ModelOpsResponse = {
   gateway_compatibility?: ModelGatewayCompatibility;
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
+  observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
   gemini_newapi_alias_capability_coverage?: GeminiNewApiAliasCapabilityCoverage;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
@@ -3202,6 +3285,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     calibration_rows?: unknown;
     model_rows?: unknown;
     family_rows?: unknown;
+    high_frequency_task_rows?: unknown;
+    gap_items?: unknown;
     validation_commands?: unknown;
     queue_items?: unknown;
     proposal_rows?: unknown;
@@ -3236,6 +3321,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
+      || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.high_frequency_task_rows) && Array.isArray(payload.gap_items))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.queue_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.proposal_rows) && Array.isArray(payload.validation_commands))
@@ -3397,6 +3483,13 @@ export async function getGeminiVariantMatrix(): Promise<GeminiVariantMatrix> {
 export async function getModelOpsObservedGeminiModelIntakeQueue(): Promise<ModelOpsObservedGeminiModelIntakeQueue> {
   return invokeModelOpsApi<ModelOpsObservedGeminiModelIntakeQueue>({
     url: '/api/v1/aihub/models/observed-gemini-model-intake-queue',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsObservedGeminiCoverageGapQueue(): Promise<ModelOpsObservedGeminiCoverageGapQueue> {
+  return invokeModelOpsApi<ModelOpsObservedGeminiCoverageGapQueue>({
+    url: '/api/v1/aihub/models/observed-gemini-coverage-gap-queue',
     method: 'GET',
   });
 }

@@ -116,6 +116,16 @@ it does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network,
 write real environment values, or include raw prompts, payloads, model outputs,
 or credentials.
 
+Current observed Gemini coverage gap evidence:
+`modelops-observed-gemini-coverage-gap-queue` adds shipped metadata-only
+coverage queue evidence for sanitized observed Gemini-like model ids. It joins
+the observed intake queue with the Gemini variant matrix, then records family
+coverage gaps, high-frequency cheap-first task gaps, unknown/unpriced/preview/
+media risk, and default-promotion review actions only. It does not call NewAPI,
+Gemini, OpenAI, Google, gateways, or the network, write configuration, shift
+traffic, or include raw prompts, payloads, model outputs, credentials, or
+emails.
+
 Current model catalog candidate patch evidence:
 `model-catalog-candidate-patch-plan` adds shipped metadata-only catalog
 maintenance evidence for unknown observed Gemini-like model ids. It records

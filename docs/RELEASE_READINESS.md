@@ -36,6 +36,14 @@ unknown observed Gemini-like model ids. It does not edit `model_catalog.py`,
 write configuration, call gateways or the network, shift traffic, or store raw
 payloads, prompts, legal text, model outputs, credentials, or emails.
 
+Additional optional evidence: `modelops-observed-gemini-coverage-gap-queue`
+records metadata-only Gemini family and high-frequency cheap-first task coverage
+gaps from sanitized observed model ids. It joins the observed intake queue with
+the Gemini variant matrix, flags unknown/unpriced/preview/media and
+premium/non-cheap review risk, and does not call NewAPI, Gemini, OpenAI, Google,
+gateways, or the network, write configuration, shift traffic, or store raw
+payloads, prompts, legal text, model outputs, credentials, or emails.
+
 Additional required evidence: `model-gateway-request-compatibility-gate`
 records metadata-only OpenAI-compatible Gemini/NewAPI request-shape checks for
 task defaults, gateway model compatibility, request parameter caps,

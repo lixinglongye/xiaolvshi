@@ -72,6 +72,7 @@ The readiness service checks:
 - gateway compatibility,
 - gateway health plan,
 - Gemini variant matrix,
+- observed Gemini coverage gap queue,
 - Gemini catalog source audit,
 - gateway probe evaluation,
 - Gemini lifecycle policy,

@@ -136,6 +136,15 @@ It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the network, does
 not write real environment values, and does not include raw prompts, payloads,
 model outputs, or credentials.
 
+`modelops-observed-gemini-coverage-gap-queue` is the shipped metadata-only
+coverage queue for observed Gemini-like model ids. It joins the observed intake
+queue with the Gemini variant matrix, then records Gemini family coverage gaps,
+high-frequency cheap-first task gaps, unknown/unpriced/preview/media risk, and
+premium or non-cheap default-promotion review actions. It does not call NewAPI,
+Gemini, OpenAI, Google, gateways, or the network, write configuration, shift
+traffic, or include raw prompts, payloads, model outputs, credentials, or
+emails.
+
 `model-catalog-candidate-patch-plan` is the shipped metadata-only catalog
 maintenance plan for unknown observed Gemini-like model ids. It creates manual
 `ModelProfile` candidate stubs, required source/pricing/lifecycle/capability
