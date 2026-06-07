@@ -241,6 +241,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
+    assert "modelops-observed-gateway-model-fit-matrix" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
@@ -1202,6 +1203,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_gateway_health_plan.py tests/test_aihub_runtime_routing.py "
         "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && "
         "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    observed_gateway_fit_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-observed-gateway-model-fit-matrix"
+    )
+    assert observed_gateway_fit_entry["size"] == "medium"
+    assert observed_gateway_fit_entry["status"] == "shipped"
+    assert "observed gateway model fit evidence" in observed_gateway_fit_entry["impact"]
+    assert "sanitized /models inventory ids" in observed_gateway_fit_entry["impact"]
+    assert "cheap-first task capabilities" in observed_gateway_fit_entry["impact"]
+    assert "lowest-cost observed candidates" in observed_gateway_fit_entry["impact"]
+    assert "missing task coverage" in observed_gateway_fit_entry["impact"]
+    assert "review-only Pro/preview/image/unknown/external/unpriced boundaries" in observed_gateway_fit_entry["impact"]
+    assert "live gateway calls" in observed_gateway_fit_entry["impact"]
+    assert "account inventory validation" in observed_gateway_fit_entry["impact"]
+    assert "configuration writes" in observed_gateway_fit_entry["impact"]
+    assert "default changes" in observed_gateway_fit_entry["impact"]
+    assert "traffic shifts" in observed_gateway_fit_entry["impact"]
+    assert "Authorization headers" in observed_gateway_fit_entry["impact"]
+    assert "request bodies" in observed_gateway_fit_entry["impact"]
+    assert "response bodies" in observed_gateway_fit_entry["impact"]
+    assert "prompts" in observed_gateway_fit_entry["impact"]
+    assert "raw payloads" in observed_gateway_fit_entry["impact"]
+    assert "model outputs" in observed_gateway_fit_entry["impact"]
+    assert "gateway responses" in observed_gateway_fit_entry["impact"]
+    assert "credentials" in observed_gateway_fit_entry["impact"]
+    assert "app/backend/services/modelops_observed_gateway_model_fit_matrix.py" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_observed_gateway_model_fit_matrix.py" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/backend/services/model_default_candidate_selector.py" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in observed_gateway_fit_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in observed_gateway_fit_entry["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GATEWAY_MODEL_FIT_MATRIX.md" in observed_gateway_fit_entry["evidence_paths"]
+    assert "modelops-observed-gateway-model-fit-matrix" in observed_gateway_fit_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in observed_gateway_fit_entry["release_gate_links"]
+    assert "model-gateway-connection-profile" in observed_gateway_fit_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in observed_gateway_fit_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_modelops_observed_gateway_model_fit_matrix.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     legal_micro_preflight_entry = next(

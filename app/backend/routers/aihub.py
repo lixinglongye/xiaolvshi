@@ -87,6 +87,7 @@ from services.model_ops_performance_budget import (
     ModelOpsPerformanceBudgetService,
     model_ops_performance_budget_registry,
 )
+from services.modelops_observed_gateway_model_fit_matrix import ModelOpsObservedGatewayModelFitMatrixService
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -301,6 +302,9 @@ async def list_models():
     observed_gemini_coverage_gap_queue = ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
         {"observed_models": observed_gateway_models}
     )
+    observed_gateway_model_fit_matrix = ModelOpsObservedGatewayModelFitMatrixService().build_matrix(
+        {"observed_models": observed_gateway_models}
+    )
     gemini_newapi_alias_capability_coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
         {"observed_models": observed_gateway_models}
     )
@@ -378,6 +382,7 @@ async def list_models():
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
+        "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -469,6 +474,7 @@ async def list_models():
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
+        "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
@@ -644,6 +650,25 @@ async def evaluate_model_ops_observed_gemini_coverage_gap_queue(payload: dict[st
     return {
         "success": True,
         "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(payload),
+    }
+
+
+@router.get("/models/observed-gateway-model-fit-matrix")
+async def modelops_observed_gateway_model_fit_matrix():
+    """Return metadata-only observed gateway model task-fit matrix evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["observed_gateway_model_fit_matrix"],
+    }
+
+
+@router.post("/models/observed-gateway-model-fit-matrix")
+async def evaluate_modelops_observed_gateway_model_fit_matrix(payload: dict[str, Any]):
+    """Evaluate sanitized gateway model inventory against cheap-first task fit."""
+    return {
+        "success": True,
+        "data": ModelOpsObservedGatewayModelFitMatrixService().build_matrix(payload),
     }
 
 

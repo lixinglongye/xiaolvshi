@@ -202,6 +202,16 @@ configuration or shift traffic, and does not include request/response bodies,
 headers, prompts, raw payloads, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
+`modelops-observed-gateway-model-fit-matrix` is the shipped metadata-only bridge
+from sanitized OpenAI-compatible gateway `/models` IDs to task policy fit. It
+maps observed model IDs to canonical Gemini catalog rows, cheapest observed
+task candidates, missing task coverage, and review-only Pro, preview, media,
+unknown, external, and unpriced boundaries. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, or the network, write
+configuration, shift traffic, validate live account inventory, or include
+request/response bodies, headers, prompts, raw payloads, legal text, model
+outputs, gateway responses, credentials, emails, or user identifiers.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

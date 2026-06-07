@@ -30,6 +30,7 @@ import {
   getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
   getModelOpsObservedGeminiCoverageGapQueue,
+  getModelOpsObservedGatewayModelFitMatrix,
   getModelOpsAIHubEndpointRouteCoverageGate,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
@@ -46,6 +47,7 @@ import {
   type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsObservedGeminiCoverageGapQueue,
+  type ModelOpsObservedGatewayModelFitMatrix,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
   type ModelOpsCheapFirstCanaryApprovalPacket,
@@ -440,6 +442,9 @@ function Inner() {
   const [observedGeminiCoverageGapQueue, setObservedGeminiCoverageGapQueue] =
     useState<ModelOpsObservedGeminiCoverageGapQueue | null>(null);
   const [observedGeminiCoverageGapQueueError, setObservedGeminiCoverageGapQueueError] = useState('');
+  const [observedGatewayModelFitMatrix, setObservedGatewayModelFitMatrix] =
+    useState<ModelOpsObservedGatewayModelFitMatrix | null>(null);
+  const [observedGatewayModelFitMatrixError, setObservedGatewayModelFitMatrixError] = useState('');
   const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
     useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
   const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
@@ -531,6 +536,7 @@ function Inner() {
       const [
         modelOpsResult,
         observedGeminiCoverageGapQueueResult,
+        observedGatewayModelFitMatrixResult,
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
         geminiCheapFirstRoutePreflightResult,
@@ -543,6 +549,7 @@ function Inner() {
         await Promise.allSettled([
         getModelOps(),
         getModelOpsObservedGeminiCoverageGapQueue(),
+        getModelOpsObservedGatewayModelFitMatrix(),
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
         getGeminiCheapFirstRoutePreflight(),
@@ -574,6 +581,7 @@ function Inner() {
         setGeminiVariantMatrix(modelOpsResult.value.gemini_variant_matrix ?? null);
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
         setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
+        setObservedGatewayModelFitMatrix(modelOpsResult.value.observed_gateway_model_fit_matrix ?? null);
         setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
         setAihubEndpointRouteCoverageGate(modelOpsResult.value.aihub_endpoint_route_coverage_gate ?? null);
         if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
@@ -583,6 +591,15 @@ function Inner() {
           setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
           if (!modelOpsResult.value.observed_gemini_coverage_gap_queue) {
             setObservedGeminiCoverageGapQueueError('Observed Gemini coverage gap queue failed to load.');
+          }
+        }
+        if (observedGatewayModelFitMatrixResult.status === 'fulfilled') {
+          setObservedGatewayModelFitMatrix(observedGatewayModelFitMatrixResult.value);
+        } else {
+          console.error(observedGatewayModelFitMatrixResult.reason);
+          setObservedGatewayModelFitMatrix(modelOpsResult.value.observed_gateway_model_fit_matrix ?? null);
+          if (!modelOpsResult.value.observed_gateway_model_fit_matrix) {
+            setObservedGatewayModelFitMatrixError('Observed gateway model fit matrix failed to load.');
           }
         }
         if (geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
@@ -643,6 +660,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
         setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && observedGatewayModelFitMatrixResult.status === 'fulfilled') {
+        setObservedGatewayModelFitMatrix(observedGatewayModelFitMatrixResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
         setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
@@ -710,6 +730,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'rejected') {
         console.error(observedGeminiCoverageGapQueueResult.reason);
         setObservedGeminiCoverageGapQueueError('Observed Gemini coverage gap queue failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && observedGatewayModelFitMatrixResult.status === 'rejected') {
+        console.error(observedGatewayModelFitMatrixResult.reason);
+        setObservedGatewayModelFitMatrixError('Observed gateway model fit matrix failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'rejected') {
         console.error(aihubEndpointRouteCoverageGateResult.reason);
@@ -1208,6 +1232,41 @@ function Inner() {
   );
   const aihubEndpointRouteClaimEntries = boundaryDisplayEntries(
     activeAihubEndpointRouteCoverageGate?.claim_boundary,
+  );
+  const activeObservedGatewayModelFitMatrix =
+    observedGatewayModelFitMatrix ?? data?.observed_gateway_model_fit_matrix ?? null;
+  const observedGatewayFitTaskRows = activeObservedGatewayModelFitMatrix?.task_fit_rows ?? [];
+  const observedGatewayFitModelRows = activeObservedGatewayModelFitMatrix?.observed_model_rows ?? [];
+  const observedGatewayFitChecks = activeObservedGatewayModelFitMatrix?.checks ?? [];
+  const observedGatewayFitPrivacyEntries = boundaryDisplayEntries(
+    activeObservedGatewayModelFitMatrix?.privacy_boundary,
+  );
+  const observedGatewayFitClaimEntries = boundaryDisplayEntries(
+    activeObservedGatewayModelFitMatrix?.claim_boundary,
+  );
+  const geminiNewApiRouteCoverageBridgeRows = useMemo(
+    () =>
+      observedGatewayFitTaskRows.map((row) => {
+        const aliasRow = geminiAliasTaskCoverageRows.find((item) => item.task === row.task);
+        const routeRow = geminiCheapFirstRouteRows.find((item) => item.task === row.task);
+        const endpointRow = aihubEndpointRouteRows.find(
+          (item) => item.task === row.task || (item.task === 'auto' && row.high_frequency),
+        );
+        return {
+          task: row.task,
+          alias_count: aliasRow?.alias_count ?? 0,
+          gateway_fit_status: row.gateway_fit_status,
+          cheapest_canonical_model: row.cheapest_canonical_model ?? row.configured_default_canonical ?? 'uncovered',
+          cheapest_cost_tier: row.cheapest_cost_tier ?? 'unknown',
+          cheap_first_aligned: routeRow?.cheap_first_aligned ?? row.gateway_fit_status === 'cheap_fit',
+          default_allowed_without_review: row.default_allowed_without_review,
+          uses_runtime_router: endpointRow?.uses_runtime_router ?? false,
+          returns_route_payloads: endpointRow?.returns_route_payloads ?? false,
+          route_gap_reason_codes: endpointRow?.route_gap_reason_codes ?? row.reason_codes,
+          review_required: row.review_required || Boolean(endpointRow?.route_gap_reason_codes?.length),
+        };
+      }),
+    [observedGatewayFitTaskRows, geminiAliasTaskCoverageRows, geminiCheapFirstRouteRows, aihubEndpointRouteRows],
   );
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
@@ -5956,6 +6015,238 @@ function Inner() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {activeGeminiCheapFirstRoutePreflight.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeObservedGatewayModelFitMatrix || observedGatewayModelFitMatrixError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Observed gateway model fit matrix</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeObservedGatewayModelFitMatrix
+                    ? `${activeObservedGatewayModelFitMatrix.summary.accepted_observed_model_count} observed / ${activeObservedGatewayModelFitMatrix.summary.cheap_first_covered_count} cheap-first covered / ${activeObservedGatewayModelFitMatrix.summary.missing_task_count} task gaps`
+                    : 'metadata-only observed gateway model fit'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeObservedGatewayModelFitMatrix?.id ?? 'modelops-observed-gateway-model-fit-matrix'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeObservedGatewayModelFitMatrix?.status)}>
+                {activeObservedGatewayModelFitMatrix?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {observedGatewayModelFitMatrixError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {observedGatewayModelFitMatrixError}
+              </div>
+            )}
+
+            {activeObservedGatewayModelFitMatrix && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.accepted_observed_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">accepted observed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.known_gemini_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">known Gemini</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.cheap_first_covered_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first covered</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.missing_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">missing tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.review_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.explicit_review_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeObservedGatewayModelFitMatrix.summary.warning_check_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">warnings</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <div className="border-b border-stone-950/10 px-4 py-3">
+                    <h3 className="text-sm font-black uppercase text-stone-500">
+                      Gemini/NewAPI cheap-first route coverage bridge
+                    </h3>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Fit</TableHead>
+                        <TableHead>Candidate</TableHead>
+                        <TableHead>Alias count</TableHead>
+                        <TableHead>Route flags</TableHead>
+                        <TableHead>Gaps</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiNewApiRouteCoverageBridgeRows.map((row) => (
+                        <TableRow key={row.task}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.task}</div>
+                            <div className="mt-1 text-xs text-stone-500">
+                              review_required: {String(row.review_required)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.gateway_fit_status.includes('missing') ? 'warn' : 'pass')}>
+                              {row.gateway_fit_status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.cheapest_canonical_model}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cheapest_cost_tier] ?? 'bg-white'}`}>
+                              {row.cheapest_cost_tier}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">
+                            alias_count: {row.alias_count}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>cheap_first_aligned: {String(row.cheap_first_aligned)}</div>
+                            <div>default_allowed_without_review: {String(row.default_allowed_without_review)}</div>
+                            <div>uses_runtime_router: {String(row.uses_runtime_router)}</div>
+                            <div>returns_route_payloads: {String(row.returns_route_payloads)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            route_gap_reason_codes: {row.route_gap_reason_codes.join(', ') || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Observed model</TableHead>
+                        <TableHead>Catalog</TableHead>
+                        <TableHead>Tasks</TableHead>
+                        <TableHead>Review</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {observedGatewayFitModelRows.slice(0, 12).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[280px]">
+                            <div className="break-all font-mono text-xs font-semibold text-stone-950">
+                              {row.observed_model}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-500">{row.model_family}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                            <div className="mt-1">{row.lifecycle_status}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.task_coverage.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>known_catalog_model: {String(row.known_catalog_model)}</div>
+                            <div>default_allowed_without_review: {String(row.default_allowed_without_review)}</div>
+                            <div>explicit_review_required: {String(row.explicit_review_required)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                            <div>{row.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1 text-stone-500">{row.recommended_action}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {observedGatewayFitChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>gateway_called: {String(activeObservedGatewayModelFitMatrix.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeObservedGatewayModelFitMatrix.summary.network_called)}</div>
+                      <div>configuration_written: {String(activeObservedGatewayModelFitMatrix.summary.configuration_written)}</div>
+                      <div>credentials_included: {String(activeObservedGatewayModelFitMatrix.summary.credentials_included)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {observedGatewayFitPrivacyEntries.slice(0, 6).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {observedGatewayFitClaimEntries.slice(0, 5).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeObservedGatewayModelFitMatrix.validation_commands.slice(0, 3).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

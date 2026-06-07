@@ -58,6 +58,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
+    assert "Observed gateway model fit matrix" in profile["release_management"]["release_readiness_controls"]
     assert "User need implementation priority queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need Gemini route coverage" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG authority citation gate" in profile["release_management"]["release_readiness_controls"]
@@ -244,7 +245,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "user-need route coverage" in route_coverage_signal["responsibility"]
     assert "runtime route reason-code evidence" in model_signal["description"]
     assert "safe gateway connection profile evidence" in model_signal["description"]
+    assert "observed gateway model fit matrix evidence" in model_signal["description"]
     assert "gateway connection profile review" in model_signal["responsibility"]
+    assert "observed gateway model fit matrix review" in model_signal["responsibility"]
     assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["description"]
     assert "AIHub endpoint runtime-router and route telemetry coverage evidence" in model_signal["description"]
     assert "route telemetry reason-code hotspot evidence" in model_signal["description"]
@@ -254,6 +257,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "AIHub route telemetry coverage review" in model_signal["responsibility"]
     assert "route telemetry reason-code hotspot review" in model_signal["responsibility"]
     assert "app/backend/services/model_runtime_router.py" in model_signal["evidence_paths"]
+    assert "app/backend/services/modelops_observed_gateway_model_fit_matrix.py" in model_signal["evidence_paths"]
+    assert "app/backend/tests/test_modelops_observed_gateway_model_fit_matrix.py" in model_signal["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GATEWAY_MODEL_FIT_MATRIX.md" in model_signal["evidence_paths"]
     assert "app/backend/services/route_telemetry_repository.py" in model_signal["evidence_paths"]
     assert "app/backend/services/route_telemetry_persistence_plan.py" in model_signal["evidence_paths"]
     assert "app/backend/services/release_readiness.py" in priority_signal["evidence_paths"]
@@ -447,6 +453,12 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("gateway connection profile is metadata-only OpenAI-compatible URL-shape evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("normalizes remote bare NewAPI/Gemini hosts to /v1" in guardrail for guardrail in profile["application_guardrails"])
     assert any("key presence with placeholders only" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("observed gateway model fit matrix is metadata-only inventory fit evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("cheap-first task capabilities" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("lowest-cost observed candidates" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("missing task coverage" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("review-only Pro/preview/image/unknown/external/unpriced boundaries" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("validating account inventory" in guardrail for guardrail in profile["application_guardrails"])
     assert any("user-need implementation priority queue is metadata-only planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("high-priority user needs, legal benchmark coverage gaps, cheap-first calibration/model routing risk, and product execution actions" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])

@@ -567,6 +567,14 @@ export type GeminiNewApiAliasCapabilityCoverage = {
     image_capable_alias_count: number;
     covered_task_count: number;
     high_frequency_task_count: number;
+    observed_model_candidate_count?: number;
+    accepted_observed_model_count?: number;
+    dropped_observed_model_count?: number;
+    rejected_sensitive_observed_model_count?: number;
+    rejected_invalid_observed_model_count?: number;
+    rejected_observed_model_count?: number;
+    observed_model_source_count?: number;
+    observed_model_extractor_version?: string;
     raw_payload_echoed: boolean;
     configuration_written: boolean;
     gateway_called: boolean;
@@ -577,6 +585,100 @@ export type GeminiNewApiAliasCapabilityCoverage = {
   capability_totals: Record<string, number>;
   task_alias_coverage: GeminiNewApiAliasCapabilityTaskCoverage[];
   accepted_alias_shapes: string[];
+  coverage_policy: Record<string, string>;
+  source_summaries?: {
+    observed_model_extraction?: GeminiVariantMatrixObservedModelExtraction;
+  };
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
+export type ModelOpsObservedGatewayModelFitTaskRow = {
+  id: string;
+  task: string;
+  route_mode: string;
+  high_frequency: boolean;
+  price_mode: string;
+  required_capabilities: string[];
+  preferred_capabilities: string[];
+  max_default_cost_tier: string;
+  configured_default_model: string;
+  configured_default_canonical?: string | null;
+  configured_default_observed: boolean;
+  gateway_candidate_count: number;
+  default_allowed_candidate_count: number;
+  review_only_candidate_count: number;
+  cheapest_gateway_model?: string | null;
+  cheapest_canonical_model?: string | null;
+  cheapest_cost_tier?: string | null;
+  gateway_fit_status: string;
+  default_allowed_without_review: boolean;
+  review_required: boolean;
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsObservedGatewayModelFitModelRow = {
+  id: string;
+  observed_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  gemini_like: boolean;
+  model_family: string;
+  cost_tier: string;
+  latency_tier: string;
+  lifecycle_status: string;
+  capabilities: string[];
+  task_coverage: string[];
+  default_allowed_without_review: boolean;
+  explicit_review_required: boolean;
+  reason_codes: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsObservedGatewayModelFitMatrix = {
+  id: 'modelops-observed-gateway-model-fit-matrix' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    observed_model_candidate_count: number;
+    accepted_observed_model_count: number;
+    rejected_sensitive_observed_model_count: number;
+    rejected_invalid_observed_model_count: number;
+    known_gemini_model_count: number;
+    unknown_gemini_like_count: number;
+    external_model_count: number;
+    default_allowed_model_count: number;
+    explicit_review_model_count: number;
+    task_count: number;
+    covered_task_count: number;
+    cheap_first_task_count: number;
+    cheap_first_covered_count: number;
+    missing_task_count: number;
+    review_task_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    raw_payload_echoed: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    credentials_included: boolean;
+  };
+  task_fit_rows: ModelOpsObservedGatewayModelFitTaskRow[];
+  observed_model_rows: ModelOpsObservedGatewayModelFitModelRow[];
+  checks: Array<{ id: string; status: string; reason: string; evidence_count?: number; evidence?: string[] }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_summaries: {
+    observed_model_extraction?: GeminiVariantMatrixObservedModelExtraction;
+  };
   coverage_policy: Record<string, string>;
   privacy_boundary: Record<string, boolean | string | number | null>;
   claim_boundary: Record<string, boolean | string | number | null>;
@@ -3555,6 +3657,7 @@ export type ModelOpsResponse = {
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
+  observed_gateway_model_fit_matrix?: ModelOpsObservedGatewayModelFitMatrix;
   gemini_newapi_alias_capability_coverage?: GeminiNewApiAliasCapabilityCoverage;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
@@ -3873,6 +3976,23 @@ export async function getModelOpsObservedGeminiCoverageGapQueue(): Promise<Model
   return invokeModelOpsApi<ModelOpsObservedGeminiCoverageGapQueue>({
     url: '/api/v1/aihub/models/observed-gemini-coverage-gap-queue',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsObservedGatewayModelFitMatrix(): Promise<ModelOpsObservedGatewayModelFitMatrix> {
+  return invokeModelOpsApi<ModelOpsObservedGatewayModelFitMatrix>({
+    url: '/api/v1/aihub/models/observed-gateway-model-fit-matrix',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsObservedGatewayModelFitMatrix(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsObservedGatewayModelFitMatrix> {
+  return invokeModelOpsApi<ModelOpsObservedGatewayModelFitMatrix>({
+    url: '/api/v1/aihub/models/observed-gateway-model-fit-matrix',
+    method: 'POST',
+    data: payload,
   });
 }
 

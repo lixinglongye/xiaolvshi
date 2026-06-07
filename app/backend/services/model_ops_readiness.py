@@ -44,6 +44,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "observed_gemini_coverage_gap_queue",
     ),
     ReadinessComponent(
+        "observed-gateway-model-fit-matrix",
+        "Observed gateway model fit matrix",
+        "configuration",
+        "observed_gateway_model_fit_matrix",
+    ),
+    ReadinessComponent(
         "gemini-newapi-alias-capability-coverage",
         "Gemini/NewAPI alias capability coverage",
         "configuration",
@@ -477,6 +483,7 @@ class ModelOpsReadinessService:
             "gemini_variant_matrix",
             "observed_gemini_model_intake_queue",
             "observed_gemini_coverage_gap_queue",
+            "observed_gateway_model_fit_matrix",
             "gemini_newapi_alias_capability_coverage",
             "gemini_cheap_first_route_preflight",
             "catalog_candidate_patch_plan",
@@ -536,7 +543,7 @@ class ModelOpsReadinessService:
         if warning_category == "canary_evidence_gap":
             return "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py tests/test_model_ops_cheap_first_canary_promotion_decision.py tests/test_model_ops_readiness.py -q"
         if warning_category == "catalog_pricing_review":
-            return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_gemini_model_variant_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
         if warning_category == "runtime_telemetry_review":
             return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":

@@ -99,6 +99,27 @@ def test_model_ops_readiness_warns_on_observed_gemini_coverage_gaps():
     assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
 
 
+def test_model_ops_readiness_warns_on_observed_gateway_fit_matrix_review():
+    signals = _signals("pass")
+    signals["observed_gateway_model_fit_matrix"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 2, "fail_count": 0, "missing_task_count": 2},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["task-capability-coverage", "review-only-model-boundary"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "observed-gateway-model-fit-matrix" in result["warning_check_ids"]
+    assert "observed-gateway-model-fit-matrix" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["source_key"] == "observed_gateway_model_fit_matrix"
+    assert result["warning_drilldown"][0]["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
+    assert "test_modelops_observed_gateway_model_fit_matrix.py" in result["warning_drilldown"][0]["validation_hint"]
+
+
 def test_model_ops_readiness_warns_on_gemini_route_preflight_review():
     signals = _signals("pass")
     signals["gemini_cheap_first_route_preflight"] = {

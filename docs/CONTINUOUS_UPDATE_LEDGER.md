@@ -177,6 +177,18 @@ claim live model quality, or include request/response bodies, headers, prompts,
 raw payloads, legal text, model outputs, gateway responses, credentials, emails,
 or user identifiers.
 
+Current observed gateway model fit evidence:
+`modelops-observed-gateway-model-fit-matrix` adds shipped metadata-only
+NewAPI/Gemini/OpenAI-compatible observed gateway model fit evidence. It maps
+sanitized `/models` inventory IDs to canonical catalog rows, cheapest observed
+task candidates, cheap-first coverage, missing task gaps, and review-only Pro,
+preview, media, unknown, external, or unpriced boundaries. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the
+network, validate live account inventory, write configuration, shift traffic, or
+include API keys, Authorization headers, request bodies, response bodies,
+prompts, raw payloads, legal text, model outputs, gateway responses, emails, or
+user identifiers.
+
 Current AIHub endpoint route coverage evidence:
 `modelops-aihub-endpoint-route-coverage-gate` adds shipped metadata-only
 endpoint route coverage evidence for text, streaming text, PDF, image, video,
