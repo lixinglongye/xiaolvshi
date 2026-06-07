@@ -95,8 +95,14 @@ const catalogCandidatePatchPlanPanel = sourceSection(
 const catalogCandidateImpactReplayPanel = sourceSection(
   modelOpsPage,
   'Model catalog candidate impact replay',
-  'Gateway health plan',
+  'Gateway connection profile',
   'model-ops catalog candidate impact replay section',
+);
+const gatewayConnectionProfilePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  'model-ops gateway connection profile section',
 );
 const geminiAliasCapabilityCoveragePanel = sourceSection(
   modelOpsPage,
@@ -747,6 +753,35 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'claims_default_route_changed', 'model-ops AIHub endpoint route default-change claim boundary'),
   () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops AIHub endpoint route gateway boundary'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops AIHub endpoint route no config-write boundary'),
+  () => assertIncludes(modelOpsApi, 'ModelGatewayConnectionProfile', 'model-ops gateway connection profile type'),
+  () => assertIncludes(modelOpsApi, 'ModelGatewayConnectionProfileRole', 'model-ops gateway connection profile role type'),
+  () => assertIncludes(modelOpsApi, 'gateway_connection_profile?: ModelGatewayConnectionProfile', 'model-ops gateway connection profile response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelGatewayConnectionProfile', 'model-ops gateway connection profile getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelGatewayConnectionProfile', 'model-ops gateway connection profile evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gateway-connection-profile', 'model-ops gateway connection profile endpoint'),
+  () => assertIncludes(modelOpsPage, 'Gateway connection profile', 'model-ops gateway connection profile panel'),
+  () => assertIncludes(modelOpsPage, 'gatewayConnectionProfile', 'model-ops gateway connection profile binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayConnectionRows', 'model-ops gateway connection role rows binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayConnectionChecks', 'model-ops gateway connection checks binding'),
+  () => assertIncludes(modelOpsPage, 'normalized_base_url_display', 'model-ops gateway connection normalized URL display binding'),
+  () => assertIncludes(modelOpsPage, 'base_url_was_normalized', 'model-ops gateway connection normalization flag'),
+  () => assertIncludes(modelOpsPage, 'remote_bare_url_normalized_to_v1', 'model-ops gateway connection bare remote normalization flag'),
+  () => assertIncludes(modelOpsPage, 'runtime_client_uses_normalized_base_url', 'model-ops gateway connection runtime normalization boundary'),
+  () => assertIncludes(modelOpsPage, 'runtime_base_url_source', 'model-ops gateway connection runtime source binding'),
+  () => assertIncludes(modelOpsPage, 'api_key_display', 'model-ops gateway connection key placeholder binding'),
+  () => assertIncludes(modelOpsPage, 'credentials_included', 'model-ops gateway connection credential boundary'),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Model catalog candidate impact replay</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>',
+    'model-ops gateway connection profile follows catalog impact replay',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+    'model-ops gateway connection profile precedes gateway health plan',
+  ),
   () =>
     assertBefore(
       modelOpsPage,
@@ -1425,6 +1460,11 @@ assertNotMatches(
   gatewayRequestCompatibilityPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_payload_value|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body_value|response_body|headers_value|client_email|phone)\b/i,
   'model-ops gateway request compatibility no secrets or raw request/body/prompt/model/legal fields',
+);
+assertNotMatches(
+  gatewayConnectionProfilePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body_value|response_body|headers_value|client_email|phone|identity)\b/i,
+  'model-ops gateway connection profile no secrets or raw request/response/prompt/model/legal fields',
 );
 assertNotMatches(
   routeTelemetryPanel,

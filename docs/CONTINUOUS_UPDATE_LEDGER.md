@@ -154,6 +154,17 @@ call NewAPI, Gemini, OpenAI, Google, gateways, or the network, write
 configuration, shift traffic, or include headers, request bodies, prompts, raw
 legal text, model outputs, payloads, emails, or credentials.
 
+Current gateway connection profile evidence:
+`model-gateway-connection-profile` adds shipped metadata-only OpenAI-compatible
+gateway connection evidence. It normalizes remote bare hosts such as
+`https://yibuapi.com` to `/v1` for runtime client setup, flags credential-bearing
+URLs and insecure remote HTTP, and reports key presence only through
+`{{APP_AI_KEY}}`. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app
+AI endpoints, or the network, write configuration, shift traffic, or include API
+keys, Authorization headers, request bodies, response bodies, prompts, raw
+payloads, legal text, model outputs, gateway responses, emails, or user
+identifiers.
+
 Current Gemini cheap-first route preflight evidence:
 `modelops-gemini-cheap-first-route-preflight` adds shipped metadata-only route
 preflight evidence for official source refresh notes, local Gemini task

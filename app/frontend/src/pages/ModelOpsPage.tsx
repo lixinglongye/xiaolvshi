@@ -1222,6 +1222,11 @@ function Inner() {
   const catalogCandidateImpactChecks = catalogCandidateImpactReplay?.checks ?? [];
   const catalogCandidateImpactPrivacyEntries = boundaryDisplayEntries(catalogCandidateImpactReplay?.privacy_boundary);
   const catalogCandidateImpactClaimEntries = boundaryDisplayEntries(catalogCandidateImpactReplay?.claim_boundary);
+  const gatewayConnectionProfile = data?.gateway_connection_profile ?? null;
+  const gatewayConnectionRows = gatewayConnectionProfile?.role_models ?? [];
+  const gatewayConnectionChecks = gatewayConnectionProfile?.checks ?? [];
+  const gatewayConnectionPrivacyEntries = boundaryDisplayEntries(gatewayConnectionProfile?.privacy_boundary);
+  const gatewayConnectionClaimEntries = boundaryDisplayEntries(gatewayConnectionProfile?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -6704,6 +6709,157 @@ function Inner() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {gatewayConnectionProfile && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {gatewayConnectionProfile.summary.base_url_configured ? 'base URL configured' : 'base URL missing'} /{' '}
+                  {gatewayConnectionProfile.summary.api_key_configured ? 'key placeholder ready' : 'key missing'} /{' '}
+                  {gatewayConnectionProfile.summary.cheap_first_ready_count} cheap-first roles ready
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(gatewayConnectionProfile.status)}>
+                {gatewayConnectionProfile.status}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="truncate font-mono text-sm font-black text-stone-950">
+                  {gatewayConnectionProfile.connection.normalized_base_url_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">normalized base URL</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(gatewayConnectionProfile.summary.remote_bare_url_normalized_to_v1)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">bare host to /v1</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(gatewayConnectionProfile.summary.v1_compatible_path)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">OpenAI path</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {gatewayConnectionProfile.connection.api_key_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">key display</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayConnectionProfile.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayConnectionProfile.summary.blocking_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Model</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Default</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {gatewayConnectionRows.map((row) => (
+                      <TableRow key={row.role}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.role}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            cheap_first_role: {String(row.cheap_first_role)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                          <div className="font-mono text-stone-950">{row.model}</div>
+                          <div className="font-mono text-[11px]">{row.canonical_model ?? '-'}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={costClass[row.cost_tier || ''] ?? 'bg-white'}>
+                            {row.cost_tier ?? 'unknown'}
+                          </Badge>
+                          <div className="mt-1 text-[11px] text-stone-500">{row.model_status}</div>
+                        </TableCell>
+                        <TableCell className="text-xs leading-5 text-stone-600">
+                          <div>cheap_first_ready: {String(row.cheap_first_ready)}</div>
+                          <div>default_allowed_without_review: {String(row.default_allowed_without_review)}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Connection checks</h3>
+                <div className="space-y-2">
+                  {gatewayConnectionChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Runtime boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>runtime_client_uses_normalized_base_url: {String(gatewayConnectionProfile.connection.runtime_client_uses_normalized_base_url)}</div>
+                  <div>runtime_base_url_source: {gatewayConnectionProfile.connection.runtime_base_url_source}</div>
+                  <div>base_url_was_normalized: {String(gatewayConnectionProfile.summary.base_url_was_normalized)}</div>
+                  <div>configuration_written: {String(gatewayConnectionProfile.summary.configuration_written)}</div>
+                  <div>gateway_called: {String(gatewayConnectionProfile.summary.gateway_called)}</div>
+                  <div>credentials_included: {String(gatewayConnectionProfile.summary.credentials_included)}</div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {gatewayConnectionPrivacyEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {gatewayConnectionClaimEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

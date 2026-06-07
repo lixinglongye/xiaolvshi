@@ -1165,6 +1165,45 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    gateway_connection_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-connection-profile"
+    )
+    assert gateway_connection_entry["size"] == "medium"
+    assert gateway_connection_entry["status"] == "shipped"
+    assert "OpenAI-compatible gateway connection profile evidence" in gateway_connection_entry["impact"]
+    assert "runtime base URL normalization" in gateway_connection_entry["impact"]
+    assert "https://yibuapi.com" in gateway_connection_entry["impact"]
+    assert "/v1 clients" in gateway_connection_entry["impact"]
+    assert "credential-bearing URLs" in gateway_connection_entry["impact"]
+    assert "insecure remote HTTP" in gateway_connection_entry["impact"]
+    assert "unknown cheap-first role models" in gateway_connection_entry["impact"]
+    assert "raw keys" in gateway_connection_entry["impact"]
+    assert "Authorization headers" in gateway_connection_entry["impact"]
+    assert "prompts" in gateway_connection_entry["impact"]
+    assert "request bodies" in gateway_connection_entry["impact"]
+    assert "response bodies" in gateway_connection_entry["impact"]
+    assert "model outputs" in gateway_connection_entry["impact"]
+    assert "gateway responses" in gateway_connection_entry["impact"]
+    assert "configuration writes" in gateway_connection_entry["impact"]
+    assert "app/backend/services/model_gateway_connection_profile.py" in gateway_connection_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_gateway_connection_profile.py" in gateway_connection_entry["evidence_paths"]
+    assert "app/backend/services/model_gateway_health_plan.py" in gateway_connection_entry["evidence_paths"]
+    assert "app/backend/services/aihub.py" in gateway_connection_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in gateway_connection_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gateway_connection_entry["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_CONNECTION_PROFILE.md" in gateway_connection_entry["evidence_paths"]
+    assert "model-gateway-connection-profile" in gateway_connection_entry["release_gate_links"]
+    assert "model-gateway-health-plan" in gateway_connection_entry["release_gate_links"]
+    assert "model-gateway-request-compatibility-gate" in gateway_connection_entry["release_gate_links"]
+    assert "model-ops-readiness" in gateway_connection_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in gateway_connection_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_gateway_connection_profile.py "
+        "tests/test_model_gateway_health_plan.py tests/test_aihub_runtime_routing.py "
+        "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && "
+        "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     legal_micro_preflight_entry = next(
         entry
         for entry in ledger["completed_updates"]

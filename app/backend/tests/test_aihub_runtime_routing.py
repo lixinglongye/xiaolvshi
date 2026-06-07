@@ -102,6 +102,19 @@ def _isolated_route_telemetry_storage(tmp_path, monkeypatch):
     monkeypatch.setattr(route_telemetry_repository.settings, "local_storage_dir", str(tmp_path))
 
 
+def test_aihub_service_normalizes_bare_remote_gateway_base_url(monkeypatch):
+    from services import aihub
+
+    monkeypatch.setattr(aihub.settings, "app_ai_base_url", "https://yibuapi.com")
+    monkeypatch.setattr(aihub.settings, "app_ai_key", "local-redacted-key")
+
+    service = AIHubService()
+
+    assert service.client is not None
+    assert str(service.client.base_url).rstrip("/") == "https://yibuapi.com/v1"
+    assert "local-redacted-key" not in str(service.client.base_url)
+
+
 @pytest.mark.asyncio
 async def test_gentxt_uses_declared_review_task_default_model():
     model_usage_registry.reset()

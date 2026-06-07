@@ -27,6 +27,45 @@ def test_gateway_health_plan_uses_placeholders_and_cheap_probe(monkeypatch):
     assert "sk-" not in str(plan)
 
 
+def test_gateway_health_plan_normalizes_bare_remote_gateway_url(monkeypatch):
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_base_url", "https://yibuapi.com")
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", "configured")
+
+    plan = ModelGatewayHealthPlanService().build_plan()
+
+    assert plan["status"] == "pass"
+    assert plan["summary"]["normalized_base_url"] == "https://yibuapi.com/v1"
+    assert plan["dry_run_contracts"][0]["url"] == "https://yibuapi.com/v1/models"
+    assert plan["dry_run_contracts"][1]["url"] == "https://yibuapi.com/v1/chat/completions"
+
+
+def test_gateway_health_plan_does_not_treat_v10_as_v1(monkeypatch):
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_base_url", "https://yibuapi.com/v10")
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", "configured")
+
+    plan = ModelGatewayHealthPlanService().build_plan()
+
+    assert plan["status"] == "warn"
+    assert "v1-path-shape" in plan["warning_check_ids"]
+
+
+def test_gateway_health_plan_strips_url_credentials_from_dry_run(monkeypatch):
+    monkeypatch.setattr(
+        model_gateway_health_plan.settings,
+        "app_ai_base_url",
+        "https://user:redacted@yibuapi.com?api_key=redacted-url-value",
+    )
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", "configured")
+
+    plan = ModelGatewayHealthPlanService().build_plan()
+    rendered = str(plan)
+
+    assert plan["summary"]["normalized_base_url"] == "https://yibuapi.com/v1"
+    assert plan["dry_run_contracts"][0]["url"] == "https://yibuapi.com/v1/models"
+    assert "user:redacted" not in rendered
+    assert "redacted-url-value" not in rendered
+
+
 def test_gateway_health_plan_warns_when_secret_setup_is_missing(monkeypatch):
     monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_base_url", None)
     monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", None)

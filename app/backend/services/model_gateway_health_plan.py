@@ -13,6 +13,10 @@ from services.model_catalog import (
     model_profile,
     task_default_model,
 )
+from services.model_gateway_connection_profile import (
+    has_openai_compatible_base_path,
+    normalize_openai_compatible_base_url,
+)
 
 
 LOW_RESOURCE_TASKS = ("cheap", "fast", "ocr", "classification")
@@ -153,6 +157,9 @@ class ModelGatewayHealthPlanService:
             if row["role"] in CHEAP_FIRST_ROLES and not row["cheap_first_aligned"] and row["is_known_model"]
         ]
         unknown_roles = [row["role"] for row in role_rows if not row["is_known_model"]]
+        normalized_base_url = self._normalized_base_url(base_url) or ""
+        normalized_path = urlparse(normalized_base_url).path.rstrip("/")
+        has_openai_path = has_openai_compatible_base_path(normalized_path)
         image_rows = [row for row in role_rows if row["role"] == "image"]
         image_row = image_rows[0] if image_rows else None
         image_ready = bool(
@@ -182,9 +189,9 @@ class ModelGatewayHealthPlanService:
             },
             {
                 "id": "v1-path-shape",
-                "status": "pass" if base_url and "/v1" in urlparse(base_url).path.rstrip("/") else "warn",
+                "status": "pass" if base_url and has_openai_path else "warn",
                 "reason": "Base URL includes an OpenAI-compatible /v1 path."
-                if base_url and "/v1" in urlparse(base_url).path.rstrip("/")
+                if base_url and has_openai_path
                 else "Use an OpenAI-compatible /v1 base URL such as https://yibuapi.com/v1.",
             },
             {
@@ -267,16 +274,11 @@ class ModelGatewayHealthPlanService:
         ]
 
     def _normalized_base_url(self, base_url: str) -> str | None:
-        value = base_url.strip().rstrip("/")
-        if not value:
-            return None
-        return value
+        return normalize_openai_compatible_base_url(base_url)
 
     def _display_base_url(self, base_url: str) -> str:
-        parsed = urlparse(base_url)
-        if not parsed.scheme or not parsed.netloc:
-            return base_url.strip()
-        return f"{parsed.scheme}://{parsed.netloc}{parsed.path.rstrip('/')}"
+        normalized = normalize_openai_compatible_base_url(base_url)
+        return normalized or base_url.strip()
 
     def _recommended_actions(self, blocking: list[dict[str, Any]], warnings: list[dict[str, Any]]) -> list[str]:
         if blocking:

@@ -23,6 +23,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ),
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
+    ReadinessComponent(
+        "gateway-connection-profile",
+        "Gateway connection profile",
+        "configuration",
+        "gateway_connection_profile",
+    ),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
     ReadinessComponent("gemini-variant-matrix", "Gemini variant matrix", "configuration", "gemini_variant_matrix"),
     ReadinessComponent(
@@ -519,7 +525,7 @@ class ModelOpsReadinessService:
         if warning_category == "release_evidence_review":
             return "Attach maintainer-reviewed release evidence before treating cheap-first model changes as ready."
         if warning_category == "configuration_review":
-            return "Resolve configuration, gateway compatibility, or template alignment warnings before release."
+            return "Resolve configuration, gateway connection, compatibility, or template alignment warnings before release."
         if warning_category == "resilience_review":
             return "Review fallback, replay, and escalation evidence before relying on model routing resilience."
         return f"Review {check['label']} before model-ops release."
@@ -540,7 +546,7 @@ class ModelOpsReadinessService:
         if warning_category == "release_evidence_review":
             return "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_default_change_queue.py tests/test_model_ops_readiness.py -q"
         if warning_category == "configuration_review":
-            return "python -m pytest tests/test_model_configuration_audit.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_configuration_audit.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q"
         if warning_category == "resilience_review":
             return "python -m pytest tests/test_model_routing_replay.py tests/test_model_fallback_chains.py tests/test_model_ops_readiness.py -q"
         return "python -m pytest tests/test_model_ops_readiness.py -q"

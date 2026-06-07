@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_catalog import resolve_model
+from services.model_gateway_connection_profile import normalize_openai_compatible_base_url
 from services.model_request_policy import resolve_generation_request_policy
 from services.model_reasoning_policy import resolve_reasoning_effort
 from services.model_route_telemetry import model_route_telemetry_registry
@@ -104,9 +105,10 @@ class AIHubService:
         app_ai_base_url = getattr(settings, "app_ai_base_url", None)
         app_ai_key = getattr(settings, "app_ai_key", None)
         if app_ai_base_url and app_ai_key:
+            normalized_base_url = normalize_openai_compatible_base_url(app_ai_base_url) or app_ai_base_url.rstrip("/")
             self.client = AsyncOpenAI(
                 api_key=app_ai_key,
-                base_url=app_ai_base_url.rstrip("/"),
+                base_url=normalized_base_url,
                 http_client=httpx.AsyncClient(
                     timeout=httpx.Timeout(float(settings.app_ai_request_timeout), connect=30.0),
                     trust_env=False,

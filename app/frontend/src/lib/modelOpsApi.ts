@@ -599,6 +599,70 @@ export type ModelGatewayHealthPlanRole = {
   reason: string;
 };
 
+export type ModelGatewayConnectionProfileRole = {
+  role: string;
+  model: string;
+  canonical_model?: string | null;
+  is_known_model: boolean;
+  cost_tier?: string | null;
+  model_status: string;
+  cheap_first_role: boolean;
+  cheap_first_ready: boolean;
+  default_allowed_without_review: boolean;
+  reason: string;
+};
+
+export type ModelGatewayConnectionProfile = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    base_url_configured: boolean;
+    api_key_configured: boolean;
+    normalized_base_url: string;
+    base_url_was_normalized: boolean;
+    remote_bare_url_normalized_to_v1: boolean;
+    v1_compatible_path: boolean;
+    configured_role_count: number;
+    cheap_first_role_count: number;
+    cheap_first_ready_count: number;
+    unknown_role_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+  };
+  connection: {
+    base_url_display: string;
+    normalized_base_url_display: string;
+    api_key_display: string;
+    runtime_base_url_source: string;
+    timeout_seconds?: number | null;
+    runtime_client_uses_normalized_base_url: boolean;
+  };
+  role_models: ModelGatewayConnectionProfileRole[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_env: Record<string, string>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlan = {
   status: string;
   method: {
@@ -3487,6 +3551,7 @@ export type ModelOpsResponse = {
   default_template_audit?: ModelDefaultTemplateAudit;
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
+  gateway_connection_profile?: ModelGatewayConnectionProfile;
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
@@ -3763,6 +3828,21 @@ export async function getModelGatewayProbeTemplate(): Promise<ModelGatewayProbeT
 export async function evaluateModelGatewayProbe(payload: Record<string, unknown>): Promise<ModelGatewayProbeEvaluation> {
   return invokeModelOpsApi<ModelGatewayProbeEvaluation>({
     url: '/api/v1/aihub/models/gateway-probe-evaluation',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelGatewayConnectionProfile(): Promise<ModelGatewayConnectionProfile> {
+  return invokeModelOpsApi<ModelGatewayConnectionProfile>({
+    url: '/api/v1/aihub/models/gateway-connection-profile',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelGatewayConnectionProfile(payload: Record<string, unknown>): Promise<ModelGatewayConnectionProfile> {
+  return invokeModelOpsApi<ModelGatewayConnectionProfile>({
+    url: '/api/v1/aihub/models/gateway-connection-profile',
     method: 'POST',
     data: payload,
   });

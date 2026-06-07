@@ -141,6 +141,27 @@ def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     assert result["warning_drilldown"][0]["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_gateway_connection_profile_review():
+    signals = _signals("pass")
+    signals["gateway_connection_profile"] = {
+        "status": "warn",
+        "summary": {"warn_count": 2, "fail_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["base-url-configured", "api-key-configured"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gateway-connection-profile" in result["warning_check_ids"]
+    assert "gateway-connection-profile" not in result["blocking_check_ids"]
+    assert result["warning_drilldown"][0]["source_key"] == "gateway_connection_profile"
+    assert result["warning_drilldown"][0]["warning_category"] == "configuration_review"
+    assert "gateway connection" in result["warning_drilldown"][0]["next_action"]
+    assert "test_model_gateway_connection_profile.py" in result["warning_drilldown"][0]["validation_hint"]
+    assert result["warning_drilldown"][0]["privacy_boundary"]["credentials_included"] is False
+
+
 def test_model_ops_readiness_fails_on_blocking_component():
     signals = _signals("pass")
     signals["cost_guardrails"] = {

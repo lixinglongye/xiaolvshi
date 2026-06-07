@@ -49,6 +49,7 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `default_optimization` 将能力矩阵和成本预测转成默认模型调优计划，指出哪个 env var 应该回到最便宜的可用 Gemini 模型，以及预计月度节省。
 `gateway_compatibility` 识别 `models/`、`google/`、`openrouter/google/` 等网关前缀形式，让本地成本和能力判断仍能映射到 canonical Gemini 模型。
 `gateway_health_plan` 检查 `APP_AI_BASE_URL`、`APP_AI_KEY` 是否已安全配置，生成 `/models` 和低价 JSON probe 的占位符请求，并确认高频任务仍使用便宜 Gemini 默认模型；它不会自动调用网关。
+`gateway_connection_profile` adds the runtime connection-shape guard before `gateway_health_plan`: a remote bare OpenAI-compatible host such as `https://yibuapi.com` is normalized to `/v1`, credential-bearing URLs are blocked in evidence, and key presence is shown only as `{{APP_AI_KEY}}`.
 `gateway_probe_evaluation` 接收维护者手动运行 `/v1/models` 和 tiny chat probe 后的脱敏结果，评估网关实际可用 Gemini 模型，并给出 cheap-first `.env` 推荐。
 `lifecycle_policy` 检查 Gemini/NewAPI 默认模型是否固定到稳定、具体、低价优先的模型 ID；preview 模型和 `latest` 别名只能作为显式实验，Gemini 1.x、1.5 和 2.0 代停用模型不得作为默认值。
 
