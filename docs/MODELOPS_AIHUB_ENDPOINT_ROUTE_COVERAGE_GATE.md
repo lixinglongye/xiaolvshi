@@ -29,11 +29,21 @@ The gate covers:
 - `POST /api/v1/aihub/genaudio`
 - `POST /api/v1/aihub/transcribe`
 
-Each row reports `uses_runtime_router`, `uses_budget_decision`, `records_route_telemetry`, `records_usage`, `returns_route_payloads`, `route_mode`, and `route_gap_reason_codes`.
+Each row reports `uses_runtime_router`, `uses_budget_decision`,
+`records_route_telemetry`, `records_usage`, `returns_route_payloads`,
+`returns_task_inference`, `returns_usage_units`, `route_mode`, and
+`route_gap_reason_codes`.
 
 ## Current Findings
 
-Text, streaming text, PDF analysis, image generation, video generation, audio generation, and transcription use runtime routing and route telemetry. Non-streaming text, video, audio, and transcription currently return route payload metadata to callers.
+Text, streaming text, PDF analysis, image generation, video generation, audio
+generation, and transcription use runtime routing and route telemetry.
+Non-streaming text, PDF analysis, image generation, video generation, audio
+generation, and transcription currently return route payload metadata to
+callers. Image, video, audio, and transcription responses also expose sanitized
+usage units for cost review without returning prompts, PDF bytes, image bytes,
+audio, transcripts, output URLs, request bodies, response bodies, headers,
+model outputs, or credentials.
 
 Video generation, audio generation, and transcription now use explicit media/speech budget tasks. Their default gateway model ids remain `model_not_in_local_catalog` review items until pricing, lifecycle, and gateway behavior are documented.
 
@@ -41,7 +51,9 @@ Video generation, audio generation, and transcription now use explicit media/spe
 
 This is metadata-only evidence. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network. It does not write configuration, shift traffic, or return request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.
 
-The gate does not claim that default routes changed or that media/speech defaults are price-benchmarked. It exposes route coverage status, remaining response payload gaps, and local catalog review items.
+The gate does not claim that default routes changed or that media/speech
+defaults are price-benchmarked. It exposes route coverage status, remaining
+stream metadata gaps, usage-unit coverage, and local catalog review items.
 
 ## Validation
 

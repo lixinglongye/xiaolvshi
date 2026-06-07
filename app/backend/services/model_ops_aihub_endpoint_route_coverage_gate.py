@@ -21,6 +21,8 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "records_route_telemetry": True,
         "records_usage": True,
         "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": False,
         "route_mode": "cheap_first_runtime",
         "route_gap_reason_codes": (),
     },
@@ -39,6 +41,8 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "records_route_telemetry": True,
         "records_usage": True,
         "returns_route_payloads": False,
+        "returns_task_inference": False,
+        "returns_usage_units": False,
         "route_mode": "cheap_first_runtime_stream",
         "route_gap_reason_codes": ("stream_metadata_not_returned",),
     },
@@ -56,9 +60,11 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "uses_budget_decision": True,
         "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
+        "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": False,
         "route_mode": "premium_exception_runtime",
-        "route_gap_reason_codes": ("response_route_payload_missing",),
+        "route_gap_reason_codes": (),
     },
     {
         "id": "aihub-genimg",
@@ -74,9 +80,11 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "uses_budget_decision": True,
         "records_route_telemetry": True,
         "records_usage": True,
-        "returns_route_payloads": False,
+        "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": True,
         "route_mode": "explicit_media_runtime",
-        "route_gap_reason_codes": ("response_route_payload_missing", "media_usage_units_missing"),
+        "route_gap_reason_codes": (),
     },
     {
         "id": "aihub-genvideo",
@@ -93,6 +101,8 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "records_route_telemetry": True,
         "records_usage": True,
         "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": True,
         "route_mode": "explicit_video_media_runtime",
         "route_gap_reason_codes": (),
     },
@@ -111,6 +121,8 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "records_route_telemetry": True,
         "records_usage": True,
         "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": True,
         "route_mode": "explicit_speech_media_runtime",
         "route_gap_reason_codes": (),
     },
@@ -129,6 +141,8 @@ AIHUB_ENDPOINT_SPECS: tuple[dict[str, Any], ...] = (
         "records_route_telemetry": True,
         "records_usage": True,
         "returns_route_payloads": True,
+        "returns_task_inference": True,
+        "returns_usage_units": True,
         "route_mode": "explicit_transcription_runtime",
         "route_gap_reason_codes": (),
     },
@@ -164,6 +178,8 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
                 "route_telemetry_count": sum(1 for row in endpoint_rows if row["records_route_telemetry"]),
                 "usage_recorded_count": sum(1 for row in endpoint_rows if row["records_usage"]),
                 "returns_route_payload_count": sum(1 for row in endpoint_rows if row["returns_route_payloads"]),
+                "returns_task_inference_count": sum(1 for row in endpoint_rows if row["returns_task_inference"]),
+                "returns_usage_units_count": sum(1 for row in endpoint_rows if row["returns_usage_units"]),
                 "legacy_unrouted_count": sum(1 for row in endpoint_rows if row["route_mode"] == "legacy_media_unrouted"),
                 "review_required_endpoint_count": sum(1 for row in endpoint_rows if row["route_status"] == "review_required"),
                 "blocked_endpoint_count": sum(1 for row in endpoint_rows if row["route_status"] == "blocked"),
@@ -243,6 +259,8 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
             "records_route_telemetry": bool(spec["records_route_telemetry"]),
             "records_usage": bool(spec["records_usage"]),
             "returns_route_payloads": bool(spec["returns_route_payloads"]),
+            "returns_task_inference": bool(spec["returns_task_inference"]),
+            "returns_usage_units": bool(spec["returns_usage_units"]),
             "route_mode": str(spec["route_mode"]),
             "route_status": route_status,
             "route_gap_reason_codes": _dedupe(gap_codes) or ["endpoint_route_coverage_ready"],
@@ -256,6 +274,8 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
             "records_route_telemetry",
             "records_usage",
             "returns_route_payloads",
+            "returns_task_inference",
+            "returns_usage_units",
         )
         return [
             {
@@ -270,6 +290,12 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
         runtime_gaps = [row["id"] for row in endpoint_rows if not row["uses_runtime_router"]]
         telemetry_gaps = [row["id"] for row in endpoint_rows if not row["records_route_telemetry"]]
         payload_gaps = [row["id"] for row in endpoint_rows if not row["returns_route_payloads"]]
+        task_inference_gaps = [row["id"] for row in endpoint_rows if not row["returns_task_inference"]]
+        usage_unit_gaps = [
+            row["id"]
+            for row in endpoint_rows
+            if row["task"] in {"image", "video", "audio", "transcription"} and not row["returns_usage_units"]
+        ]
         legacy_media = [row["id"] for row in endpoint_rows if row["route_mode"] == "legacy_media_unrouted"]
         unknown_models = [row["id"] for row in endpoint_rows if row["model_status"] == "unknown"]
         return [
@@ -296,6 +322,18 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
                 "warn" if payload_gaps else "pass",
                 "Responses should expose route/task/budget metadata where the endpoint response shape allows it.",
                 payload_gaps,
+            ),
+            self._check(
+                "response-routing-metadata-coverage",
+                "warn" if task_inference_gaps else "pass",
+                "Non-streaming responses should expose sanitized task_inference metadata for review.",
+                task_inference_gaps,
+            ),
+            self._check(
+                "media-usage-unit-coverage",
+                "warn" if usage_unit_gaps else "pass",
+                "Media and speech responses should expose usage units that support cheap-first cost review without raw payloads.",
+                usage_unit_gaps,
             ),
             self._check(
                 "legacy-media-budget-route-gap",
@@ -330,7 +368,12 @@ class ModelOpsAIHubEndpointRouteCoverageGateService:
         if any(not row["uses_runtime_router"] for row in endpoint_rows):
             actions.append("Migrate any remaining endpoints to resolve_runtime_model before promoting route evidence.")
         if any(not row["returns_route_payloads"] for row in endpoint_rows):
-            actions.append("Extend image, PDF, and streaming response shapes with route/task/budget metadata where practical.")
+            actions.append("Extend streaming response shapes with route/task/budget metadata where practical.")
+        if any(
+            row["task"] in {"image", "video", "audio", "transcription"} and not row["returns_usage_units"]
+            for row in endpoint_rows
+        ):
+            actions.append("Add media usage units before using any media endpoint for cost or savings evidence.")
         if any(row["model_status"] == "unknown" for row in endpoint_rows):
             actions.append("Catalog non-catalog media and speech defaults before using them for price, lifecycle, or benchmark claims.")
         if not actions:

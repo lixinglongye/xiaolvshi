@@ -235,6 +235,15 @@ payload metadata where the response shape allows it, and keep non-catalog
 gateway defaults review-only until pricing, lifecycle, and gateway behavior are
 documented.
 
+Current AIHub route-payload usage evidence:
+`aihub-route-payload-usage-units` adds sanitized route payload metadata to PDF
+analysis and image generation responses, adds task inference response coverage,
+and exposes media usage units for image, video, audio, and transcription routes
+in ModelOps. It does not call providers, gateways, NewAPI, Gemini, OpenAI, or
+Google, and does not include prompts, PDF bytes, image bytes, audio,
+transcripts, output URLs, raw payloads, request/response bodies, headers, model
+outputs, credentials, emails, or user identifiers.
+
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
 low-resource legal benchmark run-planning evidence for cheap-first Gemini

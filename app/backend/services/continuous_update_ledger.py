@@ -2203,6 +2203,43 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
+                id="aihub-route-payload-usage-units",
+                title="AIHub route payload usage units",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds sanitized route payload metadata to AIHub PDF analysis and image generation responses, "
+                    "adds task inference and media usage-unit response coverage for image, video, audio, and "
+                    "transcription routes, and surfaces the counts in ModelOps without provider calls, gateway calls, "
+                    "NewAPI/Gemini/OpenAI/Google calls, prompts, PDF bytes, image bytes, audio, transcripts, output URLs, "
+                    "raw payloads, request bodies, response bodies, headers, model outputs, credentials, emails, or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/backend/services/aihub.py",
+                    "app/backend/schemas/aihub.py",
+                    "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-aihub-endpoint-route-coverage-gate",
+                    "aihub-media-speech-runtime-routing",
+                    "model-ops-readiness",
+                    "modelops-gemini-cheap-first-route-preflight",
+                    "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="model-gateway-request-compatibility-gate",
                 title="Model gateway request compatibility gate",
                 category="model_ops",

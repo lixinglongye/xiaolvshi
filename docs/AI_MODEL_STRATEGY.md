@@ -385,13 +385,19 @@ same route.
 AIHub endpoint coverage gate. It inventories text, streaming text, PDF, image,
 video, audio, and transcription endpoints for runtime-router coverage,
 budget-decision coverage, route telemetry coverage, response route payloads,
-and media/speech catalog review gaps.
+task inference response coverage, media usage-unit coverage, and media/speech
+catalog review gaps.
 
 The current gate keeps endpoint-level state visible in
 `GET /api/v1/aihub/models`: text, streaming text, PDF, image, video, audio,
-and transcription routes are runtime-routed and telemetry-backed. Video,
-audio, and transcription defaults remain review-only catalog items until
-pricing, lifecycle, and gateway behavior are documented.
+and transcription routes are runtime-routed and telemetry-backed. Non-streaming
+text, PDF, image, video, audio, and transcription responses expose sanitized
+route/task/budget metadata where the response shape allows it. Image, video,
+audio, and transcription responses also expose sanitized usage units so
+cheap-first cost review can reason about generated images, generated seconds,
+input characters, and audio counts without storing raw payloads. Video, audio,
+and transcription defaults remain review-only catalog items until pricing,
+lifecycle, and gateway behavior are documented.
 
 This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network, and it does not claim that media/speech

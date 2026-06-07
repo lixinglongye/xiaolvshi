@@ -1301,6 +1301,8 @@ function Inner() {
           default_allowed_without_review: row.default_allowed_without_review,
           uses_runtime_router: endpointRow?.uses_runtime_router ?? false,
           returns_route_payloads: endpointRow?.returns_route_payloads ?? false,
+          returns_task_inference: endpointRow?.returns_task_inference ?? false,
+          returns_usage_units: endpointRow?.returns_usage_units ?? false,
           route_gap_reason_codes: endpointRow?.route_gap_reason_codes ?? row.reason_codes,
           review_required: row.review_required || Boolean(endpointRow?.route_gap_reason_codes?.length),
         };
@@ -5609,7 +5611,7 @@ function Inner() {
 
             {activeGeminiCheapFirstCoverageGate && (
               <>
-                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-9">
                   <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                     <div className="text-2xl font-black text-stone-950">
                       {activeGeminiCheapFirstCoverageGate.summary.coverage_row_count}
@@ -6598,6 +6600,18 @@ function Inner() {
                   </div>
                   <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
                     <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.returns_task_inference_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">returns_task_inference</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.returns_usage_units_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">returns_usage_units</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
                       {activeAihubEndpointRouteCoverageGate.summary.legacy_unrouted_count}
                     </div>
                     <div className="mt-1 text-sm text-stone-600">media_speech_review</div>
@@ -6642,6 +6656,8 @@ function Inner() {
                             <div>records_route_telemetry: {String(row.records_route_telemetry)}</div>
                             <div>records_usage: {String(row.records_usage)}</div>
                             <div>returns_route_payloads: {String(row.returns_route_payloads)}</div>
+                            <div>returns_task_inference: {String(row.returns_task_inference)}</div>
+                            <div>returns_usage_units: {String(row.returns_usage_units)}</div>
                           </TableCell>
                           <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
                             <div className="font-mono text-stone-950">{row.default_model}</div>

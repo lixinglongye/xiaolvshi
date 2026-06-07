@@ -1176,6 +1176,34 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "app/backend/services/model_task_inference.py" in media_speech_entry["evidence_paths"]
     assert "app/backend/tests/test_model_task_inference.py" in media_speech_entry["evidence_paths"]
     assert "docs/MODEL_RUNTIME_ROUTER.md" in media_speech_entry["evidence_paths"]
+    route_payload_units_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "aihub-route-payload-usage-units"
+    )
+    assert route_payload_units_entry["size"] == "medium"
+    assert route_payload_units_entry["status"] == "shipped"
+    assert route_payload_units_entry["category"] == "model_ops"
+    assert "PDF analysis and image generation responses" in route_payload_units_entry["impact"]
+    assert "task inference and media usage-unit response coverage" in route_payload_units_entry["impact"]
+    assert "image, video, audio, and transcription routes" in route_payload_units_entry["impact"]
+    assert "ModelOps" in route_payload_units_entry["impact"]
+    assert "without provider calls" in route_payload_units_entry["impact"]
+    assert "gateway calls" in route_payload_units_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google calls" in route_payload_units_entry["impact"]
+    assert "prompts" in route_payload_units_entry["impact"]
+    assert "PDF bytes" in route_payload_units_entry["impact"]
+    assert "image bytes" in route_payload_units_entry["impact"]
+    assert "transcripts" in route_payload_units_entry["impact"]
+    assert "output URLs" in route_payload_units_entry["impact"]
+    assert "credentials" in route_payload_units_entry["impact"]
+    assert "app/backend/services/aihub.py" in route_payload_units_entry["evidence_paths"]
+    assert "app/backend/schemas/aihub.py" in route_payload_units_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in route_payload_units_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in route_payload_units_entry["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in route_payload_units_entry["evidence_paths"]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in route_payload_units_entry["release_gate_links"]
+    assert "aihub-media-speech-runtime-routing" in route_payload_units_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in route_payload_units_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in route_payload_units_entry["release_gate_links"]
     assert "modelops-aihub-endpoint-route-coverage-gate" in media_speech_entry["release_gate_links"]
     assert "runtime-router" in media_speech_entry["release_gate_links"]
     gateway_request_gate_entry = next(

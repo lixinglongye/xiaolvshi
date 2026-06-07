@@ -145,6 +145,19 @@ class GenImgResponse(BaseModel):
         ),
     )
     model: str = Field(..., description="Name of the model used.")
+    task: str = Field(default="image", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without prompts, images, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without prompt text, image bytes, or credentials.",
+    )
+    usage_units: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Media usage units such as requested/generated image counts without prompt or image payloads.",
+    )
     revised_prompt: Optional[str] = Field(default=None, description="Refined prompt used for generation.")
 
 
@@ -186,6 +199,14 @@ class GenVideoResponse(BaseModel):
         default=None,
         description="Runtime model routing decision without prompts, media, or credentials.",
     )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without prompt text, media, or credentials.",
+    )
+    usage_units: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Media usage units such as generated duration without prompt or video payloads.",
+    )
     duration: int = Field(..., description="Video duration in seconds.")
     revised_prompt: Optional[str] = Field(default=None, description="Refined prompt used for generation.")
 
@@ -220,6 +241,14 @@ class GenAudioResponse(BaseModel):
     budget_decision: Optional[dict[str, Any]] = Field(
         default=None,
         description="Runtime model routing decision without text input, media, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without text input, media, or credentials.",
+    )
+    usage_units: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Speech usage units such as input character count without returning text input.",
     )
     gender: str = Field(..., description="Voice gender used for generation.")
     voice: str = Field(..., description="Actual voice used for generation.")
@@ -256,6 +285,16 @@ class AnalyzePdfResponse(BaseModel):
     pdf_name: str = Field(..., description="Readable PDF file name.")
     mode: str = Field(..., description="Analysis mode used.")
     model: str = Field(..., description="Model used for PDF analysis.")
+    task: str = Field(default="pdf", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without PDF content, instruction text, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without PDF content, instruction text, or credentials.",
+    )
+    usage: Optional[dict[str, int]] = Field(default=None, description="Token usage statistics when provided.")
     page_start: int = Field(..., description="Resolved 1-based start page.")
     page_end: Optional[int] = Field(default=None, description="Resolved 1-based end page.")
     total_pages: Optional[int] = Field(default=None, description="Total pages in the source PDF.")
@@ -290,6 +329,14 @@ class TranscribeAudioResponse(BaseModel):
     budget_decision: Optional[dict[str, Any]] = Field(
         default=None,
         description="Runtime model routing decision without audio, transcript text, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without audio, transcript text, or credentials.",
+    )
+    usage_units: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Transcription usage units without audio bytes or transcript text.",
     )
     source_name: Optional[str] = Field(
         default=None,

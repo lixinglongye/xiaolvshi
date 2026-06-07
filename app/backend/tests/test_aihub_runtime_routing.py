@@ -424,6 +424,11 @@ async def test_analyze_pdf_records_sanitized_pdf_route_telemetry(monkeypatch):
     assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-pro"
     assert response.model == "gemini-2.5-pro"
     assert response.mode == "qa"
+    assert response.task == "pdf"
+    assert response.task_inference["task"] == "pdf"
+    assert response.task_inference["source"] == "explicit"
+    assert response.budget_decision["budget_mode"] == "premium-exception"
+    assert response.usage == {"prompt_tokens": 11, "completion_tokens": 7, "total_tokens": 18}
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["by_task"]["pdf"]["explicit_task"] == 1
     repository = RouteTelemetryRepositoryService().build_repository()
@@ -452,6 +457,16 @@ async def test_genimg_records_sanitized_image_route_telemetry():
 
     assert fake_client.images.generate_calls[0]["model"] == "gemini-2.5-flash-image"
     assert response.model == "gemini-2.5-flash-image"
+    assert response.task == "image"
+    assert response.task_inference["task"] == "image"
+    assert response.budget_decision["budget_mode"] == "explicit-media"
+    assert response.usage_units == {
+        "unit": "image",
+        "requested_image_count": 1,
+        "generated_image_count": 1,
+        "input_image_count": 0,
+        "mode": "generate",
+    }
     assert response.images == ["https://cdn.example.test/generated-private-output.png"]
     route_snapshot = model_route_telemetry_registry.snapshot()
     assert route_snapshot["by_task"]["image"]["explicit_task"] == 1
@@ -481,6 +496,9 @@ async def test_genimg_auto_model_uses_gemini_image_default():
 
     assert fake_client.images.generate_calls[0]["model"] == "gemini-2.5-flash-image"
     assert response.model == "gemini-2.5-flash-image"
+    assert response.budget_decision["requested_model"] == "auto"
+    assert response.usage_units["unit"] == "image"
+    assert response.usage_units["generated_image_count"] == 1
     repository = RouteTelemetryRepositoryService().build_repository()
     rendered = str(repository)
     assert repository["daily_buckets"][0]["task"] == "image"
@@ -506,6 +524,9 @@ async def test_genvideo_records_sanitized_runtime_route_telemetry():
     assert fake_client.videos.create_calls[0]["seconds"] == "4"
     assert response.model == "wan2.6-t2v"
     assert response.task == "video"
+    assert response.task_inference["task"] == "video"
+    assert response.usage_units["unit"] == "second"
+    assert response.usage_units["generated_duration_seconds"] == 4
     assert response.budget_decision["requested_model"] is None
     assert response.budget_decision["explicit_model_requested"] is False
     assert response.budget_decision["explicit_model_fit_status"] == "default"
@@ -544,6 +565,9 @@ async def test_genaudio_records_sanitized_runtime_route_telemetry():
     assert response.model == "qwen3-tts-flash"
     assert response.task == "audio"
     assert response.gender == "male"
+    assert response.task_inference["task"] == "audio"
+    assert response.usage_units["unit"] == "character"
+    assert response.usage_units["input_character_count"] == len("PRIVATE AUDIO TEXT SHOULD NOT PERSIST")
     assert response.budget_decision["budget_mode"] == "explicit-speech-media"
     assert response.budget_decision["requested_model"] is None
     assert "unknown_catalog_model" in response.budget_decision["reason_codes"]
@@ -585,6 +609,8 @@ async def test_transcribe_records_sanitized_runtime_route_telemetry(monkeypatch)
     assert response.task == "transcription"
     assert response.source_name == "input_audio"
     assert response.text == "TRANSCRIBED_OUTPUT_SHOULD_NOT_PERSIST"
+    assert response.task_inference["task"] == "transcription"
+    assert response.usage_units == {"unit": "audio", "audio_count": 1}
     assert response.budget_decision["budget_mode"] == "explicit-transcription"
     assert response.budget_decision["requested_model"] is None
     route_snapshot = model_route_telemetry_registry.snapshot()

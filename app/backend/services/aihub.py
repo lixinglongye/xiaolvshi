@@ -857,6 +857,10 @@ User instruction:
                 pdf_name=pdf_name,
                 mode=request.mode,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage=usage,
                 page_start=start,
                 page_end=end,
                 total_pages=total_pages,
@@ -933,6 +937,16 @@ User instruction:
             return GenImgResponse(
                 images=images,
                 model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage_units={
+                    "unit": "image",
+                    "requested_image_count": request.n,
+                    "generated_image_count": len(images),
+                    "input_image_count": len(request.image) if isinstance(request.image, list) else 1 if request.image else 0,
+                    "mode": "edit" if request.image else "generate",
+                },
                 revised_prompt=revised_prompt,
             )
 
@@ -1084,6 +1098,14 @@ User instruction:
                 model=model,
                 task=route.task,
                 budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage_units={
+                    "unit": "second",
+                    "requested_duration_seconds": requested_seconds,
+                    "generated_duration_seconds": actual_duration,
+                    "video_count": 1,
+                    "mode": "image_to_video" if request.image else "text_to_video",
+                },
                 duration=actual_duration,
                 revised_prompt=getattr(video, "revised_prompt", None),
             )
@@ -1161,6 +1183,12 @@ User instruction:
                 model=model,
                 task=route.task,
                 budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage_units={
+                    "unit": "character",
+                    "input_character_count": len(request.text),
+                    "audio_count": 1,
+                },
                 gender=request.gender,
                 voice=voice,
             )
@@ -1223,6 +1251,11 @@ User instruction:
                 model=model,
                 task=route.task,
                 budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage_units={
+                    "unit": "audio",
+                    "audio_count": 1,
+                },
                 source_name=source_name,
             )
         except Exception as e:

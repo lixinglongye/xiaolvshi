@@ -1499,6 +1499,8 @@ export type ModelOpsAIHubEndpointRouteCoverageRow = {
   records_route_telemetry: boolean;
   records_usage: boolean;
   returns_route_payloads: boolean;
+  returns_task_inference: boolean;
+  returns_usage_units: boolean;
   route_mode: string;
   route_status: string;
   route_gap_reason_codes: string[];
@@ -1533,6 +1535,8 @@ export type ModelOpsAIHubEndpointRouteCoverageGate = {
     route_telemetry_count: number;
     usage_recorded_count: number;
     returns_route_payload_count: number;
+    returns_task_inference_count: number;
+    returns_usage_units_count: number;
     legacy_unrouted_count: number;
     review_required_endpoint_count: number;
     blocked_endpoint_count: number;
