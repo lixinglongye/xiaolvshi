@@ -210,13 +210,14 @@ evidence pages.
 `modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
 preflight for Gemini cheap-first defaults. It joins official source refresh
 notes, local task defaults, the Gemini variant matrix, gateway alias capability
-coverage, and the cheap-first coverage gate so high-frequency work stays on
-stable Flash-Lite routes while preview, premium, media, unknown, unpriced, or
-retired variants remain review/explicit-only. It does not call NewAPI, Gemini,
-OpenAI, Google, gateways, app AI endpoints, or the network, does not write
-configuration or shift traffic, and does not include request/response bodies,
-headers, prompts, raw payloads, legal text, model outputs, gateway responses,
-credentials, emails, or user identifiers.
+coverage, observed model id metadata from the ModelOps POST review form, and
+the cheap-first coverage gate so high-frequency work stays on stable Flash-Lite
+routes while preview, premium, media, unknown, unpriced, or retired variants
+remain review/explicit-only. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, or the network, does not write configuration or
+shift traffic, and does not include request/response bodies, headers, prompts,
+raw payloads, legal text, model outputs, gateway responses, credentials,
+emails, or user identifiers.
 
 `modelops-observed-gateway-model-fit-matrix` is the shipped metadata-only bridge
 from sanitized OpenAI-compatible gateway `/models` IDs to task policy fit. It

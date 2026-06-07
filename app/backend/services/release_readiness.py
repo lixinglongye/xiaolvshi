@@ -2805,8 +2805,8 @@ class ReleaseReadinessService:
                     "docs/AI_MODEL_STRATEGY.md",
                     "docs/MODEL_OPS_READINESS.md",
                 ),
-                validation_command="python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q",
-                manual_note="This is metadata-only Gemini cheap-first route preflight evidence for official source refresh notes, task defaults, alias coverage, variant review states, Flash-Lite cheap-first routing, and premium/preview/media boundaries; it does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the network, does not write configuration or shift traffic, and does not include request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
+                validation_command="python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                manual_note="This is metadata-only Gemini cheap-first route preflight evidence and POST review form coverage for official source refresh notes, task defaults, alias coverage, observed model id metadata, variant review states, Flash-Lite cheap-first routing, and premium/preview/media boundaries; it does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the network, does not write configuration or shift traffic, and does not include request bodies, response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
             ),
             ReleaseCheck(
                 id="modelops-aihub-endpoint-route-coverage-gate",

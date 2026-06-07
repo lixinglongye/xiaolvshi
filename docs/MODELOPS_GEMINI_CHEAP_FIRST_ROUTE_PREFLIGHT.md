@@ -40,6 +40,19 @@ GET /api/v1/aihub/models
 `gemini_cheap_first_route_preflight`, and ModelOps readiness consumes it as the
 `gemini-cheap-first-route-preflight` component.
 
+## ModelOps Review Form
+
+The ModelOps page exposes the POST route as a review form for sanitized
+`observed_models` metadata. Maintainers can paste model ids from a gateway
+inventory review and immediately re-run the route preflight without calling a
+gateway or replacing the aggregate `/api/v1/aihub/models` payload.
+
+The form blocks copied credentials, contact details, request/response bodies,
+prompts, raw document text, raw model output, gateway responses, and other
+non-metadata fields before submission. A successful review only refreshes the
+route rows, variant rows, source rows, checks, and privacy/claim boundary shown
+inside the Gemini cheap-first route preflight panel.
+
 ## Safety Boundary
 
 This evidence does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI

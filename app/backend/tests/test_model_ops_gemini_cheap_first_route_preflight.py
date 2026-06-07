@@ -126,6 +126,28 @@ def test_gemini_cheap_first_route_preflight_route_and_models_payload_include_sig
     )
     assert posted.status_code == 200
     assert posted.json()["data"]["summary"]["observed_model_count"] >= 1
+    assert posted.json()["data"]["privacy_boundary"]["returns_request_body"] is False
+    assert posted.json()["data"]["privacy_boundary"]["returns_response_body"] is False
+
+    forbidden_posted = client.post(
+        "/api/v1/aihub/models/gemini-cheap-first-route-preflight",
+        json={
+            "observed_models": ["models/gemini-2.5-flash-lite", "client@example.test"],
+            "headers": {"Authorization": "Bearer TEST_TOKEN"},
+            "prompt": "copied prompt body",
+            "raw_model_output": "copied output",
+        },
+    )
+    forbidden_serialized = json.dumps(forbidden_posted.json(), ensure_ascii=False)
+    assert forbidden_posted.status_code == 200
+    assert forbidden_posted.json()["data"]["summary"]["raw_payload_echoed"] is False
+    assert forbidden_posted.json()["data"]["privacy_boundary"]["returns_headers"] is False
+    assert forbidden_posted.json()["data"]["privacy_boundary"]["returns_raw_prompt"] is False
+    assert forbidden_posted.json()["data"]["privacy_boundary"]["returns_raw_model_output"] is False
+    assert "client@example.test" not in forbidden_serialized
+    assert "Bearer TEST_TOKEN" not in forbidden_serialized
+    assert "copied prompt body" not in forbidden_serialized
+    assert "copied output" not in forbidden_serialized
 
     models_response = client.get("/api/v1/aihub/models")
     assert models_response.status_code == 200

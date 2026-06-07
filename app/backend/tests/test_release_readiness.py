@@ -867,7 +867,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "user-need-gemini-route-coverage": "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
-        "modelops-gemini-cheap-first-route-preflight": "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q",
+        "modelops-gemini-cheap-first-route-preflight": "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "modelops-aihub-endpoint-route-coverage-gate": "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-gentxt-routing-guard": "python -m pytest tests/test_model_ops_gentxt_task_guard.py tests/test_model_task_inference.py tests/test_aihub_runtime_routing.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-legal-micro-benchmark-preflight": "python -m pytest tests/test_modelops_legal_micro_benchmark_preflight.py tests/test_legal_fixture_local_run_package.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_model_ops_readiness.py -q",
@@ -1221,9 +1221,11 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in checks["modelops-gemini-cheap-first-coverage-gate"]["evidence_paths"]
     assert "metadata-only Gemini cheap-first route preflight evidence" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "POST review form coverage" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "official source refresh notes" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "task defaults" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "alias coverage" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
+    assert "observed model id metadata" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "Flash-Lite cheap-first routing" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "premium/preview/media boundaries" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]
     assert "does not call NewAPI" in checks["modelops-gemini-cheap-first-route-preflight"]["manual_note"]

@@ -1101,8 +1101,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert route_preflight_entry["size"] == "medium"
     assert route_preflight_entry["status"] == "shipped"
     assert "Gemini cheap-first route preflight evidence" in route_preflight_entry["impact"]
+    assert "POST review form coverage" in route_preflight_entry["impact"]
     assert "official source refresh notes" in route_preflight_entry["impact"]
     assert "local task defaults" in route_preflight_entry["impact"]
+    assert "observed model id metadata" in route_preflight_entry["impact"]
     assert "variant review states" in route_preflight_entry["impact"]
     assert "alias capability coverage" in route_preflight_entry["impact"]
     assert "cheap-first coverage-gate signals" in route_preflight_entry["impact"]

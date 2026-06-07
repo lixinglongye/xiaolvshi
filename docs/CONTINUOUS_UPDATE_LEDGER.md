@@ -250,15 +250,15 @@ identifiers.
 
 Current Gemini cheap-first route preflight evidence:
 `modelops-gemini-cheap-first-route-preflight` adds shipped metadata-only route
-preflight evidence for official source refresh notes, local Gemini task
-defaults, variant review states, alias capability coverage, and cheap-first
-coverage-gate status. It keeps high-frequency work on stable Flash-Lite routes
-while preview, premium, media, unknown, unpriced, or retired variants remain
-review/explicit-only. It does not call NewAPI, Gemini, OpenAI, Google,
-gateways, app AI endpoints, or the network, write configuration, shift traffic,
-claim live model quality, or include request/response bodies, headers, prompts,
-raw payloads, legal text, model outputs, gateway responses, credentials, emails,
-or user identifiers.
+preflight evidence and POST review form coverage for official source refresh
+notes, local Gemini task defaults, observed model id metadata, variant review
+states, alias capability coverage, and cheap-first coverage-gate status. It
+keeps high-frequency work on stable Flash-Lite routes while preview, premium,
+media, unknown, unpriced, or retired variants remain review/explicit-only. It
+does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or
+the network, write configuration, shift traffic, claim live model quality, or
+include request/response bodies, headers, prompts, raw payloads, legal text,
+model outputs, gateway responses, credentials, emails, or user identifiers.
 
 Current observed gateway model fit evidence:
 `modelops-observed-gateway-model-fit-matrix` adds shipped metadata-only

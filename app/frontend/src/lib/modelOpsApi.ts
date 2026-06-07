@@ -1549,6 +1549,13 @@ export type ModelOpsGeminiCheapFirstRoutePreflight = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiCheapFirstRoutePreflightPayload = {
+  observed_models?: string[];
+  gemini_variant_matrix?: Record<string, unknown>;
+  gemini_newapi_alias_capability_coverage?: Record<string, unknown>;
+  gemini_cheap_first_coverage_gate?: Record<string, unknown>;
+};
+
 export type ModelOpsAIHubEndpointRouteCoverageRow = {
   id: string;
   endpoint_path: string;
@@ -4261,6 +4268,16 @@ export async function getGeminiCheapFirstRoutePreflight(): Promise<ModelOpsGemin
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstRoutePreflight>({
     url: '/api/v1/aihub/models/gemini-cheap-first-route-preflight',
     method: 'GET',
+  });
+}
+
+export async function evaluateGeminiCheapFirstRoutePreflight(
+  payload: ModelOpsGeminiCheapFirstRoutePreflightPayload,
+): Promise<ModelOpsGeminiCheapFirstRoutePreflight> {
+  return invokeModelOpsApi<ModelOpsGeminiCheapFirstRoutePreflight>({
+    url: '/api/v1/aihub/models/gemini-cheap-first-route-preflight',
+    method: 'POST',
+    data: payload,
   });
 }
 

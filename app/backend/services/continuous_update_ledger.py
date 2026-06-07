@@ -2173,7 +2173,7 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only Gemini cheap-first route preflight evidence that joins official source refresh notes, local task defaults, variant review states, alias capability coverage, and cheap-first coverage-gate signals so high-frequency routes stay on stable Flash-Lite defaults while preview, premium, media, unknown, or unpriced variants remain review/explicit-only, without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls, configuration writes, traffic shifts, request or response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
+                impact="Adds metadata-only Gemini cheap-first route preflight evidence and POST review form coverage that joins official source refresh notes, local task defaults, observed model id metadata, variant review states, alias capability coverage, and cheap-first coverage-gate signals so high-frequency routes stay on stable Flash-Lite defaults while preview, premium, media, unknown, or unpriced variants remain review/explicit-only, without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls, configuration writes, traffic shifts, request or response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
                 evidence_paths=(
                     "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py",
                     "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py",

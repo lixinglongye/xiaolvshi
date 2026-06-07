@@ -63,13 +63,14 @@ prompts, raw legal text, model outputs, payloads, emails, or credentials.
 
 Additional optional evidence: `modelops-gemini-cheap-first-route-preflight`
 records metadata-only Gemini route preflight checks for official source refresh
-notes, local task defaults, variant review states, alias capability coverage,
-and cheap-first coverage-gate status. It keeps high-frequency tasks on stable
-Flash-Lite routes while preview, premium, media, unknown, unpriced, or retired
-variants remain review/explicit-only. It does not call NewAPI, Gemini, OpenAI,
-Google, gateways, app AI endpoints, or the network, write configuration, shift
-traffic, claim live route quality, or store request/response bodies, headers,
-prompts, raw payloads, legal text, model outputs, gateway responses,
+notes, local task defaults, observed model id metadata from the ModelOps POST
+review form, variant review states, alias capability coverage, and cheap-first
+coverage-gate status. It keeps high-frequency tasks on stable Flash-Lite routes
+while preview, premium, media, unknown, unpriced, or retired variants remain
+review/explicit-only. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, or the network, write configuration, shift traffic, claim live
+route quality, or store request/response bodies, headers, prompts, raw payloads,
+legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
 Additional optional evidence: `modelops-legal-micro-benchmark-preflight`
@@ -241,8 +242,9 @@ The service does not run shell commands itself. It only evaluates results suppli
   change-set metadata, prerequisites, operator steps, rollback-drill status, and
   no-write/no-secret boundaries before any manual default edit is release-ready.
 - ModelOps Gemini cheap-first route preflight coverage, requiring reviewable
-  source-refresh notes, task defaults, alias coverage, variant states, and
-  no-call/no-write boundaries before any Gemini default route change is claimed.
+  source-refresh notes, task defaults, observed model id metadata, alias
+  coverage, variant states, and no-call/no-write boundaries before any Gemini
+  default route change is claimed.
 - User need Gemini route coverage, requiring reviewable mapping between
   high-priority user needs, benchmark coverage, cheap-first calibration tasks,
   and Gemini route preflight rows before any route change is claimed.

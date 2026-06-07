@@ -20,6 +20,7 @@ import {
   evaluateModelGatewayProbe,
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsCheapFirstEscalationBudget,
+  evaluateGeminiCheapFirstRoutePreflight,
   evaluateModelFailureUpgradeBudget,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
@@ -48,6 +49,7 @@ import {
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelOpsGeminiCheapFirstRoutePreflight,
+  type ModelOpsGeminiCheapFirstRoutePreflightPayload,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsObservedGatewayModelFitMatrix,
@@ -224,6 +226,18 @@ function defaultObservedGeminiModelIntakePayload() {
   };
 }
 
+function defaultGeminiCheapFirstRoutePreflightPayload() {
+  return {
+    observed_models: [
+      'models/gemini-2.5-flash-lite',
+      'google/gemini-2.5-flash',
+      'models/gemini-3.1-pro',
+      'yibu/gemini-3.1-flash-image',
+      'newapi/gemini-4.0-flash-lite-preview',
+    ],
+  };
+}
+
 function defaultGeminiDefaultChangeReviewPayload() {
   return {
     proposed_changes: [
@@ -354,6 +368,18 @@ function hasForbiddenObservedGeminiModelIntakePayloadText(value: string) {
   );
 }
 
+function hasForbiddenGeminiRoutePreflightPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b1[3-9]\d{9}\b/.test(value) ||
+    /\b\d{17}[\dXx]\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|raw[_ -]?response|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|gateway[_ -]?response|messages?|content|payload)\b/i.test(
+      value,
+    ) ||
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
+  );
+}
+
 function hasForbiddenPerformancePayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -462,6 +488,10 @@ function Inner() {
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
   const [geminiCheapFirstRoutePreflight, setGeminiCheapFirstRoutePreflight] =
     useState<ModelOpsGeminiCheapFirstRoutePreflight | null>(null);
+  const [geminiCheapFirstRoutePreflightPayloadText, setGeminiCheapFirstRoutePreflightPayloadText] = useState(
+    JSON.stringify(defaultGeminiCheapFirstRoutePreflightPayload(), null, 2),
+  );
+  const [geminiCheapFirstRoutePreflightLoading, setGeminiCheapFirstRoutePreflightLoading] = useState(false);
   const [geminiCheapFirstRoutePreflightError, setGeminiCheapFirstRoutePreflightError] = useState('');
   const [aihubEndpointRouteCoverageGate, setAihubEndpointRouteCoverageGate] =
     useState<ModelOpsAIHubEndpointRouteCoverageGate | null>(null);
@@ -1006,6 +1036,47 @@ function Inner() {
       );
     } finally {
       setObservedGeminiModelIntakeLoading(false);
+    }
+  };
+
+  const loadGeminiCheapFirstRoutePreflightTemplate = () => {
+    setGeminiCheapFirstRoutePreflightError('');
+    setGeminiCheapFirstRoutePreflightPayloadText(
+      JSON.stringify(defaultGeminiCheapFirstRoutePreflightPayload(), null, 2),
+    );
+  };
+
+  const evaluateGeminiCheapFirstRoutePreflightPayload = async () => {
+    setGeminiCheapFirstRoutePreflightLoading(true);
+    setGeminiCheapFirstRoutePreflightError('');
+    try {
+      const text = geminiCheapFirstRoutePreflightPayloadText.trim();
+      if (!text) {
+        setGeminiCheapFirstRoutePreflightError('Route preflight payload is empty.');
+        return;
+      }
+      if (hasForbiddenGeminiRoutePreflightPayloadText(text)) {
+        setGeminiCheapFirstRoutePreflightError(
+          'Route preflight input must contain observed model ids and sanitized metadata only.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setGeminiCheapFirstRoutePreflightError('Route preflight payload must be a JSON object.');
+        return;
+      }
+      const result = await evaluateGeminiCheapFirstRoutePreflight(
+        payload as ModelOpsGeminiCheapFirstRoutePreflightPayload,
+      );
+      setGeminiCheapFirstRoutePreflight(result);
+    } catch (err) {
+      console.error(err);
+      setGeminiCheapFirstRoutePreflightError(
+        err instanceof SyntaxError ? 'Route preflight payload is not valid JSON.' : 'Gemini route preflight failed.',
+      );
+    } finally {
+      setGeminiCheapFirstRoutePreflightLoading(false);
     }
   };
 
@@ -6342,6 +6413,61 @@ function Inner() {
                     </div>
                     <div className="mt-1 text-sm text-stone-600">config written</div>
                   </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold text-stone-950">Route preflight payload</div>
+                      <div className="mt-1 text-xs text-stone-500">
+                        observed model ids and metadata-only review signals
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={loadGeminiCheapFirstRoutePreflightTemplate}
+                        disabled={geminiCheapFirstRoutePreflightLoading}
+                      >
+                        <ClipboardList className="mr-2 h-4 w-4" />
+                        Template
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setGeminiCheapFirstRoutePreflight(data?.gemini_cheap_first_route_preflight ?? null);
+                          setGeminiCheapFirstRoutePreflightError('');
+                        }}
+                        disabled={geminiCheapFirstRoutePreflightLoading}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Reset
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={evaluateGeminiCheapFirstRoutePreflightPayload}
+                        disabled={geminiCheapFirstRoutePreflightLoading}
+                      >
+                        {geminiCheapFirstRoutePreflightLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <PlayCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Evaluate route preflight
+                      </Button>
+                    </div>
+                  </div>
+                  <Textarea
+                    value={geminiCheapFirstRoutePreflightPayloadText}
+                    onChange={(event) => setGeminiCheapFirstRoutePreflightPayloadText(event.target.value)}
+                    className="min-h-[150px] resize-y font-mono text-xs"
+                    spellCheck={false}
+                  />
                 </div>
 
                 <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
