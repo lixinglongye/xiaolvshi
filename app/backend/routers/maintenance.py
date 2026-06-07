@@ -70,6 +70,7 @@ from services.legal_public_benchmark_license_gate import LegalPublicBenchmarkLic
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
+from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_retrieval_diagnostics_gate import LegalRagRetrievalDiagnosticsGateService
 from services.legal_rag_retrieval_observation_gate import LegalRagRetrievalObservationGateService
@@ -1323,6 +1324,15 @@ async def get_legal_rag_retrieval_diagnostics_gate():
     return {
         "success": True,
         "data": LegalRagRetrievalDiagnosticsGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-benchmark-alignment")
+async def get_legal_rag_benchmark_alignment():
+    """Return metadata-only public benchmark alignment evidence for Legal RAG."""
+    return {
+        "success": True,
+        "data": LegalRagBenchmarkAlignmentService().build_scorecard(),
     }
 
 

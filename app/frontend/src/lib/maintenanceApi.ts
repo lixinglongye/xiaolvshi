@@ -3697,6 +3697,122 @@ export type LegalRagRetrievalDiagnosticsGate = {
   validation_commands: string[];
 };
 
+export type LegalRagBenchmarkAlignmentRow = {
+  id: string;
+  title: string;
+  benchmark_signal_ids: string[];
+  alignment_status: string;
+  release_action: string;
+  coverage_score: number;
+  required_gate_ids: string[];
+  gate_statuses: Record<string, string>;
+  required_validation_targets: string[];
+  observed_validation_targets: string[];
+  missing_validation_targets: string[];
+  expected_local_fixture_ids: string[];
+  observed_local_fixture_ids: string[];
+  missing_local_fixture_ids: string[];
+  public_source_sampling_states: Record<string, string>;
+  cheap_first_policy: string;
+  starts_cheap: boolean;
+  premium_exception_allowed: boolean;
+  gap_reasons: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    public_benchmark_text_returned?: boolean;
+    raw_query_returned?: boolean;
+    retrieved_context_returned?: boolean;
+    raw_legal_text_returned?: boolean;
+    prompt_returned?: boolean;
+    model_output_returned?: boolean;
+    credentials_returned?: boolean;
+    [key: string]: unknown;
+  };
+};
+
+export type LegalRagBenchmarkAlignment = {
+  id: 'legal-rag-benchmark-alignment' | string;
+  title: string;
+  status: string;
+  summary: {
+    dimension_count: number;
+    aligned_count: number;
+    review_count: number;
+    gap_count: number;
+    blocked_claim_count: number;
+    maintainer_review_count: number;
+    benchmark_signal_count: number;
+    diagnostic_row_count: number;
+    retrieval_blocked_row_count: number;
+    abstention_blocker_count: number;
+    public_sampler_source_count: number;
+    public_sampler_ready_source_count: number;
+    fixture_crosswalk_gap_count: number;
+    cheap_first_default: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    dataset_downloaded: boolean;
+    raw_public_benchmark_text_included: boolean;
+    raw_query_included: boolean;
+    raw_retrieved_context_included: boolean;
+    raw_legal_text_included: boolean;
+    prompt_included: boolean;
+    model_output_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  alignment_rows: LegalRagBenchmarkAlignmentRow[];
+  alignment_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  benchmark_dimensions: Array<{
+    id: string;
+    title: string;
+    benchmark_signal_ids: string[];
+    required_gate_ids: string[];
+    required_validation_targets: string[];
+    expected_local_fixture_ids: string[];
+    cheap_first_policy: string;
+  }>;
+  linked_gate_summary: Record<string, unknown>;
+  research_basis: Array<{
+    id: string;
+    url: string;
+    signal: string;
+  }>;
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    legal_rag_quality_claimed: boolean;
+    public_benchmark_score_claimed: boolean;
+    leaderboard_claimed: boolean;
+    live_gateway_quality_claimed: boolean;
+    automatic_client_delivery_claimed: boolean;
+    allowed_claims: string[];
+    forbidden_claims: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_raw_query: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalReviewBenchmark = {
   status: string;
   score: number;
@@ -4067,6 +4183,11 @@ type LegalRagAbstentionEscalationGateResponse = {
 type LegalRagRetrievalDiagnosticsGateResponse = {
   success: boolean;
   data: LegalRagRetrievalDiagnosticsGate;
+};
+
+type LegalRagBenchmarkAlignmentResponse = {
+  success: boolean;
+  data: LegalRagBenchmarkAlignment;
 };
 
 export type LegalKnowledgeAudit = {
@@ -5427,6 +5548,14 @@ export async function getLegalRagRetrievalDiagnosticsGate(): Promise<LegalRagRet
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagRetrievalDiagnosticsGateResponse['data']>(resp);
+}
+
+export async function getLegalRagBenchmarkAlignment(): Promise<LegalRagBenchmarkAlignment> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-benchmark-alignment',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagBenchmarkAlignmentResponse['data']>(resp);
 }
 
 export async function getLegalPublicBenchmarkSampler(): Promise<LegalPublicBenchmarkSampler> {

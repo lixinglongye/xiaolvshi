@@ -878,6 +878,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-retrieval-diagnostics-gate": "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
+        "legal-rag-benchmark-alignment": "python -m pytest tests/test_legal_rag_benchmark_alignment.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-retrieval-observation-gate": "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
         "legal-adoption-research-bridge": "python -m pytest tests/test_legal_adoption_research_bridge.py tests/test_user_needs_radar.py tests/test_product_feature_gap_radar.py -q",
@@ -1600,6 +1601,25 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in checks["legal-rag-retrieval-diagnostics-gate"]["evidence_paths"]
     assert "app/backend/tests/test_legal_rag_retrieval_diagnostics_gate.py" in checks["legal-rag-retrieval-diagnostics-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_RETRIEVAL_DIAGNOSTICS_GATE.md" in checks["legal-rag-retrieval-diagnostics-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG benchmark alignment evidence" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "LegalBench-RAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "CRAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "RAGAS" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "Legal RAG Bench" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "cheap-first Gemini/NewAPI default boundaries" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "does not call NewAPI" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "download public datasets" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "public benchmark text" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "raw query" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "raw retrieved context" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "raw legal text" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "prompts" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "model outputs" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "credentials" in checks["legal-rag-benchmark-alignment"]["manual_note"]
+    assert "app/backend/services/legal_rag_benchmark_alignment.py" in checks["legal-rag-benchmark-alignment"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_benchmark_alignment.py" in checks["legal-rag-benchmark-alignment"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-benchmark-alignment"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_BENCHMARK_ALIGNMENT.md" in checks["legal-rag-benchmark-alignment"]["evidence_paths"]
     assert "metadata-only Legal RAG retrieval observation gate evidence" in checks["legal-rag-retrieval-observation-gate"]["manual_note"]
     assert "sanitized local retrieval observations" in checks["legal-rag-retrieval-observation-gate"]["manual_note"]
     assert "selected-source citation validation counts" in checks["legal-rag-retrieval-observation-gate"]["manual_note"]

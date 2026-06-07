@@ -396,6 +396,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
+    assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
@@ -581,6 +582,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-benchmark-research-registry-ui" not in queue_ids
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
+    assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
@@ -2370,6 +2372,33 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]
     )
+    benchmark_alignment_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-benchmark-alignment"
+    )
+    assert benchmark_alignment_entry["category"] == "benchmark"
+    assert benchmark_alignment_entry["size"] == "medium"
+    assert "LegalBench-RAG" in benchmark_alignment_entry["impact"]
+    assert "CRAG" in benchmark_alignment_entry["impact"]
+    assert "RAGAS" in benchmark_alignment_entry["impact"]
+    assert "Legal RAG Bench" in benchmark_alignment_entry["impact"]
+    assert "cheap-first Gemini/NewAPI boundaries" in benchmark_alignment_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in benchmark_alignment_entry["impact"]
+    assert "public dataset downloads" in benchmark_alignment_entry["impact"]
+    assert "public benchmark text" in benchmark_alignment_entry["impact"]
+    assert "raw query" in benchmark_alignment_entry["impact"]
+    assert "raw retrieved context" in benchmark_alignment_entry["impact"]
+    assert "raw legal text" in benchmark_alignment_entry["impact"]
+    assert "prompts" in benchmark_alignment_entry["impact"]
+    assert "model outputs" in benchmark_alignment_entry["impact"]
+    assert "credentials" in benchmark_alignment_entry["impact"]
+    assert "app/backend/services/legal_rag_benchmark_alignment.py" in benchmark_alignment_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_benchmark_alignment.py" in benchmark_alignment_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in benchmark_alignment_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_BENCHMARK_ALIGNMENT.md" in benchmark_alignment_entry["evidence_paths"]
+    assert "legal-rag-benchmark-alignment" in benchmark_alignment_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in benchmark_alignment_entry["release_gate_links"]
+    assert "legal-rag-abstention-escalation-gate" in benchmark_alignment_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in benchmark_alignment_entry["release_gate_links"]
     retrieval_observation_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-retrieval-observation-gate"
     )

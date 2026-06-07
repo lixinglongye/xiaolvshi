@@ -50,6 +50,7 @@ import {
   getLegalPublicBenchmarkSampler,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
+  getLegalRagBenchmarkAlignment,
   getLegalRagHallucinationTriageGate,
   getLegalRagRetrievalDiagnosticsGate,
   getLegalResearchBacklog,
@@ -119,6 +120,7 @@ import {
   type LegalPublicBenchmarkSampler,
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
+  type LegalRagBenchmarkAlignment,
   type LegalRagHallucinationTriageGate,
   type LegalRagRetrievalDiagnosticsGate,
   type LegalResearchBacklog,
@@ -377,6 +379,8 @@ function Inner() {
     useState<LegalRagAbstentionEscalationGate | null>(null);
   const [legalRagRetrievalDiagnosticsGate, setLegalRagRetrievalDiagnosticsGate] =
     useState<LegalRagRetrievalDiagnosticsGate | null>(null);
+  const [legalRagBenchmarkAlignment, setLegalRagBenchmarkAlignment] =
+    useState<LegalRagBenchmarkAlignment | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -761,6 +765,11 @@ function Inner() {
           label: 'Legal RAG retrieval diagnostics gate',
           run: getLegalRagRetrievalDiagnosticsGate,
           apply: (value) => setLegalRagRetrievalDiagnosticsGate(value as LegalRagRetrievalDiagnosticsGate),
+        },
+        {
+          label: 'Legal RAG benchmark alignment',
+          run: getLegalRagBenchmarkAlignment,
+          apply: (value) => setLegalRagBenchmarkAlignment(value as LegalRagBenchmarkAlignment),
         },
         {
           label: 'Legal RAG hallucination triage gate',
@@ -9249,6 +9258,157 @@ function Inner() {
                   </section>
                 );
               })()}
+
+            {legalRagBenchmarkAlignment && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal RAG benchmark alignment scorecard</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Public benchmark signals mapped to local retrieval diagnostics, abstention, fixture crosswalk, and cheap-first boundaries
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[legalRagBenchmarkAlignment.status] ?? statusClass.review_required}>
+                    {displayToken(legalRagBenchmarkAlignment.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  {[
+                    { label: 'dimensions', value: legalRagBenchmarkAlignment.summary.dimension_count },
+                    { label: 'aligned', value: legalRagBenchmarkAlignment.summary.aligned_count },
+                    { label: 'review', value: legalRagBenchmarkAlignment.summary.review_count },
+                    { label: 'gaps', value: legalRagBenchmarkAlignment.summary.gap_count },
+                    { label: 'blocked claims', value: legalRagBenchmarkAlignment.summary.blocked_claim_count },
+                    { label: 'retrieval blockers', value: legalRagBenchmarkAlignment.summary.retrieval_blocked_row_count },
+                    { label: 'abstention blockers', value: legalRagBenchmarkAlignment.summary.abstention_blocker_count },
+                    { label: 'crosswalk gaps', value: legalRagBenchmarkAlignment.summary.fixture_crosswalk_gap_count },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Dimension</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Benchmark signals</TableHead>
+                        <TableHead>Release action</TableHead>
+                        <TableHead>Cheap-first</TableHead>
+                        <TableHead>Gap reasons</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(legalRagBenchmarkAlignment.alignment_rows ?? []).slice(0, 8).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.alignment_status] ?? statusClass.review_required}>
+                              {displayToken(row.alignment_status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.coverage_score}%</div>
+                            <div>missing targets: {(row.missing_validation_targets ?? []).length}</div>
+                            <div>missing fixtures: {(row.missing_local_fixture_ids ?? []).length}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                              {(row.benchmark_signal_ids ?? []).map((sourceId) => (
+                                <Badge key={`${row.id}-${sourceId}`} variant="outline" className="bg-white">
+                                  {sourceId}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.release_action] ?? statusClass.not_run}>
+                              {displayToken(row.release_action)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>starts cheap: {String(row.starts_cheap)}</div>
+                            <div>premium exception: {String(row.premium_exception_allowed)}</div>
+                            <div className="mt-1 max-w-[260px] text-stone-500">{row.cheap_first_policy}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[300px] flex-wrap gap-1.5">
+                              {(row.gap_reasons ?? []).length ? (
+                                row.gap_reasons.map((reason) => (
+                                  <Badge key={`${row.id}-${reason}`} variant="outline" className={statusClass.warn}>
+                                    {displayToken(reason)}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-stone-500">-</span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Research basis</h3>
+                    <div className="space-y-2">
+                      {(legalRagBenchmarkAlignment.research_basis ?? []).slice(0, 4).map((source) => (
+                        <div key={source.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono text-[11px] text-stone-500">{source.id}</div>
+                          <div className="mt-1 text-sm leading-5 text-stone-700">{source.signal}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gates</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {Object.entries(legalRagBenchmarkAlignment.linked_gate_summary ?? {}).slice(0, 8).map(([key, value]) => (
+                        <div key={key}>
+                          {displayToken(key)}: {formatInline(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>legal advice claimed: {String(legalRagBenchmarkAlignment.claim_boundary.legal_advice_claimed)}</div>
+                      <div>public benchmark score claimed: {String(legalRagBenchmarkAlignment.claim_boundary.public_benchmark_score_claimed)}</div>
+                      <div>leaderboard claimed: {String(legalRagBenchmarkAlignment.claim_boundary.leaderboard_claimed)}</div>
+                      <div>public benchmark text: {String(legalRagBenchmarkAlignment.privacy_boundary.returns_public_benchmark_text)}</div>
+                      <div>raw query: {String(legalRagBenchmarkAlignment.privacy_boundary.returns_raw_query)}</div>
+                      <div>raw context: {String(legalRagBenchmarkAlignment.privacy_boundary.returns_retrieved_context)}</div>
+                      <div>credentials: {String(legalRagBenchmarkAlignment.privacy_boundary.returns_credentials)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(legalRagBenchmarkAlignment.validation_commands ?? []).slice(0, 4).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
 
             {legalRagHallucinationTriageGate && (
               <section className="mb-8">

@@ -350,6 +350,16 @@ critical, warning, watch, and ready badges for task blockers, urgent deadlines,
 evidence gaps, and runtime-event deltas without writing risk state, refreshing
 evidence graphs, sending notifications, or exposing raw matter content.
 
+Current Legal RAG benchmark evidence:
+`legal-rag-benchmark-alignment` adds a shipped metadata-only scorecard that maps
+LegalBench-RAG, CRAG, RAGAS, and Legal RAG Bench signals to local retrieval
+diagnostics, abstention escalation, public-source sampling policy, fixture
+crosswalk coverage, and cheap-first Gemini/NewAPI boundaries. It blocks public
+benchmark, retrieval-quality, and legal-answer claims when local fixture or
+retrieval evidence has gaps, and it does not call models, gateways, NewAPI,
+Gemini, the network, or return public benchmark text, raw queries, retrieved
+context, raw legal text, prompts, model outputs, or credentials.
+
 `POST` accepts the same compact low-resource fixture payload used by
 `/legal-review-benchmark/local-run-review`, either directly or under
 `low_resource_fixture_review`. The ledger internally builds the local run review
