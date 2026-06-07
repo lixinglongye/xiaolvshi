@@ -1069,6 +1069,57 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    aihub_route_coverage_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-aihub-endpoint-route-coverage-gate"
+    )
+    assert aihub_route_coverage_entry["size"] == "medium"
+    assert aihub_route_coverage_entry["status"] == "shipped"
+    assert aihub_route_coverage_entry["category"] == "model_ops"
+    assert "AIHub endpoint route coverage gate evidence" in aihub_route_coverage_entry["impact"]
+    assert "gentxt streaming" in aihub_route_coverage_entry["impact"]
+    assert "runtime-router coverage" in aihub_route_coverage_entry["impact"]
+    assert "budget-decision coverage" in aihub_route_coverage_entry["impact"]
+    assert "route telemetry coverage" in aihub_route_coverage_entry["impact"]
+    assert "response route-payload coverage" in aihub_route_coverage_entry["impact"]
+    assert "legacy media route gaps" in aihub_route_coverage_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in aihub_route_coverage_entry["impact"]
+    assert "configuration writes" in aihub_route_coverage_entry["impact"]
+    assert "traffic shifts" in aihub_route_coverage_entry["impact"]
+    assert "request or response bodies" in aihub_route_coverage_entry["impact"]
+    assert "headers" in aihub_route_coverage_entry["impact"]
+    assert "prompts" in aihub_route_coverage_entry["impact"]
+    assert "raw payloads" in aihub_route_coverage_entry["impact"]
+    assert "legal text" in aihub_route_coverage_entry["impact"]
+    assert "model outputs" in aihub_route_coverage_entry["impact"]
+    assert "gateway responses" in aihub_route_coverage_entry["impact"]
+    assert "credentials" in aihub_route_coverage_entry["impact"]
+    assert "emails" in aihub_route_coverage_entry["impact"]
+    assert "user identifiers" in aihub_route_coverage_entry["impact"]
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in aihub_route_coverage_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in aihub_route_coverage_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_readiness.py" in aihub_route_coverage_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in aihub_route_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in aihub_route_coverage_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in aihub_route_coverage_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in aihub_route_coverage_entry["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in aihub_route_coverage_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in aihub_route_coverage_entry["evidence_paths"]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in aihub_route_coverage_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in aihub_route_coverage_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-coverage-gate" in aihub_route_coverage_entry["release_gate_links"]
+    assert "model-gateway-request-compatibility-gate" in aihub_route_coverage_entry["release_gate_links"]
+    assert "model-ops-readiness" in aihub_route_coverage_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in aihub_route_coverage_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py "
+        "tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     gateway_request_gate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-request-compatibility-gate"
     )

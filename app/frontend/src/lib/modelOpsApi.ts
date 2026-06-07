@@ -1240,6 +1240,81 @@ export type ModelOpsGeminiCheapFirstRoutePreflight = {
   validation_commands: string[];
 };
 
+export type ModelOpsAIHubEndpointRouteCoverageRow = {
+  id: string;
+  endpoint_path: string;
+  method: string;
+  router_handler: string;
+  service_method: string;
+  response_model: string;
+  task: string;
+  default_model: string;
+  canonical_model?: string | null;
+  model_status: string;
+  cost_tier: string;
+  model_source: string;
+  uses_runtime_router: boolean;
+  uses_budget_decision: boolean;
+  records_route_telemetry: boolean;
+  records_usage: boolean;
+  returns_route_payloads: boolean;
+  route_mode: string;
+  route_status: string;
+  route_gap_reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsAIHubEndpointRouteCoverageMatrixRow = {
+  coverage_key: string;
+  covered_endpoint_count: number;
+  gap_endpoint_ids: string[];
+};
+
+export type ModelOpsAIHubEndpointRouteCoverageCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsAIHubEndpointRouteCoverageGate = {
+  id: 'modelops-aihub-endpoint-route-coverage-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    endpoint_count: number;
+    runtime_routed_count: number;
+    budget_decision_count: number;
+    route_telemetry_count: number;
+    usage_recorded_count: number;
+    returns_route_payload_count: number;
+    legacy_unrouted_count: number;
+    review_required_endpoint_count: number;
+    blocked_endpoint_count: number;
+    route_gap_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+  };
+  endpoint_rows: ModelOpsAIHubEndpointRouteCoverageRow[];
+  coverage_matrix: ModelOpsAIHubEndpointRouteCoverageMatrixRow[];
+  checks: ModelOpsAIHubEndpointRouteCoverageCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelLifecycleConfiguredRole = {
   role: string;
   model: string;
@@ -3445,6 +3520,7 @@ export type ModelOpsResponse = {
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   gemini_cheap_first_route_preflight?: ModelOpsGeminiCheapFirstRoutePreflight;
+  aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
@@ -3521,6 +3597,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     route_task_rows?: unknown;
     variant_preflight_rows?: unknown;
     official_source_rows?: unknown;
+    endpoint_rows?: unknown;
+    coverage_matrix?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     fixture_run_items?: unknown;
@@ -3560,6 +3638,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
+      || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
@@ -3734,6 +3813,13 @@ export async function getGeminiCheapFirstCoverageGate(): Promise<ModelOpsGeminiC
 export async function getGeminiCheapFirstRoutePreflight(): Promise<ModelOpsGeminiCheapFirstRoutePreflight> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstRoutePreflight>({
     url: '/api/v1/aihub/models/gemini-cheap-first-route-preflight',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsAIHubEndpointRouteCoverageGate(): Promise<ModelOpsAIHubEndpointRouteCoverageGate> {
+  return invokeModelOpsApi<ModelOpsAIHubEndpointRouteCoverageGate>({
+    url: '/api/v1/aihub/models/aihub-endpoint-route-coverage-gate',
     method: 'GET',
   });
 }

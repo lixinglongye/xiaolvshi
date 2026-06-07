@@ -864,6 +864,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "user-need-gemini-route-coverage": "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "modelops-gemini-cheap-first-coverage-gate": "python -m pytest tests/test_modelops_gemini_cheap_first_coverage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-gemini-cheap-first-route-preflight": "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q",
+        "modelops-aihub-endpoint-route-coverage-gate": "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py tests/test_frontend_ui_regression_gate.py -q",
         "modelops-legal-micro-benchmark-preflight": "python -m pytest tests/test_modelops_legal_micro_benchmark_preflight.py tests/test_legal_fixture_local_run_package.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_model_ops_readiness.py -q",
         "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-legal-fixture-cheap-first-default-promotion-packet": "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -1116,6 +1117,40 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in checks["modelops-gemini-cheap-first-route-preflight"]["evidence_paths"]
+    assert checks["modelops-aihub-endpoint-route-coverage-gate"]["required"] is False
+    assert checks["modelops-aihub-endpoint-route-coverage-gate"]["blocks_release"] is False
+    assert "metadata-only AIHub endpoint route coverage gate evidence" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "runtime-router coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "budget-decision coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "route telemetry coverage" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "legacy media route gaps" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "Gemini" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "OpenAI" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "Google" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "gateways" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "app AI endpoints" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "models" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "network" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "does not write configuration" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "shift traffic" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "request bodies" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "response bodies" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "headers" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "raw payloads" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "model outputs" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "gateway responses" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "credentials" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "emails" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "user identifiers" in checks["modelops-aihub-endpoint-route-coverage-gate"]["manual_note"]
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in checks["modelops-aihub-endpoint-route-coverage-gate"]["evidence_paths"]
     assert "metadata-only low-resource legal benchmark preflight evidence" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]
     assert "cheap-first Gemini fixture selection" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]
     assert "document case ids" in checks["modelops-legal-micro-benchmark-preflight"]["manual_note"]

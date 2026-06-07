@@ -30,6 +30,7 @@ import {
   getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
   getModelOpsObservedGeminiCoverageGapQueue,
+  getModelOpsAIHubEndpointRouteCoverageGate,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
@@ -43,6 +44,7 @@ import {
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelOpsGeminiCheapFirstRoutePreflight,
+  type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
@@ -447,6 +449,9 @@ function Inner() {
   const [geminiCheapFirstRoutePreflight, setGeminiCheapFirstRoutePreflight] =
     useState<ModelOpsGeminiCheapFirstRoutePreflight | null>(null);
   const [geminiCheapFirstRoutePreflightError, setGeminiCheapFirstRoutePreflightError] = useState('');
+  const [aihubEndpointRouteCoverageGate, setAihubEndpointRouteCoverageGate] =
+    useState<ModelOpsAIHubEndpointRouteCoverageGate | null>(null);
+  const [aihubEndpointRouteCoverageGateError, setAihubEndpointRouteCoverageGateError] = useState('');
   const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
@@ -500,6 +505,8 @@ function Inner() {
     setGeminiCheapFirstCoverageGate(null);
     setGeminiCheapFirstRoutePreflightError('');
     setGeminiCheapFirstRoutePreflight(null);
+    setAihubEndpointRouteCoverageGateError('');
+    setAihubEndpointRouteCoverageGate(null);
     setPerformanceError('');
     setPerformanceBudget(null);
     setEscalationBudgetError('');
@@ -527,6 +534,7 @@ function Inner() {
         geminiAliasCapabilityCoverageResult,
         geminiCheapFirstCoverageGateResult,
         geminiCheapFirstRoutePreflightResult,
+        aihubEndpointRouteCoverageGateResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
@@ -538,6 +546,7 @@ function Inner() {
         getGeminiNewApiAliasCapabilityCoverage(),
         getGeminiCheapFirstCoverageGate(),
         getGeminiCheapFirstRoutePreflight(),
+        getModelOpsAIHubEndpointRouteCoverageGate(),
         getModelOpsCheapFirstEscalationBudget(),
         getModelFailureUpgradeBudget(),
         getModelOpsLegalBenchmarkRiskBridge(),
@@ -566,6 +575,7 @@ function Inner() {
         setObservedGeminiModelIntakeQueue(modelOpsResult.value.observed_gemini_model_intake_queue ?? null);
         setObservedGeminiCoverageGapQueue(modelOpsResult.value.observed_gemini_coverage_gap_queue ?? null);
         setGeminiCheapFirstRoutePreflight(modelOpsResult.value.gemini_cheap_first_route_preflight ?? null);
+        setAihubEndpointRouteCoverageGate(modelOpsResult.value.aihub_endpoint_route_coverage_gate ?? null);
         if (observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
           setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
         } else {
@@ -602,6 +612,15 @@ function Inner() {
             setGeminiCheapFirstRoutePreflightError('Gemini cheap-first route preflight failed to load.');
           }
         }
+        if (aihubEndpointRouteCoverageGateResult.status === 'fulfilled') {
+          setAihubEndpointRouteCoverageGate(aihubEndpointRouteCoverageGateResult.value);
+        } else {
+          console.error(aihubEndpointRouteCoverageGateResult.reason);
+          setAihubEndpointRouteCoverageGate(modelOpsResult.value.aihub_endpoint_route_coverage_gate ?? null);
+          if (!modelOpsResult.value.aihub_endpoint_route_coverage_gate) {
+            setAihubEndpointRouteCoverageGateError('AIHub endpoint route coverage gate failed to load.');
+          }
+        }
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
         } else {
@@ -618,6 +637,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
         setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'fulfilled') {
+        setAihubEndpointRouteCoverageGate(aihubEndpointRouteCoverageGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
         setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
@@ -688,6 +710,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'rejected') {
         console.error(observedGeminiCoverageGapQueueResult.reason);
         setObservedGeminiCoverageGapQueueError('Observed Gemini coverage gap queue failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'rejected') {
+        console.error(aihubEndpointRouteCoverageGateResult.reason);
+        setAihubEndpointRouteCoverageGateError('AIHub endpoint route coverage gate failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -1171,6 +1197,17 @@ function Inner() {
   const geminiCheapFirstRouteChecks = activeGeminiCheapFirstRoutePreflight?.checks ?? [];
   const geminiCheapFirstRouteBoundaryEntries = boundaryDisplayEntries(
     activeGeminiCheapFirstRoutePreflight?.privacy_boundary,
+  );
+  const activeAihubEndpointRouteCoverageGate =
+    aihubEndpointRouteCoverageGate ?? data?.aihub_endpoint_route_coverage_gate ?? null;
+  const aihubEndpointRouteRows = activeAihubEndpointRouteCoverageGate?.endpoint_rows ?? [];
+  const aihubEndpointRouteCoverageMatrixRows = activeAihubEndpointRouteCoverageGate?.coverage_matrix ?? [];
+  const aihubEndpointRouteChecks = activeAihubEndpointRouteCoverageGate?.checks ?? [];
+  const aihubEndpointRouteBoundaryEntries = boundaryDisplayEntries(
+    activeAihubEndpointRouteCoverageGate?.privacy_boundary,
+  );
+  const aihubEndpointRouteClaimEntries = boundaryDisplayEntries(
+    activeAihubEndpointRouteCoverageGate?.claim_boundary,
   );
   const catalogSourceRows = data?.catalog_source_audit?.catalog_rows ?? [];
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
@@ -5914,6 +5951,202 @@ function Inner() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {activeGeminiCheapFirstRoutePreflight.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeAihubEndpointRouteCoverageGate || aihubEndpointRouteCoverageGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">AIHub endpoint route coverage gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeAihubEndpointRouteCoverageGate
+                    ? `${activeAihubEndpointRouteCoverageGate.summary.endpoint_count} endpoints / ${activeAihubEndpointRouteCoverageGate.summary.runtime_routed_count} runtime routed / ${activeAihubEndpointRouteCoverageGate.summary.legacy_unrouted_count} legacy gaps`
+                    : 'metadata-only AIHub endpoint route coverage'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeAihubEndpointRouteCoverageGate?.id ?? 'modelops-aihub-endpoint-route-coverage-gate'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeAihubEndpointRouteCoverageGate?.status)}>
+                {activeAihubEndpointRouteCoverageGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {aihubEndpointRouteCoverageGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {aihubEndpointRouteCoverageGateError}
+              </div>
+            )}
+
+            {activeAihubEndpointRouteCoverageGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.endpoint_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">endpoint count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.runtime_routed_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">uses_runtime_router</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.budget_decision_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">uses_budget_decision</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.route_telemetry_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">records_route_telemetry</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.returns_route_payload_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">returns_route_payloads</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubEndpointRouteCoverageGate.summary.legacy_unrouted_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">legacy_media_unrouted</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeAihubEndpointRouteCoverageGate.summary.configuration_written)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">configuration_written</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Endpoint</TableHead>
+                        <TableHead>Route mode</TableHead>
+                        <TableHead>Coverage flags</TableHead>
+                        <TableHead>Default model</TableHead>
+                        <TableHead>route_gap_reason_codes</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {aihubEndpointRouteRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.endpoint_path}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.service_method}</div>
+                            <div className="mt-1 text-xs text-stone-500">{row.response_model}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.route_status === 'ready' ? 'pass' : 'warn')}>
+                              {row.route_mode}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-500">task: {row.task}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>uses_runtime_router: {String(row.uses_runtime_router)}</div>
+                            <div>uses_budget_decision: {String(row.uses_budget_decision)}</div>
+                            <div>records_route_telemetry: {String(row.records_route_telemetry)}</div>
+                            <div>records_usage: {String(row.records_usage)}</div>
+                            <div>returns_route_payloads: {String(row.returns_route_payloads)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.default_model}</div>
+                            <div className="mt-1">{row.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                              {row.cost_tier}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {row.route_gap_reason_codes.join(', ')}
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.next_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Coverage matrix</h3>
+                    <div className="space-y-2">
+                      {aihubEndpointRouteCoverageMatrixRows.map((row) => (
+                        <div key={row.coverage_key} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono text-[11px] font-semibold text-stone-950">{row.coverage_key}</div>
+                          <div className="mt-1 text-xs text-stone-600">
+                            covered: {row.covered_endpoint_count} / gaps: {row.gap_endpoint_ids.join(', ') || '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {aihubEndpointRouteChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>gateway_called: {String(activeAihubEndpointRouteCoverageGate.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeAihubEndpointRouteCoverageGate.summary.network_called)}</div>
+                      <div>configuration_written: {String(activeAihubEndpointRouteCoverageGate.summary.configuration_written)}</div>
+                      <div>traffic_shifted: {String(activeAihubEndpointRouteCoverageGate.summary.traffic_shifted)}</div>
+                      <div>claims_default_route_changed: {String(activeAihubEndpointRouteCoverageGate.claim_boundary.claims_default_route_changed)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {aihubEndpointRouteBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                      {aihubEndpointRouteClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeAihubEndpointRouteCoverageGate.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

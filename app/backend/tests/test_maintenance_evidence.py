@@ -100,6 +100,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary change manifest" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini cheap-first route preflight" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps AIHub endpoint route coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
@@ -188,6 +189,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
     assert "app/backend/services/modelops_legal_micro_benchmark_preflight.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py" in evidence_paths
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
@@ -236,8 +240,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "unmapped route blockers" in route_coverage_signal["description"]
     assert "user-need route coverage" in route_coverage_signal["responsibility"]
     assert "runtime route reason-code evidence" in model_signal["description"]
+    assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["description"]
+    assert "AIHub endpoint runtime-router and route telemetry coverage evidence" in model_signal["description"]
     assert "route telemetry reason-code hotspot evidence" in model_signal["description"]
     assert "runtime route reason-code review" in model_signal["responsibility"]
+    assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["responsibility"]
+    assert "AIHub endpoint runtime-router coverage review" in model_signal["responsibility"]
+    assert "AIHub route telemetry coverage review" in model_signal["responsibility"]
     assert "route telemetry reason-code hotspot review" in model_signal["responsibility"]
     assert "app/backend/services/model_runtime_router.py" in model_signal["evidence_paths"]
     assert "app/backend/services/route_telemetry_repository.py" in model_signal["evidence_paths"]
@@ -329,6 +338,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps cheap-first canary change manifest review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first coverage gate review" in model_signal["responsibility"]
     assert "ModelOps Gemini cheap-first route preflight review" in model_signal["responsibility"]
+    assert "ModelOps AIHub endpoint route coverage gate review" in model_signal["responsibility"]
     assert "ModelOps legal micro benchmark preflight review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first benchmark gate review" in model_signal["responsibility"]
     assert "ModelOps legal fixture cheap-first default promotion packet review" in model_signal["responsibility"]
@@ -356,6 +366,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
+    assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
@@ -367,6 +378,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_rollback_drill.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
@@ -378,6 +390,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_ROLLBACK_DRILL.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in evidence_paths
+    assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
@@ -424,6 +437,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("cheap-first calibration mapping reports task IDs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal benchmark research refresh is metadata-only maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model route legal benchmark risk queue is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("AIHub endpoint route coverage gate is metadata-only endpoint wiring evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("legacy media route gaps" in guardrail for guardrail in profile["application_guardrails"])
     assert any("user-need implementation priority queue is metadata-only planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("high-priority user needs, legal benchmark coverage gaps, cheap-first calibration/model routing risk, and product execution actions" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])

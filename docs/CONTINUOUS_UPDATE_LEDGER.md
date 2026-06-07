@@ -166,6 +166,17 @@ claim live model quality, or include request/response bodies, headers, prompts,
 raw payloads, legal text, model outputs, gateway responses, credentials, emails,
 or user identifiers.
 
+Current AIHub endpoint route coverage evidence:
+`modelops-aihub-endpoint-route-coverage-gate` adds shipped metadata-only
+endpoint route coverage evidence for text, streaming text, PDF, image, video,
+audio, and transcription AIHub routes. It shows runtime-router coverage,
+budget-decision coverage, route telemetry coverage, response route-payload
+coverage, and legacy media route gaps without calling NewAPI, Gemini, OpenAI,
+Google, gateways, app AI endpoints, models, or the network, writing
+configuration, shifting traffic, or including request/response bodies, headers,
+prompts, raw payloads, legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 Current legal micro benchmark preflight evidence:
 `modelops-legal-micro-benchmark-preflight` adds shipped metadata-only
 low-resource legal benchmark run-planning evidence for cheap-first Gemini

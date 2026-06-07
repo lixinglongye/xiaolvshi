@@ -60,6 +60,9 @@ from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiChe
 from services.model_ops_gemini_cheap_first_route_preflight import (
     ModelOpsGeminiCheapFirstRoutePreflightService,
 )
+from services.model_ops_aihub_endpoint_route_coverage_gate import (
+    ModelOpsAIHubEndpointRouteCoverageGateService,
+)
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
@@ -325,6 +328,7 @@ async def list_models():
             "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         }
     )
+    aihub_endpoint_route_coverage_gate = ModelOpsAIHubEndpointRouteCoverageGateService().build_gate()
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     cheap_first_escalation_budget = ModelOpsCheapFirstEscalationBudgetService().build_budget()
     default_model_ops_performance_budget = ModelOpsPerformanceBudgetService().build_budget(
@@ -376,6 +380,7 @@ async def list_models():
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
+        "aihub_endpoint_route_coverage_gate": aihub_endpoint_route_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -465,6 +470,7 @@ async def list_models():
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
+        "aihub_endpoint_route_coverage_gate": aihub_endpoint_route_coverage_gate,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
         "model_ops_performance_budget": model_ops_performance_budget,
@@ -713,6 +719,25 @@ async def evaluate_modelops_gemini_cheap_first_route_preflight(payload: dict[str
     return {
         "success": True,
         "data": ModelOpsGeminiCheapFirstRoutePreflightService().build_preflight(payload),
+    }
+
+
+@router.get("/models/aihub-endpoint-route-coverage-gate")
+async def modelops_aihub_endpoint_route_coverage_gate():
+    """Return metadata-only AIHub endpoint route coverage evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["aihub_endpoint_route_coverage_gate"],
+    }
+
+
+@router.post("/models/aihub-endpoint-route-coverage-gate")
+async def evaluate_modelops_aihub_endpoint_route_coverage_gate(payload: dict[str, Any]):
+    """Evaluate metadata-only AIHub endpoint route coverage without provider calls."""
+    return {
+        "success": True,
+        "data": ModelOpsAIHubEndpointRouteCoverageGateService().build_gate(payload),
     }
 
 

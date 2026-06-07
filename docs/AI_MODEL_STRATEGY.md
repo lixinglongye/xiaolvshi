@@ -352,3 +352,20 @@ same route.
 - Google Gemini model list: https://ai.google.dev/gemini-api/docs/models
 - Google Gemini pricing and deprecation notes: https://ai.google.dev/gemini-api/docs/pricing
 - New API user guide: https://docs.newapi.pro/zh/docs/guide/feature-guide/user/api
+## AIHub Endpoint Route Coverage Gate
+
+`modelops-aihub-endpoint-route-coverage-gate` is the shipped metadata-only
+AIHub endpoint coverage gate. It inventories text, streaming text, PDF, image,
+video, audio, and transcription endpoints for runtime-router coverage,
+budget-decision coverage, route telemetry coverage, response route payloads,
+and legacy media route gaps.
+
+The current gate keeps endpoint-level state visible in
+`GET /api/v1/aihub/models`: text, streaming text, PDF, and image routes are
+runtime-routed and telemetry-backed; video, audio, and transcription remain
+legacy media routes until explicit media/speech budget tasks and route
+telemetry are added.
+
+This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network, and it does not claim that legacy media
+routes have already been migrated.

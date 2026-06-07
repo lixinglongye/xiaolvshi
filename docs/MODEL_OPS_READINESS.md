@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -25,10 +25,10 @@ The response includes:
     "status": "pass",
     "release_recommendation": "ready_for_model_ops_release",
     "summary": {
-      "component_count": 55,
-      "required_component_count": 54,
+      "component_count": 56,
+      "required_component_count": 55,
       "optional_component_count": 1,
-      "pass_count": 55,
+      "pass_count": 56,
       "warn_count": 0,
       "fail_count": 0,
       "required_warning_count": 0,
@@ -83,6 +83,7 @@ The readiness service checks:
 - request policy,
 - gateway request compatibility gate,
 - Gemini cheap-first route preflight,
+- AIHub endpoint route coverage gate,
 - user-need Gemini route coverage,
 - request cost bounds,
 - cache policy,
@@ -141,6 +142,14 @@ OpenAI, Google, gateways, app AI endpoints, or the network, write
 configuration, shift traffic, or return request/response bodies, headers,
 prompts, raw payloads, legal text, model output, gateway responses,
 credentials, emails, or user identifiers.
+
+`aihub-endpoint-route-coverage-gate` is required metadata-only evidence for
+AIHub endpoint wiring. It inventories text, streaming text, PDF, image, video,
+audio, and transcription endpoints for runtime-router coverage, budget-decision
+coverage, route telemetry coverage, usage recording, response route payloads,
+and legacy media route gaps. It does not call providers, gateways, app AI
+endpoints, models, or the network, and it does not claim that legacy media
+routes have already been migrated.
 
 `catalog-source-audit` is required evidence for source-backed Gemini catalog maintenance. It checks official source URL coverage, pricing metadata visibility, stable Flash-Lite high-frequency defaults, and preview/premium default drift before model changes are promoted.
 
@@ -203,6 +212,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/services/model_failure_upgrade_budget.py`
 - `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py`
 - `app/backend/services/modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/services/model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
@@ -215,6 +225,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_route_quality_budget.py`
 - `app/backend/tests/test_model_failure_upgrade_budget.py`
 - `app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py`
 - `app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`
