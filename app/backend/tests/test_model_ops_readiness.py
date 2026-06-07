@@ -99,6 +99,28 @@ def test_model_ops_readiness_warns_on_observed_gemini_coverage_gaps():
     assert "catalog" in result["warning_drilldown"][0]["next_action"].lower()
 
 
+def test_model_ops_readiness_warns_on_default_recommendation_snapshot_review():
+    signals = _signals("pass")
+    signals["default_recommendation_snapshot"] = {
+        "status": "warn",
+        "summary": {"blocking_count": 0, "warning_count": 1, "catalog_review_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["observed-gemini-catalog-review"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "default-recommendation-snapshot" in result["warning_check_ids"]
+    assert "default-recommendation-snapshot" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    assert result["warning_drilldown"][0]["source_key"] == "default_recommendation_snapshot"
+    assert result["warning_drilldown"][0]["warning_category"] == "default_recommendation_review"
+    assert "default recommendations" in result["warning_drilldown"][0]["next_action"]
+    assert "test_model_default_recommendation_snapshot.py" in result["warning_drilldown"][0]["validation_hint"]
+    assert result["warning_drilldown"][0]["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_warns_on_observed_gateway_fit_matrix_review():
     signals = _signals("pass")
     signals["observed_gateway_model_fit_matrix"] = {
@@ -318,6 +340,9 @@ def test_model_ops_route_includes_readiness():
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
     assert "catalog_candidate_impact_replay" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert "default_recommendation_snapshot" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
     assert "gemini_newapi_alias_capability_coverage" in {

@@ -2044,6 +2044,35 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness" in readiness_drilldown_entry["release_gate_links"]
     assert "frontend-ui-regression" in readiness_drilldown_entry["release_gate_links"]
 
+    default_recommendation_readiness_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "model-ops-default-recommendation-readiness-binding"
+    )
+    assert default_recommendation_readiness_entry["size"] == "medium"
+    assert default_recommendation_readiness_entry["status"] == "shipped"
+    assert "default recommendation snapshot into required ModelOps readiness" in default_recommendation_readiness_entry["impact"]
+    assert "role-level blocking and warning ids" in default_recommendation_readiness_entry["impact"]
+    assert "default_recommendation_snapshot" in default_recommendation_readiness_entry["impact"]
+    assert "without calling gateways" in default_recommendation_readiness_entry["impact"]
+    assert "writing configuration" in default_recommendation_readiness_entry["impact"]
+    assert "credentials" in default_recommendation_readiness_entry["impact"]
+    assert "app/backend/services/model_default_recommendation_snapshot.py" in default_recommendation_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_readiness.py" in default_recommendation_readiness_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_default_recommendation_snapshot.py" in default_recommendation_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_readiness.py" in default_recommendation_readiness_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in default_recommendation_readiness_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in default_recommendation_readiness_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in default_recommendation_readiness_entry["evidence_paths"]
+    assert "model-default-recommendation-snapshot" in default_recommendation_readiness_entry["release_gate_links"]
+    assert "model-default-candidate-selector" in default_recommendation_readiness_entry["release_gate_links"]
+    assert "model-ops-readiness" in default_recommendation_readiness_entry["release_gate_links"]
+    assert "frontend-ui-regression" in default_recommendation_readiness_entry["release_gate_links"]
+
     catalog_candidate_patch_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-catalog-candidate-patch-plan"
     )

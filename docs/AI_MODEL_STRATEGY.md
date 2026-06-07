@@ -410,6 +410,18 @@ This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network, and it does not claim that media/speech
 defaults are price-benchmarked.
 
+## Default Recommendation Readiness Binding
+
+`model-ops-default-recommendation-readiness-binding` promotes
+`default_recommendation_snapshot` into the required ModelOps readiness table.
+The snapshot now emits role-level blocking and warning ids, so cheap-first
+default review can see premium, preview, unknown, over-budget, or observed
+Gemini catalog-review issues before maintainers edit environment defaults.
+This remains metadata-only: it does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, or the network, write configuration, shift
+traffic, or expose prompts, raw payloads, legal text, model outputs,
+credentials, emails, or user identifiers.
+
 ## Gentxt Routing Guard
 
 `modelops-gentxt-routing-guard` is the shipped metadata-only boundary evidence

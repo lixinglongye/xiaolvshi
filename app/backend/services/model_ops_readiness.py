@@ -22,6 +22,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "default_template_audit",
     ),
     ReadinessComponent("default-optimization", "Default optimization plan", "configuration", "default_optimization"),
+    ReadinessComponent(
+        "default-recommendation-snapshot",
+        "Default recommendation snapshot",
+        "configuration",
+        "default_recommendation_snapshot",
+    ),
     ReadinessComponent("gateway-compatibility", "Gateway compatibility", "configuration", "gateway_compatibility"),
     ReadinessComponent(
         "gateway-connection-profile",
@@ -475,7 +481,12 @@ class ModelOpsReadinessService:
         }[severity]
         if category in {"canary_evidence_gap", "release_evidence_review"}:
             priority += 10
-        if category in {"catalog_pricing_review", "cost_guardrail_review", "routing_quality_review"}:
+        if category in {
+            "catalog_pricing_review",
+            "cost_guardrail_review",
+            "default_recommendation_review",
+            "routing_quality_review",
+        }:
             priority += 5
         if check["blocking_ids"]:
             priority += min(10, len(check["blocking_ids"]) * 2)
@@ -490,6 +501,8 @@ class ModelOpsReadinessService:
             return "manual_evidence_gap"
         if "canary" in source_key:
             return "canary_evidence_gap"
+        if source_key == "default_recommendation_snapshot":
+            return "default_recommendation_review"
         if source_key in {
             "catalog_source_audit",
             "gemini_variant_matrix",
@@ -536,6 +549,8 @@ class ModelOpsReadinessService:
             return "Attach aggregate canary observation, approval, rollback, and change-manifest evidence before promoting cheap-first defaults."
         if warning_category == "catalog_pricing_review":
             return "Review catalog, pricing, lifecycle, and alias evidence before changing Gemini/NewAPI defaults."
+        if warning_category == "default_recommendation_review":
+            return "Review cheap-first default recommendations, blocked default roles, and observed Gemini catalog-review models before changing environment defaults."
         if warning_category == "runtime_telemetry_review":
             return "Inspect route telemetry, triage, and remediation evidence for cheap-first routing drift."
         if warning_category == "routing_quality_review":
@@ -557,6 +572,8 @@ class ModelOpsReadinessService:
             return "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py tests/test_model_ops_cheap_first_canary_promotion_decision.py tests/test_model_ops_readiness.py -q"
         if warning_category == "catalog_pricing_review":
             return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "default_recommendation_review":
+            return "python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py tests/test_model_ops_readiness.py -q"
         if warning_category == "runtime_telemetry_review":
             return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":

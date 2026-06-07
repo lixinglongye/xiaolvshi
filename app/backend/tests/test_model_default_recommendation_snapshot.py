@@ -36,6 +36,7 @@ def test_model_default_recommendation_snapshot_blocks_premium_fast_default(monke
     assert fast["recommended_model"] == "gemini-2.5-flash-lite"
     assert "high-volume" in fast["reason"]
     assert "fast" in snapshot["blocked_default_roles"]
+    assert "default-recommendation-fast" in snapshot["blocking_check_ids"]
 
 
 def test_model_default_recommendation_snapshot_uses_catalog_derived_future_cheaper_default(monkeypatch):
@@ -80,6 +81,7 @@ def test_model_default_recommendation_snapshot_warns_unknown_gemini_like_models(
     assert observed["newapi/gemini-4-flash-lite"]["status"] == "catalog_review"
     assert observed["models/gemini-2.5-flash-lite"]["status"] == "known"
     assert "newapi/gemini-4-flash-lite" in snapshot["catalog_review_models"]
+    assert "observed-gemini-catalog-review" in snapshot["warning_check_ids"]
 
 
 def test_model_default_recommendation_snapshot_prefix_examples_are_supported():

@@ -61,6 +61,14 @@ readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or
 unpriced gateway models now surface as release-review evidence before they can
 be treated as cheap-first defaults.
 
+Newest model-ops readiness slice:
+`model-ops-default-recommendation-readiness-binding` promotes
+`default_recommendation_snapshot` into the required ModelOps readiness
+component table, adds role-level blocking/warning ids to the snapshot, and
+shows the default-recommendation requirement on `/model-ops`. It does not call
+gateways, write configuration, shift traffic, or expose prompts, raw payloads,
+model outputs, legal text, credentials, emails, or user identifiers.
+
 Current catalog-derived default evidence: `model-default-candidate-selector`
 adds a metadata-only Gemini/NewAPI selector that derives cheapest capable task
 recommendations and ladders from local catalog capability, lifecycle, price,

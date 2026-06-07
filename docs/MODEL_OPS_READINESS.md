@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -23,24 +23,24 @@ The response includes:
 {
   "model_ops_readiness": {
     "status": "warn",
-    "release_recommendation": "review_model_ops_warnings",
+    "release_recommendation": "maintainer_review_required",
     "summary": {
-      "component_count": 59,
-      "required_component_count": 58,
+      "component_count": 61,
+      "required_component_count": 60,
       "optional_component_count": 1,
-      "pass_count": 58,
-      "warn_count": 1,
+      "pass_count": 41,
+      "warn_count": 20,
       "fail_count": 0,
-      "required_warning_count": 1,
-      "optional_review_count": 0,
+      "required_warning_count": 19,
+      "optional_review_count": 1,
       "required_failure_count": 0,
       "optional_failure_count": 0,
       "blocking_count": 0,
-      "warning_count": 1,
-      "warning_drilldown_count": 1,
+      "warning_count": 20,
+      "warning_drilldown_count": 20,
       "p0_warning_count": 0,
-      "p1_warning_count": 1,
-      "p2_warning_count": 0
+      "p1_warning_count": 19,
+      "p2_warning_count": 1
     },
     "warning_category_counts": {},
     "warning_drilldown": []
@@ -56,7 +56,7 @@ The frontend `/model-ops` page shows the readiness summary near the top of the p
 
 - `severity`: `p0_blocking_required`, `p1_required_review`, or `p2_optional_review`.
 - `priority`: numeric sort key used to put blocking and high-risk warning rows first.
-- `warning_category`: one of `manual_evidence_gap`, `canary_evidence_gap`, `catalog_pricing_review`, `runtime_telemetry_review`, `routing_quality_review`, `cost_guardrail_review`, `release_evidence_review`, `configuration_review`, `resilience_review`, or `general_review`.
+- `warning_category`: one of `manual_evidence_gap`, `canary_evidence_gap`, `catalog_pricing_review`, `default_recommendation_review`, `runtime_telemetry_review`, `routing_quality_review`, `cost_guardrail_review`, `release_evidence_review`, `configuration_review`, `resilience_review`, or `general_review`.
 - `next_action`: the maintainer action to resolve or accept the warning.
 - `validation_hint`: the local pytest command most relevant to the warning class.
 - `privacy_boundary`: explicit metadata-only flags showing that the row does not include prompts, raw payloads, model outputs, credentials, gateway responses, or network/model calls.
@@ -69,6 +69,7 @@ The readiness service checks:
 
 - model configuration audit,
 - default optimization plan,
+- default recommendation snapshot,
 - gateway compatibility,
 - gateway connection profile,
 - gateway health plan,
@@ -111,6 +112,16 @@ The readiness service checks:
 - ModelOps performance budget.
 
 Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. The summary separates `required_warning_count`, `required_failure_count`, and `optional_review_count` so manual evidence does not look like a required gate failure. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs. After a maintainer posts sanitized gateway probe results, `/api/v1/aihub/models` uses the latest in-process sanitized snapshot for this optional component; rejected payloads only contribute a minimal safe failure snapshot.
+
+`default-recommendation-snapshot` is required evidence for cheap-first default
+review. It binds `default_recommendation_snapshot` into the readiness
+component table, exposes role-level `blocking_check_ids` and
+`warning_check_ids`, and classifies non-passing rows as
+`default_recommendation_review`. Maintainers must resolve blocked default roles
+or observed Gemini catalog-review models before changing environment defaults.
+The snapshot remains metadata-only: model names, cost tiers, capabilities, and
+role ids are allowed; prompts, raw payloads, model outputs, legal text,
+gateway responses, credentials, emails, and user identifiers are not returned.
 
 `model-ops-performance-budget` is required evidence for the local operations UI. It checks that the heavyweight `/api/v1/aihub/models` payload has a short backend cache, the frontend has a request timeout and abort path, and the page does not repeat the cheap-first calibration request on first load.
 Submitted performance observations are also bound back into aggregate review:

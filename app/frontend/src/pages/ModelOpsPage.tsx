@@ -1566,6 +1566,11 @@ function Inner() {
                 <div className="mt-4 rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
                   Release review remains metadata-only: no prompts, raw payloads, model outputs, credentials, or
                   gateway responses are surfaced in the readiness warning drilldown.
+                  <div className="mt-2">
+                    Default recommendation snapshot coverage is required:{' '}
+                    <span className="font-mono">default_recommendation_snapshot</span> must stay attached before
+                    cheap-first default promotion.
+                  </div>
                 </div>
               </div>
             </div>

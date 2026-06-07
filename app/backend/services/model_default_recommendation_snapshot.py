@@ -77,6 +77,11 @@ class ModelDefaultRecommendationSnapshotService:
             "observed_gateway_models": observed_rows,
             "blocked_default_roles": [row["role"] for row in blocking],
             "catalog_review_models": [row["model"] for row in catalog_review],
+            "blocking_check_ids": [row["id"] for row in blocking],
+            "warning_check_ids": [
+                *[row["id"] for row in warnings],
+                *(["observed-gemini-catalog-review"] if catalog_review else []),
+            ],
             "newapi_prefix_compatibility": self._prefix_compatibility_examples(),
             "recommended_env": [
                 {

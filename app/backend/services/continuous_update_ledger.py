@@ -503,6 +503,37 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("safe-ai-ops", "low-cost-routing", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="model-ops-default-recommendation-readiness-binding",
+                title="ModelOps default recommendation readiness binding",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Promotes the Gemini/NewAPI default recommendation snapshot into required ModelOps readiness, "
+                    "adds role-level blocking and warning ids for cheap-first default review, and surfaces the "
+                    "default_recommendation_snapshot requirement in the ModelOps UI without calling gateways, "
+                    "writing configuration, shifting traffic, or exposing prompts, raw payloads, model outputs, "
+                    "legal text, credentials, or emails."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_default_recommendation_snapshot.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/tests/test_model_default_recommendation_snapshot.py",
+                    "app/backend/tests/test_model_ops_readiness.py",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "model-default-recommendation-snapshot",
+                    "model-default-candidate-selector",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                ),
+                user_need_ids=("safe-ai-ops", "low-cost-routing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="model-gateway-health-plan",
                 title="Gateway health planning before live requests",
                 category="model_ops",
