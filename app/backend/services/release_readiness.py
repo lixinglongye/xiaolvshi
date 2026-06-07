@@ -2359,6 +2359,29 @@ class ReleaseReadinessService:
                 manual_note="This binds selected-source citation validation into deep-review report metadata for export/delivery gating without raw text echo.",
             ),
             ReleaseCheck(
+                id="legal-rag-export-readiness-packet",
+                title="Legal RAG export readiness packet",
+                category="backend",
+                required=False,
+                owner="backend",
+                evidence_paths=(
+                    "app/backend/services/legal_rag_export_readiness_packet.py",
+                    "app/backend/tests/test_legal_rag_export_readiness_packet.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_RAG_EXPORT_READINESS_PACKET.md",
+                ),
+                validation_command="python -m pytest tests/test_legal_rag_export_readiness_packet.py tests/test_deep_review_selected_source_binding.py tests/test_case_export_readiness.py tests/test_deep_review_export_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                manual_note=(
+                    "This joins selected-source binding, case export readiness, and the deep-review export route gate "
+                    "into one metadata-only Legal RAG export packet; it does not return raw reports, legal text, "
+                    "document text, user claims, PII, prompts, model outputs, credentials, or call NewAPI, Gemini, "
+                    "gateways, or the network."
+                ),
+            ),
+            ReleaseCheck(
                 id="quota-delivery-decision",
                 title="Quota delivery decision",
                 category="billing",

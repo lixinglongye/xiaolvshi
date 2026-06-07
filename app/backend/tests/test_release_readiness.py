@@ -834,6 +834,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-selected-source-request-metadata": "python -m pytest tests/test_legal_rag_request_metadata.py -q",
         "legal-rag-selected-source-citation-validation": "python -m pytest tests/test_legal_rag_selected_source_validation.py tests/test_maintenance_legal_rag_selected_source_validation_route.py tests/test_legal_rag_request_metadata.py -q",
         "deep-review-selected-source-binding": "python -m pytest tests/test_deep_review_selected_source_binding.py tests/test_legal_rag_selected_source_validation.py -q",
+        "legal-rag-export-readiness-packet": "python -m pytest tests/test_legal_rag_export_readiness_packet.py tests/test_deep_review_selected_source_binding.py tests/test_case_export_readiness.py tests/test_deep_review_export_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "quota-delivery-decision": "python -m pytest tests/test_quota_delivery_decision.py tests/test_deep_review_document_quota.py -q",
         "feedback-issue-cluster": "python -m pytest tests/test_feedback_issue_cluster.py -q",
         "evidence-bundle-integrity": "python -m pytest tests/test_evidence_bundle_integrity.py -q",
@@ -904,6 +905,30 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "citation_map and generation_plan source IDs" in checks["legal-rag-selected-source-citation-validation"]["manual_note"]
     assert "metadata-only maintenance self-check route" in checks["legal-rag-selected-source-citation-validation"]["manual_note"]
     assert "deep-review report metadata" in checks["deep-review-selected-source-binding"]["manual_note"]
+    assert "selected-source binding" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "case export readiness" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "deep-review export route gate" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "raw reports" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "legal text" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "document text" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "model outputs" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "credentials" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "NewAPI" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "Gemini" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "gateways" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "network" in checks["legal-rag-export-readiness-packet"]["manual_note"]
+    assert "app/backend/services/legal_rag_export_readiness_packet.py" in checks[
+        "legal-rag-export-readiness-packet"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_export_readiness_packet.py" in checks[
+        "legal-rag-export-readiness-packet"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "legal-rag-export-readiness-packet"
+    ]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EXPORT_READINESS_PACKET.md" in checks["legal-rag-export-readiness-packet"][
+        "evidence_paths"
+    ]
     assert "account-plan review decisions" in checks["quota-delivery-decision"]["manual_note"]
     assert "repeated user feedback" in checks["feedback-issue-cluster"]["manual_note"]
     assert "missing proof purposes" in checks["evidence-bundle-integrity"]["manual_note"]

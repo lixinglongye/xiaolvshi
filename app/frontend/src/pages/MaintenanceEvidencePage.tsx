@@ -51,6 +51,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
+  getMaintenanceLegalRagExportReadinessPacket,
   getLegalRagHallucinationTriageGate,
   getLegalRagRetrievalDiagnosticsGate,
   getLegalResearchBacklog,
@@ -121,6 +122,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type MaintenanceLegalRagExportReadinessPacket,
   type LegalRagHallucinationTriageGate,
   type LegalRagRetrievalDiagnosticsGate,
   type LegalResearchBacklog,
@@ -381,6 +383,8 @@ function Inner() {
     useState<LegalRagRetrievalDiagnosticsGate | null>(null);
   const [legalRagBenchmarkAlignment, setLegalRagBenchmarkAlignment] =
     useState<LegalRagBenchmarkAlignment | null>(null);
+  const [legalRagExportReadinessPacket, setLegalRagExportReadinessPacket] =
+    useState<MaintenanceLegalRagExportReadinessPacket | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -770,6 +774,11 @@ function Inner() {
           label: 'Legal RAG benchmark alignment',
           run: getLegalRagBenchmarkAlignment,
           apply: (value) => setLegalRagBenchmarkAlignment(value as LegalRagBenchmarkAlignment),
+        },
+        {
+          label: 'Legal RAG export readiness',
+          run: getMaintenanceLegalRagExportReadinessPacket,
+          apply: (value) => setLegalRagExportReadinessPacket(value as MaintenanceLegalRagExportReadinessPacket),
         },
         {
           label: 'Legal RAG hallucination triage gate',
@@ -9400,6 +9409,153 @@ function Inner() {
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalRagExportReadinessPacket && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal RAG export readiness packet</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Selected-source binding, case export readiness, and deep-review route gate in one metadata-only review packet
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className={statusClass[legalRagExportReadinessPacket.status] ?? statusClass.review_required}>
+                      {displayToken(legalRagExportReadinessPacket.status)}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      {displayToken(legalRagExportReadinessPacket.release_action)}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  {[
+                    { label: 'checks', value: legalRagExportReadinessPacket.summary.check_count },
+                    { label: 'ready', value: legalRagExportReadinessPacket.summary.ready_check_count },
+                    { label: 'review', value: legalRagExportReadinessPacket.summary.review_check_count },
+                    { label: 'blocked', value: legalRagExportReadinessPacket.summary.blocked_check_count },
+                    { label: 'selected', value: legalRagExportReadinessPacket.summary.selected_source_count },
+                    { label: 'cited', value: legalRagExportReadinessPacket.summary.cited_source_count },
+                    { label: 'unexpected', value: legalRagExportReadinessPacket.summary.unexpected_source_count },
+                    { label: 'missing sections', value: legalRagExportReadinessPacket.summary.missing_required_section_count },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Check</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Release gate</TableHead>
+                          <TableHead>Reason codes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(legalRagExportReadinessPacket.checks ?? []).map((check) => (
+                          <TableRow key={check.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{check.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{check.id}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[check.status] ?? statusClass.review_required}>
+                                {displayToken(check.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-[11px] text-stone-600">
+                              {check.release_gate_link}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex max-w-[320px] flex-wrap gap-1.5">
+                                {(check.reason_codes ?? []).length ? (
+                                  check.reason_codes.map((reason) => (
+                                    <Badge key={`${check.id}-${reason}`} variant="outline" className={statusClass.warn}>
+                                      {displayToken(reason)}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  <span className="text-xs text-stone-500">-</span>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked release gates</h3>
+                      <div className="mb-2 font-mono text-[11px] text-stone-500">
+                        route gate: deep-review-export-readiness-route-gate
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(legalRagExportReadinessPacket.linked_release_gates ?? []).map((gate) => (
+                          <Badge key={gate} variant="outline" className="bg-white font-mono text-[11px]">
+                            {gate}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Export readiness</h3>
+                      <div className="space-y-2 text-xs leading-5 text-stone-600">
+                        <div>binding: {displayToken(legalRagExportReadinessPacket.selected_source_binding.delivery_status)}</div>
+                        <div>export: {displayToken(legalRagExportReadinessPacket.export_readiness.status)}</div>
+                        <div>selected-source validation: {displayToken(legalRagExportReadinessPacket.export_readiness.selected_source_validation_status ?? 'not_run')}</div>
+                        <div>missing sections: {(legalRagExportReadinessPacket.export_readiness.missing_sections ?? []).join(', ') || '-'}</div>
+                      </div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                      <div className="space-y-2 text-xs leading-5 text-stone-600">
+                        <div>raw report returned: {String(legalRagExportReadinessPacket.privacy_boundary.raw_report_returned)}</div>
+                        <div>raw document text: {String(legalRagExportReadinessPacket.privacy_boundary.raw_document_text_included)}</div>
+                        <div>model calls: {String(legalRagExportReadinessPacket.privacy_boundary.model_calls)}</div>
+                        <div>network calls: {String(legalRagExportReadinessPacket.privacy_boundary.network_calls)}</div>
+                        <div>credentials: {String(legalRagExportReadinessPacket.privacy_boundary.credentials_included)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {(legalRagExportReadinessPacket.recommended_actions ?? []).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(legalRagExportReadinessPacket.validation_commands ?? []).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-2 font-mono text-[11px] text-stone-600"
                         >
                           {command}
                         </div>

@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_retrieval_diagnostics_gate import LegalRagRetrievalDiagnosticsGateService
 from services.legal_rag_retrieval_observation_gate import LegalRagRetrievalObservationGateService
@@ -127,6 +128,14 @@ class LegalRagRetrievalObservationGateRequest(BaseModel):
 
 
 class DeepReviewSelectedSourceBindingRequest(BaseModel):
+    report: dict[str, Any] = Field(default_factory=dict)
+    request_metadata: dict[str, Any] = Field(default_factory=dict)
+    block_on_failure: bool = True
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class LegalRagExportReadinessPacketRequest(BaseModel):
     report: dict[str, Any] = Field(default_factory=dict)
     request_metadata: dict[str, Any] = Field(default_factory=dict)
     block_on_failure: bool = True
@@ -1351,6 +1360,19 @@ async def bind_deep_review_selected_source_validation(payload: DeepReviewSelecte
     return {
         "success": True,
         "data": DeepReviewSelectedSourceBindingService().evaluate(
+            report=payload.report,
+            request_metadata=payload.request_metadata,
+            block_on_failure=payload.block_on_failure,
+        ),
+    }
+
+
+@router.post("/legal-rag/export-readiness-packet")
+async def build_legal_rag_export_readiness_packet(payload: LegalRagExportReadinessPacketRequest):
+    """Join selected-source binding and export readiness into a metadata-only packet."""
+    return {
+        "success": True,
+        "data": LegalRagExportReadinessPacketService().build_packet(
             report=payload.report,
             request_metadata=payload.request_metadata,
             block_on_failure=payload.block_on_failure,

@@ -48,6 +48,13 @@ reviewer actions, release blockers, and authority-gate rows. It does not call
 NewAPI, Gemini, or gateways, download datasets, store raw legal text, retrieved
 snippets, prompts, model outputs, or credentials.
 
+Current Legal RAG export slice: `legal-rag-export-readiness-packet` adds a
+metadata-only review packet that joins selected-source binding, case export
+readiness, and the deep-review export route gate into one export action. It
+does not return raw reports, legal text, document text, user claims, PII,
+prompts, model outputs, credentials, or call NewAPI, Gemini, gateways, or the
+network.
+
 Current model-ops slice: `model-price-refresh-monitor-readiness-ui` wires the
 Gemini/NewAPI price refresh monitor into `/api/v1/aihub/models`, model-ops
 readiness, and the `/model-ops` reviewer page. Unknown, preview, premium, or

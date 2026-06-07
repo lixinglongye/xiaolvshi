@@ -4656,6 +4656,40 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "reviewer-visibility", "document-generation"),
             ),
             LedgerEntry(
+                id="legal-rag-export-readiness-packet",
+                title="Legal RAG export readiness packet",
+                category="full_stack",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a metadata-only Legal RAG export readiness packet that joins selected-source binding, "
+                    "case export readiness, and the deep-review export route gate into one review action without "
+                    "returning raw reports, legal text, document text, user claims, PII, prompts, model outputs, "
+                    "credentials, or calling NewAPI, Gemini, gateways, or the network."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_rag_export_readiness_packet.py",
+                    "app/backend/tests/test_legal_rag_export_readiness_packet.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_RAG_EXPORT_READINESS_PACKET.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "legal-rag-export-readiness-packet",
+                    "legal-rag-selected-source-citation-validation",
+                    "deep-review-selected-source-binding",
+                    "case-export-readiness",
+                    "deep-review-export-readiness-route-gate",
+                    "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("grounded-legal-output", "reviewer-visibility", "document-generation", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="quota-delivery-decision",
                 title="Quota delivery decision",
                 category="backend_api",

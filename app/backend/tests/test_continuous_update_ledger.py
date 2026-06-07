@@ -400,6 +400,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
+    assert "legal-rag-export-readiness-packet" in completed_ids
     assert "quota-delivery-decision" in completed_ids
     assert "feedback-issue-cluster" in completed_ids
     assert "evidence-bundle-integrity" in completed_ids
@@ -586,6 +587,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
+    assert "legal-rag-export-readiness-packet" not in queue_ids
     assert "quota-delivery-decision" not in queue_ids
     assert "feedback-issue-cluster" not in queue_ids
     assert "evidence-bundle-integrity" not in queue_ids
@@ -2433,6 +2435,37 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q"
         in ledger["validation_commands"]
     )
+    rag_export_packet_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-export-readiness-packet"
+    )
+    assert rag_export_packet_entry["category"] == "full_stack"
+    assert rag_export_packet_entry["size"] == "medium"
+    assert "selected-source binding" in rag_export_packet_entry["impact"]
+    assert "case export readiness" in rag_export_packet_entry["impact"]
+    assert "deep-review export route gate" in rag_export_packet_entry["impact"]
+    assert "raw reports" in rag_export_packet_entry["impact"]
+    assert "legal text" in rag_export_packet_entry["impact"]
+    assert "document text" in rag_export_packet_entry["impact"]
+    assert "user claims" in rag_export_packet_entry["impact"]
+    assert "PII" in rag_export_packet_entry["impact"]
+    assert "prompts" in rag_export_packet_entry["impact"]
+    assert "model outputs" in rag_export_packet_entry["impact"]
+    assert "credentials" in rag_export_packet_entry["impact"]
+    assert "NewAPI" in rag_export_packet_entry["impact"]
+    assert "Gemini" in rag_export_packet_entry["impact"]
+    assert "gateways" in rag_export_packet_entry["impact"]
+    assert "network" in rag_export_packet_entry["impact"]
+    assert "app/backend/services/legal_rag_export_readiness_packet.py" in rag_export_packet_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_export_readiness_packet.py" in rag_export_packet_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in rag_export_packet_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in rag_export_packet_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EXPORT_READINESS_PACKET.md" in rag_export_packet_entry["evidence_paths"]
+    assert "legal-rag-export-readiness-packet" in rag_export_packet_entry["release_gate_links"]
+    assert "legal-rag-selected-source-citation-validation" in rag_export_packet_entry["release_gate_links"]
+    assert "deep-review-selected-source-binding" in rag_export_packet_entry["release_gate_links"]
+    assert "case-export-readiness" in rag_export_packet_entry["release_gate_links"]
+    assert "deep-review-export-readiness-route-gate" in rag_export_packet_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in rag_export_packet_entry["release_gate_links"]
 
 
 def test_continuous_update_ledger_is_optional_release_evidence():

@@ -93,6 +93,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "reusable settings/report capture-plan previews" in gaps["feedback-loop"]["current_state"]
     assert "admin feedback lifecycle summaries" in gaps["feedback-loop"]["current_state"]
     assert "deep-review selected-source report binding" in gaps["legal-knowledge-rag"]["current_state"]
+    assert "Legal RAG export readiness packet" in gaps["legal-knowledge-rag"]["current_state"]
     assert "privacy retention rules" in gaps["safety-compliance"]["current_state"]
     assert "local-only payment/invoice/plan-change reconciliation policy evidence" in gaps["billing-entitlements"]["current_state"]
     assert "app/frontend/src/pages/CaseDetailPage.tsx" in gaps["document-generation"]["evidence_paths"]
@@ -127,8 +128,10 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "docs/FEEDBACK_CAPTURE_PLAN.md" in gaps["feedback-loop"]["evidence_paths"]
     assert "app/backend/services/legal_rag_request_metadata.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/services/legal_rag_selected_source_validation.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_export_readiness_packet.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/tests/test_maintenance_legal_rag_selected_source_validation_route.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/tests/test_deep_review_selected_source_binding.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_export_readiness_packet.py" in gaps["legal-knowledge-rag"]["evidence_paths"]
     assert "app/backend/services/billing_payment_reconciliation.py" in gaps["billing-entitlements"]["evidence_paths"]
     assert "LegalBench/LexGLUE/LegalBench-RAG/LexEval/CaseGen/COLIEE research registry" in gaps["model-cost-ops"][
         "current_state"
@@ -195,7 +198,7 @@ def test_frontend_productization_has_reviewable_evidence_and_next_deeper_work():
     assert "max-gap, commit-window, credential-scan" in gaps["continuous-maintenance-evidence"]["current_state"]
     assert any("risk refresh plan" in action for action in gaps["case-workbench"]["next_actions"])
     assert any("projected badges" in action for action in gaps["case-workbench"]["next_actions"])
-    assert any("live deep-review persistence" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
+    assert any("Legal RAG export readiness packet" in action for action in gaps["legal-knowledge-rag"]["next_actions"])
     assert any("account plan review" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("webhook signature verification" in action for action in gaps["billing-entitlements"]["next_actions"])
     assert any("model selector audits" in action for action in gaps["model-cost-ops"]["next_actions"])

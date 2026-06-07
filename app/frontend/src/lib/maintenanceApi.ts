@@ -4497,6 +4497,62 @@ type MaintenanceSelectedSourceBindingResponse = {
   data: MaintenanceSelectedSourceBinding;
 };
 
+export type MaintenanceLegalRagExportReadinessPacket = {
+  id: 'legal-rag-export-readiness-packet' | string;
+  title: string;
+  status: string;
+  release_action: string;
+  summary: {
+    check_count: number;
+    ready_check_count: number;
+    review_check_count: number;
+    blocked_check_count: number;
+    selected_source_count: number;
+    cited_source_count: number;
+    unexpected_source_count: number;
+    missing_required_section_count: number;
+    reason_code_count: number;
+    raw_report_returned: boolean;
+    model_calls: boolean;
+    network_calls: boolean;
+    [key: string]: unknown;
+  };
+  checks: Array<{
+    id: string;
+    title: string;
+    status: string;
+    reason_codes: string[];
+    release_gate_link: string;
+  }>;
+  selected_source_binding: {
+    status: string;
+    delivery_status: string;
+    reason_codes: string[];
+    counts: Record<string, number>;
+    unexpected_source_ids: string[];
+    missing_selected_source_ids: string[];
+    stale_source_ids: string[];
+    unknown_source_ids: string[];
+  };
+  export_readiness: {
+    status: string;
+    present_sections: string[];
+    missing_sections: string[];
+    selected_source_validation_status?: string;
+    reason_codes: string[];
+  };
+  linked_release_gates: string[];
+  reason_codes: string[];
+  recommended_actions: string[];
+  privacy_boundary: MaintenancePrivacyBoundary;
+  validation_commands: string[];
+};
+
+type MaintenanceLegalRagExportReadinessPacketResponse = {
+  success: boolean;
+  data: MaintenanceLegalRagExportReadinessPacket;
+};
+
 export type MaintenanceContinuousSessionTimelineEvent = {
   id: string;
   event_type: string;
@@ -4981,6 +5037,20 @@ const syntheticSelectedSourceBindingPayload = {
     report_meta: { report_id: 'RPT-001' },
     citation_map: { citations: [{ source_id: 'law:contract-001' }] },
     generation_plan: { steps: [{ selected_source_binding_checked: true }] },
+  },
+  request_metadata: { legal_rag_selected_source_ids: ['law:contract-001'] },
+  block_on_failure: true,
+};
+
+const syntheticLegalRagExportReadinessPacketPayload = {
+  report: {
+    report_meta: { report_id: 'RAG-EXPORT-001' },
+    risk_scoring: { overall_score: 18, overall_level: 'low' },
+    citations: [{ source_id: 'law:contract-001' }],
+    citation_map: { citations: [{ source_id: 'law:contract-001' }] },
+    generation_plan: { steps: [{ selected_source_binding_checked: true }] },
+    evidence: [{ evidence_id: 'EV-001' }],
+    release_decision: { status: 'ready' },
   },
   request_metadata: { legal_rag_selected_source_ids: ['law:contract-001'] },
   block_on_failure: true,
@@ -5918,6 +5988,17 @@ export async function getMaintenanceSelectedSourceBinding(
   return unwrapMaintenanceData<MaintenanceSelectedSourceBindingResponse['data']>(resp);
 }
 
+export async function getMaintenanceLegalRagExportReadinessPacket(
+  payload: Record<string, unknown> = syntheticLegalRagExportReadinessPacketPayload,
+): Promise<MaintenanceLegalRagExportReadinessPacket> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag/export-readiness-packet',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceLegalRagExportReadinessPacketResponse['data']>(resp);
+}
+
 export async function getMaintenanceContinuousSessionEvidence(): Promise<MaintenanceContinuousSessionEvidence> {
   const resp = await client.apiCall.invoke({
     url: '/api/v1/maintenance/continuous-session-evidence',
@@ -5937,6 +6018,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     adminAudit,
     quotaDecision,
     selectedSourceBinding,
+    legalRagExportReadinessPacket,
     continuousSessionEvidence,
   ] = await Promise.all([
     getMaintenanceFeedbackIssueClusters(),
@@ -5948,6 +6030,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     getMaintenanceAdminAuditPolicy(),
     getMaintenanceQuotaDeliveryDecision(),
     getMaintenanceSelectedSourceBinding(),
+    getMaintenanceLegalRagExportReadinessPacket(),
     getMaintenanceContinuousSessionEvidence(),
   ]);
 
@@ -6093,6 +6176,20 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
       ],
       reason_codes: selectedSourceBinding.binding.reason_codes,
       privacy_boundary: selectedSourceBinding.privacy_boundary,
+    },
+    {
+      id: 'legal-rag-export-readiness-packet',
+      label: 'Legal RAG export readiness',
+      endpoint: '/api/v1/maintenance/legal-rag/export-readiness-packet',
+      method: 'POST',
+      status: legalRagExportReadinessPacket.status,
+      counts: [
+        { label: 'checks', value: legalRagExportReadinessPacket.summary.check_count },
+        { label: 'blocked', value: legalRagExportReadinessPacket.summary.blocked_check_count },
+        { label: 'missing sections', value: legalRagExportReadinessPacket.summary.missing_required_section_count },
+      ],
+      reason_codes: legalRagExportReadinessPacket.reason_codes,
+      privacy_boundary: legalRagExportReadinessPacket.privacy_boundary,
     },
     {
       id: 'continuous-session-evidence',
