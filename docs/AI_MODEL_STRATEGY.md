@@ -216,6 +216,17 @@ Google, gateways, app AI endpoints, models, indexes, databases, or the network,
 and it does not claim live pricing accuracy, embedding execution, index writes,
 or retrieval quality.
 
+`legal-rag-embedding-batch-observation-gate` is the shipped metadata-only
+aggregate observation gate downstream of the approval packet. It reviews
+sanitized observed batch/chunk/vector-slot/token counts, cost deltas,
+`max_parallel_embedding_requests=1`, and allow/hold/block index-review actions
+after an external cheap Gemini embedding run. It does not approve maintainers,
+execute embeddings, collect approver identity, call NewAPI, Gemini, OpenAI,
+Google, gateways, app AI endpoints, models, indexes, databases, or the network,
+and it does not return source ids, approval item ids, raw legal text, source
+chunks, embedding vectors, prompts, model outputs, gateway payloads,
+credentials, emails, live pricing claims, index writes, or retrieval quality.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,

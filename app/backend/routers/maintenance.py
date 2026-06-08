@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_embedding_batch_observation_gate import LegalRagEmbeddingBatchObservationGateService
 from services.legal_rag_embedding_batch_approval_packet import LegalRagEmbeddingBatchApprovalPacketService
 from services.legal_rag_embedding_batch_budget_gate import LegalRagEmbeddingBatchBudgetGateService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
@@ -1436,6 +1437,43 @@ async def evaluate_legal_rag_embedding_batch_approval_packet(payload: dict[str, 
     return {
         "success": True,
         "data": LegalRagEmbeddingBatchApprovalPacketService().build_packet(rows if isinstance(rows, list) else None),
+    }
+
+
+@router.get("/legal-rag-embedding-batch-observation-gate")
+async def get_legal_rag_embedding_batch_observation_gate():
+    """Return metadata-only Legal RAG embedding batch observation evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchObservationGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-embedding-batch-observation-gate")
+async def evaluate_legal_rag_embedding_batch_observation_gate(payload: dict[str, Any]):
+    """Evaluate sanitized Legal RAG embedding batch observations without vector echo."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    observations = payload.get("observations")
+    if not isinstance(observations, list):
+        observations = payload.get("embedding_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("batch_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("observation_rows")
+    if not isinstance(observations, list):
+        observations = payload.get("rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchObservationGateService().build_gate(
+            rows if isinstance(rows, list) else None,
+            {"observations": observations} if isinstance(observations, list) else None,
+        ),
     }
 
 

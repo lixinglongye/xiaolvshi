@@ -4,6 +4,10 @@
 review packet after the embedding batch budget gate and before any live Gemini
 embedding run.
 
+After an external low-resource embedding run, aggregate observations are
+reviewed separately by `legal-rag-embedding-batch-observation-gate`; this packet
+itself never records run results or index-commit decisions.
+
 ## Endpoint
 
 - `GET /api/v1/maintenance/legal-rag-embedding-batch-approval-packet`

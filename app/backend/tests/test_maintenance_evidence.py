@@ -70,6 +70,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG embedding index dry-run gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch budget gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch approval packet" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding batch observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -516,6 +517,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("source chunks" in guardrail for guardrail in profile["application_guardrails"])
     assert any("embedding vectors" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG retrieval observation gate is metadata-only local retrieval observation evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding batch observation gate is metadata-only aggregate observation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store or return source ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw query" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw retrieved context" in guardrail for guardrail in profile["application_guardrails"])

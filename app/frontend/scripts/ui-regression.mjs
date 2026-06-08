@@ -586,6 +586,23 @@ const checks = [
   () => assertIncludes(maintenancePage, 'approval_identity_collected', 'legal RAG embedding batch approval no identity collection binding'),
   () => assertIncludes(maintenancePage, 'approver identity returned', 'legal RAG embedding batch approval approver identity boundary label'),
   () => assertIncludes(maintenancePage, 'maintainer approval claimed', 'legal RAG embedding batch approval claim boundary label'),
+  () => assertIncludes(maintenancePage, 'Legal RAG embedding batch observation gate', 'legal RAG embedding batch observation gate panel'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation POST binding'),
+  () => assertIncludes(maintenancePage, 'getLegalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation GET fallback binding'),
+  () => assertIncludes(maintenancePage, 'legalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation state binding'),
+  () => assertIncludes(maintenancePage, 'defaultLegalRagEmbeddingBatchObservationPayload', 'legal RAG embedding batch observation sample payload'),
+  () => assertIncludes(maintenancePage, 'hasForbiddenEmbeddingBatchObservationPayloadText', 'legal RAG embedding batch observation forbidden key guard'),
+  () => assertIncludes(maintenancePage, 'ready index reviews', 'legal RAG embedding batch observation ready summary'),
+  () => assertIncludes(maintenancePage, 'pending observations', 'legal RAG embedding batch observation pending summary'),
+  () => assertIncludes(maintenancePage, 'observed vector slots', 'legal RAG embedding batch observation vector summary'),
+  () => assertIncludes(maintenancePage, 'observation_status_counts', 'legal RAG embedding batch observation status distribution'),
+  () => assertIncludes(maintenancePage, 'release_action_counts', 'legal RAG embedding batch observation release distribution'),
+  () => assertIncludes(maintenancePage, 'observation_policy', 'legal RAG embedding batch observation policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_observation_fields', 'legal RAG embedding batch observation input fields'),
+  () => assertIncludes(maintenancePage, 'source_approval_item_id_echoed', 'legal RAG embedding batch observation no approval id echo binding'),
+  () => assertIncludes(maintenancePage, 'source approval ids returned', 'legal RAG embedding batch observation source approval boundary label'),
+  () => assertIncludes(maintenancePage, 'embedding batch executed claimed', 'legal RAG embedding batch observation execution claim boundary label'),
+  () => assertIncludes(maintenancePage, 'index commit claimed', 'legal RAG embedding batch observation index claim boundary label'),
   () =>
     assertBefore(
       maintenancePage,
@@ -632,8 +649,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch observation gate</h2>',
+      'embedding batch approval packet precedes embedding batch observation gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch observation gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding batch approval packet precedes retrieval diagnostics',
+      'embedding batch observation gate precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -883,6 +907,27 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'writes_approval_record', 'legal RAG embedding batch approval no approval write type'),
   () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingBatchApprovalPacket', 'legal RAG embedding batch approval getter'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-batch-approval-packet', 'legal RAG embedding batch approval endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation gate type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      "id: 'legal-rag-embedding-batch-observation-gate' | string",
+      'legal RAG embedding batch observation gate id',
+    ),
+  () => assertIncludes(maintenanceApi, 'observation_rows', 'legal RAG embedding batch observation rows type'),
+  () => assertIncludes(maintenanceApi, 'observation_status_counts', 'legal RAG embedding batch observation status counts type'),
+  () => assertIncludes(maintenanceApi, 'release_action_counts', 'legal RAG embedding batch observation release counts type'),
+  () => assertIncludes(maintenanceApi, 'observed_vector_slot_total', 'legal RAG embedding batch observation observed vector type'),
+  () => assertIncludes(maintenanceApi, 'source_approval_item_id_echoed', 'legal RAG embedding batch observation no approval id echo type'),
+  () => assertIncludes(maintenanceApi, 'embeddings_created_by_gate', 'legal RAG embedding batch observation no creation claim type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation getter'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalRagEmbeddingBatchObservationGate', 'legal RAG embedding batch observation POST helper'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-rag-embedding-batch-observation-gate',
+      'legal RAG embedding batch observation endpoint',
+    ),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1980,8 +2025,14 @@ const legalRagEmbeddingBatchBudgetPanel = sourceSection(
 const legalRagEmbeddingBatchApprovalPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch observation gate</h2>',
   'maintenance Legal RAG embedding batch approval section',
+);
+const legalRagEmbeddingBatchObservationPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch observation gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding batch observation section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2198,6 +2249,11 @@ assertNotMatches(
   legalRagEmbeddingBatchApprovalPanel,
   /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
   'maintenance Legal RAG embedding batch approval no raw chunks, raw legal text, source ids, secrets, approver identity, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingBatchObservationPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding batch observation no raw chunks, raw legal text, source ids, secrets, approver identity, vectors, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

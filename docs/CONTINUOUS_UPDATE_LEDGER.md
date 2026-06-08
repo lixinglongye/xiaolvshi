@@ -82,6 +82,20 @@ chunks, embedding vectors, prompts, model outputs, gateway payloads,
 credentials, emails, live pricing claims, or embedding/index/retrieval quality
 claims.
 
+Current Legal RAG embedding batch observation slice:
+`legal-rag-embedding-batch-observation-gate` adds metadata-only aggregate
+observation evidence through `LegalRagEmbeddingBatchObservationGateService` at
+`/api/v1/maintenance/legal-rag-embedding-batch-observation-gate`. It reviews
+sanitized observed batch/chunk/vector-slot/token counts, cost deltas,
+`max_parallel_embedding_requests=1`, and allow/hold/block index-review actions
+after an external embedding run. It does not claim maintainer approval, execute
+embeddings, call NewAPI, Gemini, models, gateways, app AI endpoints, or the
+network; create embeddings; write indexes or databases; collect approver
+identity; download datasets; or return source ids, approval item ids, raw
+query, raw retrieved context, raw legal text, source chunks, embedding vectors,
+prompts, model outputs, gateway payloads, credentials, emails, live pricing
+claims, or embedding/index/retrieval quality claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

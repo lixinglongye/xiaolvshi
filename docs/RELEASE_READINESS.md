@@ -357,6 +357,22 @@ source ids, raw query, raw retrieved context, raw legal text, source chunks,
 embedding vectors, prompts, model outputs, gateway payloads, credentials,
 emails, or client material.
 
+The optional `legal-rag-embedding-batch-observation-gate` check records
+metadata-only Legal RAG embedding batch observation evidence through
+`LegalRagEmbeddingBatchObservationGateService` at
+`/api/v1/maintenance/legal-rag-embedding-batch-observation-gate`. It reviews
+sanitized aggregate observations after an external cheap Gemini embedding run:
+observed batch/chunk/vector-slot/token counts, cost deltas,
+`max_parallel_embedding_requests=1`, and allow/hold/block index-review actions.
+It must not be used to claim maintainer approval, embedding execution by the
+gate, vector storage, index/database writes, retrieval quality, legal-answer
+quality, live pricing accuracy, provider execution, or client delivery. It must
+not collect approver identity, call NewAPI, Gemini, models, gateways, app AI
+endpoints, or the network, and it must not store or return source ids, approval
+item ids, raw query, raw retrieved context, raw legal text, source chunks,
+embedding vectors, prompts, model outputs, gateway payloads, credentials,
+emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

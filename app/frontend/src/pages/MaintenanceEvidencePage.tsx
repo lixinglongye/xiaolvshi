@@ -48,11 +48,13 @@ import {
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
+  evaluateLegalRagEmbeddingBatchObservationGate,
   evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
   getLegalRagEmbeddingBatchApprovalPacket,
+  getLegalRagEmbeddingBatchObservationGate,
   getLegalRagEmbeddingBatchBudgetGate,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
@@ -134,6 +136,7 @@ import {
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
   type LegalRagEmbeddingBatchApprovalPacket,
+  type LegalRagEmbeddingBatchObservationGate,
   type LegalRagEmbeddingBatchBudgetGate,
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexDryRunGate,
@@ -385,6 +388,77 @@ function defaultLegalRagRetrievalObservationPayload() {
   };
 }
 
+function defaultLegalRagEmbeddingBatchObservationPayload() {
+  return {
+    source_rows: [
+      {
+        source_type: 'template',
+        jurisdiction: 'CN-National',
+        freshness_status: 'fresh',
+        estimated_token_count: 300,
+        section_count: 2,
+        citation_anchor_count: 1,
+        retrieval_locator_present: true,
+      },
+      {
+        source_type: 'statute',
+        jurisdiction: 'CN-National',
+        freshness_status: 'fresh',
+        estimated_token_count: 400,
+        section_count: 2,
+        citation_anchor_count: 1,
+        retrieval_locator_present: true,
+      },
+      {
+        source_type: 'case',
+        jurisdiction: 'CN-National',
+        freshness_status: 'fresh',
+        estimated_token_count: 500,
+        section_count: 2,
+        citation_anchor_count: 1,
+        retrieval_locator_present: true,
+      },
+    ],
+    observations: [
+      {
+        queue_order: 1,
+        observed_status: 'success',
+        observed_batch_count: 1,
+        observed_chunk_count: 1,
+        observed_vector_slot_count: 1,
+        observed_token_count: 290,
+        observed_cost_usd: 0.00002,
+      },
+      {
+        queue_order: 2,
+        observed_status: 'success',
+        observed_batch_count: 1,
+        observed_chunk_count: 1,
+        observed_vector_slot_count: 0,
+        observed_token_count: 390,
+        observed_cost_usd: 0.00003,
+        signals: ['vector-slot-review'],
+      },
+      {
+        queue_order: 3,
+        observed_status: 'failed',
+        observed_batch_count: 1,
+        observed_chunk_count: 1,
+        observed_vector_slot_count: 0,
+        observed_token_count: 490,
+        observed_cost_usd: 0.00004,
+        signals: ['external-run-failed'],
+      },
+    ],
+  };
+}
+
+function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
+  return /"(source_id|source_ids|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|approver_name|approver_identity)"\s*:/i.test(
+    value,
+  );
+}
+
 function hasForbiddenRetrievalObservationPayloadText(value: string) {
   return /"(query|question|retrieved_context|raw_legal_text|prompt|model_output|gateway_response|headers|authorization|api_key|email)"\s*:/i.test(
     value,
@@ -482,6 +556,8 @@ function Inner() {
     useState<LegalRagEmbeddingBatchBudgetGate | null>(null);
   const [legalRagEmbeddingBatchApprovalPacket, setLegalRagEmbeddingBatchApprovalPacket] =
     useState<LegalRagEmbeddingBatchApprovalPacket | null>(null);
+  const [legalRagEmbeddingBatchObservationGate, setLegalRagEmbeddingBatchObservationGate] =
+    useState<LegalRagEmbeddingBatchObservationGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -598,6 +674,15 @@ function Inner() {
   const [error, setError] = useState('');
   const [loadFailures, setLoadFailures] = useState<MaintenanceLoadFailure[]>([]);
   const [copied, setCopied] = useState(false);
+
+  const loadEmbeddingBatchObservationSample = () => {
+    const payload = defaultLegalRagEmbeddingBatchObservationPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenEmbeddingBatchObservationPayloadText(payloadText)) {
+      return getLegalRagEmbeddingBatchObservationGate();
+    }
+    return evaluateLegalRagEmbeddingBatchObservationGate(payload);
+  };
 
   const load = async (nextLanguage = language) => {
     setLoading(true);
@@ -922,6 +1007,11 @@ function Inner() {
           label: 'Legal RAG embedding batch approval packet',
           run: getLegalRagEmbeddingBatchApprovalPacket,
           apply: (value) => setLegalRagEmbeddingBatchApprovalPacket(value as LegalRagEmbeddingBatchApprovalPacket),
+        },
+        {
+          label: 'Legal RAG embedding batch observation gate',
+          run: loadEmbeddingBatchObservationSample,
+          apply: (value) => setLegalRagEmbeddingBatchObservationGate(value as LegalRagEmbeddingBatchObservationGate),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -10829,6 +10919,243 @@ function Inner() {
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(packet.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingBatchObservationGate &&
+              (() => {
+                const gate = legalRagEmbeddingBatchObservationGate;
+                const rows = gate.observation_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const summaryCounts = [
+                  { label: 'observation rows', value: summary.observation_row_count },
+                  { label: 'ready index reviews', value: summary.ready_for_index_review_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'pending observations', value: summary.pending_observation_count },
+                  { label: 'observed batches', value: summary.observed_batch_total },
+                  { label: 'observed vector slots', value: summary.observed_vector_slot_total },
+                  { label: 'max parallel requests', value: summary.max_parallel_embedding_requests },
+                  { label: 'observed cost', value: formatUsd(summary.observed_cost_usd) },
+                  { label: 'expected cost', value: formatUsd(summary.expected_cost_usd) },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'source approval ids returned', value: privacy.returns_source_approval_item_ids },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'approver identity returned', value: privacy.returns_approver_identity },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'embedding batch executed claimed', value: claim.embedding_batch_executed_claimed_by_gate },
+                  { label: 'index commit claimed', value: claim.index_commit_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch observation gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only aggregate observations after an external low-resource embedding batch run
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-5 xl:grid-cols-10">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Observation row</TableHead>
+                            <TableHead>Approval / observation</TableHead>
+                            <TableHead>Expected counts</TableHead>
+                            <TableHead>Observed counts</TableHead>
+                            <TableHead>Cost / token deltas</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  #{row.queue_order} {displayToken(row.source_type)}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.embedding_model}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1 text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.observation_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(row.observation_status)}
+                                </Badge>
+                                <div>observed_status: {displayToken(row.observed_status)}</div>
+                                <div>approval_status: {displayToken(row.approval_status)}</div>
+                                <div>approval_run_action: {displayToken(row.approval_run_action)}</div>
+                                <div>release_action: {displayToken(row.release_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>expected_batch_count: {row.expected_batch_count}</div>
+                                <div>expected_chunk_count: {row.expected_chunk_count}</div>
+                                <div>expected_vector_slot_count: {row.expected_vector_slot_count}</div>
+                                <div>expected_token_count: {row.expected_token_count}</div>
+                                <div>expected_cost_usd: {formatUsd(row.expected_cost_usd)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>observed_batch_count: {row.observed_batch_count}</div>
+                                <div>observed_chunk_count: {row.observed_chunk_count}</div>
+                                <div>observed_vector_slot_count: {row.observed_vector_slot_count}</div>
+                                <div>observed_token_count: {row.observed_token_count}</div>
+                                <div>observed_cost_usd: {formatUsd(row.observed_cost_usd)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>batch_count_delta: {row.batch_count_delta}</div>
+                                <div>chunk_count_delta: {row.chunk_count_delta}</div>
+                                <div>vector_slot_delta: {row.vector_slot_delta}</div>
+                                <div>token_delta: {row.token_delta}</div>
+                                <div>cost_delta_usd: {formatUsd(row.cost_delta_usd)}</div>
+                                <div>max_parallel_embedding_requests: {row.max_parallel_embedding_requests}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[300px] flex-wrap gap-1">
+                                  {(row.reason_codes ?? []).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['observation_status_counts', gate.observation_status_counts ?? {}],
+                            ['release_action_counts', gate.release_action_counts ?? {}],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(gate.linked_gate_summary ?? {}).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">observation_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.observation_policy.method}</div>
+                          <div>requires external approval: {String(gate.observation_policy.requires_external_approval_before_run)}</div>
+                          <div>requires external observation: {String(gate.observation_policy.requires_external_batch_observation)}</div>
+                          <div>requires vector-slot match: {String(gate.observation_policy.requires_vector_slot_match)}</div>
+                          <div>cost review multiplier: {gate.observation_policy.requires_cost_within_review_multiplier}</div>
+                          <div>embedding creation allowed: {String(gate.observation_policy.embedding_creation_allowed)}</div>
+                          <div>model call allowed: {String(gate.observation_policy.model_call_allowed)}</div>
+                          <div>index write allowed: {String(gate.observation_policy.index_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_observation_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(gate.input_contract.accepted_observation_fields ?? []).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>accepted_container_keys: {(gate.input_contract.accepted_container_keys ?? []).join(', ')}</div>
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>source_approval_item_id_echoed: {String(gate.input_contract.source_approval_item_id_echoed)}</div>
+                          <div>approval_identity_collected: {String(gate.input_contract.approval_identity_collected)}</div>
+                          <div>aggregate_observations_only: {String(gate.input_contract.aggregate_observations_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div
                               key={command}
                               className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
