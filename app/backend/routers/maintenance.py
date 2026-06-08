@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
 from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
@@ -1334,6 +1335,29 @@ async def get_legal_rag_embedding_readiness_gate():
     return {
         "success": True,
         "data": LegalRagEmbeddingReadinessGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-embedding-chunk-policy-gate")
+async def get_legal_rag_embedding_chunk_policy_gate():
+    """Return metadata-only Legal RAG embedding chunk policy evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingChunkPolicyGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-embedding-chunk-policy-gate")
+async def evaluate_legal_rag_embedding_chunk_policy_gate(payload: dict[str, Any]):
+    """Evaluate metadata-only Legal RAG chunk policy rows before embedding."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingChunkPolicyGateService().build_gate(rows if isinstance(rows, list) else None),
     }
 
 

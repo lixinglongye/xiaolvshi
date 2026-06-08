@@ -529,6 +529,22 @@ const checks = [
   () => assertIncludes(maintenancePage, 'embedding vectors returned', 'legal RAG embedding vector boundary label'),
   () => assertIncludes(maintenancePage, 'index writes', 'legal RAG embedding index write boundary label'),
   () => assertIncludes(maintenancePage, 'embedding quality claimed', 'legal RAG embedding claim boundary label'),
+  () => assertIncludes(maintenancePage, 'Legal RAG embedding chunk policy gate', 'legal RAG embedding chunk policy gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagEmbeddingChunkPolicyGate', 'legal RAG embedding chunk policy API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagEmbeddingChunkPolicyGate', 'legal RAG embedding chunk policy state binding'),
+  () => assertIncludes(maintenancePage, 'source rows', 'legal RAG embedding chunk policy source row summary'),
+  () => assertIncludes(maintenancePage, 'planned chunks', 'legal RAG embedding chunk policy planned chunk summary'),
+  () => assertIncludes(maintenancePage, 'estimated tokens', 'legal RAG embedding chunk policy token summary'),
+  () => assertIncludes(maintenancePage, 'missing anchors', 'legal RAG embedding chunk policy citation anchor summary'),
+  () => assertIncludes(maintenancePage, 'missing locators', 'legal RAG embedding chunk policy locator summary'),
+  () => assertIncludes(maintenancePage, 'chunk_policy_status_counts', 'legal RAG embedding chunk policy status distribution'),
+  () => assertIncludes(maintenancePage, 'chunk_policy', 'legal RAG embedding chunk policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_fields', 'legal RAG embedding chunk policy accepted fields'),
+  () => assertIncludes(maintenancePage, 'forbidden_fields_ignored', 'legal RAG embedding chunk policy forbidden fields'),
+  () => assertIncludes(maintenancePage, 'source chunks returned', 'legal RAG embedding chunk policy source chunk boundary label'),
+  () => assertIncludes(maintenancePage, 'embedding vectors returned', 'legal RAG embedding chunk policy vector boundary label'),
+  () => assertIncludes(maintenancePage, 'creates embeddings', 'legal RAG embedding chunk policy creation boundary label'),
+  () => assertIncludes(maintenancePage, 'chunk quality claimed', 'legal RAG embedding chunk policy claim boundary label'),
   () =>
     assertBefore(
       maintenancePage,
@@ -547,8 +563,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding chunk policy gate</h2>',
+      'embedding readiness gate precedes chunk policy gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding chunk policy gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding readiness gate precedes retrieval diagnostics',
+      'chunk policy gate precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -759,6 +782,15 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'writes_index', 'legal RAG embedding index write boundary type'),
   () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingReadinessGate', 'legal RAG embedding readiness getter'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-readiness-gate', 'legal RAG embedding readiness endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagEmbeddingChunkPolicyGate', 'legal RAG embedding chunk policy gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-embedding-chunk-policy-gate' | string", 'legal RAG embedding chunk policy gate id'),
+  () => assertIncludes(maintenanceApi, 'chunk_policy_rows', 'legal RAG embedding chunk policy rows type'),
+  () => assertIncludes(maintenanceApi, 'chunk_policy_status_counts', 'legal RAG embedding chunk policy status counts type'),
+  () => assertIncludes(maintenanceApi, 'planned_chunk_total', 'legal RAG embedding chunk policy planned chunk type'),
+  () => assertIncludes(maintenanceApi, 'returns_source_chunks', 'legal RAG embedding chunk policy source chunk boundary type'),
+  () => assertIncludes(maintenanceApi, 'creates_embeddings', 'legal RAG embedding chunk policy creation boundary type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingChunkPolicyGate', 'legal RAG embedding chunk policy getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-chunk-policy-gate', 'legal RAG embedding chunk policy endpoint'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1832,8 +1864,14 @@ const legalRagIndexCoveragePanel = sourceSection(
 const legalRagEmbeddingReadinessPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding chunk policy gate</h2>',
   'maintenance Legal RAG embedding readiness section',
+);
+const legalRagEmbeddingChunkPolicyPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding chunk policy gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding chunk policy section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2030,6 +2068,11 @@ assertNotMatches(
   legalRagEmbeddingReadinessPanel,
   /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid)\b/i,
   'maintenance Legal RAG embedding readiness no raw vectors, raw legal text, source ids, secrets, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingChunkPolicyPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding chunk policy no raw chunks, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

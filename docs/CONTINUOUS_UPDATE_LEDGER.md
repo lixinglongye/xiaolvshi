@@ -26,6 +26,20 @@ context, legal text, source chunks, embedding vectors, prompts, model outputs,
 gateway payloads, credentials, emails, or embedding/index/retrieval quality
 claims.
 
+Current Legal RAG embedding chunk policy slice:
+`legal-rag-embedding-chunk-policy-gate` adds metadata-only chunk planning
+evidence through `LegalRagEmbeddingChunkPolicyGateService` at
+`/api/v1/maintenance/legal-rag-embedding-chunk-policy-gate`. It records
+token-estimate chunk planning, source-type split strategies, overlap sizes,
+citation-anchor checks, retrieval-locator blockers, freshness review
+boundaries, laptop-safe chunk limits, and the default cheap embedding model
+`gemini-embedding-001`. It does not call NewAPI, Gemini, models, gateways, app
+AI endpoints, or the network; create embeddings; write indexes; download
+datasets; or return source ids, raw query, raw retrieved context, raw legal
+text, source chunks, embedding vectors, prompts, model outputs, gateway
+payloads, credentials, emails, or chunk/embedding/index/retrieval quality
+claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps
@@ -741,6 +755,7 @@ drop counts while keeping update totals and 24-hour readiness unchanged.
 - `docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
+- `docs/LEGAL_RAG_EMBEDDING_CHUNK_POLICY_GATE.md`
 - `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`

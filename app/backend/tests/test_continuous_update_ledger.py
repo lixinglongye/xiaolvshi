@@ -444,6 +444,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
     assert "legal-rag-index-coverage-gate" in completed_ids
     assert "legal-rag-embedding-readiness-gate" in completed_ids
+    assert "legal-rag-embedding-chunk-policy-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -639,6 +640,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
     assert "legal-rag-index-coverage-gate" not in queue_ids
     assert "legal-rag-embedding-readiness-gate" not in queue_ids
+    assert "legal-rag-embedding-chunk-policy-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -3025,6 +3027,57 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_legal_rag_embedding_readiness_gate.py "
         "tests/test_model_ops_gemini_embedding_cheap_first_preflight.py "
         "tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_retrieval_diagnostics_gate.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    chunk_policy_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-embedding-chunk-policy-gate"
+    )
+    assert chunk_policy_entry["category"] == "benchmark"
+    assert chunk_policy_entry["size"] == "medium"
+    assert chunk_policy_entry["status"] == "shipped"
+    assert "token-estimate chunking" in chunk_policy_entry["impact"]
+    assert "source-type split strategies" in chunk_policy_entry["impact"]
+    assert "citation-anchor checks" in chunk_policy_entry["impact"]
+    assert "retrieval-locator blockers" in chunk_policy_entry["impact"]
+    assert "freshness review boundaries" in chunk_policy_entry["impact"]
+    assert "laptop-safe chunk limits" in chunk_policy_entry["impact"]
+    assert "cheap Gemini embedding defaults" in chunk_policy_entry["impact"]
+    assert "typed maintenance API helpers" in chunk_policy_entry["impact"]
+    assert "maintenance UI review" in chunk_policy_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in chunk_policy_entry["impact"]
+    assert "embedding creation" in chunk_policy_entry["impact"]
+    assert "index writes" in chunk_policy_entry["impact"]
+    assert "source-id echoing" in chunk_policy_entry["impact"]
+    assert "raw legal text" in chunk_policy_entry["impact"]
+    assert "source chunks" in chunk_policy_entry["impact"]
+    assert "embedding vectors" in chunk_policy_entry["impact"]
+    assert "credentials" in chunk_policy_entry["impact"]
+    assert "chunk/embedding/index/retrieval quality claims" in chunk_policy_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_chunk_policy_gate.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_chunk_policy_gate.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_readiness_gate.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/backend/services/legal_source_durable_index_plan.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/backend/services/legal_source_ingestion_metadata.py" in chunk_policy_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in chunk_policy_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in chunk_policy_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in chunk_policy_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_CHUNK_POLICY_GATE.md" in chunk_policy_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in chunk_policy_entry["evidence_paths"]
+    assert "legal-rag-embedding-chunk-policy-gate" in chunk_policy_entry["release_gate_links"]
+    assert "legal-rag-embedding-readiness-gate" in chunk_policy_entry["release_gate_links"]
+    assert "legal-source-durable-index-plan" in chunk_policy_entry["release_gate_links"]
+    assert "legal-source-ingestion-metadata" in chunk_policy_entry["release_gate_links"]
+    assert "legal-rag-index-coverage-gate" in chunk_policy_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in chunk_policy_entry["release_gate_links"]
+    assert "frontend-typecheck" in chunk_policy_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in chunk_policy_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py "
+        "tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py "
         "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"

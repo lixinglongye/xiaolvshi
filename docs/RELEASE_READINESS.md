@@ -297,6 +297,21 @@ index writes and that multimodal embedding remains review-required, but it must
 not be used to claim live embedding quality, index creation, retrieval quality,
 legal-answer quality, provider execution, or client delivery.
 
+The optional `legal-rag-embedding-chunk-policy-gate` check records
+metadata-only Legal RAG embedding chunk planning through
+`LegalRagEmbeddingChunkPolicyGateService` at
+`/api/v1/maintenance/legal-rag-embedding-chunk-policy-gate`. It reviews
+token-estimate chunk planning, source-type split strategies, overlap sizes,
+citation-anchor checks, retrieval-locator blockers, freshness review
+boundaries, laptop-safe chunk limits, and the default cheap embedding model
+`gemini-embedding-001`. It only plans chunk policy metadata; it must not be
+used to claim embedding creation, index writes, retrieval quality, legal-answer
+quality, provider execution, or client delivery. It must not call NewAPI,
+Gemini, models, gateways, app AI endpoints, or the network, and it must not
+store or return source ids, raw query, raw retrieved context, raw legal text,
+source chunks, embedding vectors, prompts, model outputs, gateway payloads,
+credentials, emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in
@@ -545,6 +560,7 @@ approver identity, apply the change, or shift traffic.
 - `docs/LEGAL_BENCHMARK_RESEARCH_REFRESH.md`
 - `docs/MODEL_ROUTE_LEGAL_BENCHMARK_RISK_QUEUE.md`
 - `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
+- `docs/LEGAL_RAG_EMBEDDING_CHUNK_POLICY_GATE.md`
 - `docs/LEGAL_RAG_AUTHORITY_CITATION_GATE.md`
 - `docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md`
 - `docs/LEGAL_RAG_FAILURE_FIXTURES.md`

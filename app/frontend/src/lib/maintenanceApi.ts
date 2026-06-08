@@ -4005,6 +4005,156 @@ export type LegalRagEmbeddingReadinessGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingChunkPolicyGateRow = {
+  id: string;
+  source_type: string;
+  jurisdiction_status: string;
+  freshness_status: string;
+  estimated_token_count: number;
+  section_count: number;
+  citation_anchor_count: number;
+  citation_anchor_status: string;
+  retrieval_locator_status: string;
+  target_chunk_tokens: number;
+  overlap_tokens: number;
+  planned_chunk_count: number;
+  over_laptop_safe_chunk_limit: boolean;
+  split_strategy: string;
+  embedding_model: string;
+  canonical_embedding_model: string;
+  chunk_policy_status: string;
+  release_action: string;
+  reason_codes: string[];
+  forbidden_fields_present: string[];
+  sensitive_value_present: boolean;
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_legal_text_returned: boolean;
+    source_chunks_returned: boolean;
+    embedding_vectors_returned: boolean;
+    prompt_returned: boolean;
+    model_output_returned: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingChunkPolicyGate = {
+  id: 'legal-rag-embedding-chunk-policy-gate' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    source_row_count: number;
+    ready_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    planned_chunk_total: number;
+    estimated_token_total: number;
+    over_laptop_safe_chunk_limit_count: number;
+    missing_citation_anchor_count: number;
+    missing_locator_count: number;
+    forbidden_field_row_count: number;
+    sensitive_value_row_count: number;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    max_laptop_safe_chunks_per_source: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    index_written: boolean;
+    embeddings_created: boolean;
+    dataset_downloaded: boolean;
+    source_ids_returned: boolean;
+    raw_legal_text_included: boolean;
+    source_chunks_included: boolean;
+    embedding_vectors_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  chunk_policy_rows: LegalRagEmbeddingChunkPolicyGateRow[];
+  chunk_policy_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  target_chunk_policy: Record<
+    string,
+    {
+      target_chunk_tokens: number;
+      overlap_tokens: number;
+      split_strategy: string;
+      [key: string]: unknown;
+    }
+  >;
+  linked_gate_summary: {
+    legal_rag_embedding_readiness_gate?: string;
+    legal_rag_index_coverage_gate?: string;
+    legal_rag_retrieval_diagnostics_gate?: string;
+    legal_source_durable_index_plan?: string;
+    legal_source_ingestion_metadata?: string;
+    embedding_default_model?: string;
+    durable_index_schema_version?: string;
+    ingestion_schema_version?: string;
+    [key: string]: unknown;
+  };
+  input_contract: {
+    accepted_fields: string[];
+    forbidden_fields_ignored: string[];
+    source_id_echoed: boolean;
+    [key: string]: unknown;
+  };
+  chunk_policy: {
+    method: string;
+    token_estimator: string;
+    max_laptop_safe_chunks_per_source: number;
+    requires_retrieval_locator: boolean;
+    requires_citation_anchor_for_ready: boolean;
+    stale_or_unknown_freshness_blocks_embedding: boolean;
+    review_due_freshness_requires_review: boolean;
+    index_write_allowed: boolean;
+    embedding_creation_allowed: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    embedding_quality_claimed: boolean;
+    chunk_quality_claimed: boolean;
+    index_quality_claimed: boolean;
+    live_gateway_quality_claimed: boolean;
+    automatic_index_write_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    writes_index: boolean;
+    creates_embeddings: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -4718,6 +4868,11 @@ type LegalRagIndexCoverageGateResponse = {
 type LegalRagEmbeddingReadinessGateResponse = {
   success: boolean;
   data: LegalRagEmbeddingReadinessGate;
+};
+
+type LegalRagEmbeddingChunkPolicyGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingChunkPolicyGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -6205,6 +6360,14 @@ export async function getLegalRagEmbeddingReadinessGate(): Promise<LegalRagEmbed
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagEmbeddingReadinessGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingChunkPolicyGate(): Promise<LegalRagEmbeddingChunkPolicyGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-chunk-policy-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingChunkPolicyGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(
