@@ -37,10 +37,23 @@ class UserNeedGeminiRouteCoverageService:
         self.calibration_service = calibration_service or GeminiNewapiCheapFirstCalibrationService()
         self.route_preflight_service = route_preflight_service or ModelOpsGeminiCheapFirstRoutePreflightService()
 
-    def build_coverage(self) -> dict[str, Any]:
-        coverage = self.coverage_service.build_coverage()
-        calibration = self.calibration_service.build_calibration()
-        route_preflight = self.route_preflight_service.build_preflight()
+    def build_coverage(self, signals: dict[str, Any] | None = None) -> dict[str, Any]:
+        data = signals if isinstance(signals, dict) else {}
+        coverage = (
+            data.get("user_need_benchmark_coverage")
+            if isinstance(data.get("user_need_benchmark_coverage"), dict)
+            else self.coverage_service.build_coverage()
+        )
+        calibration = (
+            data.get("cheap_first_calibration")
+            if isinstance(data.get("cheap_first_calibration"), dict)
+            else self.calibration_service.build_calibration()
+        )
+        route_preflight = (
+            data.get("gemini_cheap_first_route_preflight")
+            if isinstance(data.get("gemini_cheap_first_route_preflight"), dict)
+            else self.route_preflight_service.build_preflight()
+        )
         route_by_task = {str(row["task"]): row for row in route_preflight["route_task_rows"]}
         calibration_by_id = {str(row["id"]): row for row in calibration.get("calibration_rows", [])}
         task_by_calibration_id = {

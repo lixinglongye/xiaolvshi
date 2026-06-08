@@ -104,6 +104,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Route telemetry reason-code hotspots" in profile["release_management"]["release_readiness_controls"]
     assert "Route telemetry remediation plan" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first release decision" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps user-need release bridge" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default change queue" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary plan" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps cheap-first canary observation review" in profile["release_management"]["release_readiness_controls"]
@@ -332,6 +333,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini catalog source audit" in model_signal["description"]
     assert "model catalog candidate patch planning" in model_signal["description"]
     assert "ModelOps cheap-first release decision review" in model_signal["description"]
+    assert "ModelOps user-need release bridge review" in model_signal["description"]
     assert "ModelOps default change queue review" in model_signal["description"]
     assert "ModelOps cheap-first canary plan review" in model_signal["description"]
     assert "ModelOps cheap-first canary observation review" in model_signal["description"]
@@ -364,6 +366,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "public benchmark mapping review" in model_signal["responsibility"]
     assert "ModelOps performance-observation review" in model_signal["responsibility"]
     assert "ModelOps cheap-first release decision review" in model_signal["responsibility"]
+    assert "ModelOps user-need release bridge review" in model_signal["responsibility"]
     assert "ModelOps default change queue review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary plan review" in model_signal["responsibility"]
     assert "ModelOps cheap-first canary observation review" in model_signal["responsibility"]
@@ -393,6 +396,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/services/model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in evidence_paths
+    assert "app/backend/services/model_ops_user_need_release_bridge.py" in evidence_paths
     assert "app/backend/services/model_ops_default_change_queue.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_plan.py" in evidence_paths
     assert "app/backend/services/model_ops_cheap_first_canary_observation.py" in evidence_paths
@@ -405,6 +409,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_user_need_release_bridge.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_default_change_queue.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_canary_observation.py" in evidence_paths
@@ -417,6 +422,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
+    assert "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md" in evidence_paths
     assert "docs/MODEL_OPS_DEFAULT_CHANGE_QUEUE.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_OBSERVATION.md" in evidence_paths
@@ -488,6 +494,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("validating account inventory" in guardrail for guardrail in profile["application_guardrails"])
     assert any("user-need implementation priority queue is metadata-only planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("high-priority user needs, legal benchmark coverage gaps, cheap-first calibration/model routing risk, and product execution actions" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("ModelOps user-need release bridge is metadata-only default-review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("high-priority implementation or route blockers can block default changes" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("public benchmark license, premium exception, partial coverage" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG authority citation gate is metadata-only authority and citation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])

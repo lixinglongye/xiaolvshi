@@ -2819,6 +2819,8 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "payloads" in priority_queue_entry["impact"]
     assert "model outputs" in priority_queue_entry["impact"]
     assert "credentials" in priority_queue_entry["impact"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in priority_queue_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in priority_queue_entry["evidence_paths"]
     assert "app/backend/services/release_readiness.py" in priority_queue_entry["evidence_paths"]
     assert "app/backend/services/continuous_update_ledger.py" in priority_queue_entry["evidence_paths"]
     assert "app/backend/services/maintenance_evidence.py" in priority_queue_entry["evidence_paths"]
@@ -2835,6 +2837,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-cheap-first-calibration" in priority_queue_entry["release_gate_links"]
     assert "legal-benchmark-research-refresh" in priority_queue_entry["release_gate_links"]
     assert "product-feature-gap-radar" in priority_queue_entry["release_gate_links"]
+    assert "modelops-user-need-release-bridge" in priority_queue_entry["release_gate_links"]
+    assert "model-ops-readiness" in priority_queue_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in priority_queue_entry["release_gate_links"]
+    assert "model-ops-default-change-queue" in priority_queue_entry["release_gate_links"]
     assert (
         "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_maintenance_evidence.py -q"
@@ -2844,6 +2850,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py "
+        "tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_cheap_first_release_decision.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     route_coverage_entry = next(
@@ -2892,7 +2905,52 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-route-preflight" in route_coverage_entry["release_gate_links"]
     assert "modelops-gemini-cheap-first-coverage-gate" in route_coverage_entry["release_gate_links"]
     assert "model-route-legal-benchmark-risk-queue" in route_coverage_entry["release_gate_links"]
+    assert "modelops-user-need-release-bridge" in route_coverage_entry["release_gate_links"]
+    assert "model-ops-readiness" in route_coverage_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in route_coverage_entry["release_gate_links"]
+    assert "model-ops-default-change-queue" in route_coverage_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in route_coverage_entry["release_gate_links"]
+    bridge_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-user-need-release-bridge"
+    )
+    assert bridge_entry["size"] == "medium"
+    assert bridge_entry["status"] == "shipped"
+    assert "metadata-only ModelOps user-need release bridge" in bridge_entry["impact"]
+    assert "implementation priority queue rows" in bridge_entry["impact"]
+    assert "Gemini cheap-first route coverage" in bridge_entry["impact"]
+    assert "high-priority implementation or route blockers" in bridge_entry["impact"]
+    assert "public benchmark license review" in bridge_entry["impact"]
+    assert "premium exception review" in bridge_entry["impact"]
+    assert "maintainer-review only" in bridge_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls" in bridge_entry["impact"]
+    assert "configuration writes" in bridge_entry["impact"]
+    assert "default route changes" in bridge_entry["impact"]
+    assert "traffic shifts" in bridge_entry["impact"]
+    assert "raw legal text" in bridge_entry["impact"]
+    assert "model outputs" in bridge_entry["impact"]
+    assert "credentials" in bridge_entry["impact"]
+    assert "emails" in bridge_entry["impact"]
+    assert "user identifiers" in bridge_entry["impact"]
+    assert "app/backend/services/model_ops_user_need_release_bridge.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_release_bridge.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_readiness.py" in bridge_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in bridge_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in bridge_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in bridge_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in bridge_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md" in bridge_entry["evidence_paths"]
+    assert "modelops-user-need-release-bridge" in bridge_entry["release_gate_links"]
+    assert "model-ops-readiness" in bridge_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in bridge_entry["release_gate_links"]
+    assert "model-ops-default-change-queue" in bridge_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in bridge_entry["release_gate_links"]
     default_candidate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-candidate-selector"
     )

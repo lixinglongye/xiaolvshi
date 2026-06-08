@@ -110,6 +110,63 @@ def test_aihub_media_speech_default_catalog_gate_is_required_release_evidence():
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in check["evidence_paths"]
 
 
+def test_modelops_user_need_release_bridge_is_required_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-user-need-release-bridge"
+    ]
+    result = service.evaluate({"modelops-user-need-release-bridge": "not_run"})
+    checks = {check["id"]: check for check in result["checks"]}
+    check = checks["modelops-user-need-release-bridge"]
+
+    assert commands == [
+        {
+            "check_id": "modelops-user-need-release-bridge",
+            "command": "python -m pytest tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only user-need release bridge evidence" in check["manual_note"]
+    assert "cheap-first default reviews" in check["manual_note"]
+    assert "user-need implementation planning" in check["manual_note"]
+    assert "Gemini route coverage" in check["manual_note"]
+    assert "public benchmark license review" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "Gemini" in check["manual_note"]
+    assert "OpenAI" in check["manual_note"]
+    assert "Google" in check["manual_note"]
+    assert "gateways" in check["manual_note"]
+    assert "public datasets" in check["manual_note"]
+    assert "write configuration" in check["manual_note"]
+    assert "shift traffic" in check["manual_note"]
+    assert "public benchmark scores" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "benchmark samples" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "model outputs" in check["manual_note"]
+    assert "payloads" in check["manual_note"]
+    assert "emails" in check["manual_note"]
+    assert "identifiers" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/model_ops_user_need_release_bridge.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_release_bridge.py" in check["evidence_paths"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in check["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in check["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md" in check["evidence_paths"]
+
+
 def test_gemini_embedding_cheap_first_preflight_is_required_release_evidence():
     service = ReleaseReadinessService()
     commands = [
@@ -1248,6 +1305,12 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "payloads" in checks["user-need-implementation-priority-queue"]["manual_note"]
     assert "model outputs" in checks["user-need-implementation-priority-queue"]["manual_note"]
     assert "credentials" in checks["user-need-implementation-priority-queue"]["manual_note"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in checks[
+        "user-need-implementation-priority-queue"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in checks[
+        "user-need-implementation-priority-queue"
+    ]["evidence_paths"]
     assert "app/backend/services/release_readiness.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
     assert "app/backend/services/continuous_update_ledger.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]
     assert "app/backend/services/maintenance_evidence.py" in checks["user-need-implementation-priority-queue"]["evidence_paths"]

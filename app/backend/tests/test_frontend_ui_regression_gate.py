@@ -47,6 +47,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Gemini/NewAPI alias capability coverage" in rows["/model-ops"]["protected_panels"]
     assert "Gateway request compatibility gate" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first release decision" in rows["/model-ops"]["protected_panels"]
+    assert "ModelOps user-need release bridge" in rows["/model-ops"]["protected_panels"]
     assert "Default change queue" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first priority queue" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first canary plan" in rows["/model-ops"]["protected_panels"]
@@ -168,6 +169,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "Model failure upgrade budget UI evidence is metadata only" in payload_text
     assert "ModelOps legal micro benchmark preflight UI evidence is metadata only" in payload_text
     assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
+    assert "ModelOps user-need release bridge UI evidence is metadata only" in payload_text
     assert "Public benchmark license gate UI evidence is metadata only" in payload_text
     assert "public-benchmark-license-gate-regresses" in payload_text
     assert "user need Gemini route coverage" in payload_text
@@ -178,6 +180,7 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "public benchmark sample text" in payload_text
     assert "public score claims" in payload_text
     assert "modelops-legal-benchmark-risk-bridge-regresses" in payload_text
+    assert "modelops-user-need-release-bridge-regresses" in payload_text
     assert "modelops-legal-micro-benchmark-preflight-regresses" in payload_text
     assert "gateway-request-compatibility-gate-regresses" in payload_text
     assert "JSON response shapes" in payload_text

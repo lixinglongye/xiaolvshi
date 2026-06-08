@@ -257,6 +257,29 @@ def test_model_ops_readiness_warns_on_gemini_embedding_preflight_review():
     assert drilldown["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_user_need_release_bridge_review():
+    signals = _signals("pass")
+    signals["user_need_release_bridge"] = {
+        "status": "review_required",
+        "summary": {"need_count": 7, "review_required_need_count": 6, "blocked_need_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["modelops-user-need-release-feedback-to-roadmap-loop"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "user-need-release-bridge" in result["warning_check_ids"]
+    assert "user-need-release-bridge" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "user_need_release_bridge"
+    assert drilldown["warning_category"] == "user_need_release_review"
+    assert "user-need implementation" in drilldown["next_action"]
+    assert "test_model_ops_user_need_release_bridge.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["metadata_only"] is True
+
+
 def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
@@ -465,6 +488,9 @@ def test_model_ops_route_includes_readiness():
     assert "runtime_explicit_model_fit_gate" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "user_need_release_bridge" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["configuration_written"] is False
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["gateway_called"] is False
     assert payload["runtime_explicit_model_fit_gate"]["summary"]["configuration_written"] is False
@@ -546,7 +572,7 @@ def test_model_ops_route_includes_readiness():
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 13
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 14
     assert payload["cheap_first_escalation_budget"]["status"] == "pass"
     assert payload["failure_upgrade_budget"]["status"] == "pass"
     assert "cheap_first_escalation_budget" in {
@@ -565,6 +591,10 @@ def test_model_ops_route_includes_readiness():
     assert "legal_fixture_cheap_first_benchmark_gate" in cheap_first_release_sources
     assert "legal_fixture_cheap_first_default_promotion_packet" in cheap_first_release_sources
     assert "legal_benchmark_risk_bridge" in cheap_first_release_sources
+    assert "user_need_release_bridge" in cheap_first_release_sources
+    assert payload["user_need_release_bridge"]["summary"]["need_count"] >= 7
+    assert payload["user_need_release_bridge"]["summary"]["network_called"] is False
+    assert payload["user_need_release_bridge"]["source_boundaries"]["changes_default_routes"] is False
     assert payload["default_change_queue"]["summary"]["queue_item_count"] >= 6
     assert payload["default_change_queue"]["summary"]["configuration_written"] is False
     assert "cheap_first_priority_queue" in {

@@ -13,6 +13,7 @@ from services.model_ops_cheap_first_release_decision import (
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
 from services.model_ops_gemini_cheap_first_route_preflight import ModelOpsGeminiCheapFirstRoutePreflightService
 from services.model_ops_performance_budget import ModelOpsPerformanceBudgetService
+from services.model_ops_user_need_release_bridge import ModelOpsUserNeedReleaseBridgeService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_route_quality_budget import ModelRouteQualityBudgetService
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import (
@@ -44,6 +45,7 @@ def _current_signals() -> dict:
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_promotion_packet,
         "legal_benchmark_risk_bridge": ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(),
+        "user_need_release_bridge": ModelOpsUserNeedReleaseBridgeService().build_bridge(),
     }
     signals["model_ops_readiness"] = {
         "status": "warn",
@@ -81,16 +83,21 @@ def test_cheap_first_release_decision_requires_review_for_current_catalog_watchl
     assert "legal_fixture_cheap_first_benchmark_gate" in checks
     assert "legal_fixture_cheap_first_default_promotion_packet" in checks
     assert "legal_benchmark_risk_bridge" in checks
+    assert "user_need_release_bridge" in checks
     assert checks["catalog_source_audit"]["status"] == "warn"
     assert checks["gemini_cheap_first_route_preflight"]["status"] == "warn"
     assert checks["legal_fixture_cheap_first_benchmark_gate"]["status"] == "warn"
     assert checks["legal_fixture_cheap_first_default_promotion_packet"]["status"] == "warn"
     assert checks["legal_benchmark_risk_bridge"]["status"] == "warn"
+    assert checks["user_need_release_bridge"]["status"] == "warn"
     assert "catalog-source-audit-review" in decision["warning_check_ids"]
     assert "gemini-cheap-first-route-preflight-review" in decision["warning_check_ids"]
     assert "legal-fixture-cheap-first-benchmark-gate" in decision["warning_check_ids"]
     assert "legal-fixture-default-promotion-packet" in decision["warning_check_ids"]
     assert "legal-benchmark-risk-bridge" in decision["warning_check_ids"]
+    assert "user-need-release-bridge" in decision["warning_check_ids"]
+    assert checks["user_need_release_bridge"]["source_summary"]["need_count"] >= 7
+    assert checks["user_need_release_bridge"]["source_summary"]["default_change_review_need_count"] >= 1
     assert decision["privacy_boundary"]["network_called"] is False
     assert decision["claim_boundary"]["public_benchmark_scores_included"] is False
     assert decision["claim_boundary"]["twenty_four_hour_completion_claimed"] is False
@@ -127,6 +134,59 @@ def test_cheap_first_release_decision_blocks_when_required_source_signal_fails()
     assert decision["summary"]["default_promotion_blocked"] is True
     assert "route-quality-budget-review" in decision["blocking_check_ids"]
     assert "runtime-default-capability-gap" in decision["source_blocking_ids"]
+
+
+def test_cheap_first_release_decision_blocks_failed_user_need_release_bridge():
+    signals = _all_pass_signals()
+    signals["user_need_release_bridge"] = {
+        "status": "blocked",
+        "summary": {
+            "need_count": 1,
+            "blocked_need_count": 1,
+            "default_change_blocked_need_count": 1,
+            "high_priority_route_blocked_count": 1,
+        },
+        "blocking_check_ids": ["modelops-user-need-release-synthetic-need"],
+        "warning_check_ids": [],
+    }
+
+    decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(signals)
+    check = next(check for check in decision["checks"] if check["source_key"] == "user_need_release_bridge")
+
+    assert decision["status"] == "fail"
+    assert decision["release_decision"]["status"] == "blocked"
+    assert "user-need-release-bridge" in decision["blocking_check_ids"]
+    assert "modelops-user-need-release-synthetic-need" in decision["source_blocking_ids"]
+    assert check["source_summary"]["need_count"] == 1
+    assert check["source_summary"]["default_change_blocked_need_count"] == 1
+    assert check["source_summary"]["high_priority_route_blocked_count"] == 1
+
+
+def test_cheap_first_release_decision_reviews_user_need_release_bridge_warnings():
+    signals = _all_pass_signals()
+    signals["user_need_release_bridge"] = {
+        "status": "review_required",
+        "summary": {
+            "need_count": 2,
+            "review_required_need_count": 2,
+            "default_change_review_need_count": 2,
+            "public_benchmark_review_need_count": 1,
+            "premium_exception_review_need_count": 1,
+        },
+        "blocking_check_ids": [],
+        "warning_check_ids": ["modelops-user-need-release-public-benchmark"],
+    }
+
+    decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(signals)
+    check = next(check for check in decision["checks"] if check["source_key"] == "user_need_release_bridge")
+
+    assert decision["status"] == "review_required"
+    assert decision["release_decision"]["status"] == "review_required"
+    assert decision["summary"]["default_promotion_blocked"] is False
+    assert "user-need-release-bridge" in decision["warning_check_ids"]
+    assert check["source_summary"]["default_change_review_need_count"] == 2
+    assert check["source_summary"]["public_benchmark_review_need_count"] == 1
+    assert check["source_summary"]["premium_exception_review_need_count"] == 1
 
 
 def test_cheap_first_release_decision_blocks_failed_legal_fixture_gate():
@@ -192,3 +252,7 @@ def test_cheap_first_release_decision_route_and_model_ops_payload_include_readin
     assert "legal_fixture_cheap_first_benchmark_gate" in source_keys
     assert "legal_fixture_cheap_first_default_promotion_packet" in source_keys
     assert "legal_benchmark_risk_bridge" in source_keys
+    assert "user_need_release_bridge" in source_keys
+    assert payload["user_need_release_bridge"]["id"] == "modelops-user-need-release-bridge"
+    assert payload["user_need_gemini_route_coverage"]["id"] == "user-need-gemini-route-coverage"
+    assert payload["user_need_implementation_priority_queue"]["summary"]["network_access"] == "disabled"

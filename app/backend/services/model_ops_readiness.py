@@ -236,6 +236,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "legal_micro_benchmark_preflight",
     ),
     ReadinessComponent(
+        "user-need-release-bridge",
+        "User-need release bridge",
+        "release_evidence",
+        "user_need_release_bridge",
+    ),
+    ReadinessComponent(
         "cheap-first-release-decision",
         "Cheap-first release decision",
         "release_evidence",
@@ -516,7 +522,7 @@ class ModelOpsReadinessService:
             "p1_required_review": 70,
             "p2_optional_review": 45,
         }[severity]
-        if category in {"canary_evidence_gap", "release_evidence_review"}:
+        if category in {"canary_evidence_gap", "release_evidence_review", "user_need_release_review"}:
             priority += 10
         if category in {
             "catalog_pricing_review",
@@ -560,6 +566,8 @@ class ModelOpsReadinessService:
             return "catalog_pricing_review"
         if category == "runtime_evidence":
             return "runtime_telemetry_review"
+        if source_key == "user_need_release_bridge":
+            return "user_need_release_review"
         if source_key in {
             "budget_policy",
             "capability_matrix",
@@ -596,6 +604,8 @@ class ModelOpsReadinessService:
             return "Review cheap-first default recommendations, blocked default roles, and observed Gemini catalog-review models before changing environment defaults."
         if warning_category == "runtime_telemetry_review":
             return "Inspect route telemetry, triage, and remediation evidence for cheap-first routing drift."
+        if warning_category == "user_need_release_review":
+            return "Review user-need implementation, benchmark license, and Gemini route evidence before changing cheap-first defaults."
         if warning_category == "routing_quality_review":
             return "Review task quality gates, request budgets, and cheap-start coverage before release."
         if warning_category == "cost_guardrail_review":
@@ -619,6 +629,8 @@ class ModelOpsReadinessService:
             return "python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py tests/test_model_ops_readiness.py -q"
         if warning_category == "runtime_telemetry_review":
             return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
+        if warning_category == "user_need_release_review":
+            return "python -m pytest tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":
             return "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
         if warning_category == "cost_guardrail_review":

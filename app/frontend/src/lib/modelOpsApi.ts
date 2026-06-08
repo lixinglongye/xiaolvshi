@@ -2253,6 +2253,83 @@ export type ModelOpsCheapFirstReleaseDecision = {
   validation_commands: string[];
 };
 
+export type ModelOpsUserNeedReleaseBridgeRow = {
+  id: string;
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  priority_score: number;
+  release_priority_score: number;
+  benchmark_coverage_status: string;
+  implementation_action_status: string;
+  implementation_status: string;
+  route_coverage_status: string;
+  release_bridge_status: string;
+  release_status: string;
+  release_decision_effect: string;
+  default_allowed_without_review: boolean;
+  high_frequency_route_ready: boolean;
+  linked_route_tasks: string[];
+  linked_default_models: string[];
+  linked_release_gates: string[];
+  linked_release_gate_links: string[];
+  implementation_blocker_codes: string[];
+  route_blocker_codes: string[];
+  blocked_reason_codes: string[];
+  review_reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsUserNeedReleaseBridge = {
+  id: 'modelops-user-need-release-bridge' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    need_count: number;
+    high_priority_need_count: number;
+    ready_need_count: number;
+    review_required_need_count: number;
+    blocked_need_count: number;
+    implementation_blocked_count: number;
+    high_priority_implementation_blocked_count: number;
+    route_unmapped_need_count: number;
+    high_priority_route_blocked_count: number;
+    high_priority_route_protected_count: number;
+    public_benchmark_review_need_count: number;
+    premium_exception_review_need_count: number;
+    default_change_blocked_need_count: number;
+    default_change_review_need_count: number;
+    source_user_need_benchmark_status: string;
+    source_user_need_route_status: string;
+    source_implementation_queue_status: string;
+    default_change_allowed: boolean;
+    maintainer_review_required: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    network_called: boolean;
+    raw_text_returned: boolean;
+  };
+  bridge_rows: ModelOpsUserNeedReleaseBridgeRow[];
+  need_rows: ModelOpsUserNeedReleaseBridgeRow[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  blocked_need_ids: string[];
+  review_need_ids: string[];
+  ready_need_ids: string[];
+  source_summaries: Record<string, unknown>;
+  bridge_policy: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  source_boundaries: Record<string, boolean | string | number | string[] | null>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsDefaultChangeQueue = {
   status: string;
   method: {
@@ -4298,6 +4375,7 @@ export type ModelOpsResponse = {
   legal_fixture_cheap_first_default_promotion_packet?: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
+  user_need_release_bridge?: ModelOpsUserNeedReleaseBridge;
   default_change_queue?: ModelOpsDefaultChangeQueue;
   cheap_first_priority_queue?: ModelOpsCheapFirstPriorityQueue;
   gemini_default_change_review?: ModelOpsGeminiDefaultChangeReview;
@@ -4381,6 +4459,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     route_rows?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
+    bridge_rows?: unknown;
+    need_rows?: unknown;
     fixture_run_items?: unknown;
     gate_rows?: unknown;
     document_check_items?: unknown;
@@ -4426,6 +4506,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.task_recommendations) && Array.isArray(payload.observed_model_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.replay_results) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.bridge_rows) && Array.isArray(payload.need_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
@@ -4797,6 +4878,13 @@ export async function evaluateModelGatewayRequestCompatibilityGate(
 export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCheapFirstReleaseDecision> {
   return invokeModelOpsApi<ModelOpsCheapFirstReleaseDecision>({
     url: '/api/v1/aihub/models/cheap-first-release-decision',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsUserNeedReleaseBridge(): Promise<ModelOpsUserNeedReleaseBridge> {
+  return invokeModelOpsApi<ModelOpsUserNeedReleaseBridge>({
+    url: '/api/v1/aihub/models/user-need-release-bridge',
     method: 'GET',
   });
 }

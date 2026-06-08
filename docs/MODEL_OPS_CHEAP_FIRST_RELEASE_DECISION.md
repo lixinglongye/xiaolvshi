@@ -14,6 +14,10 @@ For legal-task defaults, the packet also consumes legal fixture benchmark gate,
 legal fixture default-promotion packet, and legal benchmark route-risk bridge
 metadata so benchmark/watchlist evidence is part of the final decision instead
 of a side panel.
+For product-priority defaults, it consumes `user_need_release_bridge` so
+high-priority implementation and Gemini route blockers can stop default changes
+while public benchmark license, premium exception, partial coverage, and
+medium/low planning gaps remain maintainer-review signals.
 
 The packet is downstream of `model_ops_readiness`. It does not feed back into
 readiness and does not add another readiness component.
@@ -53,6 +57,7 @@ The service consumes existing signal metadata only:
 - `legal_fixture_cheap_first_benchmark_gate`
 - `legal_fixture_cheap_first_default_promotion_packet`
 - `legal_benchmark_risk_bridge`
+- `user_need_release_bridge`
 
 It reads status fields, check IDs, counts, and recommended actions. It does not
 rerun model calls, gateway probes, price scrapes, benchmark downloads, public

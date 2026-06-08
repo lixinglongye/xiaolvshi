@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current ModelOps user-need release slice:
+`modelops-user-need-release-bridge` joins the user-need implementation priority
+queue with Gemini cheap-first route coverage and exposes it through
+`/api/v1/aihub/models/user-need-release-bridge`. High-priority implementation
+or route blockers can block default changes; public benchmark license review,
+premium exception review, partial coverage, route-hint calibration gaps, and
+medium/low implementation gaps stay maintainer-review only. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, or the network;
+download public datasets; import public benchmark samples; write configuration;
+change default routes; shift traffic; or return raw legal text, prompts, route
+payloads, request/response bodies, headers, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 Current local dev dynamic proxy slice:
 `local-dev-dynamic-proxy-port-guard` keeps the Vite development `/api` proxy
 aligned with the backend port selected by `app/start_app_v2.sh`. The startup

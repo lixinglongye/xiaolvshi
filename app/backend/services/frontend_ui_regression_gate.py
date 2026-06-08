@@ -93,6 +93,7 @@ PAGE_GATES = (
                 "Gemini/NewAPI alias capability coverage",
             "Gateway request compatibility gate",
             "Cheap-first release decision",
+            "ModelOps user-need release bridge",
             "Default change queue",
             "Cheap-first priority queue",
             "Cheap-first canary plan",
@@ -228,6 +229,7 @@ class FrontendUiRegressionGateService:
                     "Model failure upgrade budget UI evidence is metadata only: no automatic retries, premium quota consumption, gateway calls, traffic shifts, configuration writes, prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps legal micro benchmark preflight UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, configuration writes, traffic shifts, request bodies, messages, prompt text, fixture excerpts, legal text, generated document text, model output, gateway responses, or credentials.",
                     "ModelOps legal benchmark risk bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, routing writes, dataset downloads, public benchmark scores, raw legal text, model output, prompts, or credentials.",
+                    "ModelOps user-need release bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, route writes, dataset downloads, public benchmark scores, raw legal text, public sample text, model output, prompts, emails, identifiers, or credentials.",
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps route telemetry UI evidence is metadata only: repository, ops summary, triage queue, and remediation panels use sanitized route counters and never render prompts, legal text, request bodies, response bodies, headers, raw model output, emails, or credentials.",
                     "Public benchmark license gate UI evidence is metadata only: no public benchmark sample text, fixture snippets, model output, gateway payloads, dataset downloads, public score claims, or credentials.",
@@ -359,6 +361,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the legal benchmark risk bridge panel, policy boundary, and privacy boundary in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked legal-benchmark-risk-bridge API checks for route watchlists, user-need gaps, premium exception rows, and no raw legal/benchmark/model fields.",
+                },
+                {
+                    "id": "modelops-user-need-release-bridge-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the user-need release bridge panel, endpoint binding, release effect rows, and metadata-only privacy boundary in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked user-need release bridge API checks for high-priority blockers, public benchmark license review, premium exception review, route coverage gaps, and forbidden raw user/legal/model fields.",
                 },
                 {
                     "id": "public-benchmark-license-gate-regresses",

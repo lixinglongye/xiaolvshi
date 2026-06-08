@@ -95,6 +95,7 @@ from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueSe
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
+from services.model_ops_user_need_release_bridge import ModelOpsUserNeedReleaseBridgeService
 from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
 from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
 from services.model_ops_performance_budget import (
@@ -122,6 +123,9 @@ from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
 from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
+from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
+from services.user_need_gemini_route_coverage import UserNeedGeminiRouteCoverageService
+from services.user_need_implementation_priority_queue import UserNeedImplementationPriorityQueueService
 from services.model_usage import model_usage_registry
 from sse_starlette.sse import EventSourceResponse
 
@@ -392,6 +396,23 @@ async def list_models():
         )
     )
     preliminary_legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge()
+    user_need_benchmark_coverage = UserNeedBenchmarkCoverageService().build_coverage()
+    user_need_shared_signals = {
+        "user_need_benchmark_coverage": user_need_benchmark_coverage,
+        "cheap_first_calibration": cheap_first_calibration,
+        "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
+    }
+    user_need_implementation_priority_queue = (
+        UserNeedImplementationPriorityQueueService().build_queue(user_need_shared_signals)
+    )
+    user_need_gemini_route_coverage = UserNeedGeminiRouteCoverageService().build_coverage(user_need_shared_signals)
+    user_need_release_bridge = ModelOpsUserNeedReleaseBridgeService().build_bridge(
+        {
+            **user_need_shared_signals,
+            "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
+            "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
+        }
+    )
     gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(
         {
             "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
@@ -457,6 +478,10 @@ async def list_models():
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
         "legal_benchmark_risk_bridge": preliminary_legal_benchmark_risk_bridge,
+        "user_need_benchmark_coverage": user_need_benchmark_coverage,
+        "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
+        "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
+        "user_need_release_bridge": user_need_release_bridge,
         "gemini_research_refresh_gate": gemini_research_refresh_gate,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
@@ -575,6 +600,10 @@ async def list_models():
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        "user_need_benchmark_coverage": user_need_benchmark_coverage,
+        "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
+        "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
+        "user_need_release_bridge": user_need_release_bridge,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
@@ -1029,6 +1058,16 @@ async def model_ops_cheap_first_release_decision():
     return {
         "success": True,
         "data": models_payload["cheap_first_release_decision"],
+    }
+
+
+@router.get("/models/user-need-release-bridge")
+async def model_ops_user_need_release_bridge():
+    """Return metadata-only user-need release bridge evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["user_need_release_bridge"],
     }
 
 

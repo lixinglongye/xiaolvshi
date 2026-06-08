@@ -17,6 +17,7 @@ REQUIRED_SIGNAL_KEYS = (
     "legal_fixture_cheap_first_benchmark_gate",
     "legal_fixture_cheap_first_default_promotion_packet",
     "legal_benchmark_risk_bridge",
+    "user_need_release_bridge",
 )
 
 
@@ -117,6 +118,13 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 fail_reason="Legal benchmark risk bridge has blocked legal route evidence.",
                 warn_reason="Legal benchmark risk bridge requires review for public benchmark license, premium exception, or route watchlist evidence.",
             ),
+            self._check_signal(
+                "user-need-release-bridge",
+                "user_need_release_bridge",
+                data.get("user_need_release_bridge"),
+                fail_reason="User-need release bridge has high-priority implementation or Gemini route blockers.",
+                warn_reason="User-need release bridge requires review for public benchmark license, premium exception, partial coverage, or lower-priority blocker evidence.",
+            ),
         ]
         blocking = [check for check in checks if check["status"] == "fail"]
         warnings = [check for check in checks if check["status"] == "warn"]
@@ -134,6 +142,7 @@ class ModelOpsCheapFirstReleaseDecisionService:
                     "Consumes existing ModelOps evidence instead of re-running model, gateway, pricing, or benchmark checks.",
                     "Treats ModelOps readiness as the aggregate upstream release signal and does not feed this packet back into readiness.",
                     "Requires metadata-only legal fixture benchmark, default-promotion packet, and legal benchmark route-risk evidence before promoting legal-task defaults.",
+                    "Requires user-need release bridge evidence so product priorities, implementation gaps, and Gemini route coverage stay attached to cheap-first default decisions.",
                     "Blocks cheap-first default changes only when a required source signal fails.",
                     "Keeps catalog-review, unpriced-model, legal fixture not-run/not-ready, legal benchmark watchlist, performance-observation, and other warn states as maintainer review.",
                     "Does not call Gemini, NewAPI, OpenAI, Google, or any gateway.",
@@ -166,6 +175,7 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "unknown_model_policy": "Unknown Gemini-like ids can stay explicit-only but cannot become high-frequency defaults without catalog source and pricing review.",
                 "legal_fixture_policy": "Legal fixture, document benchmark, fact-consistency, and calibration evidence can support legal-task defaults only through the metadata-only benchmark gate and promotion packet.",
                 "legal_benchmark_policy": "Legal benchmark route-risk bridge must be pass before new legal-task defaults are promoted; watchlist or license-review evidence requires maintainer review.",
+                "user_need_policy": "High-priority user needs with blocked implementation or route evidence block default changes; license, premium exception, partial coverage, and medium or low priority blockers require maintainer review.",
             },
             "recommended_actions": self._recommended_actions(blocking, warnings),
             "privacy_boundary": {
@@ -270,6 +280,29 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 ),
                 "route_review_count": self._safe_int(summary.get("route_review_count")),
                 "user_need_review_count": self._safe_int(summary.get("user_need_review_count")),
+                "need_count": self._safe_int(summary.get("need_count")),
+                "high_priority_need_count": self._safe_int(summary.get("high_priority_need_count")),
+                "implementation_blocked_count": self._safe_int(summary.get("implementation_blocked_count")),
+                "high_priority_implementation_blocked_count": self._safe_int(
+                    summary.get("high_priority_implementation_blocked_count")
+                ),
+                "route_unmapped_need_count": self._safe_int(summary.get("route_unmapped_need_count")),
+                "high_priority_route_blocked_count": self._safe_int(summary.get("high_priority_route_blocked_count")),
+                "high_priority_route_protected_count": self._safe_int(
+                    summary.get("high_priority_route_protected_count")
+                ),
+                "public_benchmark_review_need_count": self._safe_int(
+                    summary.get("public_benchmark_review_need_count")
+                ),
+                "premium_exception_review_need_count": self._safe_int(
+                    summary.get("premium_exception_review_need_count")
+                ),
+                "default_change_blocked_need_count": self._safe_int(
+                    summary.get("default_change_blocked_need_count")
+                ),
+                "default_change_review_need_count": self._safe_int(
+                    summary.get("default_change_review_need_count")
+                ),
                 "premium_exception_route_count": self._safe_int(summary.get("premium_exception_route_count")),
                 "benchmark_license_watch_count": self._safe_int(summary.get("benchmark_license_watch_count")),
                 "default_change_queue_item_count": self._safe_int(summary.get("default_change_queue_item_count")),

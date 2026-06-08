@@ -46,6 +46,7 @@ import {
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalMicroBenchmarkPreflight,
+  getModelOpsUserNeedReleaseBridge,
   getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   getModelGatewayProbeTemplate,
   getModelOps,
@@ -78,6 +79,7 @@ import {
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalMicroBenchmarkPreflight,
+  type ModelOpsUserNeedReleaseBridge,
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
@@ -543,6 +545,8 @@ function Inner() {
   const [legalBenchmarkRiskBridge, setLegalBenchmarkRiskBridge] =
     useState<ModelOpsLegalBenchmarkRiskBridge | null>(null);
   const [legalBenchmarkRiskBridgeError, setLegalBenchmarkRiskBridgeError] = useState('');
+  const [userNeedReleaseBridge, setUserNeedReleaseBridge] = useState<ModelOpsUserNeedReleaseBridge | null>(null);
+  const [userNeedReleaseBridgeError, setUserNeedReleaseBridgeError] = useState('');
   const [legalMicroBenchmarkPreflight, setLegalMicroBenchmarkPreflight] =
     useState<ModelOpsLegalMicroBenchmarkPreflight | null>(null);
   const [legalMicroBenchmarkPreflightError, setLegalMicroBenchmarkPreflightError] = useState('');
@@ -577,6 +581,7 @@ function Inner() {
     setEscalationBudget(payload.cheap_first_escalation_budget ?? null);
     setFailureUpgradeBudget(payload.failure_upgrade_budget ?? null);
     setLegalBenchmarkRiskBridge(payload.legal_benchmark_risk_bridge ?? null);
+    setUserNeedReleaseBridge(payload.user_need_release_bridge ?? null);
     setLegalMicroBenchmarkPreflight(payload.legal_micro_benchmark_preflight ?? null);
     setLegalFixtureCheapFirstBenchmarkGate(
       payload.legal_fixture_cheap_first_benchmark_gate ?? null,
@@ -649,6 +654,8 @@ function Inner() {
     setFailureUpgradeBudget(null);
     setLegalBenchmarkRiskBridgeError('');
     setLegalBenchmarkRiskBridge(null);
+    setUserNeedReleaseBridgeError('');
+    setUserNeedReleaseBridge(null);
     setLegalMicroBenchmarkPreflightError('');
     setLegalMicroBenchmarkPreflight(null);
     setLegalFixtureCheapFirstBenchmarkGateError('');
@@ -699,6 +706,7 @@ function Inner() {
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
+        userNeedReleaseBridgeResult,
         legalMicroBenchmarkPreflightResult,
         legalFixtureCheapFirstBenchmarkGateResult,
         legalFixtureCheapFirstDefaultPromotionPacketResult,
@@ -729,6 +737,7 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
         aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
+        aggregateOrRequest(aggregatePayload?.user_need_release_bridge, getModelOpsUserNeedReleaseBridge),
         aggregateOrRequest(aggregatePayload?.legal_micro_benchmark_preflight, getModelOpsLegalMicroBenchmarkPreflight),
         aggregateOrRequest(
           aggregatePayload?.legal_fixture_cheap_first_benchmark_gate,
@@ -969,6 +978,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_benchmark_risk_bridge)
         ) {
           setLegalBenchmarkRiskBridgeError('Legal benchmark risk bridge failed to load.');
+        }
+      }
+      if (userNeedReleaseBridgeResult.status === 'fulfilled') {
+        setUserNeedReleaseBridge(userNeedReleaseBridgeResult.value);
+      } else {
+        console.error(userNeedReleaseBridgeResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setUserNeedReleaseBridge(modelOpsResult.value.user_need_release_bridge ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.user_need_release_bridge)
+        ) {
+          setUserNeedReleaseBridgeError('ModelOps user-need release bridge failed to load.');
         }
       }
       if (legalMicroBenchmarkPreflightResult.status === 'fulfilled') {
@@ -1537,6 +1560,14 @@ function Inner() {
     legalBenchmarkRiskBridge ?? data?.legal_benchmark_risk_bridge ?? null;
   const legalBenchmarkRiskRouteReviews = activeLegalBenchmarkRiskBridge?.route_reviews ?? [];
   const legalBenchmarkRiskUserNeedReviews = activeLegalBenchmarkRiskBridge?.user_need_reviews ?? [];
+  const activeUserNeedReleaseBridge = userNeedReleaseBridge ?? data?.user_need_release_bridge ?? null;
+  const userNeedReleaseBridgeRows = activeUserNeedReleaseBridge?.bridge_rows ?? [];
+  const userNeedReleaseBridgePrivacyEntries = boundaryDisplayEntries(
+    activeUserNeedReleaseBridge?.privacy_boundary,
+  );
+  const userNeedReleaseBridgeClaimEntries = boundaryDisplayEntries(
+    activeUserNeedReleaseBridge?.claim_boundary,
+  );
   const activeLegalMicroBenchmarkPreflight =
     legalMicroBenchmarkPreflight ?? data?.legal_micro_benchmark_preflight ?? null;
   const legalMicroFixtureRows = activeLegalMicroBenchmarkPreflight?.fixture_run_items ?? [];
@@ -2179,6 +2210,163 @@ function Inner() {
                       </TableCell>
                       <TableCell className="font-mono text-xs text-stone-700">{check.decision_effect}</TableCell>
                       <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeUserNeedReleaseBridge && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeUserNeedReleaseBridge.summary.need_count} needs /{' '}
+                  {activeUserNeedReleaseBridge.summary.high_priority_route_protected_count} protected high-priority
+                  routes / {activeUserNeedReleaseBridge.summary.default_change_review_need_count} review needs
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeUserNeedReleaseBridge.status)}>
+                {activeUserNeedReleaseBridge.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            {userNeedReleaseBridgeError && (
+              <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {userNeedReleaseBridgeError}
+              </div>
+            )}
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.high_priority_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">high priority</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.high_priority_route_protected_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">route protected</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.default_change_blocked_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default blockers</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.default_change_review_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review needs</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.implementation_blocked_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">implementation gaps</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedReleaseBridge.summary.default_change_allowed ? 'yes' : 'no'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default changes</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Bridge policy</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {String(activeUserNeedReleaseBridge.bridge_policy.high_priority_user_need_policy)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {String(activeUserNeedReleaseBridge.bridge_policy.review_policy)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Source boundary</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  benchmark: {activeUserNeedReleaseBridge.summary.source_user_need_benchmark_status} / route:{' '}
+                  {activeUserNeedReleaseBridge.summary.source_user_need_route_status} / queue:{' '}
+                  {activeUserNeedReleaseBridge.summary.source_implementation_queue_status}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  configuration written: {String(activeUserNeedReleaseBridge.summary.configuration_written)} / traffic
+                  shifted: {String(activeUserNeedReleaseBridge.summary.traffic_shifted)} / network:{' '}
+                  {String(activeUserNeedReleaseBridge.summary.network_called)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Privacy and claims</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  {userNeedReleaseBridgePrivacyEntries.map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                  {userNeedReleaseBridgeClaimEntries.slice(0, 2).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User need</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Signals</TableHead>
+                    <TableHead>Release effect</TableHead>
+                    <TableHead>Next action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userNeedReleaseBridgeRows.slice(0, 8).map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="max-w-[260px]">
+                        <div className="font-semibold text-stone-950">{row.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.priority_band} / priority {row.release_priority_score}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.release_bridge_status)}>
+                          {row.release_bridge_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          default review: {String(row.default_allowed_without_review)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                        <div>implementation: {row.implementation_action_status}</div>
+                        <div>route: {row.route_coverage_status}</div>
+                        <div>benchmark: {row.benchmark_coverage_status}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.linked_route_tasks.slice(0, 4).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        <div className="font-mono text-[11px] text-stone-700">{row.release_decision_effect}</div>
+                        <div className="mt-1">
+                          blockers: {row.blocked_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                        <div className="mt-1">
+                          review: {row.review_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.next_action}
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          gates: {row.linked_release_gates.slice(0, 3).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

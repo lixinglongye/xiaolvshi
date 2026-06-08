@@ -11,8 +11,13 @@ class UserNeedImplementationPriorityQueueService:
     def __init__(self, coverage_service: UserNeedBenchmarkCoverageService | None = None) -> None:
         self.coverage_service = coverage_service or UserNeedBenchmarkCoverageService()
 
-    def build_queue(self) -> dict[str, Any]:
-        coverage = self.coverage_service.build_coverage()
+    def build_queue(self, signals: dict[str, Any] | None = None) -> dict[str, Any]:
+        data = signals if isinstance(signals, dict) else {}
+        coverage = (
+            data.get("user_need_benchmark_coverage")
+            if isinstance(data.get("user_need_benchmark_coverage"), dict)
+            else self.coverage_service.build_coverage()
+        )
         items = [self._queue_item(row) for row in coverage["coverage_rows"]]
         items = sorted(items, key=lambda item: (-item["queue_priority_score"], item["need_id"]))
         blocked = [item for item in items if item["action_status"] == "blocked"]

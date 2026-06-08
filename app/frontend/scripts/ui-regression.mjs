@@ -146,6 +146,12 @@ const observedGeminiCoverageGapQueuePanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
   'model-ops observed Gemini coverage gap queue section',
 );
+const modelOpsUserNeedReleaseBridgePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+  'model-ops user-need release bridge section',
+);
 const caseWorkbenchRiskRefreshPanel = sourceSection(
   caseWorkbenchRuntimePanel,
   'Risk refresh plan',
@@ -2473,6 +2479,39 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstReleaseDecision', 'model-ops cheap-first release decision API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-release-decision', 'model-ops cheap-first release decision endpoint'),
   () => assertIncludes(modelOpsApi, 'cheap_first_release_decision', 'model-ops cheap-first release decision response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedReleaseBridge', 'model-ops user-need release bridge type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedReleaseBridgeRow', 'model-ops user-need release bridge row type'),
+  () => assertIncludes(modelOpsApi, 'user_need_release_bridge?: ModelOpsUserNeedReleaseBridge', 'model-ops user-need release bridge response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsUserNeedReleaseBridge', 'model-ops user-need release bridge API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/user-need-release-bridge', 'model-ops user-need release bridge endpoint'),
+  () => assertIncludes(modelOpsApi, 'bridge_rows', 'model-ops user-need release bridge payload guard'),
+  () => assertIncludes(modelOpsPage, 'ModelOps user-need release bridge', 'model-ops user-need release bridge panel'),
+  () => assertIncludes(modelOpsPage, 'userNeedReleaseBridge', 'model-ops user-need release bridge state binding'),
+  () => assertIncludes(modelOpsPage, 'setUserNeedReleaseBridge(payload.user_need_release_bridge ?? null)', 'model-ops user-need release bridge aggregate binding'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_release_bridge', 'model-ops user-need release bridge fallback request binding'),
+  () => assertIncludes(modelOpsPage, 'release_decision_effect', 'model-ops user-need release decision effect binding'),
+  () => assertIncludes(modelOpsPage, 'implementation_action_status', 'model-ops user-need implementation action binding'),
+  () => assertIncludes(modelOpsPage, 'high_priority_route_protected_count', 'model-ops user-need high-priority route protection binding'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>',
+      '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
+      'model-ops user-need bridge follows release decision',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+      'model-ops user-need bridge before default change queue',
+    ),
+  () =>
+    assertNotMatches(
+      modelOpsUserNeedReleaseBridgePanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|sample_text|raw_legal_text|request_body|response_body|headers|email|phone/i,
+      'model-ops user-need release bridge sensitive field guard',
+    ),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/performance-budget', 'model-ops performance budget endpoint'),
   () => assertIncludes(modelOpsApi, 'ModelRouteQualityBudget', 'model-ops route quality budget type'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/route-quality-budget', 'model-ops route quality budget endpoint'),
