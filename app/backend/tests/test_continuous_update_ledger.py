@@ -447,6 +447,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-chunk-policy-gate" in completed_ids
     assert "legal-rag-embedding-index-dry-run-gate" in completed_ids
     assert "legal-rag-embedding-batch-budget-gate" in completed_ids
+    assert "legal-rag-embedding-batch-approval-packet" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -645,6 +646,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-chunk-policy-gate" not in queue_ids
     assert "legal-rag-embedding-index-dry-run-gate" not in queue_ids
     assert "legal-rag-embedding-batch-budget-gate" not in queue_ids
+    assert "legal-rag-embedding-batch-approval-packet" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -3176,6 +3178,58 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_ops_gemini_embedding_cheap_first_preflight.py "
         "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+
+    approval_packet_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-embedding-batch-approval-packet"
+    )
+    assert approval_packet_entry["category"] == "benchmark"
+    assert approval_packet_entry["size"] == "medium"
+    assert approval_packet_entry["status"] == "shipped"
+    assert "metadata-only Legal RAG embedding batch approval packet" in approval_packet_entry["impact"]
+    assert "serial low-resource queue order" in approval_packet_entry["impact"]
+    assert "max_parallel_embedding_requests=1" in approval_packet_entry["impact"]
+    assert "required maintainer and RAG-index reviewer signoff roles" in approval_packet_entry["impact"]
+    assert "pre-approval checks" in approval_packet_entry["impact"]
+    assert "advance/hold/block run actions" in approval_packet_entry["impact"]
+    assert "maintenance UI review" in approval_packet_entry["impact"]
+    assert "without claiming approval" in approval_packet_entry["impact"]
+    assert "collecting approver identity" in approval_packet_entry["impact"]
+    assert "writing approval records" in approval_packet_entry["impact"]
+    assert "NewAPI/Gemini/model calls" in approval_packet_entry["impact"]
+    assert "embedding creation" in approval_packet_entry["impact"]
+    assert "index or database writes" in approval_packet_entry["impact"]
+    assert "source-id echoing" in approval_packet_entry["impact"]
+    assert "raw legal text" in approval_packet_entry["impact"]
+    assert "source chunks" in approval_packet_entry["impact"]
+    assert "embedding vectors" in approval_packet_entry["impact"]
+    assert "credentials" in approval_packet_entry["impact"]
+    assert "live pricing claims" in approval_packet_entry["impact"]
+    assert "embedding/index/retrieval quality claims" in approval_packet_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_batch_approval_packet.py" in approval_packet_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_batch_approval_packet.py" in approval_packet_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in approval_packet_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_batch_budget_gate.py" in approval_packet_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_index_dry_run_gate.py" in approval_packet_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in approval_packet_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in approval_packet_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in approval_packet_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_BATCH_APPROVAL_PACKET.md" in approval_packet_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in approval_packet_entry["evidence_paths"]
+    assert "legal-rag-embedding-batch-approval-packet" in approval_packet_entry["release_gate_links"]
+    assert "legal-rag-embedding-batch-budget-gate" in approval_packet_entry["release_gate_links"]
+    assert "legal-rag-embedding-index-dry-run-gate" in approval_packet_entry["release_gate_links"]
+    assert "legal-rag-embedding-chunk-policy-gate" in approval_packet_entry["release_gate_links"]
+    assert "modelops-gemini-embedding-cheap-first-preflight" in approval_packet_entry["release_gate_links"]
+    assert "frontend-typecheck" in approval_packet_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in approval_packet_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_embedding_batch_approval_packet.py "
+        "tests/test_legal_rag_embedding_batch_budget_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )

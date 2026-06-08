@@ -206,6 +206,16 @@ AI endpoints, models, indexes, databases, or the network, and it does not
 claim live pricing accuracy, embedding execution, index writes, or retrieval
 quality.
 
+`legal-rag-embedding-batch-approval-packet` is the shipped metadata-only
+maintainer review packet downstream of the batch budget gate. It maps budget
+rows to serial queue order, `max_parallel_embedding_requests=1`, required
+maintainer/RAG-index reviewer roles, pre-approval checks, and advance/hold/block
+actions before any cheap Gemini embedding run. It does not approve a batch,
+collect approver identity, write approval records, call NewAPI, Gemini, OpenAI,
+Google, gateways, app AI endpoints, models, indexes, databases, or the network,
+and it does not claim live pricing accuracy, embedding execution, index writes,
+or retrieval quality.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,

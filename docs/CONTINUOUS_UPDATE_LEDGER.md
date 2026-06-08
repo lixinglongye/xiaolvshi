@@ -67,6 +67,21 @@ legal text, source chunks, embedding vectors, prompts, model outputs, gateway
 payloads, credentials, emails, live pricing claims, or embedding/index/retrieval
 quality claims.
 
+Current Legal RAG embedding batch approval slice:
+`legal-rag-embedding-batch-approval-packet` adds metadata-only maintainer review
+evidence through `LegalRagEmbeddingBatchApprovalPacketService` at
+`/api/v1/maintenance/legal-rag-embedding-batch-approval-packet`. It converts
+batch-budget rows into serial low-resource queue order,
+`max_parallel_embedding_requests=1`, required maintainer/RAG-index reviewer
+roles, pre-approval checks, and advance/hold/block actions before any embedding
+run. It does not claim approval, collect approver identity, write approval
+records, call NewAPI, Gemini, models, gateways, app AI endpoints, or the
+network; create embeddings; write indexes or databases; download datasets; or
+return source ids, raw query, raw retrieved context, raw legal text, source
+chunks, embedding vectors, prompts, model outputs, gateway payloads,
+credentials, emails, live pricing claims, or embedding/index/retrieval quality
+claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

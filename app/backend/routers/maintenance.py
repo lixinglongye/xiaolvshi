@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_embedding_batch_approval_packet import LegalRagEmbeddingBatchApprovalPacketService
 from services.legal_rag_embedding_batch_budget_gate import LegalRagEmbeddingBatchBudgetGateService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
 from services.legal_rag_embedding_index_dry_run_gate import LegalRagEmbeddingIndexDryRunGateService
@@ -1410,6 +1411,31 @@ async def evaluate_legal_rag_embedding_batch_budget_gate(payload: dict[str, Any]
     return {
         "success": True,
         "data": LegalRagEmbeddingBatchBudgetGateService().build_gate(rows if isinstance(rows, list) else None),
+    }
+
+
+@router.get("/legal-rag-embedding-batch-approval-packet")
+async def get_legal_rag_embedding_batch_approval_packet():
+    """Return metadata-only Legal RAG embedding batch approval evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchApprovalPacketService().build_packet(),
+    }
+
+
+@router.post("/legal-rag-embedding-batch-approval-packet")
+async def evaluate_legal_rag_embedding_batch_approval_packet(payload: dict[str, Any]):
+    """Evaluate metadata-only Legal RAG embedding batch approval packet rows."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchApprovalPacketService().build_packet(rows if isinstance(rows, list) else None),
     }
 
 

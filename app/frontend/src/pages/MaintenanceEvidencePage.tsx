@@ -52,6 +52,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
+  getLegalRagEmbeddingBatchApprovalPacket,
   getLegalRagEmbeddingBatchBudgetGate,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
@@ -132,6 +133,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type LegalRagEmbeddingBatchApprovalPacket,
   type LegalRagEmbeddingBatchBudgetGate,
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexDryRunGate,
@@ -195,6 +197,7 @@ const statusClass: Record<string, string> = {
   ready_for_review: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  approval_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   covered: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
@@ -208,6 +211,9 @@ const statusClass: Record<string, string> = {
   at_risk: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_review: 'border-amber-200 bg-amber-50 text-amber-900',
   review_required: 'border-amber-200 bg-amber-50 text-amber-900',
+  approval_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
+  hold_for_review: 'border-amber-200 bg-amber-50 text-amber-900',
+  ready_for_maintainer_approval: 'border-amber-200 bg-amber-50 text-amber-900',
   needs_attention: 'border-amber-200 bg-amber-50 text-amber-900',
   manual_review: 'border-amber-200 bg-amber-50 text-amber-900',
   cadence_reviewable: 'border-amber-200 bg-amber-50 text-amber-900',
@@ -220,6 +226,8 @@ const statusClass: Record<string, string> = {
   ready_with_review: 'border-amber-200 bg-amber-50 text-amber-900',
   partial: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
+  approval_blocked: 'border-red-200 bg-red-50 text-red-800',
+  blocked_until_budget_ready: 'border-red-200 bg-red-50 text-red-800',
   gap: 'border-red-200 bg-red-50 text-red-800',
   missing: 'border-red-200 bg-red-50 text-red-800',
   ocr_failed: 'border-red-200 bg-red-50 text-red-800',
@@ -472,6 +480,8 @@ function Inner() {
     useState<LegalRagEmbeddingIndexDryRunGate | null>(null);
   const [legalRagEmbeddingBatchBudgetGate, setLegalRagEmbeddingBatchBudgetGate] =
     useState<LegalRagEmbeddingBatchBudgetGate | null>(null);
+  const [legalRagEmbeddingBatchApprovalPacket, setLegalRagEmbeddingBatchApprovalPacket] =
+    useState<LegalRagEmbeddingBatchApprovalPacket | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -907,6 +917,11 @@ function Inner() {
           label: 'Legal RAG embedding batch budget gate',
           run: getLegalRagEmbeddingBatchBudgetGate,
           apply: (value) => setLegalRagEmbeddingBatchBudgetGate(value as LegalRagEmbeddingBatchBudgetGate),
+        },
+        {
+          label: 'Legal RAG embedding batch approval packet',
+          run: getLegalRagEmbeddingBatchApprovalPacket,
+          apply: (value) => setLegalRagEmbeddingBatchApprovalPacket(value as LegalRagEmbeddingBatchApprovalPacket),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -10572,6 +10587,248 @@ function Inner() {
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingBatchApprovalPacket &&
+              (() => {
+                const packet = legalRagEmbeddingBatchApprovalPacket;
+                const items = packet.approval_items ?? [];
+                const summary = packet.summary;
+                const privacy = packet.privacy_boundary;
+                const claim = packet.claim_boundary;
+                const summaryCounts = [
+                  { label: 'approval items', value: summary.approval_item_count },
+                  { label: 'ready approvals', value: summary.ready_for_approval_count },
+                  { label: 'held approvals', value: summary.hold_for_review_count },
+                  { label: 'blocked approvals', value: summary.blocked_approval_count },
+                  { label: 'required signoffs', value: summary.required_signoff_count },
+                  { label: 'approved count', value: summary.approved_count },
+                  { label: 'planned batches', value: summary.planned_batch_total },
+                  { label: 'max parallel requests', value: summary.max_parallel_embedding_requests },
+                  { label: 'estimated batch cost', value: formatUsd(summary.estimated_batch_cost_usd) },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'approver identity returned', value: privacy.returns_approver_identity },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'approval record written', value: privacy.writes_approval_record },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'maintainer approval claimed', value: claim.maintainer_approval_claimed },
+                  { label: 'embedding batch executed claimed', value: claim.embedding_batch_executed_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only maintainer approval packet before any cheap Gemini embedding batch run
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[packet.status] ?? statusClass.review_required}>
+                        {displayToken(packet.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-5 xl:grid-cols-10">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Queue item</TableHead>
+                            <TableHead>Approval / run action</TableHead>
+                            <TableHead>Budget context</TableHead>
+                            <TableHead>Signoffs / checks</TableHead>
+                            <TableHead>Blocking reasons</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {items.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  #{item.queue_order} {displayToken(item.source_type)}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{item.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{item.embedding_model}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[item.approval_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(item.approval_status)}
+                                </Badge>
+                                <div className="mt-2">batch_status: {displayToken(item.batch_status)}</div>
+                                <div>run_action: {displayToken(item.run_action)}</div>
+                                <div>approval_record_written: {String(item.approval_record_written)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>planned_batch_count: {item.planned_batch_count}</div>
+                                <div>planned_chunk_count: {item.planned_chunk_count}</div>
+                                <div>estimated_token_count: {item.estimated_token_count}</div>
+                                <div>estimated_batch_cost_usd: {formatUsd(item.estimated_batch_cost_usd)}</div>
+                                <div>max_parallel_embedding_requests: {item.max_parallel_embedding_requests}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div className="mb-1 font-semibold text-stone-700">required_signoffs</div>
+                                <div className="mb-2 flex max-w-[240px] flex-wrap gap-1">
+                                  {item.required_signoffs.length ? (
+                                    item.required_signoffs.map((role) => (
+                                      <Badge key={`${item.id}-${role}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                        {role}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span>-</span>
+                                  )}
+                                </div>
+                                <div className="mb-1 font-semibold text-stone-700">pre_approval_checks</div>
+                                <div className="flex max-w-[260px] flex-wrap gap-1">
+                                  {item.pre_approval_checks.slice(0, 4).map((check) => (
+                                    <Badge key={`${item.id}-${check}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {check}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[280px] flex-wrap gap-1">
+                                  {item.blocking_reason_codes.length ? (
+                                    item.blocking_reason_codes.map((code) => (
+                                      <Badge key={`${item.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                        {code}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-stone-500">none</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['approval_status_counts', packet.approval_status_counts],
+                            ['run_action_counts', packet.run_action_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(packet.linked_gate_summary).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">approval_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {packet.approval_policy.method}</div>
+                          <div>max parallel requests: {packet.approval_policy.max_parallel_embedding_requests}</div>
+                          <div>requires maintainer signoff: {String(packet.approval_policy.requires_maintainer_signoff_for_ready_rows)}</div>
+                          <div>approval record written: {String(packet.approval_policy.approval_record_written)}</div>
+                          <div>embedding run allowed: {String(packet.approval_policy.embedding_run_allowed)}</div>
+                          <div>model call allowed: {String(packet.approval_policy.model_call_allowed)}</div>
+                          <div>index write allowed: {String(packet.approval_policy.index_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_approval_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {packet.input_contract.accepted_approval_fields.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>approval_identity_collected: {String(packet.input_contract.approval_identity_collected)}</div>
+                          <div>approval_record_written: {String(packet.input_contract.approval_record_written)}</div>
+                          <div>approval_packet_only: {String(packet.input_contract.approval_packet_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(packet.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(packet.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div
                               key={command}
                               className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"

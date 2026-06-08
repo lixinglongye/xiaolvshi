@@ -69,6 +69,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG embedding chunk policy gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding index dry-run gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch budget gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding batch approval packet" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -500,6 +501,15 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("laptop-safe chunk and token limits" in guardrail for guardrail in profile["application_guardrails"])
     assert any("local catalog batch-cost estimates" in guardrail for guardrail in profile["application_guardrails"])
     assert any("live pricing claims" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding batch approval packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("serial low-resource queue order" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("max_parallel_embedding_requests=1" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("required maintainer/RAG-index reviewer roles" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("pre-approval checks" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("advance/hold/block actions" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("without claiming approval" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("collecting approver identity" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("writing approval records" in guardrail for guardrail in profile["application_guardrails"])
     assert any("writing indexes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("writing indexes or databases" in guardrail for guardrail in profile["application_guardrails"])
     assert any("creating embeddings" in guardrail for guardrail in profile["application_guardrails"])

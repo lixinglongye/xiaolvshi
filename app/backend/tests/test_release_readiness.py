@@ -1064,6 +1064,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-embedding-chunk-policy-gate": "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-index-dry-run-gate": "python -m pytest tests/test_legal_rag_embedding_index_dry_run_gate.py tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-batch-budget-gate": "python -m pytest tests/test_legal_rag_embedding_batch_budget_gate.py tests/test_legal_rag_embedding_index_dry_run_gate.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-rag-embedding-batch-approval-packet": "python -m pytest tests/test_legal_rag_embedding_batch_approval_packet.py tests/test_legal_rag_embedding_batch_budget_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-benchmark-alignment": "python -m pytest tests/test_legal_rag_benchmark_alignment.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-retrieval-observation-gate": "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
@@ -1991,6 +1992,30 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_EMBEDDING_BATCH_BUDGET_GATE.md" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG embedding batch approval packet evidence" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "serial low-resource run order" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "max_parallel_embedding_requests=1" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "required maintainer/RAG-index signoff roles" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "pre-approval checks" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "advance/hold/block actions" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "does not claim approval" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "collect approver identity" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "write approval records" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "does not claim approval, collect approver identity, write approval records" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "call NewAPI" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "create embeddings" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "write indexes or databases" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "source chunks" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "embedding vectors" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "credentials" in checks["legal-rag-embedding-batch-approval-packet"]["manual_note"]
+    assert "app/backend/services/legal_rag_embedding_batch_approval_packet.py" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_batch_approval_packet.py" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_batch_budget_gate.py" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_index_dry_run_gate.py" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_BATCH_APPROVAL_PACKET.md" in checks["legal-rag-embedding-batch-approval-packet"]["evidence_paths"]
     assert "metadata-only Legal RAG benchmark alignment evidence" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "LegalBench-RAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "CRAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]

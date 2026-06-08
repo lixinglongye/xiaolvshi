@@ -572,6 +572,20 @@ const checks = [
   () => assertIncludes(maintenancePage, 'model call allowed', 'legal RAG embedding batch budget no model call binding'),
   () => assertIncludes(maintenancePage, 'embedding batch executed claimed', 'legal RAG embedding batch budget claim boundary label'),
   () => assertIncludes(maintenancePage, 'pricing accuracy claimed', 'legal RAG embedding batch budget pricing claim boundary label'),
+  () => assertIncludes(maintenancePage, 'Legal RAG embedding batch approval packet', 'legal RAG embedding batch approval packet panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagEmbeddingBatchApprovalPacket', 'legal RAG embedding batch approval API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagEmbeddingBatchApprovalPacket', 'legal RAG embedding batch approval state binding'),
+  () => assertIncludes(maintenancePage, 'approval items', 'legal RAG embedding batch approval item summary'),
+  () => assertIncludes(maintenancePage, 'ready approvals', 'legal RAG embedding batch approval ready summary'),
+  () => assertIncludes(maintenancePage, 'required signoffs', 'legal RAG embedding batch approval signoff summary'),
+  () => assertIncludes(maintenancePage, 'max parallel requests', 'legal RAG embedding batch approval serial summary'),
+  () => assertIncludes(maintenancePage, 'approval_status_counts', 'legal RAG embedding batch approval status distribution'),
+  () => assertIncludes(maintenancePage, 'run_action_counts', 'legal RAG embedding batch approval action distribution'),
+  () => assertIncludes(maintenancePage, 'approval_policy', 'legal RAG embedding batch approval policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_approval_fields', 'legal RAG embedding batch approval input fields'),
+  () => assertIncludes(maintenancePage, 'approval_identity_collected', 'legal RAG embedding batch approval no identity collection binding'),
+  () => assertIncludes(maintenancePage, 'approver identity returned', 'legal RAG embedding batch approval approver identity boundary label'),
+  () => assertIncludes(maintenancePage, 'maintainer approval claimed', 'legal RAG embedding batch approval claim boundary label'),
   () =>
     assertBefore(
       maintenancePage,
@@ -611,8 +625,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
+      'embedding batch budget gate precedes embedding batch approval packet',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding batch budget gate precedes retrieval diagnostics',
+      'embedding batch approval packet precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -851,6 +872,17 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'embedding_batch_executed_claimed', 'legal RAG embedding batch budget no execution claim type'),
   () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingBatchBudgetGate', 'legal RAG embedding batch budget getter'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-batch-budget-gate', 'legal RAG embedding batch budget endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagEmbeddingBatchApprovalPacket', 'legal RAG embedding batch approval packet type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-embedding-batch-approval-packet' | string", 'legal RAG embedding batch approval packet id'),
+  () => assertIncludes(maintenanceApi, 'approval_items', 'legal RAG embedding batch approval items type'),
+  () => assertIncludes(maintenanceApi, 'approval_status_counts', 'legal RAG embedding batch approval status counts type'),
+  () => assertIncludes(maintenanceApi, 'run_action_counts', 'legal RAG embedding batch approval action counts type'),
+  () => assertIncludes(maintenanceApi, 'ready_for_approval_count', 'legal RAG embedding batch approval ready count type'),
+  () => assertIncludes(maintenanceApi, 'required_signoffs', 'legal RAG embedding batch approval signoffs type'),
+  () => assertIncludes(maintenanceApi, 'approval_identity_collected', 'legal RAG embedding batch approval no identity type'),
+  () => assertIncludes(maintenanceApi, 'writes_approval_record', 'legal RAG embedding batch approval no approval write type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingBatchApprovalPacket', 'legal RAG embedding batch approval getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-batch-approval-packet', 'legal RAG embedding batch approval endpoint'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1942,8 +1974,14 @@ const legalRagEmbeddingIndexDryRunPanel = sourceSection(
 const legalRagEmbeddingBatchBudgetPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
   'maintenance Legal RAG embedding batch budget section',
+);
+const legalRagEmbeddingBatchApprovalPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch approval packet</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding batch approval section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2155,6 +2193,11 @@ assertNotMatches(
   legalRagEmbeddingBatchBudgetPanel,
   /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
   'maintenance Legal RAG embedding batch budget no raw chunks, raw legal text, source ids, secrets, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingBatchApprovalPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding batch approval no raw chunks, raw legal text, source ids, secrets, approver identity, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,
