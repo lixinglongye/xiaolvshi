@@ -14,6 +14,18 @@ text, raw legal text, source chunks, embedding vectors, request bodies, response
 bodies, headers, prompts, raw payloads, model outputs, gateway responses,
 emails, credentials, or user identifiers.
 
+Current Legal RAG embedding readiness slice:
+`legal-rag-embedding-readiness-gate` links the Gemini embedding cheap-first
+preflight to Legal RAG index coverage and retrieval diagnostics in the
+maintenance evidence API and UI. It records text-only `gemini-embedding-001`
+readiness rows, keeps multimodal `gemini-embedding-2` review-required, exposes
+index blockers before any embedding index write, and shows validation commands.
+It does not call providers, gateways, app AI endpoints, models, or the network;
+write indexes; download datasets; or return source ids, raw query, retrieved
+context, legal text, source chunks, embedding vectors, prompts, model outputs,
+gateway payloads, credentials, emails, or embedding/index/retrieval quality
+claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

@@ -514,6 +514,21 @@ const checks = [
   () => assertIncludes(maintenancePage, 'raw_text_fields_ignored', 'legal RAG index coverage raw fields ignored'),
   () => assertIncludes(maintenancePage, 'source ids returned', 'legal RAG index coverage source-id boundary label'),
   () => assertIncludes(maintenancePage, 'index quality claimed', 'legal RAG index coverage claim boundary label'),
+  () => assertIncludes(maintenancePage, 'Legal RAG embedding readiness gate', 'legal RAG embedding readiness gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagEmbeddingReadinessGate', 'legal RAG embedding readiness API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagEmbeddingReadinessGate', 'legal RAG embedding readiness state binding'),
+  () => assertIncludes(maintenancePage, 'readiness rows', 'legal RAG embedding readiness row count summary'),
+  () => assertIncludes(maintenancePage, 'embedding default model', 'legal RAG embedding default model summary'),
+  () => assertIncludes(maintenancePage, 'text embedding ready', 'legal RAG text embedding ready summary'),
+  () => assertIncludes(maintenancePage, 'multimodal review required', 'legal RAG multimodal embedding review summary'),
+  () => assertIncludes(maintenancePage, 'index blockers', 'legal RAG embedding readiness index blocker summary'),
+  () => assertIncludes(maintenancePage, 'readiness_status_counts', 'legal RAG embedding readiness status distribution'),
+  () => assertIncludes(maintenancePage, 'readiness_policy', 'legal RAG embedding readiness policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_fields', 'legal RAG embedding readiness input fields'),
+  () => assertIncludes(maintenancePage, 'forbidden_fields_ignored', 'legal RAG embedding readiness forbidden fields'),
+  () => assertIncludes(maintenancePage, 'embedding vectors returned', 'legal RAG embedding vector boundary label'),
+  () => assertIncludes(maintenancePage, 'index writes', 'legal RAG embedding index write boundary label'),
+  () => assertIncludes(maintenancePage, 'embedding quality claimed', 'legal RAG embedding claim boundary label'),
   () =>
     assertBefore(
       maintenancePage,
@@ -525,8 +540,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
+      'index coverage gate precedes embedding readiness',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'index coverage gate precedes retrieval diagnostics',
+      'embedding readiness gate precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -728,6 +750,15 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'returns_source_ids', 'legal RAG index coverage no source id return boundary'),
   () => assertIncludes(maintenanceApi, 'getLegalRagIndexCoverageGate', 'legal RAG index coverage getter'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-index-coverage-gate', 'legal RAG index coverage endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagEmbeddingReadinessGate', 'legal RAG embedding readiness gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-embedding-readiness-gate' | string", 'legal RAG embedding readiness gate id'),
+  () => assertIncludes(maintenanceApi, 'readiness_rows', 'legal RAG embedding readiness rows type'),
+  () => assertIncludes(maintenanceApi, 'readiness_status_counts', 'legal RAG embedding readiness status counts type'),
+  () => assertIncludes(maintenanceApi, 'embedding_default_model', 'legal RAG embedding default model type'),
+  () => assertIncludes(maintenanceApi, 'returns_embedding_vectors', 'legal RAG embedding vector return boundary type'),
+  () => assertIncludes(maintenanceApi, 'writes_index', 'legal RAG embedding index write boundary type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingReadinessGate', 'legal RAG embedding readiness getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-readiness-gate', 'legal RAG embedding readiness endpoint'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1795,8 +1826,14 @@ const retrievalDiagnosticsPanel = sourceSection(
 const legalRagIndexCoveragePanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG index coverage gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
   'maintenance Legal RAG index coverage section',
+);
+const legalRagEmbeddingReadinessPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding readiness section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -1988,6 +2025,11 @@ assertNotMatches(
   legalRagIndexCoveragePanel,
   /\b(UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|sk-[A-Za-z0-9]{20,}|client@example\.invalid)\b/i,
   'maintenance Legal RAG index coverage no raw sample text, secrets, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingReadinessPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid)\b/i,
+  'maintenance Legal RAG embedding readiness no raw vectors, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

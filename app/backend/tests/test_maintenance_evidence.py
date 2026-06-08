@@ -65,6 +65,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG abstention escalation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval diagnostics gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG index coverage gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding readiness gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -482,6 +483,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Legal RAG hallucination triage gate is metadata-only triage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG abstention escalation gate is metadata-only answer-routing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG retrieval diagnostics gate is metadata-only retrieval evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding readiness gate is metadata-only Gemini embedding" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("multimodal embedding review boundaries" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("writing indexes" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("embedding vectors" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG retrieval observation gate is metadata-only local retrieval observation evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store or return source ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw query" in guardrail for guardrail in profile["application_guardrails"])

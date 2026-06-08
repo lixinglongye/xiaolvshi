@@ -52,6 +52,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
+  getLegalRagEmbeddingReadinessGate,
   getLegalRagIndexCoverageGate,
   getMaintenanceLegalRagExportReadinessPacket,
   getLegalRagHallucinationTriageGate,
@@ -128,6 +129,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
   type LegalRagRetrievalObservationGate,
   type MaintenanceLegalRagExportReadinessPacket,
@@ -455,6 +457,8 @@ function Inner() {
     useState<LegalRagAuthorityCitationGate | null>(null);
   const [legalRagIndexCoverageGate, setLegalRagIndexCoverageGate] =
     useState<LegalRagIndexCoverageGate | null>(null);
+  const [legalRagEmbeddingReadinessGate, setLegalRagEmbeddingReadinessGate] =
+    useState<LegalRagEmbeddingReadinessGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -870,6 +874,11 @@ function Inner() {
           label: 'Legal RAG index coverage gate',
           run: getLegalRagIndexCoverageGate,
           apply: (value) => setLegalRagIndexCoverageGate(value as LegalRagIndexCoverageGate),
+        },
+        {
+          label: 'Legal RAG embedding readiness gate',
+          run: getLegalRagEmbeddingReadinessGate,
+          apply: (value) => setLegalRagEmbeddingReadinessGate(value as LegalRagEmbeddingReadinessGate),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -9577,6 +9586,253 @@ function Inner() {
                       </div>
                       <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingReadinessGate &&
+              (() => {
+                const gate = legalRagEmbeddingReadinessGate;
+                const rows = gate.readiness_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const summaryCounts = [
+                  { label: 'readiness rows', value: summary.readiness_row_count },
+                  { label: 'ready rows', value: summary.ready_row_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                  { label: 'text embedding ready', value: summary.text_embedding_ready_count },
+                  { label: 'multimodal review required', value: summary.multimodal_review_required_count },
+                  { label: 'index blockers', value: summary.index_blocked_plan_count },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'query content returned', value: privacy.returns_raw_query || privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'embedding quality claimed', value: claim.embedding_quality_claimed },
+                  { label: 'index quality claimed', value: claim.index_quality_claimed },
+                  { label: 'automatic index write claimed', value: claim.automatic_index_write_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding readiness gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only Gemini embedding preflight linked to Legal RAG index coverage and retrieval diagnostics
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Embedding route</TableHead>
+                            <TableHead>Default model</TableHead>
+                            <TableHead>Readiness / release</TableHead>
+                            <TableHead>Index / retrieval links</TableHead>
+                            <TableHead>Input scope</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.id)}</div>
+                                <div className="mt-1 text-xs text-stone-600">{displayToken(row.route_mode)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div className="font-mono text-[11px] text-stone-700">{row.default_model}</div>
+                                <div>{displayToken(row.canonical_model)}</div>
+                                <div>{displayToken(row.budget_mode)} / {displayToken(row.cost_tier)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge variant="outline" className={statusClass[row.readiness_status] ?? statusClass.review_required}>
+                                  {displayToken(row.readiness_status)}
+                                </Badge>
+                                <div className="mt-2">{displayToken(row.release_action)}</div>
+                                <div>route: {displayToken(row.route_status)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>index: {displayToken(row.index_coverage_status)}</div>
+                                <div>retrieval: {displayToken(row.retrieval_diagnostics_status)}</div>
+                                <div className="mt-1 flex max-w-[280px] flex-wrap gap-1">
+                                  {row.linked_gate_ids.map((gateId) => (
+                                    <Badge key={`${row.id}-${gateId}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {gateId}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[220px] flex-wrap gap-1">
+                                  {row.input_scope.map((scope) => (
+                                    <Badge key={`${row.id}-${scope}`} variant="outline" className="bg-white">
+                                      {displayToken(scope)}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[260px] flex-wrap gap-1">
+                                  {row.reason_codes.map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['readiness_status_counts', gate.readiness_status_counts],
+                            ['release_action_counts', gate.release_action_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>embedding preflight: {displayToken(gate.linked_gate_summary.modelops_gemini_embedding_cheap_first_preflight)}</div>
+                          <div>index coverage: {displayToken(gate.linked_gate_summary.legal_rag_index_coverage_gate)}</div>
+                          <div>retrieval diagnostics: {displayToken(gate.linked_gate_summary.legal_rag_retrieval_diagnostics_gate)}</div>
+                          <div>
+                            warning checks:{' '}
+                            {(gate.linked_gate_summary.embedding_preflight_warning_check_ids ?? []).map((item) => displayToken(item)).join(', ') || '-'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Readiness policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.readiness_policy.method}</div>
+                          <div>cheap default: {gate.readiness_policy.cheap_first_text_embedding_default}</div>
+                          <div>text preflight allowed: {String(gate.readiness_policy.text_embedding_routes_can_preflight_without_review)}</div>
+                          <div>multimodal review: {String(gate.readiness_policy.multimodal_embedding_requires_operator_review)}</div>
+                          <div>index write allowed: {String(gate.readiness_policy.index_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Checks</h3>
+                        <div className="space-y-3">
+                          {gate.checks.map((check) => (
+                            <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                              <div className="mb-1 flex items-center justify-between gap-2">
+                                <div className="font-mono text-[11px] text-stone-600">{check.id}</div>
+                                <Badge variant="outline" className={statusClass[check.status] ?? statusClass.not_run}>
+                                  {displayToken(check.status)}
+                                </Badge>
+                              </div>
+                              <div className="text-xs leading-5 text-stone-600">{check.reason}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.accepted_fields.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">forbidden_fields_ignored</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.forbidden_fields_ignored.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div

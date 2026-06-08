@@ -443,6 +443,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
     assert "legal-rag-index-coverage-gate" in completed_ids
+    assert "legal-rag-embedding-readiness-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -637,6 +638,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-abstention-escalation-gate" not in queue_ids
     assert "legal-rag-retrieval-diagnostics-gate" not in queue_ids
     assert "legal-rag-index-coverage-gate" not in queue_ids
+    assert "legal-rag-embedding-readiness-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -2961,6 +2963,68 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "frontend-ui-regression-gate" in index_coverage_entry["release_gate_links"]
     assert (
         "python -m pytest tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_index_binding.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    embedding_readiness_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-embedding-readiness-gate"
+    )
+    assert embedding_readiness_entry["category"] == "benchmark"
+    assert embedding_readiness_entry["size"] == "medium"
+    assert embedding_readiness_entry["status"] == "shipped"
+    assert "Gemini embedding cheap-first defaults" in embedding_readiness_entry["impact"]
+    assert "text-only index preflight rows" in embedding_readiness_entry["impact"]
+    assert "multimodal embedding review boundaries" in embedding_readiness_entry["impact"]
+    assert "index coverage blockers" in embedding_readiness_entry["impact"]
+    assert "retrieval diagnostics linkage" in embedding_readiness_entry["impact"]
+    assert "typed maintenance API helpers" in embedding_readiness_entry["impact"]
+    assert "maintenance UI review" in embedding_readiness_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in embedding_readiness_entry["impact"]
+    assert "gateway calls" in embedding_readiness_entry["impact"]
+    assert "network calls" in embedding_readiness_entry["impact"]
+    assert "index writes" in embedding_readiness_entry["impact"]
+    assert "dataset downloads" in embedding_readiness_entry["impact"]
+    assert "source-id echoing" in embedding_readiness_entry["impact"]
+    assert "raw query" in embedding_readiness_entry["impact"]
+    assert "raw retrieved context" in embedding_readiness_entry["impact"]
+    assert "raw legal text" in embedding_readiness_entry["impact"]
+    assert "embedding vectors" in embedding_readiness_entry["impact"]
+    assert "prompts" in embedding_readiness_entry["impact"]
+    assert "model outputs" in embedding_readiness_entry["impact"]
+    assert "gateway payloads" in embedding_readiness_entry["impact"]
+    assert "credentials" in embedding_readiness_entry["impact"]
+    assert "embedding/index/retrieval quality claims" in embedding_readiness_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_readiness_gate.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_readiness_gate.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in embedding_readiness_entry["evidence_paths"]
+    assert (
+        "app/backend/services/model_ops_gemini_embedding_cheap_first_preflight.py"
+        in embedding_readiness_entry["evidence_paths"]
+    )
+    assert "app/backend/services/legal_rag_index_coverage_gate.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/backend/services/maintenance_evidence.py" in embedding_readiness_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in embedding_readiness_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in embedding_readiness_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in embedding_readiness_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_READINESS_GATE.md" in embedding_readiness_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in embedding_readiness_entry["evidence_paths"]
+    assert "legal-rag-embedding-readiness-gate" in embedding_readiness_entry["release_gate_links"]
+    assert "modelops-gemini-embedding-cheap-first-preflight" in embedding_readiness_entry["release_gate_links"]
+    assert "legal-rag-index-coverage-gate" in embedding_readiness_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in embedding_readiness_entry["release_gate_links"]
+    assert "frontend-typecheck" in embedding_readiness_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in embedding_readiness_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_embedding_readiness_gate.py "
+        "tests/test_model_ops_gemini_embedding_cheap_first_preflight.py "
+        "tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_retrieval_diagnostics_gate.py "
         "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"

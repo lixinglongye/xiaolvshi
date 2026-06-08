@@ -290,6 +290,13 @@ The service does not run shell commands itself. It only evaluates results suppli
 
 Optional evidence checks, such as OSS maintenance evidence, product feature gap radar, billing entitlement gap evidence, billing usage quota policy, billing quota persistence planning, billing quota migration planning, billing quota repository persistence, billing entitlement quota binding, billing quota consumption route, case evidence graph contracts, case workbench payload contracts, case workbench persistence planning, case workbench state repository persistence, case workbench runtime binding, case workbench runtime router, frontend runtime API client bindings, runtime router discovery smoke, case workbench frontend state events, legal RAG case research UI, billing usage workspace badge, case role permission matrices, matter intake readiness, deadline validation, contract clause extraction schemas, document delivery package manifests, document version diff checklists, legal source ingestion metadata, legal source durable index planning, legal source index repository persistence, legal RAG index binding, legal RAG index route, client delivery transparency, route telemetry persistence planning, maintenance heartbeat evidence, continuous session run monitor, and the continuous update ledger, are tracked but do not block releases. The route telemetry repository, operations summary, triage queue, and remediation plan are required because they provide the reviewable runtime evidence, maintainer actions, and operator-reviewed repair plan needed before model-routing release claims.
 
+The optional `legal-rag-embedding-readiness-gate` check links Gemini embedding
+cheap-first metadata to Legal RAG index coverage and retrieval diagnostics. It
+can show that text-only `gemini-embedding-001` routes are reviewable before
+index writes and that multimodal embedding remains review-required, but it must
+not be used to claim live embedding quality, index creation, retrieval quality,
+legal-answer quality, provider execution, or client delivery.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

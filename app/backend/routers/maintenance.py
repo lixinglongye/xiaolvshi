@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
 from services.legal_rag_index_coverage_gate import LegalRagIndexCoverageGateService
@@ -1324,6 +1325,15 @@ async def get_legal_rag_index_coverage_gate():
     return {
         "success": True,
         "data": LegalRagIndexCoverageGateService().build_gate(),
+    }
+
+
+@router.get("/legal-rag-embedding-readiness-gate")
+async def get_legal_rag_embedding_readiness_gate():
+    """Return metadata-only Legal RAG embedding readiness evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingReadinessGateService().build_gate(),
     }
 
 

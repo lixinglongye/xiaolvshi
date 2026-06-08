@@ -1060,6 +1060,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-retrieval-diagnostics-gate": "python -m pytest tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-index-coverage-gate": "python -m pytest tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_index_binding.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-rag-embedding-readiness-gate": "python -m pytest tests/test_legal_rag_embedding_readiness_gate.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-benchmark-alignment": "python -m pytest tests/test_legal_rag_benchmark_alignment.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-retrieval-observation-gate": "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
@@ -1903,6 +1904,28 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-index-coverage-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-index-coverage-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_INDEX_COVERAGE_GATE.md" in checks["legal-rag-index-coverage-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG embedding readiness gate evidence" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "Gemini embedding cheap-first defaults" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "text-only index preflight rows" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "multimodal embedding review boundaries" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "index coverage blockers" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "retrieval diagnostics linkage" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "typed maintenance API helpers" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "maintenance UI review" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "write indexes" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "embedding vectors" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "credentials" in checks["legal-rag-embedding-readiness-gate"]["manual_note"]
+    assert "app/backend/services/legal_rag_embedding_readiness_gate.py" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_readiness_gate.py" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    assert (
+        "app/backend/services/model_ops_gemini_embedding_cheap_first_preflight.py"
+        in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    )
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_READINESS_GATE.md" in checks["legal-rag-embedding-readiness-gate"]["evidence_paths"]
     assert "metadata-only Legal RAG benchmark alignment evidence" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "LegalBench-RAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "CRAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]

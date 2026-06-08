@@ -3866,6 +3866,145 @@ export type LegalRagIndexCoverageGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingReadinessGateRow = {
+  id: string;
+  task: string;
+  route_mode: string;
+  input_scope: string[];
+  default_model: string;
+  canonical_model: string;
+  budget_mode: string;
+  cost_tier: string;
+  route_status: string;
+  index_coverage_status: string;
+  retrieval_diagnostics_status: string;
+  readiness_status: string;
+  release_action: string;
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_query_returned: boolean;
+    retrieved_context_returned: boolean;
+    raw_legal_text_returned: boolean;
+    embedding_vectors_returned: boolean;
+    prompt_returned: boolean;
+    model_output_returned: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingReadinessGate = {
+  id: 'legal-rag-embedding-readiness-gate' | string;
+  title?: string;
+  status: string;
+  summary: {
+    readiness_row_count: number;
+    ready_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    embedding_model_count: number;
+    text_embedding_ready_count: number;
+    multimodal_review_required_count: number;
+    index_plan_row_count: number;
+    index_ready_plan_count: number;
+    index_review_plan_count: number;
+    index_blocked_plan_count: number;
+    diagnostic_row_count: number;
+    diagnostic_review_row_count: number;
+    diagnostic_blocked_row_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    index_written: boolean;
+    dataset_downloaded: boolean;
+    raw_query_included: boolean;
+    raw_retrieved_context_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_embedding_vectors_included: boolean;
+    source_ids_returned: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  readiness_rows: LegalRagEmbeddingReadinessGateRow[];
+  readiness_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+    evidence: string[];
+    [key: string]: unknown;
+  }>;
+  linked_gate_summary: {
+    modelops_gemini_embedding_cheap_first_preflight?: string;
+    legal_rag_index_coverage_gate?: string;
+    legal_rag_retrieval_diagnostics_gate?: string;
+    embedding_preflight_warning_check_ids?: string[];
+    index_release_action_counts?: Record<string, number>;
+    retrieval_release_action_counts?: Record<string, number>;
+    [key: string]: unknown;
+  };
+  readiness_policy: {
+    method: string;
+    cheap_first_text_embedding_default: string;
+    text_embedding_routes_can_preflight_without_review: boolean;
+    multimodal_embedding_requires_operator_review: boolean;
+    blocks_on_empty_index_coverage: boolean;
+    blocks_on_missing_retrieval_locator: boolean;
+    blocks_on_forbidden_query_filters: boolean;
+    requires_retrieval_diagnostics_before_answer_claims: boolean;
+    index_write_allowed: boolean;
+    [key: string]: unknown;
+  };
+  input_contract: {
+    accepted_fields: string[];
+    forbidden_fields_ignored: string[];
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    embedding_quality_claimed: boolean;
+    index_quality_claimed: boolean;
+    live_gateway_quality_claimed: boolean;
+    automatic_index_write_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    writes_index: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -4574,6 +4713,11 @@ type LegalRagRetrievalDiagnosticsGateResponse = {
 type LegalRagIndexCoverageGateResponse = {
   success: boolean;
   data: LegalRagIndexCoverageGate;
+};
+
+type LegalRagEmbeddingReadinessGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingReadinessGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -6053,6 +6197,14 @@ export async function getLegalRagIndexCoverageGate(): Promise<LegalRagIndexCover
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagIndexCoverageGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingReadinessGate(): Promise<LegalRagEmbeddingReadinessGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-readiness-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingReadinessGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(
