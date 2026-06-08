@@ -54,6 +54,21 @@ The response includes:
 - `regressed_fixture_ids`, `newly_blocking_fixture_ids`, and `resolved_blocking_fixture_ids`,
 - `recommended_actions` for release review.
 
+## Release And Ledger Evidence
+
+`legal-fixture-regression-comparison` is optional release readiness evidence.
+If it is not run, it stays review-only and does not block ordinary release
+candidate preparation. If a maintainer submits a failed comparison, release
+readiness includes it in `failed_check_ids` so the candidate is blocked until
+fixture regressions are fixed or explicitly waived.
+
+`POST /api/v1/maintenance/continuous-update-ledger` can receive the comparison
+under `low_resource_fixture_regression`. The ledger keeps only status,
+release-decision, count, cost-delta, safe fixture-id, and dropped raw-field
+metadata. It does not return `fixture_deltas` raw scoring inputs, run report
+payloads, gateway responses, prompts, legal text, client documents, headers,
+credentials, or model outputs.
+
 ## Safety
 
 The comparator does not call NewAPI, Gemini, OpenAI, a public benchmark, or any gateway. Raw `output_text`, gateway responses, prompts, client documents, emails, headers, and credentials are only used as local scoring inputs and are not returned. The response records only fixture IDs, scores, statuses, routes, model names, costs, deltas, and reason codes.
@@ -61,7 +76,7 @@ The comparator does not call NewAPI, Gemini, OpenAI, a public benchmark, or any 
 ## Validation
 
 ```bash
-python -m pytest tests/test_legal_fixture_regression.py tests/test_legal_fixture_run_report.py -q
+python -m pytest tests/test_legal_fixture_regression.py tests/test_legal_fixture_run_report.py tests/test_continuous_update_ledger.py tests/test_release_readiness.py -q
 ```
 
 ## Related Files
@@ -69,4 +84,6 @@ python -m pytest tests/test_legal_fixture_regression.py tests/test_legal_fixture
 - `app/backend/services/legal_fixture_regression.py`
 - `app/backend/tests/test_legal_fixture_regression.py`
 - `app/backend/services/legal_fixture_run_report.py`
+- `app/backend/services/continuous_update_ledger.py`
+- `app/backend/services/release_readiness.py`
 - `app/backend/routers/maintenance.py`

@@ -795,9 +795,19 @@ The response includes:
 - `summary`: completed count, remaining count, category counts, and completion flags.
 - `completed_updates`: shipped updates with code, test, doc, or UI evidence paths.
 - `next_update_queue`: planned medium/large work, prioritized for cheap-first and low-resource validation.
-- `low_resource_fixture_evidence`: archive-safe local fixture evidence status.
+- `low_resource_fixture_evidence`: archive-safe local fixture evidence status, including optional regression-comparison metadata when supplied.
 - `low_resource_test_policy`: fixture limits, serial execution policy, default benchmark endpoint, ledger review endpoint, and run-monitor review endpoint.
 - `validation_commands`: small pytest commands that can run on a local laptop.
+
+Current low-resource fixture regression evidence:
+`legal-fixture-regression-comparison` now feeds the ledger's
+`low_resource_fixture_evidence` summary when `low_resource_fixture_regression`
+is posted. The ledger records only comparison status, release decision,
+compared fixture count, regressed/newly-blocking/resolved counts, cost delta,
+safe fixture ids, and dropped raw-field counts. It keeps raw model outputs,
+gateway responses, prompts, legal text, client documents, request/response
+bodies, headers, emails, credentials, and secrets out of the ledger response,
+and it never mutates the 24-hour or 100-update completion flags.
 
 Current case workbench runtime evidence:
 `case-workbench-risk-refresh-plan` adds shipped metadata-only risk/evidence

@@ -9,6 +9,16 @@ metadata-only refresh evidence for LegalBench, LexGLUE, LegalBench-RAG, LexEval,
 CaseGen, COLIEE, and adoption bridge mappings. It does not download datasets, claim public benchmark scores,
 store external legal text, call models, or handle credentials.
 
+Additional optional evidence: `legal-fixture-regression-comparison` records
+metadata-only baseline/current cheap-first fixture regression deltas. It is
+optional when not run, but a failed submitted comparison blocks release
+candidates through `failed_check_ids`. It records status, release decision,
+score/status/escalation/cost deltas, safe fixture ids, and validation commands
+without calling NewAPI, Gemini, OpenAI, Google, gateways, models, public
+datasets, or the network, and without returning raw model outputs, gateway
+responses, prompts, legal text, client documents, request/response bodies,
+headers, emails, credentials, or secrets.
+
 Additional optional evidence: `model-route-legal-benchmark-risk-queue` records
 metadata-only cheap-first model-route review against legal benchmark refresh and
 user-need coverage. It does not call gateways, write model defaults, download

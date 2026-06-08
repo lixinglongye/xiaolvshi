@@ -55,6 +55,28 @@ def _passing_fixture_review_payload() -> dict:
     }
 
 
+def _passing_regression_run(cost: float = 0.0001) -> dict:
+    fixtures = LegalReviewBenchmarkService().build_fixture_smoke_template()["fixtures"]
+    return {
+        "observations": {
+            fixture["id"]: {
+                "route": fixture["expected_routes"][0],
+                "output_text": " ".join([*fixture["expected_signals"], *fixture["expected_tasks"]]),
+            }
+            for fixture in fixtures
+        },
+        "run_metadata": {
+            fixture["id"]: {
+                "phase": "cheap_first",
+                "model": "gemini-2.5-flash-lite",
+                "http_status": 200,
+                "estimated_cost_usd": cost,
+            }
+            for fixture in fixtures
+        },
+    }
+
+
 def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     ledger = ContinuousUpdateLedgerService().build_ledger()
 
@@ -79,8 +101,14 @@ def test_continuous_update_ledger_tracks_goal_without_claiming_completion():
     assert not SECRET_PATTERN.search(str(ledger))
     assert ledger["low_resource_fixture_evidence"]["status"] == "not_supplied"
     assert ledger["low_resource_fixture_evidence"]["summary"]["observed_fixture_count"] == 0
+    assert ledger["low_resource_fixture_evidence"]["summary"]["regression_status"] == "not_supplied"
+    assert ledger["low_resource_fixture_evidence"]["summary"]["compared_fixture_count"] == 0
     assert ledger["low_resource_fixture_evidence"]["summary"]["updates_count_mutated"] is False
     assert ledger["low_resource_fixture_evidence"]["privacy_boundary"]["raw_gateway_response_included"] is False
+    assert ledger["low_resource_fixture_evidence"]["privacy_boundary"]["returns_regression_metadata_only"] is True
+    assert ledger["low_resource_test_policy"]["regression_endpoint"] == (
+        "/api/v1/maintenance/legal-review-benchmark/fixture-regression"
+    )
     assert ledger["low_resource_test_policy"]["run_monitor_review_endpoint"] == (
         "/api/v1/maintenance/continuous-session-run-monitor"
     )
@@ -110,6 +138,63 @@ def test_continuous_update_ledger_summarizes_low_resource_fixture_evidence_witho
     assert "run_report_payload" not in serialized
     assert "output_text" not in serialized
     assert "choices" not in serialized
+
+
+def test_continuous_update_ledger_summarizes_fixture_regression_comparison_without_raw_echo():
+    baseline = _passing_regression_run()
+    ledger = ContinuousUpdateLedgerService().build_ledger(
+        {
+            "low_resource_fixture_review": _passing_fixture_review_payload(),
+            "low_resource_fixture_regression": {
+                "baseline": baseline,
+                "current": _passing_regression_run(0.00009),
+            },
+        }
+    )
+    evidence = ledger["low_resource_fixture_evidence"]
+    serialized = json.dumps(ledger, ensure_ascii=False)
+
+    assert evidence["status"] == "ready"
+    assert evidence["summary"]["regression_status"] == "pass"
+    assert evidence["summary"]["regression_release_decision"] == "current_fixture_run_is_stable_or_improved"
+    assert evidence["summary"]["compared_fixture_count"] == 4
+    assert evidence["summary"]["regressed_fixture_count"] == 0
+    assert evidence["summary"]["newly_blocking_fixture_count"] == 0
+    assert evidence["summary"]["regression_cost_delta_usd"] < 0
+    assert evidence["summary"]["regression_comparison_ready"] is True
+    assert evidence["summary"]["updates_count_mutated"] is False
+    assert evidence["source_endpoints"]["regression"] == "/api/v1/maintenance/legal-review-benchmark/fixture-regression"
+    assert evidence["privacy_boundary"]["returns_regression_metadata_only"] is True
+    assert "output_text" not in serialized
+    assert "run_report_payload" not in serialized
+
+
+def test_continuous_update_ledger_blocks_fixture_regression_failure_without_echoing_raw_output():
+    baseline = _passing_regression_run()
+    current = _passing_regression_run()
+    current["observations"]["fixture-service-agreement-small"] = {
+        "route": "fast",
+        "output_text": "private regression output must not appear",
+        "raw_response": {"content": "raw regression response must not appear"},
+    }
+    ledger = ContinuousUpdateLedgerService().build_ledger(
+        {
+            "low_resource_fixture_review": _passing_fixture_review_payload(),
+            "low_resource_fixture_regression": {"baseline": baseline, "current": current},
+        }
+    )
+    evidence = ledger["low_resource_fixture_evidence"]
+    serialized = json.dumps(ledger, ensure_ascii=False)
+
+    assert evidence["status"] == "blocked"
+    assert evidence["summary"]["regression_status"] == "fail"
+    assert evidence["summary"]["newly_blocking_fixture_count"] >= 1
+    assert evidence["summary"]["release_ready"] is False
+    assert "fixture-service-agreement-small" in evidence["check_ids"]["regressed_fixture_ids"]
+    assert "fixture-service-agreement-small" in evidence["check_ids"]["newly_blocking_fixture_ids"]
+    assert "private regression output must not appear" not in serialized
+    assert "raw regression response must not appear" not in serialized
+    assert "raw_response" not in serialized
 
 
 def test_continuous_update_ledger_blocks_failed_fixture_evidence_without_echoing_secret():
@@ -788,8 +873,11 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     )
     assert (
         "python -m pytest tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py "
-        "tests/test_legal_fixture_result_archive.py -q"
+        "tests/test_legal_fixture_result_archive.py tests/test_legal_fixture_regression.py -q"
         in ledger["validation_commands"]
+    )
+    assert ledger["low_resource_test_policy"]["regression_endpoint"] == (
+        "/api/v1/maintenance/legal-review-benchmark/fixture-regression"
     )
     assert "python -m pytest tests/test_git_history_evidence.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_validation_event_evidence.py -q" in ledger["validation_commands"]

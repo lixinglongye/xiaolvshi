@@ -43,6 +43,46 @@ def test_release_readiness_blocks_failed_required_check():
     assert result["failed_check_ids"] == ["frontend-typecheck"]
 
 
+def test_legal_fixture_regression_comparison_is_optional_but_failed_evidence_blocks_release():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "legal-fixture-regression-comparison"
+    ]
+    not_run_result = service.evaluate({"legal-fixture-regression-comparison": "not_run"})
+    failed_result = service.evaluate({"legal-fixture-regression-comparison": "fail"})
+    checks = {check["id"]: check for check in failed_result["checks"]}
+    check = checks["legal-fixture-regression-comparison"]
+
+    assert commands == [
+        {
+            "check_id": "legal-fixture-regression-comparison",
+            "command": "python -m pytest tests/test_legal_fixture_regression.py tests/test_legal_fixture_run_report.py tests/test_continuous_update_ledger.py -q",
+        }
+    ]
+    assert check["required"] is False
+    assert check["blocks_release"] is False
+    assert "legal-fixture-regression-comparison" in not_run_result["not_run_check_ids"]
+    assert "legal-fixture-regression-comparison" not in not_run_result["failed_check_ids"]
+    assert "legal-fixture-regression-comparison" in failed_result["failed_check_ids"]
+    assert failed_result["status"] == "blocked"
+    assert "metadata-only score, status, escalation, and cost deltas" in check["manual_note"]
+    assert "not-run optional evidence does not block" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "Gemini" in check["manual_note"]
+    assert "gateways" in check["manual_note"]
+    assert "network" in check["manual_note"]
+    assert "raw model outputs" in check["manual_note"]
+    assert "gateway responses" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/legal_fixture_regression.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_legal_fixture_regression.py" in check["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in check["evidence_paths"]
+    assert "docs/LEGAL_FIXTURE_REGRESSION.md" in check["evidence_paths"]
+
+
 def test_aihub_media_speech_default_catalog_gate_is_required_release_evidence():
     service = ReleaseReadinessService()
     commands = [

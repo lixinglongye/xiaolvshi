@@ -6,6 +6,7 @@ import re
 from typing import Any, Literal
 
 from services.legal_fixture_local_run_review import LegalFixtureLocalRunReviewService
+from services.legal_fixture_regression import LegalFixtureRegressionService
 from services.legal_fixture_result_archive import LegalFixtureResultArchiveService
 
 
@@ -52,9 +53,11 @@ class ContinuousUpdateLedgerService:
         self,
         fixture_review_service: LegalFixtureLocalRunReviewService | None = None,
         fixture_archive_service: LegalFixtureResultArchiveService | None = None,
+        fixture_regression_service: LegalFixtureRegressionService | None = None,
     ) -> None:
         self.fixture_review_service = fixture_review_service or LegalFixtureLocalRunReviewService()
         self.fixture_archive_service = fixture_archive_service or LegalFixtureResultArchiveService()
+        self.fixture_regression_service = fixture_regression_service or LegalFixtureRegressionService()
 
     def build_ledger(self, payload: Any = None) -> dict[str, Any]:
         entries = self._entries()
@@ -109,6 +112,7 @@ class ContinuousUpdateLedgerService:
                 "recommended_endpoint": "/api/v1/maintenance/legal-review-benchmark/quick-suite",
                 "review_endpoint": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
                 "archive_endpoint": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+                "regression_endpoint": "/api/v1/maintenance/legal-review-benchmark/fixture-regression",
                 "ledger_review_endpoint": "/api/v1/maintenance/continuous-update-ledger",
                 "run_monitor_review_endpoint": "/api/v1/maintenance/continuous-session-run-monitor",
             },
@@ -124,7 +128,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_continuous_session_run_monitor.py -q",
                 "python -m pytest tests/test_continuous_session_review_packet.py -q",
                 "python -m pytest tests/test_continuous_session_review_packet.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_response_normalizer.py -q",
-                "python -m pytest tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py -q",
+                "python -m pytest tests/test_continuous_update_ledger.py tests/test_legal_fixture_local_run_review.py tests/test_legal_fixture_result_archive.py tests/test_legal_fixture_regression.py -q",
                 "python -m pytest tests/test_git_history_evidence.py -q",
                 "python -m pytest tests/test_validation_event_evidence.py -q",
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
@@ -224,47 +228,91 @@ class ContinuousUpdateLedgerService:
 
     def _low_resource_fixture_evidence(self, payload: Any) -> dict[str, Any]:
         fixture_payload = self._fixture_payload(payload)
-        if fixture_payload is None:
+        regression_payload = self._fixture_regression_payload(payload)
+        if fixture_payload is None and regression_payload is None:
             return self._empty_low_resource_fixture_evidence()
 
-        review = self.fixture_review_service.review(fixture_payload)
-        archive = self.fixture_archive_service.build_archive(review.get("run_report_payload"))
+        review = self.fixture_review_service.review(fixture_payload) if fixture_payload is not None else {}
+        archive = self.fixture_archive_service.build_archive(review.get("run_report_payload")) if review else {}
+        regression = (
+            self.fixture_regression_service.build_comparison(regression_payload)
+            if regression_payload is not None
+            else {}
+        )
         review_summary = review.get("summary", {})
         archive_summary = archive.get("summary", {})
-        status = self._fixture_evidence_status(review.get("status"), archive.get("status"))
+        regression_summary = regression.get("summary", {})
+        status = self._fixture_evidence_status(
+            review.get("status"),
+            archive.get("status"),
+            regression.get("status"),
+        )
         blocking_ids = [self._safe_token(item) for item in review.get("blocking_check_ids", []) if self._safe_token(item)]
         warning_ids = [self._safe_token(item) for item in review.get("warning_check_ids", []) if self._safe_token(item)]
 
         return {
             "status": status,
             "summary": {
-                "review_status": self._safe_status(review.get("status")) or "unknown",
-                "archive_status": self._safe_status(archive.get("status")) or "unknown",
+                "review_status": self._safe_status(review.get("status")) or "not_supplied",
+                "archive_status": self._safe_status(archive.get("status")) or "not_supplied",
+                "regression_status": self._safe_status(regression.get("status")) or "not_supplied",
                 "release_decision": self._safe_status(review.get("release_decision")),
                 "archive_release_decision": self._safe_status(archive_summary.get("release_decision")),
+                "regression_release_decision": self._safe_status(regression.get("release_decision")),
                 "observed_fixture_count": self._safe_int(review_summary.get("observed_fixture_count")),
                 "archived_fixture_count": self._safe_int(archive_summary.get("archived_fixture_count")),
+                "compared_fixture_count": self._safe_int(regression_summary.get("compared_fixture_count")),
+                "regressed_fixture_count": self._safe_int(regression_summary.get("regressed_fixture_count")),
+                "newly_blocking_fixture_count": self._safe_int(
+                    regression_summary.get("newly_blocking_fixture_count")
+                ),
+                "resolved_blocking_fixture_count": self._safe_int(
+                    regression_summary.get("resolved_blocking_fixture_count")
+                ),
                 "not_run_fixture_count": self._safe_int(review_summary.get("not_run_fixture_count")),
                 "redacted_response_count": self._safe_int(review_summary.get("redacted_response_count")),
-                "dropped_raw_field_count": self._safe_int(archive_summary.get("dropped_raw_field_count")),
+                "dropped_raw_field_count": self._safe_int(archive_summary.get("dropped_raw_field_count"))
+                + self._safe_int(regression_summary.get("dropped_raw_field_count")),
                 "blocking_check_count": self._safe_int(review_summary.get("blocking_check_count")),
                 "warning_check_count": self._safe_int(review_summary.get("warning_check_count")),
                 "observed_request_count": self._safe_int(review_summary.get("observed_request_count")),
                 "observed_cost_usd": self._safe_float(review_summary.get("observed_cost_usd")),
-                "release_ready": review.get("status") == "ready" and archive.get("status") == "ready",
+                "regression_cost_delta_usd": self._safe_signed_float(regression_summary.get("cost_delta_usd")),
+                "regression_cost_delta_ratio": self._safe_signed_float(regression_summary.get("cost_delta_ratio")),
+                "release_ready": (
+                    review.get("status") == "ready"
+                    and archive.get("status") == "ready"
+                    and regression.get("status") not in {"fail", "warn", "not_run"}
+                ),
+                "regression_comparison_ready": regression.get("status") == "pass",
                 "updates_count_mutated": False,
                 "completion_ready_mutated": False,
             },
             "source_endpoints": {
                 "review": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
                 "archive": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+                "regression": "/api/v1/maintenance/legal-review-benchmark/fixture-regression",
             },
             "check_ids": {
                 "blocking": blocking_ids[:8],
                 "warning": warning_ids[:8],
+                "regressed_fixture_ids": [
+                    self._safe_token(item)
+                    for item in regression.get("regressed_fixture_ids", [])[:8]
+                    if self._safe_token(item)
+                ],
+                "newly_blocking_fixture_ids": [
+                    self._safe_token(item)
+                    for item in regression.get("newly_blocking_fixture_ids", [])[:8]
+                    if self._safe_token(item)
+                ],
             },
             "recommended_actions": self._safe_actions(
-                [*review.get("recommended_actions", []), *archive.get("recommended_actions", [])]
+                [
+                    *review.get("recommended_actions", []),
+                    *archive.get("recommended_actions", []),
+                    *regression.get("recommended_actions", []),
+                ]
             ),
             "privacy_boundary": self._low_resource_fixture_privacy_boundary(),
         }
@@ -275,10 +323,16 @@ class ContinuousUpdateLedgerService:
             "summary": {
                 "review_status": "not_supplied",
                 "archive_status": "not_supplied",
+                "regression_status": "not_supplied",
                 "release_decision": "",
                 "archive_release_decision": "",
+                "regression_release_decision": "",
                 "observed_fixture_count": 0,
                 "archived_fixture_count": 0,
+                "compared_fixture_count": 0,
+                "regressed_fixture_count": 0,
+                "newly_blocking_fixture_count": 0,
+                "resolved_blocking_fixture_count": 0,
                 "not_run_fixture_count": 0,
                 "redacted_response_count": 0,
                 "dropped_raw_field_count": 0,
@@ -286,15 +340,19 @@ class ContinuousUpdateLedgerService:
                 "warning_check_count": 0,
                 "observed_request_count": 0,
                 "observed_cost_usd": None,
+                "regression_cost_delta_usd": None,
+                "regression_cost_delta_ratio": None,
                 "release_ready": False,
+                "regression_comparison_ready": False,
                 "updates_count_mutated": False,
                 "completion_ready_mutated": False,
             },
             "source_endpoints": {
                 "review": "/api/v1/maintenance/legal-review-benchmark/local-run-review",
                 "archive": "/api/v1/maintenance/legal-review-benchmark/result-archive",
+                "regression": "/api/v1/maintenance/legal-review-benchmark/fixture-regression",
             },
-            "check_ids": {"blocking": [], "warning": []},
+            "check_ids": {"blocking": [], "warning": [], "regressed_fixture_ids": [], "newly_blocking_fixture_ids": []},
             "recommended_actions": [
                 "Run one or two cheap-first local fixtures and POST the same payload to this ledger for archive-safe evidence review."
             ],
@@ -312,15 +370,38 @@ class ContinuousUpdateLedgerService:
             return payload
         return None
 
-    def _fixture_evidence_status(self, review_status: Any, archive_status: Any) -> str:
+    def _fixture_regression_payload(self, payload: Any) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        for key in ("low_resource_fixture_regression", "fixture_regression", "regression_comparison"):
+            value = payload.get(key)
+            if isinstance(value, dict):
+                return value
+        if "baseline" in payload and "current" in payload:
+            return payload
+        return None
+
+    def _fixture_evidence_status(
+        self,
+        review_status: Any,
+        archive_status: Any,
+        regression_status: Any = None,
+    ) -> str:
         review = self._safe_status(review_status)
         archive = self._safe_status(archive_status)
+        regression = self._safe_status(regression_status)
+        if regression == "fail":
+            return "blocked"
         if review == "fail":
             return "blocked"
         if review == "needs_escalation" or archive == "blocked":
             return "needs_escalation"
+        if regression in {"warn", "not_run"}:
+            return "review_recommended"
         if review in {"review_recommended", "not_run"} or archive in {"review_recommended", "not_run"}:
             return "review_recommended"
+        if review == "" and archive == "" and regression == "pass":
+            return "ready"
         if review == "ready" and archive == "ready":
             return "ready"
         return "review_recommended"
@@ -334,6 +415,7 @@ class ContinuousUpdateLedgerService:
             "credentials_included": False,
             "emails_included": False,
             "returns_archive_summaries_only": True,
+            "returns_regression_metadata_only": True,
         }
 
     def _safe_actions(self, actions: list[Any]) -> list[str]:
@@ -375,6 +457,13 @@ class ContinuousUpdateLedgerService:
             return None
         if isinstance(value, (int, float)):
             return round(max(0.0, float(value)), 8)
+        return None
+
+    def _safe_signed_float(self, value: Any) -> float | None:
+        if isinstance(value, bool) or value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return round(float(value), 8)
         return None
 
     def _entries(self) -> list[LedgerEntry]:
