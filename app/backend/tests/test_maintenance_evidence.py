@@ -75,6 +75,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG embedding index post-commit verification gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding retrieval diagnostics handoff gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG answer release readiness gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
     assert "Model default ladder review boundaries" in profile["release_management"]["release_readiness_controls"]
@@ -529,6 +530,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("safe handoff payload fields" in guardrail for guardrail in profile["application_guardrails"])
     assert any("production-retrieval false flags" in guardrail for guardrail in profile["application_guardrails"])
     assert any("without executing retrieval diagnostics" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG answer release readiness gate is metadata-only answer-release evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("client-delivery false flags" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("without calling NewAPI" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("claiming legal advice or answer quality" in guardrail for guardrail in profile["application_guardrails"])
     assert any("store or return source ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw query" in guardrail for guardrail in profile["application_guardrails"])
     assert any("raw retrieved context" in guardrail for guardrail in profile["application_guardrails"])

@@ -87,6 +87,13 @@ endpoint and must not display source ids, raw query text, retrieved context,
 raw legal text, prompts, model outputs, gateway payloads, credentials, emails,
 or client material.
 
+`legal-rag-answer-release-readiness-gate` consumes the same sanitized
+observation metadata and converts it into ready, review-required, and blocked
+answer-release rows. That downstream gate may prepare internal answer draft
+actions and citation packet requirements, but it still blocks automatic client
+delivery, legal advice claims, raw query/context exposure, and answer-quality
+claims.
+
 ## Validation
 
 ```bash

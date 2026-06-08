@@ -191,6 +191,19 @@ the network; it does not download datasets or return source ids, raw query,
 retrieved context, legal text, prompts, model outputs, gateway payloads, or
 credentials.
 
+Current Legal RAG answer release readiness slice:
+`legal-rag-answer-release-readiness-gate` exposes metadata-only answer-release
+readiness through `LegalRagAnswerReleaseReadinessGateService` at
+`/api/v1/maintenance/legal-rag-answer-release-readiness-gate`. It converts
+sanitized retrieval observation rows into ready, review-required, and blocked
+answer-release rows with internal draft actions, citation packet requirements,
+lawyer-review requirements, cheap-first verify/escalate boundaries, and
+client-delivery false flags. It does not call models, gateways, NewAPI, Gemini,
+or the network; write answers; send client delivery; claim legal advice or
+answer quality; download datasets; or return source ids, raw query, user
+questions, retrieved context, legal text, prompts, model outputs, gateway
+payloads, credentials, emails, or client material.
+
 Current ModelOps first-paint slice:
 `modelops-first-paint-aggregate-binding` lets the `/model-ops` browser page
 render as soon as the aggregate `/api/v1/aihub/models` payload returns, then

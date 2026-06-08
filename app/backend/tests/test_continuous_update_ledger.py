@@ -454,6 +454,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-retrieval-diagnostics-handoff-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
+    assert "legal-rag-answer-release-readiness-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
     assert "legal-adoption-research-bridge" in completed_ids
     assert "deep-review-selected-source-binding" in completed_ids
@@ -657,6 +658,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-retrieval-diagnostics-handoff-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
+    assert "legal-rag-answer-release-readiness-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
     assert "legal-adoption-research-bridge" not in queue_ids
     assert "deep-review-selected-source-binding" not in queue_ids
@@ -3536,6 +3538,44 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && "
         "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    answer_release_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-answer-release-readiness-gate"
+    )
+    assert "app/backend/services/legal_rag_answer_release_readiness_gate.py" in answer_release_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_answer_release_readiness_gate.py" in answer_release_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_retrieval_observation_gate.py" in answer_release_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in answer_release_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in answer_release_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in answer_release_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_ANSWER_RELEASE_READINESS_GATE.md" in answer_release_entry["evidence_paths"]
+    assert "legal-rag-answer-release-readiness-gate" in answer_release_entry["release_gate_links"]
+    assert "legal-rag-retrieval-observation-gate" in answer_release_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in answer_release_entry["release_gate_links"]
+    assert "legal-rag-authority-citation-gate" in answer_release_entry["release_gate_links"]
+    assert "legal-rag-abstention-escalation-gate" in answer_release_entry["release_gate_links"]
+    assert "model-escalation-policy" in answer_release_entry["release_gate_links"]
+    assert "sanitized retrieval observation rows" in answer_release_entry["impact"]
+    assert "ready/review/block answer-release rows" in answer_release_entry["impact"]
+    assert "internal draft actions" in answer_release_entry["impact"]
+    assert "citation packet requirements" in answer_release_entry["impact"]
+    assert "lawyer-review requirements" in answer_release_entry["impact"]
+    assert "client-delivery false flags" in answer_release_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in answer_release_entry["impact"]
+    assert "source-id echoing" in answer_release_entry["impact"]
+    assert "raw query" in answer_release_entry["impact"]
+    assert "user questions" in answer_release_entry["impact"]
+    assert "raw retrieved context" in answer_release_entry["impact"]
+    assert "raw legal text" in answer_release_entry["impact"]
+    assert "legal advice claims" in answer_release_entry["impact"]
+    assert "automatic client delivery" in answer_release_entry["impact"]
+    assert (
+        "python -m pytest tests/test_legal_rag_answer_release_readiness_gate.py "
+        "tests/test_legal_rag_retrieval_observation_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && "
+        "npm run ui:regression"
         in ledger["validation_commands"]
     )
     retrieval_observation_ui_entry = next(

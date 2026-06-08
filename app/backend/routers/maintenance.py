@@ -70,6 +70,7 @@ from services.legal_public_benchmark_license_gate import LegalPublicBenchmarkLic
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
+from services.legal_rag_answer_release_readiness_gate import LegalRagAnswerReleaseReadinessGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
 from services.legal_rag_embedding_batch_observation_gate import LegalRagEmbeddingBatchObservationGateService
 from services.legal_rag_embedding_batch_approval_packet import LegalRagEmbeddingBatchApprovalPacketService
@@ -1664,6 +1665,24 @@ async def evaluate_legal_rag_retrieval_observation_gate(payload: LegalRagRetriev
     return {
         "success": True,
         "data": LegalRagRetrievalObservationGateService().build_gate(payload.model_dump()),
+    }
+
+
+@router.get("/legal-rag-answer-release-readiness-gate")
+async def get_legal_rag_answer_release_readiness_gate():
+    """Return metadata-only Legal RAG answer release readiness evidence."""
+    return {
+        "success": True,
+        "data": LegalRagAnswerReleaseReadinessGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-answer-release-readiness-gate")
+async def evaluate_legal_rag_answer_release_readiness_gate(payload: dict[str, Any]):
+    """Evaluate sanitized Legal RAG answer release readiness evidence."""
+    return {
+        "success": True,
+        "data": LegalRagAnswerReleaseReadinessGateService().build_gate(payload),
     }
 
 

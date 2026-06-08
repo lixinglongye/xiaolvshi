@@ -423,6 +423,21 @@ raw query, user questions, raw retrieved context, raw legal text, source
 chunks, embedding vectors, prompts, model outputs, gateway payloads,
 credentials, emails, or client material.
 
+The optional `legal-rag-answer-release-readiness-gate` check records
+metadata-only Legal RAG answer release readiness evidence through
+`LegalRagAnswerReleaseReadinessGateService` at
+`/api/v1/maintenance/legal-rag-answer-release-readiness-gate`. It converts
+sanitized retrieval observation rows into ready/review/block answer-release
+rows with internal answer draft actions, citation packet requirements,
+lawyer-review requirements, cheap-first verify/escalate boundaries, and
+client-delivery false flags. It must not be used to claim legal advice, answer
+quality, live retrieval quality, public benchmark scores, provider execution,
+or automatic client delivery. It must not call NewAPI, Gemini, models,
+gateways, app AI endpoints, or the network, write answers, send client
+delivery, download datasets, or store or return source ids, raw query, user
+questions, raw retrieved context, raw legal text, prompts, model outputs,
+gateway payloads, credentials, emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

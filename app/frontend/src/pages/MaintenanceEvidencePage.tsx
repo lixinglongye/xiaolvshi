@@ -48,12 +48,14 @@ import {
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
+  evaluateLegalRagAnswerReleaseReadinessGate,
   evaluateLegalRagEmbeddingBatchObservationGate,
   evaluateLegalRagEmbeddingIndexCommitReviewPacket,
   evaluateLegalRagEmbeddingIndexPostCommitVerificationGate,
   evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
   evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
+  getLegalRagAnswerReleaseReadinessGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
   getLegalRagEmbeddingBatchApprovalPacket,
@@ -139,6 +141,7 @@ import {
   type LegalPublicBenchmarkLicenseGate,
   type LegalPublicBenchmarkSampler,
   type LegalRagAbstentionEscalationGate,
+  type LegalRagAnswerReleaseReadinessGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
   type LegalRagEmbeddingBatchApprovalPacket,
@@ -397,6 +400,10 @@ function defaultLegalRagRetrievalObservationPayload() {
   };
 }
 
+function defaultLegalRagAnswerReleaseReadinessPayload() {
+  return defaultLegalRagRetrievalObservationPayload();
+}
+
 function defaultLegalRagEmbeddingBatchObservationPayload() {
   return {
     source_rows: [
@@ -537,6 +544,12 @@ function hasForbiddenRetrievalObservationPayloadText(value: string) {
   );
 }
 
+function hasForbiddenAnswerReleaseReadinessPayloadText(value: string) {
+  return /"(source_id|source_ids|query|question|raw_query|retrieved_context|raw_context|raw_legal_text|source_chunk|source_chunks|prompt|model_output|gateway_payload|gateway_response|headers|authorization|api_key|credential|credentials|email|client_email)"\s*:/i.test(
+    value,
+  );
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 type MaintenanceLoadFailure = {
@@ -644,6 +657,8 @@ function Inner() {
     useState<LegalRagRetrievalDiagnosticsGate | null>(null);
   const [legalRagRetrievalObservationGate, setLegalRagRetrievalObservationGate] =
     useState<LegalRagRetrievalObservationGate | null>(null);
+  const [legalRagAnswerReleaseReadinessGate, setLegalRagAnswerReleaseReadinessGate] =
+    useState<LegalRagAnswerReleaseReadinessGate | null>(null);
   const [legalRagBenchmarkAlignment, setLegalRagBenchmarkAlignment] =
     useState<LegalRagBenchmarkAlignment | null>(null);
   const [legalRagExportReadinessPacket, setLegalRagExportReadinessPacket] =
@@ -787,6 +802,15 @@ function Inner() {
       return getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate();
     }
     return evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate(payload);
+  };
+
+  const loadAnswerReleaseReadinessSample = () => {
+    const payload = defaultLegalRagAnswerReleaseReadinessPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenAnswerReleaseReadinessPayloadText(payloadText)) {
+      return getLegalRagAnswerReleaseReadinessGate();
+    }
+    return evaluateLegalRagAnswerReleaseReadinessGate(payload);
   };
 
   const load = async (nextLanguage = language) => {
@@ -1149,6 +1173,11 @@ function Inner() {
           label: 'Legal RAG retrieval observation gate',
           run: () => evaluateLegalRagRetrievalObservationGate(defaultLegalRagRetrievalObservationPayload()),
           apply: (value) => setLegalRagRetrievalObservationGate(value as LegalRagRetrievalObservationGate),
+        },
+        {
+          label: 'Legal RAG answer release readiness gate',
+          run: loadAnswerReleaseReadinessSample,
+          apply: (value) => setLegalRagAnswerReleaseReadinessGate(value as LegalRagAnswerReleaseReadinessGate),
         },
         {
           label: 'Legal RAG benchmark alignment',
@@ -1523,8 +1552,12 @@ function Inner() {
         setRetrievalObservationError('Retrieval observation payload must be a JSON object.');
         return;
       }
-      setLegalRagRetrievalObservationGate(
-        await evaluateLegalRagRetrievalObservationGate(payload as Record<string, unknown>),
+      const observationGate = await evaluateLegalRagRetrievalObservationGate(payload as Record<string, unknown>);
+      setLegalRagRetrievalObservationGate(observationGate);
+      setLegalRagAnswerReleaseReadinessGate(
+        await evaluateLegalRagAnswerReleaseReadinessGate({
+          retrieval_observation_gate: observationGate,
+        }),
       );
     } catch (err) {
       console.error(err);
@@ -12531,6 +12564,208 @@ function Inner() {
                         <div className="mt-2 text-xs leading-5 text-stone-500">
                           Blocked keys: query, question, retrieved_context, raw_legal_text, prompt, model_output, gateway_response, headers, authorization, api_key, email.
                         </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagAnswerReleaseReadinessGate &&
+              (() => {
+                const gate = legalRagAnswerReleaseReadinessGate;
+                const rows = gate.answer_release_rows ?? [];
+                const summary = gate.summary;
+                const policy = gate.answer_release_policy;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const statusCounts = Object.entries(gate.answer_release_status_counts ?? {});
+                const actionCounts = Object.entries(gate.answer_release_action_counts ?? {});
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'raw query returned', value: privacy.returns_raw_query },
+                  { label: 'user question returned', value: privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'model called', value: privacy.calls_model },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'answer written', value: privacy.writes_answer },
+                  { label: 'client delivery sent', value: privacy.sends_client_delivery },
+                  { label: 'legal advice claimed', value: claim.legal_advice_claimed },
+                  { label: 'answer quality claimed', value: claim.answer_quality_claimed },
+                  { label: 'automatic client delivery claimed', value: claim.automatic_client_delivery_claimed },
+                ];
+                const summaryCounts = [
+                  { label: 'answer rows', value: summary.answer_release_row_count },
+                  { label: 'ready answers', value: summary.ready_answer_count },
+                  { label: 'review required', value: summary.review_required_count },
+                  { label: 'blocked answers', value: summary.blocked_answer_count },
+                  { label: 'internal drafts', value: summary.internal_draft_allowed_count },
+                  { label: 'citation packets', value: summary.citation_packet_required_count },
+                  { label: 'lawyer reviews', value: summary.lawyer_review_required_count },
+                  { label: 'client deliveries', value: summary.client_delivery_allowed_count },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG answer release readiness gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only answer-release readiness from sanitized retrieval observations
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Answer row</TableHead>
+                            <TableHead>Release readiness</TableHead>
+                            <TableHead>Retrieval evidence</TableHead>
+                            <TableHead>Draft/review boundaries</TableHead>
+                            <TableHead>Cheap-first boundary</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.slice(0, 8).map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.query_intent)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1">
+                                <Badge variant="outline" className={statusClass[row.answer_release_status] ?? statusClass.not_run}>
+                                  {displayToken(row.answer_release_status)}
+                                </Badge>
+                                <div className="text-xs leading-5 text-stone-600">
+                                  answer_release_action: {displayToken(row.answer_release_action)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>retrieval_status: {displayToken(row.retrieval_status)}</div>
+                                <div>retrieval_release_action: {displayToken(row.retrieval_release_action)}</div>
+                                <div>source_coverage_status: {displayToken(row.source_coverage_status)}</div>
+                                <div>top_k_depth_status: {displayToken(row.top_k_depth_status)}</div>
+                                <div>jurisdiction_status: {displayToken(row.jurisdiction_status)}</div>
+                                <div>freshness_status: {displayToken(row.freshness_status)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>internal_answer_draft_allowed: {String(row.internal_answer_draft_allowed)}</div>
+                                <div>citation_packet_required: {String(row.citation_packet_required)}</div>
+                                <div>lawyer_review_required: {String(row.lawyer_review_required)}</div>
+                                <div>client_delivery_allowed: {String(row.client_delivery_allowed)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>cheap_first_decision: {displayToken(row.cheap_first_decision)}</div>
+                                <div>cheap_first_starts_cheap: {String(row.cheap_first_starts_cheap)}</div>
+                                <div>premium_exception_candidate: {String(row.premium_exception_candidate)}</div>
+                                <div>operator review: {String(row.cheap_first_requires_operator_review)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[280px] flex-wrap gap-1.5">
+                                  {(row.reason_codes ?? []).slice(0, 6).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Status distributions</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div className="font-semibold text-stone-950">answer_release_status_counts</div>
+                          {statusCounts.map(([key, value]) => (
+                            <div key={key}>{displayToken(key)}: {formatInline(value)}</div>
+                          ))}
+                          <div className="pt-2 font-semibold text-stone-950">answer_release_action_counts</div>
+                          {actionCounts.map(([key, value]) => (
+                            <div key={key}>{displayToken(key)}: {formatInline(value)}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Answer release policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>requires_ready_retrieval_status: {String(policy.requires_ready_retrieval_status)}</div>
+                          <div>requires_allow_retrieval_use_action: {String(policy.requires_allow_retrieval_use_action)}</div>
+                          <div>requires_sufficient_top_k_depth: {String(policy.requires_sufficient_top_k_depth)}</div>
+                          <div>requires_matched_jurisdiction: {String(policy.requires_matched_jurisdiction)}</div>
+                          <div>requires_fresh_sources: {String(policy.requires_fresh_sources)}</div>
+                          <div>requires_citation_packet_for_all_ready_rows: {String(policy.requires_citation_packet_for_all_ready_rows)}</div>
+                          <div>allows_internal_answer_draft: {String(policy.allows_internal_answer_draft)}</div>
+                          <div>allows_client_delivery: {String(policy.allows_client_delivery)}</div>
+                          <div>allows_legal_advice_claim: {String(policy.allows_legal_advice_claim)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>{item.label}: {includedBoundaryLabel(item.value)}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>accepted_container_keys: {(gate.input_contract.accepted_container_keys ?? []).join(', ')}</div>
+                          <div>accepted_row_fields: {(gate.input_contract.accepted_row_fields ?? []).slice(0, 10).join(', ')}</div>
+                          <div>raw_text_fields_ignored: {(gate.input_contract.raw_text_fields_ignored ?? []).join(', ')}</div>
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>client_delivery_materialized: {String(gate.input_contract.client_delivery_materialized)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).slice(0, 5).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>

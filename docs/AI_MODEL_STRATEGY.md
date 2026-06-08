@@ -265,6 +265,17 @@ questions, retrieved context, raw legal text, source chunks, embedding vectors,
 prompts, model outputs, gateway payloads, credentials, emails, committer
 identity, live pricing claims, legal advice, or client delivery claims.
 
+`legal-rag-answer-release-readiness-gate` is the shipped metadata-only answer
+release gate after retrieval observation review. It maps sanitized retrieval
+observation rows to ready/review/block answer-release rows, internal draft
+actions, citation packet requirements, lawyer-review requirements, cheap-first
+verify/escalate boundaries, and client-delivery false flags. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, indexes, or
+the network, and it does not write answers, send client delivery, claim legal
+advice or answer quality, or return source ids, raw query, user questions,
+retrieved context, raw legal text, prompts, model outputs, gateway payloads,
+credentials, emails, or client material.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,
