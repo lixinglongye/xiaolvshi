@@ -1414,6 +1414,99 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    media_runtime_compatibility_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-aihub-media-runtime-compatibility-gate"
+    )
+    assert media_runtime_compatibility_entry["size"] == "medium"
+    assert media_runtime_compatibility_entry["status"] == "shipped"
+    assert media_runtime_compatibility_entry["category"] == "model_ops"
+    assert "required metadata-only release evidence" in media_runtime_compatibility_entry["impact"]
+    assert "/api/v1/aihub/models/aihub-media-runtime-compatibility-gate" in media_runtime_compatibility_entry["impact"]
+    assert "genvideo" in media_runtime_compatibility_entry["impact"]
+    assert "genaudio" in media_runtime_compatibility_entry["impact"]
+    assert "transcribe" in media_runtime_compatibility_entry["impact"]
+    assert "future Live audio" in media_runtime_compatibility_entry["impact"]
+    assert "client.videos.create/retrieve" in media_runtime_compatibility_entry["impact"]
+    assert "client.audio.speech.create" in media_runtime_compatibility_entry["impact"]
+    assert "client.audio.transcriptions.create" in media_runtime_compatibility_entry["impact"]
+    assert "native Gemini/Veo/TTS/Live runtime requirements" in media_runtime_compatibility_entry["impact"]
+    assert "review-only" in media_runtime_compatibility_entry["impact"]
+    assert "gateway shape" in media_runtime_compatibility_entry["impact"]
+    assert "native adapter" in media_runtime_compatibility_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in media_runtime_compatibility_entry["impact"]
+    assert "configuration writes" in media_runtime_compatibility_entry["impact"]
+    assert "default changes" in media_runtime_compatibility_entry["impact"]
+    assert "traffic shifts" in media_runtime_compatibility_entry["impact"]
+    assert "request or response bodies" in media_runtime_compatibility_entry["impact"]
+    assert "headers" in media_runtime_compatibility_entry["impact"]
+    assert "prompts" in media_runtime_compatibility_entry["impact"]
+    assert "raw payloads" in media_runtime_compatibility_entry["impact"]
+    assert "audio" in media_runtime_compatibility_entry["impact"]
+    assert "transcripts" in media_runtime_compatibility_entry["impact"]
+    assert "legal text" in media_runtime_compatibility_entry["impact"]
+    assert "model outputs" in media_runtime_compatibility_entry["impact"]
+    assert "gateway responses" in media_runtime_compatibility_entry["impact"]
+    assert "credentials" in media_runtime_compatibility_entry["impact"]
+    assert "emails" in media_runtime_compatibility_entry["impact"]
+    assert "user identifiers" in media_runtime_compatibility_entry["impact"]
+    assert "app/backend/services/model_ops_aihub_media_runtime_compatibility_gate.py" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_aihub_media_runtime_compatibility_gate.py" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/aihub.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_aihub_media_speech_default_catalog_gate.py" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_ops_readiness.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/tests/test_frontend_ui_regression_gate.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "docs/MODELOPS_AIHUB_MEDIA_RUNTIME_COMPATIBILITY_GATE.md" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "docs/MODELOPS_AIHUB_MEDIA_SPEECH_DEFAULT_CATALOG_GATE.md" in media_runtime_compatibility_entry[
+        "evidence_paths"
+    ]
+    assert "docs/MODEL_OPS_READINESS.md" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "docs/FRONTEND_UI_REGRESSION_GATE.md" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in media_runtime_compatibility_entry["evidence_paths"]
+    assert "modelops-aihub-media-runtime-compatibility-gate" in media_runtime_compatibility_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-aihub-media-speech-default-catalog-gate" in media_runtime_compatibility_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-aihub-endpoint-route-coverage-gate" in media_runtime_compatibility_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in media_runtime_compatibility_entry[
+        "release_gate_links"
+    ]
+    assert "model-ops-readiness" in media_runtime_compatibility_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in media_runtime_compatibility_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_aihub_media_runtime_compatibility_gate.py "
+        "tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_ops_readiness.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     media_speech_review_catalog_entry = next(
         entry
         for entry in ledger["completed_updates"]

@@ -1980,6 +1980,94 @@ export type ModelOpsAIHubMediaSpeechDefaultCatalogGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsAIHubMediaRuntimeCompatibilitySourceRow = {
+  id: string;
+  title: string;
+  url: string;
+  tracked_signal: string;
+};
+
+export type ModelOpsAIHubMediaRuntimeCompatibilityShapeRow = {
+  id: string;
+  task: string;
+  endpoint_id?: string | null;
+  service_method?: string | null;
+  current_endpoint_shape: string;
+  current_runtime_methods: string[];
+  current_request_fields: string[];
+  current_response_contract: string;
+  default_model?: string | null;
+  canonical_model?: string | null;
+  default_catalog_status: string;
+  default_cost_tier: string;
+  budget_mode: string;
+  requires_operator_review: boolean;
+  native_family: string;
+  native_runtime_shape: string;
+  review_candidate_models: string[];
+  candidate_catalog_known_count: number;
+  candidate_catalog_models: string[];
+  compatibility_status: string;
+  runtime_boundary: string;
+  release_action: string;
+};
+
+export type ModelOpsAIHubMediaRuntimeCompatibilityReviewItem = {
+  id: string;
+  task: string;
+  priority: string;
+  status: string;
+  endpoint_id?: string | null;
+  native_family: string;
+  next_action: string;
+  release_gate_links: string[];
+};
+
+export type ModelOpsAIHubMediaRuntimeCompatibilityCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsAIHubMediaRuntimeCompatibilityGate = {
+  id: 'modelops-aihub-media-runtime-compatibility-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls?: string[];
+  };
+  summary: {
+    runtime_shape_count: number;
+    implemented_endpoint_shape_count: number;
+    openai_compatible_shape_count: number;
+    gateway_shape_review_required_count: number;
+    adapter_review_required_count: number;
+    future_route_required_count: number;
+    review_required_shape_count: number;
+    candidate_model_count: number;
+    candidate_catalog_known_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    model_called: boolean;
+    default_changed: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: ModelOpsAIHubMediaRuntimeCompatibilitySourceRow[];
+  runtime_shape_rows: ModelOpsAIHubMediaRuntimeCompatibilityShapeRow[];
+  review_items: ModelOpsAIHubMediaRuntimeCompatibilityReviewItem[];
+  checks: ModelOpsAIHubMediaRuntimeCompatibilityCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGeminiEmbeddingCheapFirstPreflightSourceRow = {
   id: string;
   title: string;
@@ -4443,6 +4531,7 @@ export type ModelOpsResponse = {
   gemini_research_refresh_gate?: ModelOpsGeminiResearchRefreshGate;
   aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate;
   aihub_media_speech_default_catalog_gate?: ModelOpsAIHubMediaSpeechDefaultCatalogGate;
+  aihub_media_runtime_compatibility_gate?: ModelOpsAIHubMediaRuntimeCompatibilityGate;
   gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
@@ -4528,6 +4617,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     endpoint_rows?: unknown;
     coverage_matrix?: unknown;
     default_rows?: unknown;
+    runtime_shape_rows?: unknown;
     review_items?: unknown;
     embedding_rows?: unknown;
     task_recommendations?: unknown;
@@ -4582,6 +4672,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.roadmap_items) && Array.isArray(payload.cheap_first_evidence_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.default_rows) && Array.isArray(payload.review_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.runtime_shape_rows) && Array.isArray(payload.review_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.embedding_rows) && Array.isArray(payload.route_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.task_recommendations) && Array.isArray(payload.observed_model_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.replay_results) && Array.isArray(payload.validation_commands))
@@ -4903,6 +4994,13 @@ export async function getModelOpsAIHubEndpointRouteCoverageGate(): Promise<Model
 export async function getModelOpsAIHubMediaSpeechDefaultCatalogGate(): Promise<ModelOpsAIHubMediaSpeechDefaultCatalogGate> {
   return invokeModelOpsApi<ModelOpsAIHubMediaSpeechDefaultCatalogGate>({
     url: '/api/v1/aihub/models/aihub-media-speech-default-catalog-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsAIHubMediaRuntimeCompatibilityGate(): Promise<ModelOpsAIHubMediaRuntimeCompatibilityGate> {
+  return invokeModelOpsApi<ModelOpsAIHubMediaRuntimeCompatibilityGate>({
+    url: '/api/v1/aihub/models/aihub-media-runtime-compatibility-gate',
     method: 'GET',
   });
 }

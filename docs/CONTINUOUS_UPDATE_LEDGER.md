@@ -565,6 +565,21 @@ request/response bodies, headers, prompts, raw payloads, audio, transcripts,
 legal text, model outputs, gateway responses, credentials, emails, or user
 identifiers.
 
+Current AIHub media runtime compatibility evidence:
+`modelops-aihub-media-runtime-compatibility-gate` adds shipped required
+metadata-only release evidence at
+`/api/v1/aihub/models/aihub-media-runtime-compatibility-gate`. It separates
+current OpenAI-compatible `client.videos.create`/`retrieve`,
+`client.audio.speech.create`, and `client.audio.transcriptions.create` code
+paths from native Gemini/Veo/TTS/Live runtime requirements so Veo, Gemini TTS,
+Gemini audio-understanding, and Live audio promotion remain review-only until
+gateway shape, native adapter, polling, session, and output-extraction evidence
+is attached. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network, write configuration, change defaults, shift
+traffic, or include request/response bodies, headers, prompts, raw payloads,
+audio, transcripts, legal text, model outputs, gateway responses, credentials,
+emails, or user identifiers.
+
 Current AIHub media/speech runtime routing evidence:
 `aihub-media-speech-runtime-routing` adds shipped runtime routing for video,
 audio, and transcription AIHub routes. The endpoints now use explicit

@@ -38,6 +38,7 @@ import {
   getModelOpsRuntimeExplicitModelFitGate,
   getModelOpsAIHubEndpointRouteCoverageGate,
   getModelOpsAIHubMediaSpeechDefaultCatalogGate,
+  getModelOpsAIHubMediaRuntimeCompatibilityGate,
   getModelOpsGeminiEmbeddingCheapFirstPreflight,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
@@ -62,6 +63,7 @@ import {
   type ModelOpsGeminiResearchRefreshGate,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
+  type ModelOpsAIHubMediaRuntimeCompatibilityGate,
   type ModelOpsGeminiEmbeddingCheapFirstPreflight,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsObservedGatewayModelFitMatrix,
@@ -526,6 +528,9 @@ function Inner() {
   const [aihubMediaSpeechDefaultCatalogGate, setAihubMediaSpeechDefaultCatalogGate] =
     useState<ModelOpsAIHubMediaSpeechDefaultCatalogGate | null>(null);
   const [aihubMediaSpeechDefaultCatalogGateError, setAihubMediaSpeechDefaultCatalogGateError] = useState('');
+  const [aihubMediaRuntimeCompatibilityGate, setAihubMediaRuntimeCompatibilityGate] =
+    useState<ModelOpsAIHubMediaRuntimeCompatibilityGate | null>(null);
+  const [aihubMediaRuntimeCompatibilityGateError, setAihubMediaRuntimeCompatibilityGateError] = useState('');
   const [geminiEmbeddingCheapFirstPreflight, setGeminiEmbeddingCheapFirstPreflight] =
     useState<ModelOpsGeminiEmbeddingCheapFirstPreflight | null>(null);
   const [geminiEmbeddingCheapFirstPreflightError, setGeminiEmbeddingCheapFirstPreflightError] = useState('');
@@ -608,6 +613,7 @@ function Inner() {
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
     setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
+    setAihubMediaRuntimeCompatibilityGate(payload.aihub_media_runtime_compatibility_gate ?? null);
     setGeminiEmbeddingCheapFirstPreflight(payload.gemini_embedding_cheap_first_preflight ?? null);
   };
 
@@ -644,6 +650,8 @@ function Inner() {
     setAihubEndpointRouteCoverageGate(null);
     setAihubMediaSpeechDefaultCatalogGateError('');
     setAihubMediaSpeechDefaultCatalogGate(null);
+    setAihubMediaRuntimeCompatibilityGateError('');
+    setAihubMediaRuntimeCompatibilityGate(null);
     setGeminiEmbeddingCheapFirstPreflightError('');
     setGeminiEmbeddingCheapFirstPreflight(null);
     setPerformanceError('');
@@ -702,6 +710,7 @@ function Inner() {
         geminiResearchRefreshGateResult,
         aihubEndpointRouteCoverageGateResult,
         aihubMediaSpeechDefaultCatalogGateResult,
+        aihubMediaRuntimeCompatibilityGateResult,
         geminiEmbeddingCheapFirstPreflightResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
@@ -729,6 +738,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.aihub_media_speech_default_catalog_gate,
           getModelOpsAIHubMediaSpeechDefaultCatalogGate,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.aihub_media_runtime_compatibility_gate,
+          getModelOpsAIHubMediaRuntimeCompatibilityGate,
         ),
         aggregateOrRequest(
           aggregatePayload?.gemini_embedding_cheap_first_preflight,
@@ -872,6 +885,19 @@ function Inner() {
             );
           }
         }
+        if (aihubMediaRuntimeCompatibilityGateResult.status === 'fulfilled') {
+          setAihubMediaRuntimeCompatibilityGate(aihubMediaRuntimeCompatibilityGateResult.value);
+        } else {
+          console.error(aihubMediaRuntimeCompatibilityGateResult.reason);
+          setAihubMediaRuntimeCompatibilityGate(
+            modelOpsResult.value.aihub_media_runtime_compatibility_gate ?? null,
+          );
+          if (!modelOpsResult.value.aihub_media_runtime_compatibility_gate) {
+            setAihubMediaRuntimeCompatibilityGateError(
+              'AIHub media runtime compatibility gate failed to load.',
+            );
+          }
+        }
         if (geminiEmbeddingCheapFirstPreflightResult.status === 'fulfilled') {
           setGeminiEmbeddingCheapFirstPreflight(geminiEmbeddingCheapFirstPreflightResult.value);
         } else {
@@ -916,6 +942,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && aihubMediaSpeechDefaultCatalogGateResult.status === 'fulfilled') {
         setAihubMediaSpeechDefaultCatalogGate(aihubMediaSpeechDefaultCatalogGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && aihubMediaRuntimeCompatibilityGateResult.status === 'fulfilled') {
+        setAihubMediaRuntimeCompatibilityGate(aihubMediaRuntimeCompatibilityGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiEmbeddingCheapFirstPreflightResult.status === 'fulfilled') {
         setGeminiEmbeddingCheapFirstPreflight(geminiEmbeddingCheapFirstPreflightResult.value);
@@ -1719,6 +1748,19 @@ function Inner() {
   const aihubMediaSpeechDefaultCatalogClaimEntries = boundaryDisplayEntries(
     activeAihubMediaSpeechDefaultCatalogGate?.claim_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url)/i.test(key));
+  const activeAihubMediaRuntimeCompatibilityGate =
+    aihubMediaRuntimeCompatibilityGate ?? data?.aihub_media_runtime_compatibility_gate ?? null;
+  const aihubMediaRuntimeCompatibilityShapeRows =
+    activeAihubMediaRuntimeCompatibilityGate?.runtime_shape_rows ?? [];
+  const aihubMediaRuntimeCompatibilityReviewItems =
+    activeAihubMediaRuntimeCompatibilityGate?.review_items ?? [];
+  const aihubMediaRuntimeCompatibilityChecks = activeAihubMediaRuntimeCompatibilityGate?.checks ?? [];
+  const aihubMediaRuntimeCompatibilityBoundaryEntries = boundaryDisplayEntries(
+    activeAihubMediaRuntimeCompatibilityGate?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url|media|audio|transcript)/i.test(key));
+  const aihubMediaRuntimeCompatibilityClaimEntries = boundaryDisplayEntries(
+    activeAihubMediaRuntimeCompatibilityGate?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url|media|audio|transcript)/i.test(key));
   const activeGeminiEmbeddingCheapFirstPreflight =
     geminiEmbeddingCheapFirstPreflight ?? data?.gemini_embedding_cheap_first_preflight ?? null;
   const geminiEmbeddingRows = activeGeminiEmbeddingCheapFirstPreflight?.embedding_rows ?? [];
@@ -8610,6 +8652,204 @@ function Inner() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {activeAihubMediaSpeechDefaultCatalogGate.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          validation_commands: {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeAihubMediaRuntimeCompatibilityGate || aihubMediaRuntimeCompatibilityGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">AIHub media runtime compatibility gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeAihubMediaRuntimeCompatibilityGate
+                    ? `${activeAihubMediaRuntimeCompatibilityGate.summary.openai_compatible_shape_count} OpenAI-compatible shapes / ${activeAihubMediaRuntimeCompatibilityGate.summary.adapter_review_required_count} adapter reviews / ${activeAihubMediaRuntimeCompatibilityGate.summary.future_route_required_count} future routes`
+                    : 'metadata-only AIHub media runtime compatibility review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeAihubMediaRuntimeCompatibilityGate?.id
+                    ?? 'modelops-aihub-media-runtime-compatibility-gate'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeAihubMediaRuntimeCompatibilityGate?.status)}>
+                {activeAihubMediaRuntimeCompatibilityGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {aihubMediaRuntimeCompatibilityGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {aihubMediaRuntimeCompatibilityGateError}
+              </div>
+            )}
+
+            {activeAihubMediaRuntimeCompatibilityGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaRuntimeCompatibilityGate.summary.runtime_shape_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">runtime_shape_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaRuntimeCompatibilityGate.summary.openai_compatible_shape_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">openai_compatible_shape_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaRuntimeCompatibilityGate.summary.gateway_shape_review_required_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway_shape_review_required_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaRuntimeCompatibilityGate.summary.adapter_review_required_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">adapter_review_required_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeAihubMediaRuntimeCompatibilityGate.summary.future_route_required_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">future_route_required_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeAihubMediaRuntimeCompatibilityGate.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway_called</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Current shape</TableHead>
+                        <TableHead>Default model</TableHead>
+                        <TableHead>Native family</TableHead>
+                        <TableHead>Compatibility</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {aihubMediaRuntimeCompatibilityShapeRows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.task}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.endpoint_id ?? 'future-route'}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-500">{row.service_method ?? '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.current_endpoint_shape}</div>
+                            <div className="mt-1">{row.current_runtime_methods.join(', ') || '-'}</div>
+                            <div className="mt-1">{row.current_response_contract}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-stone-950">{row.default_model ?? '-'}</div>
+                            <div className="mt-1">{row.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={statusClass(row.default_catalog_status)}>
+                              {row.default_catalog_status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>{row.native_family}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.native_runtime_shape}</div>
+                            <div className="mt-1">
+                              catalog candidates: {row.candidate_catalog_known_count} / {row.review_candidate_models.length}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.compatibility_status)}>
+                              {row.compatibility_status}
+                            </Badge>
+                            <div className="mt-1">{row.runtime_boundary}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.release_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review items</h3>
+                    <div className="space-y-2">
+                      {aihubMediaRuntimeCompatibilityReviewItems.map((item) => (
+                        <div key={item.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{item.id}</div>
+                            <Badge variant="outline" className={priorityClass[item.priority] ?? 'bg-white'}>
+                              {item.priority}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.status}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.next_action}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {aihubMediaRuntimeCompatibilityChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>gateway_called: {String(activeAihubMediaRuntimeCompatibilityGate.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeAihubMediaRuntimeCompatibilityGate.summary.network_called)}</div>
+                      <div>configuration_written: {String(activeAihubMediaRuntimeCompatibilityGate.summary.configuration_written)}</div>
+                      <div>default_changed: {String(activeAihubMediaRuntimeCompatibilityGate.summary.default_changed)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {aihubMediaRuntimeCompatibilityBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                      {aihubMediaRuntimeCompatibilityClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeAihubMediaRuntimeCompatibilityGate.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

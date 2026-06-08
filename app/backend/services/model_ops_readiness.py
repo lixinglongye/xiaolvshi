@@ -143,6 +143,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "aihub_media_speech_default_catalog_gate",
     ),
     ReadinessComponent(
+        "aihub-media-runtime-compatibility-gate",
+        "AIHub media runtime compatibility gate",
+        "routing",
+        "aihub_media_runtime_compatibility_gate",
+    ),
+    ReadinessComponent(
         "gentxt-routing-guard",
         "AIHub gentxt routing guard",
         "routing",
@@ -584,6 +590,7 @@ class ModelOpsReadinessService:
             "gateway_request_compatibility_gate",
             "aihub_endpoint_route_coverage_gate",
             "aihub_media_speech_default_catalog_gate",
+            "aihub_media_runtime_compatibility_gate",
             "request_cost_bounds",
             "cache_policy",
             "route_quality_budget",
@@ -638,7 +645,7 @@ class ModelOpsReadinessService:
         if warning_category == "user_need_release_review":
             return "python -m pytest tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":
-            return "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_ops_aihub_media_runtime_compatibility_gate.py tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
         if warning_category == "cost_guardrail_review":
             return "python -m pytest tests/test_model_cost_guardrails.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py -q"
         if warning_category == "release_evidence_review":

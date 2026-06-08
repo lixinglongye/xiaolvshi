@@ -327,6 +327,33 @@ def test_model_ops_readiness_warns_on_aihub_media_speech_default_catalog_review(
     assert drilldown["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_aihub_media_runtime_compatibility_review():
+    signals = _signals("pass")
+    signals["aihub_media_runtime_compatibility_gate"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 3, "fail_count": 0, "adapter_review_required_count": 2},
+        "blocking_check_ids": [],
+        "warning_check_ids": [
+            "openai-compatible-shape-boundary",
+            "native-adapter-review-boundary",
+            "live-session-route-boundary",
+        ],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "aihub-media-runtime-compatibility-gate" in result["warning_check_ids"]
+    assert "aihub-media-runtime-compatibility-gate" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "aihub_media_runtime_compatibility_gate"
+    assert drilldown["warning_category"] == "routing_quality_review"
+    assert "task quality gates" in drilldown["next_action"]
+    assert "test_model_ops_aihub_media_runtime_compatibility_gate.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_warns_on_gateway_connection_profile_review():
     signals = _signals("pass")
     signals["gateway_connection_profile"] = {
@@ -568,6 +595,9 @@ def test_model_ops_route_includes_readiness():
     assert "aihub_media_speech_default_catalog_gate" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "aihub_media_runtime_compatibility_gate" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert "gentxt_routing_guard" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
@@ -589,6 +619,10 @@ def test_model_ops_route_includes_readiness():
     assert payload["aihub_media_speech_default_catalog_gate"]["summary"]["missing_catalog_default_count"] == 3
     assert payload["aihub_media_speech_default_catalog_gate"]["summary"]["future_family_gap_count"] == 2
     assert payload["aihub_media_speech_default_catalog_gate"]["summary"]["gateway_called"] is False
+    assert payload["aihub_media_runtime_compatibility_gate"]["summary"]["openai_compatible_shape_count"] == 3
+    assert payload["aihub_media_runtime_compatibility_gate"]["summary"]["adapter_review_required_count"] == 2
+    assert payload["aihub_media_runtime_compatibility_gate"]["summary"]["future_route_required_count"] == 1
+    assert payload["aihub_media_runtime_compatibility_gate"]["summary"]["gateway_called"] is False
     assert payload["gentxt_routing_guard"]["summary"]["media_task_blocked_count"] == 6
     assert payload["gentxt_routing_guard"]["summary"]["text_task_allowed_count"] == 5
     assert payload["gentxt_routing_guard"]["summary"]["gateway_called"] is False

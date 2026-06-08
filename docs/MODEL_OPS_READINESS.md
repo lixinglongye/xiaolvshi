@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, AIHub media runtime compatibility review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -89,6 +89,7 @@ The readiness service checks:
 - Gemini cheap-first route preflight,
 - AIHub endpoint route coverage gate,
 - AIHub media/speech default catalog gate,
+- AIHub media runtime compatibility gate,
 - user-need Gemini route coverage,
 - request cost bounds,
 - cache policy,
@@ -200,6 +201,20 @@ traffic, or return request/response bodies, headers, prompts, raw payloads,
 audio, transcripts, legal text, model output, gateway responses, credentials,
 emails, or user identifiers.
 
+`aihub-media-runtime-compatibility-gate` is required metadata-only evidence for
+AIHub media runtime endpoint shapes. It is exposed at
+`/api/v1/aihub/models/aihub-media-runtime-compatibility-gate` and separates the
+current OpenAI-compatible `client.videos.create`/`retrieve`,
+`client.audio.speech.create`, and `client.audio.transcriptions.create` code
+paths from native Gemini/Veo/TTS/Live runtime requirements. Veo, Gemini TTS,
+Gemini audio-understanding, and Live audio promotion remain review-only until
+gateway shape, native adapter, polling, session, and output-extraction evidence
+is attached. The gate does not call providers, gateways, app AI endpoints,
+models, or the network, write configuration, change defaults, shift traffic, or
+return request/response bodies, headers, prompts, raw payloads, audio,
+transcripts, legal text, model output, gateway responses, credentials, emails,
+or user identifiers.
+
 `gemini-embedding-cheap-first-preflight` is required metadata-only evidence for
 embedding default review. It is exposed at
 `/api/v1/aihub/models/gemini-embedding-cheap-first-preflight` and records
@@ -293,6 +308,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_ops_runtime_explicit_model_fit_gate.py`
 - `app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py`
 - `app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py`
+- `app/backend/services/model_ops_aihub_media_runtime_compatibility_gate.py`
 - `app/backend/services/modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/services/model_ops_cheap_first_escalation_budget.py`
 - `app/backend/routers/aihub.py`
@@ -308,6 +324,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_modelops_observed_gateway_model_fit_matrix.py`
 - `app/backend/tests/test_model_ops_runtime_explicit_model_fit_gate.py`
 - `app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py`
+- `app/backend/tests/test_model_ops_aihub_media_runtime_compatibility_gate.py`
 - `app/backend/tests/test_modelops_legal_micro_benchmark_preflight.py`
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/tests/test_model_default_optimization.py`

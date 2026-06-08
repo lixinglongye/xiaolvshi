@@ -77,6 +77,9 @@ from services.model_ops_aihub_endpoint_route_coverage_gate import (
 from services.model_ops_aihub_media_speech_default_catalog_gate import (
     ModelOpsAIHubMediaSpeechDefaultCatalogGateService,
 )
+from services.model_ops_aihub_media_runtime_compatibility_gate import (
+    ModelOpsAIHubMediaRuntimeCompatibilityGateService,
+)
 from services.model_ops_gentxt_task_guard import ModelOpsGenTxtTaskGuardService
 from services.model_ops_runtime_explicit_model_fit_gate import ModelOpsRuntimeExplicitModelFitGateService
 from services.model_ops_readiness import ModelOpsReadinessService
@@ -380,6 +383,7 @@ async def list_models():
     aihub_media_speech_default_catalog_gate = (
         ModelOpsAIHubMediaSpeechDefaultCatalogGateService().build_gate()
     )
+    aihub_media_runtime_compatibility_gate = ModelOpsAIHubMediaRuntimeCompatibilityGateService().build_gate()
     gentxt_routing_guard = ModelOpsGenTxtTaskGuardService().build_gate()
     route_quality_budget = ModelRouteQualityBudgetService().build_budget()
     cheap_first_escalation_budget = ModelOpsCheapFirstEscalationBudgetService().build_budget()
@@ -473,6 +477,7 @@ async def list_models():
         "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
         "aihub_endpoint_route_coverage_gate": aihub_endpoint_route_coverage_gate,
         "aihub_media_speech_default_catalog_gate": aihub_media_speech_default_catalog_gate,
+        "aihub_media_runtime_compatibility_gate": aihub_media_runtime_compatibility_gate,
         "gentxt_routing_guard": gentxt_routing_guard,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
@@ -597,6 +602,7 @@ async def list_models():
         "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
         "aihub_endpoint_route_coverage_gate": aihub_endpoint_route_coverage_gate,
         "aihub_media_speech_default_catalog_gate": aihub_media_speech_default_catalog_gate,
+        "aihub_media_runtime_compatibility_gate": aihub_media_runtime_compatibility_gate,
         "gentxt_routing_guard": gentxt_routing_guard,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
@@ -1052,6 +1058,25 @@ async def evaluate_modelops_aihub_media_speech_default_catalog_gate(payload: dic
     return {
         "success": True,
         "data": ModelOpsAIHubMediaSpeechDefaultCatalogGateService().build_gate(payload),
+    }
+
+
+@router.get("/models/aihub-media-runtime-compatibility-gate")
+async def modelops_aihub_media_runtime_compatibility_gate():
+    """Return metadata-only AIHub media runtime compatibility evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["aihub_media_runtime_compatibility_gate"],
+    }
+
+
+@router.post("/models/aihub-media-runtime-compatibility-gate")
+async def evaluate_modelops_aihub_media_runtime_compatibility_gate(payload: dict[str, Any]):
+    """Evaluate metadata-only AIHub media runtime compatibility without provider calls."""
+    return {
+        "success": True,
+        "data": ModelOpsAIHubMediaRuntimeCompatibilityGateService().build_gate(payload),
     }
 
 

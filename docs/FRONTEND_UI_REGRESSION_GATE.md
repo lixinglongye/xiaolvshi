@@ -50,6 +50,7 @@ The `/model-ops` page carries evidence for:
 - Cheap-first quality budget
 - Gateway request compatibility gate
 - AIHub media/speech default catalog gate
+- AIHub media runtime compatibility gate
 - Gemini embedding cheap-first preflight
 - selector replay
 - route telemetry
@@ -101,6 +102,12 @@ This gate does not:
   request bodies, response bodies, headers, prompts, raw payloads, audio,
   transcripts, legal text, model outputs, gateway responses, emails,
   credentials, or user identifiers for the AIHub media/speech default catalog
+  gate
+- call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
+  the network, write configuration, change defaults, shift traffic, or expose
+  request bodies, response bodies, headers, prompts, raw payloads, audio,
+  transcripts, legal text, model outputs, gateway responses, emails,
+  credentials, or user identifiers for the AIHub media runtime compatibility
   gate
 - call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
   the network, write configuration, change defaults, write indexes, shift

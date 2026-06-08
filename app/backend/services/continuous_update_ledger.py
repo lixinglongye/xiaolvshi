@@ -165,6 +165,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_aihub_media_runtime_compatibility_gate.py tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_configuration_audit.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_rag_embedding_readiness_gate.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2388,6 +2389,60 @@ class ContinuousUpdateLedgerService:
                     "gemini-variant-matrix",
                     "model-runtime-router",
                     "model-ops-readiness",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="modelops-aihub-media-runtime-compatibility-gate",
+                title="ModelOps AIHub media runtime compatibility gate",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds required metadata-only release evidence at "
+                    "/api/v1/aihub/models/aihub-media-runtime-compatibility-gate for AIHub genvideo, "
+                    "genaudio, transcribe, and future Live audio runtime-shape review. It separates current "
+                    "OpenAI-compatible client.videos.create/retrieve, client.audio.speech.create, and "
+                    "client.audio.transcriptions.create code paths from native Gemini/Veo/TTS/Live runtime "
+                    "requirements so Veo, Gemini TTS, Gemini audio-understanding, and Live audio promotion "
+                    "remain review-only until gateway shape, native adapter, polling, session, and "
+                    "output-extraction evidence is attached, without NewAPI/Gemini/OpenAI/Google/gateway/"
+                    "app-AI/model/network calls, configuration writes, default changes, traffic shifts, "
+                    "request or response bodies, headers, prompts, raw payloads, audio, transcripts, legal "
+                    "text, model outputs, gateway responses, credentials, emails, or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_aihub_media_runtime_compatibility_gate.py",
+                    "app/backend/tests/test_model_ops_aihub_media_runtime_compatibility_gate.py",
+                    "app/backend/services/aihub.py",
+                    "app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py",
+                    "app/backend/tests/test_model_ops_aihub_media_speech_default_catalog_gate.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_AIHUB_MEDIA_RUNTIME_COMPATIBILITY_GATE.md",
+                    "docs/MODELOPS_AIHUB_MEDIA_SPEECH_DEFAULT_CATALOG_GATE.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "modelops-aihub-media-runtime-compatibility-gate",
+                    "modelops-aihub-media-speech-default-catalog-gate",
+                    "modelops-aihub-endpoint-route-coverage-gate",
+                    "modelops-gemini-official-model-family-roadmap-evidence",
+                    "model-ops-readiness",
+                    "frontend-ui-regression-gate",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),

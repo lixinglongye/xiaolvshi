@@ -98,6 +98,20 @@ raw payloads, audio, transcripts, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
 Additional required evidence:
+`modelops-aihub-media-runtime-compatibility-gate` records metadata-only AIHub
+media runtime compatibility review at
+`/api/v1/aihub/models/aihub-media-runtime-compatibility-gate`. It inventories
+current video, audio, transcription, and future Live endpoint shapes, separates
+OpenAI-compatible client methods from native Gemini/Veo/TTS/Live runtime
+requirements, and keeps Veo, Gemini TTS, audio-understanding transcription, and
+Live audio promotions review-only until adapter or gateway shape tests are
+attached. The gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app
+AI endpoints, models, or the network, write configuration, change defaults,
+shift traffic, or store request/response bodies, headers, prompts, raw payloads,
+audio, transcripts, legal text, model outputs, gateway responses, credentials,
+emails, or user identifiers.
+
+Additional required evidence:
 `modelops-gemini-embedding-cheap-first-preflight` records metadata-only Gemini
 embedding default review at
 `/api/v1/aihub/models/gemini-embedding-cheap-first-preflight`. It keeps
