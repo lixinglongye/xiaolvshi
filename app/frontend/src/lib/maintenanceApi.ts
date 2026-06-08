@@ -2320,6 +2320,89 @@ type GeminiNewApiCheapFirstPolicyResponse = {
   data: GeminiNewApiCheapFirstPolicy;
 };
 
+export type ModelCostRegressionCheck = {
+  id: string;
+  status: string;
+  expected: unknown;
+  actual: unknown;
+  reason: string;
+};
+
+export type ModelCostRegressionSnapshot = {
+  id: string;
+  task: string;
+  status: string;
+  scenario: {
+    id: string;
+    task: string;
+    display_name: string;
+    monthly_units: number;
+    prompt_tokens_per_unit: number;
+    completion_tokens_per_unit: number;
+    expected_escalation_rate: number;
+    escalation_signals: string[];
+    premium_baseline_alias: string;
+    threshold: {
+      warn_min_savings_ratio: number;
+      fail_min_savings_ratio: number;
+      warn_max_monthly_cost_usd: number;
+      fail_max_monthly_cost_usd: number;
+      max_initial_cost_tier: string;
+    };
+    rationale: string;
+  };
+  current: {
+    initial_model: string;
+    initial_cost_tier: string;
+    escalation_model: string;
+    escalation_cost_tier: string;
+    premium_baseline_model: string;
+    premium_baseline_cost_tier: string;
+    expected_escalation_rate: number;
+  };
+  initial_unit_cost_usd: number | null;
+  escalation_unit_cost_usd: number | null;
+  premium_baseline_unit_cost_usd: number | null;
+  cheap_first_monthly_cost_usd: number | null;
+  premium_baseline_monthly_cost_usd: number | null;
+  estimated_savings_usd: number | null;
+  estimated_savings_ratio: number | null;
+  checks: ModelCostRegressionCheck[];
+  recommended_action: string;
+};
+
+export type ModelCostRegressionSnapshots = {
+  status: string;
+  method: {
+    type: string;
+    source_basis: string[];
+    drift_thresholds: Record<string, string>;
+  };
+  summary: {
+    snapshot_count: number;
+    passed_count: number;
+    warning_count: number;
+    failed_count: number;
+    regression_check_count: number;
+    cheap_first_monthly_cost_usd: number | null;
+    premium_baseline_monthly_cost_usd: number | null;
+    estimated_savings_usd: number | null;
+    estimated_savings_ratio: number | null;
+    forecast_status?: string | null;
+    routing_replay_status?: string | null;
+  };
+  snapshots: ModelCostRegressionSnapshot[];
+  regression_checks: ModelCostRegressionCheck[];
+  recommended_actions: string[];
+  privacy_note: string;
+  validation_commands: string[];
+};
+
+type ModelCostRegressionSnapshotsResponse = {
+  success: boolean;
+  data: ModelCostRegressionSnapshots;
+};
+
 export type GeminiNewApiModelSelectorEvidence = {
   status: string;
   summary: {
@@ -8540,6 +8623,14 @@ export async function postGeminiNewApiCheapFirstPolicyEvidence(
     data: payload,
   });
   return unwrapMaintenanceData<GeminiNewApiCheapFirstPolicyResponse['data']>(resp);
+}
+
+export async function getModelCostRegressionSnapshots(): Promise<ModelCostRegressionSnapshots> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/model-cost-regression-snapshots',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelCostRegressionSnapshotsResponse['data']>(resp);
 }
 
 export async function getGeminiNewApiModelSelectorEvidence(): Promise<GeminiNewApiModelSelectorEvidence> {

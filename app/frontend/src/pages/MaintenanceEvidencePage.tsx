@@ -94,6 +94,7 @@ import {
   getMaintenanceValidationEventEvidence,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
+  getModelCostRegressionSnapshots,
   getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
   getGeminiNewApiCheapFirstPolicyEvidence,
@@ -183,6 +184,7 @@ import {
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
+  type ModelCostRegressionSnapshots,
   type ModelOpsCheapFirstReleaseDecision,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
@@ -282,6 +284,12 @@ const geminiCheapFirstPolicySignals = [
   'gemini-flash-lite',
   'no_premium_or_preview_high_frequency_default',
   'unknown_gemini_like_needs_catalog_review',
+] as const;
+
+const modelCostRegressionSignals = [
+  'fast-routing-5000',
+  'classification-2500',
+  'ocr-extraction-3500',
 ] as const;
 
 function roleLabel(role?: string) {
@@ -759,6 +767,8 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
     useState<GeminiNewApiCheapFirstPolicy | null>(null);
+  const [modelCostRegressionSnapshots, setModelCostRegressionSnapshots] =
+    useState<ModelCostRegressionSnapshots | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
     useState<GeminiNewApiModelSelectorEvidence | null>(null);
   const [geminiNewApiModelAliasMatrix, setGeminiNewApiModelAliasMatrix] =
@@ -1109,6 +1119,11 @@ function Inner() {
           label: 'Gemini/NewAPI cheap-first policy',
           run: getGeminiNewApiCheapFirstPolicyEvidence,
           apply: (value) => setGeminiNewApiCheapFirstPolicy(value as GeminiNewApiCheapFirstPolicy),
+        },
+        {
+          label: 'Model cost regression snapshots',
+          run: getModelCostRegressionSnapshots,
+          apply: (value) => setModelCostRegressionSnapshots(value as ModelCostRegressionSnapshots),
         },
         {
           label: 'Gemini/NewAPI model selector',
@@ -9127,6 +9142,194 @@ function Inner() {
                       </ul>
                       <div className="mt-3 space-y-2">
                         {geminiNewApiCheapFirstPolicy.validation_commands.map((command) => (
+                          <div
+                            key={command}
+                            className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
+                          >
+                            {command}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelCostRegressionSnapshots && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Deterministic cheap-first cost guard comparing current Gemini routes against premium-only baselines.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[modelCostRegressionSnapshots.status] ?? statusClass.review_recommended}
+                  >
+                    {displayToken(modelCostRegressionSnapshots.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    { label: 'snapshots', value: modelCostRegressionSnapshots.summary.snapshot_count },
+                    { label: 'passed', value: modelCostRegressionSnapshots.summary.passed_count },
+                    { label: 'warnings', value: modelCostRegressionSnapshots.summary.warning_count },
+                    { label: 'failed', value: modelCostRegressionSnapshots.summary.failed_count },
+                    {
+                      label: 'cheap-first cost',
+                      value: formatUsd(modelCostRegressionSnapshots.summary.cheap_first_monthly_cost_usd),
+                    },
+                    {
+                      label: 'estimated savings',
+                      value: formatUsd(modelCostRegressionSnapshots.summary.estimated_savings_usd),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-xl font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.45fr_0.55fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Scenario</TableHead>
+                          <TableHead>Current route</TableHead>
+                          <TableHead>Monthly cost</TableHead>
+                          <TableHead>Savings</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {modelCostRegressionSnapshots.snapshots.map((snapshot) => (
+                          <TableRow key={snapshot.id}>
+                            <TableCell className="max-w-[260px]">
+                              <div className="font-semibold text-stone-950">{snapshot.scenario.display_name}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{snapshot.id}</div>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[snapshot.status] ?? statusClass.review_recommended}
+                              >
+                                {displayToken(snapshot.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                              <div className="font-mono font-semibold text-stone-950">
+                                {snapshot.current.initial_model}
+                              </div>
+                              <div>
+                                initial tier: {displayToken(snapshot.current.initial_cost_tier)}
+                              </div>
+                              <div className="font-mono text-[11px]">
+                                escalate: {snapshot.current.escalation_model}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                              <div>cheap-first: {formatUsd(snapshot.cheap_first_monthly_cost_usd)}</div>
+                              <div>baseline: {formatUsd(snapshot.premium_baseline_monthly_cost_usd)}</div>
+                              <div>units: {snapshot.scenario.monthly_units}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[180px] text-xs leading-5 text-stone-600">
+                              <div>{formatUsd(snapshot.estimated_savings_usd)}</div>
+                              <div>
+                                ratio:{' '}
+                                {snapshot.estimated_savings_ratio === null
+                                  ? '-'
+                                  : `${Math.round(snapshot.estimated_savings_ratio * 100)}%`}
+                              </div>
+                              <div>escalation: {Math.round(snapshot.current.expected_escalation_rate * 100)}%</div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <div>{snapshot.recommended_action}</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {snapshot.checks.slice(0, 3).map((check) => (
+                                  <Badge
+                                    key={`${snapshot.id}-${check.id}`}
+                                    variant="outline"
+                                    className={statusClass[check.status] ?? statusClass.review_recommended}
+                                  >
+                                    {check.id}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">High-volume signals</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {modelCostRegressionSignals.map((signal) => (
+                          <Badge key={signal} variant="outline" className="bg-white">
+                            {signal}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Regression checks</h3>
+                      <div className="space-y-3">
+                        {modelCostRegressionSnapshots.regression_checks.map((check) => (
+                          <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[check.status] ?? statusClass.review_recommended}
+                              >
+                                {displayToken(check.status)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Method</h3>
+                      <div className="mb-3 font-mono text-xs font-semibold text-stone-950">
+                        {modelCostRegressionSnapshots.method.type}
+                      </div>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {modelCostRegressionSnapshots.method.source_basis.map((source) => (
+                          <li key={source} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{source}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Actions</h3>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {modelCostRegressionSnapshots.recommended_actions.map((action) => (
+                          <li key={action} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-3 text-xs leading-5 text-stone-500">
+                        {modelCostRegressionSnapshots.privacy_note}
+                      </div>
+                      <div className="mt-3 space-y-2">
+                        {modelCostRegressionSnapshots.validation_commands.map((command) => (
                           <div
                             key={command}
                             className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"

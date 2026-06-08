@@ -89,8 +89,14 @@ const geminiAliasMatrixPanel = sourceSection(
 const geminiCheapFirstPolicyPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
   'maintenance Gemini/NewAPI cheap-first policy panel',
+);
+const modelCostRegressionSnapshotsPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+  'maintenance model cost regression snapshots panel',
 );
 const maintenanceHeartbeatEvidencePanel = sourceSection(
   maintenancePage,
@@ -341,8 +347,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
+      'maintenance model cost regression follows Gemini cheap-first policy',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
       '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
-      'maintenance Gemini cheap-first policy precedes selector',
+      'maintenance model cost regression precedes selector',
     ),
   () =>
     assertBefore(
@@ -356,6 +369,52 @@ const checks = [
       geminiCheapFirstPolicyPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers/i,
       'maintenance Gemini/NewAPI cheap-first policy sensitive field guard',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelCostRegressionSnapshots',
+      'maintenance model cost regression snapshots type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelCostRegressionSnapshot',
+      'maintenance model cost regression snapshot row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelCostRegressionCheck',
+      'maintenance model cost regression check type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getModelCostRegressionSnapshots',
+      'maintenance model cost regression getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/model-cost-regression-snapshots',
+      'maintenance model cost regression endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getModelCostRegressionSnapshots', 'maintenance model cost regression load task'),
+  () => assertIncludes(maintenancePage, 'modelCostRegressionSnapshots', 'maintenance model cost regression state binding'),
+  () => assertIncludes(maintenancePage, 'Model cost regression snapshots', 'maintenance model cost regression panel'),
+  () => assertIncludes(maintenancePage, 'cheap_first_monthly_cost_usd', 'maintenance model cost regression cheap cost binding'),
+  () => assertIncludes(maintenancePage, 'premium_baseline_monthly_cost_usd', 'maintenance model cost regression baseline binding'),
+  () => assertIncludes(maintenancePage, 'estimated_savings_ratio', 'maintenance model cost regression savings binding'),
+  () => assertIncludes(maintenancePage, 'regression_checks', 'maintenance model cost regression checks binding'),
+  () => assertIncludes(maintenancePage, 'fast-routing-5000', 'maintenance model cost regression fast scenario signal'),
+  () => assertIncludes(maintenancePage, 'classification-2500', 'maintenance model cost regression classification scenario signal'),
+  () => assertIncludes(maintenancePage, 'ocr-extraction-3500', 'maintenance model cost regression OCR scenario signal'),
+  () =>
+    assertNotMatches(
+      modelCostRegressionSnapshotsPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers|email/i,
+      'maintenance model cost regression sensitive field guard',
     ),
   () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix type'),
   () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixRow', 'maintenance Gemini/NewAPI alias matrix row type'),
