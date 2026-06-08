@@ -35,6 +35,7 @@ import {
   getModelOpsRuntimeExplicitModelFitGate,
   getModelOpsAIHubEndpointRouteCoverageGate,
   getModelOpsAIHubMediaSpeechDefaultCatalogGate,
+  getModelOpsGeminiEmbeddingCheapFirstPreflight,
   getModelOpsCheapFirstEscalationBudget,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
@@ -54,6 +55,7 @@ import {
   type ModelOpsGeminiCheapFirstRoutePreflightPayload,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
+  type ModelOpsGeminiEmbeddingCheapFirstPreflight,
   type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsObservedGatewayModelFitMatrix,
   type ModelOpsRuntimeExplicitModelFitGate,
@@ -507,6 +509,9 @@ function Inner() {
   const [aihubMediaSpeechDefaultCatalogGate, setAihubMediaSpeechDefaultCatalogGate] =
     useState<ModelOpsAIHubMediaSpeechDefaultCatalogGate | null>(null);
   const [aihubMediaSpeechDefaultCatalogGateError, setAihubMediaSpeechDefaultCatalogGateError] = useState('');
+  const [geminiEmbeddingCheapFirstPreflight, setGeminiEmbeddingCheapFirstPreflight] =
+    useState<ModelOpsGeminiEmbeddingCheapFirstPreflight | null>(null);
+  const [geminiEmbeddingCheapFirstPreflightError, setGeminiEmbeddingCheapFirstPreflightError] = useState('');
   const [performanceBudget, setPerformanceBudget] = useState<ModelOpsPerformanceBudget | null>(null);
   const [performancePayloadText, setPerformancePayloadText] = useState('');
   const [performanceEvaluateLoading, setPerformanceEvaluateLoading] = useState(false);
@@ -580,6 +585,7 @@ function Inner() {
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
     setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
+    setGeminiEmbeddingCheapFirstPreflight(payload.gemini_embedding_cheap_first_preflight ?? null);
   };
 
   const load = async () => {
@@ -609,6 +615,8 @@ function Inner() {
     setAihubEndpointRouteCoverageGate(null);
     setAihubMediaSpeechDefaultCatalogGateError('');
     setAihubMediaSpeechDefaultCatalogGate(null);
+    setGeminiEmbeddingCheapFirstPreflightError('');
+    setGeminiEmbeddingCheapFirstPreflight(null);
     setPerformanceError('');
     setPerformanceBudget(null);
     setEscalationBudgetError('');
@@ -660,6 +668,7 @@ function Inner() {
         geminiCheapFirstRoutePreflightResult,
         aihubEndpointRouteCoverageGateResult,
         aihubMediaSpeechDefaultCatalogGateResult,
+        geminiEmbeddingCheapFirstPreflightResult,
         escalationBudgetResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
@@ -682,6 +691,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.aihub_media_speech_default_catalog_gate,
           getModelOpsAIHubMediaSpeechDefaultCatalogGate,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.gemini_embedding_cheap_first_preflight,
+          getModelOpsGeminiEmbeddingCheapFirstPreflight,
         ),
         aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
@@ -793,6 +806,19 @@ function Inner() {
             );
           }
         }
+        if (geminiEmbeddingCheapFirstPreflightResult.status === 'fulfilled') {
+          setGeminiEmbeddingCheapFirstPreflight(geminiEmbeddingCheapFirstPreflightResult.value);
+        } else {
+          console.error(geminiEmbeddingCheapFirstPreflightResult.reason);
+          setGeminiEmbeddingCheapFirstPreflight(
+            modelOpsResult.value.gemini_embedding_cheap_first_preflight ?? null,
+          );
+          if (!modelOpsResult.value.gemini_embedding_cheap_first_preflight) {
+            setGeminiEmbeddingCheapFirstPreflightError(
+              'Gemini embedding cheap-first preflight failed to load.',
+            );
+          }
+        }
         if (modelOpsResult.value.cheap_first_calibration) {
           setCheapFirstCalibration(modelOpsResult.value.cheap_first_calibration);
         } else {
@@ -821,6 +847,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && aihubMediaSpeechDefaultCatalogGateResult.status === 'fulfilled') {
         setAihubMediaSpeechDefaultCatalogGate(aihubMediaSpeechDefaultCatalogGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiEmbeddingCheapFirstPreflightResult.status === 'fulfilled') {
+        setGeminiEmbeddingCheapFirstPreflight(geminiEmbeddingCheapFirstPreflightResult.value);
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'fulfilled') {
         setObservedGeminiCoverageGapQueue(observedGeminiCoverageGapQueueResult.value);
@@ -950,6 +979,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && aihubMediaSpeechDefaultCatalogGateResult.status === 'rejected') {
         console.error(aihubMediaSpeechDefaultCatalogGateResult.reason);
         setAihubMediaSpeechDefaultCatalogGateError('AIHub media/speech default catalog gate failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && geminiEmbeddingCheapFirstPreflightResult.status === 'rejected') {
+        console.error(geminiEmbeddingCheapFirstPreflightResult.reason);
+        setGeminiEmbeddingCheapFirstPreflightError('Gemini embedding cheap-first preflight failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -1521,6 +1554,17 @@ function Inner() {
   const aihubMediaSpeechDefaultCatalogClaimEntries = boundaryDisplayEntries(
     activeAihubMediaSpeechDefaultCatalogGate?.claim_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url)/i.test(key));
+  const activeGeminiEmbeddingCheapFirstPreflight =
+    geminiEmbeddingCheapFirstPreflight ?? data?.gemini_embedding_cheap_first_preflight ?? null;
+  const geminiEmbeddingRows = activeGeminiEmbeddingCheapFirstPreflight?.embedding_rows ?? [];
+  const geminiEmbeddingRouteRows = activeGeminiEmbeddingCheapFirstPreflight?.route_rows ?? [];
+  const geminiEmbeddingChecks = activeGeminiEmbeddingCheapFirstPreflight?.checks ?? [];
+  const geminiEmbeddingBoundaryEntries = boundaryDisplayEntries(
+    activeGeminiEmbeddingCheapFirstPreflight?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url|vector|chunk)/i.test(key));
+  const geminiEmbeddingClaimEntries = boundaryDisplayEntries(
+    activeGeminiEmbeddingCheapFirstPreflight?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|content|text|url|vector|chunk)/i.test(key));
   const activeGenTxtRoutingGuard = data?.gentxt_routing_guard ?? null;
   const genTxtRoutingGuardMediaRows = activeGenTxtRoutingGuard?.media_task_rows ?? [];
   const genTxtRoutingGuardAliasRows = activeGenTxtRoutingGuard?.media_alias_rows ?? [];
@@ -7611,6 +7655,200 @@ function Inner() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {activeAihubMediaSpeechDefaultCatalogGate.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          validation_commands: {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiEmbeddingCheapFirstPreflight || geminiEmbeddingCheapFirstPreflightError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiEmbeddingCheapFirstPreflight
+                    ? `${activeGeminiEmbeddingCheapFirstPreflight.summary.embedding_model_count} embedding models / ${activeGeminiEmbeddingCheapFirstPreflight.summary.text_embedding_ready_count} text ready / ${activeGeminiEmbeddingCheapFirstPreflight.summary.multimodal_review_count} multimodal review`
+                    : 'metadata-only Gemini embedding cheap-first review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiEmbeddingCheapFirstPreflight?.id
+                    ?? 'modelops-gemini-embedding-cheap-first-preflight'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiEmbeddingCheapFirstPreflight?.status)}>
+                {activeGeminiEmbeddingCheapFirstPreflight?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiEmbeddingCheapFirstPreflightError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiEmbeddingCheapFirstPreflightError}
+              </div>
+            )}
+
+            {activeGeminiEmbeddingCheapFirstPreflight && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiEmbeddingCheapFirstPreflight.summary.embedding_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">embedding_model_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiEmbeddingCheapFirstPreflight.summary.text_embedding_ready_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">text_embedding_ready_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiEmbeddingCheapFirstPreflight.summary.multimodal_review_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">multimodal_review_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiEmbeddingCheapFirstPreflight.summary.review_route_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review_route_count</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiEmbeddingCheapFirstPreflight.summary.index_written)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">index_written</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiEmbeddingCheapFirstPreflight.summary.default_changed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default_changed</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Model</TableHead>
+                        <TableHead>Scope</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Budget</TableHead>
+                        <TableHead>Review</TableHead>
+                        <TableHead>Policy</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiEmbeddingRows.map((row) => (
+                        <TableRow key={row.model_id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                            <div className="mt-1 text-xs text-stone-500">{row.canonical_model ?? '-'}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.route_role)}>
+                              {row.route_role}
+                            </Badge>
+                            <div className="mt-1">{row.input_scope}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.pricing_status}</div>
+                            <div>standard: {row.input_usd_per_million_tokens ?? '-'}</div>
+                            <div>batch: {row.batch_input_usd_per_million_tokens ?? '-'}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge variant="outline" className={statusClass(row.budget_mode)}>
+                              {row.budget_mode}
+                            </Badge>
+                            <div className="mt-1">tier: {row.cost_tier}</div>
+                            <div>over: {String(row.is_over_budget)}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.release_action}</div>
+                            <div className="mt-1">operator_review: {String(row.requires_operator_review)}</div>
+                            <div>default_allowed: {String(row.default_allowed_without_review)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                            {row.recommended_policy}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Routes</h3>
+                    <div className="space-y-2">
+                      {geminiEmbeddingRouteRows.map((row) => (
+                        <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{row.id}</div>
+                            <Badge variant="outline" className={statusClass(row.route_status)}>
+                              {row.route_status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{row.route_mode}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{row.default_model}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{row.reason_codes.join(', ')}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="space-y-2">
+                      {geminiEmbeddingChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                      <div>gateway_called: {String(activeGeminiEmbeddingCheapFirstPreflight.summary.gateway_called)}</div>
+                      <div>network_called: {String(activeGeminiEmbeddingCheapFirstPreflight.summary.network_called)}</div>
+                      <div>index_written: {String(activeGeminiEmbeddingCheapFirstPreflight.summary.index_written)}</div>
+                      <div>default_changed: {String(activeGeminiEmbeddingCheapFirstPreflight.summary.default_changed)}</div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiEmbeddingBoundaryEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                      {geminiEmbeddingClaimEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeGeminiEmbeddingCheapFirstPreflight.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

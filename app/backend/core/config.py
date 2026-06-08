@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     app_ai_video_model: str = "wan2.6-t2v"
     app_ai_audio_model: str = "qwen3-tts-flash"
     app_ai_transcription_model: str = "scribe_v2"
+    app_ai_embedding_model: str = "gemini-embedding-001"
     app_ai_agentic_model: str = "gemini-3.1-flash-lite"
     app_ai_grounded_research_model: str = "gemini-3.1-flash-lite"
     app_ai_request_timeout: int = 360

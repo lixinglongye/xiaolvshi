@@ -15,14 +15,15 @@ def test_gemini_cheap_first_coverage_gate_builds_metadata_only_rows():
 
     assert gate["id"] == "modelops-gemini-cheap-first-coverage-gate"
     assert gate["status"] == "review_required"
-    assert gate["summary"]["coverage_row_count"] == 8
-    assert gate["summary"]["ready_row_count"] == 6
+    assert gate["summary"]["coverage_row_count"] == 9
+    assert gate["summary"]["ready_row_count"] == 7
     assert gate["summary"]["review_row_count"] == 2
     assert gate["summary"]["blocked_row_count"] == 0
-    assert gate["summary"]["cheap_first_ready_count"] == 6
+    assert gate["summary"]["cheap_first_ready_count"] == 7
     assert gate["summary"]["premium_exception_count"] == 2
     assert gate["summary"]["unknown_model_count"] == 0
     assert gate["summary"]["non_gemini_default_count"] == 0
+    assert gate["summary"]["missing_price_count"] == 0
     assert gate["summary"]["missing_reasoning_policy_count"] == 0
     assert gate["summary"]["model_called"] is False
     assert gate["summary"]["gateway_called"] is False
@@ -44,13 +45,18 @@ def test_gemini_cheap_first_coverage_gate_builds_metadata_only_rows():
     assert rows["grounded-research"]["runtime_default_model"] == "gemini-3.1-flash-lite"
     assert rows["grounded-research"]["coverage_status"] == "ready"
     assert rows["grounded-research"]["cheap_first_aligned"] is True
+    assert rows["embedding"]["runtime_default_model"] == "gemini-embedding-001"
+    assert rows["embedding"]["coverage_status"] == "ready"
+    assert rows["embedding"]["model_family"] == "gemini"
+    assert rows["embedding"]["price_status"] == "priced_per_token"
+    assert rows["embedding"]["reasoning_policy_status"] == "not_applicable"
 
 
 def test_gemini_cheap_first_coverage_gate_links_existing_modelops_signals():
     gate = ModelOpsGeminiCheapFirstCoverageGateService().build_gate()
 
     assert gate["linked_signal_summary"]["capability_matrix_status"] == "ready"
-    assert gate["linked_signal_summary"]["capability_task_count"] == 8
+    assert gate["linked_signal_summary"]["capability_task_count"] == 9
     assert gate["linked_signal_summary"]["configured_gateway_role_count"] >= 8
     assert gate["research_basis"]
     assert {item["id"] for item in gate["research_basis"]} == {
@@ -106,7 +112,7 @@ def test_gemini_cheap_first_coverage_gate_route_and_models_payload_include_gate(
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
-    assert payload["data"]["summary"]["coverage_row_count"] == 8
+    assert payload["data"]["summary"]["coverage_row_count"] == 9
     assert payload["data"]["summary"]["model_called"] is False
 
     models_response = client.get("/api/v1/aihub/models")

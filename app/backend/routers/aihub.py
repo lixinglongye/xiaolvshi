@@ -64,6 +64,9 @@ from services.model_ops_gemini_cheap_first_route_preflight import (
 from services.model_ops_gemini_official_model_family_roadmap import (
     ModelOpsGeminiOfficialModelFamilyRoadmapService,
 )
+from services.model_ops_gemini_embedding_cheap_first_preflight import (
+    ModelOpsGeminiEmbeddingCheapFirstPreflightService,
+)
 from services.model_ops_aihub_endpoint_route_coverage_gate import (
     ModelOpsAIHubEndpointRouteCoverageGateService,
 )
@@ -309,6 +312,9 @@ async def list_models():
     gemini_official_model_family_roadmap_evidence = (
         ModelOpsGeminiOfficialModelFamilyRoadmapService().build_roadmap()
     )
+    gemini_embedding_cheap_first_preflight = (
+        ModelOpsGeminiEmbeddingCheapFirstPreflightService().build_preflight()
+    )
     price_refresh_monitor = ModelPriceRefreshMonitorService().build_monitor(
         observed_gateway_models,
         forecast,
@@ -413,6 +419,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
+        "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
@@ -476,6 +483,7 @@ async def list_models():
             "auto-video": task_default_model("video"),
             "auto-audio": task_default_model("audio"),
             "auto-transcription": task_default_model("transcription"),
+            "auto-embedding": task_default_model("embedding"),
             "auto-agentic": task_default_model("agentic"),
             "auto-grounded-research": task_default_model("grounded-research"),
         },
@@ -514,6 +522,7 @@ async def list_models():
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
+        "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
         "observed_gemini_coverage_gap_queue": observed_gemini_coverage_gap_queue,
@@ -815,6 +824,25 @@ async def modelops_gemini_official_model_family_roadmap_evidence():
     return {
         "success": True,
         "data": ModelOpsGeminiOfficialModelFamilyRoadmapService().build_roadmap(),
+    }
+
+
+@router.get("/models/gemini-embedding-cheap-first-preflight")
+async def modelops_gemini_embedding_cheap_first_preflight():
+    """Return metadata-only Gemini embedding cheap-first preflight evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_embedding_cheap_first_preflight"],
+    }
+
+
+@router.post("/models/gemini-embedding-cheap-first-preflight")
+async def evaluate_modelops_gemini_embedding_cheap_first_preflight(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini embedding preflight metadata without provider calls."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiEmbeddingCheapFirstPreflightService().build_preflight(payload),
     }
 
 

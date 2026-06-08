@@ -57,6 +57,10 @@ TASK_ALIASES = {
     "image-edit": "image",
     "genimg": "image",
     "visual": "image",
+    "embeddings": "embedding",
+    "text-embedding": "embedding",
+    "rag-index": "embedding",
+    "source-index": "embedding",
 }
 
 
@@ -152,6 +156,16 @@ TASK_POLICIES: dict[str, TaskCandidatePolicy] = {
         high_frequency=False,
         price_mode="image",
     ),
+    "embedding": TaskCandidatePolicy(
+        task="embedding",
+        required_capabilities=("embedding", "text"),
+        preferred_capabilities=("batch",),
+        max_default_cost_tier="lowest",
+        fallback_model="gemini-embedding-001",
+        route_mode="cheap_first_embedding",
+        high_frequency=True,
+        price_mode="embedding",
+    ),
 }
 
 
@@ -232,6 +246,7 @@ class ModelDefaultCandidateSelectorService:
             self._candidate_row(profile, policy)
             for profile in self.catalog
             if _has_required_capabilities(profile, policy.required_capabilities)
+            and _task_family_allowed(profile, policy)
         ]
         rows.sort(key=lambda item: item["sort_key"])
         for row in rows:
@@ -369,9 +384,16 @@ def _has_required_capabilities(profile: ModelProfile, required: tuple[str, ...])
     return all(capability in profile.capabilities for capability in required)
 
 
+def _task_family_allowed(profile: ModelProfile, policy: TaskCandidatePolicy) -> bool:
+    is_embedding_model = "embedding" in set(profile.capabilities) or "embedding" in profile.id
+    return policy.task == "embedding" if is_embedding_model else policy.task != "embedding"
+
+
 def _pricing_status(profile: ModelProfile, price_mode: str) -> str:
     if price_mode == "image":
         return "image_priced" if profile.output_usd_per_image is not None else "missing"
+    if price_mode == "embedding":
+        return "token_priced" if profile.input_usd_per_million_tokens is not None else "missing"
     if profile.input_usd_per_million_tokens is not None and profile.output_usd_per_million_tokens is not None:
         return "token_priced"
     if profile.input_usd_per_million_tokens is not None or profile.output_usd_per_million_tokens is not None:
@@ -382,6 +404,8 @@ def _pricing_status(profile: ModelProfile, price_mode: str) -> str:
 def _price_value(profile: ModelProfile, price_mode: str) -> float:
     if price_mode == "image":
         return profile.output_usd_per_image if profile.output_usd_per_image is not None else TEXT_PRICE_MISSING_PENALTY
+    if price_mode == "embedding":
+        return profile.input_usd_per_million_tokens if profile.input_usd_per_million_tokens is not None else TEXT_PRICE_MISSING_PENALTY
     if profile.input_usd_per_million_tokens is None or profile.output_usd_per_million_tokens is None:
         return TEXT_PRICE_MISSING_PENALTY
     return profile.input_usd_per_million_tokens + profile.output_usd_per_million_tokens
@@ -413,6 +437,8 @@ def _catalog_status_rank(status: str) -> int:
 
 
 def _family_sort_rank(model_id: str) -> int:
+    if "embedding" in model_id:
+        return 0
     if "flash-lite" in model_id:
         return 0
     if "flash" in model_id and "image" not in model_id:
@@ -425,6 +451,8 @@ def _family_sort_rank(model_id: str) -> int:
 
 
 def _family_label(model_id: str) -> str:
+    if "embedding" in model_id:
+        return "gemini-embedding"
     if "flash-lite" in model_id:
         return "gemini-flash-lite"
     if "flash" in model_id and "image" not in model_id:

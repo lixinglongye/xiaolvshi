@@ -17,6 +17,7 @@ def _reset_default_models(monkeypatch):
             "agentic": "gemini-3.1-flash-lite",
             "pdf": "gemini-2.5-pro",
             "image": "gemini-2.5-flash-image",
+            "embedding": "gemini-embedding-001",
         }.get(task, "gemini-2.5-flash")
 
     monkeypatch.setattr(model_configuration_audit, "task_default_model", task_default)
@@ -33,6 +34,7 @@ def test_model_configuration_audit_passes_default_roles(monkeypatch):
     assert any(check["id"] == "agentic-route-model" for check in result["checks"])
     assert any(check["id"] == "grounded-research-route-model" for check in result["checks"])
     assert any(check["id"] == "image-route-model" for check in result["checks"])
+    assert any(check["id"] == "embedding-route-model" for check in result["checks"])
     assert "sk-" not in str(result)
 
 
@@ -80,7 +82,12 @@ def test_model_ops_route_includes_model_configuration_audit():
     assert payload["routing_aliases"]["auto-video"] == "wan2.6-t2v"
     assert payload["routing_aliases"]["auto-audio"] == "qwen3-tts-flash"
     assert payload["routing_aliases"]["auto-transcription"] == "scribe_v2"
+    assert payload["routing_aliases"]["auto-embedding"] == "gemini-embedding-001"
     assert any(
         check["id"] == "image-route-model"
+        for check in payload["model_configuration_audit"]["checks"]
+    )
+    assert any(
+        check["id"] == "embedding-route-model"
         for check in payload["model_configuration_audit"]["checks"]
     )

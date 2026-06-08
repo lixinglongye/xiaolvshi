@@ -200,6 +200,19 @@ traffic, or return request/response bodies, headers, prompts, raw payloads,
 audio, transcripts, legal text, model output, gateway responses, credentials,
 emails, or user identifiers.
 
+`gemini-embedding-cheap-first-preflight` is required metadata-only evidence for
+embedding default review. It is exposed at
+`/api/v1/aihub/models/gemini-embedding-cheap-first-preflight` and records
+`APP_AI_EMBEDDING_MODEL=gemini-embedding-001`, `auto-embedding` alias coverage,
+local catalog pricing, cheap-first embedding budget policy, and multimodal
+`gemini-embedding-2` review routing. Multimodal `gemini-embedding-2` remains
+review-required before image, audio, video, PDF, or source-index use. The
+preflight does not call providers, gateways, app AI endpoints, models, or the
+network, write configuration, change defaults, write indexes, shift traffic, or
+return source text, raw legal text, source chunks, embedding vectors,
+request/response bodies, headers, prompts, raw payloads, model output, gateway
+responses, credentials, emails, or user identifiers.
+
 `gentxt-routing-guard` is required metadata-only evidence for the text endpoint
 task boundary. It verifies that media and speech routing aliases are rejected
 for `POST /api/v1/aihub/gentxt` and remain scoped to media endpoints. It does

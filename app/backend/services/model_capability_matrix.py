@@ -158,6 +158,16 @@ class ModelCapabilityMatrixService:
                 default_alias="explicit",
                 reason="Image models are media-specific and should be selected explicitly.",
             ),
+            ModelTaskRequirement(
+                task="embedding",
+                display_name="Embedding and legal RAG indexing",
+                required_capabilities=("embedding", "text"),
+                preferred_capabilities=("batch",),
+                max_cost_tier="lowest",
+                preferred_latency_tier="fast",
+                default_alias="auto-embedding",
+                reason="Legal source indexes and deduping are high-volume, so text embeddings should start on the cheapest stable embedding model.",
+            ),
         )
 
     def _task_row(self, requirement: ModelTaskRequirement) -> dict[str, Any]:
@@ -165,6 +175,7 @@ class ModelCapabilityMatrixService:
             self._candidate(profile, requirement)
             for profile in self.catalog
             if _has_required(profile, requirement.required_capabilities)
+            and _task_family_allowed(profile, requirement)
         ]
         candidates.sort(key=lambda item: item["sort_key"])
         for item in candidates:
@@ -216,3 +227,8 @@ class ModelCapabilityMatrixService:
 
 def _has_required(profile: ModelProfile, required_capabilities: tuple[str, ...]) -> bool:
     return all(capability in profile.capabilities for capability in required_capabilities)
+
+
+def _task_family_allowed(profile: ModelProfile, requirement: ModelTaskRequirement) -> bool:
+    is_embedding_model = "embedding" in set(profile.capabilities) or "embedding" in profile.id
+    return requirement.task == "embedding" if is_embedding_model else requirement.task != "embedding"

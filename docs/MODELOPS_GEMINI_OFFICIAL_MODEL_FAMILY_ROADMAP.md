@@ -32,8 +32,12 @@ and gateway notes.
   and partially reviewed boundaries still need maintainer confirmation.
 - Gemini image generation and editing rows as explicit media routes, not
   high-frequency text defaults.
-- Gemini Live/audio, embedding, and TTS families as roadmap gaps until catalog,
-  pricing, request-policy, and route boundaries exist.
+- Gemini Live/audio and TTS families as roadmap gaps until catalog, pricing,
+  request-policy, and route boundaries exist.
+- Gemini embedding as a separately tracked cheap-first preflight: text
+  embeddings default to `APP_AI_EMBEDDING_MODEL=gemini-embedding-001`, while
+  multimodal `gemini-embedding-2` remains review-required before image, audio,
+  video, PDF, or source-index use.
 - High-frequency tasks that should remain on stable Flash-Lite defaults before
   any premium or preview default promotion is considered.
 

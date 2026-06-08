@@ -10,7 +10,7 @@ from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.model_reasoning_policy import resolve_reasoning_effort
 
 
-CHEAP_FIRST_TASKS = {"fast", "ocr", "classification", "agentic", "grounded-research"}
+CHEAP_FIRST_TASKS = {"fast", "ocr", "classification", "agentic", "grounded-research", "embedding"}
 BALANCED_TASKS = {"review"}
 PREMIUM_EXCEPTION_TASKS = {"pdf", "image"}
 
@@ -146,6 +146,9 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
         lifecycle = self._lifecycle_status(runtime_default, lifecycle_policy)
         gateway_status = self._gateway_status(runtime_default, gateway_compatibility)
         reasoning = resolve_reasoning_effort(model=runtime_default, task=task)
+        reasoning_status = "not_applicable" if task == "embedding" else (
+            "ready" if reasoning.gateway_parameter or reasoning.effective_effort else "missing"
+        )
         price_status = self._price_status(profile)
         cheap_first_aligned = self._cheap_first_aligned(task, profile, recommended_profile, runtime_default, recommended)
         premium_exception = role == "premium_exception"
@@ -157,7 +160,7 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
             recommended=recommended,
             lifecycle_status=lifecycle,
             price_status=price_status,
-            reasoning_policy_status="ready" if reasoning.gateway_parameter or reasoning.effective_effort else "missing",
+            reasoning_policy_status=reasoning_status,
             gateway_status=gateway_status,
             cheap_first_aligned=cheap_first_aligned,
             premium_exception=premium_exception,
@@ -180,7 +183,7 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
             "max_cost_tier": str(requirement.get("max_cost_tier") or "premium"),
             "lifecycle_status": lifecycle,
             "price_status": price_status,
-            "reasoning_policy_status": "ready" if reasoning.gateway_parameter or reasoning.effective_effort else "missing",
+            "reasoning_policy_status": reasoning_status,
             "reasoning_effort": reasoning.gateway_parameter or reasoning.effective_effort,
             "reasoning_cost_mode": reasoning.cost_mode,
             "gateway_compatibility_status": gateway_status,
@@ -239,7 +242,9 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
             return "unknown"
         if profile.output_usd_per_image is not None:
             return "priced_per_image"
-        if profile.input_usd_per_million_tokens is not None and profile.output_usd_per_million_tokens is not None:
+        if profile.input_usd_per_million_tokens is not None and (
+            profile.output_usd_per_million_tokens is not None or "embedding" in set(profile.capabilities)
+        ):
             return "priced_per_token"
         return "missing"
 
@@ -268,6 +273,8 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
             return "unknown"
         if task == "image":
             return "media"
+        if task == "embedding" and str(profile.family or "").startswith("gemini"):
+            return "gemini"
         return str(profile.family or "unknown")
 
     def _reason_codes(
@@ -298,7 +305,7 @@ class ModelOpsGeminiCheapFirstCoverageGateService:
             codes.append(f"lifecycle:{lifecycle_status}")
         if price_status in {"missing", "unknown"}:
             codes.append(f"price:{price_status}")
-        if reasoning_policy_status != "ready" and not premium_exception:
+        if reasoning_policy_status not in {"ready", "not_applicable"} and not premium_exception:
             codes.append("reasoning_policy_missing")
         if gateway_status != "pass":
             codes.append(f"gateway:{gateway_status}")

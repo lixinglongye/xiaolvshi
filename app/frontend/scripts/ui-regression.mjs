@@ -119,8 +119,14 @@ const geminiAliasCapabilityCoveragePanel = sourceSection(
 const aihubMediaSpeechDefaultCatalogGatePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
   'model-ops AIHub media/speech default catalog gate section',
+);
+const geminiEmbeddingCheapFirstPreflightPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
+  '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
+  'model-ops Gemini embedding cheap-first preflight section',
 );
 const observedGeminiCoverageGapQueuePanel = sourceSection(
   modelOpsPage,
@@ -1032,6 +1038,31 @@ const checks = [
     /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|request_body_value|response_body_value|headers_value|client_email|email|phone|identity|messages|content|file_url|media_url|download_url|signed_url|sample_text|input_excerpt|audio_bytes|image_bytes|video_bytes|binary_payload|base64|raw_audio|raw_image|audio_transcript|transcript_text|voice_sample)\b/i,
     'model-ops AIHub media/speech default catalog gate no secrets or raw media/speech/request/model fields',
   ),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiEmbeddingCheapFirstPreflight', 'model-ops Gemini embedding cheap-first preflight type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiEmbeddingCheapFirstPreflightEmbeddingRow', 'model-ops Gemini embedding row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiEmbeddingCheapFirstPreflightRouteRow', 'model-ops Gemini embedding route row type'),
+  () => assertIncludes(modelOpsApi, 'gemini_embedding_cheap_first_preflight?: ModelOpsGeminiEmbeddingCheapFirstPreflight', 'model-ops Gemini embedding preflight response binding'),
+  () => assertIncludes(modelOpsApi, 'embedding_rows?: unknown', 'model-ops Gemini embedding preflight payload guard embedding rows'),
+  () => assertIncludes(modelOpsApi, 'route_rows?: unknown', 'model-ops Gemini embedding preflight payload guard route rows'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiEmbeddingCheapFirstPreflight', 'model-ops Gemini embedding preflight getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-embedding-cheap-first-preflight', 'model-ops Gemini embedding preflight endpoint'),
+  () => assertIncludes(modelOpsPage, 'Gemini embedding cheap-first preflight', 'model-ops Gemini embedding preflight panel'),
+  () => assertIncludes(modelOpsPage, 'geminiEmbeddingCheapFirstPreflight', 'model-ops Gemini embedding preflight state binding'),
+  () => assertIncludes(modelOpsPage, 'activeGeminiEmbeddingCheapFirstPreflight', 'model-ops Gemini embedding preflight active binding'),
+  () => assertIncludes(modelOpsPage, 'geminiEmbeddingRows', 'model-ops Gemini embedding rows binding'),
+  () => assertIncludes(modelOpsPage, 'geminiEmbeddingRouteRows', 'model-ops Gemini embedding route rows binding'),
+  () => assertIncludes(modelOpsPage, 'geminiEmbeddingChecks', 'model-ops Gemini embedding checks binding'),
+  () => assertIncludes(modelOpsPage, 'text_embedding_ready_count', 'model-ops Gemini embedding text-ready summary'),
+  () => assertIncludes(modelOpsPage, 'multimodal_review_count', 'model-ops Gemini embedding multimodal review summary'),
+  () => assertIncludes(modelOpsPage, 'review_route_count', 'model-ops Gemini embedding review route summary'),
+  () => assertIncludes(modelOpsPage, 'index_written', 'model-ops Gemini embedding no index-write boundary'),
+  () => assertIncludes(modelOpsPage, 'default_changed', 'model-ops Gemini embedding no default-change boundary'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.gemini_embedding_cheap_first_preflight', 'model-ops Gemini embedding aggregate reuse'),
+  () => assertNotMatches(
+    geminiEmbeddingCheapFirstPreflightPanel,
+    /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|request_body_value|response_body_value|headers_value|client_email|email|phone|identity|messages|content|source_chunk|source_chunks|raw_embedding|embedding_vector|embedding_vectors|vector_values|index_document_text|file_url|media_url|download_url|signed_url|sample_text|input_excerpt|base64|binary_payload)\b/i,
+    'model-ops Gemini embedding cheap-first preflight no secrets or raw embedding/request/model/index fields',
+  ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard type'),
   () => assertIncludes(modelOpsApi, 'gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard response binding'),
   () => assertIncludes(modelOpsApi, 'getModelOpsGenTxtRoutingGuard', 'model-ops gentxt routing guard getter'),
@@ -1110,8 +1141,15 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
+      'model-ops Gemini embedding preflight follows AIHub media/speech default catalog',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
-      'model-ops gentxt routing guard follows AIHub media/speech default catalog',
+      'model-ops gentxt routing guard follows Gemini embedding preflight',
     ),
   () =>
     assertBefore(
@@ -1705,8 +1743,15 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
+      'model-ops Gemini embedding preflight follows AIHub media/speech default catalog',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini embedding cheap-first preflight</h2>',
       '<h2 className="text-xl font-black text-stone-950">AIHub gentxt routing guard</h2>',
-      'model-ops gentxt routing guard follows AIHub media/speech default catalog',
+      'model-ops gentxt routing guard follows Gemini embedding preflight',
     ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate type'),
   () => assertIncludes(modelOpsApi, "id: 'modelops-gemini-cheap-first-coverage-gate' | string", 'model-ops Gemini cheap-first coverage gate typed id'),

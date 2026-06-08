@@ -292,6 +292,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
     assert "modelops-aihub-media-speech-default-catalog-gate" in completed_ids
+    assert "modelops-gemini-embedding-cheap-first-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
     assert "modelops-observed-gateway-model-fit-matrix" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
@@ -569,6 +570,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-cheap-first-canary-change-manifest" not in queue_ids
     assert "modelops-gemini-cheap-first-coverage-gate" not in queue_ids
     assert "modelops-gemini-cheap-first-route-preflight" not in queue_ids
+    assert "modelops-gemini-embedding-cheap-first-preflight" not in queue_ids
     assert "model-gateway-request-compatibility-gate" not in queue_ids
     assert "modelops-legal-micro-benchmark-preflight" not in queue_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" not in queue_ids
@@ -1296,6 +1298,95 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py "
         "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    gemini_embedding_preflight_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-gemini-embedding-cheap-first-preflight"
+    )
+    assert gemini_embedding_preflight_entry["size"] == "medium"
+    assert gemini_embedding_preflight_entry["status"] == "shipped"
+    assert gemini_embedding_preflight_entry["category"] == "model_ops"
+    assert "required metadata-only Gemini embedding cheap-first preflight evidence" in gemini_embedding_preflight_entry["impact"]
+    assert "/api/v1/aihub/models/gemini-embedding-cheap-first-preflight" in gemini_embedding_preflight_entry["impact"]
+    assert "APP_AI_EMBEDDING_MODEL=gemini-embedding-001" in gemini_embedding_preflight_entry["impact"]
+    assert "auto-embedding aliases" in gemini_embedding_preflight_entry["impact"]
+    assert "local catalog pricing" in gemini_embedding_preflight_entry["impact"]
+    assert "cheap-first embedding budget policy" in gemini_embedding_preflight_entry["impact"]
+    assert "multimodal gemini-embedding-2 review routing" in gemini_embedding_preflight_entry["impact"]
+    assert "Text embedding defaults stay on gemini-embedding-001" in gemini_embedding_preflight_entry["impact"]
+    assert "multimodal gemini-embedding-2 remains review-required" in gemini_embedding_preflight_entry["impact"]
+    assert "source-index use" in gemini_embedding_preflight_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in gemini_embedding_preflight_entry[
+        "impact"
+    ]
+    assert "configuration writes" in gemini_embedding_preflight_entry["impact"]
+    assert "default changes" in gemini_embedding_preflight_entry["impact"]
+    assert "index writes" in gemini_embedding_preflight_entry["impact"]
+    assert "traffic shifts" in gemini_embedding_preflight_entry["impact"]
+    assert "source text" in gemini_embedding_preflight_entry["impact"]
+    assert "raw legal text" in gemini_embedding_preflight_entry["impact"]
+    assert "source chunks" in gemini_embedding_preflight_entry["impact"]
+    assert "embedding vectors" in gemini_embedding_preflight_entry["impact"]
+    assert "request bodies" in gemini_embedding_preflight_entry["impact"]
+    assert "response bodies" in gemini_embedding_preflight_entry["impact"]
+    assert "headers" in gemini_embedding_preflight_entry["impact"]
+    assert "prompts" in gemini_embedding_preflight_entry["impact"]
+    assert "raw payloads" in gemini_embedding_preflight_entry["impact"]
+    assert "model outputs" in gemini_embedding_preflight_entry["impact"]
+    assert "gateway responses" in gemini_embedding_preflight_entry["impact"]
+    assert "credentials" in gemini_embedding_preflight_entry["impact"]
+    assert "emails" in gemini_embedding_preflight_entry["impact"]
+    assert "user identifiers" in gemini_embedding_preflight_entry["impact"]
+    assert "app/backend/services/model_ops_gemini_embedding_cheap_first_preflight.py" in gemini_embedding_preflight_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_gemini_embedding_cheap_first_preflight.py" in gemini_embedding_preflight_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/model_catalog.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/services/model_budget.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/tests/test_frontend_ui_regression_gate.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_EMBEDDING_CHEAP_FIRST_PREFLIGHT.md" in gemini_embedding_preflight_entry[
+        "evidence_paths"
+    ]
+    assert "docs/MODEL_OPS_READINESS.md" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "docs/FRONTEND_UI_REGRESSION_GATE.md" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "docs/RELEASE_READINESS.md" in gemini_embedding_preflight_entry["evidence_paths"]
+    assert "modelops-gemini-embedding-cheap-first-preflight" in gemini_embedding_preflight_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-aihub-media-speech-default-catalog-gate" in gemini_embedding_preflight_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in gemini_embedding_preflight_entry[
+        "release_gate_links"
+    ]
+    assert "modelops-gemini-cheap-first-route-preflight" in gemini_embedding_preflight_entry[
+        "release_gate_links"
+    ]
+    assert "model-ops-readiness" in gemini_embedding_preflight_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in gemini_embedding_preflight_entry["release_gate_links"]
+    assert "frontend-typecheck" in gemini_embedding_preflight_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_ops_gemini_embedding_cheap_first_preflight.py "
+        "tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_configuration_audit.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     media_speech_entry = next(

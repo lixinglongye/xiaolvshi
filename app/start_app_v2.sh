@@ -920,9 +920,17 @@ start_services_with_retry() {
         export ENVIRONMENT=dev
         log_info "Ensured IS_LAMBDA=$IS_LAMBDA and ENVIRONMENT=$ENVIRONMENT for local development"
 
-        # Start backend service
+        # Start backend service. Exclude local runtime output from reload watches;
+        # otherwise log writes under app/backend/logs can trigger reload loops.
         log_info "Starting Backend service...$BACKEND_PORT"
-        uvicorn main:app --host 0.0.0.0 --port $BACKEND_PORT --reload &
+        uvicorn main:app \
+            --host 0.0.0.0 \
+            --port $BACKEND_PORT \
+            --reload \
+            --reload-exclude 'logs/*' \
+            --reload-exclude '*.log' \
+            --reload-exclude '__pycache__/*' \
+            --reload-exclude '.pytest_cache/*' &
         BACKEND_RELOADER_PID=$!  # Parent process (reloader)
 
         # Wait for backend to start

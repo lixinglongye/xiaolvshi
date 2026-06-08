@@ -8,7 +8,7 @@ from services.model_catalog import catalog_for_api, canonical_model_id, model_pr
 from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
 
 
-HIGH_FREQUENCY_TASKS = ("fast", "routing", "classification", "ocr", "agentic", "grounded-research")
+HIGH_FREQUENCY_TASKS = ("fast", "routing", "classification", "ocr", "agentic", "grounded-research", "embedding")
 BALANCED_TASKS = ("review", "document-generation")
 PREMIUM_EXCEPTION_TASKS = ("pdf", "image")
 ALL_ROUTE_TASKS = HIGH_FREQUENCY_TASKS + BALANCED_TASKS + PREMIUM_EXCEPTION_TASKS
@@ -272,7 +272,7 @@ class ModelOpsGeminiCheapFirstRoutePreflightService:
             self._check(
                 "high-frequency-flash-lite-defaults",
                 "fail" if high_frequency_failures else "pass",
-                "High-frequency tasks keep a Flash-Lite cheap-first default.",
+                "High-frequency text tasks keep a Flash-Lite default, while embedding tasks keep a lowest-tier embedding default.",
                 high_frequency_failures,
             ),
             self._check(
@@ -343,7 +343,12 @@ class ModelOpsGeminiCheapFirstRoutePreflightService:
         if profile is None:
             codes.append("unknown_model")
         else:
-            if task in HIGH_FREQUENCY_TASKS and "flash-lite" not in profile.id:
+            if task == "embedding":
+                if "embedding" not in set(profile.capabilities):
+                    codes.append("high_frequency_embedding_capability_missing")
+                if profile.cost_tier != "lowest":
+                    codes.append("embedding_cost_review")
+            elif task in HIGH_FREQUENCY_TASKS and "flash-lite" not in profile.id:
                 codes.append("high_frequency_not_flash_lite")
             if profile.status != "stable":
                 codes.append(f"lifecycle_{profile.status}")

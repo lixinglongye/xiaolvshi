@@ -21,8 +21,8 @@ def test_gemini_cheap_first_route_preflight_builds_reviewable_plan():
     assert preflight["id"] == "modelops-gemini-cheap-first-route-preflight"
     assert preflight["status"] == "review_required"
     assert preflight["summary"]["official_source_count"] == 4
-    assert preflight["summary"]["route_task_count"] == 10
-    assert preflight["summary"]["cheap_first_route_count"] == 6
+    assert preflight["summary"]["route_task_count"] == 11
+    assert preflight["summary"]["cheap_first_route_count"] == 7
     assert preflight["summary"]["balanced_route_count"] == 2
     assert preflight["summary"]["premium_exception_count"] == 2
     assert preflight["summary"]["catalog_model_count"] >= 10
@@ -43,6 +43,9 @@ def test_gemini_cheap_first_route_preflight_builds_reviewable_plan():
     assert route_rows["ocr"]["canonical_model"] == "gemini-2.5-flash-lite"
     assert route_rows["agentic"]["default_model"] == "gemini-3.1-flash-lite"
     assert route_rows["grounded-research"]["default_model"] == "gemini-3.1-flash-lite"
+    assert route_rows["embedding"]["default_model"] == "gemini-embedding-001"
+    assert route_rows["embedding"]["cheap_first_aligned"] is True
+    assert route_rows["embedding"]["default_allowed_without_review"] is True
     assert route_rows["review"]["route_mode"] == "cheap_precheck_then_balanced"
     assert route_rows["pdf"]["premium_exception_required"] is True
     assert route_rows["pdf"]["release_action"] == "require_operator_exception"
@@ -117,7 +120,7 @@ def test_gemini_cheap_first_route_preflight_route_and_models_payload_include_sig
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["id"] == "modelops-gemini-cheap-first-route-preflight"
-    assert payload["data"]["summary"]["route_task_count"] == 10
+    assert payload["data"]["summary"]["route_task_count"] == 11
     assert payload["data"]["summary"]["gateway_called"] is False
 
     posted = client.post(

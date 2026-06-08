@@ -182,6 +182,17 @@ class ModelConfigurationAuditService:
                 preferred_capabilities=("image-edit",),
                 rationale="Image generation should default to the lowest priced capable Gemini image model unless an operator explicitly chooses a premium media model.",
             ),
+            ConfiguredModelRole(
+                id="embedding-route-model",
+                label="Embedding task default",
+                model=task_default_model("embedding"),
+                env_var="APP_AI_EMBEDDING_MODEL",
+                max_cost_tier="lowest",
+                preferred_cost_tier="lowest",
+                required_capabilities=("embedding", "text"),
+                preferred_capabilities=("batch",),
+                rationale="Legal RAG indexing should start on the cheapest stable text embedding model before multimodal embedding review.",
+            ),
         ]
 
     def _audit_role(self, role: ConfiguredModelRole) -> dict[str, Any]:

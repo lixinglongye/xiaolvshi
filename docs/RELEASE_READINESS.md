@@ -97,6 +97,21 @@ defaults, shift traffic, or store request/response bodies, headers, prompts,
 raw payloads, audio, transcripts, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
+Additional required evidence:
+`modelops-gemini-embedding-cheap-first-preflight` records metadata-only Gemini
+embedding default review at
+`/api/v1/aihub/models/gemini-embedding-cheap-first-preflight`. It keeps
+`APP_AI_EMBEDDING_MODEL=gemini-embedding-001` as the default text embedding
+route, exposes `auto-embedding` alias coverage, local catalog pricing, and
+cheap-first embedding budget policy, and leaves multimodal
+`gemini-embedding-2` review-required before image, audio, video, PDF, or
+source-index use. The preflight does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network, write configuration, change
+defaults, write indexes, shift traffic, or store source text, raw legal text,
+source chunks, embedding vectors, request/response bodies, headers, prompts,
+raw payloads, model outputs, gateway responses, credentials, emails, or user
+identifiers.
+
 Additional optional evidence: `modelops-legal-micro-benchmark-preflight`
 records metadata-only low-resource legal benchmark preflight checks for
 cheap-first fixture selection, document case ids, fact-consistency case ids,

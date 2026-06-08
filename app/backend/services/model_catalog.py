@@ -188,6 +188,40 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         best_for=("high-quality-image-generation",),
         status="preview",
     ),
+    ModelProfile(
+        id="gemini-embedding-001",
+        provider="google",
+        family="gemini-embedding",
+        cost_tier="lowest",
+        latency_tier="fast",
+        capabilities=("embedding", "text", "batch"),
+        best_for=("legal-rag-index", "source-deduping", "text-embedding", "cheap-batch-indexing"),
+        notes="Cheap-first text embedding default. Use multimodal embedding only when image, audio, video, or PDF inputs are required.",
+        input_usd_per_million_tokens=0.15,
+        pricing_note=(
+            "Google Gemini API paid tier, standard mode for text embeddings. Batch text embedding may be cheaper; "
+            "gateway billing may differ."
+        ),
+        status="stable",
+        pricing_source_url="https://ai.google.dev/pricing",
+    ),
+    ModelProfile(
+        id="gemini-embedding-2",
+        provider="google",
+        family="gemini-embedding",
+        cost_tier="low",
+        latency_tier="medium",
+        capabilities=("embedding", "text", "image", "audio", "video", "pdf", "multimodal", "batch"),
+        best_for=("multimodal-rag-index", "source-matching", "evidence-retrieval", "cross-modal-search"),
+        notes="Multimodal embedding candidate. Keep explicit-review for high-volume default use because modality billing and index policy need review.",
+        input_usd_per_million_tokens=0.20,
+        pricing_note=(
+            "Google Gemini API paid tier, standard mode. Text input price is cataloged; image/audio/video/PDF "
+            "units and gateway billing must be reviewed before broad default use."
+        ),
+        status="stable",
+        pricing_source_url="https://ai.google.dev/pricing",
+    ),
 )
 
 
@@ -264,6 +298,10 @@ def transcription_model() -> str:
     return _configured_model(getattr(settings, "app_ai_transcription_model", None), "scribe_v2")
 
 
+def embedding_model() -> str:
+    return _configured_model(getattr(settings, "app_ai_embedding_model", None), "gemini-embedding-001")
+
+
 def agentic_text_model() -> str:
     return _configured_model(getattr(settings, "app_ai_agentic_model", None), "gemini-3.1-flash-lite")
 
@@ -299,6 +337,8 @@ def task_default_model(task: str) -> str:
         return audio_model()
     if task in {"transcription", "transcribe", "speech-to-text", "stt"}:
         return transcription_model()
+    if task in {"embedding", "embeddings", "text-embedding", "rag-index", "source-index"}:
+        return embedding_model()
     return balanced_text_model()
 
 
@@ -324,6 +364,7 @@ def resolve_model(model: str | None, *, task: str = "fast") -> str:
         "auto-video": task_default_model("video"),
         "auto-audio": task_default_model("audio"),
         "auto-transcription": task_default_model("transcription"),
+        "auto-embedding": task_default_model("embedding"),
         "auto-agentic": task_default_model("agentic"),
         "auto-grounded-research": task_default_model("grounded-research"),
         "cheap": cheap_text_model(),
@@ -370,6 +411,7 @@ def catalog_for_api() -> list[dict[str, object]]:
         "video": task_default_model("video"),
         "audio": task_default_model("audio"),
         "transcription": task_default_model("transcription"),
+        "embedding": task_default_model("embedding"),
         "agentic": task_default_model("agentic"),
         "grounded-research": task_default_model("grounded-research"),
     }

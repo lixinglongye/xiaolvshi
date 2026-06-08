@@ -1,3 +1,5 @@
+import re
+
 from services.model_gateway_probe_evaluation import model_gateway_probe_evaluation_registry
 from services.model_ops_readiness import MODEL_OPS_COMPONENTS, ModelOpsReadinessService
 
@@ -206,6 +208,32 @@ def test_model_ops_readiness_warns_on_gemini_official_family_roadmap_review():
     assert drilldown["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_gemini_embedding_preflight_review():
+    signals = _signals("pass")
+    signals["gemini_embedding_cheap_first_preflight"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 2, "fail_count": 0, "multimodal_review_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": [
+            "multimodal-embedding-review-boundary",
+            "embedding-route-preflight-inventory",
+        ],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gemini-embedding-cheap-first-preflight" in result["warning_check_ids"]
+    assert "gemini-embedding-cheap-first-preflight" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "gemini_embedding_cheap_first_preflight"
+    assert drilldown["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in drilldown["next_action"].lower()
+    assert "test_model_ops_gemini_embedding_cheap_first_preflight.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
@@ -373,7 +401,7 @@ def test_model_ops_route_includes_readiness():
         row["privacy_boundary"]["credentials_included"] is False
         for row in payload["model_ops_readiness"]["warning_drilldown"]
     )
-    assert "sk-" not in str(payload["model_ops_readiness"]["warning_drilldown"])
+    assert not re.search(r"sk-[A-Za-z0-9]{20,}", str(payload["model_ops_readiness"]["warning_drilldown"]))
     assert payload["model_ops_readiness"]["checks"]
     assert "price_refresh_monitor" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
@@ -388,6 +416,9 @@ def test_model_ops_route_includes_readiness():
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
     assert "gemini_official_model_family_roadmap_evidence" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert "gemini_embedding_cheap_first_preflight" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
     assert "catalog_candidate_impact_replay" in {
@@ -452,9 +483,12 @@ def test_model_ops_route_includes_readiness():
     assert "gentxt_routing_guard" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
-    assert payload["gemini_cheap_first_coverage_gate"]["summary"]["coverage_row_count"] == 8
-    assert payload["gemini_cheap_first_route_preflight"]["summary"]["route_task_count"] == 10
+    assert payload["gemini_cheap_first_coverage_gate"]["summary"]["coverage_row_count"] == 9
+    assert payload["gemini_cheap_first_route_preflight"]["summary"]["route_task_count"] == 11
     assert payload["gemini_cheap_first_route_preflight"]["summary"]["gateway_called"] is False
+    assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["cheap_first_default_model"] == "gemini-embedding-001"
+    assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["text_embedding_ready_count"] == 1
+    assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["gateway_called"] is False
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["endpoint_count"] == 7
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 7
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 0

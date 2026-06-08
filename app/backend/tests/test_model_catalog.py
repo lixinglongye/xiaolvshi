@@ -12,6 +12,7 @@ def test_resolve_model_prefers_cost_first_aliases(monkeypatch):
     monkeypatch.setattr(model_catalog.settings, "app_ai_video_model", "video-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_audio_model", "audio-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_transcription_model", "transcription-model", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_embedding_model", "embedding-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_agentic_model", "agentic-model", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_grounded_research_model", "grounded-model", raising=False)
 
@@ -33,6 +34,8 @@ def test_resolve_model_prefers_cost_first_aliases(monkeypatch):
     assert model_catalog.resolve_model("auto-audio", task="fast") == "audio-model"
     assert model_catalog.resolve_model(None, task="transcription") == "transcription-model"
     assert model_catalog.resolve_model("auto-transcription", task="fast") == "transcription-model"
+    assert model_catalog.resolve_model(None, task="embedding") == "embedding-model"
+    assert model_catalog.resolve_model("auto-embedding", task="fast") == "embedding-model"
 
 
 def test_resolve_model_passes_gateway_specific_names_through():
@@ -49,6 +52,8 @@ def test_canonical_model_id_recognizes_gateway_prefixes():
     assert model_catalog.canonical_model_id("publishers/google/models/gemini-3-flash-preview") == "gemini-3-flash-preview"
     assert model_catalog.canonical_model_id("models/gemini-3.1-pro") == "gemini-3.1-pro"
     assert model_catalog.canonical_model_id("yibu/gemini-3.1-flash-image") == "gemini-3.1-flash-image"
+    assert model_catalog.canonical_model_id("models/gemini-embedding-001") == "gemini-embedding-001"
+    assert model_catalog.canonical_model_id("google/gemini-embedding-2") == "gemini-embedding-2"
     assert model_catalog.canonical_model_id("provider-custom-model") is None
 
 
@@ -68,6 +73,7 @@ def test_catalog_marks_configured_roles(monkeypatch):
     monkeypatch.setattr(model_catalog.settings, "app_ai_review_model", "gemini-2.5-flash", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_pdf_model", "gemini-2.5-pro", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_image_model", "gemini-2.5-flash-image", raising=False)
+    monkeypatch.setattr(model_catalog.settings, "app_ai_embedding_model", "gemini-embedding-001", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_agentic_model", "gemini-3.1-flash-lite", raising=False)
     monkeypatch.setattr(model_catalog.settings, "app_ai_grounded_research_model", "gemini-3.1-flash-lite", raising=False)
 
@@ -78,6 +84,7 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "review" in catalog["gemini-2.5-flash"]["configured_roles"]
     assert "pdf" in catalog["gemini-2.5-pro"]["configured_roles"]
     assert "image" in catalog["gemini-2.5-flash-image"]["configured_roles"]
+    assert "embedding" in catalog["gemini-embedding-001"]["configured_roles"]
     assert "agentic" in catalog["gemini-3.1-flash-lite"]["configured_roles"]
     assert "grounded-research" in catalog["gemini-3.1-flash-lite"]["configured_roles"]
     assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
@@ -92,6 +99,12 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
     assert catalog["gemini-3.1-flash-image"]["pricing"]["output_usd_per_image"] == 0.067
     assert "image-edit" in catalog["gemini-3.1-flash-image"]["capabilities"]
+    assert catalog["gemini-embedding-001"]["cost_tier"] == "lowest"
+    assert catalog["gemini-embedding-001"]["pricing"]["input_usd_per_million_tokens"] == 0.15
+    assert "embedding" in catalog["gemini-embedding-001"]["capabilities"]
+    assert catalog["gemini-embedding-2"]["cost_tier"] == "low"
+    assert catalog["gemini-embedding-2"]["pricing"]["input_usd_per_million_tokens"] == 0.20
+    assert "multimodal" in catalog["gemini-embedding-2"]["capabilities"]
     assert catalog["gemini-2.5-flash-lite"]["context_window_tokens"] >= 1_000_000
 
 
@@ -115,5 +128,7 @@ def test_estimate_token_cost_uses_catalog_pricing():
     assert model_catalog.estimate_token_cost_usd("newapi/google/gemini-3-flash-preview", 1_000_000, 500_000) == 2.0
     assert model_catalog.estimate_token_cost_usd("gemini-3.5-flash", 1_000_000, 500_000) is None
     assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) is None
+    assert model_catalog.estimate_token_cost_usd("gemini-embedding-001", 1_000_000, 0) == 0.15
+    assert model_catalog.estimate_token_cost_usd("google/gemini-embedding-2", 1_000_000, 0) == 0.20
     assert model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", -100, -100) == 0.0
     assert model_catalog.estimate_token_cost_usd("provider-custom-model", 100, 100) is None

@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current ModelOps Gemini embedding slice:
+`modelops-gemini-embedding-cheap-first-preflight` adds required metadata-only
+embedding default evidence in the AIHub ModelOps payload and UI. It records
+`APP_AI_EMBEDDING_MODEL=gemini-embedding-001`, `auto-embedding` alias coverage,
+local catalog pricing, cheap-first embedding budget policy, and multimodal
+`gemini-embedding-2` review routing. Text embeddings stay on
+`gemini-embedding-001`; multimodal `gemini-embedding-2` remains review-required
+before image, audio, video, PDF, or source-index use. It does not call
+providers, gateways, app AI endpoints, models, or the network; write
+configuration; change defaults; write indexes; shift traffic; or return source
+text, raw legal text, source chunks, embedding vectors, request bodies, response
+bodies, headers, prompts, raw payloads, model outputs, gateway responses,
+emails, credentials, or user identifiers.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

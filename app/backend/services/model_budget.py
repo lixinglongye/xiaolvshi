@@ -71,6 +71,11 @@ TASK_GROUPS: dict[str, dict[str, Any]] = {
         "max_cost_tier": "premium",
         "reason": "Speech-to-text routes through explicit transcription defaults; audio duration billing must be reviewed separately.",
     },
+    "embedding": {
+        "budget_mode": "cheap-first-embedding",
+        "max_cost_tier": "lowest",
+        "reason": "Legal RAG indexing should start with the cheapest stable text embedding model; multimodal embedding requires explicit review.",
+    },
 }
 
 COST_TIER_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3}
@@ -124,6 +129,8 @@ def normalize_budget_task(task: str | None) -> str:
         return "audio"
     if value in {"transcribe", "speech-to-text", "stt"}:
         return "transcription"
+    if value in {"embeddings", "text-embedding", "rag-index", "source-index"}:
+        return "embedding"
     if value in {"grounded_research", "research", "rag-research"}:
         return "grounded-research"
     if value in {"agentic-routing", "workflow-planning"}:
@@ -145,7 +152,7 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
     requires_operator_review = (
         premium_requires_review
         and cost_tier == "premium"
-        and normalized_task not in {"pdf", "image", "video", "audio", "transcription"}
+        and normalized_task not in {"pdf", "image", "video", "audio", "transcription", "embedding"}
     )
 
     reason = str(policy["reason"])
@@ -184,6 +191,7 @@ def budget_policy_for_api() -> dict[str, Any]:
             "video",
             "audio",
             "transcription",
+            "embedding",
         )
     ]
     return {

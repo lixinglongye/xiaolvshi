@@ -1821,6 +1821,99 @@ export type ModelOpsAIHubMediaSpeechDefaultCatalogGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiEmbeddingCheapFirstPreflightSourceRow = {
+  id: string;
+  title: string;
+  url: string;
+  tracked_signal: string;
+};
+
+export type ModelOpsGeminiEmbeddingCheapFirstPreflightEmbeddingRow = {
+  model_id: string;
+  canonical_model?: string | null;
+  route_role: string;
+  input_scope: string;
+  model_status: string;
+  cost_tier: string;
+  latency_tier: string;
+  capabilities: string[];
+  best_for: string[];
+  input_usd_per_million_tokens?: number | null;
+  batch_input_usd_per_million_tokens?: number | null;
+  pricing_status: string;
+  budget_mode: string;
+  max_cost_tier: string;
+  is_known_model: boolean;
+  is_over_budget: boolean;
+  requires_operator_review: boolean;
+  default_allowed_without_review: boolean;
+  recommended_policy: string;
+  release_action: string;
+};
+
+export type ModelOpsGeminiEmbeddingCheapFirstPreflightRouteRow = {
+  id: string;
+  task: string;
+  display_name: string;
+  route_mode: string;
+  default_model: string;
+  canonical_model?: string | null;
+  budget_mode: string;
+  cost_tier: string;
+  expected_inputs: string[];
+  release_policy: string;
+  route_status: string;
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsGeminiEmbeddingCheapFirstPreflightCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsGeminiEmbeddingCheapFirstPreflight = {
+  id: 'modelops-gemini-embedding-cheap-first-preflight' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls?: string[];
+  };
+  summary: {
+    official_source_count: number;
+    embedding_model_count: number;
+    route_row_count: number;
+    cheap_first_default_model: string;
+    cheap_first_default_canonical_model?: string | null;
+    text_embedding_ready_count: number;
+    multimodal_review_count: number;
+    over_budget_candidate_count: number;
+    default_allowed_model_count: number;
+    review_route_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    model_called: boolean;
+    index_written: boolean;
+    default_changed: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: ModelOpsGeminiEmbeddingCheapFirstPreflightSourceRow[];
+  embedding_rows: ModelOpsGeminiEmbeddingCheapFirstPreflightEmbeddingRow[];
+  route_rows: ModelOpsGeminiEmbeddingCheapFirstPreflightRouteRow[];
+  checks: ModelOpsGeminiEmbeddingCheapFirstPreflightCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type ModelOpsGenTxtRoutingGuardMediaRow = {
   id: string;
   requested_task: string;
@@ -4103,6 +4196,7 @@ export type ModelOpsResponse = {
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
   gemini_official_model_family_roadmap_evidence?: ModelOpsGeminiOfficialModelFamilyRoadmapEvidence;
+  gemini_embedding_cheap_first_preflight?: ModelOpsGeminiEmbeddingCheapFirstPreflight;
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
@@ -4194,6 +4288,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     coverage_matrix?: unknown;
     default_rows?: unknown;
     review_items?: unknown;
+    embedding_rows?: unknown;
+    route_rows?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
     fixture_run_items?: unknown;
@@ -4237,6 +4333,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.roadmap_items) && Array.isArray(payload.cheap_first_evidence_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.default_rows) && Array.isArray(payload.review_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.embedding_rows) && Array.isArray(payload.route_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
@@ -4485,6 +4582,13 @@ export async function getModelOpsAIHubEndpointRouteCoverageGate(): Promise<Model
 export async function getModelOpsAIHubMediaSpeechDefaultCatalogGate(): Promise<ModelOpsAIHubMediaSpeechDefaultCatalogGate> {
   return invokeModelOpsApi<ModelOpsAIHubMediaSpeechDefaultCatalogGate>({
     url: '/api/v1/aihub/models/aihub-media-speech-default-catalog-gate',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiEmbeddingCheapFirstPreflight(): Promise<ModelOpsGeminiEmbeddingCheapFirstPreflight> {
+  return invokeModelOpsApi<ModelOpsGeminiEmbeddingCheapFirstPreflight>({
+    url: '/api/v1/aihub/models/gemini-embedding-cheap-first-preflight',
     method: 'GET',
   });
 }

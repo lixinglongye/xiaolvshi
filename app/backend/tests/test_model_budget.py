@@ -98,6 +98,25 @@ def test_budget_policy_uses_low_cost_agentic_and_grounded_defaults(monkeypatch):
     assert not grounded.is_over_budget
 
 
+def test_budget_policy_uses_cheap_first_embedding_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_embedding_model", "gemini-embedding-001", raising=False)
+
+    text_embedding = model_budget.model_budget_decision(None, task="text-embedding")
+    multimodal_embedding = model_budget.model_budget_decision("gemini-embedding-2", task="rag-index")
+
+    assert text_embedding.task == "embedding"
+    assert text_embedding.resolved_model == "gemini-embedding-001"
+    assert text_embedding.budget_mode == "cheap-first-embedding"
+    assert text_embedding.cost_tier == "lowest"
+    assert text_embedding.max_cost_tier == "lowest"
+    assert not text_embedding.is_over_budget
+    assert multimodal_embedding.task == "embedding"
+    assert multimodal_embedding.resolved_model == "gemini-embedding-2"
+    assert multimodal_embedding.cost_tier == "low"
+    assert multimodal_embedding.is_over_budget
+    assert multimodal_embedding.recommended_model == "gemini-embedding-001"
+
+
 def test_budget_policy_for_api_lists_all_core_tasks():
     payload = model_budget.budget_policy_for_api()
     tasks = {item["task"] for item in payload["task_decisions"]}
@@ -114,5 +133,6 @@ def test_budget_policy_for_api_lists_all_core_tasks():
         "video",
         "audio",
         "transcription",
+        "embedding",
     }
     assert payload["premium_requires_review"] in {True, False}

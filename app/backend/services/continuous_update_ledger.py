@@ -164,6 +164,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_ops_gemini_cheap_first_route_preflight.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_aihub_runtime_routing.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_ops_aihub_endpoint_route_coverage_gate.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_model_catalog.py tests/test_model_budget.py tests/test_model_configuration_audit.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_gateway_request_compatibility_gate.py tests/test_model_request_policy.py tests/test_model_reasoning_policy.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_gateway_connection_profile.py tests/test_model_gateway_health_plan.py tests/test_aihub_runtime_routing.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2327,6 +2328,59 @@ class ContinuousUpdateLedgerService:
                     "modelops-gemini-cheap-first-route-preflight",
                     "model-ops-readiness",
                     "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="modelops-gemini-embedding-cheap-first-preflight",
+                title="ModelOps Gemini embedding cheap-first preflight",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds required metadata-only Gemini embedding cheap-first preflight evidence at "
+                    "/api/v1/aihub/models/gemini-embedding-cheap-first-preflight for "
+                    "APP_AI_EMBEDDING_MODEL=gemini-embedding-001, auto-embedding aliases, local catalog "
+                    "pricing, cheap-first embedding budget policy, and multimodal gemini-embedding-2 review "
+                    "routing. Text embedding defaults stay on gemini-embedding-001 while multimodal "
+                    "gemini-embedding-2 remains review-required before image, audio, video, PDF, or "
+                    "source-index use, without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network "
+                    "calls, configuration writes, default changes, index writes, traffic shifts, source text, "
+                    "raw legal text, source chunks, embedding vectors, request bodies, response bodies, "
+                    "headers, prompts, raw payloads, model outputs, gateway responses, credentials, emails, "
+                    "or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_gemini_embedding_cheap_first_preflight.py",
+                    "app/backend/tests/test_model_ops_gemini_embedding_cheap_first_preflight.py",
+                    "app/backend/services/model_catalog.py",
+                    "app/backend/services/model_budget.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_GEMINI_EMBEDDING_CHEAP_FIRST_PREFLIGHT.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "modelops-gemini-embedding-cheap-first-preflight",
+                    "modelops-aihub-media-speech-default-catalog-gate",
+                    "modelops-gemini-official-model-family-roadmap-evidence",
+                    "modelops-gemini-cheap-first-route-preflight",
+                    "model-ops-readiness",
+                    "frontend-ui-regression-gate",
+                    "frontend-typecheck",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),

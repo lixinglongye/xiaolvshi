@@ -460,6 +460,24 @@ defaults, shift traffic, or include request/response bodies, headers, prompts,
 raw payloads, audio, transcripts, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
 
+## Gemini Embedding Cheap-First Preflight
+
+`modelops-gemini-embedding-cheap-first-preflight` is the required
+metadata-only release gate for embedding default review. It pins the text
+embedding default to `APP_AI_EMBEDDING_MODEL=gemini-embedding-001`, exposes
+`auto-embedding` alias coverage, and keeps local catalog pricing and the
+cheap-first embedding budget policy visible at
+`/api/v1/aihub/models/gemini-embedding-cheap-first-preflight`.
+
+`gemini-embedding-001` is the cheap-first text embedding path. Multimodal
+`gemini-embedding-2` remains review-required before any image, audio, video,
+PDF, or source-index route can use it. The preflight does not call NewAPI,
+Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network. It
+does not write configuration, change defaults, write indexes, shift traffic, or
+include source text, raw legal text, source chunks, embedding vectors,
+request/response bodies, headers, prompts, raw payloads, model outputs, gateway
+responses, credentials, emails, or user identifiers.
+
 ## Default Recommendation Readiness Binding
 
 `model-ops-default-recommendation-readiness-binding` promotes

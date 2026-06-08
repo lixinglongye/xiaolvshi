@@ -81,6 +81,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "gemini_official_model_family_roadmap_evidence",
     ),
     ReadinessComponent(
+        "gemini-embedding-cheap-first-preflight",
+        "Gemini embedding cheap-first preflight",
+        "configuration",
+        "gemini_embedding_cheap_first_preflight",
+    ),
+    ReadinessComponent(
         "gateway-probe-evaluation",
         "Gateway probe evaluation",
         "manual_evidence",
@@ -524,6 +530,7 @@ class ModelOpsReadinessService:
             "gemini_newapi_alias_capability_coverage",
             "gemini_cheap_first_route_preflight",
             "gemini_official_model_family_roadmap_evidence",
+            "gemini_embedding_cheap_first_preflight",
             "catalog_candidate_patch_plan",
             "catalog_candidate_impact_replay",
             "price_refresh_monitor",
@@ -585,7 +592,7 @@ class ModelOpsReadinessService:
         if warning_category == "canary_evidence_gap":
             return "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py tests/test_model_ops_cheap_first_canary_promotion_decision.py tests/test_model_ops_readiness.py -q"
         if warning_category == "catalog_pricing_review":
-            return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
         if warning_category == "default_recommendation_review":
             return "python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py tests/test_model_ops_readiness.py -q"
         if warning_category == "runtime_telemetry_review":
