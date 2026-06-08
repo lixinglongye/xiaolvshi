@@ -920,17 +920,27 @@ start_services_with_retry() {
         export ENVIRONMENT=dev
         log_info "Ensured IS_LAMBDA=$IS_LAMBDA and ENVIRONMENT=$ENVIRONMENT for local development"
 
-        # Start backend service. Exclude local runtime output from reload watches;
-        # otherwise log writes under app/backend/logs can trigger reload loops.
+        # Start backend service. Exclude local runtime/test output from reload
+        # watches; otherwise log writes and pytest cache updates can interrupt
+        # the backend while the Vite proxy is serving the browser.
         log_info "Starting Backend service...$BACKEND_PORT"
         uvicorn main:app \
             --host 0.0.0.0 \
             --port $BACKEND_PORT \
             --reload \
             --reload-exclude 'logs/*' \
+            --reload-exclude 'logs/**' \
             --reload-exclude '*.log' \
             --reload-exclude '__pycache__/*' \
-            --reload-exclude '.pytest_cache/*' &
+            --reload-exclude '__pycache__/**' \
+            --reload-exclude 'tests/__pycache__/*' \
+            --reload-exclude 'tests/__pycache__/**' \
+            --reload-exclude 'tests/.pytest_cache/*' \
+            --reload-exclude 'tests/.pytest_cache/**' \
+            --reload-exclude 'tests/*' \
+            --reload-exclude 'tests/**' \
+            --reload-exclude '.pytest_cache/*' \
+            --reload-exclude '.pytest_cache/**' &
         BACKEND_RELOADER_PID=$!  # Parent process (reloader)
 
         # Wait for backend to start

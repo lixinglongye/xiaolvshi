@@ -33,6 +33,12 @@ def test_user_need_benchmark_coverage_maps_high_priority_needs_to_fixtures():
     assert "legal-review-balanced" in rows["cheap-first-review-routing"]["linked_calibration_task_ids"]
     assert rows["cheap-first-review-routing"]["calibration_status"] == "pass"
     assert rows["cheap-first-review-routing"]["calibration_decisions"]["fast-intake-preflight"] == "keep_cheap_first_default"
+    assert rows["feedback-to-roadmap-loop"]["calibration_status"] == "pass"
+    assert "feedback-roadmap-classification" in rows["feedback-to-roadmap-loop"]["linked_calibration_task_ids"]
+    assert (
+        rows["feedback-to-roadmap-loop"]["calibration_decisions"]["feedback-roadmap-classification"]
+        == "keep_cheap_first_default"
+    )
     assert "legalbench" in rows["traceable-legal-review"]["linked_public_source_ids"]
     assert "legalbench-rag" in rows["traceable-legal-review"]["linked_public_source_ids"]
     assert "lexeval" in rows["traceable-legal-review"]["linked_public_source_ids"]

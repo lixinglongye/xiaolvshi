@@ -497,6 +497,23 @@ class GeminiNewapiCheapFirstCalibrationService:
                 import_policy="Metadata only; use local synthetic classification checks by default.",
             ),
             CalibrationResearchMapping(
+                source_id="frugalgpt",
+                title="FrugalGPT cost-quality cascade",
+                url="https://arxiv.org/abs/2305.05176",
+                task_signal="Cost-quality cascades keep low-risk triage on cheaper models before selective escalation.",
+                calibration_task_ids=(
+                    "fast-intake-preflight",
+                    "classification-routing",
+                    "feedback-roadmap-classification",
+                ),
+                local_fixture_ids=(),
+                policy_impact=(
+                    "Keep feedback triage and roadmap clustering on cheap-first Gemini routes; "
+                    "escalate only when triage labels fail release review."
+                ),
+                import_policy="Metadata only; do not import tickets, user feedback text, or model outputs into calibration evidence.",
+            ),
+            CalibrationResearchMapping(
                 source_id="coliee",
                 title="COLIEE legal information retrieval and entailment competition",
                 url="https://sites.ualberta.ca/~rabelo/COLIEE2024/",
@@ -541,6 +558,17 @@ class GeminiNewapiCheapFirstCalibrationService:
                 quality_floor=80,
                 release_gate_links=("gemini-newapi-selector-replay", "model-task-inference"),
                 user_need_ids=("cheap-first-review-routing", "robust-extraction-quality"),
+            ),
+            CalibrationTask(
+                id="feedback-roadmap-classification",
+                task="classification",
+                product_area="feedback_roadmap_triage",
+                fixture_ids=(),
+                expected_decision="cheap_first_ready",
+                max_cost_tier="lowest",
+                quality_floor=80,
+                release_gate_links=("feedback_triage", "user-need-gemini-route-coverage", "gemini-newapi-selector-replay"),
+                user_need_ids=("feedback-to-roadmap-loop",),
             ),
             CalibrationTask(
                 id="ocr-assist",

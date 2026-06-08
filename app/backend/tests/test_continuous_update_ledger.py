@@ -439,6 +439,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-public-benchmark-license-gate" in completed_ids
     assert "model-route-legal-benchmark-risk-queue" in completed_ids
     assert "modelops-legal-benchmark-risk-bridge" in completed_ids
+    assert "local-dev-reload-stability-guard" in completed_ids
+    assert "feedback-roadmap-cheap-first-route-coverage" in completed_ids
+    assert "local-dev-reload-stability-guard" not in queue_ids
+    assert "feedback-roadmap-cheap-first-route-coverage" not in queue_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
     assert "legal-rag-retrieval-diagnostics-gate" in completed_ids
@@ -465,6 +469,41 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "privacy-retention-rules" in completed_ids
     assert "release-claim-compliance" in completed_ids
     assert "case-export-readiness" in completed_ids
+    local_dev_reload_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "local-dev-reload-stability-guard"
+    )
+    assert local_dev_reload_entry["size"] == "medium"
+    assert local_dev_reload_entry["status"] == "shipped"
+    assert "backend reload watches exclude logs" in local_dev_reload_entry["impact"]
+    assert "Vite proxy" in local_dev_reload_entry["impact"]
+    assert "127.0.0.1:3000" in local_dev_reload_entry["impact"]
+    assert "business routes" in local_dev_reload_entry["impact"]
+    assert "provider calls" in local_dev_reload_entry["impact"]
+    assert "credentials" in local_dev_reload_entry["impact"]
+    assert "app/start_app_v2.sh" in local_dev_reload_entry["evidence_paths"]
+    assert "app/backend/tests/test_local_dev_startup_reload_guard.py" in local_dev_reload_entry["evidence_paths"]
+    assert "frontend-local-run-review-form" in local_dev_reload_entry["release_gate_links"]
+    assert "runtime-router-discovery-smoke" in local_dev_reload_entry["release_gate_links"]
+    assert "product-readiness" in local_dev_reload_entry["user_need_ids"]
+    feedback_route_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "feedback-roadmap-cheap-first-route-coverage"
+    )
+    assert feedback_route_entry["size"] == "medium"
+    assert feedback_route_entry["status"] == "shipped"
+    assert "feedback-to-roadmap cheap-first classification coverage" in feedback_route_entry["impact"]
+    assert "FrugalGPT cost-quality mapping" in feedback_route_entry["impact"]
+    assert "blocked to review-required" in feedback_route_entry["impact"]
+    assert "default-route changes" in feedback_route_entry["impact"]
+    assert "raw feedback text" in feedback_route_entry["impact"]
+    assert "app/backend/services/gemini_newapi_cheap_first_calibration.py" in feedback_route_entry["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in feedback_route_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_CHEAP_FIRST_CALIBRATION.md" in feedback_route_entry["evidence_paths"]
+    assert "feedback_triage" in feedback_route_entry["release_gate_links"]
+    assert "gemini-newapi-cheap-first-calibration" in feedback_route_entry["release_gate_links"]
+    assert "feedback-to-roadmap-loop" in feedback_route_entry["user_need_ids"]
+    assert "cheap-first-review-routing" in feedback_route_entry["user_need_ids"]
     deep_review_export_gate_entry = next(
         entry
         for entry in ledger["completed_updates"]

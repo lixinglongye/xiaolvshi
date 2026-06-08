@@ -19,6 +19,7 @@ NEED_ROUTE_HINTS: dict[str, tuple[str, ...]] = {
     "robust-extraction-quality": ("classification", "ocr", "pdf"),
     "prompt-injection-resilience": ("fast", "routing", "classification"),
     "plain-language-actionability": ("review", "document-generation"),
+    "feedback-to-roadmap-loop": ("fast", "classification"),
 }
 
 

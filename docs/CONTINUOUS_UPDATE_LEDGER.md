@@ -266,6 +266,22 @@ NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls, configuration writes,
 default route changes, traffic shifts, raw legal text, prompts, route payloads,
 model outputs, credentials, emails, or user identifiers.
 
+Local dev stability slice: `local-dev-reload-stability-guard` hardens
+`start_app_v2.sh` so backend reload watches exclude logs, pycache, pytest cache,
+and test-output churn. This keeps the Vite proxy at `127.0.0.1:3000` from
+falling into connection-refused or browser 500 loops while local tests are
+running, without changing business routes, auth policy, provider calls, model
+defaults, traffic, request bodies, model outputs, or credentials.
+
+Feedback roadmap routing slice:
+`feedback-roadmap-cheap-first-route-coverage` links the
+`feedback-to-roadmap-loop` user need to a lowest-tier Gemini classification
+calibration task and FrugalGPT cost-quality mapping. The route row now becomes
+review-required instead of blocked while staying metadata-only: no public
+dataset downloads, benchmark imports, provider/gateway/network calls,
+configuration writes, default-route changes, traffic shifts, raw feedback text,
+prompts, payloads, model outputs, credentials, emails, or user identifiers.
+
 Current Legal RAG authority slice: `legal-rag-authority-citation-gate` adds a
 metadata-only authority and citation gate for selected-source ids, authority
 tiers, jurisdiction/date/freshness metadata, and citation-map source ids. It

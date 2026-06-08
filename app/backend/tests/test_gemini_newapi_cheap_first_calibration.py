@@ -15,8 +15,8 @@ def test_cheap_first_calibration_keeps_low_cost_defaults_without_newapi_calls():
     mappings = {row["source_id"]: row for row in result["external_research_mappings"]}
 
     assert result["status"] == "pass"
-    assert result["summary"]["task_count"] >= 6
-    assert result["summary"]["cheap_first_retained_count"] >= 3
+    assert result["summary"]["task_count"] >= 7
+    assert result["summary"]["cheap_first_retained_count"] >= 4
     assert result["summary"]["balanced_precheck_count"] >= 2
     assert result["summary"]["premium_exception_count"] == 1
     assert result["summary"]["cost_guardrail_status"] == "pass"
@@ -27,13 +27,23 @@ def test_cheap_first_calibration_keeps_low_cost_defaults_without_newapi_calls():
     assert result["summary"]["newapi_called"] is False
     assert result["summary"]["raw_payload_echoed"] is False
     assert rows["fast-intake-preflight"]["calibration_decision"] == "keep_cheap_first_default"
+    assert rows["feedback-roadmap-classification"]["calibration_decision"] == "keep_cheap_first_default"
+    assert rows["feedback-roadmap-classification"]["product_area"] == "feedback_roadmap_triage"
+    assert "feedback-to-roadmap-loop" in {
+        item
+        for task in result["calibration_tasks"]
+        if task["id"] == "feedback-roadmap-classification"
+        for item in task["user_need_ids"]
+    }
     assert rows["legal-review-balanced"]["calibration_decision"] == "keep_balanced_after_precheck"
     assert rows["large-pdf-premium-exception"]["calibration_decision"] == "require_operator_premium_exception"
     assert "lexglue" in rows["classification-routing"]["research_source_ids"]
+    assert "frugalgpt" in rows["feedback-roadmap-classification"]["research_source_ids"]
     assert "doclaynet" in rows["ocr-assist"]["research_source_ids"]
     assert "legalbench" in rows["legal-review-balanced"]["research_source_ids"]
     assert "coliee" in rows["large-pdf-premium-exception"]["research_source_ids"]
     assert mappings["cuad"]["import_policy"].startswith("Metadata only")
+    assert "feedback-roadmap-classification" in mappings["frugalgpt"]["calibration_task_ids"]
     assert "calibration-pass" in rows["ocr-assist"]["reason_codes"]
     assert not SECRET_PATTERN.search(str(result))
 

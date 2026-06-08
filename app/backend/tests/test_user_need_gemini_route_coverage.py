@@ -8,14 +8,15 @@ def test_user_need_gemini_route_coverage_maps_needs_to_route_preflight():
     rows = {row["need_id"]: row for row in coverage["coverage_rows"]}
 
     assert coverage["id"] == "user-need-gemini-route-coverage"
-    assert coverage["status"] in {"review_required", "blocked"}
+    assert coverage["status"] == "review_required"
     assert coverage["summary"]["need_count"] >= 7
     assert coverage["summary"]["high_priority_need_count"] >= 4
     assert coverage["summary"]["source_route_preflight_status"] == "review_required"
     assert coverage["summary"]["source_calibration_status"] == "pass"
-    assert coverage["summary"]["route_task_count"] == 10
+    assert coverage["summary"]["route_task_count"] == 11
     assert coverage["summary"]["official_source_count"] == 4
     assert coverage["summary"]["cheap_first_route_need_count"] >= 4
+    assert coverage["summary"]["blocked_need_count"] == 0
     assert coverage["summary"]["high_priority_route_protected_count"] >= 3
     assert coverage["summary"]["configuration_written"] is False
 
@@ -48,9 +49,14 @@ def test_user_need_gemini_route_coverage_maps_needs_to_route_preflight():
     assert "public_benchmark_license_review_required" in traceable["review_reason_codes"]
 
     feedback = rows["feedback-to-roadmap-loop"]
-    assert feedback["route_coverage_status"] == "blocked"
-    assert feedback["route_task_source"] == "unmapped"
-    assert "no_gemini_route_task_mapped" in feedback["blocked_reason_codes"]
+    assert feedback["route_coverage_status"] == "review_required"
+    assert feedback["route_task_source"] == "cheap_first_calibration"
+    assert feedback["high_frequency_route_ready"] is True
+    assert feedback["linked_calibration_task_ids"] == ["feedback-roadmap-classification"]
+    assert "classification" in feedback["linked_route_tasks"]
+    assert "gemini-2.5-flash-lite" in feedback["linked_default_models"]
+    assert feedback["blocked_reason_codes"] == []
+    assert "benchmark_coverage_not_complete" in feedback["review_reason_codes"]
     assert "high_priority_route_unmapped" not in feedback["blocked_reason_codes"]
 
 

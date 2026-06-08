@@ -15,6 +15,8 @@ metadata-only mappings include:
 - LegalBench for multi-task legal reasoning coverage.
 - CUAD for contract clause extraction and contract review sampling.
 - LexGLUE for legal classification and CaseHOLD-style routing signals.
+- FrugalGPT for cost-quality cascades that keep low-risk triage and feedback
+  clustering on cheaper models before selective escalation.
 - COLIEE for legal retrieval, entailment, and cited-support evaluation signals.
 - DocLayNet for document layout and OCR/PDF precheck signals.
 
@@ -66,6 +68,9 @@ The service emits one row for each calibrated task family:
 
 - `fast`: keep a lowest-tier cheap-first default.
 - `classification`: keep a lowest-tier cheap-first default.
+- `feedback-roadmap-classification`: keep feedback triage and roadmap clustering
+  on the cheap-first classification route while benchmark coverage remains a
+  separate review item.
 - `ocr`: keep a lowest-tier cheap-first default when fixture coverage passes.
 - `review`: keep balanced Flash only after a cheap precheck.
 - `document-generation`: keep balanced Flash only after a cheap precheck.
