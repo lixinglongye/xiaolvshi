@@ -23,6 +23,12 @@ process.env.VITE_APP_TITLE = escapeHtmlAttr(process.env.VITE_APP_TITLE);
 process.env.VITE_APP_DESCRIPTION = escapeHtmlAttr(process.env.VITE_APP_DESCRIPTION);
 process.env.VITE_APP_LOGO_URL ??= process.env.OVERVIEW_LOGO_URL ?? '/favicon.svg';
 
+const backendProxyPort = process.env.BACKEND_PORT || '8000';
+const apiProxyTarget =
+  process.env.VITE_API_PROXY_TARGET ||
+  process.env.VITE_BACKEND_PROXY_TARGET ||
+  `http://127.0.0.1:${backendProxyPort}`;
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const blogPrerenderRoutes = command === 'build' ? getBlogRoutes() : [];
@@ -58,7 +64,7 @@ export default defineConfig(({ command }) => {
       port: parseInt(process.env.VITE_PORT || '3000'),
       proxy: {
         '/api': {
-          target: 'http://127.0.0.1:8000',
+          target: apiProxyTarget,
           changeOrigin: true,
         },
       },

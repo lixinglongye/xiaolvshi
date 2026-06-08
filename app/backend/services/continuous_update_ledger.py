@@ -5047,6 +5047,28 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("product-readiness", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="local-dev-dynamic-proxy-port-guard",
+                title="Local dev dynamic proxy port guard",
+                category="developer_experience",
+                size="medium",
+                status="shipped",
+                impact="Keeps the Vite development /api proxy aligned with the backend port selected by the local startup script, waits for the loopback frontend home page before reporting success, and prints an explicit loopback URL with the port so local browser sessions do not accidentally open bare 127.0.0.1 and see stale 500/proxy failures, without changing business routes, auth policy, model defaults, provider calls, traffic, raw request bodies, model outputs, or credentials.",
+                evidence_paths=(
+                    "app/frontend/vite.config.ts",
+                    "app/start_app_v2.sh",
+                    "app/backend/tests/test_local_dev_startup_reload_guard.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "local-dev-dynamic-proxy-port-guard",
+                    "local-dev-reload-stability-guard",
+                    "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("product-readiness", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="feedback-roadmap-cheap-first-route-coverage",
                 title="Feedback roadmap cheap-first route coverage",
                 category="user_research",

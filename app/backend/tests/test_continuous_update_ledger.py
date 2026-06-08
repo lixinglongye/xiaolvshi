@@ -442,8 +442,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-route-legal-benchmark-risk-queue" in completed_ids
     assert "modelops-legal-benchmark-risk-bridge" in completed_ids
     assert "local-dev-reload-stability-guard" in completed_ids
+    assert "local-dev-dynamic-proxy-port-guard" in completed_ids
     assert "feedback-roadmap-cheap-first-route-coverage" in completed_ids
     assert "local-dev-reload-stability-guard" not in queue_ids
+    assert "local-dev-dynamic-proxy-port-guard" not in queue_ids
     assert "feedback-roadmap-cheap-first-route-coverage" not in queue_ids
     assert "legal-benchmark-research-registry-ui" in completed_ids
     assert "legal-rag-abstention-escalation-gate" in completed_ids
@@ -487,6 +489,23 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "frontend-local-run-review-form" in local_dev_reload_entry["release_gate_links"]
     assert "runtime-router-discovery-smoke" in local_dev_reload_entry["release_gate_links"]
     assert "product-readiness" in local_dev_reload_entry["user_need_ids"]
+    local_dev_proxy_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "local-dev-dynamic-proxy-port-guard"
+    )
+    assert local_dev_proxy_entry["size"] == "medium"
+    assert local_dev_proxy_entry["status"] == "shipped"
+    assert "Vite development /api proxy" in local_dev_proxy_entry["impact"]
+    assert "backend port selected by the local startup script" in local_dev_proxy_entry["impact"]
+    assert "loopback frontend home page" in local_dev_proxy_entry["impact"]
+    assert "bare 127.0.0.1" in local_dev_proxy_entry["impact"]
+    assert "business routes" in local_dev_proxy_entry["impact"]
+    assert "model defaults" in local_dev_proxy_entry["impact"]
+    assert "credentials" in local_dev_proxy_entry["impact"]
+    assert "app/frontend/vite.config.ts" in local_dev_proxy_entry["evidence_paths"]
+    assert "app/start_app_v2.sh" in local_dev_proxy_entry["evidence_paths"]
+    assert "local-dev-dynamic-proxy-port-guard" in local_dev_proxy_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in local_dev_proxy_entry["release_gate_links"]
+    assert "reviewer-visibility" in local_dev_proxy_entry["user_need_ids"]
     feedback_route_entry = next(
         entry
         for entry in ledger["completed_updates"]

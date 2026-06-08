@@ -236,6 +236,34 @@ wait_for_backend_health() {
     return 1
 }
 
+# Wait for frontend home page to be ready on the loopback URL that users
+# normally open from a local browser.
+wait_for_frontend_home() {
+    local max_attempts=60
+    local attempt=1
+    local frontend_url="http://127.0.0.1:$FRONTEND_PORT/"
+
+    log_info "Waiting for frontend home page to be ready..."
+    log_info "Checking: $frontend_url"
+
+    while [ $attempt -le $max_attempts ]; do
+        if curl -f -s "$frontend_url" >/dev/null 2>&1; then
+            log_success "Frontend home page is ready"
+            return 0
+        fi
+
+        if [ $((attempt % 5)) -eq 0 ]; then
+            log_info "Still waiting for frontend home page... (attempt $attempt/$max_attempts)"
+        fi
+
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+
+    log_warning "Frontend home page did not become ready after $max_attempts attempts"
+    return 1
+}
+
 # Reset dirty signal to S2S API
 reset_dirty_signal() {
     local base_url=${S2S_JWT_BASE_URL:-"http://localhost:8686"}
@@ -983,6 +1011,14 @@ start_services_with_retry() {
             process_env_with_placeholders "$LOCAL_IP" "$BACKEND_PORT" "$FRONTEND_PORT" "$LOCAL_MODE"
         fi
 
+        # Vite reads this at startup. Keep the dev proxy aligned with the
+        # backend port selected above; otherwise /api requests can still hit
+        # stale 8000 and surface as browser 500/proxy failures.
+        export VITE_API_PROXY_TARGET="http://127.0.0.1:$BACKEND_PORT"
+        export VITE_BACKEND_PROXY_TARGET="$VITE_API_PROXY_TARGET"
+        export VITE_PORT="$FRONTEND_PORT"
+        log_info "Configured frontend API proxy target: $VITE_API_PROXY_TARGET"
+
         # Start frontend service
         log_info "Starting Frontend service...$FRONTEND_PORT"
         $PACKAGE_MANAGER dev --host "0.0.0.0" --port $FRONTEND_PORT &
@@ -1264,13 +1300,16 @@ main() {
     else
         # Wait for backend health endpoint to be ready before displaying success message
         wait_for_backend_health
-        
+        wait_for_frontend_home
+
         log_success "=== Application Started Successfully ==="
         echo "Backend URL:  http://$LOCAL_IP:$BACKEND_PORT"
         echo "Frontend URL: http://$LOCAL_IP:$FRONTEND_PORT"
+        echo "Frontend Loopback URL: http://127.0.0.1:$FRONTEND_PORT"
         echo "Backend Reloader PID:  $BACKEND_RELOADER_PID"
         echo "Frontend PID: $FRONTEND_PID"
         echo "API Documentation:      http://$LOCAL_IP:$BACKEND_PORT/docs"
+        echo "Open the frontend URL with the port. http://127.0.0.1/ without a port is not this Vite app."
         echo ""
         log_info "Press Ctrl+C to stop all services"
 

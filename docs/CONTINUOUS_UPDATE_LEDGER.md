@@ -1,5 +1,16 @@
 # Continuous Update Ledger
 
+Current local dev dynamic proxy slice:
+`local-dev-dynamic-proxy-port-guard` keeps the Vite development `/api` proxy
+aligned with the backend port selected by `app/start_app_v2.sh`. The startup
+script exports `VITE_API_PROXY_TARGET`, `VITE_BACKEND_PROXY_TARGET`, and
+`VITE_PORT` before starting Vite, waits for `http://127.0.0.1:<frontend-port>/`
+to answer, and prints the loopback frontend URL with the port. This reduces
+local browser 500/proxy failures caused by opening bare `http://127.0.0.1/` or
+by a stale hard-coded backend proxy target. It does not change business routes,
+auth policy, model defaults, provider calls, traffic, raw request bodies, model
+outputs, credentials, or user data.
+
 Current ModelOps Gemini embedding slice:
 `modelops-gemini-embedding-cheap-first-preflight` adds required metadata-only
 embedding default evidence in the AIHub ModelOps payload and UI. It records
