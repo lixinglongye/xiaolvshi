@@ -96,6 +96,7 @@ import {
   getOcrImportReadinessPolicy,
   getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
+  getGeminiNewApiCheapFirstPolicyEvidence,
   getGeminiNewApiModelAliasMatrixEvidence,
   getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
@@ -121,6 +122,7 @@ import {
   type FeedbackLifecyclePolicy,
   type FeedbackRoadmapCatalog,
   type FrontendUiRegressionGate,
+  type GeminiNewApiCheapFirstPolicy,
   type GeminiNewApiModelAliasMatrixEvidence,
   type GeminiNewApiModelSelectorEvidence,
   type GeminiNewApiSelectorReplayEvidence,
@@ -274,6 +276,12 @@ const statusClass: Record<string, string> = {
 const billingEntitlementGapTrackedSignals = [
   'stripe-webhook-signature-verification',
   'frontend-entitlement-state-messaging',
+] as const;
+
+const geminiCheapFirstPolicySignals = [
+  'gemini-flash-lite',
+  'no_premium_or_preview_high_frequency_default',
+  'unknown_gemini_like_needs_catalog_review',
 ] as const;
 
 function roleLabel(role?: string) {
@@ -749,6 +757,8 @@ function Inner() {
     useState<LegalBenchmarkFixtureCrosswalk | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
+  const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
+    useState<GeminiNewApiCheapFirstPolicy | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
     useState<GeminiNewApiModelSelectorEvidence | null>(null);
   const [geminiNewApiModelAliasMatrix, setGeminiNewApiModelAliasMatrix] =
@@ -1094,6 +1104,11 @@ function Inner() {
           label: 'Legal fixture model matrix',
           run: getLegalFixtureModelMatrix,
           apply: (value) => setFixtureModelMatrix(value as LegalFixtureModelMatrix),
+        },
+        {
+          label: 'Gemini/NewAPI cheap-first policy',
+          run: getGeminiNewApiCheapFirstPolicyEvidence,
+          apply: (value) => setGeminiNewApiCheapFirstPolicy(value as GeminiNewApiCheapFirstPolicy),
         },
         {
           label: 'Gemini/NewAPI model selector',
@@ -8879,6 +8894,249 @@ function Inner() {
                     ))}
                   </ul>
                   <div className="mt-3 text-xs leading-5 text-stone-500">{fixtureModelMatrix.privacy_note}</div>
+                </div>
+              </section>
+            )}
+
+            {geminiNewApiCheapFirstPolicy && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only policy for lowest-cost Gemini defaults, NewAPI-compatible model names, and
+                      reviewed premium exceptions.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[geminiNewApiCheapFirstPolicy.status] ?? statusClass.review_recommended}
+                  >
+                    {displayToken(geminiNewApiCheapFirstPolicy.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    { label: 'posture', value: geminiNewApiCheapFirstPolicy.summary.default_posture },
+                    { label: 'known models', value: geminiNewApiCheapFirstPolicy.summary.known_gemini_models },
+                    {
+                      label: 'fast default',
+                      value: geminiNewApiCheapFirstPolicy.summary.high_frequency_default_model,
+                    },
+                    { label: 'review count', value: geminiNewApiCheapFirstPolicy.summary.catalog_review_count },
+                    {
+                      label: 'premium blocked',
+                      value: geminiNewApiCheapFirstPolicy.summary.premium_default_blocked_for_high_frequency,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-xl font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Family</TableHead>
+                            <TableHead>Cost posture</TableHead>
+                            <TableHead>Default use</TableHead>
+                            <TableHead>High-frequency</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {geminiNewApiCheapFirstPolicy.supported_gemini_model_families.map((family) => (
+                            <TableRow key={family.family}>
+                              <TableCell className="max-w-[220px]">
+                                <div className="font-mono text-xs font-semibold text-stone-950">{family.family}</div>
+                                <div className="mt-1 text-[11px] text-stone-500">
+                                  models: {family.catalog_models.length}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="bg-white">
+                                  {displayToken(family.cost_posture)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                <div>{family.default_use}</div>
+                                <div className="mt-1 text-stone-500">{family.notes}</div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={
+                                    family.high_frequency_default_allowed ? statusClass.ready : statusClass.warn
+                                  }
+                                >
+                                  {family.high_frequency_default_allowed ? 'allowed' : 'review only'}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Task</TableHead>
+                            <TableHead>Recommended model</TableHead>
+                            <TableHead>Route mode</TableHead>
+                            <TableHead>Escalation</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {geminiNewApiCheapFirstPolicy.default_model_recommendations.slice(0, 7).map((item) => (
+                            <TableRow key={`${item.task}-${item.recommended_model}`}>
+                              <TableCell className="max-w-[180px]">
+                                <div className="font-semibold text-stone-950">{displayToken(item.task)}</div>
+                                <Badge
+                                  variant="outline"
+                                  className={item.high_frequency ? statusClass.ready : statusClass.review_required}
+                                >
+                                  {item.high_frequency ? 'high-volume default' : 'review path'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[240px]">
+                                <div className="font-mono text-xs font-semibold text-stone-950">
+                                  {item.recommended_model}
+                                </div>
+                                <div className="mt-1 text-xs text-stone-600">
+                                  {item.model_family} / {item.cost_tier}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                                {displayToken(item.route_mode)}
+                              </TableCell>
+                              <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                <div>{item.escalation_after}</div>
+                                <div className="mt-1 text-stone-500">{item.rationale}</div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Policy signals</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {geminiCheapFirstPolicySignals.map((signal) => (
+                          <Badge key={signal} variant="outline" className="bg-white">
+                            {signal}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">
+                        NewAPI prefix compatibility
+                      </h3>
+                      <div className="mb-3 text-xs leading-5 text-stone-600">
+                        <div className="font-semibold text-stone-950">
+                          {geminiNewApiCheapFirstPolicy.newapi_openai_compatible_prefix_compatibility.gateway}
+                        </div>
+                        <div>
+                          {
+                            geminiNewApiCheapFirstPolicy.newapi_openai_compatible_prefix_compatibility
+                              .request_shape
+                          }
+                        </div>
+                        <Badge variant="outline" className="mt-2 bg-white">
+                          openai compatible:{' '}
+                          {String(
+                            geminiNewApiCheapFirstPolicy.newapi_openai_compatible_prefix_compatibility
+                              .openai_compatible,
+                          )}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {geminiNewApiCheapFirstPolicy.newapi_openai_compatible_prefix_compatibility.accepted_prefix_examples
+                          .slice(0, 4)
+                          .map((example) => (
+                            <div
+                              key={`${example.shape}-${example.example}`}
+                              className="rounded-[8px] border border-stone-950/10 bg-white p-2 text-xs leading-5 text-stone-600"
+                            >
+                              <div className="font-mono font-semibold text-stone-950">{example.example}</div>
+                              <div>{example.normalization}</div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Forbidden default rules</h3>
+                      <div className="space-y-3">
+                        {geminiNewApiCheapFirstPolicy.forbidden_default_rules.map((rule) => (
+                          <div key={rule.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{rule.id}</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {rule.blocked_model_markers.map((marker) => (
+                                <Badge key={`${rule.id}-${marker}`} variant="outline" className={statusClass.warn}>
+                                  {marker}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">{rule.allowed_as}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Unknown model handling</h3>
+                      <div className="space-y-2 text-xs leading-5 text-stone-600">
+                        <div>
+                          catalog status:{' '}
+                          {geminiNewApiCheapFirstPolicy.unknown_gemini_like_model_handling.catalog_review_status}
+                        </div>
+                        <div>
+                          high-frequency default allowed:{' '}
+                          {String(
+                            geminiNewApiCheapFirstPolicy.unknown_gemini_like_model_handling
+                              .default_allowed_for_high_frequency,
+                          )}
+                        </div>
+                        <div>{geminiNewApiCheapFirstPolicy.unknown_gemini_like_model_handling.allowed_use}</div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy and validation</h3>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {geminiNewApiCheapFirstPolicy.privacy_note.map((note) => (
+                          <li key={note} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{note}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-3 space-y-2">
+                        {geminiNewApiCheapFirstPolicy.validation_commands.map((command) => (
+                          <div
+                            key={command}
+                            className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
+                          >
+                            {command}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

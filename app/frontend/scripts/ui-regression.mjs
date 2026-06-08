@@ -86,6 +86,12 @@ const geminiAliasMatrixPanel = sourceSection(
   'Gemini/NewAPI selector replay',
   'maintenance Gemini/NewAPI model alias matrix panel',
 );
+const geminiCheapFirstPolicyPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+  'maintenance Gemini/NewAPI cheap-first policy panel',
+);
 const maintenanceHeartbeatEvidencePanel = sourceSection(
   maintenancePage,
   'Maintenance heartbeat evidence',
@@ -240,6 +246,117 @@ const checks = [
   () => assertIncludes(maintenancePage, 'task.apply(await runMaintenanceLoadTask(task))', 'maintenance incremental render'),
   () => assertIncludes(maintenancePage, 'Partial maintenance evidence loaded', 'maintenance partial-load banner'),
   () => assertIncludes(maintenancePage, 'Frontend UI regression gate', 'maintenance UI gate panel'),
+  () => assertIncludes(maintenanceApi, 'GeminiNewApiCheapFirstPolicy', 'maintenance Gemini/NewAPI cheap-first policy type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'GeminiNewApiCheapFirstPolicyFamily',
+      'maintenance Gemini/NewAPI cheap-first family type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'GeminiNewApiCheapFirstPolicyRecommendation',
+      'maintenance Gemini/NewAPI cheap-first recommendation type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getGeminiNewApiCheapFirstPolicyEvidence',
+      'maintenance Gemini/NewAPI cheap-first policy getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'postGeminiNewApiCheapFirstPolicyEvidence',
+      'maintenance Gemini/NewAPI cheap-first policy evaluator',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/gemini-newapi-cheap-first-policy',
+      'maintenance Gemini/NewAPI cheap-first policy endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'supported_gemini_model_families',
+      'maintenance Gemini/NewAPI cheap-first family payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'default_model_recommendations',
+      'maintenance Gemini/NewAPI cheap-first recommendation payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'forbidden_default_rules',
+      'maintenance Gemini/NewAPI cheap-first forbidden rule payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'observed_model_review',
+      'maintenance Gemini/NewAPI cheap-first observed review payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getGeminiNewApiCheapFirstPolicyEvidence',
+      'maintenance Gemini/NewAPI cheap-first policy load task',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'geminiNewApiCheapFirstPolicy',
+      'maintenance Gemini/NewAPI cheap-first policy state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'Gemini/NewAPI cheap-first policy',
+      'maintenance Gemini/NewAPI cheap-first policy panel',
+    ),
+  () => assertIncludes(maintenancePage, 'supported_gemini_model_families', 'maintenance Gemini family row binding'),
+  () => assertIncludes(maintenancePage, 'default_model_recommendations', 'maintenance Gemini default recommendation binding'),
+  () => assertIncludes(maintenancePage, 'newapi_openai_compatible_prefix_compatibility', 'maintenance NewAPI prefix binding'),
+  () => assertIncludes(maintenancePage, 'forbidden_default_rules', 'maintenance Gemini forbidden rules binding'),
+  () => assertIncludes(maintenancePage, 'unknown_gemini_like_model_handling', 'maintenance unknown Gemini handling binding'),
+  () => assertIncludes(maintenancePage, 'gemini-flash-lite', 'maintenance Gemini Flash-Lite policy signal'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'no_premium_or_preview_high_frequency_default',
+      'maintenance Gemini premium default block signal',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'unknown_gemini_like_needs_catalog_review',
+      'maintenance unknown Gemini catalog review signal',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+      'maintenance Gemini cheap-first policy precedes selector',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model alias matrix</h2>',
+      'maintenance Gemini cheap-first policy precedes alias matrix',
+    ),
+  () =>
+    assertNotMatches(
+      geminiCheapFirstPolicyPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers/i,
+      'maintenance Gemini/NewAPI cheap-first policy sensitive field guard',
+    ),
   () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix type'),
   () => assertIncludes(maintenanceApi, 'GeminiNewApiModelAliasMatrixRow', 'maintenance Gemini/NewAPI alias matrix row type'),
   () => assertIncludes(maintenanceApi, 'getGeminiNewApiModelAliasMatrixEvidence', 'maintenance Gemini/NewAPI alias matrix getter'),

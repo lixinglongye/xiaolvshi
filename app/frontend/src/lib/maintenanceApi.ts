@@ -2226,6 +2226,100 @@ export type GeminiNewApiCheapFirstLadder = {
   }>;
 };
 
+export type GeminiNewApiCheapFirstPolicyFamily = {
+  family: string;
+  catalog_patterns: string[];
+  catalog_models: string[];
+  cost_posture: string;
+  default_use: string;
+  high_frequency_default_allowed: boolean;
+  notes: string;
+};
+
+export type GeminiNewApiCheapFirstPolicyRecommendation = {
+  task: string;
+  recommended_model: string;
+  model_family: string;
+  cost_tier: string;
+  route_mode: string;
+  high_frequency: boolean;
+  escalation_after: string;
+  rationale: string;
+};
+
+export type GeminiNewApiCheapFirstPolicy = {
+  status: string;
+  summary: {
+    default_posture: string;
+    known_gemini_models: number;
+    high_frequency_default_model: string;
+    high_frequency_tasks: string[];
+    catalog_review_count: number;
+    premium_default_blocked_for_high_frequency: boolean;
+  };
+  supported_gemini_model_families: GeminiNewApiCheapFirstPolicyFamily[];
+  newapi_openai_compatible_prefix_compatibility: {
+    gateway: string;
+    request_shape: string;
+    openai_compatible: boolean;
+    accepted_prefix_examples: Array<{
+      shape: string;
+      example: string;
+      normalization: string;
+    }>;
+    pass_through_rule: string;
+  };
+  default_model_recommendations: GeminiNewApiCheapFirstPolicyRecommendation[];
+  cheap_first_task_ladder: Array<{
+    task_group: string;
+    tasks: string[];
+    ladder: Array<{
+      order?: number;
+      model: string;
+      cost_tier?: string;
+      role?: string;
+      candidate_stage?: string;
+      review_required?: boolean;
+      promotion_blockers?: string[];
+    }>;
+    escalation_signals: string[];
+    stop_signals: string[];
+  }>;
+  unknown_gemini_like_model_handling: {
+    gemini_like_detection: string[];
+    catalog_review_status: string;
+    warning_level: string;
+    default_allowed_for_high_frequency: boolean;
+    allowed_use: string;
+    required_review_fields: string[];
+  };
+  forbidden_default_rules: Array<{
+    id: string;
+    applies_to_tasks: string[];
+    blocked_model_markers: string[];
+    blocked_cost_tiers: string[];
+    action: string;
+    allowed_as: string;
+  }>;
+  observed_model_review: Array<{
+    raw_model: string;
+    normalized_model?: string | null;
+    is_gemini_like: boolean;
+    status: string;
+    severity: string;
+    action: string;
+    default_allowed_for_high_frequency: boolean;
+    warnings: string[];
+  }>;
+  validation_commands: string[];
+  privacy_note: string[];
+};
+
+type GeminiNewApiCheapFirstPolicyResponse = {
+  success: boolean;
+  data: GeminiNewApiCheapFirstPolicy;
+};
+
 export type GeminiNewApiModelSelectorEvidence = {
   status: string;
   summary: {
@@ -8427,6 +8521,25 @@ export async function getLegalFixtureModelMatrix(): Promise<LegalFixtureModelMat
     return payload.data;
   }
   return payload as LegalFixtureModelMatrix;
+}
+
+export async function getGeminiNewApiCheapFirstPolicyEvidence(): Promise<GeminiNewApiCheapFirstPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-cheap-first-policy',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<GeminiNewApiCheapFirstPolicyResponse['data']>(resp);
+}
+
+export async function postGeminiNewApiCheapFirstPolicyEvidence(
+  payload: Record<string, unknown> = {},
+): Promise<GeminiNewApiCheapFirstPolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini-newapi-cheap-first-policy',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<GeminiNewApiCheapFirstPolicyResponse['data']>(resp);
 }
 
 export async function getGeminiNewApiModelSelectorEvidence(): Promise<GeminiNewApiModelSelectorEvidence> {
