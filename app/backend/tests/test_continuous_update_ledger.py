@@ -3095,6 +3095,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    assert (
+        "python -m pytest tests/test_model_ops_user_need_cheap_first_handoff.py tests/test_model_ops_user_need_release_bridge.py "
+        "tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     route_coverage_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "user-need-gemini-route-coverage"
     )
@@ -3187,6 +3194,61 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-cheap-first-release-decision" in bridge_entry["release_gate_links"]
     assert "model-ops-default-change-queue" in bridge_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in bridge_entry["release_gate_links"]
+    handoff_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-user-need-cheap-first-handoff"
+    )
+    assert handoff_entry["size"] == "medium"
+    assert handoff_entry["status"] == "shipped"
+    assert "metadata-only ModelOps user-need cheap-first handoff" in handoff_entry["impact"]
+    assert "benchmark coverage" in handoff_entry["impact"]
+    assert "implementation queue rows" in handoff_entry["impact"]
+    assert "Gemini route coverage" in handoff_entry["impact"]
+    assert "user-need release bridge" in handoff_entry["impact"]
+    assert "blocking default-change rows" in handoff_entry["impact"]
+    assert "maintainer-review-only rows" in handoff_entry["impact"]
+    assert "cheap-first protected high-priority needs" in handoff_entry["impact"]
+    assert "without public dataset downloads" in handoff_entry["impact"]
+    assert "public benchmark sample imports" in handoff_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/app-AI/network calls" in handoff_entry["impact"]
+    assert "configuration writes" in handoff_entry["impact"]
+    assert "default route changes" in handoff_entry["impact"]
+    assert "traffic shifts" in handoff_entry["impact"]
+    assert "raw legal text" in handoff_entry["impact"]
+    assert "prompts" in handoff_entry["impact"]
+    assert "route/request/response bodies" in handoff_entry["impact"]
+    assert "headers" in handoff_entry["impact"]
+    assert "model outputs" in handoff_entry["impact"]
+    assert "gateway responses" in handoff_entry["impact"]
+    assert "credentials" in handoff_entry["impact"]
+    assert "emails" in handoff_entry["impact"]
+    assert "user identifiers" in handoff_entry["impact"]
+    assert "app/backend/services/model_ops_user_need_cheap_first_handoff.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_cheap_first_handoff.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_user_need_release_bridge.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_release_bridge.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/user_need_benchmark_coverage.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_readiness.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_continuous_update_ledger.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in handoff_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in handoff_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in handoff_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_USER_NEED_CHEAP_FIRST_HANDOFF.md" in handoff_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in handoff_entry["evidence_paths"]
+    assert "modelops-user-need-cheap-first-handoff" in handoff_entry["release_gate_links"]
+    assert "modelops-user-need-release-bridge" in handoff_entry["release_gate_links"]
+    assert "user-need-implementation-priority-queue" in handoff_entry["release_gate_links"]
+    assert "user-need-gemini-route-coverage" in handoff_entry["release_gate_links"]
+    assert "model-ops-readiness" in handoff_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in handoff_entry["release_gate_links"]
     default_candidate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-candidate-selector"
     )

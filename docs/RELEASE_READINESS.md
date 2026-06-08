@@ -24,6 +24,18 @@ writing configuration, changing default routes, shifting traffic, or storing raw
 legal text, prompts, route payloads, model outputs, credentials, emails, or user
 identifiers.
 
+Additional required evidence: `modelops-user-need-cheap-first-handoff` records
+metadata-only reviewer handoff evidence for cheap-first default changes. It
+aggregates user-need benchmark coverage, implementation queue rows, Gemini route
+coverage, and the ModelOps user-need release bridge through
+`/api/v1/aihub/models/user-need-cheap-first-handoff` and
+`/api/v1/maintenance/user-needs/cheap-first-evidence-handoff`. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, public datasets, or
+the network, write configuration, change default routes, shift traffic, claim
+public benchmark scores, or store raw legal text, benchmark samples, fixture
+snippets, prompts, model outputs, payloads, headers, emails, identifiers, or
+credentials.
+
 Additional optional evidence: `legal-rag-authority-citation-gate` records
 metadata-only Legal RAG source authority and citation quality checks. It does
 not call NewAPI, Gemini, or gateways, download datasets, store raw legal text,

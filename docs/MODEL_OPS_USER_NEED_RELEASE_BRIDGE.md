@@ -35,6 +35,12 @@ The bridge is exposed in:
 - the `/model-ops` UI between `Cheap-first release decision` and
   `Default change queue`
 
+`model_ops_user_need_cheap_first_handoff.py` now consumes this bridge and the
+upstream user-need coverage packets to produce a maintainer handoff at
+`/api/v1/aihub/models/user-need-cheap-first-handoff` and
+`/api/v1/maintenance/user-needs/cheap-first-evidence-handoff`. The handoff does
+not change the release bridge rules or production routes.
+
 ## Validation
 
 ```bash

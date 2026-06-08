@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current ModelOps user-need cheap-first handoff slice:
+`modelops-user-need-cheap-first-handoff` aggregates user-need benchmark
+coverage, implementation queue rows, Gemini route coverage, and the user-need
+release bridge into one reviewer handoff at
+`/api/v1/aihub/models/user-need-cheap-first-handoff` and
+`/api/v1/maintenance/user-needs/cheap-first-evidence-handoff`. It separates
+blocking default-change rows from maintainer-review-only rows and shows which
+high-priority needs are protected by cheap-first Gemini routes. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, public datasets, or
+the network; download public datasets; import public benchmark samples; write
+configuration; change default routes; shift traffic; claim public benchmark
+scores; or return raw legal text, benchmark samples, fixture snippets, prompts,
+model outputs, payloads, headers, emails, identifiers, or credentials.
+
 Current Gemini media/speech review catalog slice:
 `gemini-media-speech-review-catalog` adds review-only catalog coverage for Veo
 3.1 video, Gemini TTS, and Gemini Live/native-audio candidates. It lets

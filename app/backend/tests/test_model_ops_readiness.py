@@ -280,6 +280,29 @@ def test_model_ops_readiness_warns_on_user_need_release_bridge_review():
     assert drilldown["privacy_boundary"]["metadata_only"] is True
 
 
+def test_model_ops_readiness_warns_on_user_need_cheap_first_handoff_review():
+    signals = _signals("pass")
+    signals["user_need_cheap_first_handoff"] = {
+        "status": "review_required",
+        "summary": {"need_count": 7, "review_required_need_count": 6, "blocked_need_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["modelops-user-need-cheap-first-handoff-feedback-to-roadmap-loop"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "user-need-cheap-first-handoff" in result["warning_check_ids"]
+    assert "user-need-cheap-first-handoff" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "user_need_cheap_first_handoff"
+    assert drilldown["warning_category"] == "user_need_release_review"
+    assert "user-need implementation" in drilldown["next_action"]
+    assert "test_model_ops_user_need_cheap_first_handoff.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["metadata_only"] is True
+
+
 def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
@@ -542,6 +565,9 @@ def test_model_ops_route_includes_readiness():
     assert "user_need_release_bridge" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "user_need_cheap_first_handoff" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert payload["gateway_runtime_configuration"]["id"] == "model-gateway-runtime-configuration"
     assert payload["gateway_runtime_configuration"]["summary"]["credentials_included"] is False
     assert payload["gateway_runtime_configuration"]["privacy_boundary"]["gateway_called"] is False
@@ -656,6 +682,9 @@ def test_model_ops_route_includes_readiness():
     assert payload["user_need_release_bridge"]["summary"]["need_count"] >= 7
     assert payload["user_need_release_bridge"]["summary"]["network_called"] is False
     assert payload["user_need_release_bridge"]["source_boundaries"]["changes_default_routes"] is False
+    assert payload["user_need_cheap_first_handoff"]["summary"]["need_count"] >= 7
+    assert payload["user_need_cheap_first_handoff"]["summary"]["network_called"] is False
+    assert payload["user_need_cheap_first_handoff"]["source_boundaries"]["changes_default_routes"] is False
     assert payload["default_change_queue"]["summary"]["queue_item_count"] >= 6
     assert payload["default_change_queue"]["summary"]["configuration_written"] is False
     assert "cheap_first_priority_queue" in {

@@ -105,6 +105,7 @@ from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsL
 from services.modelops_legal_fixture_evidence_handoff import ModelOpsLegalFixtureEvidenceHandoffService
 from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
+from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
@@ -250,6 +251,15 @@ async def get_user_need_implementation_priority_queue():
     return {
         "success": True,
         "data": UserNeedImplementationPriorityQueueService().build_queue(),
+    }
+
+
+@router.get("/user-needs/cheap-first-evidence-handoff")
+async def get_user_need_cheap_first_evidence_handoff():
+    """Return metadata-only user-need cheap-first handoff evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsUserNeedCheapFirstHandoffService().build_handoff(),
     }
 
 

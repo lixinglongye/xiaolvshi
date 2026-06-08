@@ -241,6 +241,75 @@ def test_modelops_user_need_release_bridge_is_required_release_evidence():
     assert "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md" in check["evidence_paths"]
 
 
+def test_modelops_user_need_cheap_first_handoff_is_required_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-user-need-cheap-first-handoff"
+    ]
+    result = service.evaluate({"modelops-user-need-cheap-first-handoff": "not_run"})
+    checks = {check["id"]: check for check in result["checks"]}
+    check = checks["modelops-user-need-cheap-first-handoff"]
+
+    assert commands == [
+        {
+            "check_id": "modelops-user-need-cheap-first-handoff",
+            "command": "python -m pytest tests/test_model_ops_user_need_cheap_first_handoff.py tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only user-need cheap-first handoff evidence" in check["manual_note"]
+    assert "maintainer review" in check["manual_note"]
+    assert "cheap-first default changes" in check["manual_note"]
+    assert "user-need benchmark coverage" in check["manual_note"]
+    assert "implementation queue rows" in check["manual_note"]
+    assert "Gemini route coverage" in check["manual_note"]
+    assert "ModelOps user-need release bridge" in check["manual_note"]
+    assert "/api/v1/aihub/models/user-need-cheap-first-handoff" in check["manual_note"]
+    assert "/api/v1/maintenance/user-needs/cheap-first-evidence-handoff" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "Gemini" in check["manual_note"]
+    assert "OpenAI" in check["manual_note"]
+    assert "Google" in check["manual_note"]
+    assert "gateways" in check["manual_note"]
+    assert "app AI endpoints" in check["manual_note"]
+    assert "public datasets" in check["manual_note"]
+    assert "network" in check["manual_note"]
+    assert "write configuration" in check["manual_note"]
+    assert "change default routes" in check["manual_note"]
+    assert "shift traffic" in check["manual_note"]
+    assert "public benchmark scores" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "benchmark samples" in check["manual_note"]
+    assert "fixture snippets" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "model outputs" in check["manual_note"]
+    assert "payloads" in check["manual_note"]
+    assert "headers" in check["manual_note"]
+    assert "emails" in check["manual_note"]
+    assert "identifiers" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/model_ops_user_need_cheap_first_handoff.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_cheap_first_handoff.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_user_need_release_bridge.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_release_bridge.py" in check["evidence_paths"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_user_need_implementation_priority_queue.py" in check["evidence_paths"]
+    assert "app/backend/services/user_need_gemini_route_coverage.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_user_need_gemini_route_coverage.py" in check["evidence_paths"]
+    assert "app/backend/services/user_need_benchmark_coverage.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in check["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in check["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in check["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in check["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_USER_NEED_CHEAP_FIRST_HANDOFF.md" in check["evidence_paths"]
+
+
 def test_gemini_embedding_cheap_first_preflight_is_required_release_evidence():
     service = ReleaseReadinessService()
     commands = [

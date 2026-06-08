@@ -260,6 +260,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "user_need_release_bridge",
     ),
     ReadinessComponent(
+        "user-need-cheap-first-handoff",
+        "User-need cheap-first handoff",
+        "release_evidence",
+        "user_need_cheap_first_handoff",
+    ),
+    ReadinessComponent(
         "cheap-first-release-decision",
         "Cheap-first release decision",
         "release_evidence",
@@ -584,7 +590,7 @@ class ModelOpsReadinessService:
             return "catalog_pricing_review"
         if category == "runtime_evidence":
             return "runtime_telemetry_review"
-        if source_key == "user_need_release_bridge":
+        if source_key in {"user_need_release_bridge", "user_need_cheap_first_handoff"}:
             return "user_need_release_review"
         if source_key in {
             "budget_policy",
@@ -649,7 +655,7 @@ class ModelOpsReadinessService:
         if warning_category == "runtime_telemetry_review":
             return "python -m pytest tests/test_route_telemetry_ops_summary.py tests/test_route_telemetry_triage_queue.py tests/test_route_telemetry_remediation_plan.py tests/test_model_ops_readiness.py -q"
         if warning_category == "user_need_release_review":
-            return "python -m pytest tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_ops_user_need_cheap_first_handoff.py tests/test_model_ops_user_need_release_bridge.py tests/test_user_need_implementation_priority_queue.py tests/test_user_need_gemini_route_coverage.py tests/test_model_ops_readiness.py -q"
         if warning_category == "routing_quality_review":
             return "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_ops_aihub_media_runtime_compatibility_gate.py tests/test_model_ops_aihub_media_speech_default_catalog_gate.py tests/test_model_route_quality_budget.py tests/test_model_request_cost_bounds.py tests/test_model_ops_readiness.py -q"
         if warning_category == "cost_guardrail_review":

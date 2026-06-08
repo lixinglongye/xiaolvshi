@@ -99,6 +99,7 @@ from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueSe
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
+from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_ops_user_need_release_bridge import ModelOpsUserNeedReleaseBridgeService
 from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
 from services.model_ops_observed_gemini_model_intake_queue import ModelOpsObservedGeminiModelIntakeQueueService
@@ -426,6 +427,14 @@ async def list_models():
             "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
         }
     )
+    user_need_cheap_first_handoff = ModelOpsUserNeedCheapFirstHandoffService().build_handoff(
+        {
+            **user_need_shared_signals,
+            "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
+            "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
+            "user_need_release_bridge": user_need_release_bridge,
+        }
+    )
     gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(
         {
             "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
@@ -498,6 +507,7 @@ async def list_models():
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
         "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
         "user_need_release_bridge": user_need_release_bridge,
+        "user_need_cheap_first_handoff": user_need_cheap_first_handoff,
         "gemini_research_refresh_gate": gemini_research_refresh_gate,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
@@ -623,6 +633,7 @@ async def list_models():
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
         "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
         "user_need_release_bridge": user_need_release_bridge,
+        "user_need_cheap_first_handoff": user_need_cheap_first_handoff,
         "cheap_first_release_decision": cheap_first_release_decision,
         "default_change_queue": default_change_queue,
         "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
@@ -1125,6 +1136,16 @@ async def model_ops_user_need_release_bridge():
     return {
         "success": True,
         "data": models_payload["user_need_release_bridge"],
+    }
+
+
+@router.get("/models/user-need-cheap-first-handoff")
+async def model_ops_user_need_cheap_first_handoff():
+    """Return metadata-only user-need cheap-first handoff evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["user_need_cheap_first_handoff"],
     }
 
 

@@ -11,6 +11,12 @@ Model operations now include configuration audit, default template alignment, de
 with focused Gemini/cheap-first signals, but it is not counted as another
 readiness component.
 
+`user_need_cheap_first_handoff` is a required release-evidence component. It
+aggregates user-need benchmark coverage, implementation queue rows, Gemini route
+coverage, and the user-need release bridge into one maintainer handoff without
+provider calls, gateway calls, dataset downloads, configuration writes, or raw
+legal/model payloads.
+
 ## Endpoint
 
 ```http
@@ -112,6 +118,10 @@ The readiness service checks:
 - Gemini/NewAPI cheap-first calibration,
 - Gemini/NewAPI price refresh monitor,
 - ModelOps performance budget.
+
+The release-evidence group also includes `user-need-cheap-first-handoff`, which
+feeds readiness warning drilldown category `user_need_release_review` when
+blocked or review-required user-need cheap-first evidence remains open.
 
 Any required `fail` status blocks model-ops readiness. Any `warn` status requires maintainer review before treating the model stack as release-ready. The summary separates `required_warning_count`, `required_failure_count`, and `optional_review_count` so manual evidence does not look like a required gate failure. `gateway-probe-evaluation` is optional manual evidence: missing or `not_run` results warn but do not block, while supplied failing probe evidence is surfaced as a warning with its underlying blocker IDs. After a maintainer posts sanitized gateway probe results, `/api/v1/aihub/models` uses the latest in-process sanitized snapshot for this optional component; rejected payloads only contribute a minimal safe failure snapshot.
 
