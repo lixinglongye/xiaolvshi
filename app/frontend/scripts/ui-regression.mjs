@@ -559,6 +559,19 @@ const checks = [
   () => assertIncludes(maintenancePage, 'database writes', 'legal RAG embedding index dry-run database write boundary label'),
   () => assertIncludes(maintenancePage, 'index commit claimed', 'legal RAG embedding index dry-run commit claim boundary label'),
   () => assertIncludes(maintenancePage, 'vector store quality claimed', 'legal RAG embedding index dry-run vector quality boundary label'),
+  () => assertIncludes(maintenancePage, 'Legal RAG embedding batch budget gate', 'legal RAG embedding batch budget gate panel'),
+  () => assertIncludes(maintenancePage, 'getLegalRagEmbeddingBatchBudgetGate', 'legal RAG embedding batch budget API binding'),
+  () => assertIncludes(maintenancePage, 'legalRagEmbeddingBatchBudgetGate', 'legal RAG embedding batch budget state binding'),
+  () => assertIncludes(maintenancePage, 'budget rows', 'legal RAG embedding batch budget row summary'),
+  () => assertIncludes(maintenancePage, 'planned batches', 'legal RAG embedding batch budget planned batch summary'),
+  () => assertIncludes(maintenancePage, 'estimated batch cost', 'legal RAG embedding batch budget cost summary'),
+  () => assertIncludes(maintenancePage, 'batch price / 1M tokens', 'legal RAG embedding batch budget batch price summary'),
+  () => assertIncludes(maintenancePage, 'batch_status_counts', 'legal RAG embedding batch budget status distribution'),
+  () => assertIncludes(maintenancePage, 'batch_budget_policy', 'legal RAG embedding batch budget policy binding'),
+  () => assertIncludes(maintenancePage, 'accepted_batch_fields', 'legal RAG embedding batch budget input fields'),
+  () => assertIncludes(maintenancePage, 'model call allowed', 'legal RAG embedding batch budget no model call binding'),
+  () => assertIncludes(maintenancePage, 'embedding batch executed claimed', 'legal RAG embedding batch budget claim boundary label'),
+  () => assertIncludes(maintenancePage, 'pricing accuracy claimed', 'legal RAG embedding batch budget pricing claim boundary label'),
   () =>
     assertBefore(
       maintenancePage,
@@ -591,8 +604,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index dry-run gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
+      'embedding index dry-run gate precedes embedding batch budget gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding index dry-run gate precedes retrieval diagnostics',
+      'embedding batch budget gate precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -821,6 +841,16 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'writes_database', 'legal RAG embedding index dry-run database write boundary type'),
   () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingIndexDryRunGate', 'legal RAG embedding index dry-run getter'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-index-dry-run-gate', 'legal RAG embedding index dry-run endpoint'),
+  () => assertIncludes(maintenanceApi, 'LegalRagEmbeddingBatchBudgetGate', 'legal RAG embedding batch budget gate type'),
+  () => assertIncludes(maintenanceApi, "id: 'legal-rag-embedding-batch-budget-gate' | string", 'legal RAG embedding batch budget gate id'),
+  () => assertIncludes(maintenanceApi, 'batch_budget_rows', 'legal RAG embedding batch budget rows type'),
+  () => assertIncludes(maintenanceApi, 'batch_status_counts', 'legal RAG embedding batch budget status counts type'),
+  () => assertIncludes(maintenanceApi, 'planned_batch_total', 'legal RAG embedding batch budget planned batch type'),
+  () => assertIncludes(maintenanceApi, 'estimated_batch_cost_usd', 'legal RAG embedding batch budget cost type'),
+  () => assertIncludes(maintenanceApi, 'model_call_allowed', 'legal RAG embedding batch budget no model call type'),
+  () => assertIncludes(maintenanceApi, 'embedding_batch_executed_claimed', 'legal RAG embedding batch budget no execution claim type'),
+  () => assertIncludes(maintenanceApi, 'getLegalRagEmbeddingBatchBudgetGate', 'legal RAG embedding batch budget getter'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag-embedding-batch-budget-gate', 'legal RAG embedding batch budget endpoint'),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
   () => assertIncludes(maintenanceApi, 'query_intent', 'legal RAG retrieval diagnostics query intent type'),
@@ -1906,8 +1936,14 @@ const legalRagEmbeddingChunkPolicyPanel = sourceSection(
 const legalRagEmbeddingIndexDryRunPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index dry-run gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
   'maintenance Legal RAG embedding index dry-run section',
+);
+const legalRagEmbeddingBatchBudgetPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding batch budget section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2114,6 +2150,11 @@ assertNotMatches(
   legalRagEmbeddingIndexDryRunPanel,
   /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
   'maintenance Legal RAG embedding index dry-run no raw chunks, raw legal text, source ids, secrets, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingBatchBudgetPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding batch budget no raw chunks, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

@@ -71,6 +71,7 @@ from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
+from services.legal_rag_embedding_batch_budget_gate import LegalRagEmbeddingBatchBudgetGateService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
 from services.legal_rag_embedding_index_dry_run_gate import LegalRagEmbeddingIndexDryRunGateService
 from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
@@ -1384,6 +1385,31 @@ async def evaluate_legal_rag_embedding_index_dry_run_gate(payload: dict[str, Any
     return {
         "success": True,
         "data": LegalRagEmbeddingIndexDryRunGateService().build_gate(rows if isinstance(rows, list) else None),
+    }
+
+
+@router.get("/legal-rag-embedding-batch-budget-gate")
+async def get_legal_rag_embedding_batch_budget_gate():
+    """Return metadata-only Legal RAG embedding batch budget evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchBudgetGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-embedding-batch-budget-gate")
+async def evaluate_legal_rag_embedding_batch_budget_gate(payload: dict[str, Any]):
+    """Evaluate metadata-only Legal RAG embedding batch budget rows."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchBudgetGateService().build_gate(rows if isinstance(rows, list) else None),
     }
 
 

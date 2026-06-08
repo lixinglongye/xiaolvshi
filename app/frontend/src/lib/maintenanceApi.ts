@@ -4293,6 +4293,158 @@ export type LegalRagEmbeddingIndexDryRunGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingBatchBudgetGateRow = {
+  id: string;
+  source_type: string;
+  dry_run_status: string;
+  batch_status: string;
+  release_action: string;
+  estimated_token_count: number;
+  planned_chunk_count: number;
+  planned_batch_count: number;
+  estimated_tokens_per_batch: number;
+  estimated_batch_cost_usd: number;
+  batch_input_usd_per_million_tokens: number;
+  over_chunk_batch_limit: boolean;
+  over_token_batch_limit: boolean;
+  embedding_model: string;
+  canonical_embedding_model: string;
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_legal_text_returned: boolean;
+    source_chunks_returned: boolean;
+    embedding_vectors_returned: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    database_written: boolean;
+    index_written: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingBatchBudgetGate = {
+  id: 'legal-rag-embedding-batch-budget-gate' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    batch_budget_row_count: number;
+    ready_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    planned_batch_total: number;
+    planned_chunk_total: number;
+    estimated_token_total: number;
+    estimated_batch_cost_usd: number;
+    batch_input_usd_per_million_tokens: number;
+    daily_token_over_laptop_safe_limit: boolean;
+    max_laptop_safe_chunks_per_batch: number;
+    max_laptop_safe_batch_tokens: number;
+    max_laptop_safe_daily_tokens: number;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    dry_run_gate_status: string;
+    embedding_preflight_status: string;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    embeddings_created: boolean;
+    index_written: boolean;
+    database_written: boolean;
+    source_ids_returned: boolean;
+    raw_legal_text_included: boolean;
+    source_chunks_included: boolean;
+    embedding_vectors_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  batch_budget_rows: LegalRagEmbeddingBatchBudgetGateRow[];
+  batch_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  linked_gate_summary: {
+    legal_rag_embedding_index_dry_run_gate?: string;
+    legal_rag_embedding_chunk_policy_gate?: string;
+    legal_rag_embedding_readiness_gate?: string;
+    modelops_gemini_embedding_cheap_first_preflight?: string;
+    embedding_default_model?: string;
+    embedding_default_canonical_model?: string;
+    source_price?: string;
+    [key: string]: unknown;
+  };
+  input_contract: {
+    accepted_source_fields: string[];
+    accepted_batch_fields: string[];
+    forbidden_fields_ignored: string[];
+    source_id_echoed: boolean;
+    dry_run_only: boolean;
+    budget_only: boolean;
+    [key: string]: unknown;
+  };
+  batch_budget_policy: {
+    method: string;
+    pricing_basis: string;
+    batch_input_usd_per_million_tokens: number;
+    max_laptop_safe_chunks_per_batch: number;
+    max_laptop_safe_batch_tokens: number;
+    max_laptop_safe_daily_tokens: number;
+    requires_ready_dry_run_rows: boolean;
+    splits_over_chunk_limit: boolean;
+    blocks_on_blocked_dry_run_rows: boolean;
+    review_on_review_required_dry_run_rows: boolean;
+    embedding_creation_allowed: boolean;
+    model_call_allowed: boolean;
+    index_write_allowed: boolean;
+    database_write_allowed: boolean;
+    network_allowed: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    embedding_quality_claimed: boolean;
+    embedding_batch_executed_claimed: boolean;
+    index_quality_claimed: boolean;
+    index_commit_claimed: boolean;
+    automatic_index_write_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    creates_embeddings: boolean;
+    writes_index: boolean;
+    writes_database: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -5016,6 +5168,11 @@ type LegalRagEmbeddingChunkPolicyGateResponse = {
 type LegalRagEmbeddingIndexDryRunGateResponse = {
   success: boolean;
   data: LegalRagEmbeddingIndexDryRunGate;
+};
+
+type LegalRagEmbeddingBatchBudgetGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingBatchBudgetGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -6519,6 +6676,14 @@ export async function getLegalRagEmbeddingIndexDryRunGate(): Promise<LegalRagEmb
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagEmbeddingIndexDryRunGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingBatchBudgetGate(): Promise<LegalRagEmbeddingBatchBudgetGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-batch-budget-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingBatchBudgetGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(

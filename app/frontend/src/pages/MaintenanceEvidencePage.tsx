@@ -52,6 +52,7 @@ import {
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
+  getLegalRagEmbeddingBatchBudgetGate,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
@@ -131,6 +132,7 @@ import {
   type LegalRagAbstentionEscalationGate,
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
+  type LegalRagEmbeddingBatchBudgetGate,
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexDryRunGate,
   type LegalRagEmbeddingReadinessGate,
@@ -215,6 +217,7 @@ const statusClass: Record<string, string> = {
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   ready_with_gaps: 'border-amber-200 bg-amber-50 text-amber-900',
   ready_with_watchlist: 'border-amber-200 bg-amber-50 text-amber-900',
+  ready_with_review: 'border-amber-200 bg-amber-50 text-amber-900',
   partial: 'border-amber-200 bg-amber-50 text-amber-900',
   blocked: 'border-red-200 bg-red-50 text-red-800',
   gap: 'border-red-200 bg-red-50 text-red-800',
@@ -467,6 +470,8 @@ function Inner() {
     useState<LegalRagEmbeddingChunkPolicyGate | null>(null);
   const [legalRagEmbeddingIndexDryRunGate, setLegalRagEmbeddingIndexDryRunGate] =
     useState<LegalRagEmbeddingIndexDryRunGate | null>(null);
+  const [legalRagEmbeddingBatchBudgetGate, setLegalRagEmbeddingBatchBudgetGate] =
+    useState<LegalRagEmbeddingBatchBudgetGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -897,6 +902,11 @@ function Inner() {
           label: 'Legal RAG embedding index dry-run gate',
           run: getLegalRagEmbeddingIndexDryRunGate,
           apply: (value) => setLegalRagEmbeddingIndexDryRunGate(value as LegalRagEmbeddingIndexDryRunGate),
+        },
+        {
+          label: 'Legal RAG embedding batch budget gate',
+          run: getLegalRagEmbeddingBatchBudgetGate,
+          apply: (value) => setLegalRagEmbeddingBatchBudgetGate(value as LegalRagEmbeddingBatchBudgetGate),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -10317,6 +10327,234 @@ function Inner() {
                           </div>
                           <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
                           <div>dry_run_only: {String(gate.input_contract.dry_run_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingBatchBudgetGate &&
+              (() => {
+                const gate = legalRagEmbeddingBatchBudgetGate;
+                const rows = gate.batch_budget_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const summaryCounts = [
+                  { label: 'budget rows', value: summary.batch_budget_row_count },
+                  { label: 'ready rows', value: summary.ready_row_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'planned batches', value: summary.planned_batch_total },
+                  { label: 'planned chunks', value: summary.planned_chunk_total },
+                  { label: 'estimated tokens', value: summary.estimated_token_total },
+                  { label: 'estimated batch cost', value: formatUsd(summary.estimated_batch_cost_usd) },
+                  { label: 'batch price / 1M tokens', value: formatUsd(summary.batch_input_usd_per_million_tokens) },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'calls model', value: privacy.calls_model },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'embedding batch executed claimed', value: claim.embedding_batch_executed_claimed },
+                  { label: 'pricing accuracy claimed', value: claim.pricing_accuracy_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch budget gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only cheap Gemini embedding batch budget and low-resource queue planning
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-5 xl:grid-cols-10">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Source type</TableHead>
+                            <TableHead>Batch status</TableHead>
+                            <TableHead>Batch budget</TableHead>
+                            <TableHead>Low-resource limits</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.source_type)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.embedding_model}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.batch_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(row.batch_status)}
+                                </Badge>
+                                <div className="mt-2">dry_run_status: {displayToken(row.dry_run_status)}</div>
+                                <div>release_action: {displayToken(row.release_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>estimated_token_count: {row.estimated_token_count}</div>
+                                <div>planned_chunk_count: {row.planned_chunk_count}</div>
+                                <div>planned_batch_count: {row.planned_batch_count}</div>
+                                <div>estimated_tokens_per_batch: {row.estimated_tokens_per_batch}</div>
+                                <div>estimated_batch_cost_usd: {formatUsd(row.estimated_batch_cost_usd)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>over_chunk_batch_limit: {String(row.over_chunk_batch_limit)}</div>
+                                <div>over_token_batch_limit: {String(row.over_token_batch_limit)}</div>
+                                <div>batch price / 1M tokens: {formatUsd(row.batch_input_usd_per_million_tokens)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[280px] flex-wrap gap-1">
+                                  {row.reason_codes.map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['batch_status_counts', gate.batch_status_counts],
+                            ['release_action_counts', gate.release_action_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(gate.linked_gate_summary).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">batch_budget_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.batch_budget_policy.method}</div>
+                          <div>pricing basis: {gate.batch_budget_policy.pricing_basis}</div>
+                          <div>max chunks per batch: {gate.batch_budget_policy.max_laptop_safe_chunks_per_batch}</div>
+                          <div>max batch tokens: {gate.batch_budget_policy.max_laptop_safe_batch_tokens}</div>
+                          <div>max daily tokens: {gate.batch_budget_policy.max_laptop_safe_daily_tokens}</div>
+                          <div>model call allowed: {String(gate.batch_budget_policy.model_call_allowed)}</div>
+                          <div>embedding creation allowed: {String(gate.batch_budget_policy.embedding_creation_allowed)}</div>
+                          <div>index write allowed: {String(gate.batch_budget_policy.index_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_batch_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.accepted_batch_fields.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">forbidden_fields_ignored</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.forbidden_fields_ignored.slice(0, 12).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>budget_only: {String(gate.input_contract.budget_only)}</div>
                         </div>
                       </div>
                       <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">

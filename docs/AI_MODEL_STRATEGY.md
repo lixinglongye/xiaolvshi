@@ -195,6 +195,17 @@ or the network, and it does not include real legal text, fixture snippets,
 candidate generated text, prompts, calibration payloads, model outputs,
 credentials, or emails.
 
+`legal-rag-embedding-batch-budget-gate` is the shipped metadata-only
+low-resource batch budget gate for Legal RAG embeddings. It consumes the
+embedding index dry-run manifest, keeps text embeddings on
+`gemini-embedding-001`, uses the local catalog batch price from the Gemini
+embedding cheap-first preflight, and exposes planned batch counts, laptop-safe
+chunk/token limits, estimated token totals, and release actions before any
+embedding run. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app
+AI endpoints, models, indexes, databases, or the network, and it does not
+claim live pricing accuracy, embedding execution, index writes, or retrieval
+quality.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,

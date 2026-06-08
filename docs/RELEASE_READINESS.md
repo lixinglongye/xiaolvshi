@@ -326,6 +326,21 @@ not store or return source ids, raw query, raw retrieved context, raw legal
 text, source chunks, embedding vectors, prompts, model outputs, gateway
 payloads, credentials, emails, or client material.
 
+The optional `legal-rag-embedding-batch-budget-gate` check records
+metadata-only Legal RAG embedding batch budget evidence through
+`LegalRagEmbeddingBatchBudgetGateService` at
+`/api/v1/maintenance/legal-rag-embedding-batch-budget-gate`. It reviews cheap
+Gemini embedding batch splits, low-resource local queue limits, planned chunk
+counts, estimated token totals, and local catalog batch-cost estimates before
+any embedding run. It is a batch budget plan only; it must not be used to claim
+embedding creation, model execution, vector storage, index/database writes,
+retrieval quality, legal-answer quality, live pricing accuracy, provider
+execution, or client delivery. It must not call NewAPI, Gemini, models,
+gateways, app AI endpoints, or the network, and it must not store or return
+source ids, raw query, raw retrieved context, raw legal text, source chunks,
+embedding vectors, prompts, model outputs, gateway payloads, credentials,
+emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in
