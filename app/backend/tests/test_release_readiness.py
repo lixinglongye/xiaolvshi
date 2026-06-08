@@ -306,6 +306,7 @@ def test_modelops_user_need_cheap_first_handoff_is_required_release_evidence():
     assert "app/backend/routers/aihub.py" in check["evidence_paths"]
     assert "app/backend/routers/maintenance.py" in check["evidence_paths"]
     assert "app/frontend/src/lib/modelOpsApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
     assert "docs/MODEL_OPS_USER_NEED_CHEAP_FIRST_HANDOFF.md" in check["evidence_paths"]
 

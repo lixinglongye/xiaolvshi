@@ -741,6 +741,7 @@ class ReleaseReadinessService:
                     "app/backend/routers/aihub.py",
                     "app/backend/routers/maintenance.py",
                     "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
                     "app/frontend/scripts/ui-regression.mjs",
                     "docs/MODEL_OPS_USER_NEED_CHEAP_FIRST_HANDOFF.md",
                     "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md",

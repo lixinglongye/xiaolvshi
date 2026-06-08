@@ -47,6 +47,7 @@ import {
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalMicroBenchmarkPreflight,
+  getModelOpsUserNeedCheapFirstHandoff,
   getModelOpsUserNeedReleaseBridge,
   getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   getModelGatewayProbeTemplate,
@@ -81,6 +82,7 @@ import {
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalMicroBenchmarkPreflight,
+  type ModelOpsUserNeedCheapFirstHandoff,
   type ModelOpsUserNeedReleaseBridge,
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
@@ -552,6 +554,9 @@ function Inner() {
   const [legalBenchmarkRiskBridgeError, setLegalBenchmarkRiskBridgeError] = useState('');
   const [userNeedReleaseBridge, setUserNeedReleaseBridge] = useState<ModelOpsUserNeedReleaseBridge | null>(null);
   const [userNeedReleaseBridgeError, setUserNeedReleaseBridgeError] = useState('');
+  const [userNeedCheapFirstHandoff, setUserNeedCheapFirstHandoff] =
+    useState<ModelOpsUserNeedCheapFirstHandoff | null>(null);
+  const [userNeedCheapFirstHandoffError, setUserNeedCheapFirstHandoffError] = useState('');
   const [legalMicroBenchmarkPreflight, setLegalMicroBenchmarkPreflight] =
     useState<ModelOpsLegalMicroBenchmarkPreflight | null>(null);
   const [legalMicroBenchmarkPreflightError, setLegalMicroBenchmarkPreflightError] = useState('');
@@ -587,6 +592,7 @@ function Inner() {
     setFailureUpgradeBudget(payload.failure_upgrade_budget ?? null);
     setLegalBenchmarkRiskBridge(payload.legal_benchmark_risk_bridge ?? null);
     setUserNeedReleaseBridge(payload.user_need_release_bridge ?? null);
+    setUserNeedCheapFirstHandoff(payload.user_need_cheap_first_handoff ?? null);
     setLegalMicroBenchmarkPreflight(payload.legal_micro_benchmark_preflight ?? null);
     setLegalFixtureCheapFirstBenchmarkGate(
       payload.legal_fixture_cheap_first_benchmark_gate ?? null,
@@ -664,6 +670,8 @@ function Inner() {
     setLegalBenchmarkRiskBridge(null);
     setUserNeedReleaseBridgeError('');
     setUserNeedReleaseBridge(null);
+    setUserNeedCheapFirstHandoffError('');
+    setUserNeedCheapFirstHandoff(null);
     setLegalMicroBenchmarkPreflightError('');
     setLegalMicroBenchmarkPreflight(null);
     setLegalFixtureCheapFirstBenchmarkGateError('');
@@ -716,6 +724,7 @@ function Inner() {
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
         userNeedReleaseBridgeResult,
+        userNeedCheapFirstHandoffResult,
         legalMicroBenchmarkPreflightResult,
         legalFixtureCheapFirstBenchmarkGateResult,
         legalFixtureCheapFirstDefaultPromotionPacketResult,
@@ -751,6 +760,7 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
         aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
         aggregateOrRequest(aggregatePayload?.user_need_release_bridge, getModelOpsUserNeedReleaseBridge),
+        aggregateOrRequest(aggregatePayload?.user_need_cheap_first_handoff, getModelOpsUserNeedCheapFirstHandoff),
         aggregateOrRequest(aggregatePayload?.legal_micro_benchmark_preflight, getModelOpsLegalMicroBenchmarkPreflight),
         aggregateOrRequest(
           aggregatePayload?.legal_fixture_cheap_first_benchmark_gate,
@@ -1021,6 +1031,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.user_need_release_bridge)
         ) {
           setUserNeedReleaseBridgeError('ModelOps user-need release bridge failed to load.');
+        }
+      }
+      if (userNeedCheapFirstHandoffResult.status === 'fulfilled') {
+        setUserNeedCheapFirstHandoff(userNeedCheapFirstHandoffResult.value);
+      } else {
+        console.error(userNeedCheapFirstHandoffResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setUserNeedCheapFirstHandoff(modelOpsResult.value.user_need_cheap_first_handoff ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.user_need_cheap_first_handoff)
+        ) {
+          setUserNeedCheapFirstHandoffError('ModelOps user-need cheap-first handoff failed to load.');
         }
       }
       if (legalMicroBenchmarkPreflightResult.status === 'fulfilled') {
@@ -1596,6 +1620,15 @@ function Inner() {
   );
   const userNeedReleaseBridgeClaimEntries = boundaryDisplayEntries(
     activeUserNeedReleaseBridge?.claim_boundary,
+  );
+  const activeUserNeedCheapFirstHandoff = userNeedCheapFirstHandoff ?? data?.user_need_cheap_first_handoff ?? null;
+  const userNeedCheapFirstHandoffRows = activeUserNeedCheapFirstHandoff?.handoff_rows ?? [];
+  const userNeedCheapFirstHandoffSections = activeUserNeedCheapFirstHandoff?.handoff_sections ?? [];
+  const userNeedCheapFirstHandoffPrivacyEntries = boundaryDisplayEntries(
+    activeUserNeedCheapFirstHandoff?.privacy_boundary,
+  );
+  const userNeedCheapFirstHandoffClaimEntries = boundaryDisplayEntries(
+    activeUserNeedCheapFirstHandoff?.claim_boundary,
   );
   const activeLegalMicroBenchmarkPreflight =
     legalMicroBenchmarkPreflight ?? data?.legal_micro_benchmark_preflight ?? null;
@@ -2412,6 +2445,163 @@ function Inner() {
                       </TableCell>
                       <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
                         {row.next_action}
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          gates: {row.linked_release_gates.slice(0, 3).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeUserNeedCheapFirstHandoff && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeUserNeedCheapFirstHandoff.summary.need_count} needs /{' '}
+                  {activeUserNeedCheapFirstHandoff.summary.cheap_first_route_protected_need_count} cheap-first
+                  protected / {activeUserNeedCheapFirstHandoff.summary.review_required_need_count} review rows
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeUserNeedCheapFirstHandoff.status)}>
+                {activeUserNeedCheapFirstHandoff.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            {userNeedCheapFirstHandoffError && (
+              <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {userNeedCheapFirstHandoffError}
+              </div>
+            )}
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedCheapFirstHandoff.summary.high_priority_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">high priority</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedCheapFirstHandoff.summary.high_priority_route_protected_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">protected high-priority</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedCheapFirstHandoff.summary.blocked_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">handoff blockers</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedCheapFirstHandoff.summary.review_required_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">handoff reviews</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedCheapFirstHandoff.summary.default_change_allowed ? 'yes' : 'no'}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default change</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeUserNeedCheapFirstHandoff.summary.network_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">network called</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Reviewer handoff</div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {String(activeUserNeedCheapFirstHandoff.reviewer_handoff.default_change_rule)}
+                </div>
+                <div className="mt-2 text-xs leading-5 text-stone-600">
+                  {String(activeUserNeedCheapFirstHandoff.reviewer_handoff.cheap_first_policy)}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Source status</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  {userNeedCheapFirstHandoffSections.map((section) => (
+                    <div key={section.id}>
+                      {section.title}: {section.status}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Privacy and claims</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  {userNeedCheapFirstHandoffPrivacyEntries.slice(0, 4).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                  {userNeedCheapFirstHandoffClaimEntries.slice(0, 2).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User need</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Cheap-first route</TableHead>
+                    <TableHead>Review signals</TableHead>
+                    <TableHead>Reviewer action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userNeedCheapFirstHandoffRows.slice(0, 8).map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="max-w-[260px]">
+                        <div className="font-semibold text-stone-950">{row.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.priority_band} / priority {row.review_priority_score}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.handoff_status)}>
+                          {row.handoff_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          default review: {String(row.default_allowed_without_review)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        <div>protected: {String(row.cheap_first_route_protected)}</div>
+                        <div>high-frequency: {String(row.high_frequency_route_ready)}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.linked_default_models.slice(0, 3).join(', ') || 'unmapped'}
+                        </div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.linked_route_tasks.slice(0, 4).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        <div>implementation: {row.implementation_action_status}</div>
+                        <div>route: {row.route_coverage_status}</div>
+                        <div className="mt-1">
+                          blockers: {row.blocked_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                        <div className="mt-1">
+                          review: {row.review_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.reviewer_action}
                         <div className="mt-2 text-[11px] text-stone-500">
                           gates: {row.linked_release_gates.slice(0, 3).join(', ') || 'unmapped'}
                         </div>

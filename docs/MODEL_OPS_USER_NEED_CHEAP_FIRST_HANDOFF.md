@@ -18,6 +18,14 @@ routes such as Flash-Lite.
 - `/api/v1/maintenance/user-needs/cheap-first-evidence-handoff`
 - `/api/v1/aihub/models` as `user_need_cheap_first_handoff`
 
+## UI
+
+The `/model-ops` page shows a read-only `ModelOps user-need cheap-first handoff`
+panel after the release bridge and before the default-change queue. It displays
+summary counts, source-section statuses, privacy/claim boundaries, and the first
+review rows with reviewer actions. The panel reuses the aggregate ModelOps
+payload first, then falls back to the direct handoff endpoint if needed.
+
 ## Boundaries
 
 This handoff is metadata-only. It does not call NewAPI, Gemini, OpenAI, Google,

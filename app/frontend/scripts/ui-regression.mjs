@@ -161,8 +161,14 @@ const observedGeminiCoverageGapQueuePanel = sourceSection(
 const modelOpsUserNeedReleaseBridgePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
   'model-ops user-need release bridge section',
+);
+const modelOpsUserNeedCheapFirstHandoffPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+  'model-ops user-need cheap-first handoff section',
 );
 const caseWorkbenchRiskRefreshPanel = sourceSection(
   caseWorkbenchRuntimePanel,
@@ -1722,6 +1728,8 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'aggregateOrRequest', 'model-ops secondary endpoint dedupe helper'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_benchmark_gate', 'model-ops legal fixture gate aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet', 'model-ops promotion packet aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_cheap_first_handoff', 'model-ops user-need cheap-first handoff aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'getModelOpsUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff fallback request'),
   () => assertIncludes(modelOpsPage, 'initialModelOpsApplied', 'model-ops early aggregate load guard'),
   () => assertIncludes(modelOpsPage, 'setLoading(false)', 'model-ops aggregate payload unblocks first paint'),
   () => assertIncludes(modelOpsPage, 'ModelOps load guard', 'model-ops performance budget panel'),
@@ -2796,6 +2804,25 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/user-need-cheap-first-handoff', 'model-ops user-need cheap-first handoff endpoint'),
   () => assertIncludes(modelOpsApi, 'cheap_first_route_protected', 'model-ops user-need cheap-first protected flag binding'),
   () => assertIncludes(modelOpsApi, 'reviewer_action', 'model-ops user-need cheap-first reviewer action binding'),
+  () => assertIncludes(modelOpsPage, 'ModelOps user-need cheap-first handoff', 'model-ops user-need cheap-first handoff panel'),
+  () => assertIncludes(modelOpsPage, 'activeUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff active binding'),
+  () => assertIncludes(modelOpsPage, 'userNeedCheapFirstHandoffRows', 'model-ops user-need cheap-first handoff row binding'),
+  () => assertIncludes(modelOpsPage, 'userNeedCheapFirstHandoffSections', 'model-ops user-need cheap-first handoff section binding'),
+  () => assertIncludes(modelOpsPage, 'cheap_first_route_protected_need_count', 'model-ops user-need cheap-first protected summary binding'),
+  () => assertIncludes(modelOpsPage, 'row.cheap_first_route_protected', 'model-ops user-need cheap-first row protected binding'),
+  () => assertIncludes(modelOpsPage, 'row.reviewer_action', 'model-ops user-need cheap-first reviewer action display'),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
+    '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+    'model-ops release bridge precedes user-need handoff',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+    'model-ops user-need handoff precedes default change queue',
+  ),
   () => assertIncludes(modelOpsPage, 'Gemini/NewAPI alias capability coverage', 'model-ops Gemini/NewAPI alias capability panel'),
   () => assertIncludes(modelOpsPage, 'Observed gateway model fit matrix', 'model-ops observed gateway fit matrix panel'),
   () => assertIncludes(modelOpsPage, 'Gemini/NewAPI cheap-first route coverage bridge', 'model-ops observed gateway bridge panel'),
@@ -3350,6 +3377,11 @@ assertNotMatches(
   modelOpsLegalBenchmarkRiskBridgePanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
   'model-ops legal benchmark risk bridge no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
+  modelOpsUserNeedCheapFirstHandoffPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|benchmark_sample)\b/i,
+  'model-ops user-need cheap-first handoff no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
   cheapFirstEscalationBudgetPanel,

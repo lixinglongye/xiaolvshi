@@ -3249,6 +3249,47 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-gemini-route-coverage" in handoff_entry["release_gate_links"]
     assert "model-ops-readiness" in handoff_entry["release_gate_links"]
     assert "model-ops-cheap-first-release-decision" in handoff_entry["release_gate_links"]
+    handoff_ui_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-user-need-cheap-first-handoff-ui"
+    )
+    assert handoff_ui_entry["size"] == "medium"
+    assert handoff_ui_entry["status"] == "shipped"
+    assert "read-only ModelOps page panel" in handoff_ui_entry["impact"]
+    assert "user-need cheap-first handoff" in handoff_ui_entry["impact"]
+    assert "high-priority needs" in handoff_ui_entry["impact"]
+    assert "cheap-first protected route counts" in handoff_ui_entry["impact"]
+    assert "default-change blockers" in handoff_ui_entry["impact"]
+    assert "reviewer-only rows" in handoff_ui_entry["impact"]
+    assert "privacy/claim boundaries" in handoff_ui_entry["impact"]
+    assert "reviewer actions" in handoff_ui_entry["impact"]
+    assert "without model calls" in handoff_ui_entry["impact"]
+    assert "gateway calls" in handoff_ui_entry["impact"]
+    assert "network calls" in handoff_ui_entry["impact"]
+    assert "configuration writes" in handoff_ui_entry["impact"]
+    assert "default route changes" in handoff_ui_entry["impact"]
+    assert "traffic shifts" in handoff_ui_entry["impact"]
+    assert "raw legal text" in handoff_ui_entry["impact"]
+    assert "benchmark samples" in handoff_ui_entry["impact"]
+    assert "fixture snippets" in handoff_ui_entry["impact"]
+    assert "prompts" in handoff_ui_entry["impact"]
+    assert "payloads" in handoff_ui_entry["impact"]
+    assert "headers" in handoff_ui_entry["impact"]
+    assert "model outputs" in handoff_ui_entry["impact"]
+    assert "gateway responses" in handoff_ui_entry["impact"]
+    assert "credentials" in handoff_ui_entry["impact"]
+    assert "emails" in handoff_ui_entry["impact"]
+    assert "user identifiers" in handoff_ui_entry["impact"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in handoff_ui_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in handoff_ui_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in handoff_ui_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_user_need_cheap_first_handoff.py" in handoff_ui_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_user_need_cheap_first_handoff.py" in handoff_ui_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_USER_NEED_CHEAP_FIRST_HANDOFF.md" in handoff_ui_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in handoff_ui_entry["evidence_paths"]
+    assert "modelops-user-need-cheap-first-handoff" in handoff_ui_entry["release_gate_links"]
+    assert "modelops-user-need-cheap-first-handoff-ui" in handoff_ui_entry["release_gate_links"]
+    assert "frontend-typecheck" in handoff_ui_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in handoff_ui_entry["release_gate_links"]
     default_candidate_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-default-candidate-selector"
     )

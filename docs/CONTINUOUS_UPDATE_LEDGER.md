@@ -1,5 +1,16 @@
 # Continuous Update Ledger
 
+Current ModelOps user-need handoff UI slice:
+`modelops-user-need-cheap-first-handoff-ui` adds a read-only `/model-ops`
+panel for the user-need cheap-first handoff. Maintainers can review
+high-priority needs, cheap-first protected route counts, default-change
+blockers, reviewer-only rows, source-section statuses, privacy/claim
+boundaries, and row-level reviewer actions without leaving the ModelOps page.
+It does not call models, gateways, app AI endpoints, or the network; write
+configuration; change default routes; shift traffic; or return raw legal text,
+benchmark samples, fixture snippets, prompts, payloads, headers, model outputs,
+gateway responses, credentials, emails, or user identifiers.
+
 Current ModelOps user-need cheap-first handoff slice:
 `modelops-user-need-cheap-first-handoff` aggregates user-need benchmark
 coverage, implementation queue rows, Gemini route coverage, and the user-need
