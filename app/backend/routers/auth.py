@@ -111,9 +111,35 @@ def get_dev_login_frontend_url(request: Request, frontend_origin: Optional[str] 
     return settings.frontend_url.rstrip("/")
 
 
+def oidc_login_configured() -> bool:
+    """Return whether production OIDC login has enough config to build a valid auth URL."""
+    return all(
+        str(getattr(settings, name, "") or "").strip()
+        for name in ("oidc_client_id", "oidc_client_secret", "oidc_issuer_url")
+    )
+
+
+def should_use_local_dev_login(request: Request) -> bool:
+    """Use dev-login for local browsers when OIDC is not configured."""
+    return is_local_dev_request(request) and not oidc_login_configured()
+
+
+def get_local_dev_login_redirect_url(request: Request, frontend_origin: Optional[str] = None) -> str:
+    """Build a relative dev-login redirect that cannot leak to a non-local frontend."""
+    frontend_url = get_dev_login_frontend_url(request, frontend_origin=frontend_origin)
+    return f"/api/v1/auth/dev-login?{urlencode({'role': 'admin', 'frontend_origin': frontend_url})}"
+
+
 @router.get("/login")
 async def login(request: Request, db: AsyncSession = Depends(get_db)):
     """Start OIDC login flow with PKCE."""
+    if should_use_local_dev_login(request):
+        logger.info("[login] OIDC config missing for local request; redirecting to dev-login")
+        return RedirectResponse(
+            url=get_local_dev_login_redirect_url(request),
+            status_code=status.HTTP_302_FOUND,
+        )
+
     state = generate_state()
     nonce = generate_nonce()
     code_verifier = generate_code_verifier()
