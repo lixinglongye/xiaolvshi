@@ -744,6 +744,77 @@ type FeedbackRoadmapCatalogResponse = {
   data: FeedbackRoadmapCatalog;
 };
 
+export type FeedbackLifecycleState = {
+  id: string;
+  order: number;
+  terminal: boolean;
+};
+
+export type FeedbackLifecycleTransition = {
+  from: string;
+  to: string;
+  check_ids: string[];
+};
+
+export type FeedbackLifecycleCheck = {
+  id: string;
+  applies_to: string;
+  required: boolean;
+  reason: string;
+};
+
+export type FeedbackLifecycleSampleEvaluation = {
+  ticket_id: string;
+  current_state: string;
+  next_state?: string | null;
+  next_allowed_states: string[];
+  high_risk: boolean;
+  triage: {
+    priority?: string;
+    assignee?: string;
+    labels?: string[];
+    matched_rule_ids?: string[];
+    [key: string]: unknown;
+  };
+  roadmap_alignment_status?: string | null;
+  linkage: {
+    roadmap_gap_id?: string | null;
+    release_gate_links: string[];
+    satisfies_high_risk_policy: boolean;
+    [key: string]: unknown;
+  };
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  required_actions: string[];
+};
+
+export type FeedbackLifecyclePolicy = {
+  status: string;
+  state_machine: {
+    states: FeedbackLifecycleState[];
+    transitions: FeedbackLifecycleTransition[];
+    happy_path: string[];
+  };
+  transition_checks: FeedbackLifecycleCheck[];
+  high_risk_policy: {
+    definition: string;
+    required_linkage: string;
+    blocking_sample_ticket_ids: string[];
+  };
+  sample_tickets_evaluation: FeedbackLifecycleSampleEvaluation[];
+  privacy_note: string;
+  validation_commands: string[];
+};
+
+type FeedbackLifecyclePolicyResponse = {
+  success: boolean;
+  data: FeedbackLifecyclePolicy;
+};
+
 export type ContinuousUpdateLedgerEntry = {
   id: string;
   title: string;
@@ -7197,6 +7268,18 @@ export async function getFeedbackRoadmapCatalog(): Promise<FeedbackRoadmapCatalo
     return payload.data;
   }
   return payload as FeedbackRoadmapCatalog;
+}
+
+export async function getFeedbackLifecyclePolicy(): Promise<FeedbackLifecyclePolicy> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/feedback-lifecycle-policy',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as FeedbackLifecyclePolicyResponse | FeedbackLifecyclePolicy;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as FeedbackLifecyclePolicy;
 }
 
 export async function getContinuousUpdateLedger(): Promise<ContinuousUpdateLedger> {

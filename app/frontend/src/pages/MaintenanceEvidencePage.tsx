@@ -89,6 +89,7 @@ import {
   getMaintenanceValidationEventEvidence,
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
+  getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
   getGeminiNewApiModelAliasMatrixEvidence,
   getGeminiNewApiModelSelectorEvidence,
@@ -111,6 +112,7 @@ import {
   type ContinuousUpdateLedger,
   type ContinuousUpdateLedgerEntry,
   type EvidenceExhibitPackagePolicy,
+  type FeedbackLifecyclePolicy,
   type FeedbackRoadmapCatalog,
   type FrontendUiRegressionGate,
   type GeminiNewApiModelAliasMatrixEvidence,
@@ -673,6 +675,7 @@ function Inner() {
   const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
+  const [feedbackLifecyclePolicy, setFeedbackLifecyclePolicy] = useState<FeedbackLifecyclePolicy | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
     useState<MaintenanceContinuousSessionTimeline | null>(null);
@@ -863,6 +866,11 @@ function Inner() {
           label: 'Feedback roadmap',
           run: getFeedbackRoadmapCatalog,
           apply: (value) => setFeedbackRoadmap(value as FeedbackRoadmapCatalog),
+        },
+        {
+          label: 'Feedback lifecycle policy',
+          run: getFeedbackLifecyclePolicy,
+          apply: (value) => setFeedbackLifecyclePolicy(value as FeedbackLifecyclePolicy),
         },
         {
           label: 'Continuous update ledger',
@@ -6609,6 +6617,226 @@ function Inner() {
                     Unmapped needs: {feedbackRoadmap.coverage.unmapped_need_ids.join(', ')}
                   </div>
                 )}
+              </section>
+            )}
+
+            {feedbackLifecyclePolicy && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {feedbackLifecyclePolicy.state_machine.states.length} states /{' '}
+                      {feedbackLifecyclePolicy.state_machine.transitions.length} transitions /{' '}
+                      {feedbackLifecyclePolicy.sample_tickets_evaluation.length} sample tickets
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[feedbackLifecyclePolicy.status] ?? statusClass.warn}>
+                    {feedbackLifecyclePolicy.status}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {feedbackLifecyclePolicy.state_machine.happy_path.length}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">state_machine.happy_path states</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {feedbackLifecyclePolicy.transition_checks.length}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">transition_checks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {
+                        feedbackLifecyclePolicy.sample_tickets_evaluation.filter((sample) => sample.high_risk)
+                          .length
+                      }
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high-risk samples</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {feedbackLifecyclePolicy.high_risk_policy.blocking_sample_ticket_ids.length}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocking_sample_ticket_ids</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Lifecycle happy path</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {feedbackLifecyclePolicy.state_machine.happy_path.map((state) => (
+                      <Badge key={state} variant="outline" className="bg-white font-mono text-[11px]">
+                        {displayToken(state)}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-xs leading-5 text-stone-600">
+                    customer_visible_resolution is the final customer-facing checkpoint before closure.
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>From</TableHead>
+                          <TableHead>To</TableHead>
+                          <TableHead>Check IDs</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {feedbackLifecyclePolicy.state_machine.transitions.map((transition) => (
+                          <TableRow key={`${transition.from}-${transition.to}`}>
+                            <TableCell className="font-mono text-xs text-stone-700">{transition.from}</TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">{transition.to}</TableCell>
+                            <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                              {transition.check_ids.join(', ')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Check</TableHead>
+                          <TableHead>Applies to</TableHead>
+                          <TableHead>Required</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {feedbackLifecyclePolicy.transition_checks.map((check) => (
+                          <TableRow key={check.id}>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                              <div className="mt-1 max-w-[360px] text-xs leading-5 text-stone-600">{check.reason}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">{check.applies_to}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[readinessStatus(check.required)] ?? statusClass.warn}>
+                                {String(check.required)}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                  <div className="font-black text-amber-950">High-risk policy</div>
+                  <div className="mt-1">{feedbackLifecyclePolicy.high_risk_policy.definition}</div>
+                  <div className="mt-1">{feedbackLifecyclePolicy.high_risk_policy.required_linkage}</div>
+                  <div className="mt-2 font-mono text-xs">
+                    blocking_sample_ticket_ids:{' '}
+                    {feedbackLifecyclePolicy.high_risk_policy.blocking_sample_ticket_ids.join(', ') || '-'}
+                  </div>
+                  <div className="mt-1 font-mono text-xs">high_risk_feedback_linked / privacy-safe public note</div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>sample_tickets_evaluation</TableHead>
+                        <TableHead>Lifecycle</TableHead>
+                        <TableHead>Linkage</TableHead>
+                        <TableHead>Blockers</TableHead>
+                        <TableHead>Required actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackLifecyclePolicy.sample_tickets_evaluation.map((sample) => (
+                        <TableRow key={sample.ticket_id}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">{sample.ticket_id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge
+                                variant="outline"
+                                className={sample.high_risk ? priorityClass.high : statusClass.not_run}
+                              >
+                                high_risk: {String(sample.high_risk)}
+                              </Badge>
+                              <Badge variant="outline" className={statusClass[sample.roadmap_alignment_status ?? 'not_run'] ?? statusClass.warn}>
+                                {sample.roadmap_alignment_status ?? 'not_run'}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">
+                              triage: {sample.triage.priority ?? '-'} / {sample.triage.assignee ?? '-'}
+                            </div>
+                            <div className="text-xs leading-5 text-stone-600">
+                              labels: {(sample.triage.labels ?? []).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono">current: {sample.current_state}</div>
+                            <div className="font-mono">next: {sample.next_state ?? '-'}</div>
+                            <div className="font-mono">
+                              allowed: {sample.next_allowed_states.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="font-mono">gap: {sample.linkage.roadmap_gap_id ?? '-'}</div>
+                            <div className="font-mono">
+                              gates: {sample.linkage.release_gate_links.join(', ') || '-'}
+                            </div>
+                            <div className="font-mono">
+                              high-risk policy: {String(sample.linkage.satisfies_high_risk_policy)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {sample.blocking_check_ids.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {sample.blocking_check_ids.map((checkId) => (
+                                  <Badge key={`${sample.ticket_id}-${checkId}`} variant="outline" className={statusClass.blocked}>
+                                    {checkId}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <Badge variant="outline" className={statusClass.ready}>
+                                clear
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            {sample.required_actions.length > 0 ? sample.required_actions.join(' / ') : 'No immediate action.'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="text-sm leading-6 text-stone-700">{feedbackLifecyclePolicy.privacy_note}</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">validation_commands</h3>
+                    <div className="grid gap-2">
+                      {feedbackLifecyclePolicy.validation_commands.map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </section>
             )}
 

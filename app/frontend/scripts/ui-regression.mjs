@@ -332,6 +332,50 @@ const checks = [
   () => assertIncludes(maintenancePage, 'queue_priority_score', 'user need implementation queue priority binding'),
   () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
+  () => assertIncludes(maintenanceApi, 'FeedbackLifecyclePolicy', 'maintenance feedback lifecycle policy type'),
+  () => assertIncludes(maintenanceApi, 'FeedbackLifecycleState', 'maintenance feedback lifecycle state type'),
+  () => assertIncludes(maintenanceApi, 'FeedbackLifecycleTransition', 'maintenance feedback lifecycle transition type'),
+  () => assertIncludes(maintenanceApi, 'FeedbackLifecycleCheck', 'maintenance feedback lifecycle check type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'FeedbackLifecycleSampleEvaluation',
+      'maintenance feedback lifecycle sample evaluation type',
+    ),
+  () => assertIncludes(maintenanceApi, 'getFeedbackLifecyclePolicy', 'maintenance feedback lifecycle API binding'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/feedback-lifecycle-policy',
+      'maintenance feedback lifecycle endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getFeedbackLifecyclePolicy', 'maintenance feedback lifecycle load task'),
+  () => assertIncludes(maintenancePage, 'feedbackLifecyclePolicy', 'maintenance feedback lifecycle state binding'),
+  () => assertIncludes(maintenancePage, 'setFeedbackLifecyclePolicy', 'maintenance feedback lifecycle state setter'),
+  () => assertIncludes(maintenancePage, 'Feedback lifecycle policy', 'maintenance feedback lifecycle panel'),
+  () => assertIncludes(maintenancePage, 'state_machine.happy_path', 'maintenance feedback lifecycle happy path binding'),
+  () => assertIncludes(maintenancePage, 'transition_checks', 'maintenance feedback lifecycle transition checks binding'),
+  () => assertIncludes(maintenancePage, 'high_risk_policy', 'maintenance feedback lifecycle high-risk policy binding'),
+  () => assertIncludes(maintenancePage, 'customer_visible_resolution', 'maintenance feedback lifecycle customer resolution checkpoint'),
+  () => assertIncludes(maintenancePage, 'high_risk_feedback_linked', 'maintenance feedback lifecycle high-risk linkage check'),
+  () => assertIncludes(maintenancePage, 'blocking_sample_ticket_ids', 'maintenance feedback lifecycle blocker summary'),
+  () => assertIncludes(maintenancePage, 'sample_tickets_evaluation', 'maintenance feedback lifecycle sample table'),
+  () => assertIncludes(maintenancePage, 'privacy-safe public note', 'maintenance feedback lifecycle privacy-safe note check'),
+  () => assertIncludes(maintenancePage, 'validation_commands', 'maintenance feedback lifecycle validation binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Feedback roadmap</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
+      'feedback lifecycle policy follows roadmap',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal review benchmark</h2>',
+      'feedback lifecycle policy precedes legal review benchmark',
+    ),
   () => assertIncludes(maintenancePage, 'Legal document benchmark coverage', 'legal document benchmark coverage panel'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
@@ -2636,6 +2680,12 @@ const legalRagAnswerReleaseReadinessPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Legal RAG benchmark alignment scorecard</h2>',
   'maintenance Legal RAG answer release readiness section',
 );
+const feedbackLifecyclePolicyPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal review benchmark</h2>',
+  'maintenance feedback lifecycle policy section',
+);
 const geminiCheapFirstCoveragePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
@@ -2877,6 +2927,11 @@ assertNotMatches(
   'maintenance Legal RAG answer release readiness no raw example values, source id values, secrets, prompts, model output, or emails',
 );
 assertNotMatches(
+  feedbackLifecyclePolicyPanel,
+  /\b(raw_feedback_value|RAW_FEEDBACK_SHOULD_NOT_LEAK|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance feedback lifecycle policy no raw feedback values, secrets, prompts, model output, authorization, or emails',
+);
+assertNotMatches(
   maintenancePage,
   /fixture problem|dangerous answer|dangerous_answer|raw_fixture_problem|unsafe_answer_text|raw_unsafe_answer/i,
   'maintenance Legal RAG abstention no raw fixture problem or answer text',
@@ -3028,7 +3083,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 35,
+      assertions: checks.length + 36,
     },
     null,
     2,
