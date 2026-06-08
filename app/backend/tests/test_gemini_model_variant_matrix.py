@@ -18,6 +18,9 @@ def test_gemini_model_variant_matrix_marks_cheap_first_and_exception_roles():
     assert matrix["summary"]["cheap_first_default_model"] == "gemini-2.5-flash-lite"
     assert rows["gemini-2.5-flash-lite"]["route_role"] == "cheap_first_default"
     assert rows["gemini-2.5-flash-lite"]["high_frequency_default_allowed"] is True
+    assert rows["gemini-3.1-flash-lite"]["route_role"] == "cheap_first_default"
+    assert rows["gemini-3.1-flash-lite"]["high_frequency_default_allowed"] is True
+    assert rows["gemini-3.1-flash-lite"]["media_route_only"] is False
     assert rows["gemini-2.5-flash"]["route_role"] == "balanced_retry"
     assert rows["gemini-2.5-pro"]["premium_exception_required"] is True
     assert rows["gemini-3-flash-preview"]["catalog_status"] == "preview"

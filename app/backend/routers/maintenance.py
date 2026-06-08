@@ -105,6 +105,8 @@ from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsL
 from services.modelops_legal_fixture_evidence_handoff import ModelOpsLegalFixtureEvidenceHandoffService
 from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
+from services.model_gateway_compatibility import ModelGatewayCompatibilityService
+from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
 from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
@@ -962,6 +964,23 @@ async def evaluate_gemini_newapi_cheap_first_policy(payload: dict[str, Any]):
         "success": True,
         "data": GeminiNewapiCheapFirstPolicyService().build_policy(
             observed_models if isinstance(observed_models, list) else None
+        ),
+    }
+
+
+@router.get("/gemini/observed-coverage-gap-queue")
+async def get_gemini_observed_coverage_gap_queue():
+    """Return metadata-only Gemini family and cheap-first task coverage gaps."""
+    gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
+    observed_gateway_models = [
+        item.get("model")
+        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
+        if item.get("model")
+    ]
+    return {
+        "success": True,
+        "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
+            {"observed_models": observed_gateway_models}
         ),
     }
 

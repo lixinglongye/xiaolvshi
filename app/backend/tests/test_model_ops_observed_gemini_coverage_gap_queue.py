@@ -86,9 +86,11 @@ def test_observed_gemini_coverage_gap_queue_routes_and_model_ops_payload_include
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
     from routers.aihub import router
+    from routers.maintenance import router as maintenance_router
 
     app = fastapi.FastAPI()
     app.include_router(router)
+    app.include_router(maintenance_router)
     client = testclient.TestClient(app)
 
     response = client.get("/api/v1/aihub/models/observed-gemini-coverage-gap-queue")
@@ -96,6 +98,15 @@ def test_observed_gemini_coverage_gap_queue_routes_and_model_ops_payload_include
     route_payload = response.json()
     assert route_payload["success"] is True
     assert route_payload["data"]["summary"]["configuration_written"] is False
+
+    maintenance_response = client.get("/api/v1/maintenance/gemini/observed-coverage-gap-queue")
+    assert maintenance_response.status_code == 200
+    maintenance_payload = maintenance_response.json()
+    assert maintenance_payload["success"] is True
+    assert maintenance_payload["data"]["status"] == route_payload["data"]["status"]
+    assert maintenance_payload["data"]["summary"]["configuration_written"] is False
+    assert maintenance_payload["data"]["summary"]["gateway_called"] is False
+    assert maintenance_payload["data"]["summary"]["network_called"] is False
 
     eval_response = client.post(
         "/api/v1/aihub/models/observed-gemini-coverage-gap-queue",

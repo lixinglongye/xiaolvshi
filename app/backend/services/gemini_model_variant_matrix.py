@@ -190,10 +190,10 @@ class GeminiModelVariantMatrixService:
             "live",
             "transcription",
         }
-        if media_capabilities.intersection(capabilities):
-            return "media_explicit"
         if "flash-lite" in model_id and cost_tier in {"lowest", "low"} and status == "stable":
             return "cheap_first_default"
+        if media_capabilities.intersection(capabilities):
+            return "media_explicit"
         if "flash" in model_id and status == "stable" and cost_tier in {"low", "medium"}:
             return "balanced_retry"
         if cost_tier == "premium" or status == "preview" or "pro" in model_id:

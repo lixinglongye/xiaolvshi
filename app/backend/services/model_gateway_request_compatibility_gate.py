@@ -189,7 +189,7 @@ class ModelGatewayRequestCompatibilityGateService:
             codes.append("high-frequency-token-cap-too-high")
         if task in HIGH_FREQUENCY_TASKS and reasoning.cost_mode == "elevated-thinking":
             codes.append("high-frequency-reasoning-too-expensive")
-        if reasoning.gateway_parameter is None and _is_gemini_like(model, profile) and task != "pdf":
+        if reasoning.gateway_parameter is None and _is_gemini_like(model, profile) and task not in {"pdf", "embedding"}:
             codes.append("reasoning-parameter-omitted")
         if request_decision.response_format_mode == "json" and request_decision.effective_temperature > 0.2:
             codes.append("json-temperature-ceiling-missed")

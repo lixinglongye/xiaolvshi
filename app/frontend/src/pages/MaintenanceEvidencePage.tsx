@@ -103,6 +103,7 @@ import {
   getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
   getReleaseReadiness,
+  getMaintenanceObservedGeminiCoverageGapQueue,
   getMaintenanceUserNeedCheapFirstHandoff,
   getUserNeedBenchmarkCoverage,
   getUserNeedGeminiRouteCoverage,
@@ -188,6 +189,7 @@ import {
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
+  type ModelOpsObservedGeminiCoverageGapQueue,
   type ModelOpsUserNeedCheapFirstHandoff,
   type ModelPriceRefreshMonitor,
   type ModelOpsCheapFirstReleaseDecision,
@@ -787,6 +789,8 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
     useState<GeminiNewApiCheapFirstPolicy | null>(null);
+  const [maintenanceObservedGeminiCoverageGapQueue, setMaintenanceObservedGeminiCoverageGapQueue] =
+    useState<ModelOpsObservedGeminiCoverageGapQueue | null>(null);
   const [modelPriceRefreshMonitor, setModelPriceRefreshMonitor] =
     useState<ModelPriceRefreshMonitor | null>(null);
   const [modelPriceRefreshObservedReview, setModelPriceRefreshObservedReview] =
@@ -1148,6 +1152,12 @@ function Inner() {
           label: 'Gemini/NewAPI cheap-first policy',
           run: getGeminiNewApiCheapFirstPolicyEvidence,
           apply: (value) => setGeminiNewApiCheapFirstPolicy(value as GeminiNewApiCheapFirstPolicy),
+        },
+        {
+          label: 'Observed Gemini coverage gap queue',
+          run: getMaintenanceObservedGeminiCoverageGapQueue,
+          apply: (value) =>
+            setMaintenanceObservedGeminiCoverageGapQueue(value as ModelOpsObservedGeminiCoverageGapQueue),
         },
         {
           label: 'Model price refresh monitor',
@@ -9431,6 +9441,274 @@ function Inner() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {maintenanceObservedGeminiCoverageGapQueue && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only queue for observed Gemini family gaps, high-frequency cheap-first task coverage,
+                      and reviewer release gates.
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      modelops-observed-gemini-coverage-gap-queue
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[maintenanceObservedGeminiCoverageGapQueue.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(maintenanceObservedGeminiCoverageGapQueue.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  {[
+                    {
+                      label: 'observed models',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.observed_model_count,
+                    },
+                    {
+                      label: 'family rows',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.family_row_count,
+                    },
+                    {
+                      label: 'family gaps',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.family_gap_count,
+                    },
+                    {
+                      label: 'task gaps',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.cheap_first_task_gap_count,
+                    },
+                    {
+                      label: 'ready candidates',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.ready_cheap_first_candidate_count,
+                    },
+                    {
+                      label: 'blocking',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.blocking_gap_count,
+                    },
+                    {
+                      label: 'review',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.review_gap_count,
+                    },
+                    {
+                      label: 'unknown ids',
+                      value: maintenanceObservedGeminiCoverageGapQueue.summary.unknown_gemini_count,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-xl font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <div className="border-b border-stone-950/10 px-4 py-3">
+                      <h3 className="text-sm font-black uppercase text-stone-500">Family coverage</h3>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Family</TableHead>
+                          <TableHead>Coverage</TableHead>
+                          <TableHead>Observed</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {maintenanceObservedGeminiCoverageGapQueue.family_rows.map((row) => (
+                          <TableRow key={row.family}>
+                            <TableCell className="max-w-[220px]">
+                              <div className="font-semibold text-stone-950">{row.family}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">
+                                high-frequency default: {String(row.high_frequency_default_allowed)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.coverage_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.coverage_status)}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {displayToken(row.default_use)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {row.observed_model_count} observed / {row.catalog_model_count} catalog
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.observed_models.slice(0, 4).join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.recommended_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <div className="border-b border-stone-950/10 px-4 py-3">
+                      <h3 className="text-sm font-black uppercase text-stone-500">
+                        High-frequency task coverage
+                      </h3>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Coverage</TableHead>
+                          <TableHead>Candidates</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {maintenanceObservedGeminiCoverageGapQueue.high_frequency_task_rows.map((row) => (
+                          <TableRow key={row.task}>
+                            <TableCell className="font-semibold text-stone-950">{displayToken(row.task)}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.coverage_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.coverage_status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {row.ready_candidate_count} ready / {row.catalog_candidate_count} catalog
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.candidate_models.slice(0, 4).join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.recommended_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <div className="border-b border-stone-950/10 px-4 py-3">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Gap queue</h3>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Gap</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Models</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Release links</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {maintenanceObservedGeminiCoverageGapQueue.gap_items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="max-w-[320px]">
+                            <div className="font-semibold text-stone-950">{item.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              P{item.priority} / {item.severity} / {item.gap_type} / {item.scope}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={statusClass[item.coverage_status] ?? statusClass.review_required}
+                            >
+                              {displayToken(item.coverage_status)}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">owner: {item.owner}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] font-mono text-[11px] leading-5 text-stone-600">
+                            {item.model_ids.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                            <div>{item.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-1">{item.recommended_action}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                            <div>{item.release_gate_links.join(', ') || '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {item.evidence_paths.slice(0, 2).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy and claims</h3>
+                    <div className="text-xs leading-5 text-stone-600">
+                      Metadata-only output scoped to model ids, family/task labels, local coverage gaps, and no-write/no-call flags.
+                    </div>
+                    <div className="mt-3 grid gap-2 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(maintenanceObservedGeminiCoverageGapQueue.privacy_boundary)
+                        .slice(0, 6)
+                        .map(([key, value]) => (
+                          <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white px-3 py-2">
+                            {displayToken(key)}: {formatInline(value)}
+                          </div>
+                        ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      configuration written: {String(maintenanceObservedGeminiCoverageGapQueue.summary.configuration_written)} /
+                      gateway called: {String(maintenanceObservedGeminiCoverageGapQueue.summary.gateway_called)} / network
+                      called: {String(maintenanceObservedGeminiCoverageGapQueue.summary.network_called)}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(maintenanceObservedGeminiCoverageGapQueue.claim_boundary)
+                        .slice(0, 6)
+                        .map(([key, value]) => (
+                          <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white px-3 py-2">
+                            {displayToken(key)}: {formatInline(value)}
+                          </div>
+                        ))}
+                    </div>
+                    <ul className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                      {maintenanceObservedGeminiCoverageGapQueue.recommended_actions.slice(0, 2).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {maintenanceObservedGeminiCoverageGapQueue.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

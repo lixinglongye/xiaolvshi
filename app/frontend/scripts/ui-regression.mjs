@@ -89,8 +89,14 @@ const geminiAliasMatrixPanel = sourceSection(
 const geminiCheapFirstPolicyPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
   'maintenance Gemini/NewAPI cheap-first policy panel',
+);
+const maintenanceObservedGeminiCoverageGapQueuePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+  'maintenance observed Gemini coverage gap queue panel',
 );
 const modelPriceRefreshMonitorPanel = sourceSection(
   maintenancePage,
@@ -382,6 +388,140 @@ const checks = [
       geminiCheapFirstPolicyPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers/i,
       'maintenance Gemini/NewAPI cheap-first policy sensitive field guard',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiCoverageGapQueue',
+      'maintenance observed Gemini coverage gap queue type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiCoverageGapFamilyRow',
+      'maintenance observed Gemini coverage gap family row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiCoverageGapTaskRow',
+      'maintenance observed Gemini coverage gap task row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiCoverageGapItem',
+      'maintenance observed Gemini coverage gap item type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceObservedGeminiCoverageGapQueue',
+      'maintenance observed Gemini coverage gap queue getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/gemini/observed-coverage-gap-queue',
+      'maintenance observed Gemini coverage gap queue endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'high_frequency_task_rows',
+      'maintenance observed Gemini coverage gap task rows payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'gap_items',
+      'maintenance observed Gemini coverage gap items payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getMaintenanceObservedGeminiCoverageGapQueue',
+      'maintenance observed Gemini coverage gap queue load task',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceObservedGeminiCoverageGapQueue',
+      'maintenance observed Gemini coverage gap queue state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'Observed Gemini coverage gap queue',
+      'maintenance observed Gemini coverage gap queue panel',
+    ),
+  () => assertIncludes(maintenancePage, 'family_gap_count', 'maintenance observed Gemini family gap metric'),
+  () => assertIncludes(maintenancePage, 'cheap_first_task_gap_count', 'maintenance observed Gemini task gap metric'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'ready_cheap_first_candidate_count',
+      'maintenance observed Gemini ready cheap-first candidate metric',
+    ),
+  () => assertIncludes(maintenancePage, 'high_frequency_task_rows', 'maintenance observed Gemini task row binding'),
+  () => assertIncludes(maintenancePage, 'gap_items', 'maintenance observed Gemini gap item binding'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'modelops-observed-gemini-coverage-gap-queue',
+      'maintenance observed Gemini release gate id binding',
+    ),
+  () => assertIncludes(maintenancePage, 'privacy_boundary', 'maintenance observed Gemini privacy boundary binding'),
+  () => assertIncludes(maintenancePage, 'claim_boundary', 'maintenance observed Gemini claim boundary binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+      'maintenance observed Gemini queue follows cheap-first policy',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+      'maintenance price refresh follows observed Gemini queue',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      'Family coverage',
+      'maintenance observed Gemini family coverage panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      'High-frequency task coverage',
+      'maintenance observed Gemini high-frequency task coverage panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      'Gap queue',
+      'maintenance observed Gemini gap queue panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      'Privacy and claims',
+      'maintenance observed Gemini privacy and claims panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      'Validation commands',
+      'maintenance observed Gemini validation commands panel',
+    ),
+  () =>
+    assertNotMatches(
+      maintenanceObservedGeminiCoverageGapQueuePanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|gateway_response|headers|client_contact_details|email|phone|identity|benchmark_sample)\b/i,
+      'maintenance observed Gemini coverage gap queue sensitive field guard',
     ),
   () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitor', 'maintenance model price refresh monitor type'),
   () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitorCheck', 'maintenance model price refresh check type'),

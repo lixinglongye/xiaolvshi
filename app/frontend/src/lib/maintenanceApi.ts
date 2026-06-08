@@ -544,6 +544,93 @@ type ModelOpsUserNeedCheapFirstHandoffResponse = {
   data: ModelOpsUserNeedCheapFirstHandoff;
 };
 
+export type ModelOpsObservedGeminiCoverageGapFamilyRow = {
+  family: string;
+  coverage_status: string;
+  catalog_model_count: number;
+  observed_model_count: number;
+  ready_cheap_first_candidate_count: number;
+  blocked_model_count: number;
+  review_required_model_count: number;
+  high_frequency_default_allowed: boolean;
+  default_use: string;
+  observed_models: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsObservedGeminiCoverageGapTaskRow = {
+  task: string;
+  coverage_status: string;
+  ready_candidate_count: number;
+  catalog_candidate_count: number;
+  candidate_models: string[];
+  recommended_action: string;
+};
+
+export type ModelOpsObservedGeminiCoverageGapItem = {
+  id: string;
+  title: string;
+  severity: string;
+  priority: number;
+  gap_type: string;
+  scope: string;
+  coverage_status: string;
+  model_ids: string[];
+  reason_codes: string[];
+  recommended_action: string;
+  owner: string;
+  release_gate_links: string[];
+  evidence_paths: string[];
+  validation_commands: string[];
+};
+
+export type ModelOpsObservedGeminiCoverageGapQueue = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observed_model_count: number;
+    family_row_count: number;
+    covered_family_count: number;
+    family_gap_count: number;
+    high_frequency_task_count: number;
+    cheap_first_task_covered_count: number;
+    cheap_first_task_gap_count: number;
+    gap_item_count: number;
+    blocking_gap_count: number;
+    review_gap_count: number;
+    ready_cheap_first_candidate_count: number;
+    blocked_model_count: number;
+    review_model_count: number;
+    unknown_gemini_count: number;
+    unpriced_model_count: number;
+    preview_model_count: number;
+    media_review_count: number;
+    external_non_gemini_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  family_rows: ModelOpsObservedGeminiCoverageGapFamilyRow[];
+  high_frequency_task_rows: ModelOpsObservedGeminiCoverageGapTaskRow[];
+  gap_items: ModelOpsObservedGeminiCoverageGapItem[];
+  blocking_gap_ids: string[];
+  review_gap_ids: string[];
+  recommended_actions: string[];
+  source_summaries: Record<string, unknown>;
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
+type ModelOpsObservedGeminiCoverageGapQueueResponse = {
+  success: boolean;
+  data: ModelOpsObservedGeminiCoverageGapQueue;
+};
+
 export type FrontendUiRegressionCommandGate = {
   id: string;
   command: string;
@@ -7887,6 +7974,20 @@ export async function getMaintenanceUserNeedCheapFirstHandoff(): Promise<ModelOp
     return payload.data;
   }
   return payload as ModelOpsUserNeedCheapFirstHandoff;
+}
+
+export async function getMaintenanceObservedGeminiCoverageGapQueue(): Promise<ModelOpsObservedGeminiCoverageGapQueue> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini/observed-coverage-gap-queue',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | ModelOpsObservedGeminiCoverageGapQueueResponse
+    | ModelOpsObservedGeminiCoverageGapQueue;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ModelOpsObservedGeminiCoverageGapQueue;
 }
 
 export async function getFrontendUiRegressionGate(): Promise<FrontendUiRegressionGate> {
