@@ -49,6 +49,7 @@ import {
   getModelOpsLegalBenchmarkRiskBridge,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
   getModelOpsUserNeedReleaseBridge,
@@ -86,6 +87,7 @@ import {
   type ModelOpsLegalBenchmarkRiskBridge,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
   type ModelOpsUserNeedReleaseBridge,
@@ -598,6 +600,9 @@ function Inner() {
     useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
   const [legalFixtureCheapFirstDefaultPromotionPacketError, setLegalFixtureCheapFirstDefaultPromotionPacketError] =
     useState('');
+  const [legalFixtureEvidenceHandoff, setLegalFixtureEvidenceHandoff] =
+    useState<ModelOpsLegalFixtureEvidenceHandoff | null>(null);
+  const [legalFixtureEvidenceHandoffError, setLegalFixtureEvidenceHandoffError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -632,6 +637,7 @@ function Inner() {
     setLegalFixtureCheapFirstDefaultPromotionPacket(
       payload.legal_fixture_cheap_first_default_promotion_packet ?? null,
     );
+    setLegalFixtureEvidenceHandoff(payload.legal_fixture_evidence_handoff ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -715,6 +721,8 @@ function Inner() {
     setLegalFixtureCheapFirstBenchmarkGate(null);
     setLegalFixtureCheapFirstDefaultPromotionPacketError('');
     setLegalFixtureCheapFirstDefaultPromotionPacket(null);
+    setLegalFixtureEvidenceHandoffError('');
+    setLegalFixtureEvidenceHandoff(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -767,6 +775,7 @@ function Inner() {
         legalMicroBenchmarkPreflightResult,
         legalFixtureCheapFirstBenchmarkGateResult,
         legalFixtureCheapFirstDefaultPromotionPacketResult,
+        legalFixtureEvidenceHandoffResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -810,6 +819,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet,
           getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_fixture_evidence_handoff,
+          getModelOpsLegalFixtureEvidenceHandoff,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1160,6 +1173,20 @@ function Inner() {
           setLegalFixtureCheapFirstDefaultPromotionPacketError(
             'Legal fixture cheap-first default promotion packet failed to load.',
           );
+        }
+      }
+      if (legalFixtureEvidenceHandoffResult.status === 'fulfilled') {
+        setLegalFixtureEvidenceHandoff(legalFixtureEvidenceHandoffResult.value);
+      } else {
+        console.error(legalFixtureEvidenceHandoffResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalFixtureEvidenceHandoff(modelOpsResult.value.legal_fixture_evidence_handoff ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_fixture_evidence_handoff)
+        ) {
+          setLegalFixtureEvidenceHandoffError('Legal fixture evidence handoff failed to load.');
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -1764,6 +1791,49 @@ function Inner() {
     ?? null;
   const legalFixtureDefaultPromotionRows =
     activeLegalFixtureCheapFirstDefaultPromotionPacket?.promotion_items ?? [];
+  const activeLegalFixtureEvidenceHandoff =
+    (data?.legal_fixture_evidence_handoff ?? legalFixtureEvidenceHandoff ?? null) as ModelOpsLegalFixtureEvidenceHandoff | null;
+  const legalFixtureEvidenceHandoffRows = activeLegalFixtureEvidenceHandoff?.handoff_rows ?? [];
+  const legalFixtureEvidenceHandoffChecks = activeLegalFixtureEvidenceHandoff?.checks ?? [];
+  const legalFixtureEvidenceHandoffPrivacyEntries = boundaryDisplayEntries(
+    activeLegalFixtureEvidenceHandoff?.privacy_boundary,
+  );
+  const legalFixtureEvidenceHandoffClaimEntries = boundaryDisplayEntries(
+    activeLegalFixtureEvidenceHandoff?.claim_boundary,
+  );
+  const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
+    ? [
+        {
+          label: 'observed fixtures',
+          value: formatNumber(activeLegalFixtureEvidenceHandoff.summary.observed_fixture_count),
+        },
+        {
+          label: 'archived fixtures',
+          value: formatNumber(activeLegalFixtureEvidenceHandoff.summary.archived_fixture_count),
+        },
+        { label: 'release ready', value: String(activeLegalFixtureEvidenceHandoff.summary.release_ready) },
+        {
+          label: 'input metadata fields',
+          value: formatNumber(activeLegalFixtureEvidenceHandoff.summary.raw_input_field_count),
+        },
+        { label: 'gateway called', value: String(activeLegalFixtureEvidenceHandoff.summary.gateway_called) },
+        { label: 'network called', value: String(activeLegalFixtureEvidenceHandoff.summary.network_called) },
+        {
+          label: 'config written',
+          value: String(activeLegalFixtureEvidenceHandoff.summary.configuration_written),
+        },
+        { label: 'completion claimed', value: String(activeLegalFixtureEvidenceHandoff.summary.completion_claimed) },
+      ]
+    : [];
+  const legalFixtureEvidenceHandoffUiRows = legalFixtureEvidenceHandoffRows.map((row) => ({
+    ...row,
+    archiveBoundaryRows: [
+      { label: 'release ready', value: row.release_ready },
+      { label: 'payload returned', value: row.raw_payload_returned },
+      { label: 'gateway response returned', value: row.raw_gateway_response_returned },
+      { label: 'model output returned', value: row.raw_model_output_returned },
+    ],
+  }));
   const routeQualityRows = data?.route_quality_budget?.task_quality_budgets ?? [];
   const runtimeRouterFields = useMemo(() => Object.entries(data?.runtime_router?.request_fields ?? {}), [data]);
   const runtimeDefaults = data?.runtime_router?.task_defaults ?? [];
@@ -5513,6 +5583,142 @@ function Inner() {
                   </div>
                 )}
               </>
+            )}
+          </section>
+        )}
+
+        {activeLegalFixtureEvidenceHandoff && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalFixtureEvidenceHandoff.summary.handoff_source_count)} sources /{' '}
+                  {formatNumber(activeLegalFixtureEvidenceHandoff.summary.ready_source_count)} ready /{' '}
+                  {formatNumber(activeLegalFixtureEvidenceHandoff.summary.not_run_source_count)} not run
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeLegalFixtureEvidenceHandoff.id}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeLegalFixtureEvidenceHandoff.status)}>
+                {activeLegalFixtureEvidenceHandoff.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+              {legalFixtureEvidenceHandoffMetrics.map((metric) => (
+                <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                  <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Fixture counts</TableHead>
+                      <TableHead>Archive boundary</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {legalFixtureEvidenceHandoffUiRows.map((row) => (
+                      <TableRow key={row.id}>
+                        <TableCell className="max-w-[280px]">
+                          <div className="font-semibold text-stone-950">{row.label}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{row.endpoint}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(row.handoff_status)}>
+                            {row.handoff_status.replace(/_/g, ' ')}
+                          </Badge>
+                          <div className="mt-1 text-xs text-stone-600">
+                            source {row.source_status.replace(/_/g, ' ')}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs leading-5 text-stone-600">
+                          <div>observed {formatNumber(row.observed_fixture_count)}</div>
+                          <div>not run {formatNumber(row.not_run_fixture_count)}</div>
+                          <div>blocking {formatNumber(row.blocking_count)} / warning {formatNumber(row.warning_count)}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                          {row.archiveBoundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {String(item.value)}
+                            </div>
+                          ))}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Checks</h3>
+                <div className="space-y-3">
+                  {legalFixtureEvidenceHandoffChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {legalFixtureEvidenceHandoffPrivacyEntries.map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {value == null ? '-' : String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {legalFixtureEvidenceHandoffClaimEntries.map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {value == null ? '-' : String(value)}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  {activeLegalFixtureEvidenceHandoff.recommended_actions.slice(0, 2).join(' ')}
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                <div className="space-y-2">
+                  {activeLegalFixtureEvidenceHandoff.validation_commands.map((command) => (
+                    <div
+                      key={command}
+                      className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                    >
+                      {command}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {legalFixtureEvidenceHandoffError && (
+              <div className="mt-2 text-xs font-semibold text-red-700">{legalFixtureEvidenceHandoffError}</div>
             )}
           </section>
         )}

@@ -1365,6 +1365,16 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'default_change_allowed_by_packet', 'legal fixture cheap-first default promotion packet no auto-default type'),
   () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'legal fixture cheap-first default promotion packet API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet', 'legal fixture cheap-first default promotion packet endpoint'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureEvidenceHandoff', 'legal fixture evidence handoff type'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureEvidenceHandoffRow', 'legal fixture evidence handoff row type'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsLegalFixtureEvidenceHandoffCheck', 'legal fixture evidence handoff check type'),
+  () => assertIncludes(maintenanceApi, 'handoff_rows', 'legal fixture evidence handoff rows type'),
+  () => assertIncludes(maintenanceApi, 'handoff_evidence_summary', 'legal fixture evidence handoff source summary type'),
+  () => assertIncludes(maintenanceApi, 'raw_input_field_count', 'legal fixture evidence handoff input boundary summary type'),
+  () => assertIncludes(maintenanceApi, 'completion_claimed', 'legal fixture evidence handoff completion non-claim type'),
+  () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureEvidenceHandoff', 'legal fixture evidence handoff API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateModelOpsLegalFixtureEvidenceHandoff', 'legal fixture evidence handoff evaluate API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/evidence-handoff', 'legal fixture evidence handoff endpoint'),
   () => assertIncludes(maintenanceApi, 'ModelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision type'),
   () => assertIncludes(maintenanceApi, 'getModelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/aihub/models/cheap-first-release-decision', 'maintenance cheap-first release decision endpoint'),
@@ -1390,6 +1400,14 @@ const checks = [
   () => assertIncludes(maintenancePage, 'traffic_shift_allowed', 'legal fixture cheap-first default promotion packet no traffic shift label'),
   () => assertIncludes(maintenancePage, 'requires_cheap_first_calibration_pass', 'legal fixture cheap-first default promotion calibration requirement label'),
   () => assertIncludes(maintenancePage, 'linked_calibration_task_ids', 'legal fixture cheap-first default promotion calibration task binding'),
+  () => assertIncludes(maintenancePage, 'modelOpsLegalFixtureEvidenceHandoff', 'legal fixture evidence handoff state binding'),
+  () => assertIncludes(maintenancePage, 'Legal fixture evidence handoff', 'legal fixture evidence handoff panel'),
+  () => assertIncludes(maintenancePage, 'legalFixtureEvidenceHandoffRows', 'legal fixture evidence handoff rows fallback'),
+  () => assertIncludes(maintenancePage, 'legalFixtureEvidenceHandoffChecks', 'legal fixture evidence handoff checks fallback'),
+  () => assertIncludes(maintenancePage, 'legalFixtureEvidenceHandoffBoundaryRows', 'legal fixture evidence handoff boundary rows'),
+  () => assertIncludes(maintenancePage, 'returns_run_report_payload', 'legal fixture evidence handoff run report boundary binding'),
+  () => assertIncludes(maintenancePage, 'returns_credentials', 'legal fixture evidence handoff credential boundary binding'),
+  () => assertIncludes(maintenancePage, 'completion_claimed', 'legal fixture evidence handoff completion claim binding'),
   () => assertIncludes(maintenancePage, 'modelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision state binding'),
   () => assertIncludes(maintenancePage, 'Cheap-first release decision', 'maintenance cheap-first release decision panel'),
   () => assertIncludes(maintenancePage, 'cheapFirstReleaseDecisionLegalChecks', 'maintenance cheap-first release legal checks binding'),
@@ -1401,7 +1419,8 @@ const checks = [
   () => assertIncludes(maintenancePage, 'source_blocking_id_count', 'maintenance cheap-first release source blocker count binding'),
   () => assertIncludes(maintenancePage, 'legal_fixture_policy', 'maintenance cheap-first release legal fixture policy binding'),
   () => assertIncludes(maintenancePage, 'legal_benchmark_policy', 'maintenance cheap-first release legal benchmark policy binding'),
-  () => assertBefore(maintenancePage, 'Maintainer-only packet for cheap-first legal fixture default review', '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>', 'maintenance cheap-first release follows legal promotion packet'),
+  () => assertBefore(maintenancePage, 'Maintainer-only packet for cheap-first legal fixture default review', '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>', 'maintenance legal fixture evidence handoff follows legal promotion packet'),
+  () => assertBefore(maintenancePage, '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>', '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>', 'maintenance cheap-first release follows legal fixture evidence handoff'),
   () => assertBefore(maintenancePage, '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>', '                      Model route legal benchmark risk queue', 'maintenance cheap-first release precedes legal route risk queue'),
   () => assertIncludes(maintenanceApi, 'LegalRagAuthorityCitationGate', 'legal RAG authority citation gate type'),
   () => assertIncludes(maintenanceApi, 'legalRagAuthorityCitationGate', 'legal RAG authority citation gate payload binding'),
@@ -1789,6 +1808,8 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'aggregateOrRequest', 'model-ops secondary endpoint dedupe helper'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_benchmark_gate', 'model-ops legal fixture gate aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet', 'model-ops promotion packet aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_evidence_handoff', 'model-ops legal fixture evidence handoff aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'getModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff fallback request'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_cheap_first_handoff', 'model-ops user-need cheap-first handoff aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'getModelOpsUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff fallback request'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.cheap_first_cascade_research_gate', 'model-ops cheap-first cascade research gate aggregate reuse'),
@@ -2800,13 +2821,22 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'run_sequence', 'model-ops legal micro benchmark run order payload guard'),
   () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGate', 'model-ops legal fixture benchmark gate type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'model-ops legal fixture promotion packet type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureEvidenceHandoffRow', 'model-ops legal fixture evidence handoff row type export'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureEvidenceHandoffCheck', 'model-ops legal fixture evidence handoff check type export'),
   () => assertIncludes(modelOpsApi, 'getModelOpsLegalFixtureCheapFirstBenchmarkGate', 'model-ops legal fixture benchmark gate API'),
   () => assertIncludes(modelOpsApi, 'getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'model-ops legal fixture promotion packet API'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff API'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff evaluate API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-fixture-cheap-first-benchmark-gate', 'model-ops legal fixture benchmark gate endpoint'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet', 'model-ops legal fixture promotion packet endpoint'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-fixture-evidence-handoff', 'model-ops legal fixture evidence handoff endpoint'),
   () => assertIncludes(modelOpsApi, 'legal_fixture_cheap_first_benchmark_gate', 'model-ops legal fixture benchmark gate response binding'),
   () => assertIncludes(modelOpsApi, 'legal_fixture_cheap_first_default_promotion_packet', 'model-ops legal fixture promotion packet response binding'),
+  () => assertIncludes(modelOpsApi, 'legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff response binding'),
   () => assertIncludes(modelOpsApi, 'gate_rows', 'model-ops legal fixture benchmark gate payload guard'),
+  () => assertIncludes(modelOpsApi, 'handoff_rows?: unknown', 'model-ops legal fixture evidence handoff payload guard'),
+  () => assertIncludes(modelOpsApi, 'handoff_evidence_summary?: unknown', 'model-ops legal fixture evidence handoff source payload guard'),
   () => assertIncludes(modelOpsApi, 'ModelOpsLegalFixtureCheapFirstBenchmarkGateRow', 'model-ops legal fixture benchmark gate row type export'),
   () => assertIncludes(modelOpsPage, 'Model failure upgrade budget', 'model-ops model failure upgrade budget panel'),
   () => assertIncludes(modelOpsPage, 'activeFailureUpgradeBudget', 'model-ops model failure upgrade budget state binding'),
@@ -2837,6 +2867,14 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'legalFixtureDefaultPromotionRows', 'model-ops legal fixture promotion packet row binding'),
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_packet', 'model-ops legal fixture promotion packet decision binding'),
   () => assertIncludes(modelOpsPage, 'requires_cheap_first_calibration_pass', 'model-ops legal fixture calibration requirement binding'),
+  () => assertIncludes(modelOpsPage, 'Legal fixture evidence handoff', 'model-ops legal fixture evidence handoff panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff active binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureEvidenceHandoffRows', 'model-ops legal fixture evidence handoff rows binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureEvidenceHandoffChecks', 'model-ops legal fixture evidence handoff checks binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureEvidenceHandoffMetrics', 'model-ops legal fixture evidence handoff metric binding'),
+  () => assertIncludes(modelOpsPage, 'legalFixtureEvidenceHandoffUiRows', 'model-ops legal fixture evidence handoff safe row projection'),
+  () => assertIncludes(modelOpsPage, 'raw_input_field_count', 'model-ops legal fixture evidence handoff input boundary binding'),
+  () => assertIncludes(modelOpsPage, 'completion_claimed', 'model-ops legal fixture evidence handoff completion claim binding'),
   () => assertIncludes(modelOpsPage, 'ModelOps legal benchmark risk bridge', 'model-ops legal benchmark risk bridge panel'),
   () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkRiskBridge', 'model-ops legal benchmark risk bridge active binding'),
   () => assertIncludes(modelOpsPage, 'legalBenchmarkRiskRouteReviews', 'model-ops legal benchmark risk bridge route rows'),
@@ -2878,8 +2916,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+    'model-ops legal fixture evidence handoff follows fixture promotion packet',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
     '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
-    'model-ops legal benchmark bridge follows legal fixture promotion packet',
+    'model-ops legal benchmark bridge follows legal fixture evidence handoff',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -3280,8 +3324,14 @@ const modelOpsLegalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
 const modelOpsLegalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first default promotion packet</h2>',
-  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
   'model-ops legal fixture cheap-first default promotion packet section',
+);
+const modelOpsLegalFixtureEvidenceHandoffPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps legal benchmark risk bridge</h2>',
+  'model-ops legal fixture evidence handoff section',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
@@ -3322,8 +3372,14 @@ const legalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
 const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
   maintenancePage,
   'Maintainer-only packet for cheap-first legal fixture default review',
-  '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
   'maintenance legal fixture cheap-first default promotion packet section',
+);
+const legalFixtureEvidenceHandoffPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>',
+  'maintenance legal fixture evidence handoff section',
 );
 const maintenanceCheapFirstReleaseDecisionPanel = sourceSection(
   maintenancePage,
@@ -3509,6 +3565,11 @@ assertNotMatches(
   'model-ops legal fixture cheap-first default promotion packet no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
+  modelOpsLegalFixtureEvidenceHandoffPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_gateway_response|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|input_excerpt|output_text)\b/i,
+  'model-ops legal fixture evidence handoff no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
   modelOpsLegalBenchmarkRiskBridgePanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet)\b/i,
   'model-ops legal benchmark risk bridge no secrets or raw benchmark/model/payload fields',
@@ -3547,6 +3608,11 @@ assertNotMatches(
   legalFixtureCheapFirstDefaultPromotionPacketPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|document_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
   'maintenance legal fixture cheap-first default promotion packet no secrets or raw fixture/output field names',
+);
+assertNotMatches(
+  legalFixtureEvidenceHandoffPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_gateway_response|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|input_excerpt|output_text)\b/i,
+  'maintenance legal fixture evidence handoff no secrets or raw fixture/model/payload field names',
 );
 assertNotMatches(
   maintenanceCheapFirstReleaseDecisionPanel,

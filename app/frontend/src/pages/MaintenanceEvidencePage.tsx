@@ -47,6 +47,7 @@ import {
   getModelOpsCheapFirstReleaseDecision,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  getModelOpsLegalFixtureEvidenceHandoff,
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
   evaluateLegalRagAnswerReleaseReadinessGate,
@@ -181,6 +182,7 @@ import {
   type ModelOpsCheapFirstReleaseDecision,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelRouteLegalBenchmarkRiskQueue,
   type OcrImportReadinessPolicy,
   type ProductFeatureGapRadar,
@@ -727,6 +729,8 @@ function Inner() {
     modelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
     setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ] = useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
+  const [modelOpsLegalFixtureEvidenceHandoff, setModelOpsLegalFixtureEvidenceHandoff] =
+    useState<ModelOpsLegalFixtureEvidenceHandoff | null>(null);
   const [modelOpsCheapFirstReleaseDecision, setModelOpsCheapFirstReleaseDecision] =
     useState<ModelOpsCheapFirstReleaseDecision | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
@@ -1041,6 +1045,11 @@ function Inner() {
             setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(
               value as ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
             ),
+        },
+        {
+          label: 'ModelOps legal fixture evidence handoff',
+          run: getModelOpsLegalFixtureEvidenceHandoff,
+          apply: (value) => setModelOpsLegalFixtureEvidenceHandoff(value as ModelOpsLegalFixtureEvidenceHandoff),
         },
         {
           label: 'ModelOps cheap-first release decision',
@@ -1392,6 +1401,93 @@ function Inner() {
       ? legalFixtureDefaultPromotionRows.filter((row) => row.promotion_status !== 'ready_for_maintainer_review')
       : legalFixtureDefaultPromotionRows
   ).slice(0, 3);
+  const legalFixtureEvidenceHandoffRows = modelOpsLegalFixtureEvidenceHandoff?.handoff_rows ?? [];
+  const legalFixtureEvidenceHandoffChecks = modelOpsLegalFixtureEvidenceHandoff?.checks ?? [];
+  const legalFixtureEvidenceHandoffMetrics = modelOpsLegalFixtureEvidenceHandoff
+    ? [
+        {
+          label: 'handoff sources',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.handoff_source_count,
+        },
+        {
+          label: 'ready sources',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.ready_source_count,
+        },
+        {
+          label: 'blocked sources',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.blocked_source_count,
+        },
+        {
+          label: 'not run sources',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.not_run_source_count,
+        },
+        {
+          label: 'observed fixtures',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.observed_fixture_count,
+        },
+        {
+          label: 'input metadata fields',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.raw_input_field_count,
+        },
+        {
+          label: 'gateway called',
+          value: String(modelOpsLegalFixtureEvidenceHandoff.summary.gateway_called),
+        },
+        {
+          label: 'completion claimed',
+          value: String(modelOpsLegalFixtureEvidenceHandoff.summary.completion_claimed),
+        },
+      ]
+    : [];
+  const legalFixtureEvidenceHandoffUiRows = legalFixtureEvidenceHandoffRows.map((row) => ({
+    ...row,
+    archiveBoundaryRows: [
+      { label: 'release ready', value: row.release_ready },
+      { label: 'payload returned', value: row.raw_payload_returned },
+      { label: 'gateway response returned', value: row.raw_gateway_response_returned },
+      { label: 'model output returned', value: row.raw_model_output_returned },
+    ],
+  }));
+  const legalFixtureEvidenceHandoffBoundaryRows = modelOpsLegalFixtureEvidenceHandoff
+    ? [
+        {
+          label: 'run report payload returned',
+          value: modelOpsLegalFixtureEvidenceHandoff.privacy_boundary.returns_run_report_payload ?? false,
+        },
+        {
+          label: 'credentials returned',
+          value: modelOpsLegalFixtureEvidenceHandoff.privacy_boundary.returns_credentials ?? false,
+        },
+        {
+          label: 'gateway response returned',
+          value: modelOpsLegalFixtureEvidenceHandoff.privacy_boundary.returns_gateway_response ?? false,
+        },
+        {
+          label: 'network called',
+          value: modelOpsLegalFixtureEvidenceHandoff.privacy_boundary.network_called ?? false,
+        },
+        {
+          label: 'configuration written',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.configuration_written,
+        },
+        {
+          label: 'traffic shifted',
+          value: modelOpsLegalFixtureEvidenceHandoff.summary.traffic_shifted,
+        },
+        {
+          label: '24h completion claimed',
+          value: modelOpsLegalFixtureEvidenceHandoff.claim_boundary.twenty_four_hour_completion_claimed ?? false,
+        },
+        {
+          label: '100 update completion claimed',
+          value: modelOpsLegalFixtureEvidenceHandoff.claim_boundary.hundred_update_completion_claimed ?? false,
+        },
+        {
+          label: 'allowed claim',
+          value: modelOpsLegalFixtureEvidenceHandoff.claim_boundary.allowed_claim ?? '-',
+        },
+      ]
+    : [];
   const cheapFirstReleaseDecisionLegalChecks = (
     modelOpsCheapFirstReleaseDecision?.checks ?? []
   ).filter((check) =>
@@ -6460,6 +6556,128 @@ function Inner() {
                           <Badge variant="outline" className={statusClass[item.status] ?? statusClass.review_required}>
                             {displayToken(item.status)}
                           </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelOpsLegalFixtureEvidenceHandoff && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only handoff across local fixture review, cheap-first gate, promotion packet, and run monitor.
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      {modelOpsLegalFixtureEvidenceHandoff.id}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[modelOpsLegalFixtureEvidenceHandoff.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(modelOpsLegalFixtureEvidenceHandoff.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 lg:grid-cols-8">
+                  {legalFixtureEvidenceHandoffMetrics.map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Source</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Counts</TableHead>
+                          <TableHead>Release boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalFixtureEvidenceHandoffUiRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[280px]">
+                              <div className="font-semibold text-stone-950">{row.label}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.endpoint}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.handoff_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.handoff_status)}
+                              </Badge>
+                              <div className="mt-2 text-xs text-stone-600">
+                                source {displayToken(row.source_status)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>observed {row.observed_fixture_count}</div>
+                              <div>not run {row.not_run_fixture_count}</div>
+                              <div>
+                                blocking {row.blocking_count} / warning {row.warning_count}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              {row.archiveBoundaryRows.map((item) => (
+                                <div key={item.label}>
+                                  {item.label}: {String(item.value)}
+                                </div>
+                              ))}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalFixtureEvidenceHandoffBoundaryRows.map((item) => (
+                        <div key={item.label}>
+                          {item.label}: {formatInline(item.value)}
+                        </div>
+                      ))}
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Checks</h3>
+                    <div className="grid gap-2">
+                      {legalFixtureEvidenceHandoffChecks.slice(0, 6).map((check) => (
+                        <div
+                          key={check.id}
+                          className="rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-mono font-semibold text-stone-700">{check.id}</span>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.review_required}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(modelOpsLegalFixtureEvidenceHandoff.validation_commands ?? []).slice(0, 4).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
                         </div>
                       ))}
                     </div>

@@ -3384,6 +3384,76 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalFixtureEvidenceHandoffRow = {
+  id: string;
+  label: string;
+  endpoint: string;
+  source_status: string;
+  handoff_status: string;
+  blocking_count: number;
+  warning_count: number;
+  observed_fixture_count: number;
+  not_run_fixture_count: number;
+  release_ready: boolean;
+  raw_payload_returned: boolean;
+  raw_gateway_response_returned: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalFixtureEvidenceHandoffCheck = {
+  id: string;
+  status: string;
+  reason: string;
+};
+
+export type ModelOpsLegalFixtureEvidenceHandoff = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    handoff_source_count: number;
+    ready_source_count: number;
+    review_source_count: number;
+    blocked_source_count: number;
+    not_run_source_count: number;
+    local_run_review_status: string;
+    cheap_first_gate_status: string;
+    default_promotion_packet_status: string;
+    run_monitor_status: string;
+    observed_fixture_count: number;
+    archived_fixture_count: number;
+    release_ready: boolean;
+    raw_input_field_count: number;
+    raw_payload_echoed: boolean;
+    raw_gateway_response_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_legal_text_returned: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    completion_claimed: boolean;
+  };
+  handoff_rows: ModelOpsLegalFixtureEvidenceHandoffRow[];
+  handoff_evidence_summary: {
+    status: string;
+    summary: Record<string, boolean | string | number | null>;
+    source_endpoints: Record<string, string>;
+  };
+  checks: ModelOpsLegalFixtureEvidenceHandoffCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  source_endpoints: Record<string, string>;
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type ModelOpsCheapFirstReleaseDecision = {
   status: string;
   release_decision: {
@@ -7939,6 +8009,25 @@ export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket():
     method: 'GET',
   });
   return unwrapMaintenanceData<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket>(resp);
+}
+
+export async function getModelOpsLegalFixtureEvidenceHandoff(): Promise<ModelOpsLegalFixtureEvidenceHandoff> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/evidence-handoff',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelOpsLegalFixtureEvidenceHandoff>(resp);
+}
+
+export async function evaluateModelOpsLegalFixtureEvidenceHandoff(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsLegalFixtureEvidenceHandoff> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/evidence-handoff',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<ModelOpsLegalFixtureEvidenceHandoff>(resp);
 }
 
 export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCheapFirstReleaseDecision> {

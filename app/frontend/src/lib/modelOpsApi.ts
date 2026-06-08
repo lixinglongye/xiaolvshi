@@ -6,6 +6,9 @@ import type {
   ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem,
+  ModelOpsLegalFixtureEvidenceHandoff,
+  ModelOpsLegalFixtureEvidenceHandoffCheck,
+  ModelOpsLegalFixtureEvidenceHandoffRow,
 } from './maintenanceApi';
 
 export type {
@@ -15,6 +18,9 @@ export type {
   ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacketItem,
+  ModelOpsLegalFixtureEvidenceHandoff,
+  ModelOpsLegalFixtureEvidenceHandoffCheck,
+  ModelOpsLegalFixtureEvidenceHandoffRow,
 };
 
 export type RoutingAliases = Record<string, string>;
@@ -4766,6 +4772,7 @@ export type ModelOpsResponse = {
   legal_micro_benchmark_preflight?: ModelOpsLegalMicroBenchmarkPreflight;
   legal_fixture_cheap_first_benchmark_gate?: ModelOpsLegalFixtureCheapFirstBenchmarkGate;
   legal_fixture_cheap_first_default_promotion_packet?: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket;
+  legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_release_bridge?: ModelOpsUserNeedReleaseBridge;
@@ -4859,6 +4866,9 @@ function hasModelOpsPayload(value: unknown): boolean {
     need_rows?: unknown;
     fixture_run_items?: unknown;
     gate_rows?: unknown;
+    handoff_rows?: unknown;
+    handoff_evidence_summary?: unknown;
+    source_endpoints?: unknown;
     document_check_items?: unknown;
     fact_consistency_items?: unknown;
     run_sequence?: unknown;
@@ -4909,6 +4919,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.bridge_rows) && Array.isArray(payload.need_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.handoff_rows) && Boolean(payload.handoff_evidence_summary) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.role_rows) && Array.isArray(payload.runtime_probe_sequence) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
@@ -5540,6 +5551,23 @@ export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket():
   return invokeModelOpsApi<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket>({
     url: '/api/v1/aihub/models/legal-fixture-cheap-first-default-promotion-packet',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalFixtureEvidenceHandoff(): Promise<ModelOpsLegalFixtureEvidenceHandoff> {
+  return invokeModelOpsApi<ModelOpsLegalFixtureEvidenceHandoff>({
+    url: '/api/v1/aihub/models/legal-fixture-evidence-handoff',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsLegalFixtureEvidenceHandoff(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsLegalFixtureEvidenceHandoff> {
+  return invokeModelOpsApi<ModelOpsLegalFixtureEvidenceHandoff>({
+    url: '/api/v1/aihub/models/legal-fixture-evidence-handoff',
+    method: 'POST',
+    data: payload,
   });
 }
 
