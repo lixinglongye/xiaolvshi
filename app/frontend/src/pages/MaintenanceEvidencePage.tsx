@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { AlertTriangle, Clipboard, ExternalLink, FileCheck, Loader2, RefreshCw, ShieldCheck, Target } from 'lucide-react';
 import {
+  getBillingEntitlementGap,
   getCaseIntakeCompleteness,
   getCaseTaskNotificationPolicy,
   getCaseTimelineDeadlineRisk,
@@ -107,6 +108,7 @@ import {
   postMaintenanceContinuousSessionRunMonitor,
   reviewContinuousUpdateLedger,
   reviewLegalFixtureLocalRun,
+  type BillingEntitlementGap,
   type CaseIntakeCompleteness,
   type CaseTaskNotificationPolicy,
   type CaseTimelineDeadlineRisk,
@@ -223,6 +225,7 @@ const statusClass: Record<string, string> = {
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   approval_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  backend_evidence_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   covered: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   parsed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   not_run: 'border-stone-200 bg-stone-50 text-stone-700',
@@ -267,6 +270,11 @@ const statusClass: Record<string, string> = {
   planned: 'border-stone-200 bg-stone-50 text-stone-700',
   shipped: 'border-emerald-200 bg-emerald-50 text-emerald-800',
 };
+
+const billingEntitlementGapTrackedSignals = [
+  'stripe-webhook-signature-verification',
+  'frontend-entitlement-state-messaging',
+] as const;
 
 function roleLabel(role?: string) {
   return role ? role.replace(/_/g, ' ') : '-';
@@ -676,6 +684,7 @@ function Inner() {
   const [finalDocumentDeliveryReleaseGate, setFinalDocumentDeliveryReleaseGate] =
     useState<MaintenanceFinalDocumentDeliveryReleaseGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
+  const [billingEntitlementGap, setBillingEntitlementGap] = useState<BillingEntitlementGap | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
   const [userNeedGeminiRouteCoverage, setUserNeedGeminiRouteCoverage] =
@@ -877,6 +886,11 @@ function Inner() {
           label: 'Product feature gap radar',
           run: getProductFeatureGapRadar,
           apply: (value) => setProductFeatureGaps(value as ProductFeatureGapRadar),
+        },
+        {
+          label: 'Billing entitlement gap',
+          run: getBillingEntitlementGap,
+          apply: (value) => setBillingEntitlementGap(value as BillingEntitlementGap),
         },
         {
           label: 'Feedback roadmap',
@@ -1946,6 +1960,122 @@ function Inner() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {billingEntitlementGap && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Billing entitlement gap</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Product-facing entitlement readiness, shown as metadata-only controls and unresolved work.
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass[billingEntitlementGap.status] ?? statusClass.review_required}
+              >
+                {displayToken(billingEntitlementGap.status)}
+              </Badge>
+            </div>
+
+            <div className="overflow-hidden rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <div className="grid gap-3 border-b border-stone-950/10 p-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {billingEntitlementGap.implemented_controls.length}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">implemented_controls</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {billingEntitlementGap.remaining_product_gaps.length}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">remaining_product_gaps</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {billingEntitlementGap.validation_commands.length}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">validation_commands</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-stone-950">
+                    {displayToken(billingEntitlementGap.scope)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">scope</div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 p-4 lg:grid-cols-[1fr_1fr_1.2fr]">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.08em] text-stone-500">Implemented</h3>
+                  <div className="mt-3 space-y-2">
+                    {billingEntitlementGap.implemented_controls.map((control) => (
+                      <div
+                        key={control}
+                        className="rounded-[8px] border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-stone-800"
+                      >
+                        {displayToken(control)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.08em] text-stone-500">Remaining</h3>
+                  <div className="mt-3 space-y-2">
+                    {billingEntitlementGap.remaining_product_gaps.map((gap) => (
+                      <div
+                        key={gap}
+                        className="rounded-[8px] border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-stone-800"
+                      >
+                        {displayToken(gap)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-[0.08em] text-stone-500">
+                      Tracked gap signals
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {billingEntitlementGapTrackedSignals.map((signal) => (
+                        <Badge key={signal} variant="outline" className="bg-white">
+                          {signal}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-[0.08em] text-stone-500">privacy_note</h3>
+                    <p className="mt-2 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-sm text-stone-700">
+                      {billingEntitlementGap.privacy_note}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-[0.08em] text-stone-500">
+                      validation_commands
+                    </h3>
+                    <div className="mt-2 space-y-2">
+                      {billingEntitlementGap.validation_commands.map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

@@ -6635,6 +6635,20 @@ type MaintenanceAdminAuditPolicyResponse = {
   data: MaintenanceAdminAuditPolicy;
 };
 
+export type BillingEntitlementGap = {
+  status: string;
+  scope: string;
+  implemented_controls: string[];
+  remaining_product_gaps: string[];
+  validation_commands: string[];
+  privacy_note: string;
+};
+
+type BillingEntitlementGapResponse = {
+  success: boolean;
+  data: BillingEntitlementGap;
+};
+
 export type MaintenanceQuotaDeliveryDecision = {
   status: string;
   action: string;
@@ -8583,6 +8597,14 @@ export async function getMaintenanceAdminAuditPolicy(
     data: payload,
   });
   return unwrapMaintenanceData<MaintenanceAdminAuditPolicyResponse['data']>(resp);
+}
+
+export async function getBillingEntitlementGap(): Promise<BillingEntitlementGap> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/billing-entitlement-gap',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<BillingEntitlementGapResponse['data']>(resp);
 }
 
 export async function getMaintenanceQuotaDeliveryDecision(

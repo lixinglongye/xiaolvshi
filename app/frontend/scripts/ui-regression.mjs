@@ -92,6 +92,12 @@ const maintenanceHeartbeatEvidencePanel = sourceSection(
   'Continuous session review packet',
   'maintenance heartbeat evidence panel',
 );
+const billingEntitlementGapPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Billing entitlement gap</h2>',
+  '<h2 className="text-xl font-black text-stone-950">24h evidence timeline</h2>',
+  'maintenance billing entitlement gap section',
+);
 const catalogCandidatePatchPlanPanel = sourceSection(
   modelOpsPage,
   'Model catalog candidate patch plan',
@@ -465,6 +471,55 @@ const checks = [
   () => assertIncludes(maintenancePage, 'queue_priority_score', 'user need implementation queue priority binding'),
   () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
+  () => assertIncludes(maintenanceApi, 'BillingEntitlementGap', 'maintenance billing entitlement gap type'),
+  () => assertIncludes(maintenanceApi, 'getBillingEntitlementGap', 'maintenance billing entitlement gap getter'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/billing-entitlement-gap',
+      'maintenance billing entitlement gap endpoint',
+    ),
+  () => assertIncludes(maintenanceApi, 'implemented_controls', 'maintenance billing entitlement implemented controls type'),
+  () => assertIncludes(maintenanceApi, 'remaining_product_gaps', 'maintenance billing entitlement remaining gaps type'),
+  () => assertIncludes(maintenanceApi, 'privacy_note', 'maintenance billing entitlement privacy note type'),
+  () => assertIncludes(maintenancePage, 'getBillingEntitlementGap', 'maintenance billing entitlement gap load task'),
+  () => assertIncludes(maintenancePage, 'billingEntitlementGap', 'maintenance billing entitlement gap state binding'),
+  () => assertIncludes(maintenancePage, 'Billing entitlement gap', 'maintenance billing entitlement gap panel'),
+  () => assertIncludes(maintenancePage, 'implemented_controls', 'maintenance billing entitlement implemented controls binding'),
+  () => assertIncludes(maintenancePage, 'remaining_product_gaps', 'maintenance billing entitlement remaining gaps binding'),
+  () => assertIncludes(maintenancePage, 'validation_commands', 'maintenance billing entitlement validation binding'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'stripe-webhook-signature-verification',
+      'maintenance billing entitlement webhook signature signal',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'frontend-entitlement-state-messaging',
+      'maintenance billing entitlement frontend messaging signal',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">100+ maintenance gates</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Billing entitlement gap</h2>',
+      'billing entitlement gap follows maintenance gate summary',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Billing entitlement gap</h2>',
+      '<h2 className="text-xl font-black text-stone-950">24h evidence timeline</h2>',
+      'billing entitlement gap precedes continuous timeline',
+    ),
+  () =>
+    assertNotMatches(
+      billingEntitlementGapPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|payment_session|card_number|payment_secret/i,
+      'maintenance billing entitlement gap sensitive field guard',
+    ),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecyclePolicy', 'maintenance feedback lifecycle policy type'),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecycleState', 'maintenance feedback lifecycle state type'),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecycleTransition', 'maintenance feedback lifecycle transition type'),
