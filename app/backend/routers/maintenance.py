@@ -31,6 +31,7 @@ from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolic
 from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.final_document_delivery_release_gate import FinalDocumentDeliveryReleaseGateService
 from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_alias_capability_coverage import GeminiNewapiAliasCapabilityCoverageService
@@ -650,6 +651,24 @@ async def evaluate_document_version_diff_checklist(payload: dict[str, Any]):
     return {
         "success": True,
         "data": DocumentVersionDiffChecklistService().build_checklist(payload),
+    }
+
+
+@router.get("/final-document-delivery-release-gate")
+async def get_final_document_delivery_release_gate_template():
+    """Return final document delivery release gate metadata."""
+    return {
+        "success": True,
+        "data": FinalDocumentDeliveryReleaseGateService().build_gate(),
+    }
+
+
+@router.post("/final-document-delivery-release-gate")
+async def evaluate_final_document_delivery_release_gate(payload: dict[str, Any]):
+    """Evaluate final package release readiness without reading files or sending delivery."""
+    return {
+        "success": True,
+        "data": FinalDocumentDeliveryReleaseGateService().build_gate(payload),
     }
 
 

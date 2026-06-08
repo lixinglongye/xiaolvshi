@@ -68,6 +68,7 @@ import {
   getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
   getLegalRagIndexCoverageGate,
+  getMaintenanceFinalDocumentDeliveryReleaseGate,
   getMaintenanceLegalRagExportReadinessPacket,
   getLegalRagHallucinationTriageGate,
   getLegalRagRetrievalDiagnosticsGate,
@@ -157,6 +158,7 @@ import {
   type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
   type LegalRagRetrievalObservationGate,
+  type MaintenanceFinalDocumentDeliveryReleaseGate,
   type MaintenanceLegalRagExportReadinessPacket,
   type LegalRagHallucinationTriageGate,
   type LegalRagRetrievalDiagnosticsGate,
@@ -665,6 +667,8 @@ function Inner() {
     useState<LegalRagBenchmarkAlignment | null>(null);
   const [legalRagExportReadinessPacket, setLegalRagExportReadinessPacket] =
     useState<MaintenanceLegalRagExportReadinessPacket | null>(null);
+  const [finalDocumentDeliveryReleaseGate, setFinalDocumentDeliveryReleaseGate] =
+    useState<MaintenanceFinalDocumentDeliveryReleaseGate | null>(null);
   const [maintenanceGateSnapshot, setMaintenanceGateSnapshot] = useState<MaintenanceGateSnapshot | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
@@ -1196,6 +1200,12 @@ function Inner() {
           label: 'Legal RAG export readiness',
           run: getMaintenanceLegalRagExportReadinessPacket,
           apply: (value) => setLegalRagExportReadinessPacket(value as MaintenanceLegalRagExportReadinessPacket),
+        },
+        {
+          label: 'Final document delivery release gate',
+          run: getMaintenanceFinalDocumentDeliveryReleaseGate,
+          apply: (value) =>
+            setFinalDocumentDeliveryReleaseGate(value as MaintenanceFinalDocumentDeliveryReleaseGate),
         },
         {
           label: 'Legal RAG hallucination triage gate',
@@ -13301,6 +13311,186 @@ function Inner() {
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {finalDocumentDeliveryReleaseGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only package release gate across manifest, version diff, final export, and quota delivery decision
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[finalDocumentDeliveryReleaseGate.status] ?? statusClass.review_required}
+                    >
+                      {displayToken(finalDocumentDeliveryReleaseGate.status)}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      release_action: {displayToken(finalDocumentDeliveryReleaseGate.release_decision.delivery_action)}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  {[
+                    { label: 'components', value: finalDocumentDeliveryReleaseGate.summary.component_gate_count },
+                    { label: 'ready', value: finalDocumentDeliveryReleaseGate.summary.ready_component_count },
+                    { label: 'blocked', value: finalDocumentDeliveryReleaseGate.summary.blocking_component_count },
+                    {
+                      label: 'ready_for_final_delivery',
+                      value: finalDocumentDeliveryReleaseGate.summary.package_release_allowed,
+                    },
+                    {
+                      label: 'final_export_allowed',
+                      value: finalDocumentDeliveryReleaseGate.summary.final_export_allowed,
+                    },
+                    {
+                      label: 'client_delivery_allowed',
+                      value: finalDocumentDeliveryReleaseGate.summary.client_delivery_allowed,
+                    },
+                    {
+                      label: 'client delivery sent',
+                      value: finalDocumentDeliveryReleaseGate.claim_boundary.client_delivery_sent,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Component gate</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Blocks release</TableHead>
+                          <TableHead>Blocker IDs</TableHead>
+                          <TableHead>Reviewer action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(finalDocumentDeliveryReleaseGate.component_gates ?? []).map((gate) => (
+                          <TableRow key={gate.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{gate.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{gate.id}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                                {displayToken(gate.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-stone-600">{String(gate.blocks_release)}</TableCell>
+                            <TableCell>
+                              <div className="flex max-w-[300px] flex-wrap gap-1.5">
+                                {(gate.blocker_ids ?? []).length ? (
+                                  gate.blocker_ids.map((blocker) => (
+                                    <Badge key={`${gate.id}-${blocker}`} variant="outline" className={statusClass.blocked}>
+                                      {displayToken(blocker)}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  <Badge variant="outline" className={statusClass.ready}>
+                                    clear
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {(gate.reviewer_actions ?? [])[0] ?? '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Release decision</h3>
+                      <div className="space-y-2 text-xs leading-5 text-stone-600">
+                        <div>status: {displayToken(finalDocumentDeliveryReleaseGate.release_decision.status)}</div>
+                        <div>release_action: {displayToken(finalDocumentDeliveryReleaseGate.release_decision.delivery_action)}</div>
+                        <div>package_release_allowed: {String(finalDocumentDeliveryReleaseGate.release_decision.package_release_allowed)}</div>
+                        <div>final_export_allowed: {String(finalDocumentDeliveryReleaseGate.release_decision.final_export_allowed)}</div>
+                        <div>client_delivery_allowed: {String(finalDocumentDeliveryReleaseGate.release_decision.client_delivery_allowed)}</div>
+                        <div>materializes_export: {String(finalDocumentDeliveryReleaseGate.release_decision.materializes_export)}</div>
+                        <div>sends_client_delivery: {String(finalDocumentDeliveryReleaseGate.release_decision.sends_client_delivery)}</div>
+                      </div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">linked_release_gates</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(finalDocumentDeliveryReleaseGate.component_gates ?? []).map((gate) => (
+                          <Badge key={`linked-${gate.id}`} variant="outline" className="bg-white font-mono text-[11px]">
+                            {gate.id}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>raw document text: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.raw_document_text_included)}</div>
+                      <div>raw report returned: false</div>
+                      <div>client contact details: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.raw_client_contact_included)}</div>
+                      <div>credentials: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.credential_material_included)}</div>
+                      <div>model calls: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.model_calls)}</div>
+                      <div>network calls: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.network_access !== 'disabled')}</div>
+                      <div>reads files: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.reads_files)}</div>
+                      <div>writes files: {String(finalDocumentDeliveryReleaseGate.privacy_boundary.writes_files)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>final docx/pdf generated: {String(finalDocumentDeliveryReleaseGate.claim_boundary.final_docx_pdf_generated)}</div>
+                      <div>client delivery sent: {String(finalDocumentDeliveryReleaseGate.claim_boundary.client_delivery_sent)}</div>
+                      <div>
+                        provider settlement verified:{' '}
+                        {String(finalDocumentDeliveryReleaseGate.claim_boundary.live_payment_provider_settlement_verified)}
+                      </div>
+                      <div>legal advice claimed: {String(finalDocumentDeliveryReleaseGate.claim_boundary.legal_advice_claimed)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Audit record requirements</h3>
+                    <div className="space-y-2">
+                      {(finalDocumentDeliveryReleaseGate.audit_record_requirements ?? []).slice(0, 6).map((item) => (
+                        <div key={item.field} className="rounded-[8px] border border-stone-950/10 bg-white p-2">
+                          <div className="font-mono text-[11px] text-stone-500">{item.field}</div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{item.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {(finalDocumentDeliveryReleaseGate.validation_commands ?? []).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
                         >
                           {command}
                         </div>

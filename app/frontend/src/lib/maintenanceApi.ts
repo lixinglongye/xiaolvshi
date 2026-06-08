@@ -6613,6 +6613,80 @@ type MaintenanceLegalRagExportReadinessPacketResponse = {
   data: MaintenanceLegalRagExportReadinessPacket;
 };
 
+export type MaintenanceFinalDocumentDeliveryReleaseGate = {
+  status: string;
+  gate_id: string;
+  summary: {
+    component_gate_count: number;
+    ready_component_count: number;
+    blocking_component_count: number;
+    blocking_component_ids: string[];
+    package_release_allowed: boolean;
+    final_export_allowed: boolean;
+    client_delivery_allowed: boolean;
+    [key: string]: unknown;
+  };
+  component_gates: Array<{
+    id: string;
+    title: string;
+    status: string;
+    ready: boolean;
+    blocks_release: boolean;
+    blocking_issue_count: number;
+    blocker_ids: string[];
+    reviewer_actions: string[];
+    quota_metadata_present?: boolean;
+    [key: string]: unknown;
+  }>;
+  release_decision: {
+    status: string;
+    delivery_action: string;
+    package_release_allowed: boolean;
+    final_export_allowed: boolean;
+    client_delivery_allowed: boolean;
+    materializes_export: boolean;
+    sends_client_delivery: boolean;
+    blocking_component_ids: string[];
+    decision: string;
+    [key: string]: unknown;
+  };
+  audit_record_requirements: Array<{
+    field: string;
+    reason: string;
+  }>;
+  recommended_actions: Array<{
+    id: string;
+    priority: string;
+    owner: string;
+    action: string;
+    blocker_ids?: string[];
+    [key: string]: unknown;
+  }>;
+  privacy_boundary: MaintenancePrivacyBoundary & {
+    raw_client_contact_included?: boolean;
+    credential_material_included?: boolean;
+    model_calls?: boolean;
+    network_access?: string;
+    reads_files?: boolean;
+    writes_files?: boolean;
+    materializes_export?: boolean;
+    sends_client_delivery?: boolean;
+  };
+  claim_boundary: {
+    final_docx_pdf_generated: boolean;
+    client_delivery_sent: boolean;
+    live_payment_provider_settlement_verified: boolean;
+    legal_advice_claimed: boolean;
+    [key: string]: unknown;
+  };
+  validation_commands: string[];
+};
+
+type MaintenanceFinalDocumentDeliveryReleaseGateResponse = {
+  success: boolean;
+  data: MaintenanceFinalDocumentDeliveryReleaseGate;
+};
+
 export type MaintenanceContinuousSessionTimelineEvent = {
   id: string;
   event_type: string;
@@ -7114,6 +7188,78 @@ const syntheticLegalRagExportReadinessPacketPayload = {
   },
   request_metadata: { legal_rag_selected_source_ids: ['law:contract-001'] },
   block_on_failure: true,
+};
+
+const syntheticFinalDocumentDeliveryReleaseGatePayload = {
+  action: 'deliver_to_client',
+  delivery_package: {
+    package: {
+      package_id: 'package-001',
+      case_id: 'case-001',
+      current_version_id: 'version-002',
+      delivery_channel: 'client_portal',
+    },
+    documents: [
+      {
+        document_id: 'doc-001',
+        document_type: 'complaint',
+        version_id: 'version-002',
+        export_formats: ['pdf', 'docx'],
+      },
+    ],
+    source_support: {
+      status: 'complete',
+      citation_count: 4,
+      unsupported_claim_count: 0,
+      evidence_links: ['evidence-001', 'evidence-002'],
+    },
+    missing_facts: { status: 'resolved', items: [] },
+    lawyer_review: {
+      status: 'approved',
+      reviewer_id: 'lawyer-001',
+      reviewed_at: '2026-06-04T08:00:00Z',
+      reviewed_version_id: 'version-002',
+    },
+    client_transparency: {
+      notice_present: true,
+      client_visible: true,
+      risk_notice_included: true,
+      scope_limits_included: true,
+    },
+    export: { formats: ['pdf', 'docx'], final_format: 'pdf', version_locked: true },
+    version_notes: {
+      current_version_id: 'version-002',
+      previous_version_id: 'version-001',
+      summary_present: true,
+      generated_at: '2026-06-04T08:05:00Z',
+    },
+  },
+  version_diff: {
+    version_id: 'version-002',
+    previous_version_id: 'version-001',
+    change_summary: 'Clarified payment deadline and source support.',
+    changed_sections: ['payment', 'evidence'],
+    reviewer_role: 'lawyer',
+    client_visible_summary: 'Payment deadline language was clarified.',
+    risk_change_summary: 'No risk level change.',
+    source_support_status: 'complete',
+  },
+  export_readiness: {
+    required_fields_complete: true,
+    blockers_cleared: true,
+    lawyer_review_status: 'approved',
+    source_support_complete: true,
+    privacy_redaction_status: 'pass',
+    version_locked: true,
+    export_format: 'pdf',
+  },
+  quota_summary: {
+    decision_status: 'ready',
+    can_create_report: true,
+    reports_remaining: 3,
+    report_quota_monthly: 20,
+    quota_window: '2026-06',
+  },
 };
 
 function unwrapMaintenanceData<T>(resp: unknown): T {
@@ -8256,6 +8402,17 @@ export async function getMaintenanceLegalRagExportReadinessPacket(
   return unwrapMaintenanceData<MaintenanceLegalRagExportReadinessPacketResponse['data']>(resp);
 }
 
+export async function getMaintenanceFinalDocumentDeliveryReleaseGate(
+  payload: Record<string, unknown> = syntheticFinalDocumentDeliveryReleaseGatePayload,
+): Promise<MaintenanceFinalDocumentDeliveryReleaseGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/final-document-delivery-release-gate',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceFinalDocumentDeliveryReleaseGateResponse['data']>(resp);
+}
+
 export async function getMaintenanceContinuousSessionEvidence(): Promise<MaintenanceContinuousSessionEvidence> {
   const resp = await client.apiCall.invoke({
     url: '/api/v1/maintenance/continuous-session-evidence',
@@ -8276,6 +8433,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     quotaDecision,
     selectedSourceBinding,
     legalRagExportReadinessPacket,
+    finalDocumentDeliveryReleaseGate,
     continuousSessionEvidence,
   ] = await Promise.all([
     getMaintenanceFeedbackIssueClusters(),
@@ -8288,6 +8446,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     getMaintenanceQuotaDeliveryDecision(),
     getMaintenanceSelectedSourceBinding(),
     getMaintenanceLegalRagExportReadinessPacket(),
+    getMaintenanceFinalDocumentDeliveryReleaseGate(),
     getMaintenanceContinuousSessionEvidence(),
   ]);
 
@@ -8447,6 +8606,20 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
       ],
       reason_codes: legalRagExportReadinessPacket.reason_codes,
       privacy_boundary: legalRagExportReadinessPacket.privacy_boundary,
+    },
+    {
+      id: 'final-document-delivery-release-gate',
+      label: 'Final document delivery release gate',
+      endpoint: '/api/v1/maintenance/final-document-delivery-release-gate',
+      method: 'POST',
+      status: finalDocumentDeliveryReleaseGate.status,
+      counts: [
+        { label: 'components', value: finalDocumentDeliveryReleaseGate.summary.component_gate_count },
+        { label: 'ready', value: finalDocumentDeliveryReleaseGate.summary.ready_component_count },
+        { label: 'blocked', value: finalDocumentDeliveryReleaseGate.summary.blocking_component_count },
+      ],
+      reason_codes: finalDocumentDeliveryReleaseGate.summary.blocking_component_ids,
+      privacy_boundary: finalDocumentDeliveryReleaseGate.privacy_boundary,
     },
     {
       id: 'continuous-session-evidence',

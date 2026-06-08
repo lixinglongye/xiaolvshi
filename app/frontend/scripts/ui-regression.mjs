@@ -1127,6 +1127,39 @@ const checks = [
   () => assertIncludes(maintenancePage, 'deep-review-export-readiness-route-gate', 'legal RAG export readiness route gate linkage'),
   () => assertIncludes(maintenancePage, 'raw report returned', 'legal RAG export readiness raw report boundary label'),
   () => assertIncludes(maintenancePage, 'network calls', 'legal RAG export readiness network boundary label'),
+  () => assertIncludes(maintenancePage, 'Final document delivery release gate', 'final document delivery release gate panel'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getMaintenanceFinalDocumentDeliveryReleaseGate',
+      'final document delivery release gate API binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'finalDocumentDeliveryReleaseGate',
+      'final document delivery release gate state binding',
+    ),
+  () => assertIncludes(maintenancePage, 'ready_for_final_delivery', 'final document delivery ready label'),
+  () => assertIncludes(maintenancePage, 'client_delivery_allowed', 'final document delivery client delivery binding'),
+  () => assertIncludes(maintenancePage, 'linked_release_gates', 'final document delivery linked gates panel'),
+  () => assertIncludes(maintenancePage, 'raw document text', 'final document delivery raw document boundary label'),
+  () => assertIncludes(maintenancePage, 'client contact details', 'final document delivery contact boundary label'),
+  () => assertIncludes(maintenancePage, 'provider settlement verified', 'final document delivery provider claim boundary'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG export readiness packet</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>',
+      'final document delivery gate follows Legal RAG export readiness',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>',
+      'final document delivery gate precedes hallucination triage',
+    ),
   () => assertIncludes(maintenanceApi, 'linked_public_source_ids', 'user need benchmark public source type'),
   () => assertIncludes(maintenanceApi, 'returns_public_benchmark_text', 'user need benchmark public text boundary type'),
   () => assertIncludes(maintenanceApi, 'public_sampler_network_access', 'user need benchmark public sampler summary type'),
@@ -1578,6 +1611,28 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'raw_report_returned', 'legal RAG export readiness raw report boundary type'),
   () => assertIncludes(maintenanceApi, 'getMaintenanceLegalRagExportReadinessPacket', 'legal RAG export readiness packet API'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-rag/export-readiness-packet', 'legal RAG export readiness packet endpoint'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'MaintenanceFinalDocumentDeliveryReleaseGate',
+      'final document delivery release gate type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceFinalDocumentDeliveryReleaseGate',
+      'final document delivery release gate API',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/final-document-delivery-release-gate',
+      'final document delivery release gate endpoint',
+    ),
+  () => assertIncludes(maintenanceApi, 'component_gates', 'final document delivery component gate type'),
+  () => assertIncludes(maintenanceApi, 'package_release_allowed', 'final document delivery package release type'),
+  () => assertIncludes(maintenanceApi, 'final_docx_pdf_generated', 'final document delivery no generation claim type'),
+  () => assertIncludes(maintenanceApi, 'live_payment_provider_settlement_verified', 'final document delivery provider claim type'),
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'applyModelOpsPayload', 'model-ops early aggregate payload renderer'),
   () => assertIncludes(modelOpsPage, 'const modelOpsRequest = getModelOps()', 'model-ops shared aggregate request'),
@@ -2680,6 +2735,12 @@ const legalRagAnswerReleaseReadinessPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Legal RAG benchmark alignment scorecard</h2>',
   'maintenance Legal RAG answer release readiness section',
 );
+const finalDocumentDeliveryReleaseGatePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>',
+  'maintenance final document delivery release gate section',
+);
 const feedbackLifecyclePolicyPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
@@ -2932,6 +2993,11 @@ assertNotMatches(
   'maintenance feedback lifecycle policy no raw feedback values, secrets, prompts, model output, authorization, or emails',
 );
 assertNotMatches(
+  finalDocumentDeliveryReleaseGatePanel,
+  /\b(RAW_DOCUMENT_SHOULD_NOT_LEAK|UNSAFE_RAW_DIFF|UNSAFE_MODEL_OUTPUT|document_text|client_contact_details|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|billing_provider_payload|provider-payload|C:\\\\cases\\\\private|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance final document delivery release gate no raw document examples, contact details, provider payloads, credentials, prompts, model output, or emails',
+);
+assertNotMatches(
   maintenancePage,
   /fixture problem|dangerous answer|dangerous_answer|raw_fixture_problem|unsafe_answer_text|raw_unsafe_answer/i,
   'maintenance Legal RAG abstention no raw fixture problem or answer text',
@@ -3083,7 +3149,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 36,
+      assertions: checks.length + 37,
     },
     null,
     2,
