@@ -1648,6 +1648,84 @@ export type ModelOpsGeminiCheapFirstRoutePreflightPayload = {
   gemini_cheap_first_coverage_gate?: Record<string, unknown>;
 };
 
+export type ModelOpsGeminiResearchRefreshSourceRow = {
+  id: string;
+  source_type: string;
+  title: string;
+  url: string;
+  tracked_signal: string;
+  refresh_cadence: string;
+  default_decision_use: string;
+};
+
+export type ModelOpsGeminiResearchRefreshAdoptionRow = {
+  id: string;
+  task: string;
+  product_area: string;
+  route_mode: string;
+  default_model: string;
+  canonical_model?: string | null;
+  cost_tier: string;
+  cheap_first_aligned: boolean;
+  required_source_ids: string[];
+  missing_source_ids: string[];
+  benchmark_requirement: string;
+  legal_micro_benchmark_status: string;
+  legal_risk_level: string;
+  license_review_required: boolean;
+  adoption_status: string;
+  release_action: string;
+  reason_codes: string[];
+  next_action: string;
+  network_called: boolean;
+  configuration_written: boolean;
+};
+
+export type ModelOpsGeminiResearchRefreshCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence: string[];
+};
+
+export type ModelOpsGeminiResearchRefreshGate = {
+  id: 'modelops-gemini-research-refresh-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    research_source_count: number;
+    official_source_count: number;
+    public_benchmark_source_count: number;
+    adoption_task_count: number;
+    ready_adoption_count: number;
+    review_adoption_count: number;
+    blocked_adoption_count: number;
+    cheap_first_task_count: number;
+    public_benchmark_license_review_count: number;
+    external_refresh_completed: boolean;
+    public_benchmark_downloaded: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    raw_payload_echoed: boolean;
+  };
+  research_source_rows: ModelOpsGeminiResearchRefreshSourceRow[];
+  adoption_rows: ModelOpsGeminiResearchRefreshAdoptionRow[];
+  checks: ModelOpsGeminiResearchRefreshCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_signal_summary: Record<string, unknown>;
+  refresh_policy: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsAIHubEndpointRouteCoverageRow = {
   id: string;
   endpoint_path: string;
@@ -4201,6 +4279,7 @@ export type ModelOpsResponse = {
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
   gemini_cheap_first_coverage_gate?: ModelOpsGeminiCheapFirstCoverageGate;
   gemini_cheap_first_route_preflight?: ModelOpsGeminiCheapFirstRoutePreflight;
+  gemini_research_refresh_gate?: ModelOpsGeminiResearchRefreshGate;
   aihub_endpoint_route_coverage_gate?: ModelOpsAIHubEndpointRouteCoverageGate;
   aihub_media_speech_default_catalog_gate?: ModelOpsAIHubMediaSpeechDefaultCatalogGate;
   gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard;
@@ -4567,6 +4646,23 @@ export async function evaluateGeminiCheapFirstRoutePreflight(
 ): Promise<ModelOpsGeminiCheapFirstRoutePreflight> {
   return invokeModelOpsApi<ModelOpsGeminiCheapFirstRoutePreflight>({
     url: '/api/v1/aihub/models/gemini-cheap-first-route-preflight',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsGeminiResearchRefreshGate(): Promise<ModelOpsGeminiResearchRefreshGate> {
+  return invokeModelOpsApi<ModelOpsGeminiResearchRefreshGate>({
+    url: '/api/v1/aihub/models/gemini-research-refresh-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsGeminiResearchRefreshGate(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsGeminiResearchRefreshGate> {
+  return invokeModelOpsApi<ModelOpsGeminiResearchRefreshGate>({
+    url: '/api/v1/aihub/models/gemini-research-refresh-gate',
     method: 'POST',
     data: payload,
   });

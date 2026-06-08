@@ -61,6 +61,7 @@ from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiChe
 from services.model_ops_gemini_cheap_first_route_preflight import (
     ModelOpsGeminiCheapFirstRoutePreflightService,
 )
+from services.model_ops_gemini_research_refresh_gate import ModelOpsGeminiResearchRefreshGateService
 from services.model_ops_gemini_official_model_family_roadmap import (
     ModelOpsGeminiOfficialModelFamilyRoadmapService,
 )
@@ -384,6 +385,14 @@ async def list_models():
             {"source_gate": legal_fixture_cheap_first_benchmark_gate}
         )
     )
+    preliminary_legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge()
+    gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(
+        {
+            "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
+            "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
+            "legal_benchmark_risk_bridge": preliminary_legal_benchmark_risk_bridge,
+        }
+    )
     model_ops_signals = {
         "runtime_router": runtime_router,
         "model_configuration_audit": model_configuration_audit,
@@ -439,6 +448,7 @@ async def list_models():
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        "gemini_research_refresh_gate": gemini_research_refresh_gate,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
     model_ops_signals["model_ops_readiness"] = base_model_ops_readiness
@@ -448,6 +458,8 @@ async def list_models():
     model_ops_signals["default_change_queue"] = default_change_queue
     legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(model_ops_signals)
     model_ops_signals["legal_benchmark_risk_bridge"] = legal_benchmark_risk_bridge
+    gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(model_ops_signals)
+    model_ops_signals["gemini_research_refresh_gate"] = gemini_research_refresh_gate
     cheap_first_priority_queue = ModelOpsCheapFirstPriorityQueueService().build_queue(model_ops_signals)
     model_ops_signals["cheap_first_priority_queue"] = cheap_first_priority_queue
     gemini_default_change_review = ModelOpsGeminiDefaultChangeReviewService().build_review()
@@ -546,6 +558,7 @@ async def list_models():
         "default_change_queue": default_change_queue,
         "legal_benchmark_risk_bridge": legal_benchmark_risk_bridge,
         "cheap_first_priority_queue": cheap_first_priority_queue,
+        "gemini_research_refresh_gate": gemini_research_refresh_gate,
         "gemini_default_change_review": gemini_default_change_review,
         "gemini_default_cost_impact": gemini_default_cost_impact,
         "cheap_first_canary_plan": cheap_first_canary_plan,
@@ -871,6 +884,25 @@ async def evaluate_modelops_gemini_cheap_first_route_preflight(payload: dict[str
     return {
         "success": True,
         "data": ModelOpsGeminiCheapFirstRoutePreflightService().build_preflight(payload),
+    }
+
+
+@router.get("/models/gemini-research-refresh-gate")
+async def modelops_gemini_research_refresh_gate():
+    """Return metadata-only Gemini source and legal benchmark refresh evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_research_refresh_gate"],
+    }
+
+
+@router.post("/models/gemini-research-refresh-gate")
+async def evaluate_modelops_gemini_research_refresh_gate(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini research refresh metadata without provider or benchmark calls."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiResearchRefreshGateService().build_gate(payload),
     }
 
 

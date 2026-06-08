@@ -30,6 +30,7 @@ import {
   getGeminiCheapFirstCoverageGate,
   getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
+  getModelOpsGeminiResearchRefreshGate,
   getModelOpsObservedGeminiCoverageGapQueue,
   getModelOpsObservedGatewayModelFitMatrix,
   getModelOpsRuntimeExplicitModelFitGate,
@@ -53,6 +54,7 @@ import {
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsGeminiCheapFirstRoutePreflightPayload,
+  type ModelOpsGeminiResearchRefreshGate,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
   type ModelOpsGeminiEmbeddingCheapFirstPreflight,
@@ -503,6 +505,9 @@ function Inner() {
   );
   const [geminiCheapFirstRoutePreflightLoading, setGeminiCheapFirstRoutePreflightLoading] = useState(false);
   const [geminiCheapFirstRoutePreflightError, setGeminiCheapFirstRoutePreflightError] = useState('');
+  const [geminiResearchRefreshGate, setGeminiResearchRefreshGate] =
+    useState<ModelOpsGeminiResearchRefreshGate | null>(null);
+  const [geminiResearchRefreshGateError, setGeminiResearchRefreshGateError] = useState('');
   const [aihubEndpointRouteCoverageGate, setAihubEndpointRouteCoverageGate] =
     useState<ModelOpsAIHubEndpointRouteCoverageGate | null>(null);
   const [aihubEndpointRouteCoverageGateError, setAihubEndpointRouteCoverageGateError] = useState('');
@@ -582,6 +587,7 @@ function Inner() {
     setObservedGatewayModelFitMatrix(payload.observed_gateway_model_fit_matrix ?? null);
     setRuntimeExplicitModelFitGate(payload.runtime_explicit_model_fit_gate ?? null);
     setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
+    setGeminiResearchRefreshGate(payload.gemini_research_refresh_gate ?? null);
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
     setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
@@ -611,6 +617,8 @@ function Inner() {
     setGeminiOfficialModelFamilyRoadmapEvidence(null);
     setGeminiCheapFirstRoutePreflightError('');
     setGeminiCheapFirstRoutePreflight(null);
+    setGeminiResearchRefreshGateError('');
+    setGeminiResearchRefreshGate(null);
     setAihubEndpointRouteCoverageGateError('');
     setAihubEndpointRouteCoverageGate(null);
     setAihubMediaSpeechDefaultCatalogGateError('');
@@ -666,6 +674,7 @@ function Inner() {
         geminiCheapFirstCoverageGateResult,
         geminiOfficialModelFamilyRoadmapEvidenceResult,
         geminiCheapFirstRoutePreflightResult,
+        geminiResearchRefreshGateResult,
         aihubEndpointRouteCoverageGateResult,
         aihubMediaSpeechDefaultCatalogGateResult,
         geminiEmbeddingCheapFirstPreflightResult,
@@ -687,6 +696,7 @@ function Inner() {
           getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
         ),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_route_preflight, getGeminiCheapFirstRoutePreflight),
+        aggregateOrRequest(aggregatePayload?.gemini_research_refresh_gate, getModelOpsGeminiResearchRefreshGate),
         aggregateOrRequest(aggregatePayload?.aihub_endpoint_route_coverage_gate, getModelOpsAIHubEndpointRouteCoverageGate),
         aggregateOrRequest(
           aggregatePayload?.aihub_media_speech_default_catalog_gate,
@@ -784,6 +794,15 @@ function Inner() {
             setGeminiCheapFirstRoutePreflightError('Gemini cheap-first route preflight failed to load.');
           }
         }
+        if (geminiResearchRefreshGateResult.status === 'fulfilled') {
+          setGeminiResearchRefreshGate(geminiResearchRefreshGateResult.value);
+        } else {
+          console.error(geminiResearchRefreshGateResult.reason);
+          setGeminiResearchRefreshGate(modelOpsResult.value.gemini_research_refresh_gate ?? null);
+          if (!modelOpsResult.value.gemini_research_refresh_gate) {
+            setGeminiResearchRefreshGateError('Gemini research refresh gate failed to load.');
+          }
+        }
         if (aihubEndpointRouteCoverageGateResult.status === 'fulfilled') {
           setAihubEndpointRouteCoverageGate(aihubEndpointRouteCoverageGateResult.value);
         } else {
@@ -841,6 +860,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
         setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiResearchRefreshGateResult.status === 'fulfilled') {
+        setGeminiResearchRefreshGate(geminiResearchRefreshGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && aihubEndpointRouteCoverageGateResult.status === 'fulfilled') {
         setAihubEndpointRouteCoverageGate(aihubEndpointRouteCoverageGateResult.value);
@@ -983,6 +1005,10 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiEmbeddingCheapFirstPreflightResult.status === 'rejected') {
         console.error(geminiEmbeddingCheapFirstPreflightResult.reason);
         setGeminiEmbeddingCheapFirstPreflightError('Gemini embedding cheap-first preflight failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && geminiResearchRefreshGateResult.status === 'rejected') {
+        console.error(geminiResearchRefreshGateResult.reason);
+        setGeminiResearchRefreshGateError('Gemini research refresh gate failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
@@ -1529,6 +1555,49 @@ function Inner() {
   const geminiCheapFirstRouteChecks = activeGeminiCheapFirstRoutePreflight?.checks ?? [];
   const geminiCheapFirstRouteBoundaryEntries = boundaryDisplayEntries(
     activeGeminiCheapFirstRoutePreflight?.privacy_boundary,
+  );
+  const activeGeminiResearchRefreshGate = geminiResearchRefreshGate ?? data?.gemini_research_refresh_gate ?? null;
+  const geminiResearchRefreshSourceRows = activeGeminiResearchRefreshGate?.research_source_rows ?? [];
+  const geminiResearchRefreshAdoptionRows = activeGeminiResearchRefreshGate?.adoption_rows ?? [];
+  const geminiResearchRefreshChecks = activeGeminiResearchRefreshGate?.checks ?? [];
+  const geminiResearchRefreshBoundaryEntries = boundaryDisplayEntries(
+    activeGeminiResearchRefreshGate?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|secret|payload|dataset|sample)/i.test(key));
+  const geminiResearchRefreshClaimEntries = boundaryDisplayEntries(
+    activeGeminiResearchRefreshGate?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|secret|payload|dataset|sample)/i.test(key));
+  const geminiResearchRefreshPayloadEchoed = Boolean(activeGeminiResearchRefreshGate?.summary.raw_payload_echoed);
+  const geminiCheapFirstLegalBenchmarkRouteRows = useMemo(
+    () =>
+      geminiCheapFirstRouteRows.map((routeRow) => {
+        const review = legalBenchmarkRiskRouteReviews.find(
+          (item) => item.task === routeRow.task || item.task_id === routeRow.id,
+        );
+        const adoption = geminiResearchRefreshAdoptionRows.find((item) => item.task === routeRow.task);
+        return {
+          task: routeRow.task,
+          route_mode: routeRow.route_mode,
+          default_model: routeRow.default_model,
+          cheap_first_aligned: routeRow.cheap_first_aligned,
+          risk_level: review?.risk_level ?? adoption?.legal_risk_level ?? 'unmapped',
+          calibration_status: review?.calibration_status ?? 'unmapped',
+          calibration_decision: review?.calibration_decision ?? 'unmapped',
+          cheap_first_allowed: review?.cheap_first_allowed ?? routeRow.default_allowed_without_review,
+          balanced_precheck_required: review?.balanced_precheck_required ?? routeRow.route_mode === 'cheap_precheck_then_balanced',
+          premium_exception_required: review?.premium_exception_required ?? routeRow.premium_exception_required,
+          coverage_statuses: review?.coverage_statuses ?? [],
+          public_benchmark_statuses: review?.public_benchmark_statuses ?? [],
+          release_gate_links: review?.release_gate_links ?? [],
+          reason_codes: [
+            ...(review?.reason_codes ?? []),
+            ...(adoption?.reason_codes ?? []),
+          ],
+          adoption_status: adoption?.adoption_status ?? 'unmapped',
+          benchmark_requirement: adoption?.benchmark_requirement ?? 'metadata review required',
+          next_action: adoption?.next_action ?? review?.next_action ?? routeRow.next_action,
+        };
+      }),
+    [geminiCheapFirstRouteRows, legalBenchmarkRiskRouteReviews, geminiResearchRefreshAdoptionRows],
   );
   const activeAihubEndpointRouteCoverageGate =
     aihubEndpointRouteCoverageGate ?? data?.aihub_endpoint_route_coverage_gate ?? null;
@@ -6671,6 +6740,271 @@ function Inner() {
                     </TableBody>
                   </Table>
                 </div>
+
+                {(activeGeminiResearchRefreshGate || geminiResearchRefreshGateError) && (
+                  <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-black uppercase text-stone-500">
+                          Gemini research refresh gate
+                        </h3>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Legal benchmark routing metadata joined to cheap-first route preflight.
+                        </div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {activeGeminiResearchRefreshGate?.id ?? 'modelops-gemini-research-refresh-gate'}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass(activeGeminiResearchRefreshGate?.status)}>
+                        {activeGeminiResearchRefreshGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+                      </Badge>
+                    </div>
+
+                    {geminiResearchRefreshGateError && (
+                      <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        <AlertTriangle className="h-4 w-4" />
+                        {geminiResearchRefreshGateError}
+                      </div>
+                    )}
+
+                    {activeGeminiResearchRefreshGate && (
+                      <>
+                        <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.research_source_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">research sources</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.official_source_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">official sources</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.public_benchmark_source_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">benchmark sources</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.adoption_task_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">adoption tasks</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.review_adoption_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">review adoption</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {activeGeminiResearchRefreshGate.summary.public_benchmark_license_review_count}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">license reviews</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {String(activeGeminiResearchRefreshGate.summary.network_called)}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">network called</div>
+                          </div>
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="text-xl font-black text-stone-950">
+                              {String(activeGeminiResearchRefreshGate.summary.configuration_written)}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">config written</div>
+                          </div>
+                        </div>
+
+                        <div className="mb-3 grid gap-3 lg:grid-cols-2">
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white">
+                            <div className="border-b border-stone-950/10 px-4 py-3">
+                              <h4 className="text-sm font-black uppercase text-stone-500">Research source rows</h4>
+                            </div>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Source</TableHead>
+                                  <TableHead>Type</TableHead>
+                                  <TableHead>Refresh cadence</TableHead>
+                                  <TableHead>Default decision use</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {geminiResearchRefreshSourceRows.map((row) => (
+                                  <TableRow key={row.id}>
+                                    <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                                      <div className="font-semibold text-stone-950">{row.title}</div>
+                                      <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                      <a
+                                        href={row.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="mt-1 block break-all text-[11px] text-stone-500 underline"
+                                      >
+                                        {row.url}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className="bg-white">
+                                        {row.source_type}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-xs leading-5 text-stone-600">
+                                      {row.refresh_cadence}
+                                    </TableCell>
+                                    <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                                      {row.default_decision_use}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white">
+                            <div className="border-b border-stone-950/10 px-4 py-3">
+                              <h4 className="text-sm font-black uppercase text-stone-500">
+                                Legal benchmark routing metadata
+                              </h4>
+                            </div>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Task</TableHead>
+                                  <TableHead>Risk</TableHead>
+                                  <TableHead>Allowed</TableHead>
+                                  <TableHead>Benchmark state</TableHead>
+                                  <TableHead>Action</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {geminiCheapFirstLegalBenchmarkRouteRows.map((row) => (
+                                  <TableRow key={row.task}>
+                                    <TableCell className="text-xs leading-5 text-stone-600">
+                                      <div className="font-semibold text-stone-950">{row.task}</div>
+                                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                        {row.route_mode}
+                                      </div>
+                                      <div className="mt-1">{row.default_model}</div>
+                                    </TableCell>
+                                    <TableCell className="text-xs leading-5 text-stone-600">
+                                      <Badge variant="outline" className={statusClass(row.risk_level === 'block' ? 'fail' : row.risk_level === 'unmapped' ? 'warn' : 'pass')}>
+                                        {row.risk_level}
+                                      </Badge>
+                                      <div className="mt-1">calibration_status: {row.calibration_status}</div>
+                                      <div>calibration_decision: {row.calibration_decision}</div>
+                                    </TableCell>
+                                    <TableCell className="text-xs leading-5 text-stone-600">
+                                      <div>cheap_first_allowed: {String(row.cheap_first_allowed)}</div>
+                                      <div>balanced_precheck_required: {String(row.balanced_precheck_required)}</div>
+                                      <div>premium_exception_required: {String(row.premium_exception_required)}</div>
+                                    </TableCell>
+                                    <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                                      <div>adoption_status: {row.adoption_status}</div>
+                                      <div>coverage_statuses: {row.coverage_statuses.join(', ') || '-'}</div>
+                                      <div>public_benchmark_statuses: {row.public_benchmark_statuses.join(', ') || '-'}</div>
+                                      <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                        release_gate_links: {row.release_gate_links.join(', ') || '-'}
+                                      </div>
+                                      <div className="mt-1">{row.benchmark_requirement}</div>
+                                    </TableCell>
+                                    <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                      <div>{row.next_action}</div>
+                                      <div className="mt-1 text-[11px] text-stone-500">
+                                        {row.reason_codes.join(', ') || '-'}
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 lg:grid-cols-3">
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-4">
+                            <h4 className="mb-2 text-sm font-black uppercase text-stone-500">Adoption rows</h4>
+                            <div className="space-y-2">
+                              {geminiResearchRefreshAdoptionRows.map((row) => (
+                                <div key={row.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="font-mono text-[11px] font-semibold text-stone-950">{row.id}</div>
+                                    <Badge variant="outline" className={statusClass(row.adoption_status)}>
+                                      {row.adoption_status}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-1 text-xs leading-5 text-stone-600">
+                                    required_source_ids: {row.required_source_ids.join(', ')}
+                                  </div>
+                                  <div className="mt-1 text-xs leading-5 text-stone-600">
+                                    release_action: {row.release_action}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-4">
+                            <h4 className="mb-2 text-sm font-black uppercase text-stone-500">Checks</h4>
+                            <div className="space-y-2">
+                              {geminiResearchRefreshChecks.map((check) => (
+                                <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                                    <Badge variant="outline" className={statusClass(check.status)}>
+                                      {check.status}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                                  <div className="mt-1 text-[11px] text-stone-500">{check.evidence.join(', ') || '-'}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="rounded-[8px] border border-stone-950/10 bg-white p-4">
+                            <h4 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h4>
+                            <div className="grid grid-cols-2 gap-2 text-xs leading-5 text-stone-600">
+                              <div>external_refresh_completed: {String(activeGeminiResearchRefreshGate.summary.external_refresh_completed)}</div>
+                              <div>public_benchmark_downloaded: {String(activeGeminiResearchRefreshGate.summary.public_benchmark_downloaded)}</div>
+                              <div>gateway_called: {String(activeGeminiResearchRefreshGate.summary.gateway_called)}</div>
+                              <div>network_called: {String(activeGeminiResearchRefreshGate.summary.network_called)}</div>
+                              <div>configuration_written: {String(activeGeminiResearchRefreshGate.summary.configuration_written)}</div>
+                              <div>payload echoed: {String(geminiResearchRefreshPayloadEchoed)}</div>
+                            </div>
+                            <div className="mt-3 space-y-1 text-xs leading-5 text-stone-600">
+                              {geminiResearchRefreshBoundaryEntries.map(([key, value]) => (
+                                <div key={key}>
+                                  {key}: {value == null ? '-' : String(value)}
+                                </div>
+                              ))}
+                              {geminiResearchRefreshClaimEntries.map(([key, value]) => (
+                                <div key={key}>
+                                  {key}: {value == null ? '-' : String(value)}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              {activeGeminiResearchRefreshGate.validation_commands.slice(0, 2).map((command) => (
+                                <div
+                                  key={command}
+                                  className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                                >
+                                  validation_commands: {command}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
                   <Table>
