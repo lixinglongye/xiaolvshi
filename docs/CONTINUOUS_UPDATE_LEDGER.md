@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current Settings AI provider status slice:
+`settings-ai-provider-status-card` adds a read-only Settings page status card
+for OpenAI-compatible Gemini/NewAPI gateway readiness. It uses the existing
+metadata-only runtime configuration API to show configured/missing provider
+state, cheap-first role counts, safe environment variable names,
+high-frequency Gemini defaults, recommended actions, and a link to the full
+ModelOps evidence page. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network; read admin settings; write
+configuration; change defaults; shift traffic; or return raw gateway URLs,
+credential values, Authorization headers, request bodies, response bodies,
+prompts, raw legal text, model outputs, gateway responses, emails, or user
+identifiers.
+
 Current ModelOps gateway runtime configuration slice:
 `model-gateway-runtime-configuration` adds metadata-only runtime setup evidence
 for OpenAI-compatible NewAPI/YibuAPI/Gemini gateways. It verifies

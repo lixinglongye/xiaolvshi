@@ -182,6 +182,12 @@ const caseExportReadinessApiCall = sourceSection(
   'setExportReadiness(readiness);',
   'case detail export readiness API call',
 );
+const settingsAiModelProviderSection = sourceSection(
+  settingsPage,
+  'AI model provider',
+  '<FeedbackCapturePanel />',
+  'settings AI model provider section',
+);
 const settingsFeedbackCaptureSection = feedbackCapturePanel;
 
 const requiredScripts = ['lint', 'typecheck', 'build', 'ui:regression'];
@@ -282,6 +288,36 @@ const checks = [
   () => assertIncludes(feedbackCapturePanel, 'client.entities.feedback_tickets.create', 'feedback capture panel ticket create binding'),
   () => assertIncludes(feedbackCapturePanel, 'raw feedback returned', 'feedback capture panel privacy boundary UI'),
   () => assertIncludes(feedbackCapturePanel, 'calls_ai_model', 'feedback capture panel model-call privacy binding'),
+  () => assertIncludes(settingsPage, 'getModelGatewayRuntimeConfiguration', 'settings AI provider runtime configuration API binding'),
+  () => assertIncludes(settingsPage, 'ModelGatewayRuntimeConfiguration', 'settings AI provider runtime configuration type'),
+  () => assertIncludes(settingsPage, 'AI model provider', 'settings AI provider status card'),
+  () =>
+    assertIncludes(
+      settingsPage,
+      'Gemini cheap-first routing is read-only here',
+      'settings AI provider read-only deployment-secret copy',
+    ),
+  () => assertIncludes(settingsPage, 'normalized base URL via', 'settings AI provider normalized base URL status label'),
+  () => assertIncludes(settingsPage, 'credential presence via', 'settings AI provider credential presence label'),
+  () => assertIncludes(settingsPage, 'cheap_first_ready_count', 'settings AI provider cheap-first count binding'),
+  () => assertIncludes(settingsPage, 'credentials_included', 'settings AI provider credentials-included boundary binding'),
+  () => assertIncludes(settingsPage, 'configuration_written', 'settings AI provider configuration write boundary binding'),
+  () => assertIncludes(settingsPage, 'APP_AI_CHEAP_MODEL', 'settings AI provider cheap model env name'),
+  () => assertIncludes(settingsPage, 'APP_AI_EMBEDDING_MODEL', 'settings AI provider embedding env name'),
+  () => assertIncludes(settingsPage, '/model-ops', 'settings AI provider model-ops evidence link'),
+  () => assertBefore(settingsPage, 'AI model provider', '<FeedbackCapturePanel />', 'settings AI provider before feedback form'),
+  () =>
+    assertNotMatches(
+      settingsAiModelProviderSection,
+      /api_key_display|base_url_display|dry_run_contracts|headers|request_body|response_body|gateway_response|\/api\/v1\/admin|adminSettings|updateEnv|setEnv|localStorage/i,
+      'settings AI provider forbidden raw/admin field guard',
+    ),
+  () =>
+    assertNotMatches(
+      settingsAiModelProviderSection,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text/i,
+      'settings AI provider sensitive field guard',
+    ),
   () => assertIncludes(settingsPage, 'FeedbackCapturePanel', 'settings feedback capture import'),
   () => assertIncludes(settingsPage, '<FeedbackCapturePanel />', 'settings feedback capture component binding'),
   () => assertIncludes(deepReportPage, 'FeedbackCapturePanel', 'deep report feedback capture component binding'),

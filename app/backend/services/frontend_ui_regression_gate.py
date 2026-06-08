@@ -142,6 +142,8 @@ PAGE_GATES = (
         "source_path": "app/frontend/src/pages/SettingsPage.tsx",
         "risk_area": "user-facing feedback capture and account settings",
         "protected_panels": (
+            "AI model provider",
+            "metadata-only AI provider status",
             "product feedback capture form",
             "feedback capture-plan preview",
             "feedback ticket submit action",
@@ -234,6 +236,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps route telemetry UI evidence is metadata only: repository, ops summary, triage queue, and remediation panels use sanitized route counters and never render prompts, legal text, request bodies, response bodies, headers, raw model output, emails, or credentials.",
                     "Public benchmark license gate UI evidence is metadata only: no public benchmark sample text, fixture snippets, model output, gateway payloads, dataset downloads, public score claims, or credentials.",
+                    "Settings AI provider status evidence is metadata only: it displays configured/missing booleans, cheap-first role counts, safe env names, and ModelOps links without raw gateway URLs, credential values, headers, request bodies, response bodies, prompts, model output, legal text, or configuration writes.",
                     "Settings feedback capture evidence is metadata only: capture-plan previews return priority, owner, roadmap IDs, release gates, and privacy flags without raw feedback text or model calls.",
                     "Deep report feedback capture evidence is metadata only: report-level feedback links to report IDs, roadmap IDs, and release gates without raw report text, prompts, model output, or external calls.",
                     "Separates current executable gates from missing browser-level network mocking automation.",
@@ -386,6 +389,12 @@ class FrontendUiRegressionGateService:
                     "page": "/settings",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the product feedback form, capture-plan API binding, ticket creation path, and privacy-boundary rendering in the source contract.",
                     "regression_target": "Add browser-level mocked capture-plan 200/500 checks and assert raw user feedback text is not rendered in the preview summary.",
+                },
+                {
+                    "id": "settings-ai-provider-status-regresses",
+                    "page": "/settings",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the read-only AI provider status card, runtime configuration API binding, ModelOps link, and privacy-safe source contract.",
+                    "regression_target": "Add browser-level mocked provider-status checks for configured, missing, warning, and blocked states while asserting raw gateway URLs, headers, bodies, prompts, model output, and credentials never render.",
                 },
                 {
                     "id": "deep-report-feedback-capture-regresses",

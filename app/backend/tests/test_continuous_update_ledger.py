@@ -176,6 +176,37 @@ def test_continuous_update_ledger_includes_modelops_legal_benchmark_risk_bridge_
     assert "traceable-legal-review" in entry["user_need_ids"]
 
 
+def test_continuous_update_ledger_tracks_settings_ai_provider_status_card():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "settings-ai-provider-status-card"
+    )
+
+    assert entry["category"] == "frontend_ui"
+    assert entry["size"] == "medium"
+    assert entry["status"] == "shipped"
+    assert "read-only Settings AI provider status card" in entry["impact"]
+    assert "metadata-only gateway runtime configuration evidence" in entry["impact"]
+    assert "cheap-first role counts" in entry["impact"]
+    assert "admin settings access" in entry["impact"]
+    assert "configuration writes" in entry["impact"]
+    assert "raw gateway URLs" in entry["impact"]
+    assert "credential values" in entry["impact"]
+    assert "prompts" in entry["impact"]
+    assert "model outputs" in entry["impact"]
+    assert "app/frontend/src/pages/SettingsPage.tsx" in entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in entry["evidence_paths"]
+    assert "app/backend/tests/test_frontend_ui_regression_gate.py" in entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in entry["evidence_paths"]
+    assert "settings-ai-provider-status-card" in entry["release_gate_links"]
+    assert "model-gateway-runtime-configuration" in entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in entry["release_gate_links"]
+    assert "low-cost-routing" in entry["user_need_ids"]
+    assert "safe-ai-ops" in entry["user_need_ids"]
+
+
 def test_continuous_update_ledger_tracks_case_workbench_risk_state_badges():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     entry = next(
@@ -300,6 +331,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
+    assert "settings-ai-provider-status-card" in completed_ids
     assert "modelops-legal-fixture-cheap-first-calibration-binding" in completed_ids
     assert "modelops-legal-fixture-modelops-ui-binding" in completed_ids
     assert "modelops-cheap-first-release-legal-benchmark-binding" in completed_ids
