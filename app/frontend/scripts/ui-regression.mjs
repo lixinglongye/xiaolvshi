@@ -170,6 +170,12 @@ const modelOpsUserNeedCheapFirstHandoffPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
   'model-ops user-need cheap-first handoff section',
 );
+const modelOpsCheapFirstCascadeResearchGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first cascade research gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+  'model-ops cheap-first cascade research gate section',
+);
 const caseWorkbenchRiskRefreshPanel = sourceSection(
   caseWorkbenchRuntimePanel,
   'Risk refresh plan',
@@ -1730,9 +1736,44 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet', 'model-ops promotion packet aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_cheap_first_handoff', 'model-ops user-need cheap-first handoff aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'getModelOpsUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff fallback request'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.cheap_first_cascade_research_gate', 'model-ops cheap-first cascade research gate aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'getModelOpsCheapFirstCascadeResearchGate', 'model-ops cheap-first cascade research gate fallback request'),
   () => assertIncludes(modelOpsPage, 'initialModelOpsApplied', 'model-ops early aggregate load guard'),
   () => assertIncludes(modelOpsPage, 'setLoading(false)', 'model-ops aggregate payload unblocks first paint'),
   () => assertIncludes(modelOpsPage, 'ModelOps load guard', 'model-ops performance budget panel'),
+  () => assertIncludes(modelOpsPage, 'Cheap-first cascade research gate', 'model-ops cheap-first cascade research gate panel'),
+  () => assertIncludes(modelOpsPage, 'cascadeResearchSourceRows', 'model-ops cheap-first cascade source row binding'),
+  () => assertIncludes(modelOpsPage, 'cascadeResearchBasisRows', 'model-ops cheap-first cascade research basis binding'),
+  () => assertIncludes(modelOpsPage, 'cascadeResearchPolicyEntries', 'model-ops cheap-first cascade policy binding'),
+  () => assertIncludes(modelOpsPage, 'cascadeResearchBoundaryEntries', 'model-ops cheap-first cascade privacy boundary binding'),
+  () => assertIncludes(modelOpsPage, 'cascadeResearchClaimEntries', 'model-ops cheap-first cascade claim boundary binding'),
+  () => assertIncludes(modelOpsPage, 'default_routes_changed', 'model-ops cheap-first cascade no default change summary'),
+  () => assertIncludes(modelOpsPage, 'source_rows ?? []', 'model-ops cheap-first cascade source rows fallback'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstCascadeResearchGate', 'model-ops cheap-first cascade research gate type'),
+  () => assertIncludes(modelOpsApi, 'cheap_first_cascade_research_gate?: ModelOpsCheapFirstCascadeResearchGate', 'model-ops cheap-first cascade research gate response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstCascadeResearchGateSourceRow', 'model-ops cheap-first cascade source row type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsCheapFirstCascadeResearchGate', 'model-ops cheap-first cascade research gate getter'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/cheap-first-cascade-research-gate', 'model-ops cheap-first cascade research gate endpoint'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Cheap-first cascade research gate</h2>',
+      'model-ops cascade research gate follows user-need handoff',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Cheap-first cascade research gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Default change queue</h2>',
+      'model-ops cascade research gate precedes default change queue',
+    ),
+  () =>
+    assertNotMatches(
+      modelOpsCheapFirstCascadeResearchGatePanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|email|phone|identity|messages|content)\b/i,
+      'model-ops cheap-first cascade research gate no secret or raw prompt/output fields',
+    ),
   () => assertIncludes(modelOpsPage, 'Performance observations', 'model-ops performance observation review form'),
   () => assertIncludes(modelOpsPage, 'Evaluate observations', 'model-ops performance observation submit button'),
   () => assertIncludes(modelOpsPage, 'fallback_after_timeout_disabled', 'model-ops timeout fallback summary binding'),

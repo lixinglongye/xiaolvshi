@@ -3466,6 +3466,75 @@ export type ModelOpsCheapFirstEscalationBudget = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstCascadeResearchGateSourceRow = {
+  id: string;
+  label: string;
+  source_type: string;
+  status: string;
+  source_status: string;
+  blocking_ids: string[];
+  warning_ids: string[];
+  summary_counts: {
+    blocking_check_count: number;
+    warning_check_count: number;
+    source_warning_count: number;
+    source_blocking_count: number;
+  };
+  required_action: string;
+};
+
+export type ModelOpsCheapFirstCascadeResearchGateCheck = {
+  id: string;
+  status: string;
+  reason: string;
+};
+
+export type ModelOpsCheapFirstCascadeResearchGate = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    research_basis: Array<{
+      id: string;
+      url: string;
+      signal: string;
+    }>;
+  };
+  summary: {
+    source_count: number;
+    passing_source_count: number;
+    review_source_count: number;
+    blocked_source_count: number;
+    research_source_count: number;
+    official_source_count: number;
+    local_gate_count: number;
+    forbidden_payload_field_count: number;
+    secret_like_value_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    frugalgpt_basis_attached: boolean;
+    gemini_flash_lite_basis_attached: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    default_routes_changed: boolean;
+    raw_payload_echoed: boolean;
+  };
+  cascade_policy: Record<string, string>;
+  source_rows: ModelOpsCheapFirstCascadeResearchGateSourceRow[];
+  checks: ModelOpsCheapFirstCascadeResearchGateCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  source_boundaries: Record<string, boolean | string | number | string[] | null>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelFailureUpgradeBudgetCheck = {
   id: string;
   status: string;
@@ -4619,6 +4688,7 @@ export type ModelOpsResponse = {
   gentxt_routing_guard?: ModelOpsGenTxtRoutingGuard;
   route_quality_budget?: ModelRouteQualityBudget;
   cheap_first_escalation_budget?: ModelOpsCheapFirstEscalationBudget;
+  cheap_first_cascade_research_gate?: ModelOpsCheapFirstCascadeResearchGate;
   failure_upgrade_budget?: ModelFailureUpgradeBudget;
   legal_benchmark_risk_bridge?: ModelOpsLegalBenchmarkRiskBridge;
   legal_micro_benchmark_preflight?: ModelOpsLegalMicroBenchmarkPreflight;
@@ -5309,6 +5379,13 @@ export async function getModelRouteQualityBudget(): Promise<ModelRouteQualityBud
 export async function getModelOpsCheapFirstEscalationBudget(): Promise<ModelOpsCheapFirstEscalationBudget> {
   return invokeModelOpsApi<ModelOpsCheapFirstEscalationBudget>({
     url: '/api/v1/aihub/models/cheap-first-escalation-budget',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsCheapFirstCascadeResearchGate(): Promise<ModelOpsCheapFirstCascadeResearchGate> {
+  return invokeModelOpsApi<ModelOpsCheapFirstCascadeResearchGate>({
+    url: '/api/v1/aihub/models/cheap-first-cascade-research-gate',
     method: 'GET',
   });
 }

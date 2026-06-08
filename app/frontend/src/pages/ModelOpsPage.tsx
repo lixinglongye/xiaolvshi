@@ -41,6 +41,7 @@ import {
   getModelOpsAIHubMediaRuntimeCompatibilityGate,
   getModelOpsGeminiEmbeddingCheapFirstPreflight,
   getModelOpsCheapFirstEscalationBudget,
+  getModelOpsCheapFirstCascadeResearchGate,
   getModelFailureUpgradeBudget,
   getModelFailureUpgradeBudgetTemplate,
   getModelOpsLegalBenchmarkRiskBridge,
@@ -77,6 +78,7 @@ import {
   type ModelOpsCheapFirstCanaryPromotionDecision,
   type ModelOpsCheapFirstCanaryRollbackDrill,
   type ModelOpsCheapFirstEscalationBudget,
+  type ModelOpsCheapFirstCascadeResearchGate,
   type ModelFailureUpgradeBudget,
   type ModelOpsLegalBenchmarkRiskBridge,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
@@ -544,6 +546,8 @@ function Inner() {
   const [escalationBudgetPayloadText, setEscalationBudgetPayloadText] = useState('');
   const [escalationBudgetLoading, setEscalationBudgetLoading] = useState(false);
   const [escalationBudgetError, setEscalationBudgetError] = useState('');
+  const [cascadeResearchGate, setCascadeResearchGate] = useState<ModelOpsCheapFirstCascadeResearchGate | null>(null);
+  const [cascadeResearchGateError, setCascadeResearchGateError] = useState('');
   const [failureUpgradeBudget, setFailureUpgradeBudget] = useState<ModelFailureUpgradeBudget | null>(null);
   const [failureUpgradePayloadText, setFailureUpgradePayloadText] = useState('');
   const [failureUpgradeLoading, setFailureUpgradeLoading] = useState(false);
@@ -589,6 +593,7 @@ function Inner() {
     setProbeEvaluation(null);
     setPerformanceBudget(null);
     setEscalationBudget(payload.cheap_first_escalation_budget ?? null);
+    setCascadeResearchGate(payload.cheap_first_cascade_research_gate ?? null);
     setFailureUpgradeBudget(payload.failure_upgrade_budget ?? null);
     setLegalBenchmarkRiskBridge(payload.legal_benchmark_risk_bridge ?? null);
     setUserNeedReleaseBridge(payload.user_need_release_bridge ?? null);
@@ -664,6 +669,8 @@ function Inner() {
     setPerformanceBudget(null);
     setEscalationBudgetError('');
     setEscalationBudget(null);
+    setCascadeResearchGateError('');
+    setCascadeResearchGate(null);
     setFailureUpgradeError('');
     setFailureUpgradeBudget(null);
     setLegalBenchmarkRiskBridgeError('');
@@ -721,6 +728,7 @@ function Inner() {
         aihubMediaRuntimeCompatibilityGateResult,
         geminiEmbeddingCheapFirstPreflightResult,
         escalationBudgetResult,
+        cascadeResearchGateResult,
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
         userNeedReleaseBridgeResult,
@@ -757,6 +765,7 @@ function Inner() {
           getModelOpsGeminiEmbeddingCheapFirstPreflight,
         ),
         aggregateOrRequest(aggregatePayload?.cheap_first_escalation_budget, getModelOpsCheapFirstEscalationBudget),
+        aggregateOrRequest(aggregatePayload?.cheap_first_cascade_research_gate, getModelOpsCheapFirstCascadeResearchGate),
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
         aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
         aggregateOrRequest(aggregatePayload?.user_need_release_bridge, getModelOpsUserNeedReleaseBridge),
@@ -989,6 +998,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.cheap_first_escalation_budget)
         ) {
           setEscalationBudgetError('Cheap-first escalation budget failed to load.');
+        }
+      }
+      if (cascadeResearchGateResult.status === 'fulfilled') {
+        setCascadeResearchGate(cascadeResearchGateResult.value);
+      } else {
+        console.error(cascadeResearchGateResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setCascadeResearchGate(modelOpsResult.value.cheap_first_cascade_research_gate ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.cheap_first_cascade_research_gate)
+        ) {
+          setCascadeResearchGateError('Cheap-first cascade research gate failed to load.');
         }
       }
       if (failureUpgradeBudgetResult.status === 'fulfilled') {
@@ -1607,6 +1630,17 @@ function Inner() {
   const modelOpsPerformanceRows = activePerformanceBudget?.checks ?? [];
   const activeEscalationBudget = escalationBudget ?? data?.cheap_first_escalation_budget ?? null;
   const escalationBudgetRows = activeEscalationBudget?.budget_rows ?? [];
+  const activeCascadeResearchGate = cascadeResearchGate ?? data?.cheap_first_cascade_research_gate ?? null;
+  const cascadeResearchSourceRows = activeCascadeResearchGate?.source_rows ?? [];
+  const cascadeResearchBasisRows = activeCascadeResearchGate?.method.research_basis ?? [];
+  const cascadeResearchChecks = activeCascadeResearchGate?.checks ?? [];
+  const cascadeResearchPolicyEntries = Object.entries(activeCascadeResearchGate?.cascade_policy ?? {});
+  const cascadeResearchBoundaryEntries = boundaryDisplayEntries(
+    activeCascadeResearchGate?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|phone|identity|credential|secret|payload|text)/i.test(key));
+  const cascadeResearchClaimEntries = boundaryDisplayEntries(
+    activeCascadeResearchGate?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|secret|payload|text)/i.test(key));
   const activeFailureUpgradeBudget = failureUpgradeBudget ?? data?.failure_upgrade_budget ?? null;
   const failureUpgradeChecks = activeFailureUpgradeBudget?.checks ?? [];
   const activeLegalBenchmarkRiskBridge =
@@ -2610,6 +2644,167 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {activeCascadeResearchGate && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Cheap-first cascade research gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeCascadeResearchGate.summary.source_count} sources /{' '}
+                  {activeCascadeResearchGate.summary.local_gate_count} local gates /{' '}
+                  {activeCascadeResearchGate.summary.review_source_count} reviews
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeCascadeResearchGate.status)}>
+                {activeCascadeResearchGate.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            {cascadeResearchGateError && (
+              <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {cascadeResearchGateError}
+              </div>
+            )}
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCascadeResearchGate.summary.passing_source_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">passing sources</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCascadeResearchGate.summary.review_source_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review sources</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCascadeResearchGate.summary.blocked_source_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocked sources</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeCascadeResearchGate.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warning checks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCascadeResearchGate.summary.network_called)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">network called</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeCascadeResearchGate.summary.default_routes_changed)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">default changed</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4 lg:col-span-2">
+                <div className="text-sm font-black uppercase text-stone-500">Cascade policy</div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {cascadeResearchPolicyEntries.map(([key, value]) => (
+                    <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="font-mono text-[11px] text-stone-500">{key}</div>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">{String(value)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Research basis</div>
+                <div className="mt-2 space-y-2 text-xs leading-5 text-stone-600">
+                  {cascadeResearchBasisRows.map((row) => (
+                    <a
+                      key={row.id}
+                      className="block rounded-[8px] border border-stone-950/10 bg-white p-3 font-semibold text-stone-700 underline-offset-4 hover:underline"
+                      href={row.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {row.id}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Privacy and claims</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  {cascadeResearchBoundaryEntries.slice(0, 5).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                  {cascadeResearchClaimEntries.slice(0, 3).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Source</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Counts</TableHead>
+                    <TableHead>Required action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cascadeResearchSourceRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="max-w-[280px]">
+                        <div className="font-semibold text-stone-950">{row.label}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">{row.source_type}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.status)}>
+                          {row.status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          source: {row.source_status.replace(/_/g, ' ')}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                        <div>blocking: {row.summary_counts.blocking_check_count}</div>
+                        <div>warning: {row.summary_counts.warning_check_count}</div>
+                        <div>source warning: {row.summary_counts.source_warning_count}</div>
+                        <div>source blocking: {row.summary_counts.source_blocking_count}</div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        {row.required_action}
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          review ids: {row.warning_ids.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {cascadeResearchChecks.map((check) => (
+                <div key={check.id} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="font-mono text-xs font-black text-stone-700">{check.id}</div>
+                    <Badge variant="outline" className={statusClass(check.status)}>
+                      {check.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                </div>
+              ))}
             </div>
           </section>
         )}
