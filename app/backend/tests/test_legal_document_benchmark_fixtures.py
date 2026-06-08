@@ -10,6 +10,8 @@ SENSITIVE_PATTERNS = (
     r"\b\d{17}[\dXx]\b",
 )
 
+MOJIBAKE_MARKERS = ("锛", "绾", "鍏", "鏃", "€", "�")
+
 
 def test_legal_document_benchmark_fixtures_build_small_chinese_suite():
     suite = LegalDocumentBenchmarkFixturesService().build_suite()
@@ -17,6 +19,7 @@ def test_legal_document_benchmark_fixtures_build_small_chinese_suite():
     assert suite["status"] == "ready"
     assert 3 <= suite["summary"]["benchmark_case_count"] <= 5
     assert suite["summary"]["language"] == "zh-CN"
+    assert suite["summary"]["locale_quality"] == "readable_zh_cn"
     assert suite["summary"]["model_calls"] == "not_required"
     assert suite["summary"]["network_access"] == "disabled"
     assert suite["benchmark_cases"]
@@ -37,6 +40,28 @@ def test_legal_document_benchmark_fixtures_cover_core_document_types():
     assert "service_contract" in matter_types
     assert "private_lending_dispute" in matter_types
     assert "lease_payment_collection" in matter_types
+
+
+def test_legal_document_benchmark_fixture_text_is_readable_chinese_not_mojibake():
+    suite = LegalDocumentBenchmarkFixturesService().build_suite()
+    text = " ".join(
+        [
+            *(task["title"] for task in suite["expected_tasks"]),
+            *(case["title"] for case in suite["benchmark_cases"]),
+            *(case["snippet"] for case in suite["benchmark_cases"]),
+            *(
+                value
+                for case in suite["benchmark_cases"]
+                for value in case["expected_fields"].values()
+            ),
+        ]
+    )
+
+    assert "服务合同付款与违约责任片段" in text
+    assert "民间借贷起诉状事实与诉请片段" in text
+    assert "租金催收律师函片段" in text
+    assert "劳动解除补偿协议片段" in text
+    assert not any(marker in text for marker in MOJIBAKE_MARKERS)
 
 
 def test_legal_document_benchmark_expected_tasks_cover_classification_extraction_and_risk():

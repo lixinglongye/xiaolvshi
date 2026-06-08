@@ -1287,6 +1287,8 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
     assert "synthetic legal document fixture suite" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
     assert "empty-prediction evaluator" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
+    assert "readable zh-CN fixture metadata" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
+    assert "mojibake regression" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
     assert "not rendering raw fixture snippets" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-document-benchmark-fixture-ui"]["evidence_paths"]
     assert "metadata-only amount, deadline, and fact-consistency benchmark evidence" in checks[

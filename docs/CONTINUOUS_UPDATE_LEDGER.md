@@ -222,10 +222,11 @@ text, model outputs, emails, credentials, or user identifiers.
 Current legal document fixture UI slice:
 `legal-document-benchmark-fixture-ui` exposes the local synthetic legal-document
 fixture suite and empty-prediction evaluator on the maintenance evidence page.
-It shows case ids, document types, expected-check counts, field keys, snippet
-lengths, scoring state, local resource policy, and validation commands while
-deliberately not rendering raw fixture snippets, prompts, model responses,
-gateway payloads, credentials, emails, or client material.
+It shows readable zh-CN case ids, document types, expected-check counts, field
+keys, snippet lengths, scoring state, local resource policy, validation
+commands, and mojibake regression coverage while deliberately not rendering raw
+fixture snippets, prompts, model responses, gateway payloads, credentials,
+emails, or client material.
 
 Current ModelOps source freshness slice:
 `modelops-catalog-source-freshness-gate` extends the Gemini catalog source

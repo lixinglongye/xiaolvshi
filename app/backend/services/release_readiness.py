@@ -2727,8 +2727,9 @@ class ReleaseReadinessService:
                 ),
                 manual_note=(
                     "This exposes the synthetic legal document fixture suite and empty-prediction evaluator on "
-                    "the maintenance evidence page while deliberately not rendering raw fixture snippets, prompts, "
-                    "model responses, gateway payloads, credentials, or client material."
+                    "the maintenance evidence page with readable zh-CN fixture metadata and mojibake regression "
+                    "checks while deliberately not rendering raw fixture snippets, prompts, model responses, "
+                    "gateway payloads, credentials, or client material."
                 ),
             ),
             ReleaseCheck(

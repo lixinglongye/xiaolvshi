@@ -3419,7 +3419,11 @@ class ContinuousUpdateLedgerService:
                 category="benchmark",
                 size="large",
                 status="shipped",
-                impact="Adds deterministic Chinese legal-document snippets and local classification, extraction, deadline, and risk-label scoring without model calls.",
+                impact=(
+                    "Adds deterministic readable zh-CN legal-document snippets, locale-quality metadata, "
+                    "mojibake regression checks, and local classification, extraction, deadline, and "
+                    "risk-label scoring without model calls."
+                ),
                 evidence_paths=(
                     "app/backend/services/legal_document_benchmark_fixtures.py",
                     "app/backend/tests/test_legal_document_benchmark_fixtures.py",
@@ -4972,8 +4976,9 @@ class ContinuousUpdateLedgerService:
                 status="shipped",
                 impact=(
                     "Exposes the local synthetic legal-document fixture suite and empty-prediction evaluator on "
-                    "the maintenance evidence page with case metadata, expected-check counts, scoring state, "
-                    "resource policy, validation commands, and a raw-snippet rendering boundary."
+                    "the maintenance evidence page with readable zh-CN case metadata, expected-check counts, "
+                    "scoring state, resource policy, validation commands, mojibake regression coverage, and "
+                    "a raw-snippet rendering boundary."
                 ),
                 evidence_paths=(
                     "app/backend/services/legal_document_benchmark_fixtures.py",

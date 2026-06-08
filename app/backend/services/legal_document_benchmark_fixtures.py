@@ -57,6 +57,7 @@ class LegalDocumentBenchmarkFixturesService:
                 "language": "zh-CN",
                 "model_calls": "not_required",
                 "network_access": "disabled",
+                "locale_quality": "readable_zh_cn",
             },
             "benchmark_cases": cases,
             "expected_tasks": tasks,

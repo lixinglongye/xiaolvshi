@@ -14,7 +14,11 @@ This module adds a small, deterministic benchmark fixture set for Chinese legal-
 - Risk label coverage
 - Contract, civil complaint, lawyer letter, and settlement-agreement snippets
 
-All fixtures are synthetic. They use generic names such as `A公司`, `张某`, and `C公司`; they do not contain real client documents or personal contact data.
+All fixtures are synthetic. They use generic names such as `A公司`, `张某`,
+and `C公司`; they do not contain real client documents or personal contact
+data. The fixture service exposes `summary.locale_quality = readable_zh_cn`,
+and the pytest suite blocks common mojibake markers so reviewer-facing fixture
+metadata stays readable Chinese.
 
 ## Output Shape
 

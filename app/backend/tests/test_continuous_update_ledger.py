@@ -461,6 +461,8 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     )
     assert legal_document_benchmark_fixture_ui_entry["size"] == "medium"
     assert legal_document_benchmark_fixture_ui_entry["status"] == "shipped"
+    assert "readable zh-CN case metadata" in legal_document_benchmark_fixture_ui_entry["impact"]
+    assert "mojibake regression coverage" in legal_document_benchmark_fixture_ui_entry["impact"]
     assert "empty-prediction evaluator" in legal_document_benchmark_fixture_ui_entry["impact"]
     assert "raw-snippet rendering boundary" in legal_document_benchmark_fixture_ui_entry["impact"]
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_fixture_ui_entry[
