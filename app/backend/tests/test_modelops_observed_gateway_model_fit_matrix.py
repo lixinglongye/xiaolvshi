@@ -20,6 +20,7 @@ def test_observed_gateway_model_fit_matrix_scores_full_gateway_inventory():
                     {"id": "newapi/google/gemini-3.1-flash-lite@latest"},
                     {"id": "publishers/google/models/gemini-2.5-pro:generateContent"},
                     {"id": "yibuapi/google/gemini-2.5-flash-image"},
+                    {"id": "models/gemini-embedding-001"},
                 ]
             }
         }
@@ -28,18 +29,24 @@ def test_observed_gateway_model_fit_matrix_scores_full_gateway_inventory():
     model_rows = {row["canonical_model"]: row for row in matrix["observed_model_rows"]}
 
     assert matrix["status"] == "review_required"
-    assert matrix["summary"]["accepted_observed_model_count"] == 5
+    assert matrix["summary"]["accepted_observed_model_count"] == 6
     assert matrix["summary"]["cheap_first_covered_count"] == matrix["summary"]["cheap_first_task_count"]
     assert matrix["summary"]["gateway_called"] is False
     assert matrix["summary"]["network_called"] is False
     assert matrix["summary"]["configuration_written"] is False
+    assert "high-frequency-cheap-fit" not in matrix["blocking_check_ids"]
     assert task_rows["fast"]["gateway_fit_status"] == "cheap_fit"
     assert task_rows["classification"]["cheapest_canonical_model"] == "gemini-2.5-flash-lite"
     assert task_rows["ocr"]["configured_default_observed"] is True
+    assert task_rows["embedding"]["gateway_fit_status"] == "cheap_fit"
+    assert task_rows["embedding"]["cheapest_canonical_model"] == "gemini-embedding-001"
+    assert task_rows["embedding"]["configured_default_observed"] is True
+    assert "high_frequency_not_flash_lite" not in task_rows["embedding"]["reason_codes"]
     assert task_rows["review"]["gateway_fit_status"] == "balanced_fit"
     assert task_rows["agentic"]["cheapest_canonical_model"] == "gemini-3.1-flash-lite"
     assert task_rows["pdf"]["gateway_fit_status"] == "premium_exception_fit"
     assert task_rows["image"]["gateway_fit_status"] == "media_fit"
+    assert model_rows["gemini-embedding-001"]["default_allowed_without_review"] is True
     assert model_rows["gemini-2.5-flash-lite"]["default_allowed_without_review"] is True
     assert model_rows["gemini-2.5-pro"]["explicit_review_required"] is True
     assert "premium_model" in model_rows["gemini-2.5-pro"]["reason_codes"]
@@ -50,6 +57,7 @@ def test_observed_gateway_model_fit_matrix_marks_sparse_inventory_gaps():
         {
             "observed_models": [
                 "models/gemini-2.5-flash-lite",
+                "models/gemini-embedding-001",
                 "newapi/google/gemini-3.9-flash-lite",
                 "vendor/other-model",
             ]
@@ -61,8 +69,10 @@ def test_observed_gateway_model_fit_matrix_marks_sparse_inventory_gaps():
     assert matrix["summary"]["unknown_gemini_like_count"] == 1
     assert matrix["summary"]["external_model_count"] == 1
     assert task_rows["fast"]["gateway_fit_status"] == "cheap_fit"
+    assert task_rows["embedding"]["gateway_fit_status"] == "cheap_fit"
     assert task_rows["review"]["gateway_fit_status"] == "missing"
     assert task_rows["agentic"]["gateway_fit_status"] == "missing"
+    assert "high-frequency-cheap-fit" not in matrix["blocking_check_ids"]
     assert "task-capability-coverage" in matrix["warning_check_ids"]
     assert "review-only-model-boundary" in matrix["warning_check_ids"]
 
@@ -79,6 +89,8 @@ def test_observed_gateway_model_fit_matrix_blocks_missing_high_frequency_cheap_f
     assert matrix["status"] == "blocked"
     assert "high-frequency-cheap-fit" in matrix["blocking_check_ids"]
     assert matrix["summary"]["cheap_first_covered_count"] == 0
+    assert any("embedding coverage" in action for action in matrix["recommended_actions"])
+    assert not any("sensitive" in action.lower() for action in matrix["recommended_actions"])
 
 
 def test_observed_gateway_model_fit_matrix_rejects_sensitive_values_without_echoing():
@@ -117,6 +129,9 @@ def test_observed_gateway_model_fit_matrix_aihub_route_is_attached_to_readiness(
     assert get_response.status_code == 200
     packet = get_response.json()["data"]
     assert packet["id"] == "modelops-observed-gateway-model-fit-matrix"
+    assert packet["status"] == "review_required"
+    assert "high-frequency-cheap-fit" not in packet["blocking_check_ids"]
+    assert packet["summary"]["cheap_first_covered_count"] == packet["summary"]["cheap_first_task_count"]
     assert packet["summary"]["gateway_called"] is False
 
     post_response = client.post(

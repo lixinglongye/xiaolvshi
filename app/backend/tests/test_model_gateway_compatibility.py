@@ -4,11 +4,18 @@ from services.model_gateway_compatibility import ModelGatewayCompatibilityServic
 
 def test_gateway_compatibility_passes_for_default_gemini_models():
     result = ModelGatewayCompatibilityService().evaluate()
+    roles = {row["id"]: row for row in result["configured_roles"]}
+    examples = {row["model"]: row for row in result["gateway_examples"]}
 
     assert result["status"] == "pass"
-    assert result["summary"]["configured_role_count"] >= 8
+    assert result["summary"]["configured_role_count"] >= 9
     assert result["summary"]["known_configured_count"] == result["summary"]["configured_role_count"]
     assert result["summary"]["blocking_count"] == 0
+    assert roles["embedding-model"]["model"] == "gemini-embedding-001"
+    assert roles["embedding-model"]["env_var"] == "APP_AI_EMBEDDING_MODEL"
+    assert roles["embedding-model"]["max_cost_tier"] == "lowest"
+    assert roles["embedding-model"]["status"] == "pass"
+    assert examples["models/gemini-embedding-001"]["canonical_model"] == "gemini-embedding-001"
     assert "sk-" not in str(result)
 
 

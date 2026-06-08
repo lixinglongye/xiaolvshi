@@ -8,6 +8,7 @@ from services.model_catalog import (
     balanced_text_model,
     canonical_model_id,
     cheap_text_model,
+    embedding_model,
     image_model,
     model_profile,
     premium_text_model,
@@ -32,6 +33,8 @@ GATEWAY_EXAMPLES: tuple[str, ...] = (
     "openrouter/google/gemini-2.5-flash-lite",
     "gemini-2.5-flash",
     "models/gemini-2.5-pro",
+    "gemini-embedding-001",
+    "models/gemini-embedding-001",
 )
 
 
@@ -97,6 +100,13 @@ class ModelGatewayCompatibilityService:
                 task_default_model("agentic"),
                 "APP_AI_AGENTIC_MODEL",
                 "low",
+            ),
+            GatewayModelRole(
+                "embedding-model",
+                "Embedding route model",
+                embedding_model(),
+                "APP_AI_EMBEDDING_MODEL",
+                "lowest",
             ),
             GatewayModelRole("pdf-model", "PDF route model", task_default_model("pdf"), "APP_AI_PDF_MODEL", "premium"),
             GatewayModelRole("image-model", "Image route model", image_model(), "APP_AI_IMAGE_MODEL", "premium"),

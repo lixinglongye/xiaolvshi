@@ -177,6 +177,8 @@ class ModelOpsObservedGatewayModelFitMatrixService:
             return False
         if policy.price_mode == "image":
             return profile.output_usd_per_image is not None
+        if policy.price_mode == "embedding":
+            return profile.input_usd_per_million_tokens is not None
         return profile.input_usd_per_million_tokens is not None and profile.output_usd_per_million_tokens is not None
 
     def _task_status(self, task: str, cheapest: dict[str, Any] | None, review_candidates: list[dict[str, Any]]) -> str:
@@ -206,7 +208,12 @@ class ModelOpsObservedGatewayModelFitMatrixService:
             codes.append("gateway_task_capability_missing")
         if candidates and not cheapest:
             codes.append("gateway_candidates_review_only")
-        if policy.high_frequency and cheapest and "flash-lite" not in str(cheapest.get("canonical_model") or ""):
+        if (
+            policy.high_frequency
+            and cheapest
+            and policy.price_mode == "text"
+            and "flash-lite" not in str(cheapest.get("canonical_model") or "")
+        ):
             codes.append("high_frequency_not_flash_lite")
         if configured_canonical and candidates and not any(row["canonical_model"] == configured_canonical for row in candidates):
             codes.append("configured_default_not_observed")
@@ -292,22 +299,29 @@ class ModelOpsObservedGatewayModelFitMatrixService:
         warnings: list[str],
         task_rows: list[dict[str, Any]],
     ) -> list[str]:
-        if blocking:
-            return [
+        actions: list[str] = []
+        if "sensitive-observed-model-values" in blocking:
+            actions.extend(
+                [
                 "Remove sensitive model-list values and rerun the sanitized gateway model fit matrix.",
                 "Do not promote observed gateway models while sensitive values are present.",
-            ]
+                ]
+            )
         missing = [row["task"] for row in task_rows if row["gateway_fit_status"] == "missing"]
         high_frequency = [
             row["task"]
             for row in task_rows
             if row["high_frequency"] and row["gateway_fit_status"] != "cheap_fit"
         ]
-        actions = []
         if high_frequency:
-            actions.append("Verify Flash-Lite coverage for high-frequency tasks before batch or default route changes.")
+            actions.append(
+                "Verify Flash-Lite text coverage and input-priced embedding coverage for high-frequency tasks before batch or default route changes."
+            )
         if missing:
             actions.append(f"Collect sanitized gateway model-list evidence for missing tasks: {', '.join(missing)}.")
+        unresolved_blocking = [check_id for check_id in blocking if check_id != "sensitive-observed-model-values"]
+        if unresolved_blocking and not high_frequency and not missing:
+            actions.append(f"Resolve blocking observed gateway fit checks: {', '.join(unresolved_blocking)}.")
         if warnings:
             actions.append("Keep review-only observed models explicit until catalog pricing and lifecycle evidence is added.")
         actions.append("Use this matrix with cheap-first route preflight before changing APP_AI_* defaults.")
@@ -327,6 +341,13 @@ def _covered_tasks(profile: ModelProfile | None) -> list[str]:
 def _default_allowed_model(profile: ModelProfile | None) -> bool:
     if not profile or profile.status != "stable":
         return False
+    capabilities = set(profile.capabilities)
+    if "embedding" in capabilities:
+        return (
+            profile.cost_tier == "lowest"
+            and profile.input_usd_per_million_tokens is not None
+            and "multimodal" not in capabilities
+        )
     if profile.output_usd_per_image is not None and "image" in profile.capabilities:
         return profile.cost_tier in {"lowest", "low"}
     return (
@@ -346,6 +367,8 @@ def _model_reason_codes(profile: ModelProfile | None, gemini_like: bool) -> list
         codes.append("premium_model")
     if profile.input_usd_per_million_tokens is None and profile.output_usd_per_image is None:
         codes.append("pricing_missing")
+    if "embedding" in profile.capabilities and "multimodal" in profile.capabilities:
+        codes.append("multimodal_embedding_review")
     if "image" in profile.capabilities:
         codes.append("media_model_explicit_only")
     return codes

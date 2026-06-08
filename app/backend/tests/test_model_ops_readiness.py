@@ -524,6 +524,10 @@ def test_model_ops_route_includes_readiness():
     assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["cheap_first_default_model"] == "gemini-embedding-001"
     assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["text_embedding_ready_count"] == 1
     assert payload["gemini_embedding_cheap_first_preflight"]["summary"]["gateway_called"] is False
+    assert payload["observed_gateway_model_fit_matrix"]["summary"]["cheap_first_covered_count"] == (
+        payload["observed_gateway_model_fit_matrix"]["summary"]["cheap_first_task_count"]
+    )
+    assert "high-frequency-cheap-fit" not in payload["observed_gateway_model_fit_matrix"]["blocking_check_ids"]
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["endpoint_count"] == 7
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 7
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 0
