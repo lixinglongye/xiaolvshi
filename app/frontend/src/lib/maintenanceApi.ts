@@ -3384,6 +3384,55 @@ export type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket = {
   validation_commands: string[];
 };
 
+export type ModelOpsCheapFirstReleaseDecision = {
+  status: string;
+  release_decision: {
+    status: string;
+    label: string;
+    current_default_action: string;
+    default_change_policy: string;
+  };
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    required_signal_count: number;
+    attached_signal_count: number;
+    passing_signal_count: number;
+    warning_signal_count: number;
+    blocking_signal_count: number;
+    source_warning_id_count: number;
+    source_blocking_id_count: number;
+    current_cheap_first_default_allowed: boolean;
+    default_change_allowed: boolean;
+    default_promotion_blocked: boolean;
+    maintainer_review_required: boolean;
+    newapi_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  checks: Array<{
+    id: string;
+    source_key: string;
+    status: string;
+    source_status: string;
+    decision_effect: string;
+    source_blocking_ids: string[];
+    source_warning_ids: string[];
+    source_summary: Record<string, number>;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+  promotion_policy: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type LegalRagAuthorityCitationGateSourceRow = {
   id?: string;
   source_id?: string;
@@ -7820,6 +7869,14 @@ export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket():
     method: 'GET',
   });
   return unwrapMaintenanceData<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket>(resp);
+}
+
+export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCheapFirstReleaseDecision> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/aihub/models/cheap-first-release-decision',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelOpsCheapFirstReleaseDecision>(resp);
 }
 
 export async function getLegalRagAuthorityCitationGate(): Promise<LegalRagAuthorityCitationGate> {

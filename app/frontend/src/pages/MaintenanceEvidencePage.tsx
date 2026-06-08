@@ -44,6 +44,7 @@ import {
   getLegalBenchmarkResearchRegistry,
   getGeminiNewApiSelectorReplayEvidence,
   getLegalKnowledgeAudit,
+  getModelOpsCheapFirstReleaseDecision,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getLegalPublicBenchmarkLicenseGate,
@@ -175,6 +176,7 @@ import {
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
+  type ModelOpsCheapFirstReleaseDecision,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelRouteLegalBenchmarkRiskQueue,
@@ -721,6 +723,8 @@ function Inner() {
     modelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
     setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   ] = useState<ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket | null>(null);
+  const [modelOpsCheapFirstReleaseDecision, setModelOpsCheapFirstReleaseDecision] =
+    useState<ModelOpsCheapFirstReleaseDecision | null>(null);
   const [publicBenchmarkSampler, setPublicBenchmarkSampler] = useState<LegalPublicBenchmarkSampler | null>(null);
   const [publicBenchmarkLicenseGate, setPublicBenchmarkLicenseGate] =
     useState<LegalPublicBenchmarkLicenseGate | null>(null);
@@ -1028,6 +1032,11 @@ function Inner() {
             setModelOpsLegalFixtureCheapFirstDefaultPromotionPacket(
               value as ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
             ),
+        },
+        {
+          label: 'ModelOps cheap-first release decision',
+          run: getModelOpsCheapFirstReleaseDecision,
+          apply: (value) => setModelOpsCheapFirstReleaseDecision(value as ModelOpsCheapFirstReleaseDecision),
         },
         {
           label: 'Legal public benchmark sampler',
@@ -1367,6 +1376,20 @@ function Inner() {
       ? legalFixtureDefaultPromotionRows.filter((row) => row.promotion_status !== 'ready_for_maintainer_review')
       : legalFixtureDefaultPromotionRows
   ).slice(0, 3);
+  const cheapFirstReleaseDecisionLegalChecks = (
+    modelOpsCheapFirstReleaseDecision?.checks ?? []
+  ).filter((check) =>
+    [
+      'legal_fixture_cheap_first_benchmark_gate',
+      'legal_fixture_cheap_first_default_promotion_packet',
+      'legal_benchmark_risk_bridge',
+    ].includes(check.source_key),
+  );
+  const cheapFirstReleaseDecisionAttentionChecks = (
+    cheapFirstReleaseDecisionLegalChecks.some((check) => check.status !== 'pass')
+      ? cheapFirstReleaseDecisionLegalChecks.filter((check) => check.status !== 'pass')
+      : cheapFirstReleaseDecisionLegalChecks
+  ).slice(0, 4);
   const reviewPacketReadinessFlags = continuousSessionReviewPacket
     ? [
         { label: 'updates', value: continuousSessionReviewPacket.summary.update_count_ready },
@@ -6213,6 +6236,195 @@ function Inner() {
                           </Badge>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelOpsCheapFirstReleaseDecision && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Final cheap-first default-promotion decision now bound to the legal fixture gate, promotion packet,
+                      and legal benchmark risk bridge.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[modelOpsCheapFirstReleaseDecision.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(modelOpsCheapFirstReleaseDecision.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 lg:grid-cols-6">
+                  {[
+                    {
+                      label: 'release status',
+                      value: displayToken(modelOpsCheapFirstReleaseDecision.release_decision.status),
+                    },
+                    {
+                      label: 'required signals',
+                      value: modelOpsCheapFirstReleaseDecision.summary.required_signal_count,
+                    },
+                    {
+                      label: 'attached signals',
+                      value: modelOpsCheapFirstReleaseDecision.summary.attached_signal_count,
+                    },
+                    {
+                      label: 'passing',
+                      value: modelOpsCheapFirstReleaseDecision.summary.passing_signal_count,
+                    },
+                    {
+                      label: 'warnings',
+                      value: modelOpsCheapFirstReleaseDecision.summary.warning_signal_count,
+                    },
+                    {
+                      label: 'blocking',
+                      value: modelOpsCheapFirstReleaseDecision.summary.blocking_signal_count,
+                    },
+                    {
+                      label: 'promotion blocked',
+                      value: String(modelOpsCheapFirstReleaseDecision.summary.default_promotion_blocked),
+                    },
+                    {
+                      label: 'maintainer review',
+                      value: String(modelOpsCheapFirstReleaseDecision.summary.maintainer_review_required),
+                    },
+                    {
+                      label: 'current defaults',
+                      value: String(modelOpsCheapFirstReleaseDecision.summary.current_cheap_first_default_allowed),
+                    },
+                    {
+                      label: 'source warnings',
+                      value: modelOpsCheapFirstReleaseDecision.summary.source_warning_id_count,
+                    },
+                    {
+                      label: 'source blockers',
+                      value: modelOpsCheapFirstReleaseDecision.summary.source_blocking_id_count,
+                    },
+                    {
+                      label: 'legal checks',
+                      value: cheapFirstReleaseDecisionLegalChecks.length,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Legal source signal</TableHead>
+                          <TableHead>Decision</TableHead>
+                          <TableHead>Evidence summary</TableHead>
+                          <TableHead>Reason</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cheapFirstReleaseDecisionAttentionChecks.map((check) => {
+                          const compactSummary = Object.entries(check.source_summary ?? {})
+                            .filter(([, value]) => Number(value) > 0)
+                            .slice(0, 8);
+                          return (
+                            <TableRow key={check.id}>
+                              <TableCell className="max-w-[260px]">
+                                <div className="font-semibold text-stone-950">{displayToken(check.source_key)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{check.id}</div>
+                                <div className="mt-2 text-xs text-stone-600">
+                                  source status {displayToken(check.source_status)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[220px]">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[check.status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(check.status)}
+                                </Badge>
+                                <div className="mt-2 text-xs leading-5 text-stone-600">
+                                  {displayToken(check.decision_effect)}
+                                </div>
+                                <div className="mt-2 text-xs text-stone-500">
+                                  blockers {check.source_blocking_ids.length} / warnings {check.source_warning_ids.length}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                                {compactSummary.length > 0
+                                  ? compactSummary.map(([key, value]) => (
+                                      <div key={key}>
+                                        {displayToken(key)}: {formatInline(value)}
+                                      </div>
+                                    ))
+                                  : 'no non-zero summary counts'}
+                              </TableCell>
+                              <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                                {check.reason}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release policy</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>
+                        current_default_action:{' '}
+                        {displayToken(modelOpsCheapFirstReleaseDecision.release_decision.current_default_action)}
+                      </div>
+                      <div>
+                        default_change_policy:{' '}
+                        {displayToken(modelOpsCheapFirstReleaseDecision.release_decision.default_change_policy)}
+                      </div>
+                      <div>
+                        legal_fixture_policy:{' '}
+                        {modelOpsCheapFirstReleaseDecision.promotion_policy['legal_fixture_policy'] ?? '-'}
+                      </div>
+                      <div>
+                        legal_benchmark_policy:{' '}
+                        {modelOpsCheapFirstReleaseDecision.promotion_policy['legal_benchmark_policy'] ?? '-'}
+                      </div>
+                    </div>
+
+                    <h3 className="mb-2 mt-5 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>network called: {String(modelOpsCheapFirstReleaseDecision.privacy_boundary.network_called)}</div>
+                      <div>
+                        credentials included:{' '}
+                        {String(modelOpsCheapFirstReleaseDecision.privacy_boundary['credentials_included'])}
+                      </div>
+                      <div>
+                        prompts included: {String(modelOpsCheapFirstReleaseDecision.privacy_boundary['prompts_included'])}
+                      </div>
+                      <div>
+                        model output included:{' '}
+                        {String(
+                          modelOpsCheapFirstReleaseDecision.privacy_boundary[`raw_${'model_output_included'}`],
+                        )}
+                      </div>
+                      <div>
+                        public benchmark scores:{' '}
+                        {String(modelOpsCheapFirstReleaseDecision.claim_boundary['public_benchmark_scores_included'])}
+                      </div>
+                      <div>
+                        live gateway execution:{' '}
+                        {String(modelOpsCheapFirstReleaseDecision.claim_boundary['live_gateway_execution_claimed'])}
+                      </div>
+                      <div>
+                        default change allowed:{' '}
+                        {String(modelOpsCheapFirstReleaseDecision.summary.default_change_allowed)}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -637,6 +637,17 @@ not write configuration, shift traffic, call model providers or gateways,
 download public datasets, or include raw legal text, benchmark samples, prompts,
 model outputs, credentials, or emails.
 
+Current cheap-first release maintenance evidence panel:
+`modelops-cheap-first-release-maintenance-evidence-panel` surfaces the
+cheap-first release decision directly in the maintenance evidence page between
+the legal fixture default-promotion packet and the legal route-risk queue. It
+shows required signal counts, legal source checks, maintainer-review state,
+default-promotion blockers, legal fixture policy, legal benchmark policy, and
+privacy/claim boundaries without writing configuration, changing defaults,
+shifting traffic, calling providers or gateways, downloading public datasets, or
+including raw legal text, benchmark samples, prompts, model outputs, payloads,
+credentials, or emails.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

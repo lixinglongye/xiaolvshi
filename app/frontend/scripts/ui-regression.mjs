@@ -1244,6 +1244,9 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'default_change_allowed_by_packet', 'legal fixture cheap-first default promotion packet no auto-default type'),
   () => assertIncludes(maintenanceApi, 'getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket', 'legal fixture cheap-first default promotion packet API binding'),
   () => assertIncludes(maintenanceApi, '/api/v1/maintenance/legal-review-benchmark/cheap-first-default-promotion-packet', 'legal fixture cheap-first default promotion packet endpoint'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision type'),
+  () => assertIncludes(maintenanceApi, 'getModelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision API binding'),
+  () => assertIncludes(maintenanceApi, '/api/v1/aihub/models/cheap-first-release-decision', 'maintenance cheap-first release decision endpoint'),
   () => assertIncludes(maintenancePage, 'Legal fixture cheap-first benchmark gate', 'legal fixture cheap-first benchmark gate panel'),
   () => assertIncludes(maintenancePage, 'Document benchmark gate', 'legal fixture cheap-first benchmark document panel'),
   () => assertIncludes(maintenancePage, 'document_benchmark_rows ?? []', 'legal fixture cheap-first benchmark document rows fallback'),
@@ -1266,6 +1269,19 @@ const checks = [
   () => assertIncludes(maintenancePage, 'traffic_shift_allowed', 'legal fixture cheap-first default promotion packet no traffic shift label'),
   () => assertIncludes(maintenancePage, 'requires_cheap_first_calibration_pass', 'legal fixture cheap-first default promotion calibration requirement label'),
   () => assertIncludes(maintenancePage, 'linked_calibration_task_ids', 'legal fixture cheap-first default promotion calibration task binding'),
+  () => assertIncludes(maintenancePage, 'modelOpsCheapFirstReleaseDecision', 'maintenance cheap-first release decision state binding'),
+  () => assertIncludes(maintenancePage, 'Cheap-first release decision', 'maintenance cheap-first release decision panel'),
+  () => assertIncludes(maintenancePage, 'cheapFirstReleaseDecisionLegalChecks', 'maintenance cheap-first release legal checks binding'),
+  () => assertIncludes(maintenancePage, 'cheapFirstReleaseDecisionAttentionChecks', 'maintenance cheap-first release attention checks binding'),
+  () => assertIncludes(maintenancePage, 'legal_fixture_cheap_first_benchmark_gate', 'maintenance cheap-first release legal fixture source binding'),
+  () => assertIncludes(maintenancePage, 'legal_fixture_cheap_first_default_promotion_packet', 'maintenance cheap-first release promotion packet source binding'),
+  () => assertIncludes(maintenancePage, 'legal_benchmark_risk_bridge', 'maintenance cheap-first release risk bridge source binding'),
+  () => assertIncludes(maintenancePage, 'source_warning_id_count', 'maintenance cheap-first release source warning count binding'),
+  () => assertIncludes(maintenancePage, 'source_blocking_id_count', 'maintenance cheap-first release source blocker count binding'),
+  () => assertIncludes(maintenancePage, 'legal_fixture_policy', 'maintenance cheap-first release legal fixture policy binding'),
+  () => assertIncludes(maintenancePage, 'legal_benchmark_policy', 'maintenance cheap-first release legal benchmark policy binding'),
+  () => assertBefore(maintenancePage, 'Maintainer-only packet for cheap-first legal fixture default review', '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>', 'maintenance cheap-first release follows legal promotion packet'),
+  () => assertBefore(maintenancePage, '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>', '                      Model route legal benchmark risk queue', 'maintenance cheap-first release precedes legal route risk queue'),
   () => assertIncludes(maintenanceApi, 'LegalRagAuthorityCitationGate', 'legal RAG authority citation gate type'),
   () => assertIncludes(maintenanceApi, 'legalRagAuthorityCitationGate', 'legal RAG authority citation gate payload binding'),
   () => assertIncludes(maintenanceApi, 'source_tier', 'legal RAG source tier type'),
@@ -2986,8 +3002,14 @@ const legalFixtureCheapFirstBenchmarkGatePanel = sourceSection(
 const legalFixtureCheapFirstDefaultPromotionPacketPanel = sourceSection(
   maintenancePage,
   'Maintainer-only packet for cheap-first legal fixture default review',
-  'Model route legal benchmark risk queue',
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>',
   'maintenance legal fixture cheap-first default promotion packet section',
+);
+const maintenanceCheapFirstReleaseDecisionPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Cheap-first release decision</h2>',
+  'Model route legal benchmark risk queue',
+  'maintenance cheap-first release decision section',
 );
 const legalDocumentFactConsistencyPanel = sourceSection(
   maintenancePage,
@@ -3200,6 +3222,11 @@ assertNotMatches(
   legalFixtureCheapFirstDefaultPromotionPacketPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|document_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload)\b/i,
   'maintenance legal fixture cheap-first default promotion packet no secrets or raw fixture/output field names',
+);
+assertNotMatches(
+  maintenanceCheapFirstReleaseDecisionPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|input_excerpt|output_text|generated_text|document_text|missing_sections|missing_citations|missing_risk_labels|pii_findings|raw_prompt|prompt_payload|raw_model_output|raw_legal_text|request_body|response_body|headers)\b/i,
+  'maintenance cheap-first release decision no secrets or raw legal/model/payload field names',
 );
 assertNotMatches(
   legalDocumentFactConsistencyPanel,

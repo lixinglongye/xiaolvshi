@@ -302,6 +302,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-calibration-binding" in completed_ids
     assert "modelops-legal-fixture-modelops-ui-binding" in completed_ids
     assert "modelops-cheap-first-release-legal-benchmark-binding" in completed_ids
+    assert "modelops-cheap-first-release-maintenance-evidence-panel" in completed_ids
     assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
@@ -2112,6 +2113,47 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in release_legal_binding_entry["release_gate_links"]
     assert "modelops-legal-benchmark-risk-bridge" in release_legal_binding_entry["release_gate_links"]
     assert "model-route-legal-benchmark-risk-queue" in release_legal_binding_entry["release_gate_links"]
+    release_maintenance_panel_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-cheap-first-release-maintenance-evidence-panel"
+    )
+    assert release_maintenance_panel_entry["category"] == "frontend_ui"
+    assert release_maintenance_panel_entry["size"] == "medium"
+    assert release_maintenance_panel_entry["status"] == "shipped"
+    assert "maintenance evidence page" in release_maintenance_panel_entry["impact"]
+    assert "required signal counts" in release_maintenance_panel_entry["impact"]
+    assert "legal source checks" in release_maintenance_panel_entry["impact"]
+    assert "default-promotion blockers" in release_maintenance_panel_entry["impact"]
+    assert "legal fixture policy" in release_maintenance_panel_entry["impact"]
+    assert "legal benchmark policy" in release_maintenance_panel_entry["impact"]
+    assert "privacy/claim boundaries" in release_maintenance_panel_entry["impact"]
+    assert "without switching pages" in release_maintenance_panel_entry["impact"]
+    assert "configuration" in release_maintenance_panel_entry["impact"]
+    assert "traffic" in release_maintenance_panel_entry["impact"]
+    assert "raw legal text" in release_maintenance_panel_entry["impact"]
+    assert "credentials" in release_maintenance_panel_entry["impact"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in release_maintenance_panel_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in release_maintenance_panel_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in release_maintenance_panel_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in release_maintenance_panel_entry["evidence_paths"]
+    assert (
+        "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py"
+        in release_maintenance_panel_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/services/modelops_legal_fixture_default_promotion_packet.py"
+        in release_maintenance_panel_entry["evidence_paths"]
+    )
+    assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in release_maintenance_panel_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in release_maintenance_panel_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in release_maintenance_panel_entry["evidence_paths"]
+    assert "modelops-cheap-first-release-maintenance-evidence-panel" in release_maintenance_panel_entry["release_gate_links"]
+    assert "modelops-cheap-first-release-legal-benchmark-binding" in release_maintenance_panel_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in release_maintenance_panel_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in release_maintenance_panel_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in release_maintenance_panel_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in release_maintenance_panel_entry["release_gate_links"]
     agentic_defaults_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-agentic-grounded-defaults"
     )
