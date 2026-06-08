@@ -389,6 +389,23 @@ not store or return source ids, approval item ids, raw query, raw retrieved
 context, raw legal text, source chunks, embedding vectors, prompts, model
 outputs, gateway payloads, credentials, emails, or client material.
 
+The optional `legal-rag-embedding-index-post-commit-verification-gate` check
+records metadata-only Legal RAG embedding index post-commit verification
+evidence through `LegalRagEmbeddingIndexPostCommitVerificationGateService` at
+`/api/v1/maintenance/legal-rag-embedding-index-post-commit-verification-gate`.
+It reviews sanitized post-commit index observations after commit review:
+expected versus observed vector slots, index entry counts, metadata records,
+retrieval locators, checksum records, failed-entry totals, rollback signals,
+and allow/hold/block retrieval-diagnostics review actions. It must not be used
+to claim maintainer commit approval, embedding execution, vector storage,
+index/database writes, commit record writes, production retrieval enablement,
+retrieval quality, legal-answer quality, live pricing accuracy, provider
+execution, or client delivery. It must not collect committer identity, call
+NewAPI, Gemini, models, gateways, app AI endpoints, or the network, and it must
+not store or return source ids, approval item ids, raw query, raw retrieved
+context, raw legal text, source chunks, embedding vectors, prompts, model
+outputs, gateway payloads, credentials, emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

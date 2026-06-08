@@ -50,6 +50,7 @@ import {
   getLegalPublicBenchmarkSampler,
   evaluateLegalRagEmbeddingBatchObservationGate,
   evaluateLegalRagEmbeddingIndexCommitReviewPacket,
+  evaluateLegalRagEmbeddingIndexPostCommitVerificationGate,
   evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -58,6 +59,7 @@ import {
   getLegalRagEmbeddingBatchObservationGate,
   getLegalRagEmbeddingBatchBudgetGate,
   getLegalRagEmbeddingIndexCommitReviewPacket,
+  getLegalRagEmbeddingIndexPostCommitVerificationGate,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
@@ -142,6 +144,7 @@ import {
   type LegalRagEmbeddingBatchBudgetGate,
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexCommitReviewPacket,
+  type LegalRagEmbeddingIndexPostCommitVerificationGate,
   type LegalRagEmbeddingIndexDryRunGate,
   type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
@@ -456,6 +459,47 @@ function defaultLegalRagEmbeddingBatchObservationPayload() {
   };
 }
 
+function defaultLegalRagEmbeddingIndexPostCommitVerificationPayload() {
+  return {
+    ...defaultLegalRagEmbeddingBatchObservationPayload(),
+    post_commit_observations: [
+      {
+        queue_order: 1,
+        post_commit_status: 'success',
+        observed_vector_slot_count: 1,
+        observed_index_entry_count: 1,
+        metadata_record_count: 1,
+        retrieval_locator_count: 1,
+        checksum_record_count: 1,
+        failed_entry_count: 0,
+        rollback_required: false,
+      },
+      {
+        queue_order: 2,
+        post_commit_status: 'success',
+        observed_vector_slot_count: 1,
+        observed_index_entry_count: 0,
+        metadata_record_count: 1,
+        retrieval_locator_count: 0,
+        checksum_record_count: 1,
+        failed_entry_count: 0,
+        rollback_required: false,
+      },
+      {
+        queue_order: 3,
+        post_commit_status: 'failed',
+        observed_vector_slot_count: 1,
+        observed_index_entry_count: 1,
+        metadata_record_count: 1,
+        retrieval_locator_count: 1,
+        checksum_record_count: 1,
+        failed_entry_count: 1,
+        rollback_required: true,
+      },
+    ],
+  };
+}
+
 function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
   return /"(source_id|source_ids|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|approver_name|approver_identity)"\s*:/i.test(
     value,
@@ -464,6 +508,12 @@ function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
 
 function hasForbiddenEmbeddingIndexCommitReviewPayloadText(value: string) {
   return /"(source_id|source_ids|approval_item_id|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|committer_email|committer_name|committer_identity|commit_signature)"\s*:/i.test(
+    value,
+  );
+}
+
+function hasForbiddenEmbeddingIndexPostCommitVerificationPayloadText(value: string) {
+  return /"(source_id|source_ids|approval_item_id|source_approval_item_id|raw_text|raw_legal_text|raw_context|retrieved_context|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|credential|credentials|credential_value|secret_value|bearer_token|email|approver_email|committer_email|committer_name|committer_identity|commit_signature|commit_client)"\s*:/i.test(
     value,
   );
 }
@@ -569,6 +619,8 @@ function Inner() {
     useState<LegalRagEmbeddingBatchObservationGate | null>(null);
   const [legalRagEmbeddingIndexCommitReviewPacket, setLegalRagEmbeddingIndexCommitReviewPacket] =
     useState<LegalRagEmbeddingIndexCommitReviewPacket | null>(null);
+  const [legalRagEmbeddingIndexPostCommitVerificationGate, setLegalRagEmbeddingIndexPostCommitVerificationGate] =
+    useState<LegalRagEmbeddingIndexPostCommitVerificationGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -702,6 +754,15 @@ function Inner() {
       return getLegalRagEmbeddingIndexCommitReviewPacket();
     }
     return evaluateLegalRagEmbeddingIndexCommitReviewPacket(payload);
+  };
+
+  const loadEmbeddingIndexPostCommitVerificationSample = () => {
+    const payload = defaultLegalRagEmbeddingIndexPostCommitVerificationPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenEmbeddingIndexPostCommitVerificationPayloadText(payloadText)) {
+      return getLegalRagEmbeddingIndexPostCommitVerificationGate();
+    }
+    return evaluateLegalRagEmbeddingIndexPostCommitVerificationGate(payload);
   };
 
   const load = async (nextLanguage = language) => {
@@ -1038,6 +1099,14 @@ function Inner() {
           run: loadEmbeddingIndexCommitReviewSample,
           apply: (value) =>
             setLegalRagEmbeddingIndexCommitReviewPacket(value as LegalRagEmbeddingIndexCommitReviewPacket),
+        },
+        {
+          label: 'Legal RAG embedding index post-commit verification gate',
+          run: loadEmbeddingIndexPostCommitVerificationSample,
+          apply: (value) =>
+            setLegalRagEmbeddingIndexPostCommitVerificationGate(
+              value as LegalRagEmbeddingIndexPostCommitVerificationGate,
+            ),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -11435,6 +11504,250 @@ function Inner() {
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(packet.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingIndexPostCommitVerificationGate &&
+              (() => {
+                const gate = legalRagEmbeddingIndexPostCommitVerificationGate;
+                const rows = gate.verification_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const policy = gate.post_commit_verification_policy;
+                const summaryCounts = [
+                  { label: 'verification rows', value: summary.verification_row_count },
+                  {
+                    label: 'verified for retrieval diagnostics',
+                    value: summary.verified_for_retrieval_diagnostics_count,
+                  },
+                  { label: 'verification review required', value: summary.verification_review_required_count },
+                  { label: 'verification blocked', value: summary.verification_blocked_count },
+                  { label: 'observed index entries', value: summary.observed_index_entry_total },
+                  { label: 'expected index entries', value: summary.expected_index_entry_total },
+                  { label: 'metadata records', value: summary.metadata_record_total },
+                  { label: 'retrieval locators', value: summary.retrieval_locator_total },
+                  { label: 'rollback required', value: summary.rollback_required_count },
+                  {
+                    label: 'retrieval diagnostics review only',
+                    value: String(summary.retrieval_diagnostics_review_only_allowed),
+                  },
+                  { label: 'retrieval use allowed', value: String(summary.retrieval_use_allowed_by_gate) },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'approval item ids returned', value: privacy.returns_approval_item_ids },
+                  { label: 'raw query returned', value: privacy.returns_raw_query || privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'committer identity returned', value: privacy.returns_committer_identity },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                  { label: 'commit record written', value: privacy.writes_commit_record },
+                  { label: 'maintainer commit approval claimed', value: claim.maintainer_commit_approval_claimed },
+                  { label: 'automatic retrieval enablement claimed', value: claim.automatic_retrieval_enablement_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only post-commit observation review before retrieval diagnostics
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-12">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Verification row</TableHead>
+                            <TableHead>Status / action</TableHead>
+                            <TableHead>Index evidence</TableHead>
+                            <TableHead>Rollback / privacy</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  #{row.queue_order} {displayToken(row.source_type)}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.embedding_model}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1 text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.verification_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(row.verification_status)}
+                                </Badge>
+                                <div>post_commit_status: {displayToken(row.post_commit_status)}</div>
+                                <div>verification_action: {displayToken(row.verification_action)}</div>
+                                <div>commit_review_status: {displayToken(row.commit_review_status)}</div>
+                                <div>commit_review_action: {displayToken(row.commit_review_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>observed_vector_slot_count: {row.observed_vector_slot_count}</div>
+                                <div>expected_vector_slot_count: {row.expected_vector_slot_count}</div>
+                                <div>observed_index_entry_count: {row.observed_index_entry_count}</div>
+                                <div>expected_index_entry_count: {row.expected_index_entry_count}</div>
+                                <div>metadata_record_count: {row.metadata_record_count}</div>
+                                <div>retrieval_locator_count: {row.retrieval_locator_count}</div>
+                                <div>checksum_record_count: {row.checksum_record_count}</div>
+                                <div>failed_entry_count: {row.failed_entry_count}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>rollback_required: {String(row.rollback_required)}</div>
+                                <div>rollback_action: {displayToken(row.rollback_action)}</div>
+                                <div>index_written: {String(row.privacy_boundary.index_written)}</div>
+                                <div>database_written: {String(row.privacy_boundary.database_written)}</div>
+                                <div>retrieval_use_enabled: {String(row.privacy_boundary.retrieval_use_enabled)}</div>
+                                <div>embedding_vectors_returned: {String(row.privacy_boundary.embedding_vectors_returned)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[320px] flex-wrap gap-1">
+                                  {(row.reason_codes ?? []).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['verification_status_counts', gate.verification_status_counts ?? {}],
+                            ['verification_action_counts', gate.verification_action_counts ?? {}],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(gate.linked_gate_summary ?? {}).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">post_commit_verification_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {policy.method}</div>
+                          <div>requires ready commit reviews: {String(policy.requires_ready_commit_review_rows)}</div>
+                          <div>requires post-commit observation: {String(policy.requires_post_commit_observation_for_ready_rows)}</div>
+                          <div>requires no rollback signal: {String(policy.requires_no_rollback_signal)}</div>
+                          <div>requires no failed entries: {String(policy.requires_no_failed_entries)}</div>
+                          <div>retrieval diagnostics review only: {String(policy.retrieval_diagnostics_review_only)}</div>
+                          <div>retrieval use allowed: {String(policy.retrieval_use_allowed)}</div>
+                          <div>index write allowed: {String(policy.index_write_allowed)}</div>
+                          <div>database write allowed: {String(policy.database_write_allowed)}</div>
+                          <div>model call allowed: {String(policy.model_call_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_verification_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(gate.input_contract.accepted_verification_fields ?? []).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>approval_item_id_echoed: {String(gate.input_contract.approval_item_id_echoed)}</div>
+                          <div>committer_identity_collected: {String(gate.input_contract.committer_identity_collected)}</div>
+                          <div>commit_record_written: {String(gate.input_contract.commit_record_written)}</div>
+                          <div>post_commit_observation_only: {String(gate.input_contract.post_commit_observation_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div
                               key={command}
                               className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"

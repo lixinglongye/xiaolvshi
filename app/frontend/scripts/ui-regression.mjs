@@ -626,6 +626,102 @@ const checks = [
   () => assertIncludes(maintenancePage, 'maintainer commit approval claimed', 'legal RAG embedding index commit review approval claim boundary label'),
   () => assertIncludes(maintenancePage, 'index commit allowed', 'legal RAG embedding index commit review no index commit binding'),
   () =>
+    assertIncludes(
+      maintenancePage,
+      'Legal RAG embedding index post-commit verification gate',
+      'legal RAG embedding index post-commit verification gate panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'evaluateLegalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification POST binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getLegalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification GET fallback binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'legalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'defaultLegalRagEmbeddingIndexPostCommitVerificationPayload',
+      'legal RAG embedding index post-commit verification sample payload',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'loadEmbeddingIndexPostCommitVerificationSample',
+      'legal RAG embedding index post-commit verification load task binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'hasForbiddenEmbeddingIndexPostCommitVerificationPayloadText',
+      'legal RAG embedding index post-commit verification forbidden key guard',
+    ),
+  () => assertIncludes(maintenancePage, 'verification rows', 'legal RAG embedding index post-commit verification row summary'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'verified for retrieval diagnostics',
+      'legal RAG embedding index post-commit verification verified summary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'verification review required',
+      'legal RAG embedding index post-commit verification review summary',
+    ),
+  () => assertIncludes(maintenancePage, 'verification blocked', 'legal RAG embedding index post-commit verification blocked summary'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'verification_status_counts',
+      'legal RAG embedding index post-commit verification status distribution',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'verification_action_counts',
+      'legal RAG embedding index post-commit verification action distribution',
+    ),
+  () => assertIncludes(maintenancePage, 'post_commit_status', 'legal RAG embedding index post-commit status binding'),
+  () => assertIncludes(maintenancePage, 'verification_action', 'legal RAG embedding index post-commit action binding'),
+  () => assertIncludes(maintenancePage, 'rollback_action', 'legal RAG embedding index post-commit rollback binding'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'post_commit_verification_policy',
+      'legal RAG embedding index post-commit verification policy binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'accepted_verification_fields',
+      'legal RAG embedding index post-commit verification input fields',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'post_commit_observation_only',
+      'legal RAG embedding index post-commit verification observation-only binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'retrieval diagnostics review only',
+      'legal RAG embedding index post-commit verification diagnostics-only label',
+    ),
+  () => assertIncludes(maintenancePage, 'retrieval use allowed', 'legal RAG embedding index post-commit no retrieval use label'),
+  () =>
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG authority citation gate</h2>',
@@ -685,8 +781,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index commit review packet</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
+      'embedding index commit review packet precedes post-commit verification gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding index commit review packet precedes retrieval diagnostics',
+      'embedding index post-commit verification gate precedes retrieval diagnostics',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -992,6 +1095,92 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-rag-embedding-index-commit-review-packet',
       'legal RAG embedding index commit review endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'LegalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification gate type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'LegalRagEmbeddingIndexPostCommitVerificationGateRow',
+      'legal RAG embedding index post-commit verification row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      "id: 'legal-rag-embedding-index-post-commit-verification-gate' | string",
+      'legal RAG embedding index post-commit verification gate id',
+    ),
+  () => assertIncludes(maintenanceApi, 'verification_rows', 'legal RAG embedding index post-commit verification rows type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'verification_status_counts',
+      'legal RAG embedding index post-commit verification status counts type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'verification_action_counts',
+      'legal RAG embedding index post-commit verification action counts type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'verified_for_retrieval_diagnostics_count',
+      'legal RAG embedding index post-commit verification verified count type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'verification_review_required_count',
+      'legal RAG embedding index post-commit verification review count type',
+    ),
+  () => assertIncludes(maintenanceApi, 'verification_blocked_count', 'legal RAG embedding index post-commit blocked count type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'post_commit_verification_policy',
+      'legal RAG embedding index post-commit verification policy type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'accepted_verification_fields',
+      'legal RAG embedding index post-commit verification input fields type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'post_commit_observation_only',
+      'legal RAG embedding index post-commit verification observation-only type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'returns_committer_identity',
+      'legal RAG embedding index post-commit no committer identity return type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getLegalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'evaluateLegalRagEmbeddingIndexPostCommitVerificationGate',
+      'legal RAG embedding index post-commit verification POST helper',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-rag-embedding-index-post-commit-verification-gate',
+      'legal RAG embedding index post-commit verification endpoint',
     ),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
@@ -2102,8 +2291,14 @@ const legalRagEmbeddingBatchObservationPanel = sourceSection(
 const legalRagEmbeddingIndexCommitReviewPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index commit review packet</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
   'maintenance Legal RAG embedding index commit review section',
+);
+const legalRagEmbeddingIndexPostCommitVerificationPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding index post-commit verification section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2330,6 +2525,11 @@ assertNotMatches(
   legalRagEmbeddingIndexCommitReviewPanel,
   /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
   'maintenance Legal RAG embedding index commit review no raw chunks, raw legal text, source ids, secrets, committer identity, vectors, or emails',
+);
+assertNotMatches(
+  legalRagEmbeddingIndexPostCommitVerificationPanel,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding index post-commit verification no raw chunks, raw legal text, source ids, secrets, committer identity, vectors, or emails',
 );
 assertNotMatches(
   retrievalObservationPanel,

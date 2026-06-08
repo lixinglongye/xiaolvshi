@@ -23,6 +23,9 @@ safe metadata and aggregate observation counts only.
 - Pre-commit checks that must be completed outside this service.
 - Review actions: `prepare_external_index_commit_review`,
   `hold_index_commit_for_observation_review`, and `block_index_commit`.
+- Downstream handoff to
+  `legal-rag-embedding-index-post-commit-verification-gate` after external
+  commit review records produce sanitized post-commit observations.
 
 ## Boundaries
 

@@ -4937,6 +4937,168 @@ export type LegalRagEmbeddingIndexCommitReviewPacket = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingIndexPostCommitVerificationGateRow = {
+  id: string;
+  source_type: string;
+  queue_order: number;
+  commit_review_status: string;
+  commit_review_action: string;
+  post_commit_status: string;
+  verification_status: string;
+  verification_action: string;
+  expected_vector_slot_count: number;
+  observed_vector_slot_count: number;
+  expected_index_entry_count: number;
+  observed_index_entry_count: number;
+  metadata_record_count: number;
+  retrieval_locator_count: number;
+  checksum_record_count: number;
+  failed_entry_count: number;
+  rollback_required: boolean;
+  rollback_action: string;
+  embedding_model: string;
+  canonical_embedding_model: string;
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    approval_item_ids_returned: boolean;
+    raw_legal_text_returned: boolean;
+    source_chunks_returned: boolean;
+    embedding_vectors_returned: boolean;
+    committer_identity_returned: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    commit_record_written: boolean;
+    database_written: boolean;
+    index_written: boolean;
+    retrieval_use_enabled: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingIndexPostCommitVerificationGate = {
+  id: 'legal-rag-embedding-index-post-commit-verification-gate' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    verification_row_count: number;
+    verified_for_retrieval_diagnostics_count: number;
+    verification_review_required_count: number;
+    verification_blocked_count: number;
+    expected_index_entry_total: number;
+    observed_index_entry_total: number;
+    expected_vector_slot_total: number;
+    observed_vector_slot_total: number;
+    metadata_record_total: number;
+    retrieval_locator_total: number;
+    checksum_record_total: number;
+    failed_entry_total: number;
+    rollback_required_count: number;
+    retrieval_diagnostics_review_only_allowed: boolean;
+    retrieval_use_allowed_by_gate: boolean;
+    commit_review_packet_status: string;
+    commit_record_written: boolean;
+    index_written_by_gate: boolean;
+    database_written_by_gate: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    embeddings_created: boolean;
+    source_ids_returned: boolean;
+    raw_legal_text_included: boolean;
+    source_chunks_included: boolean;
+    embedding_vectors_included: boolean;
+    credentials_included: boolean;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    [key: string]: unknown;
+  };
+  verification_rows: LegalRagEmbeddingIndexPostCommitVerificationGateRow[];
+  verification_status_counts: Record<string, number>;
+  verification_action_counts: Record<string, number>;
+  verified_row_ids: string[];
+  review_row_ids: string[];
+  blocked_row_ids: string[];
+  linked_gate_summary: Record<string, unknown>;
+  input_contract: {
+    accepted_container_keys: string[];
+    accepted_verification_fields: string[];
+    forbidden_fields_ignored: string[];
+    source_id_echoed: boolean;
+    approval_item_id_echoed: boolean;
+    committer_identity_collected: boolean;
+    commit_record_written: boolean;
+    post_commit_observation_only: boolean;
+    [key: string]: unknown;
+  };
+  post_commit_verification_policy: {
+    method: string;
+    requires_ready_commit_review_rows: boolean;
+    requires_post_commit_observation_for_ready_rows: boolean;
+    requires_no_rollback_signal: boolean;
+    requires_no_failed_entries: boolean;
+    requires_index_entry_count_match: boolean;
+    requires_vector_slot_count_match: boolean;
+    requires_metadata_and_locator_counts: boolean;
+    retrieval_diagnostics_review_only: boolean;
+    retrieval_use_allowed: boolean;
+    index_write_allowed: boolean;
+    database_write_allowed: boolean;
+    model_call_allowed: boolean;
+    network_allowed: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    maintainer_commit_approval_claimed: boolean;
+    index_commit_executed_by_gate_claimed: boolean;
+    post_commit_success_claimed_without_observation: boolean;
+    automatic_retrieval_enablement_claimed: boolean;
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    embedding_quality_claimed: boolean;
+    index_quality_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_approval_item_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    returns_committer_identity: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    creates_embeddings: boolean;
+    writes_index: boolean;
+    writes_database: boolean;
+    writes_commit_record: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -5680,6 +5842,11 @@ type LegalRagEmbeddingBatchObservationGateResponse = {
 type LegalRagEmbeddingIndexCommitReviewPacketResponse = {
   success: boolean;
   data: LegalRagEmbeddingIndexCommitReviewPacket;
+};
+
+type LegalRagEmbeddingIndexPostCommitVerificationGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingIndexPostCommitVerificationGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -7237,6 +7404,25 @@ export async function evaluateLegalRagEmbeddingIndexCommitReviewPacket(
     data: payload,
   });
   return unwrapMaintenanceData<LegalRagEmbeddingIndexCommitReviewPacketResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingIndexPostCommitVerificationGate(): Promise<LegalRagEmbeddingIndexPostCommitVerificationGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-index-post-commit-verification-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingIndexPostCommitVerificationGateResponse['data']>(resp);
+}
+
+export async function evaluateLegalRagEmbeddingIndexPostCommitVerificationGate(
+  payload: Record<string, unknown>,
+): Promise<LegalRagEmbeddingIndexPostCommitVerificationGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-index-post-commit-verification-gate',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingIndexPostCommitVerificationGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(

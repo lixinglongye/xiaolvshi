@@ -239,6 +239,19 @@ indexes or return source ids, approval item ids, raw legal text, source chunks,
 embedding vectors, prompts, model outputs, gateway payloads, credentials,
 emails, live pricing claims, or retrieval quality.
 
+`legal-rag-embedding-index-post-commit-verification-gate` is the shipped
+metadata-only post-commit verification gate downstream of commit review. It
+turns sanitized post-commit observations into verification rows with expected
+versus observed vector slots, index entry counts, metadata records, retrieval
+locators, checksum counts, failed-entry totals, rollback signals, and
+allow/hold/block retrieval-diagnostics review actions. It does not approve or
+execute index commits, enable production retrieval, call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, indexes, databases, or the
+network, and it does not write indexes or return source ids, approval item ids,
+raw legal text, source chunks, embedding vectors, prompts, model outputs,
+gateway payloads, credentials, emails, live pricing claims, index quality, or
+retrieval quality.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,
