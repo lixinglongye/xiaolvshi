@@ -2320,6 +2320,51 @@ type GeminiNewApiCheapFirstPolicyResponse = {
   data: GeminiNewApiCheapFirstPolicy;
 };
 
+export type ModelPriceRefreshMonitorCheck = {
+  id: string;
+  status: string;
+  summary: Record<string, number | string | boolean | null>;
+  rows: Array<Record<string, unknown>>;
+  recommended_action: string;
+};
+
+export type ModelPriceRefreshMonitorSignal = {
+  id: string;
+  severity: string;
+  signal_type: string;
+  model?: string | null;
+  reason: string;
+  requires_price_refresh: boolean;
+  recommended_action: string;
+};
+
+export type ModelPriceRefreshMonitor = {
+  status: string;
+  summary: {
+    check_count: number;
+    blocking_count: number;
+    warning_count: number;
+    drift_signal_count: number;
+    refresh_needed_count: number;
+    missing_price_metadata_count: number;
+    high_frequency_tasks: string[];
+    specialized_text_tasks?: string[];
+    media_tasks: string[];
+    forecast_profile_count: number;
+    observed_model_count: number;
+  };
+  checks: ModelPriceRefreshMonitorCheck[];
+  drift_signals: ModelPriceRefreshMonitorSignal[];
+  recommended_actions: string[];
+  privacy_note: string[];
+  validation_commands: string[];
+};
+
+type ModelPriceRefreshMonitorResponse = {
+  success: boolean;
+  data: ModelPriceRefreshMonitor;
+};
+
 export type ModelCostRegressionCheck = {
   id: string;
   status: string;
@@ -8623,6 +8668,25 @@ export async function postGeminiNewApiCheapFirstPolicyEvidence(
     data: payload,
   });
   return unwrapMaintenanceData<GeminiNewApiCheapFirstPolicyResponse['data']>(resp);
+}
+
+export async function getModelPriceRefreshMonitor(): Promise<ModelPriceRefreshMonitor> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/model-price-refresh-monitor',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<ModelPriceRefreshMonitorResponse['data']>(resp);
+}
+
+export async function postModelPriceRefreshMonitor(
+  payload: Record<string, unknown> = {},
+): Promise<ModelPriceRefreshMonitor> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/model-price-refresh-monitor',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<ModelPriceRefreshMonitorResponse['data']>(resp);
 }
 
 export async function getModelCostRegressionSnapshots(): Promise<ModelCostRegressionSnapshots> {

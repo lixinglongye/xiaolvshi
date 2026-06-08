@@ -89,8 +89,14 @@ const geminiAliasMatrixPanel = sourceSection(
 const geminiCheapFirstPolicyPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
   'maintenance Gemini/NewAPI cheap-first policy panel',
+);
+const modelPriceRefreshMonitorPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
+  'maintenance model price refresh monitor panel',
 );
 const modelCostRegressionSnapshotsPanel = sourceSection(
   maintenancePage,
@@ -347,6 +353,13 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+      'maintenance model price refresh follows Gemini cheap-first policy',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
       '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
       'maintenance model cost regression follows Gemini cheap-first policy',
     ),
@@ -369,6 +382,51 @@ const checks = [
       geminiCheapFirstPolicyPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers/i,
       'maintenance Gemini/NewAPI cheap-first policy sensitive field guard',
+    ),
+  () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitor', 'maintenance model price refresh monitor type'),
+  () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitorCheck', 'maintenance model price refresh check type'),
+  () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitorSignal', 'maintenance model price refresh signal type'),
+  () => assertIncludes(maintenanceApi, 'getModelPriceRefreshMonitor', 'maintenance model price refresh getter'),
+  () => assertIncludes(maintenanceApi, 'postModelPriceRefreshMonitor', 'maintenance model price refresh evaluator'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/model-price-refresh-monitor',
+      'maintenance model price refresh endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getModelPriceRefreshMonitor', 'maintenance model price refresh load task'),
+  () => assertIncludes(maintenancePage, 'postModelPriceRefreshMonitor', 'maintenance model price refresh observed review load task'),
+  () => assertIncludes(maintenancePage, 'modelPriceRefreshMonitor', 'maintenance model price refresh state binding'),
+  () => assertIncludes(maintenancePage, 'modelPriceRefreshObservedReview', 'maintenance model price refresh observed review state'),
+  () => assertIncludes(maintenancePage, 'Model price refresh monitor', 'maintenance model price refresh panel'),
+  () => assertIncludes(maintenancePage, 'observed-gateway-model-refresh-review', 'maintenance observed gateway model review binding'),
+  () => assertIncludes(maintenancePage, 'modelPriceRefreshObservedModelsSample', 'maintenance observed model review sample binding'),
+  () => assertIncludes(maintenancePage, 'google/gemini-9-flash-lite', 'maintenance observed unknown Gemini sample'),
+  () => assertIncludes(maintenancePage, 'models/gemini-3.1-pro-preview', 'maintenance observed premium preview sample'),
+  () => assertIncludes(maintenancePage, 'yibu/gemini-3.1-flash-image', 'maintenance observed Yibu Gemini image sample'),
+  () => assertIncludes(maintenancePage, 'high_frequency_tasks', 'maintenance model price refresh high-frequency binding'),
+  () => assertIncludes(maintenancePage, 'specialized_text_tasks', 'maintenance model price refresh specialized text binding'),
+  () => assertIncludes(maintenancePage, 'media_tasks', 'maintenance model price refresh media binding'),
+  () => assertIncludes(maintenancePage, 'drift_signals', 'maintenance model price refresh drift signal binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model cost regression snapshots</h2>',
+      'maintenance price refresh precedes cost regression snapshots',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+      'maintenance price refresh precedes selector',
+    ),
+  () =>
+    assertNotMatches(
+      modelPriceRefreshMonitorPanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers|email/i,
+      'maintenance model price refresh sensitive field guard',
     ),
   () =>
     assertIncludes(

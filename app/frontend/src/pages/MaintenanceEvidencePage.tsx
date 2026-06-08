@@ -95,6 +95,7 @@ import {
   getMatterAuditRetentionPolicy,
   getOcrImportReadinessPolicy,
   getModelCostRegressionSnapshots,
+  getModelPriceRefreshMonitor,
   getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
   getGeminiNewApiCheapFirstPolicyEvidence,
@@ -108,6 +109,7 @@ import {
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
   postMaintenanceContinuousSessionRunMonitor,
+  postModelPriceRefreshMonitor,
   reviewContinuousUpdateLedger,
   reviewLegalFixtureLocalRun,
   type BillingEntitlementGap,
@@ -185,6 +187,7 @@ import {
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
+  type ModelPriceRefreshMonitor,
   type ModelOpsCheapFirstReleaseDecision,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
@@ -284,6 +287,12 @@ const geminiCheapFirstPolicySignals = [
   'gemini-flash-lite',
   'no_premium_or_preview_high_frequency_default',
   'unknown_gemini_like_needs_catalog_review',
+] as const;
+
+const modelPriceRefreshObservedModelsSample = [
+  'google/gemini-9-flash-lite',
+  'models/gemini-3.1-pro-preview',
+  'yibu/gemini-3.1-flash-image',
 ] as const;
 
 const modelCostRegressionSignals = [
@@ -767,6 +776,10 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
     useState<GeminiNewApiCheapFirstPolicy | null>(null);
+  const [modelPriceRefreshMonitor, setModelPriceRefreshMonitor] =
+    useState<ModelPriceRefreshMonitor | null>(null);
+  const [modelPriceRefreshObservedReview, setModelPriceRefreshObservedReview] =
+    useState<ModelPriceRefreshMonitor | null>(null);
   const [modelCostRegressionSnapshots, setModelCostRegressionSnapshots] =
     useState<ModelCostRegressionSnapshots | null>(null);
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
@@ -1119,6 +1132,16 @@ function Inner() {
           label: 'Gemini/NewAPI cheap-first policy',
           run: getGeminiNewApiCheapFirstPolicyEvidence,
           apply: (value) => setGeminiNewApiCheapFirstPolicy(value as GeminiNewApiCheapFirstPolicy),
+        },
+        {
+          label: 'Model price refresh monitor',
+          run: getModelPriceRefreshMonitor,
+          apply: (value) => setModelPriceRefreshMonitor(value as ModelPriceRefreshMonitor),
+        },
+        {
+          label: 'Model price refresh observed review',
+          run: () => postModelPriceRefreshMonitor({ observed_models: [...modelPriceRefreshObservedModelsSample] }),
+          apply: (value) => setModelPriceRefreshObservedReview(value as ModelPriceRefreshMonitor),
         },
         {
           label: 'Model cost regression snapshots',
@@ -9142,6 +9165,222 @@ function Inner() {
                       </ul>
                       <div className="mt-3 space-y-2">
                         {geminiNewApiCheapFirstPolicy.validation_commands.map((command) => (
+                          <div
+                            key={command}
+                            className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
+                          >
+                            {command}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {modelPriceRefreshMonitor && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Local-only Gemini/NewAPI pricing drift monitor for high-frequency, specialized, media, forecast,
+                      and observed gateway model metadata.
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[modelPriceRefreshMonitor.status] ?? statusClass.review_recommended}
+                  >
+                    {displayToken(modelPriceRefreshMonitor.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    { label: 'checks', value: modelPriceRefreshMonitor.summary.check_count },
+                    { label: 'blocking', value: modelPriceRefreshMonitor.summary.blocking_count },
+                    { label: 'warnings', value: modelPriceRefreshMonitor.summary.warning_count },
+                    { label: 'refresh needed', value: modelPriceRefreshMonitor.summary.refresh_needed_count },
+                    { label: 'missing prices', value: modelPriceRefreshMonitor.summary.missing_price_metadata_count },
+                    { label: 'observed models', value: modelPriceRefreshObservedReview?.summary.observed_model_count ?? 0 },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-xl font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Check</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Summary</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {modelPriceRefreshMonitor.checks.map((check) => (
+                            <TableRow key={check.id}>
+                              <TableCell className="max-w-[260px]">
+                                <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[check.status] ?? statusClass.review_recommended}
+                                >
+                                  {displayToken(check.status)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                                {Object.entries(check.summary)
+                                  .map(([key, value]) => `${displayToken(key)}: ${formatInline(value)}`)
+                                  .join(', ')}
+                              </TableCell>
+                              <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                                {check.recommended_action}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {modelPriceRefreshObservedReview && (
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Observed model</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Catalog</TableHead>
+                              <TableHead>Review reason</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(
+                              modelPriceRefreshObservedReview.checks.find(
+                                (check) => check.id === 'observed-gateway-model-refresh-review',
+                              )?.rows ?? []
+                            ).map((row, index) => (
+                              <TableRow key={`${formatInline(row.raw_model)}-${index}`}>
+                                <TableCell className="max-w-[280px]">
+                                  <div className="font-mono text-xs font-semibold text-stone-950">
+                                    {formatInline(row.raw_model)}
+                                  </div>
+                                  <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                    {formatInline(row.normalized_model)}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      statusClass[String(row.status ?? '')] ?? statusClass.review_recommended
+                                    }
+                                  >
+                                    {displayToken(String(row.status ?? 'unknown'))}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="max-w-[220px] text-xs leading-5 text-stone-600">
+                                  <div>tier: {formatInline(row.cost_tier)}</div>
+                                  <div>catalog: {formatInline(row.catalog_status)}</div>
+                                  <div>priced: {formatInline(row.has_price_metadata)}</div>
+                                </TableCell>
+                                <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                                  {formatInline(row.reason)}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Task coverage</h3>
+                      <div className="space-y-3 text-xs leading-5 text-stone-600">
+                        <div>
+                          <div className="font-semibold text-stone-950">high frequency</div>
+                          <div>{modelPriceRefreshMonitor.summary.high_frequency_tasks.join(', ')}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-stone-950">specialized text</div>
+                          <div>{(modelPriceRefreshMonitor.summary.specialized_text_tasks ?? []).join(', ') || '-'}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-stone-950">media</div>
+                          <div>{modelPriceRefreshMonitor.summary.media_tasks.join(', ') || '-'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Observed review sample</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {modelPriceRefreshObservedModelsSample.map((model) => (
+                          <Badge key={model} variant="outline" className="bg-white">
+                            {model}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Drift signals</h3>
+                      <div className="space-y-3">
+                        {modelPriceRefreshObservedReview?.drift_signals.length ? (
+                          modelPriceRefreshObservedReview.drift_signals.slice(0, 8).map((signal) => (
+                            <div key={signal.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-mono text-xs font-semibold text-stone-950">
+                                  {signal.signal_type}
+                                </span>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[signal.severity] ?? statusClass.review_recommended}
+                                >
+                                  {displayToken(signal.severity)}
+                                </Badge>
+                              </div>
+                              <div className="mt-2 font-mono text-[11px] text-stone-500">{signal.model ?? '-'}</div>
+                              <div className="mt-2 text-xs leading-5 text-stone-600">{signal.reason}</div>
+                              <div className="mt-1 text-xs leading-5 text-stone-500">
+                                {signal.recommended_action}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-xs leading-5 text-stone-600">
+                            No observed price refresh drift in the current sample.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy and validation</h3>
+                      <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                        {modelPriceRefreshMonitor.privacy_note.map((note) => (
+                          <li key={note} className="flex gap-2">
+                            <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                            <span>{note}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-3 space-y-2">
+                        {modelPriceRefreshMonitor.validation_commands.map((command) => (
                           <div
                             key={command}
                             className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
