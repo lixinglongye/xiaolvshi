@@ -86,6 +86,12 @@ const geminiAliasMatrixPanel = sourceSection(
   'Gemini/NewAPI selector replay',
   'maintenance Gemini/NewAPI model alias matrix panel',
 );
+const maintenanceHeartbeatEvidencePanel = sourceSection(
+  maintenancePage,
+  'Maintenance heartbeat evidence',
+  'Continuous session review packet',
+  'maintenance heartbeat evidence panel',
+);
 const catalogCandidatePatchPlanPanel = sourceSection(
   modelOpsPage,
   'Model catalog candidate patch plan',
@@ -369,6 +375,49 @@ const checks = [
   () => assertIncludes(maintenancePage, 'Run monitor fixture evidence', 'maintenance run monitor fixture evidence panel'),
   () => assertIncludes(maintenancePage, 'postMaintenanceContinuousSessionRunMonitor', 'maintenance run monitor fixture review API binding'),
   () => assertIncludes(maintenancePage, 'completion ready mutated: false', 'maintenance run monitor fixture non-completion boundary'),
+  () => assertIncludes(maintenanceApi, 'MaintenanceHeartbeatEvidence', 'maintenance heartbeat evidence API type'),
+  () => assertIncludes(maintenanceApi, 'MaintenanceHeartbeatRecord', 'maintenance heartbeat record API type'),
+  () => assertIncludes(maintenanceApi, 'getMaintenanceHeartbeatEvidence', 'maintenance heartbeat evidence getter'),
+  () => assertIncludes(maintenanceApi, 'postMaintenanceHeartbeatEvidence', 'maintenance heartbeat evidence review API binding'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/maintenance-heartbeat-evidence',
+      'maintenance heartbeat evidence endpoint',
+    ),
+  () => assertIncludes(maintenancePage, 'getMaintenanceHeartbeatEvidence', 'maintenance heartbeat evidence load task'),
+  () => assertIncludes(maintenancePage, 'maintenanceHeartbeatEvidence', 'maintenance heartbeat evidence state binding'),
+  () => assertIncludes(maintenancePage, 'Maintenance heartbeat evidence', 'maintenance heartbeat evidence panel'),
+  () => assertIncludes(maintenancePage, 'Event type schema', 'maintenance heartbeat schema table'),
+  () => assertIncludes(maintenancePage, 'Heartbeat records', 'maintenance heartbeat record table'),
+  () => assertIncludes(maintenancePage, 'Gap analysis', 'maintenance heartbeat gap panel'),
+  () => assertIncludes(maintenancePage, 'recommended_actions', 'maintenance heartbeat recommended action source binding'),
+  () => assertIncludes(maintenancePage, 'verified_continuous_hours', 'maintenance heartbeat verified hours binding'),
+  () => assertIncludes(maintenancePage, 'missing_event_types', 'maintenance heartbeat missing event binding'),
+  () => assertIncludes(maintenancePage, 'heartbeat_records', 'maintenance heartbeat records binding'),
+  () => assertIncludes(maintenancePage, 'event_type_schema', 'maintenance heartbeat schema binding'),
+  () => assertIncludes(maintenancePage, 'raw_payload_echoed', 'maintenance heartbeat raw payload boundary binding'),
+  () => assertIncludes(maintenancePage, 'ready_for_goal_claim', 'maintenance heartbeat goal claim boundary binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Continuous session run monitor',
+      'Maintenance heartbeat evidence',
+      'maintenance heartbeat evidence follows run monitor',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Maintenance heartbeat evidence',
+      'Continuous session review packet',
+      'maintenance heartbeat evidence precedes review packet',
+    ),
+  () =>
+    assertNotMatches(
+      maintenanceHeartbeatEvidencePanel,
+      /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|payment_secret/i,
+      'maintenance heartbeat evidence sensitive field guard',
+    ),
   () => assertIncludes(maintenancePage, 'User need benchmark coverage', 'user need benchmark coverage panel'),
   () => assertIncludes(maintenancePage, 'Public benchmark review gaps', 'user need benchmark public review gap panel'),
   () => assertIncludes(maintenancePage, 'public sampler network', 'user need benchmark public sampler boundary'),

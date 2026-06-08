@@ -6885,6 +6885,57 @@ type MaintenanceContinuousSessionRunMonitorResponse = {
   data: MaintenanceContinuousSessionRunMonitor;
 };
 
+export type MaintenanceHeartbeatEventType = {
+  event_type: string;
+  purpose: string;
+  required_fields: string[];
+  accepted_evidence: string[];
+};
+
+export type MaintenanceHeartbeatRecord = {
+  id: string;
+  event_type: string;
+  timestamp: string | null;
+  commit_hash: string;
+  validation_id: string;
+  evidence_paths: string[];
+  status: string;
+  missing_fields: string[];
+};
+
+export type MaintenanceHeartbeatGap = {
+  id: string;
+  status: string;
+  detail: string;
+};
+
+export type MaintenanceHeartbeatEvidence = {
+  status: string;
+  summary: {
+    target_hours: number;
+    event_count: number;
+    valid_event_count: number;
+    invalid_event_count: number;
+    verified_continuous_hours: number;
+    remaining_hours: number;
+    required_event_types: string[];
+    missing_event_types: string[];
+    ready_for_goal_claim: boolean;
+    raw_payload_echoed: boolean;
+  };
+  event_type_schema: MaintenanceHeartbeatEventType[];
+  heartbeat_records: MaintenanceHeartbeatRecord[];
+  gap_analysis: MaintenanceHeartbeatGap[];
+  recommended_actions: string[];
+  privacy_note: string;
+  validation_commands: string[];
+};
+
+type MaintenanceHeartbeatEvidenceResponse = {
+  success: boolean;
+  data: MaintenanceHeartbeatEvidence;
+};
+
 export type MaintenanceGitHistoryEvidenceCommitEvent = {
   commit_hash: string;
   timestamp?: string | null;
@@ -7516,6 +7567,25 @@ export async function getMaintenanceContinuousSessionRunMonitor(): Promise<Maint
     method: 'GET',
   });
   return unwrapMaintenanceData<MaintenanceContinuousSessionRunMonitorResponse['data']>(resp);
+}
+
+export async function getMaintenanceHeartbeatEvidence(): Promise<MaintenanceHeartbeatEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/maintenance-heartbeat-evidence',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceHeartbeatEvidenceResponse['data']>(resp);
+}
+
+export async function postMaintenanceHeartbeatEvidence(
+  events: Array<Record<string, unknown>> = [],
+): Promise<MaintenanceHeartbeatEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/maintenance-heartbeat-evidence',
+    method: 'POST',
+    data: events,
+  });
+  return unwrapMaintenanceData<MaintenanceHeartbeatEvidenceResponse['data']>(resp);
 }
 
 export async function postMaintenanceContinuousSessionRunMonitor(
@@ -8492,6 +8562,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     legalRagExportReadinessPacket,
     finalDocumentDeliveryReleaseGate,
     continuousSessionEvidence,
+    maintenanceHeartbeatEvidence,
   ] = await Promise.all([
     getMaintenanceFeedbackIssueClusters(),
     getMaintenanceEvidenceBundleIntegrity(),
@@ -8505,6 +8576,7 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
     getMaintenanceLegalRagExportReadinessPacket(),
     getMaintenanceFinalDocumentDeliveryReleaseGate(),
     getMaintenanceContinuousSessionEvidence(),
+    getMaintenanceHeartbeatEvidence(),
   ]);
 
   const releaseClaimReasons = allClaimReasonCodes(releaseClaims);
@@ -8698,6 +8770,29 @@ export async function getMaintenanceGateSnapshot(): Promise<MaintenanceGateSnaps
         raw_legal_text_included: false,
         pii_included: false,
         output_scope: 'metadata-only 24h session template; no synthetic completion claim',
+      },
+    },
+    {
+      id: 'maintenance-heartbeat-evidence',
+      label: '24h maintenance heartbeat',
+      endpoint: '/api/v1/maintenance/maintenance-heartbeat-evidence',
+      method: 'GET',
+      status: maintenanceHeartbeatEvidence.status,
+      counts: [
+        { label: 'verified hours', value: maintenanceHeartbeatEvidence.summary.verified_continuous_hours },
+        { label: 'remaining hours', value: maintenanceHeartbeatEvidence.summary.remaining_hours },
+        { label: 'events', value: maintenanceHeartbeatEvidence.summary.event_count },
+        { label: 'valid events', value: maintenanceHeartbeatEvidence.summary.valid_event_count },
+      ],
+      reason_codes: uniqueCodes(
+        maintenanceHeartbeatEvidence.gap_analysis.map((gap) => gap.id),
+        maintenanceHeartbeatEvidence.summary.missing_event_types.map((eventType) => `missing_${eventType}`),
+      ),
+      privacy_boundary: {
+        raw_payload_included: maintenanceHeartbeatEvidence.summary.raw_payload_echoed,
+        raw_legal_text_included: false,
+        pii_included: false,
+        output_scope: 'metadata-only heartbeat records; no credentials, emails, raw legal text, or completion claim',
       },
     },
   ];

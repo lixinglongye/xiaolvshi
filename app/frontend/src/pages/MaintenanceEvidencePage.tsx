@@ -82,6 +82,7 @@ import {
   getModelRouteLegalBenchmarkRiskQueue,
   getLegalRagEvaluationPolicy,
   getLawyerReviewWorkflowPolicy,
+  getMaintenanceHeartbeatEvidence,
   getMaintenanceContinuousSessionTimeline,
   getMaintenanceContinuousSessionReviewPacket,
   getMaintenanceEvidence,
@@ -167,6 +168,7 @@ import {
   type LegalReviewBenchmark,
   type LegalReviewFixtureSmoke,
   type LegalRagEvaluationPolicy,
+  type MaintenanceHeartbeatEvidence,
   type MaintenanceContinuousSessionTimeline,
   type MaintenanceContinuousSessionRunMonitor,
   type MaintenanceContinuousSessionReviewPacket,
@@ -687,6 +689,8 @@ function Inner() {
     useState<MaintenanceContinuousSessionTimeline | null>(null);
   const [continuousSessionRunMonitor, setContinuousSessionRunMonitor] =
     useState<MaintenanceContinuousSessionRunMonitor | null>(null);
+  const [maintenanceHeartbeatEvidence, setMaintenanceHeartbeatEvidence] =
+    useState<MaintenanceHeartbeatEvidence | null>(null);
   const [continuousSessionReviewPacket, setContinuousSessionReviewPacket] =
     useState<MaintenanceContinuousSessionReviewPacket | null>(null);
   const [gitHistoryEvidence, setGitHistoryEvidence] = useState<MaintenanceGitHistoryEvidence | null>(null);
@@ -894,6 +898,11 @@ function Inner() {
           label: 'Continuous session run monitor',
           run: getMaintenanceContinuousSessionRunMonitor,
           apply: (value) => setContinuousSessionRunMonitor(value as MaintenanceContinuousSessionRunMonitor),
+        },
+        {
+          label: 'Maintenance heartbeat evidence',
+          run: getMaintenanceHeartbeatEvidence,
+          apply: (value) => setMaintenanceHeartbeatEvidence(value as MaintenanceHeartbeatEvidence),
         },
         {
           label: 'Continuous session review packet',
@@ -1324,6 +1333,13 @@ function Inner() {
     ledgerEntries.length;
   const timelineEventCount =
     continuousSessionTimeline?.summary.event_count ?? continuousSessionTimeline?.timeline_events.length ?? 0;
+  const heartbeatSchemaRows = maintenanceHeartbeatEvidence?.event_type_schema ?? [];
+  const heartbeatRecordRows = maintenanceHeartbeatEvidence?.heartbeat_records ?? [];
+  const heartbeatGapRows = maintenanceHeartbeatEvidence?.gap_analysis ?? [];
+  const heartbeatMissingTypes = maintenanceHeartbeatEvidence?.summary.missing_event_types ?? [];
+  const heartbeatRecommendedActions = maintenanceHeartbeatEvidence?.recommended_actions ?? [];
+  const heartbeatValidationCommands = maintenanceHeartbeatEvidence?.validation_commands ?? [];
+  const heartbeatReadyStatus = readinessStatus(maintenanceHeartbeatEvidence?.summary.ready_for_goal_claim);
   const gitHistoryCommitCount = gitHistoryEvidence?.summary.commit_count ?? gitHistoryEvidence?.commit_events.length ?? 0;
   const gitHistoryLongestWindowHours =
     gitHistoryEvidence?.summary.longest_window_hours ??
@@ -2087,6 +2103,216 @@ function Inner() {
                           {item}
                         </div>
                       ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {maintenanceHeartbeatEvidence && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Maintenance heartbeat evidence</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  Metadata-only commit, test, push, and review heartbeat evidence for 24h maintenance review.
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={statusClass[maintenanceHeartbeatEvidence.status] ?? statusClass.collecting}
+                >
+                  {displayToken(maintenanceHeartbeatEvidence.status)}
+                </Badge>
+                <Badge variant="outline" className={statusClass[heartbeatReadyStatus] ?? statusClass.blocked}>
+                  goal claim {heartbeatReadyStatus}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(maintenanceHeartbeatEvidence.summary.verified_continuous_hours)}/
+                    {formatInline(maintenanceHeartbeatEvidence.summary.target_hours)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">verified / target hours</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(maintenanceHeartbeatEvidence.summary.remaining_hours)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">remaining hours</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(maintenanceHeartbeatEvidence.summary.valid_event_count)}/
+                    {formatInline(maintenanceHeartbeatEvidence.summary.event_count)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">valid / total events</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {formatInline(maintenanceHeartbeatEvidence.summary.invalid_event_count)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">invalid events</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">{heartbeatMissingTypes.length}</div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">missing event types</div>
+                </div>
+                <div>
+                  <div className="text-xl font-black text-stone-950">
+                    {String(maintenanceHeartbeatEvidence.summary.raw_payload_echoed)}
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-stone-500">raw payload echoed</div>
+                </div>
+              </div>
+
+              <div className="mb-4 flex flex-wrap gap-2">
+                {maintenanceHeartbeatEvidence.summary.required_event_types.map((eventType) => (
+                  <Badge
+                    key={eventType}
+                    variant="outline"
+                    className={
+                      heartbeatMissingTypes.includes(eventType)
+                        ? statusClass.missing
+                        : 'border-emerald-200 bg-white text-emerald-800'
+                    }
+                  >
+                    {displayToken(eventType)} {heartbeatMissingTypes.includes(eventType) ? 'missing' : 'present'}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[1fr_1.1fr]">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3 pb-2">
+                    <h3 className="text-xs font-black uppercase text-stone-500">Event type schema</h3>
+                    <Badge variant="outline" className="bg-[#fbfaf6]">
+                      {heartbeatSchemaRows.length} types
+                    </Badge>
+                  </div>
+                  <div className="overflow-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Required fields</TableHead>
+                          <TableHead>Evidence</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {heartbeatSchemaRows.map((row) => (
+                          <TableRow key={row.event_type}>
+                            <TableCell className="font-mono text-xs">{row.event_type}</TableCell>
+                            <TableCell className="text-xs text-stone-600">{row.required_fields.join(', ')}</TableCell>
+                            <TableCell className="text-xs text-stone-600">{row.accepted_evidence.join(', ')}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3 pb-2">
+                    <h3 className="text-xs font-black uppercase text-stone-500">Heartbeat records</h3>
+                    <Badge variant="outline" className="bg-[#fbfaf6]">
+                      {heartbeatRecordRows.length} records
+                    </Badge>
+                  </div>
+                  <div className="max-h-[300px] overflow-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Event</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Evidence</TableHead>
+                          <TableHead>Gaps</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {heartbeatRecordRows.length > 0 ? (
+                          heartbeatRecordRows.map((record, index) => (
+                            <TableRow key={`${record.event_type}-${record.timestamp ?? index}`}>
+                              <TableCell>
+                                <div className="font-mono text-xs text-stone-950">{record.event_type}</div>
+                                <div className="break-all text-[11px] text-stone-500">{record.timestamp ?? 'no timestamp'}</div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[record.status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(record.status)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[260px] text-[11px] text-stone-600">
+                                {record.evidence_paths.length > 0
+                                  ? record.evidence_paths.slice(0, 3).join(', ')
+                                  : record.commit_hash || record.validation_id || '-'}
+                              </TableCell>
+                              <TableCell className="text-[11px] text-stone-600">
+                                {record.missing_fields.length > 0 ? record.missing_fields.join(', ') : '-'}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={4} className="text-sm text-stone-600">
+                              No heartbeat records submitted yet; use the schema before claiming 24h completion.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Gap analysis</h3>
+                  <div className="space-y-2">
+                    {heartbeatGapRows.map((gap) => (
+                      <div key={gap.id} className="text-xs leading-5 text-stone-600">
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className={statusClass[gap.status] ?? statusClass.review_required}>
+                            {displayToken(gap.status)}
+                          </Badge>
+                          <span className="font-mono text-[11px] font-semibold text-stone-950">{gap.id}</span>
+                        </div>
+                        <div>{gap.detail}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Recommended actions</h3>
+                  <div className="space-y-2 text-xs leading-5 text-stone-600">
+                    {heartbeatRecommendedActions.slice(0, 4).map((action) => (
+                      <div key={action}>{action}</div>
+                    ))}
+                    {heartbeatRecommendedActions.length === 0 && <div>No actions reported.</div>}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                  <h3 className="mb-2 text-xs font-black uppercase text-stone-500">Validation and privacy</h3>
+                  <div className="space-y-2 text-xs leading-5 text-stone-600">
+                    {heartbeatValidationCommands.map((command) => (
+                      <div key={command} className="break-all font-mono text-[11px]">
+                        {command}
+                      </div>
+                    ))}
+                    <div>privacy_note: {maintenanceHeartbeatEvidence.privacy_note}</div>
+                    <div>raw_payload_echoed: {String(maintenanceHeartbeatEvidence.summary.raw_payload_echoed)}</div>
+                    <div>ready_for_goal_claim: {String(maintenanceHeartbeatEvidence.summary.ready_for_goal_claim)}</div>
                   </div>
                 </div>
               </div>
