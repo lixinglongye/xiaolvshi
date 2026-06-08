@@ -707,6 +707,18 @@ NewAPI, Gemini, OpenAI, Google, gateways, or the network, shift traffic, or
 include real legal text, fixture snippets, generated document text, prompts,
 model outputs, credentials, or emails.
 
+Current legal fixture evidence handoff:
+`modelops-legal-fixture-evidence-handoff` adds an archive-safe metadata-only
+handoff across local-run-review, cheap-first benchmark gate, default-promotion
+packet, and continuous-session-run-monitor summaries. It exposes source
+statuses, fixture counts, readiness/review/blocker counts, endpoint links, and
+privacy/claim boundaries only. It does not return raw run reports,
+observations, output text, gateway responses, prompts, messages, headers,
+credentials, raw legal text, model outputs, external-provider results,
+configuration writes, default changes, traffic shifts, 24-hour completion
+claims, 100-update completion claims, GitHub push claims, or default-change
+claims.
+
 Current cheap-first release legal benchmark binding evidence:
 `modelops-cheap-first-release-legal-benchmark-binding` binds the legal fixture
 benchmark gate, legal fixture default-promotion packet, and legal benchmark

@@ -102,6 +102,7 @@ from services.matter_audit_retention_policy import MatterAuditRetentionPolicySer
 from services.matter_intake_readiness_policy import MatterIntakeReadinessPolicyService
 from services.model_route_legal_benchmark_risk_queue import ModelRouteLegalBenchmarkRiskQueueService
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import ModelOpsLegalFixtureCheapFirstBenchmarkGateService
+from services.modelops_legal_fixture_evidence_handoff import ModelOpsLegalFixtureEvidenceHandoffService
 from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
@@ -1982,6 +1983,24 @@ async def review_legal_review_fixture_local_run(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalFixtureLocalRunReviewService().review(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/evidence-handoff")
+async def get_legal_review_fixture_evidence_handoff():
+    """Return an archive-safe handoff summary for legal fixture evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureEvidenceHandoffService().build_handoff(),
+    }
+
+
+@router.post("/legal-review-benchmark/evidence-handoff")
+async def build_legal_review_fixture_evidence_handoff(payload: dict[str, Any]):
+    """Build an archive-safe handoff summary from local fixture evidence sources."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureEvidenceHandoffService().build_handoff(payload),
     }
 
 

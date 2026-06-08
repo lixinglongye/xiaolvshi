@@ -332,6 +332,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
+    assert "modelops-legal-fixture-evidence-handoff" in completed_ids
     assert "settings-ai-provider-status-card" in completed_ids
     assert "modelops-legal-fixture-cheap-first-calibration-binding" in completed_ids
     assert "modelops-legal-fixture-modelops-ui-binding" in completed_ids
@@ -2187,6 +2188,47 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage" in legal_fixture_promotion_packet_entry["release_gate_links"]
     assert "legal-document-fact-consistency-benchmark" in legal_fixture_promotion_packet_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in legal_fixture_promotion_packet_entry["release_gate_links"]
+    legal_fixture_handoff_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-legal-fixture-evidence-handoff"
+    )
+    assert legal_fixture_handoff_entry["size"] == "medium"
+    assert legal_fixture_handoff_entry["status"] == "shipped"
+    assert "archive-safe metadata-only legal fixture evidence handoff" in legal_fixture_handoff_entry["impact"]
+    assert "local-run-review" in legal_fixture_handoff_entry["impact"]
+    assert "cheap-first benchmark gate" in legal_fixture_handoff_entry["impact"]
+    assert "default-promotion packet" in legal_fixture_handoff_entry["impact"]
+    assert "continuous-session-run-monitor" in legal_fixture_handoff_entry["impact"]
+    assert "readiness/review/blocker counts" in legal_fixture_handoff_entry["impact"]
+    assert "raw run reports" in legal_fixture_handoff_entry["impact"]
+    assert "observations" in legal_fixture_handoff_entry["impact"]
+    assert "gateway responses" in legal_fixture_handoff_entry["impact"]
+    assert "prompts" in legal_fixture_handoff_entry["impact"]
+    assert "raw legal text" in legal_fixture_handoff_entry["impact"]
+    assert "model outputs" in legal_fixture_handoff_entry["impact"]
+    assert "NewAPI/Gemini/OpenAI/Google/gateway/network calls" in legal_fixture_handoff_entry["impact"]
+    assert "configuration writes" in legal_fixture_handoff_entry["impact"]
+    assert "default changes" in legal_fixture_handoff_entry["impact"]
+    assert "traffic shifts" in legal_fixture_handoff_entry["impact"]
+    assert "24-hour completion claims" in legal_fixture_handoff_entry["impact"]
+    assert "100-update completion claims" in legal_fixture_handoff_entry["impact"]
+    assert "GitHub push claims" in legal_fixture_handoff_entry["impact"]
+    assert "app/backend/services/modelops_legal_fixture_evidence_handoff.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_evidence_handoff.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/services/legal_fixture_local_run_review.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/services/continuous_session_run_monitor.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_EVIDENCE_HANDOFF.md" in legal_fixture_handoff_entry["evidence_paths"]
+    assert "modelops-legal-fixture-evidence-handoff" in legal_fixture_handoff_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in legal_fixture_handoff_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in legal_fixture_handoff_entry["release_gate_links"]
+    assert "continuous-session-run-monitor" in legal_fixture_handoff_entry["release_gate_links"]
+    assert "model-ops-readiness" in legal_fixture_handoff_entry["release_gate_links"]
     calibration_binding_entry = next(
         entry
         for entry in ledger["completed_updates"]

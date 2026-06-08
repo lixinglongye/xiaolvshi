@@ -248,6 +248,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "legal_micro_benchmark_preflight",
     ),
     ReadinessComponent(
+        "legal-fixture-evidence-handoff",
+        "Legal fixture evidence handoff",
+        "release_evidence",
+        "legal_fixture_evidence_handoff",
+    ),
+    ReadinessComponent(
         "user-need-release-bridge",
         "User-need release bridge",
         "release_evidence",

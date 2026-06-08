@@ -1193,6 +1193,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-legal-micro-benchmark-preflight": "python -m pytest tests/test_modelops_legal_micro_benchmark_preflight.py tests/test_legal_fixture_local_run_package.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_model_ops_readiness.py -q",
         "modelops-legal-fixture-cheap-first-benchmark-gate": "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-legal-fixture-cheap-first-default-promotion-packet": "python -m pytest tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-legal-fixture-evidence-handoff": "python -m pytest tests/test_modelops_legal_fixture_evidence_handoff.py tests/test_legal_fixture_local_run_review.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_continuous_session_run_monitor.py tests/test_model_ops_readiness.py -q",
         "modelops-agentic-grounded-defaults": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-default-template-alignment": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-gemini-default-change-review": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
@@ -1821,6 +1822,31 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-legal-fixture-cheap-first-default-promotion-packet"]["evidence_paths"]
+    assert "metadata-only archive-safe legal fixture evidence handoff" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "local-run-review" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "cheap-first benchmark gate" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "default-promotion packet" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "continuous-session-run-monitor" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "run_report_payload" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "raw gateway responses" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "credentials" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "raw legal text" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "configuration writes" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "default changes" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "traffic shifts" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "24-hour completion claims" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "100-update completion claims" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "GitHub push claims" in checks["modelops-legal-fixture-evidence-handoff"]["manual_note"]
+    assert "app/backend/services/modelops_legal_fixture_evidence_handoff.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_evidence_handoff.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/services/legal_fixture_local_run_review.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/services/continuous_session_run_monitor.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_EVIDENCE_HANDOFF.md" in checks["modelops-legal-fixture-evidence-handoff"]["evidence_paths"]
     assert "metadata-only/default routing change evidence" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
     assert "APP_AI_AGENTIC_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]
     assert "APP_AI_GROUNDED_RESEARCH_MODEL -> gemini-3.1-flash-lite" in checks["modelops-agentic-grounded-defaults"]["manual_note"]

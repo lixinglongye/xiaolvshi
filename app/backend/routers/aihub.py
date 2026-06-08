@@ -110,6 +110,7 @@ from services.modelops_observed_gateway_model_fit_matrix import ModelOpsObserved
 from services.modelops_legal_fixture_cheap_first_benchmark_gate import (
     ModelOpsLegalFixtureCheapFirstBenchmarkGateService,
 )
+from services.modelops_legal_fixture_evidence_handoff import ModelOpsLegalFixtureEvidenceHandoffService
 from services.modelops_legal_fixture_default_promotion_packet import (
     ModelOpsLegalFixtureDefaultPromotionPacketService,
 )
@@ -401,6 +402,12 @@ async def list_models():
             {"source_gate": legal_fixture_cheap_first_benchmark_gate}
         )
     )
+    legal_fixture_evidence_handoff = ModelOpsLegalFixtureEvidenceHandoffService().build_handoff(
+        {
+            "cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
+            "default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        }
+    )
     preliminary_legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge()
     user_need_benchmark_coverage = UserNeedBenchmarkCoverageService().build_coverage()
     user_need_shared_signals = {
@@ -485,6 +492,7 @@ async def list_models():
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        "legal_fixture_evidence_handoff": legal_fixture_evidence_handoff,
         "legal_benchmark_risk_bridge": preliminary_legal_benchmark_risk_bridge,
         "user_need_benchmark_coverage": user_need_benchmark_coverage,
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
@@ -610,6 +618,7 @@ async def list_models():
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        "legal_fixture_evidence_handoff": legal_fixture_evidence_handoff,
         "user_need_benchmark_coverage": user_need_benchmark_coverage,
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
         "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
@@ -1165,6 +1174,25 @@ async def model_ops_legal_fixture_cheap_first_default_promotion_packet():
     return {
         "success": True,
         "data": models_payload["legal_fixture_cheap_first_default_promotion_packet"],
+    }
+
+
+@router.get("/models/legal-fixture-evidence-handoff")
+async def model_ops_legal_fixture_evidence_handoff():
+    """Return metadata-only legal fixture evidence handoff summary."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_fixture_evidence_handoff"],
+    }
+
+
+@router.post("/models/legal-fixture-evidence-handoff")
+async def build_model_ops_legal_fixture_evidence_handoff(payload: dict[str, Any]):
+    """Build metadata-only legal fixture evidence handoff from local review summaries."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalFixtureEvidenceHandoffService().build_handoff(payload),
     }
 
 
