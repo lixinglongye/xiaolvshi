@@ -455,6 +455,95 @@ type UserNeedImplementationPriorityQueueResponse = {
   data: UserNeedImplementationPriorityQueue;
 };
 
+export type ModelOpsUserNeedCheapFirstHandoffRow = {
+  id: string;
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  priority_score: number;
+  review_priority_score: number;
+  handoff_status: string;
+  release_decision_effect: string;
+  default_allowed_without_review: boolean;
+  cheap_first_route_protected: boolean;
+  high_frequency_route_ready: boolean;
+  implementation_action_status: string;
+  route_coverage_status: string;
+  linked_route_tasks: string[];
+  linked_default_models: string[];
+  linked_release_gates: string[];
+  implementation_blocker_codes: string[];
+  route_blocker_codes: string[];
+  blocked_reason_codes: string[];
+  review_reason_codes: string[];
+  reviewer_action: string;
+  evidence_endpoints: string[];
+};
+
+export type ModelOpsUserNeedCheapFirstHandoffSection = {
+  id: string;
+  title: string;
+  status: string;
+  endpoint: string;
+  summary: Record<string, number | string | boolean | null | undefined>;
+  blocking_ids: string[];
+  warning_ids: string[];
+};
+
+export type ModelOpsUserNeedCheapFirstHandoff = {
+  id: 'modelops-user-need-cheap-first-handoff' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    need_count: number;
+    high_priority_need_count: number;
+    ready_need_count: number;
+    review_required_need_count: number;
+    blocked_need_count: number;
+    cheap_first_route_protected_need_count: number;
+    high_priority_route_protected_count: number;
+    default_change_allowed: boolean;
+    default_change_blocked: boolean;
+    maintainer_review_required: boolean;
+    implementation_queue_status: string;
+    gemini_route_coverage_status: string;
+    release_bridge_status: string;
+    source_benchmark_coverage_status: string;
+    evidence_section_count: number;
+    validation_command_count: number;
+    model_calls: string;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    raw_text_returned: boolean;
+  };
+  handoff_rows: ModelOpsUserNeedCheapFirstHandoffRow[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  blocked_need_ids: string[];
+  review_need_ids: string[];
+  ready_need_ids: string[];
+  handoff_sections: ModelOpsUserNeedCheapFirstHandoffSection[];
+  source_summaries: Record<string, unknown>;
+  reviewer_handoff: Record<string, string | string[] | number | boolean | null>;
+  recommended_actions: string[];
+  source_boundaries: Record<string, boolean | string | number | string[] | null>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
+type ModelOpsUserNeedCheapFirstHandoffResponse = {
+  success: boolean;
+  data: ModelOpsUserNeedCheapFirstHandoff;
+};
+
 export type FrontendUiRegressionCommandGate = {
   id: string;
   command: string;
@@ -7784,6 +7873,20 @@ export async function getUserNeedImplementationPriorityQueue(): Promise<UserNeed
     return payload.data;
   }
   return payload as UserNeedImplementationPriorityQueue;
+}
+
+export async function getMaintenanceUserNeedCheapFirstHandoff(): Promise<ModelOpsUserNeedCheapFirstHandoff> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs/cheap-first-evidence-handoff',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | ModelOpsUserNeedCheapFirstHandoffResponse
+    | ModelOpsUserNeedCheapFirstHandoff;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ModelOpsUserNeedCheapFirstHandoff;
 }
 
 export async function getFrontendUiRegressionGate(): Promise<FrontendUiRegressionGate> {

@@ -705,6 +705,73 @@ const checks = [
   () => assertIncludes(maintenancePage, 'queue_priority_score', 'user need implementation queue priority binding'),
   () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
+  () => assertIncludes(maintenanceApi, 'ModelOpsUserNeedCheapFirstHandoff', 'maintenance user need cheap-first handoff type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsUserNeedCheapFirstHandoffRow',
+      'maintenance user need cheap-first handoff row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsUserNeedCheapFirstHandoffSection',
+      'maintenance user need cheap-first handoff section type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceUserNeedCheapFirstHandoff',
+      'maintenance user need cheap-first handoff API binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/user-needs/cheap-first-evidence-handoff',
+      'maintenance user need cheap-first handoff endpoint',
+    ),
+  () => assertIncludes(maintenanceApi, 'cheap_first_route_protected', 'maintenance user need cheap-first protected route type'),
+  () => assertIncludes(maintenanceApi, 'reviewer_action', 'maintenance user need cheap-first reviewer action type'),
+  () => assertIncludes(maintenancePage, 'getMaintenanceUserNeedCheapFirstHandoff', 'maintenance user need cheap-first handoff load task'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceUserNeedCheapFirstHandoff',
+      'maintenance user need cheap-first handoff state binding',
+    ),
+  () => assertIncludes(maintenancePage, 'User need cheap-first handoff', 'maintenance user need cheap-first handoff panel'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'cheap_first_route_protected_need_count',
+      'maintenance user need cheap-first protected summary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'high_priority_route_protected_count',
+      'maintenance user need cheap-first high-priority protection summary',
+    ),
+  () => assertIncludes(maintenancePage, 'default_change_allowed', 'maintenance user need cheap-first default change flag'),
+  () => assertIncludes(maintenancePage, 'row.cheap_first_route_protected', 'maintenance user need cheap-first row route flag'),
+  () => assertIncludes(maintenancePage, 'row.reviewer_action', 'maintenance user need cheap-first reviewer action binding'),
+  () => assertIncludes(maintenancePage, 'row.linked_release_gates', 'maintenance user need cheap-first release gates binding'),
+  () => assertIncludes(maintenancePage, 'privacy_boundary', 'maintenance user need cheap-first privacy boundary binding'),
+  () => assertIncludes(maintenancePage, 'claim_boundary', 'maintenance user need cheap-first claim boundary binding'),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+      'user need cheap-first handoff follows implementation queue',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Product feature gap radar</h2>',
+      'user need cheap-first handoff precedes product gap radar',
+    ),
   () => assertIncludes(maintenanceApi, 'BillingEntitlementGap', 'maintenance billing entitlement gap type'),
   () => assertIncludes(maintenanceApi, 'getBillingEntitlementGap', 'maintenance billing entitlement gap getter'),
   () =>
@@ -3643,8 +3710,14 @@ const geminiDefaultCostImpactPanel = sourceSection(
 const userNeedImplementationQueuePanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
-  'Product feature gap radar',
+  '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
   'maintenance user need implementation priority queue section',
+);
+const maintenanceUserNeedCheapFirstHandoffPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Product feature gap radar</h2>',
+  'maintenance user need cheap-first handoff section',
 );
 const userNeedGeminiRouteCoveragePanel = sourceSection(
   maintenancePage,
@@ -3887,6 +3960,11 @@ assertNotMatches(
   userNeedImplementationQueuePanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|raw_prompt|raw_payload|prompt_payload|raw_model_output|raw_legal_text)\b/i,
   'maintenance user need implementation priority queue no secret or raw prompt/payload/legal text field names',
+);
+assertNotMatches(
+  maintenanceUserNeedCheapFirstHandoffPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|gateway_response|headers|client_contact_details|email|phone|identity|benchmark_sample)\b/i,
+  'maintenance user need cheap-first handoff no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
   legalFixtureCheapFirstBenchmarkGatePanel,

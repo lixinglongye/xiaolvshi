@@ -103,6 +103,7 @@ import {
   getGeminiNewApiModelSelectorEvidence,
   getProductFeatureGapRadar,
   getReleaseReadiness,
+  getMaintenanceUserNeedCheapFirstHandoff,
   getUserNeedBenchmarkCoverage,
   getUserNeedGeminiRouteCoverage,
   getUserNeedImplementationPriorityQueue,
@@ -187,6 +188,7 @@ import {
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
+  type ModelOpsUserNeedCheapFirstHandoff,
   type ModelPriceRefreshMonitor,
   type ModelOpsCheapFirstReleaseDecision,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
@@ -351,6 +353,13 @@ function boundaryFlag(boundary: Record<string, unknown> | undefined, keys: strin
 
 function includedBoundaryLabel(value: unknown) {
   return boundaryValueIncluded(value) ? 'true / included' : 'false / not included';
+}
+
+function safeBoundaryEntries(boundary: Record<string, unknown> | undefined) {
+  if (!boundary) return [];
+  return Object.entries(boundary).filter(
+    ([key]) => !/(raw|prompt|request|response|headers|email|credential|secret|payload|content|document|client|identity)/i.test(key),
+  );
 }
 
 function privacyBoundarySummary(boundary: MaintenanceGateSnapshot['gates'][number]['privacy_boundary']) {
@@ -716,6 +725,8 @@ function Inner() {
     useState<UserNeedGeminiRouteCoverage | null>(null);
   const [userNeedImplementationQueue, setUserNeedImplementationQueue] =
     useState<UserNeedImplementationPriorityQueue | null>(null);
+  const [maintenanceUserNeedCheapFirstHandoff, setMaintenanceUserNeedCheapFirstHandoff] =
+    useState<ModelOpsUserNeedCheapFirstHandoff | null>(null);
   const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
@@ -909,6 +920,11 @@ function Inner() {
           label: 'User need implementation priority queue',
           run: getUserNeedImplementationPriorityQueue,
           apply: (value) => setUserNeedImplementationQueue(value as UserNeedImplementationPriorityQueue),
+        },
+        {
+          label: 'User need cheap-first handoff',
+          run: getMaintenanceUserNeedCheapFirstHandoff,
+          apply: (value) => setMaintenanceUserNeedCheapFirstHandoff(value as ModelOpsUserNeedCheapFirstHandoff),
         },
         {
           label: 'Frontend UI regression gate',
@@ -4986,6 +5002,248 @@ function Inner() {
                         {command}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {maintenanceUserNeedCheapFirstHandoff && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {maintenanceUserNeedCheapFirstHandoff.summary.need_count} needs /{' '}
+                      {maintenanceUserNeedCheapFirstHandoff.summary.cheap_first_route_protected_need_count} cheap-first
+                      protected / {maintenanceUserNeedCheapFirstHandoff.summary.review_required_need_count} review rows
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      {maintenanceUserNeedCheapFirstHandoff.id}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[maintenanceUserNeedCheapFirstHandoff.status] ?? statusClass.warn}
+                  >
+                    {displayToken(maintenanceUserNeedCheapFirstHandoff.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+                  {[
+                    {
+                      label: 'high priority',
+                      value: maintenanceUserNeedCheapFirstHandoff.summary.high_priority_need_count,
+                    },
+                    {
+                      label: 'protected high priority',
+                      value: maintenanceUserNeedCheapFirstHandoff.summary.high_priority_route_protected_count,
+                    },
+                    {
+                      label: 'blocked',
+                      value: maintenanceUserNeedCheapFirstHandoff.summary.blocked_need_count,
+                    },
+                    {
+                      label: 'review required',
+                      value: maintenanceUserNeedCheapFirstHandoff.summary.review_required_need_count,
+                    },
+                    {
+                      label: 'default change',
+                      value: maintenanceUserNeedCheapFirstHandoff.summary.default_change_allowed ? 'yes' : 'no',
+                    },
+                    {
+                      label: 'network called',
+                      value: String(maintenanceUserNeedCheapFirstHandoff.summary.network_called),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Reviewer handoff</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>{String(maintenanceUserNeedCheapFirstHandoff.reviewer_handoff.default_change_rule)}</div>
+                      <div>{String(maintenanceUserNeedCheapFirstHandoff.reviewer_handoff.cheap_first_policy)}</div>
+                      <div className="font-mono text-[11px] text-stone-500">
+                        primary: {String(maintenanceUserNeedCheapFirstHandoff.reviewer_handoff.primary_endpoint ?? '-')}
+                      </div>
+                      <div className="font-mono text-[11px] text-stone-500">
+                        maintenance:{' '}
+                        {String(maintenanceUserNeedCheapFirstHandoff.reviewer_handoff.maintenance_endpoint ?? '-')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Source status</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {maintenanceUserNeedCheapFirstHandoff.handoff_sections.map((section) => (
+                        <div key={section.id} className="rounded-[6px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-semibold text-stone-950">{section.title}</span>
+                            <Badge variant="outline" className={statusClass[section.status] ?? statusClass.warn}>
+                              {displayToken(section.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">{section.endpoint}</div>
+                          <div className="mt-2 text-[11px] text-stone-500">
+                            {Object.entries(section.summary)
+                              .slice(0, 3)
+                              .map(([key, value]) => `${displayToken(key)}: ${formatInline(value)}`)
+                              .join(' / ') || 'metadata summary unavailable'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy and claims</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(maintenanceUserNeedCheapFirstHandoff.privacy_boundary)
+                        .slice(0, 4)
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            {displayToken(key)}: {String(value)}
+                          </div>
+                        ))}
+                      {safeBoundaryEntries(maintenanceUserNeedCheapFirstHandoff.claim_boundary)
+                        .slice(0, 2)
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            {displayToken(key)}: {String(value)}
+                          </div>
+                        ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">
+                      model calls: {maintenanceUserNeedCheapFirstHandoff.summary.model_calls} / gateway called:{' '}
+                      {String(maintenanceUserNeedCheapFirstHandoff.summary.gateway_called)} / traffic shifted:{' '}
+                      {String(maintenanceUserNeedCheapFirstHandoff.summary.traffic_shifted)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User need</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Cheap-first route</TableHead>
+                        <TableHead>Review signals</TableHead>
+                        <TableHead>Reviewer action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {maintenanceUserNeedCheapFirstHandoff.handoff_rows.slice(0, 8).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[260px]">
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {displayToken(row.priority_band)} / review priority {row.review_priority_score}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.handoff_status] ?? statusClass.warn}>
+                              {displayToken(row.handoff_status)}
+                            </Badge>
+                            <div className="mt-2 text-[11px] text-stone-500">
+                              default review: {String(row.default_allowed_without_review)}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.release_decision_effect}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>protected: {String(row.cheap_first_route_protected)}</div>
+                            <div>high-frequency: {String(row.high_frequency_route_ready)}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.linked_default_models.slice(0, 3).join(', ') || 'unmapped'}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.linked_route_tasks.slice(0, 4).join(', ') || 'unmapped'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>implementation: {displayToken(row.implementation_action_status)}</div>
+                            <div>route: {displayToken(row.route_coverage_status)}</div>
+                            <div className="mt-1">
+                              blockers:{' '}
+                              {[
+                                ...row.implementation_blocker_codes,
+                                ...row.route_blocker_codes,
+                                ...row.blocked_reason_codes,
+                              ]
+                                .slice(0, 4)
+                                .join(', ') || 'none'}
+                            </div>
+                            <div className="mt-1">
+                              review: {row.review_reason_codes.slice(0, 3).join(', ') || 'none'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.reviewer_action}
+                            <div className="mt-2 text-[11px] text-stone-500">
+                              gates: {row.linked_release_gates.slice(0, 3).join(', ') || 'unmapped'}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              evidence: {row.evidence_endpoints.slice(0, 2).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {maintenanceUserNeedCheapFirstHandoff.recommended_actions.slice(0, 4).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review buckets</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>ready: {maintenanceUserNeedCheapFirstHandoff.ready_need_ids.join(', ') || 'none'}</div>
+                      <div>review: {maintenanceUserNeedCheapFirstHandoff.review_need_ids.join(', ') || 'none'}</div>
+                      <div>blocked: {maintenanceUserNeedCheapFirstHandoff.blocked_need_ids.join(', ') || 'none'}</div>
+                      <div>
+                        blocking checks:{' '}
+                        {maintenanceUserNeedCheapFirstHandoff.blocking_check_ids.slice(0, 4).join(', ') || 'none'}
+                      </div>
+                      <div>
+                        warning checks:{' '}
+                        {maintenanceUserNeedCheapFirstHandoff.warning_check_ids.slice(0, 4).join(', ') || 'none'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {maintenanceUserNeedCheapFirstHandoff.validation_commands.map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
