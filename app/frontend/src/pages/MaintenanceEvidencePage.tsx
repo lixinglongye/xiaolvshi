@@ -104,6 +104,7 @@ import {
   getProductFeatureGapRadar,
   getReleaseReadiness,
   getMaintenanceObservedGeminiCoverageGapQueue,
+  getMaintenanceObservedGeminiPremiumExceptionReview,
   getMaintenanceUserNeedCheapFirstHandoff,
   getUserNeedBenchmarkCoverage,
   getUserNeedGeminiRouteCoverage,
@@ -190,6 +191,7 @@ import {
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
   type ModelOpsObservedGeminiCoverageGapQueue,
+  type ModelOpsObservedGeminiPremiumExceptionReview,
   type ModelOpsUserNeedCheapFirstHandoff,
   type ModelPriceRefreshMonitor,
   type ModelOpsCheapFirstReleaseDecision,
@@ -791,6 +793,8 @@ function Inner() {
     useState<GeminiNewApiCheapFirstPolicy | null>(null);
   const [maintenanceObservedGeminiCoverageGapQueue, setMaintenanceObservedGeminiCoverageGapQueue] =
     useState<ModelOpsObservedGeminiCoverageGapQueue | null>(null);
+  const [maintenanceObservedGeminiPremiumExceptionReview, setMaintenanceObservedGeminiPremiumExceptionReview] =
+    useState<ModelOpsObservedGeminiPremiumExceptionReview | null>(null);
   const [modelPriceRefreshMonitor, setModelPriceRefreshMonitor] =
     useState<ModelPriceRefreshMonitor | null>(null);
   const [modelPriceRefreshObservedReview, setModelPriceRefreshObservedReview] =
@@ -1158,6 +1162,14 @@ function Inner() {
           run: getMaintenanceObservedGeminiCoverageGapQueue,
           apply: (value) =>
             setMaintenanceObservedGeminiCoverageGapQueue(value as ModelOpsObservedGeminiCoverageGapQueue),
+        },
+        {
+          label: 'Observed Gemini premium exception review',
+          run: getMaintenanceObservedGeminiPremiumExceptionReview,
+          apply: (value) =>
+            setMaintenanceObservedGeminiPremiumExceptionReview(
+              value as ModelOpsObservedGeminiPremiumExceptionReview,
+            ),
         },
         {
           label: 'Model price refresh monitor',
@@ -9710,6 +9722,187 @@ function Inner() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {maintenanceObservedGeminiPremiumExceptionReview && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Observed Gemini premium exception review</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only review for observed Gemini Pro or premium variants: explicit routes stay supported,
+                      while high-frequency cheap-first defaults stay blocked.
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      modelops-observed-gemini-premium-exception-review
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[maintenanceObservedGeminiPremiumExceptionReview.status] ??
+                      statusClass.review_required
+                    }
+                  >
+                    {displayToken(maintenanceObservedGeminiPremiumExceptionReview.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    {
+                      label: 'observed premium',
+                      value: maintenanceObservedGeminiPremiumExceptionReview.summary.premium_review_count ?? 0,
+                    },
+                    {
+                      label: 'explicit routes',
+                      value: maintenanceObservedGeminiPremiumExceptionReview.summary.explicit_route_supported_count ?? 0,
+                    },
+                    {
+                      label: 'defaults blocked',
+                      value: maintenanceObservedGeminiPremiumExceptionReview.summary.default_blocked_count ?? 0,
+                    },
+                    {
+                      label: 'release checks',
+                      value: maintenanceObservedGeminiPremiumExceptionReview.summary.release_check_count ?? 0,
+                    },
+                    {
+                      label: 'gateway called',
+                      value: String(maintenanceObservedGeminiPremiumExceptionReview.summary.gateway_called),
+                    },
+                    {
+                      label: 'network called',
+                      value: String(maintenanceObservedGeminiPremiumExceptionReview.summary.network_called),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-xl font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <div className="border-b border-stone-950/10 px-4 py-3">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Premium exception rows</h3>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Observed model</TableHead>
+                        <TableHead>Decision</TableHead>
+                        <TableHead>Allowed routes</TableHead>
+                        <TableHead>Blocked defaults</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {maintenanceObservedGeminiPremiumExceptionReview.review_rows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className="max-w-[300px]">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.raw_model}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              canonical: {row.canonical_model ?? '-'} / {row.cost_tier} / {row.model_lifecycle_status}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={statusClass[row.review_decision] ?? statusClass.review_required}
+                            >
+                              {displayToken(row.review_decision)}
+                            </Badge>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              intake: {displayToken(row.intake_status)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.allowed_route_modes.join(', ') || '-'}
+                          </TableCell>
+                          <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                            {row.blocked_default_tasks.join(', ') || '-'}
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            <div>{row.recommended_action}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.release_gate_links.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release checks</h3>
+                    <div className="space-y-2">
+                      {maintenanceObservedGeminiPremiumExceptionReview.release_checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge
+                              variant="outline"
+                              className={statusClass[check.status] ?? statusClass.review_required}
+                            >
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy and claims</h3>
+                    <div className="grid gap-2 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(maintenanceObservedGeminiPremiumExceptionReview.privacy_boundary)
+                        .slice(0, 5)
+                        .map(([key, value]) => (
+                          <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white px-3 py-2">
+                            {displayToken(key)}: {formatInline(value)}
+                          </div>
+                        ))}
+                      {safeBoundaryEntries(maintenanceObservedGeminiPremiumExceptionReview.claim_boundary)
+                        .slice(0, 5)
+                        .map(([key, value]) => (
+                          <div key={key} className="rounded-[8px] border border-stone-950/10 bg-white px-3 py-2">
+                            {displayToken(key)}: {formatInline(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {maintenanceObservedGeminiPremiumExceptionReview.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                    <ul className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                      {maintenanceObservedGeminiPremiumExceptionReview.recommended_actions.slice(0, 2).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </section>

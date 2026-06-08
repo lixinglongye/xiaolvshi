@@ -1345,6 +1345,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-gemini-default-cost-impact": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-observed-gemini-model-intake-queue": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "modelops-observed-gemini-coverage-gap-queue": "python -m pytest tests/test_model_ops_observed_gemini_coverage_gap_queue.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_gemini_model_variant_matrix.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+        "modelops-observed-gemini-premium-exception-review": "python -m pytest tests/test_model_ops_observed_gemini_premium_exception_review.py tests/test_model_ops_observed_gemini_coverage_gap_queue.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-authority-citation-gate": "python -m pytest tests/test_legal_rag_authority_citation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-hallucination-triage-gate": "python -m pytest tests/test_legal_rag_hallucination_triage_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "legal-rag-abstention-escalation-gate": "python -m pytest tests/test_legal_rag_abstention_escalation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
@@ -2176,6 +2177,54 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "docs/AI_MODEL_STRATEGY.md" in checks["modelops-observed-gemini-coverage-gap-queue"]["evidence_paths"]
     assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in checks[
         "modelops-observed-gemini-coverage-gap-queue"
+    ]["evidence_paths"]
+    assert "metadata-only ModelOps observed Gemini premium exception review evidence" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["manual_note"]
+    assert "Pro or premium Gemini variants" in checks["modelops-observed-gemini-premium-exception-review"][
+        "manual_note"
+    ]
+    assert "explicit premium routes only after maintainer review" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["manual_note"]
+    assert "blocks high-frequency defaults" in checks["modelops-observed-gemini-premium-exception-review"][
+        "manual_note"
+    ]
+    assert "automatic configuration changes" in checks["modelops-observed-gemini-premium-exception-review"][
+        "manual_note"
+    ]
+    assert "does not call NewAPI" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "Gemini" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "OpenAI" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "Google" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "gateways" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "network" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "real environment values" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "shift traffic" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "raw prompts" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "payloads" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "model outputs" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "credentials" in checks["modelops-observed-gemini-premium-exception-review"]["manual_note"]
+    assert "app/backend/services/model_ops_observed_gemini_premium_exception_review.py" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks[
+        "modelops-observed-gemini-premium-exception-review"
+    ]["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md" in checks[
+        "modelops-observed-gemini-premium-exception-review"
     ]["evidence_paths"]
     assert "metadata-only Legal RAG authority and citation gate evidence" in checks["legal-rag-authority-citation-gate"]["manual_note"]
     assert "does not call NewAPI" in checks["legal-rag-authority-citation-gate"]["manual_note"]

@@ -2720,6 +2720,42 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-alias-capability-coverage" in coverage_gap_entry["release_gate_links"]
     assert "model-ops-readiness" in coverage_gap_entry["release_gate_links"]
     assert "frontend-ui-regression" in coverage_gap_entry["release_gate_links"]
+    premium_exception_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-observed-gemini-premium-exception-review"
+    )
+    assert premium_exception_entry["size"] == "medium"
+    assert premium_exception_entry["status"] == "shipped"
+    assert "metadata-only observed Gemini premium exception review evidence" in premium_exception_entry["impact"]
+    assert "observed model intake" in premium_exception_entry["impact"]
+    assert "coverage-gap queues" in premium_exception_entry["impact"]
+    assert "Pro or premium Gemini variants" in premium_exception_entry["impact"]
+    assert "explicit premium routes only after maintainer review" in premium_exception_entry["impact"]
+    assert "block high-frequency defaults" in premium_exception_entry["impact"]
+    assert "prevent automatic configuration changes" in premium_exception_entry["impact"]
+    assert "gateway calls" in premium_exception_entry["impact"]
+    assert "network calls" in premium_exception_entry["impact"]
+    assert "raw prompts" in premium_exception_entry["impact"]
+    assert "payloads" in premium_exception_entry["impact"]
+    assert "model outputs" in premium_exception_entry["impact"]
+    assert "credentials" in premium_exception_entry["impact"]
+    assert "app/backend/services/model_ops_observed_gemini_premium_exception_review.py" in premium_exception_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py" in premium_exception_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/maintenance.py" in premium_exception_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in premium_exception_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in premium_exception_entry["evidence_paths"]
+    assert "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md" in premium_exception_entry["evidence_paths"]
+    assert "modelops-observed-gemini-premium-exception-review" in premium_exception_entry["release_gate_links"]
+    assert "modelops-observed-gemini-coverage-gap-queue" in premium_exception_entry["release_gate_links"]
+    assert "modelops-observed-gemini-model-intake-queue" in premium_exception_entry["release_gate_links"]
+    assert "modelops-gemini-default-change-review" in premium_exception_entry["release_gate_links"]
+    assert "modelops-gemini-default-cost-impact" in premium_exception_entry["release_gate_links"]
+    assert "frontend-ui-regression" in premium_exception_entry["release_gate_links"]
 
     gemini_official_roadmap_entry = next(
         entry

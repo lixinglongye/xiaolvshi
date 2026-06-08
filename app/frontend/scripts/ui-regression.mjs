@@ -95,8 +95,14 @@ const geminiCheapFirstPolicyPanel = sourceSection(
 const maintenanceObservedGeminiCoverageGapQueuePanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini premium exception review</h2>',
   'maintenance observed Gemini coverage gap queue panel',
+);
+const maintenanceObservedGeminiPremiumExceptionReviewPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini premium exception review</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+  'maintenance observed Gemini premium exception review panel',
 );
 const modelPriceRefreshMonitorPanel = sourceSection(
   maintenancePage,
@@ -522,6 +528,134 @@ const checks = [
       maintenanceObservedGeminiCoverageGapQueuePanel,
       /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|gateway_response|headers|client_contact_details|email|phone|identity|benchmark_sample)\b/i,
       'maintenance observed Gemini coverage gap queue sensitive field guard',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiPremiumExceptionReview',
+      'maintenance observed Gemini premium exception review type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'ModelOpsObservedGeminiPremiumExceptionReviewRow',
+      'maintenance observed Gemini premium exception row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceObservedGeminiPremiumExceptionReview',
+      'maintenance observed Gemini premium exception review getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/gemini/observed-premium-exception-review',
+      'maintenance observed Gemini premium exception review endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getMaintenanceObservedGeminiPremiumExceptionReview',
+      'maintenance observed Gemini premium exception review load task',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceObservedGeminiPremiumExceptionReview',
+      'maintenance observed Gemini premium exception review state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'Observed Gemini premium exception review',
+      'maintenance observed Gemini premium exception review panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'modelops-observed-gemini-premium-exception-review',
+      'maintenance observed Gemini premium exception release gate id binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'premium_review_count',
+      'maintenance observed Gemini premium exception review count metric',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'explicit_route_supported_count',
+      'maintenance observed Gemini premium exception explicit-route metric',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'default_blocked_count',
+      'maintenance observed Gemini premium exception default block metric',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'review_decision',
+      'maintenance observed Gemini premium exception review decision binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'allowed_route_modes',
+      'maintenance observed Gemini premium exception allowed route binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'blocked_default_tasks',
+      'maintenance observed Gemini premium exception blocked default binding',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini premium exception review</h2>',
+      'maintenance observed Gemini premium exception follows coverage gap queue',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini premium exception review</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model price refresh monitor</h2>',
+      'maintenance price refresh follows observed Gemini premium exception review',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiPremiumExceptionReviewPanel,
+      'Premium exception rows',
+      'maintenance observed Gemini premium exception rows panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiPremiumExceptionReviewPanel,
+      'Release checks',
+      'maintenance observed Gemini premium exception release checks panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiPremiumExceptionReviewPanel,
+      'Privacy and claims',
+      'maintenance observed Gemini premium exception privacy panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceObservedGeminiPremiumExceptionReviewPanel,
+      'Validation commands',
+      'maintenance observed Gemini premium exception validation panel',
+    ),
+  () =>
+    assertNotMatches(
+      maintenanceObservedGeminiPremiumExceptionReviewPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|gateway_response|headers|client_contact_details|email|phone|identity|benchmark_sample)\b/i,
+      'maintenance observed Gemini premium exception review sensitive field guard',
     ),
   () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitor', 'maintenance model price refresh monitor type'),
   () => assertIncludes(maintenanceApi, 'ModelPriceRefreshMonitorCheck', 'maintenance model price refresh check type'),

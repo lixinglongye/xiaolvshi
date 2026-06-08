@@ -126,6 +126,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default cost impact forecast" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps observed Gemini model intake queue" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps observed Gemini coverage gap queue" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps observed Gemini premium exception review" in profile["release_management"]["release_readiness_controls"]
     assert "Model catalog candidate patch plan" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous session evidence validator" in profile["release_management"]["release_readiness_controls"]
     assert "Continuous ledger low-resource fixture evidence" in profile["release_management"]["release_readiness_controls"]
@@ -356,6 +357,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default cost impact forecast evidence" in model_signal["description"]
     assert "ModelOps observed Gemini model intake queue evidence" in model_signal["description"]
     assert "ModelOps observed Gemini coverage gap evidence" in model_signal["description"]
+    assert "ModelOps observed Gemini premium exception review evidence" in model_signal["description"]
     assert "ModelOps readiness warning drilldown evidence" in model_signal["description"]
     assert "ModelOps load performance budgets" in model_signal["description"]
     assert "sanitized ModelOps performance observation review" in model_signal["description"]
@@ -390,6 +392,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini default cost impact forecast review" in model_signal["responsibility"]
     assert "ModelOps observed Gemini model intake queue review" in model_signal["responsibility"]
     assert "ModelOps observed Gemini coverage gap review" in model_signal["responsibility"]
+    assert "ModelOps observed Gemini premium exception review" in model_signal["responsibility"]
     assert "ModelOps readiness warning triage review" in model_signal["responsibility"]
     assert "route quality-budget review" in model_signal["responsibility"]
     assert "model failure-upgrade budget review" in model_signal["responsibility"]
@@ -410,6 +413,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "app/backend/services/model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths
@@ -423,6 +427,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
@@ -436,6 +441,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in evidence_paths
     assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
+    assert "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
     assert "app/backend/services/route_telemetry_repository.py" in evidence_paths
@@ -581,6 +587,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini default change proposal review is metadata-only proposal evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini default cost impact forecast is metadata-only cost evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("observed Gemini model intake queue is metadata-only intake evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("observed Gemini premium exception review is metadata-only premium-route evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("explicit-only premium routes" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("high-frequency default blocks" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini/NewAPI observed model extraction evidence is metadata-only parsing evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("model catalog candidate patch plan is metadata-only catalog maintenance evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("does not edit model_catalog.py" in guardrail for guardrail in profile["application_guardrails"])

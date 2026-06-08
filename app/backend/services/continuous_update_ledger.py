@@ -3573,6 +3573,54 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="modelops-observed-gemini-premium-exception-review",
+                title="ModelOps observed Gemini premium exception review",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only observed Gemini premium exception review evidence that joins observed model "
+                    "intake and coverage-gap queues to classify Pro or premium Gemini variants, support explicit "
+                    "premium routes only after maintainer review, block high-frequency defaults, and prevent automatic "
+                    "configuration changes, traffic shifts, gateway calls, network calls, raw prompts, payloads, model "
+                    "outputs, legal text, emails, or credentials from entering the review packet."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_observed_gemini_premium_exception_review.py",
+                    "app/backend/services/model_ops_observed_gemini_coverage_gap_queue.py",
+                    "app/backend/services/model_ops_observed_gemini_model_intake_queue.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/services/maintenance_evidence.py",
+                    "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py",
+                    "app/backend/tests/test_model_ops_observed_gemini_coverage_gap_queue.py",
+                    "app/backend/tests/test_model_ops_observed_gemini_model_intake_queue.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/tests/test_maintenance_evidence.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-observed-gemini-premium-exception-review",
+                    "modelops-observed-gemini-coverage-gap-queue",
+                    "modelops-observed-gemini-model-intake-queue",
+                    "gemini-model-variant-matrix",
+                    "modelops-gemini-default-change-review",
+                    "modelops-gemini-default-cost-impact",
+                    "modelops-gemini-cheap-first-coverage-gate",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="legal-document-benchmark-fixtures",
                 title="Small legal document benchmark fixtures",
                 category="benchmark",

@@ -631,6 +631,73 @@ type ModelOpsObservedGeminiCoverageGapQueueResponse = {
   data: ModelOpsObservedGeminiCoverageGapQueue;
 };
 
+export type ModelOpsObservedGeminiPremiumExceptionReviewRow = {
+  id: string;
+  raw_model: string;
+  canonical_model: string | null;
+  cost_tier: string;
+  model_lifecycle_status: string;
+  intake_status: string;
+  intake_action: string;
+  review_decision: string;
+  allowed_route_modes: string[];
+  blocked_default_tasks: string[];
+  reason_codes: string[];
+  recommended_action: string;
+  release_gate_links: string[];
+};
+
+export type ModelOpsObservedGeminiPremiumExceptionReleaseCheck = {
+  id: string;
+  title?: string;
+  status: string;
+  required?: boolean;
+  reason: string;
+  evidence?: string[];
+  reason_codes?: string[];
+  recommended_action?: string;
+  release_gate_links?: string[];
+};
+
+export type ModelOpsObservedGeminiPremiumExceptionReview = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observed_model_count?: number;
+    review_row_count?: number;
+    pro_model_count?: number;
+    premium_model_count?: number;
+    premium_exception_candidate_count?: number;
+    approved_exception_count?: number;
+    review_required_count?: number;
+    blocked_default_task_count?: number;
+    premium_review_count?: number;
+    explicit_route_supported_count?: number;
+    default_blocked_count?: number;
+    release_check_count?: number;
+    blocking_check_count?: number;
+    configuration_written?: boolean;
+    gateway_called?: boolean;
+    network_called?: boolean;
+    raw_payload_echoed?: boolean;
+    [key: string]: string | number | boolean | null | undefined;
+  };
+  review_rows: ModelOpsObservedGeminiPremiumExceptionReviewRow[];
+  release_checks: ModelOpsObservedGeminiPremiumExceptionReleaseCheck[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
+type ModelOpsObservedGeminiPremiumExceptionReviewResponse = {
+  success: boolean;
+  data: ModelOpsObservedGeminiPremiumExceptionReview;
+};
+
 export type FrontendUiRegressionCommandGate = {
   id: string;
   command: string;
@@ -7988,6 +8055,20 @@ export async function getMaintenanceObservedGeminiCoverageGapQueue(): Promise<Mo
     return payload.data;
   }
   return payload as ModelOpsObservedGeminiCoverageGapQueue;
+}
+
+export async function getMaintenanceObservedGeminiPremiumExceptionReview(): Promise<ModelOpsObservedGeminiPremiumExceptionReview> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini/observed-premium-exception-review',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | ModelOpsObservedGeminiPremiumExceptionReviewResponse
+    | ModelOpsObservedGeminiPremiumExceptionReview;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as ModelOpsObservedGeminiPremiumExceptionReview;
 }
 
 export async function getFrontendUiRegressionGate(): Promise<FrontendUiRegressionGate> {

@@ -107,6 +107,9 @@ from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLeg
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
+from services.model_ops_observed_gemini_premium_exception_review import (
+    ModelOpsObservedGeminiPremiumExceptionReviewService,
+)
 from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
 from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
@@ -980,6 +983,23 @@ async def get_gemini_observed_coverage_gap_queue():
     return {
         "success": True,
         "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
+            {"observed_models": observed_gateway_models}
+        ),
+    }
+
+
+@router.get("/gemini/observed-premium-exception-review")
+async def get_gemini_observed_premium_exception_review():
+    """Return metadata-only review packet for observed premium Gemini variants."""
+    gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
+    observed_gateway_models = [
+        item.get("model")
+        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
+        if item.get("model")
+    ]
+    return {
+        "success": True,
+        "data": ModelOpsObservedGeminiPremiumExceptionReviewService().build_review(
             {"observed_models": observed_gateway_models}
         ),
     }
