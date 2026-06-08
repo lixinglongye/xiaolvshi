@@ -37,6 +37,13 @@ expected vector slots.
 Review and blocked rows take precedence over ready rows at the gate level.
 Verified rows are not production retrieval enablement.
 
+Verified rows can feed
+`legal-rag-embedding-retrieval-diagnostics-handoff-gate`, which converts them
+into safe metadata-only handoff rows for retrieval diagnostics review. The
+handoff gate still blocks production retrieval and keeps query text, retrieved
+context, source chunks, vectors, source ids, and committer identity out of the
+payload.
+
 ## Boundaries
 
 This gate does not approve or execute an index commit. It does not collect

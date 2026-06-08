@@ -80,6 +80,9 @@ from services.legal_rag_embedding_index_dry_run_gate import LegalRagEmbeddingInd
 from services.legal_rag_embedding_index_post_commit_verification_gate import (
     LegalRagEmbeddingIndexPostCommitVerificationGateService,
 )
+from services.legal_rag_embedding_retrieval_diagnostics_handoff_gate import (
+    LegalRagEmbeddingRetrievalDiagnosticsHandoffGateService,
+)
 from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
@@ -1548,8 +1551,6 @@ async def evaluate_legal_rag_embedding_index_post_commit_verification_gate(paylo
     if not isinstance(post_commit_observations, (list, dict)):
         post_commit_observations = payload.get("commit_observations")
     if not isinstance(post_commit_observations, (list, dict)):
-        post_commit_observations = payload.get("verification_rows")
-    if not isinstance(post_commit_observations, (list, dict)):
         post_commit_observations = payload.get("post_commit_rows")
     if not isinstance(post_commit_observations, (list, dict)):
         post_commit_observations = payload.get("rows")
@@ -1561,6 +1562,62 @@ async def evaluate_legal_rag_embedding_index_post_commit_verification_gate(paylo
             {"post_commit_observations": post_commit_observations}
             if isinstance(post_commit_observations, (list, dict))
             else None,
+        ),
+    }
+
+
+@router.get("/legal-rag-embedding-retrieval-diagnostics-handoff-gate")
+async def get_legal_rag_embedding_retrieval_diagnostics_handoff_gate():
+    """Return metadata-only Legal RAG embedding retrieval diagnostics handoff evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingRetrievalDiagnosticsHandoffGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-embedding-retrieval-diagnostics-handoff-gate")
+async def evaluate_legal_rag_embedding_retrieval_diagnostics_handoff_gate(payload: dict[str, Any]):
+    """Evaluate sanitized Legal RAG embedding retrieval diagnostics handoff evidence."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    observations = payload.get("observations")
+    if not isinstance(observations, list):
+        observations = payload.get("embedding_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("batch_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("observation_rows")
+    verification_gate = payload.get("post_commit_verification_gate")
+    if not isinstance(verification_gate, (list, dict)):
+        verification_gate = payload.get("verification_gate")
+    if not isinstance(verification_gate, (list, dict)):
+        verification_gate = payload.get("handoff_source_rows")
+    verification_rows = payload.get("verification_rows")
+    if isinstance(verification_rows, list) and any(
+        isinstance(row, dict) and "verification_status" in row for row in verification_rows
+    ):
+        verification_gate = {"verification_rows": verification_rows}
+    post_commit_observations = payload.get("post_commit_observations")
+    if not isinstance(post_commit_observations, (list, dict)):
+        post_commit_observations = payload.get("commit_observations")
+    if not isinstance(post_commit_observations, (list, dict)):
+        post_commit_observations = payload.get("post_commit_rows")
+    if not isinstance(post_commit_observations, (list, dict)):
+        post_commit_observations = payload.get("rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingRetrievalDiagnosticsHandoffGateService().build_gate(
+            rows if isinstance(rows, list) else None,
+            {"observations": observations} if isinstance(observations, list) else None,
+            {"post_commit_observations": post_commit_observations}
+            if isinstance(post_commit_observations, (list, dict))
+            else None,
+            verification_gate if isinstance(verification_gate, (list, dict)) else None,
         ),
     }
 

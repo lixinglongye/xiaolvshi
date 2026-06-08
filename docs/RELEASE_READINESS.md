@@ -406,6 +406,23 @@ not store or return source ids, approval item ids, raw query, raw retrieved
 context, raw legal text, source chunks, embedding vectors, prompts, model
 outputs, gateway payloads, credentials, emails, or client material.
 
+The optional `legal-rag-embedding-retrieval-diagnostics-handoff-gate` check
+records metadata-only Legal RAG embedding retrieval diagnostics handoff
+evidence through
+`LegalRagEmbeddingRetrievalDiagnosticsHandoffGateService` at
+`/api/v1/maintenance/legal-rag-embedding-retrieval-diagnostics-handoff-gate`.
+It reviews safe handoff rows between post-commit verification and retrieval
+diagnostics, ready/hold/block handoff statuses, safe handoff payload fields,
+rollback review links, and retrieval-diagnostics-review-only actions. It must
+not be used to claim retrieval diagnostics execution, production retrieval
+enablement, index quality, retrieval quality, legal-answer quality, live
+pricing accuracy, provider execution, or client delivery. It must not collect
+committer identity, call NewAPI, Gemini, models, gateways, app AI endpoints, or
+the network, and it must not store or return source ids, approval item ids,
+raw query, user questions, raw retrieved context, raw legal text, source
+chunks, embedding vectors, prompts, model outputs, gateway payloads,
+credentials, emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

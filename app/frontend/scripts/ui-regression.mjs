@@ -722,6 +722,150 @@ const checks = [
     ),
   () => assertIncludes(maintenancePage, 'retrieval use allowed', 'legal RAG embedding index post-commit no retrieval use label'),
   () =>
+    assertIncludes(
+      maintenancePage,
+      'Legal RAG embedding retrieval diagnostics handoff gate',
+      'legal RAG embedding retrieval diagnostics handoff gate panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff POST binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff GET fallback binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'legalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'defaultLegalRagEmbeddingRetrievalDiagnosticsHandoffPayload',
+      'legal RAG embedding retrieval diagnostics handoff sample payload',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'loadEmbeddingRetrievalDiagnosticsHandoffSample',
+      'legal RAG embedding retrieval diagnostics handoff load task binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'hasForbiddenEmbeddingRetrievalDiagnosticsHandoffPayloadText',
+      'legal RAG embedding retrieval diagnostics handoff forbidden key guard',
+    ),
+  () => assertIncludes(maintenancePage, 'handoff rows', 'legal RAG embedding retrieval diagnostics handoff row summary'),
+  () => assertIncludes(maintenancePage, 'ready handoffs', 'legal RAG embedding retrieval diagnostics handoff ready summary'),
+  () => assertIncludes(maintenancePage, 'hold handoffs', 'legal RAG embedding retrieval diagnostics handoff hold summary'),
+  () => assertIncludes(maintenancePage, 'blocked handoffs', 'legal RAG embedding retrieval diagnostics handoff blocked summary'),
+  () => assertIncludes(maintenancePage, 'handoff_status', 'legal RAG embedding retrieval diagnostics handoff status binding'),
+  () => assertIncludes(maintenancePage, 'handoff_action', 'legal RAG embedding retrieval diagnostics handoff action binding'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'post_commit_verification_status',
+      'legal RAG embedding retrieval diagnostics handoff post-commit status binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'retrieval_diagnostics_review_allowed',
+      'legal RAG embedding retrieval diagnostics handoff diagnostics review boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'production_retrieval_allowed',
+      'legal RAG embedding retrieval diagnostics handoff production retrieval boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'retrieval_query_allowed',
+      'legal RAG embedding retrieval diagnostics handoff query boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'retrieved_context_allowed',
+      'legal RAG embedding retrieval diagnostics handoff context boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'handoff_status_counts',
+      'legal RAG embedding retrieval diagnostics handoff status distribution',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'handoff_action_counts',
+      'legal RAG embedding retrieval diagnostics handoff action distribution',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'safe_handoff_payload_fields',
+      'legal RAG embedding retrieval diagnostics handoff safe payload fields binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'source_id_echoed',
+      'legal RAG embedding retrieval diagnostics handoff no source id echo binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'query_payload_collected',
+      'legal RAG embedding retrieval diagnostics handoff no query payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'retrieved_context_collected',
+      'legal RAG embedding retrieval diagnostics handoff no context payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'committer_identity_collected',
+      'legal RAG embedding retrieval diagnostics handoff no committer identity binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'handoff_payload_materialized',
+      'legal RAG embedding retrieval diagnostics handoff no materialized payload binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'handoff_policy',
+      'legal RAG embedding retrieval diagnostics handoff policy binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'allows_retrieval_diagnostics_review_only',
+      'legal RAG embedding retrieval diagnostics handoff diagnostics-only policy',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'allows_production_retrieval',
+      'legal RAG embedding retrieval diagnostics handoff no production retrieval policy',
+    ),
+  () =>
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG authority citation gate</h2>',
@@ -788,8 +932,29 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding retrieval diagnostics handoff gate</h2>',
+      'embedding index post-commit verification gate precedes retrieval diagnostics handoff',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding retrieval diagnostics handoff gate</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
-      'embedding index post-commit verification gate precedes retrieval diagnostics',
+      'embedding retrieval diagnostics handoff gate precedes retrieval diagnostics',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      "label: 'Legal RAG embedding index post-commit verification gate'",
+      "label: 'Legal RAG embedding retrieval diagnostics handoff gate'",
+      'post-commit verification load task precedes handoff load task',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      "label: 'Legal RAG embedding retrieval diagnostics handoff gate'",
+      "label: 'Legal RAG retrieval diagnostics gate'",
+      'handoff load task precedes retrieval diagnostics load task',
     ),
   () => assertIncludes(maintenancePage, 'getLegalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate API binding'),
   () => assertIncludes(maintenancePage, 'legalRagRetrievalDiagnosticsGate', 'legal RAG retrieval diagnostics gate state binding'),
@@ -1181,6 +1346,88 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-rag-embedding-index-post-commit-verification-gate',
       'legal RAG embedding index post-commit verification endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'LegalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff gate type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'LegalRagEmbeddingRetrievalDiagnosticsHandoffGateRow',
+      'legal RAG embedding retrieval diagnostics handoff row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      "id: 'legal-rag-embedding-retrieval-diagnostics-handoff-gate' | string",
+      'legal RAG embedding retrieval diagnostics handoff gate id',
+    ),
+  () => assertIncludes(maintenanceApi, 'handoff_rows', 'legal RAG embedding retrieval diagnostics handoff rows type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'handoff_status_counts',
+      'legal RAG embedding retrieval diagnostics handoff status counts type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'handoff_action_counts',
+      'legal RAG embedding retrieval diagnostics handoff action counts type',
+    ),
+  () => assertIncludes(maintenanceApi, 'ready_handoff_count', 'legal RAG embedding retrieval diagnostics handoff ready count type'),
+  () => assertIncludes(maintenanceApi, 'hold_handoff_count', 'legal RAG embedding retrieval diagnostics handoff hold count type'),
+  () => assertIncludes(maintenanceApi, 'blocked_handoff_count', 'legal RAG embedding retrieval diagnostics handoff blocked count type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'diagnostics_review_ready_count',
+      'legal RAG embedding retrieval diagnostics handoff diagnostics-ready count type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'safe_handoff_payload_fields',
+      'legal RAG embedding retrieval diagnostics handoff safe payload fields type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'handoff_policy',
+      'legal RAG embedding retrieval diagnostics handoff policy type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'allows_retrieval_diagnostics_review_only',
+      'legal RAG embedding retrieval diagnostics handoff diagnostics-only policy type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'allows_production_retrieval',
+      'legal RAG embedding retrieval diagnostics handoff production retrieval policy type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate',
+      'legal RAG embedding retrieval diagnostics handoff POST helper',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-rag-embedding-retrieval-diagnostics-handoff-gate',
+      'legal RAG embedding retrieval diagnostics handoff endpoint',
     ),
   () => assertIncludes(maintenanceApi, "id: 'legal-rag-retrieval-diagnostics-gate' | string", 'legal RAG retrieval diagnostics gate id'),
   () => assertIncludes(maintenanceApi, 'diagnostic_rows', 'legal RAG retrieval diagnostics rows type'),
@@ -2297,8 +2544,14 @@ const legalRagEmbeddingIndexCommitReviewPanel = sourceSection(
 const legalRagEmbeddingIndexPostCommitVerificationPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding index post-commit verification gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding retrieval diagnostics handoff gate</h2>',
   'maintenance Legal RAG embedding index post-commit verification section',
+);
+const legalRagEmbeddingRetrievalDiagnosticsHandoffPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG embedding retrieval diagnostics handoff gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG retrieval diagnostics gate</h2>',
+  'maintenance Legal RAG embedding retrieval diagnostics handoff section',
 );
 const retrievalObservationPanel = sourceSection(
   maintenancePage,
@@ -2532,6 +2785,11 @@ assertNotMatches(
   'maintenance Legal RAG embedding index post-commit verification no raw chunks, raw legal text, source ids, secrets, committer identity, vectors, or emails',
 );
 assertNotMatches(
+  legalRagEmbeddingRetrievalDiagnosticsHandoffPanel,
+  /\b(RAW_HANDOFF_TEXT|RAW_HANDOFF_TEXT_SHOULD_NOT_LEAK|RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|RAW_QUERY_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-handoff-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|handoff-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  'maintenance Legal RAG embedding retrieval diagnostics handoff no raw handoff/query/context/legal text, source ids, secrets, committer identity, vectors, or emails',
+);
+assertNotMatches(
   retrievalObservationPanel,
   /\b(RAW_QUERY_SHOULD_NOT_LEAK|RAW_CONTEXT|sk-[A-Za-z0-9]{20,}|client@example\.com)\b/i,
   'maintenance Legal RAG retrieval observation no raw sample text, secrets, or emails',
@@ -2688,7 +2946,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 33,
+      assertions: checks.length + 34,
     },
     null,
     2,

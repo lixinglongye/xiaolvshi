@@ -51,6 +51,7 @@ import {
   evaluateLegalRagEmbeddingBatchObservationGate,
   evaluateLegalRagEmbeddingIndexCommitReviewPacket,
   evaluateLegalRagEmbeddingIndexPostCommitVerificationGate,
+  evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
   evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -60,6 +61,7 @@ import {
   getLegalRagEmbeddingBatchBudgetGate,
   getLegalRagEmbeddingIndexCommitReviewPacket,
   getLegalRagEmbeddingIndexPostCommitVerificationGate,
+  getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
@@ -145,6 +147,7 @@ import {
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexCommitReviewPacket,
   type LegalRagEmbeddingIndexPostCommitVerificationGate,
+  type LegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
   type LegalRagEmbeddingIndexDryRunGate,
   type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
@@ -500,6 +503,10 @@ function defaultLegalRagEmbeddingIndexPostCommitVerificationPayload() {
   };
 }
 
+function defaultLegalRagEmbeddingRetrievalDiagnosticsHandoffPayload() {
+  return defaultLegalRagEmbeddingIndexPostCommitVerificationPayload();
+}
+
 function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
   return /"(source_id|source_ids|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|approver_name|approver_identity)"\s*:/i.test(
     value,
@@ -514,6 +521,12 @@ function hasForbiddenEmbeddingIndexCommitReviewPayloadText(value: string) {
 
 function hasForbiddenEmbeddingIndexPostCommitVerificationPayloadText(value: string) {
   return /"(source_id|source_ids|approval_item_id|source_approval_item_id|raw_text|raw_legal_text|raw_context|retrieved_context|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|credential|credentials|credential_value|secret_value|bearer_token|email|approver_email|committer_email|committer_name|committer_identity|commit_signature|commit_client)"\s*:/i.test(
+    value,
+  );
+}
+
+function hasForbiddenEmbeddingRetrievalDiagnosticsHandoffPayloadText(value: string) {
+  return /"(source_id|source_ids|approval_item_id|source_approval_item_id|raw_text|raw_legal_text|raw_query|query|question|raw_context|retrieved_context|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|credential|credentials|credential_value|secret_value|bearer_token|email|approver_email|committer_email|committer_name|committer_identity|commit_signature|handoff_client)"\s*:/i.test(
     value,
   );
 }
@@ -621,6 +634,8 @@ function Inner() {
     useState<LegalRagEmbeddingIndexCommitReviewPacket | null>(null);
   const [legalRagEmbeddingIndexPostCommitVerificationGate, setLegalRagEmbeddingIndexPostCommitVerificationGate] =
     useState<LegalRagEmbeddingIndexPostCommitVerificationGate | null>(null);
+  const [legalRagEmbeddingRetrievalDiagnosticsHandoffGate, setLegalRagEmbeddingRetrievalDiagnosticsHandoffGate] =
+    useState<LegalRagEmbeddingRetrievalDiagnosticsHandoffGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -763,6 +778,15 @@ function Inner() {
       return getLegalRagEmbeddingIndexPostCommitVerificationGate();
     }
     return evaluateLegalRagEmbeddingIndexPostCommitVerificationGate(payload);
+  };
+
+  const loadEmbeddingRetrievalDiagnosticsHandoffSample = () => {
+    const payload = defaultLegalRagEmbeddingRetrievalDiagnosticsHandoffPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenEmbeddingRetrievalDiagnosticsHandoffPayloadText(payloadText)) {
+      return getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate();
+    }
+    return evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate(payload);
   };
 
   const load = async (nextLanguage = language) => {
@@ -1106,6 +1130,14 @@ function Inner() {
           apply: (value) =>
             setLegalRagEmbeddingIndexPostCommitVerificationGate(
               value as LegalRagEmbeddingIndexPostCommitVerificationGate,
+            ),
+        },
+        {
+          label: 'Legal RAG embedding retrieval diagnostics handoff gate',
+          run: loadEmbeddingRetrievalDiagnosticsHandoffSample,
+          apply: (value) =>
+            setLegalRagEmbeddingRetrievalDiagnosticsHandoffGate(
+              value as LegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
             ),
         },
         {
@@ -11731,6 +11763,230 @@ function Inner() {
                           <div>committer_identity_collected: {String(gate.input_contract.committer_identity_collected)}</div>
                           <div>commit_record_written: {String(gate.input_contract.commit_record_written)}</div>
                           <div>post_commit_observation_only: {String(gate.input_contract.post_commit_observation_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingRetrievalDiagnosticsHandoffGate &&
+              (() => {
+                const gate = legalRagEmbeddingRetrievalDiagnosticsHandoffGate;
+                const rows = gate.handoff_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const policy = gate.handoff_policy;
+                const summaryCounts = [
+                  { label: 'handoff rows', value: summary.handoff_row_count },
+                  { label: 'ready handoffs', value: summary.ready_handoff_count },
+                  { label: 'hold handoffs', value: summary.hold_handoff_count },
+                  { label: 'blocked handoffs', value: summary.blocked_handoff_count },
+                  { label: 'diagnostics review ready', value: summary.diagnostics_review_ready_count },
+                  { label: 'rollback review required', value: summary.rollback_review_required_count },
+                  { label: 'observed index entries', value: summary.observed_index_entry_total },
+                  { label: 'expected index entries', value: summary.expected_index_entry_total },
+                  { label: 'safe handoff fields', value: summary.safe_handoff_payload_field_count },
+                  { label: 'handoff payload included', value: String(summary.handoff_payload_included) },
+                  { label: 'query payload included', value: String(summary.query_payload_included) },
+                  { label: 'production retrieval allowed', value: String(summary.production_retrieval_allowed_by_gate) },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'raw query returned', value: privacy.returns_raw_query || privacy.returns_user_question },
+                  { label: 'retrieved context returned', value: privacy.returns_retrieved_context },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'committer identity returned', value: privacy.returns_committer_identity },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'model called', value: privacy.calls_model },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                  { label: 'production retrieval enabled', value: privacy.enables_production_retrieval },
+                  { label: 'retrieval diagnostics executed claimed', value: claim.retrieval_diagnostics_executed_claimed },
+                  { label: 'production retrieval enabled claimed', value: claim.production_retrieval_enabled_claimed },
+                  { label: 'retrieval quality claimed', value: claim.retrieval_quality_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding retrieval diagnostics handoff gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only handoff from post-commit verification into retrieval diagnostics review
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-12">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Handoff row</TableHead>
+                            <TableHead>Status / action</TableHead>
+                            <TableHead>Allowed scope</TableHead>
+                            <TableHead>Index evidence</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  #{row.queue_order} {displayToken(row.source_type)}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.diagnostics_review_scope}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1 text-xs leading-5 text-stone-600">
+                                <Badge variant="outline" className={statusClass[row.handoff_status] ?? statusClass.review_required}>
+                                  {displayToken(row.handoff_status)}
+                                </Badge>
+                                <div>handoff_status: {displayToken(row.handoff_status)}</div>
+                                <div>handoff_action: {displayToken(row.handoff_action)}</div>
+                                <div>post_commit_verification_status: {displayToken(row.post_commit_verification_status)}</div>
+                                <div>post_commit_status: {displayToken(row.post_commit_status)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>retrieval_diagnostics_review_allowed: {String(row.retrieval_diagnostics_review_allowed)}</div>
+                                <div>production_retrieval_allowed: {String(row.production_retrieval_allowed)}</div>
+                                <div>retrieval_query_allowed: {String(row.retrieval_query_allowed)}</div>
+                                <div>retrieved_context_allowed: {String(row.retrieved_context_allowed)}</div>
+                                <div>rollback_required: {String(row.rollback_required)}</div>
+                                <div>rollback_action: {displayToken(row.rollback_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>observed_index_entry_count: {row.observed_index_entry_count}</div>
+                                <div>expected_index_entry_count: {row.expected_index_entry_count}</div>
+                                <div>metadata_record_count: {row.metadata_record_count}</div>
+                                <div>retrieval_locator_count: {row.retrieval_locator_count}</div>
+                                <div>checksum_record_count: {row.checksum_record_count}</div>
+                                <div>failed_entry_count: {row.failed_entry_count}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[320px] flex-wrap gap-1">
+                                  {(row.reason_codes ?? []).map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['handoff_status_counts', gate.handoff_status_counts ?? {}],
+                            ['handoff_action_counts', gate.handoff_action_counts ?? {}],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">handoff_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {policy.method}</div>
+                          <div>requires verified rows: {String(policy.requires_verified_post_commit_rows)}</div>
+                          <div>requires no review rows: {String(policy.requires_no_post_commit_review_rows_for_global_ready)}</div>
+                          <div>requires no blocked rows: {String(policy.requires_no_blocked_post_commit_rows)}</div>
+                          <div>allows retrieval diagnostics review only: {String(policy.allows_retrieval_diagnostics_review_only)}</div>
+                          <div>allows production retrieval: {String(policy.allows_production_retrieval)}</div>
+                          <div>allows query payload: {String(policy.allows_query_payload)}</div>
+                          <div>allows retrieved context payload: {String(policy.allows_retrieved_context_payload)}</div>
+                          <div>allows source id payload: {String(policy.allows_source_id_payload)}</div>
+                          <div>allows embedding vector payload: {String(policy.allows_embedding_vector_payload)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">safe_handoff_payload_fields</h3>
+                        <div className="flex flex-wrap gap-1">
+                          {(gate.input_contract.safe_handoff_payload_fields ?? []).map((field) => (
+                            <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                              {field}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>query_payload_collected: {String(gate.input_contract.query_payload_collected)}</div>
+                          <div>retrieved_context_collected: {String(gate.input_contract.retrieved_context_collected)}</div>
+                          <div>committer_identity_collected: {String(gate.input_contract.committer_identity_collected)}</div>
+                          <div>production_retrieval_enabled: {String(gate.input_contract.production_retrieval_enabled)}</div>
+                          <div>handoff_payload_materialized: {String(gate.input_contract.handoff_payload_materialized)}</div>
                         </div>
                       </div>
                       <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">

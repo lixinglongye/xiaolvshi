@@ -252,6 +252,19 @@ raw legal text, source chunks, embedding vectors, prompts, model outputs,
 gateway payloads, credentials, emails, live pricing claims, index quality, or
 retrieval quality.
 
+`legal-rag-embedding-retrieval-diagnostics-handoff-gate` is the shipped
+metadata-only handoff gate between post-commit verification and retrieval
+diagnostics review. It converts verified, review, and blocked verification
+rows into safe ready/hold/block handoff rows with diagnostics-review-only
+actions, rollback review links, safe payload field lists, and production
+retrieval false flags. It does not execute retrieval diagnostics, enable
+production retrieval, claim index or retrieval quality, call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, indexes, databases, or the
+network, and it does not write indexes or return source ids, raw query, user
+questions, retrieved context, raw legal text, source chunks, embedding vectors,
+prompts, model outputs, gateway payloads, credentials, emails, committer
+identity, live pricing claims, legal advice, or client delivery claims.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,

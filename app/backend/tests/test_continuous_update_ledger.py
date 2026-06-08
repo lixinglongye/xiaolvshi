@@ -451,6 +451,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-batch-observation-gate" in completed_ids
     assert "legal-rag-embedding-index-commit-review-packet" in completed_ids
     assert "legal-rag-embedding-index-post-commit-verification-gate" in completed_ids
+    assert "legal-rag-embedding-retrieval-diagnostics-handoff-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -653,6 +654,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-batch-observation-gate" not in queue_ids
     assert "legal-rag-embedding-index-commit-review-packet" not in queue_ids
     assert "legal-rag-embedding-index-post-commit-verification-gate" not in queue_ids
+    assert "legal-rag-embedding-retrieval-diagnostics-handoff-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -3405,6 +3407,63 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_legal_rag_embedding_index_post_commit_verification_gate.py "
         "tests/test_legal_rag_embedding_index_commit_review_packet.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    handoff_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-rag-embedding-retrieval-diagnostics-handoff-gate"
+    )
+    assert handoff_entry["category"] == "benchmark"
+    assert handoff_entry["size"] == "medium"
+    assert handoff_entry["status"] == "shipped"
+    assert "metadata-only Legal RAG embedding retrieval diagnostics handoff gate" in handoff_entry["impact"]
+    assert "post-commit verification rows" in handoff_entry["impact"]
+    assert "ready/hold/block handoff rows" in handoff_entry["impact"]
+    assert "safe handoff payload fields" in handoff_entry["impact"]
+    assert "diagnostics-review-only actions" in handoff_entry["impact"]
+    assert "rollback review links" in handoff_entry["impact"]
+    assert "production retrieval false flags" in handoff_entry["impact"]
+    assert "maintenance UI review" in handoff_entry["impact"]
+    assert "without executing retrieval diagnostics" in handoff_entry["impact"]
+    assert "enabling production retrieval" in handoff_entry["impact"]
+    assert "claiming index or retrieval quality" in handoff_entry["impact"]
+    assert "executing embeddings" in handoff_entry["impact"]
+    assert "NewAPI/Gemini/model calls" in handoff_entry["impact"]
+    assert "index or database writes" in handoff_entry["impact"]
+    assert "commit record writes" in handoff_entry["impact"]
+    assert "committer identity collection" in handoff_entry["impact"]
+    assert "source-id echoing" in handoff_entry["impact"]
+    assert "raw query" in handoff_entry["impact"]
+    assert "user question" in handoff_entry["impact"]
+    assert "retrieved context" in handoff_entry["impact"]
+    assert "source chunks" in handoff_entry["impact"]
+    assert "embedding vectors" in handoff_entry["impact"]
+    assert "credentials" in handoff_entry["impact"]
+    assert "legal advice/client delivery claims" in handoff_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_retrieval_diagnostics_handoff_gate.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_retrieval_diagnostics_handoff_gate.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_index_post_commit_verification_gate.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_index_post_commit_verification_gate.py" in handoff_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in handoff_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in handoff_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in handoff_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in handoff_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_RETRIEVAL_DIAGNOSTICS_HANDOFF_GATE.md" in handoff_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in handoff_entry["evidence_paths"]
+    assert "legal-rag-embedding-retrieval-diagnostics-handoff-gate" in handoff_entry["release_gate_links"]
+    assert "legal-rag-embedding-index-post-commit-verification-gate" in handoff_entry["release_gate_links"]
+    assert "legal-rag-embedding-index-commit-review-packet" in handoff_entry["release_gate_links"]
+    assert "legal-rag-retrieval-diagnostics-gate" in handoff_entry["release_gate_links"]
+    assert "frontend-typecheck" in handoff_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in handoff_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_embedding_retrieval_diagnostics_handoff_gate.py "
+        "tests/test_legal_rag_embedding_index_post_commit_verification_gate.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"

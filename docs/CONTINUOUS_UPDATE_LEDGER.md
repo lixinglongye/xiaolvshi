@@ -128,6 +128,22 @@ query, raw retrieved context, raw legal text, source chunks, embedding vectors,
 prompts, model outputs, gateway payloads, credentials, emails, live pricing
 claims, or embedding/index/retrieval quality claims.
 
+Current Legal RAG embedding retrieval diagnostics handoff slice:
+`legal-rag-embedding-retrieval-diagnostics-handoff-gate` adds metadata-only
+handoff evidence through
+`LegalRagEmbeddingRetrievalDiagnosticsHandoffGateService` at
+`/api/v1/maintenance/legal-rag-embedding-retrieval-diagnostics-handoff-gate`.
+It converts post-commit verification rows into ready, hold, and blocked
+handoff rows with safe handoff payload fields, diagnostics-review-only
+actions, rollback review links, and production-retrieval false flags. It does
+not execute retrieval diagnostics, enable production retrieval, claim index or
+retrieval quality, execute embeddings, call NewAPI, Gemini, models, gateways,
+app AI endpoints, or the network; write indexes, databases, or commit records;
+collect committer identity; download datasets; or return source ids, raw
+query, user questions, retrieved context, raw legal text, source chunks,
+embedding vectors, prompts, model outputs, gateway payloads, credentials,
+emails, live pricing claims, legal advice, or client delivery claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

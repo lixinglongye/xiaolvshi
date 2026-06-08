@@ -5099,6 +5099,172 @@ export type LegalRagEmbeddingIndexPostCommitVerificationGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingRetrievalDiagnosticsHandoffGateRow = {
+  id: string;
+  source_type: string;
+  queue_order: number;
+  post_commit_verification_status: string;
+  post_commit_verification_action: string;
+  post_commit_status: string;
+  handoff_status: string;
+  handoff_action: string;
+  diagnostics_review_scope: string;
+  retrieval_diagnostics_review_allowed: boolean;
+  production_retrieval_allowed: boolean;
+  retrieval_query_allowed: boolean;
+  retrieved_context_allowed: boolean;
+  expected_index_entry_count: number;
+  observed_index_entry_count: number;
+  metadata_record_count: number;
+  retrieval_locator_count: number;
+  checksum_record_count: number;
+  failed_entry_count: number;
+  rollback_required: boolean;
+  rollback_action: string;
+  safe_handoff_payload_fields: string[];
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_query_returned: boolean;
+    retrieved_context_returned: boolean;
+    raw_legal_text_returned: boolean;
+    source_chunks_returned: boolean;
+    embedding_vectors_returned: boolean;
+    committer_identity_returned: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    production_retrieval_enabled: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingRetrievalDiagnosticsHandoffGate = {
+  id: 'legal-rag-embedding-retrieval-diagnostics-handoff-gate' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    handoff_row_count: number;
+    ready_handoff_count: number;
+    hold_handoff_count: number;
+    blocked_handoff_count: number;
+    diagnostics_review_ready_count: number;
+    rollback_review_required_count: number;
+    expected_index_entry_total: number;
+    observed_index_entry_total: number;
+    metadata_record_total: number;
+    retrieval_locator_total: number;
+    safe_handoff_payload_field_count: number;
+    handoff_payload_included: boolean;
+    query_payload_included: boolean;
+    retrieved_context_included: boolean;
+    production_retrieval_allowed_count: number;
+    production_retrieval_allowed_by_gate: boolean;
+    retrieval_diagnostics_review_only: boolean;
+    post_commit_verification_gate_status: string;
+    post_commit_verified_count: number;
+    post_commit_review_required_count: number;
+    post_commit_blocked_count: number;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    embeddings_created: boolean;
+    index_written: boolean;
+    database_written: boolean;
+    source_ids_returned: boolean;
+    raw_query_included: boolean;
+    retrieved_context_returned: boolean;
+    raw_legal_text_included: boolean;
+    source_chunks_included: boolean;
+    embedding_vectors_included: boolean;
+    credentials_included: boolean;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    [key: string]: unknown;
+  };
+  handoff_rows: LegalRagEmbeddingRetrievalDiagnosticsHandoffGateRow[];
+  handoff_status_counts: Record<string, number>;
+  handoff_action_counts: Record<string, number>;
+  ready_handoff_row_ids: string[];
+  hold_handoff_row_ids: string[];
+  blocked_handoff_row_ids: string[];
+  linked_gate_summary: Record<string, unknown>;
+  input_contract: {
+    accepted_container_keys: string[];
+    safe_handoff_payload_fields: string[];
+    forbidden_fields_ignored: string[];
+    source_id_echoed: boolean;
+    approval_item_id_echoed: boolean;
+    query_payload_collected: boolean;
+    retrieved_context_collected: boolean;
+    committer_identity_collected: boolean;
+    production_retrieval_enabled: boolean;
+    handoff_payload_materialized: boolean;
+    [key: string]: unknown;
+  };
+  handoff_policy: {
+    method: string;
+    requires_verified_post_commit_rows: boolean;
+    requires_no_post_commit_review_rows_for_global_ready: boolean;
+    requires_no_blocked_post_commit_rows: boolean;
+    allows_retrieval_diagnostics_review_only: boolean;
+    allows_production_retrieval: boolean;
+    allows_query_payload: boolean;
+    allows_retrieved_context_payload: boolean;
+    allows_source_id_payload: boolean;
+    allows_embedding_vector_payload: boolean;
+    model_call_allowed: boolean;
+    network_allowed: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    retrieval_diagnostics_executed_claimed: boolean;
+    production_retrieval_enabled_claimed: boolean;
+    index_quality_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    legal_advice_claimed: boolean;
+    automatic_client_delivery_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_approval_item_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    returns_committer_identity: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    creates_embeddings: boolean;
+    writes_index: boolean;
+    writes_database: boolean;
+    writes_commit_record: boolean;
+    enables_production_retrieval: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -5847,6 +6013,11 @@ type LegalRagEmbeddingIndexCommitReviewPacketResponse = {
 type LegalRagEmbeddingIndexPostCommitVerificationGateResponse = {
   success: boolean;
   data: LegalRagEmbeddingIndexPostCommitVerificationGate;
+};
+
+type LegalRagEmbeddingRetrievalDiagnosticsHandoffGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingRetrievalDiagnosticsHandoffGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -7423,6 +7594,25 @@ export async function evaluateLegalRagEmbeddingIndexPostCommitVerificationGate(
     data: payload,
   });
   return unwrapMaintenanceData<LegalRagEmbeddingIndexPostCommitVerificationGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate(): Promise<LegalRagEmbeddingRetrievalDiagnosticsHandoffGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-retrieval-diagnostics-handoff-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingRetrievalDiagnosticsHandoffGateResponse['data']>(resp);
+}
+
+export async function evaluateLegalRagEmbeddingRetrievalDiagnosticsHandoffGate(
+  payload: Record<string, unknown>,
+): Promise<LegalRagEmbeddingRetrievalDiagnosticsHandoffGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-retrieval-diagnostics-handoff-gate',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingRetrievalDiagnosticsHandoffGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(

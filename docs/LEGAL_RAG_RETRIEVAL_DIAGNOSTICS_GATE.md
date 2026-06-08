@@ -43,6 +43,12 @@ The retrieval diagnostics gate is a join layer over existing local metadata:
   boundaries.
 - `model-escalation-policy`: supplies cheap-first and premium-exception labels
   only. The diagnostics endpoint does not select or call a model.
+- `legal-rag-embedding-retrieval-diagnostics-handoff-gate`: supplies
+  metadata-only ready/hold/block handoff rows from post-commit index
+  verification. These handoff rows are references for diagnostics review only;
+  they do not enable production retrieval or include query text, retrieved
+  context, source ids, source chunks, vectors, committer identity, or
+  credentials.
 
 ## Cheap-First And Premium Exception Boundary
 

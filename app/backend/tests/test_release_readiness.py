@@ -1068,6 +1068,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-embedding-batch-observation-gate": "python -m pytest tests/test_legal_rag_embedding_batch_observation_gate.py tests/test_legal_rag_embedding_batch_approval_packet.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-index-commit-review-packet": "python -m pytest tests/test_legal_rag_embedding_index_commit_review_packet.py tests/test_legal_rag_embedding_batch_observation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-index-post-commit-verification-gate": "python -m pytest tests/test_legal_rag_embedding_index_post_commit_verification_gate.py tests/test_legal_rag_embedding_index_commit_review_packet.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-rag-embedding-retrieval-diagnostics-handoff-gate": "python -m pytest tests/test_legal_rag_embedding_retrieval_diagnostics_handoff_gate.py tests/test_legal_rag_embedding_index_post_commit_verification_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-benchmark-alignment": "python -m pytest tests/test_legal_rag_benchmark_alignment.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-retrieval-observation-gate": "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
@@ -2093,6 +2094,34 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-index-post-commit-verification-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-index-post-commit-verification-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_EMBEDDING_INDEX_POST_COMMIT_VERIFICATION_GATE.md" in checks["legal-rag-embedding-index-post-commit-verification-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG embedding retrieval diagnostics handoff gate evidence" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "safe handoff rows" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "ready/hold/block handoff statuses" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "safe handoff payload fields" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "rollback review links" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "retrieval-diagnostics-review-only actions" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "does not execute retrieval diagnostics" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "enable production retrieval" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "claim index or retrieval quality" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "execute embeddings" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "call NewAPI" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "write indexes or databases" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "write commit records" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "collect committer identity" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "raw query" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "user questions" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "retrieved context" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "source chunks" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "embedding vectors" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "credentials" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["manual_note"]
+    assert "app/backend/services/legal_rag_embedding_retrieval_diagnostics_handoff_gate.py" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_retrieval_diagnostics_handoff_gate.py" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_index_post_commit_verification_gate.py" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_retrieval_diagnostics_gate.py" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_RETRIEVAL_DIAGNOSTICS_HANDOFF_GATE.md" in checks["legal-rag-embedding-retrieval-diagnostics-handoff-gate"]["evidence_paths"]
     assert "metadata-only Legal RAG benchmark alignment evidence" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "LegalBench-RAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "CRAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
