@@ -52,6 +52,25 @@ def test_canonical_model_id_recognizes_gateway_prefixes():
     assert model_catalog.canonical_model_id("publishers/google/models/gemini-3-flash-preview") == "gemini-3-flash-preview"
     assert model_catalog.canonical_model_id("models/gemini-3.1-pro") == "gemini-3.1-pro"
     assert model_catalog.canonical_model_id("yibu/gemini-3.1-flash-image") == "gemini-3.1-flash-image"
+    assert (
+        model_catalog.canonical_model_id("models/gemini-2.5-flash-preview-tts:generateContent")
+        == "gemini-2.5-flash-preview-tts"
+    )
+    assert (
+        model_catalog.canonical_model_id("publishers/google/models/veo-3.1-generate-preview:predictLongRunning")
+        == "veo-3.1-generate-preview"
+    )
+    assert (
+        model_catalog.canonical_model_id("publishers/google/models/veo-3.1-fast-generate-preview:predictLongRunning")
+        == "veo-3.1-fast-generate-preview"
+    )
+    assert model_catalog.canonical_model_id("models/veo-3.1-lite-generate-preview:predict") == "veo-3.1-lite-generate-preview"
+    assert model_catalog.canonical_model_id("models/gemini-3.1-flash-tts-preview") == "gemini-3.1-flash-tts-preview"
+    assert (
+        model_catalog.canonical_model_id("google/gemini-2.5-flash-native-audio-preview-12-2025")
+        == "gemini-2.5-flash-native-audio-preview-12-2025"
+    )
+    assert model_catalog.canonical_model_id("google/gemini-3.1-flash-live-preview") == "gemini-3.1-flash-live-preview"
     assert model_catalog.canonical_model_id("models/gemini-embedding-001") == "gemini-embedding-001"
     assert model_catalog.canonical_model_id("google/gemini-embedding-2") == "gemini-embedding-2"
     assert model_catalog.canonical_model_id("provider-custom-model") is None
@@ -99,6 +118,25 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
     assert catalog["gemini-3.1-flash-image"]["pricing"]["output_usd_per_image"] == 0.067
     assert "image-edit" in catalog["gemini-3.1-flash-image"]["capabilities"]
+    assert catalog["veo-3.1-generate-preview"]["status"] == "preview"
+    assert "video-generation" in catalog["veo-3.1-generate-preview"]["capabilities"]
+    assert catalog["veo-3.1-fast-generate-preview"]["status"] == "preview"
+    assert catalog["veo-3.1-fast-generate-preview"]["pricing"]["input_usd_per_million_tokens"] is None
+    assert catalog["veo-3.1-lite-generate-preview"]["cost_tier"] == "medium"
+    assert "image-to-video" in catalog["veo-3.1-lite-generate-preview"]["capabilities"]
+    assert catalog["gemini-3.1-flash-tts-preview"]["status"] == "preview"
+    assert catalog["gemini-3.1-flash-tts-preview"]["pricing"]["output_usd_per_million_tokens"] == 20.00
+    assert "multispeaker" in catalog["gemini-3.1-flash-tts-preview"]["capabilities"]
+    assert catalog["gemini-2.5-flash-preview-tts"]["status"] == "preview"
+    assert catalog["gemini-2.5-flash-preview-tts"]["pricing"]["input_usd_per_million_tokens"] == 0.50
+    assert "tts" in catalog["gemini-2.5-flash-preview-tts"]["capabilities"]
+    assert catalog["gemini-2.5-pro-preview-tts"]["cost_tier"] == "premium"
+    assert "expressive-speech" in catalog["gemini-2.5-pro-preview-tts"]["capabilities"]
+    assert catalog["gemini-2.5-flash-native-audio-preview-12-2025"]["status"] == "preview"
+    assert "live" in catalog["gemini-2.5-flash-native-audio-preview-12-2025"]["capabilities"]
+    assert "transcription" in catalog["gemini-2.5-flash-native-audio-preview-12-2025"]["capabilities"]
+    assert catalog["gemini-3.1-flash-live-preview"]["status"] == "preview"
+    assert "dialogue" in catalog["gemini-3.1-flash-live-preview"]["capabilities"]
     assert catalog["gemini-embedding-001"]["cost_tier"] == "lowest"
     assert catalog["gemini-embedding-001"]["pricing"]["input_usd_per_million_tokens"] == 0.15
     assert "embedding" in catalog["gemini-embedding-001"]["capabilities"]
@@ -128,6 +166,11 @@ def test_estimate_token_cost_uses_catalog_pricing():
     assert model_catalog.estimate_token_cost_usd("newapi/google/gemini-3-flash-preview", 1_000_000, 500_000) == 2.0
     assert model_catalog.estimate_token_cost_usd("gemini-3.5-flash", 1_000_000, 500_000) is None
     assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) is None
+    assert model_catalog.estimate_token_cost_usd("models/gemini-2.5-flash-preview-tts", 1_000_000, 500_000) == 5.5
+    assert model_catalog.estimate_token_cost_usd("models/gemini-3.1-flash-tts-preview", 1_000_000, 500_000) == 11.0
+    assert model_catalog.estimate_token_cost_usd("gemini-3.1-flash-live-preview", 1_000_000, 500_000) == 6.75
+    assert model_catalog.estimate_token_cost_usd("veo-3.1-generate-preview", 1_000_000, 500_000) is None
+    assert model_catalog.estimate_token_cost_usd("veo-3.1-fast-generate-preview", 1_000_000, 500_000) is None
     assert model_catalog.estimate_token_cost_usd("gemini-embedding-001", 1_000_000, 0) == 0.15
     assert model_catalog.estimate_token_cost_usd("google/gemini-embedding-2", 1_000_000, 0) == 0.20
     assert model_catalog.estimate_token_cost_usd("gemini-2.5-flash-lite", -100, -100) == 0.0

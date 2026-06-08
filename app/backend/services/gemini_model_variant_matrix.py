@@ -34,7 +34,11 @@ class GeminiModelVariantMatrixService:
         model_rows = [self._model_row(item) for item in catalog_items]
         family_rows = self._family_rows(policy, model_rows)
         high_frequency_allowed = [row for row in model_rows if row["high_frequency_default_allowed"]]
-        explicit_only_rows = [row for row in model_rows if row["route_role"] in {"balanced_retry", "premium_exception", "media_explicit"}]
+        explicit_only_rows = [
+            row
+            for row in model_rows
+            if row["route_role"] in {"balanced_retry", "premium_exception", "media_explicit"}
+        ]
         preview_rows = [row for row in model_rows if row["catalog_status"] == "preview"]
         unpriced_rows = [row for row in model_rows if row["pricing_status"] == "unpriced"]
         observed_reviews = selector["observed_model_reviews"]
@@ -154,6 +158,14 @@ class GeminiModelVariantMatrixService:
         return extract_observed_model_ids(value)
 
     def _family_label(self, model_id: str) -> str:
+        if model_id.startswith("veo-") or "video" in model_id:
+            return "veo-video"
+        if "tts" in model_id:
+            return "gemini-tts"
+        if "live" in model_id or "native-audio" in model_id:
+            return "gemini-live-audio"
+        if "embedding" in model_id:
+            return "gemini-embedding"
         if "flash-lite" in model_id:
             return "gemini-flash-lite"
         if "flash" in model_id and "image" not in model_id:
@@ -168,7 +180,17 @@ class GeminiModelVariantMatrixService:
         model_id = str(item["id"])
         status = str(item.get("status") or "")
         cost_tier = str(item.get("cost_tier") or "")
-        if "image" in capabilities and "text" not in capabilities:
+        media_capabilities = {
+            "image",
+            "video",
+            "video-generation",
+            "audio",
+            "audio-generation",
+            "tts",
+            "live",
+            "transcription",
+        }
+        if media_capabilities.intersection(capabilities):
             return "media_explicit"
         if "flash-lite" in model_id and cost_tier in {"lowest", "low"} and status == "stable":
             return "cheap_first_default"

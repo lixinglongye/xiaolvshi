@@ -2344,6 +2344,54 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
+                id="gemini-media-speech-review-catalog",
+                title="Gemini media and speech review catalog",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds source-anchored review-only catalog coverage for Veo 3.1 video, Gemini TTS, "
+                    "and Gemini Live/native-audio candidates so OpenAI-compatible NewAPI/Gemini gateway "
+                    "model ids can be recognized, canonicalized, budget-reviewed, shown in the official "
+                    "family roadmap, and kept out of high-frequency defaults until lifecycle, pricing, "
+                    "voice, duration, route-shape, and gateway support pass review. Current APP_AI_VIDEO_MODEL, "
+                    "APP_AI_AUDIO_MODEL, and APP_AI_TRANSCRIPTION_MODEL defaults remain unchanged, audio/video "
+                    "candidate pricing stays explicit-review only, and no NewAPI/Gemini/OpenAI/Google/gateway/"
+                    "app-AI/model/network calls, configuration writes, default changes, traffic shifts, headers, "
+                    "request bodies, response bodies, prompts, raw payloads, audio, transcripts, legal text, "
+                    "model outputs, gateway responses, credentials, emails, or user identifiers are returned."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_catalog.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/aihub.py",
+                    "app/backend/services/model_ops_aihub_media_speech_default_catalog_gate.py",
+                    "app/backend/services/model_ops_gemini_official_model_family_roadmap.py",
+                    "app/backend/services/gemini_model_variant_matrix.py",
+                    "app/backend/tests/test_model_catalog.py",
+                    "app/backend/tests/test_model_default_candidate_selector.py",
+                    "app/backend/tests/test_model_runtime_router.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "app/backend/tests/test_model_ops_aihub_media_speech_default_catalog_gate.py",
+                    "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py",
+                    "app/backend/tests/test_gemini_model_variant_matrix.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "gemini-media-speech-review-catalog",
+                    "modelops-aihub-media-speech-default-catalog-gate",
+                    "modelops-gemini-official-model-family-roadmap-evidence",
+                    "gemini-variant-matrix",
+                    "model-runtime-router",
+                    "model-ops-readiness",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="modelops-gemini-embedding-cheap-first-preflight",
                 title="ModelOps Gemini embedding cheap-first preflight",
                 category="model_ops",

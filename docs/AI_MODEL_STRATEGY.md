@@ -536,6 +536,21 @@ default release actions, and review items. Non-catalog and future-route defaults
 remain explicit-review only until pricing, lifecycle, gateway behavior, and
 route policy evidence is attached.
 
+`gemini-media-speech-review-catalog` extends the local review catalog with
+source-anchored Gemini/Veo media ids while preserving the current production
+defaults. The recognized review-only candidates include
+`veo-3.1-lite-generate-preview`, `veo-3.1-fast-generate-preview`,
+`veo-3.1-generate-preview`, `gemini-2.5-flash-preview-tts`,
+`gemini-3.1-flash-tts-preview`, `gemini-2.5-pro-preview-tts`,
+`gemini-3.1-flash-live-preview`, and
+`gemini-2.5-flash-native-audio-preview-12-2025`. These models can now be
+canonicalized, shown in the official family roadmap, and classified by the
+variant matrix as explicit media/speech review candidates, but they do not
+replace `APP_AI_VIDEO_MODEL`, `APP_AI_AUDIO_MODEL`, or
+`APP_AI_TRANSCRIPTION_MODEL`. Audio and video candidate pricing remains
+explicit-review only until per-second, voice, duration, gateway route-shape, and
+safety budget controls are implemented.
+
 This gate does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
 endpoints, models, or the network. It does not write configuration, change
 defaults, shift traffic, or include request/response bodies, headers, prompts,

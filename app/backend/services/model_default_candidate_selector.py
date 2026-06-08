@@ -57,6 +57,19 @@ TASK_ALIASES = {
     "image-edit": "image",
     "genimg": "image",
     "visual": "image",
+    "genvideo": "video",
+    "visual-video": "video",
+    "image-to-video": "video",
+    "text-to-video": "video",
+    "tts": "audio",
+    "speech": "audio",
+    "speech-generation": "audio",
+    "live-audio": "audio",
+    "realtime-audio": "audio",
+    "transcribe": "transcription",
+    "speech-to-text": "transcription",
+    "stt": "transcription",
+    "audio-understanding": "transcription",
     "embeddings": "embedding",
     "text-embedding": "embedding",
     "rag-index": "embedding",
@@ -155,6 +168,36 @@ TASK_POLICIES: dict[str, TaskCandidatePolicy] = {
         route_mode="media_explicit",
         high_frequency=False,
         price_mode="image",
+    ),
+    "video": TaskCandidatePolicy(
+        task="video",
+        required_capabilities=("video-generation",),
+        preferred_capabilities=("image-to-video", "text-to-video"),
+        max_default_cost_tier="low",
+        fallback_model="wan2.6-t2v",
+        route_mode="explicit_video_review",
+        high_frequency=False,
+        price_mode="video",
+    ),
+    "audio": TaskCandidatePolicy(
+        task="audio",
+        required_capabilities=("audio", "tts"),
+        preferred_capabilities=("audio-generation",),
+        max_default_cost_tier="low",
+        fallback_model="qwen3-tts-flash",
+        route_mode="explicit_speech_review",
+        high_frequency=False,
+        price_mode="audio",
+    ),
+    "transcription": TaskCandidatePolicy(
+        task="transcription",
+        required_capabilities=("audio", "transcription"),
+        preferred_capabilities=("live", "translation"),
+        max_default_cost_tier="low",
+        fallback_model="scribe_v2",
+        route_mode="explicit_transcription_review",
+        high_frequency=False,
+        price_mode="audio",
     ),
     "embedding": TaskCandidatePolicy(
         task="embedding",
@@ -357,6 +400,8 @@ class ModelDefaultCandidateSelectorService:
             return "operator-approved exception only"
         if policy.price_mode == "image":
             return "media default candidate" if len(policy.required_capabilities) == 1 else "media route candidate"
+        if policy.price_mode in {"audio", "video"}:
+            return "media route candidate"
         if candidate["cost_tier"] in {"lowest", "low"}:
             return "cheap-first default candidate"
         return "operator-approved exception only"
@@ -392,6 +437,8 @@ def _task_family_allowed(profile: ModelProfile, policy: TaskCandidatePolicy) -> 
 def _pricing_status(profile: ModelProfile, price_mode: str) -> str:
     if price_mode == "image":
         return "image_priced" if profile.output_usd_per_image is not None else "missing"
+    if price_mode in {"audio", "video"}:
+        return "missing"
     if price_mode == "embedding":
         return "token_priced" if profile.input_usd_per_million_tokens is not None else "missing"
     if profile.input_usd_per_million_tokens is not None and profile.output_usd_per_million_tokens is not None:
@@ -404,6 +451,8 @@ def _pricing_status(profile: ModelProfile, price_mode: str) -> str:
 def _price_value(profile: ModelProfile, price_mode: str) -> float:
     if price_mode == "image":
         return profile.output_usd_per_image if profile.output_usd_per_image is not None else TEXT_PRICE_MISSING_PENALTY
+    if price_mode in {"audio", "video"}:
+        return TEXT_PRICE_MISSING_PENALTY
     if price_mode == "embedding":
         return profile.input_usd_per_million_tokens if profile.input_usd_per_million_tokens is not None else TEXT_PRICE_MISSING_PENALTY
     if profile.input_usd_per_million_tokens is None or profile.output_usd_per_million_tokens is None:

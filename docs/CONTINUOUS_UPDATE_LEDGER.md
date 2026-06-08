@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current Gemini media/speech review catalog slice:
+`gemini-media-speech-review-catalog` adds review-only catalog coverage for Veo
+3.1 video, Gemini TTS, and Gemini Live/native-audio candidates. It lets
+OpenAI-compatible NewAPI/Gemini gateway model ids canonicalize into known
+review rows, appear in the official family roadmap and Gemini variant matrix,
+and remain blocked from high-frequency defaults until lifecycle, pricing, voice,
+duration, route-shape, and gateway support are reviewed. Current
+`APP_AI_VIDEO_MODEL`, `APP_AI_AUDIO_MODEL`, and `APP_AI_TRANSCRIPTION_MODEL`
+defaults remain unchanged, and audio/video candidate pricing stays
+explicit-review only. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, models, or the network; write configuration; change defaults;
+shift traffic; or return headers, request bodies, response bodies, prompts, raw
+payloads, audio, transcripts, raw legal text, model outputs, gateway responses,
+credentials, emails, or user identifiers.
+
 Current Settings AI provider status slice:
 `settings-ai-provider-status-card` adds a read-only Settings page status card
 for OpenAI-compatible Gemini/NewAPI gateway readiness. It uses the existing

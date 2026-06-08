@@ -20,10 +20,10 @@ def test_gemini_official_model_family_roadmap_tracks_coverage_and_gaps():
 
     assert roadmap["id"] == "modelops-gemini-official-model-family-roadmap-evidence"
     assert roadmap["status"] == "review_required"
-    assert roadmap["summary"]["official_family_count"] == 6
+    assert roadmap["summary"]["official_family_count"] == 7
     assert roadmap["summary"]["covered_family_count"] == 1
-    assert roadmap["summary"]["review_family_count"] == 2
-    assert roadmap["summary"]["gap_family_count"] == 3
+    assert roadmap["summary"]["review_family_count"] == 5
+    assert roadmap["summary"]["gap_family_count"] == 1
     assert roadmap["summary"]["cheap_first_candidate_count"] == 6
     assert roadmap["blocking_check_ids"] == []
     assert "official-family-gap-queue" in roadmap["warning_check_ids"]
@@ -34,9 +34,13 @@ def test_gemini_official_model_family_roadmap_tracks_coverage_and_gaps():
     assert family_rows["gemini-2.5-text"]["high_frequency_default_allowed"] is True
     assert family_rows["gemini-3-text"]["coverage_status"] == "review_required"
     assert family_rows["gemini-image"]["route_policy"] == "explicit_media_route_only"
-    assert family_rows["gemini-live-audio"]["coverage_status"] == "gap"
+    assert family_rows["gemini-live-audio"]["coverage_status"] == "review_required"
+    assert family_rows["gemini-live-audio"]["catalog_model_count"] == 2
+    assert family_rows["veo-video"]["coverage_status"] == "review_required"
+    assert family_rows["veo-video"]["catalog_model_count"] == 3
     assert family_rows["gemini-embedding"]["coverage_status"] == "gap"
-    assert family_rows["gemini-tts"]["coverage_status"] == "gap"
+    assert family_rows["gemini-tts"]["coverage_status"] == "review_required"
+    assert family_rows["gemini-tts"]["catalog_model_count"] == 3
 
     for task in ("cheap", "fast", "classification", "ocr", "agentic", "grounded-research"):
         assert cheap_first_rows[task]["cheap_first_allowed"] is True
@@ -76,7 +80,7 @@ def test_gemini_official_model_family_roadmap_route_and_models_payload_include_s
     response = client.get("/api/v1/aihub/models/gemini-official-model-family-roadmap-evidence")
     assert response.status_code == 200
     payload = response.json()["data"]
-    assert payload["summary"]["official_family_count"] == 6
+    assert payload["summary"]["official_family_count"] == 7
     assert payload["summary"]["network_called"] is False
 
     models_response = client.get("/api/v1/aihub/models")

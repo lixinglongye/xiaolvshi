@@ -55,6 +55,22 @@ def test_default_candidate_selector_preserves_current_low_cost_defaults():
         "gemini-2.5-flash-image",
         "gemini-3.1-flash-image",
     ]
+    assert selector.recommended_model_for_task("audio") == "qwen3-tts-flash"
+    assert selector.recommended_model_for_task("video") == "wan2.6-t2v"
+    assert selector.recommended_model_for_task("transcription") == "scribe_v2"
+    audio_ladder = selector.default_ladder_for_task("tts", limit=3)
+    assert audio_ladder[0]["model"] == "gemini-2.5-flash-preview-tts"
+    assert audio_ladder[0]["candidate_stage"] == "review_only"
+    assert audio_ladder[0]["review_required"] is True
+    assert "lifecycle:preview" in audio_ladder[0]["promotion_blockers"]
+    assert "pricing:missing" in audio_ladder[0]["promotion_blockers"]
+    video_ladder = selector.default_ladder_for_task("image-to-video", limit=2)
+    assert video_ladder[0]["model"] == "veo-3.1-lite-generate-preview"
+    assert video_ladder[0]["pricing_status"] == "missing"
+    assert "pricing:missing" in video_ladder[0]["promotion_blockers"]
+    transcription_ladder = selector.default_ladder_for_task("speech-to-text", limit=2)
+    assert transcription_ladder[0]["model"] == "gemini-2.5-flash-native-audio-preview-12-2025"
+    assert "lifecycle:preview" in transcription_ladder[0]["promotion_blockers"]
     assert selector.build_selector()["privacy_boundary"]["gateway_called"] is False
 
 

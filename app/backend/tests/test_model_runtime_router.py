@@ -135,6 +135,27 @@ def test_runtime_router_uses_media_and_speech_defaults_as_non_explicit_requests(
     assert transcription.routed_to_recommended_model is False
 
 
+def test_runtime_router_treats_gemini_tts_as_known_preview_review_model():
+    route = resolve_runtime_model("models/gemini-2.5-flash-preview-tts", task="tts")
+
+    assert route.task == "audio"
+    assert route.requested_canonical_model == "gemini-2.5-flash-preview-tts"
+    assert route.requested_model_status == "preview"
+    assert route.requested_cost_tier == "medium"
+    assert route.resolved_model == "qwen3-tts-flash"
+    assert route.requires_operator_review is True
+    assert route.routed_to_recommended_model is True
+    assert route.explicit_model_fit_status == "enforced"
+    assert "lifecycle_preview" in route.reason_codes
+    assert "non_stable_model_routed_to_recommended" in route.reason_codes
+
+    allowed = resolve_runtime_model("models/gemini-2.5-flash-preview-tts", task="tts", allow_over_budget_model=True)
+    assert allowed.resolved_model == "models/gemini-2.5-flash-preview-tts"
+    assert allowed.explicit_model_fit_status == "allowed_review_exception"
+    assert "explicit_non_stable_model_allowed" in allowed.reason_codes
+    assert "sk-" not in str(allowed.to_api())
+
+
 def test_runtime_router_uses_specialized_low_cost_defaults():
     agentic = resolve_runtime_model(None, task="workflow-planning")
     grounded = resolve_runtime_model(None, task="rag-research")

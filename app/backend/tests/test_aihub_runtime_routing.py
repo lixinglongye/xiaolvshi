@@ -350,6 +350,11 @@ async def test_gentxt_blocks_media_tasks_from_media_defaults(requested_task, nor
     assert "Generate text only." not in str(repository)
 
 
+def test_gemini_flash_tts_voice_mapping_accepts_gateway_prefixes():
+    assert AIHubService._get_voice("gemini-2.5-flash-preview-tts", "male") == "Puck"
+    assert AIHubService._get_voice("models/gemini-2.5-flash-preview-tts", "female") == "Zephyr"
+
+
 @pytest.mark.asyncio
 async def test_gentxt_stream_events_emit_sanitized_route_metadata_before_content():
     model_usage_registry.reset()

@@ -31,6 +31,14 @@ def test_gemini_model_variant_matrix_marks_cheap_first_and_exception_roles():
     assert rows["gemini-3.1-pro-preview"]["catalog_status"] == "preview"
     assert rows["gemini-3.1-pro-preview"]["route_role"] == "premium_exception"
     assert rows["gemini-2.5-flash-image"]["media_route_only"] is True
+    assert rows["gemini-2.5-flash-preview-tts"]["family"] == "gemini-tts"
+    assert rows["gemini-2.5-flash-preview-tts"]["route_role"] == "media_explicit"
+    assert rows["gemini-2.5-flash-preview-tts"]["high_frequency_default_allowed"] is False
+    assert rows["gemini-3.1-flash-live-preview"]["family"] == "gemini-live-audio"
+    assert rows["gemini-3.1-flash-live-preview"]["media_route_only"] is True
+    assert rows["veo-3.1-lite-generate-preview"]["family"] == "veo-video"
+    assert rows["veo-3.1-lite-generate-preview"]["pricing_status"] == "unpriced"
+    assert rows["veo-3.1-lite-generate-preview"]["high_frequency_default_allowed"] is False
     assert rows["gemini-2.5-flash-lite"]["supported_request_shapes"] == [
         "gemini-2.5-flash-lite",
         "models/gemini-2.5-flash-lite",

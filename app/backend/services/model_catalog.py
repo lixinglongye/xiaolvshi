@@ -189,6 +189,156 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         status="preview",
     ),
     ModelProfile(
+        id="veo-3.1-generate-preview",
+        provider="google",
+        family="veo",
+        cost_tier="premium",
+        latency_tier="slower",
+        capabilities=("video", "video-generation", "text-to-video", "image-to-video", "audio"),
+        best_for=("video-generation", "evidence-video-draft", "image-to-video"),
+        notes=(
+            "Veo video candidate exposed by Gemini API. Keep review-only until duration, "
+            "resolution, safety, and gateway billing units are verified."
+        ),
+        status="preview",
+        pricing_note=(
+            "Video generation pricing is unit-based and gateway-specific in practice; keep missing in "
+            "the token catalog until a video unit budget is implemented."
+        ),
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/video",
+    ),
+    ModelProfile(
+        id="veo-3.1-fast-generate-preview",
+        provider="google",
+        family="veo",
+        cost_tier="premium",
+        latency_tier="medium",
+        capabilities=("video", "video-generation", "text-to-video", "image-to-video", "audio"),
+        best_for=("fast-video-generation", "evidence-video-draft", "image-to-video"),
+        notes=(
+            "Faster Veo 3.1 preview candidate. Keep review-only until duration, resolution, "
+            "safety, and gateway billing units are verified."
+        ),
+        status="preview",
+        pricing_note=(
+            "Veo 3.1 Fast is priced per video second and resolution; the text-token catalog keeps "
+            "this unpriced until per-unit budgets are modeled."
+        ),
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/pricing",
+    ),
+    ModelProfile(
+        id="veo-3.1-lite-generate-preview",
+        provider="google",
+        family="veo",
+        cost_tier="medium",
+        latency_tier="medium",
+        capabilities=("video", "video-generation", "text-to-video", "image-to-video", "audio"),
+        best_for=("low-cost-video-draft", "evidence-video-draft", "image-to-video"),
+        notes=(
+            "Lowest-cost Veo 3.1 preview candidate by per-second pricing. Keep review-only "
+            "until media duration budgets and gateway support are verified."
+        ),
+        status="preview",
+        pricing_note=(
+            "Veo 3.1 Lite is priced per video second and resolution; the text-token catalog keeps "
+            "this unpriced until per-unit budgets are modeled."
+        ),
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/pricing",
+    ),
+    ModelProfile(
+        id="gemini-3.1-flash-tts-preview",
+        provider="google",
+        family="gemini-tts",
+        cost_tier="medium",
+        latency_tier="fast",
+        capabilities=("audio", "tts", "audio-generation", "text", "multispeaker"),
+        best_for=("speech-generation", "low-latency-tts", "multi-speaker-audio-draft"),
+        notes=(
+            "Gemini 3.1 Flash TTS candidate. It is price-performant for TTS but remains "
+            "preview and therefore explicit-review only."
+        ),
+        input_usd_per_million_tokens=1.00,
+        output_usd_per_million_tokens=20.00,
+        status="preview",
+        pricing_note="Gemini API paid-tier TTS token pricing. Audio tokens correspond to generated audio duration.",
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/pricing",
+    ),
+    ModelProfile(
+        id="gemini-2.5-flash-preview-tts",
+        provider="google",
+        family="gemini-tts",
+        cost_tier="medium",
+        latency_tier="fast",
+        capabilities=("audio", "tts", "audio-generation", "text"),
+        best_for=("speech-generation", "low-latency-tts", "audio-draft"),
+        notes=(
+            "Gemini Flash TTS candidate. It is known to the local catalog for explicit review, "
+            "but preview lifecycle keeps it out of automatic defaults."
+        ),
+        input_usd_per_million_tokens=0.50,
+        output_usd_per_million_tokens=10.00,
+        status="preview",
+        pricing_note="Gemini API paid-tier TTS token pricing. Gateway billing and voice support may differ.",
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/speech-generation",
+    ),
+    ModelProfile(
+        id="gemini-2.5-pro-preview-tts",
+        provider="google",
+        family="gemini-tts",
+        cost_tier="premium",
+        latency_tier="slower",
+        capabilities=("audio", "tts", "audio-generation", "text", "expressive-speech"),
+        best_for=("high-quality-speech-generation", "lawyer-review-audio-draft"),
+        notes="Gemini Pro TTS candidate; explicit media review only because it is preview and premium.",
+        input_usd_per_million_tokens=1.00,
+        output_usd_per_million_tokens=20.00,
+        status="preview",
+        pricing_note="Gemini API paid-tier TTS token pricing. Gateway billing and voice support may differ.",
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/speech-generation",
+    ),
+    ModelProfile(
+        id="gemini-3.1-flash-live-preview",
+        provider="google",
+        family="gemini-live",
+        cost_tier="medium",
+        latency_tier="fast",
+        capabilities=("audio", "live", "transcription", "translation", "text", "multimodal", "dialogue"),
+        best_for=("live-audio", "realtime-dialogue", "audio-understanding"),
+        notes=(
+            "Gemini 3.1 Flash Live candidate. Keep future-route/review-only until the app has "
+            "a Live session route and duration-based budget controls."
+        ),
+        input_usd_per_million_tokens=0.75,
+        output_usd_per_million_tokens=12.00,
+        status="preview",
+        pricing_note=(
+            "Live/native-audio pricing is modality and duration sensitive; token fields are retained "
+            "only for coarse review sorting."
+        ),
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/pricing",
+    ),
+    ModelProfile(
+        id="gemini-2.5-flash-native-audio-preview-12-2025",
+        provider="google",
+        family="gemini-live",
+        cost_tier="medium",
+        latency_tier="fast",
+        capabilities=("audio", "live", "transcription", "translation", "text", "multimodal"),
+        best_for=("live-audio", "speech-to-text-review", "audio-understanding"),
+        notes=(
+            "Native audio Live candidate. Keep future-route/review-only until the app has a "
+            "Live session route and duration-based budget controls."
+        ),
+        input_usd_per_million_tokens=0.50,
+        output_usd_per_million_tokens=12.00,
+        status="preview",
+        pricing_note=(
+            "Live/native-audio pricing is modality and duration sensitive; token fields are retained "
+            "only for coarse review sorting."
+        ),
+        pricing_source_url="https://ai.google.dev/gemini-api/docs/live-guide",
+    ),
+    ModelProfile(
         id="gemini-embedding-001",
         provider="google",
         family="gemini-embedding",
@@ -238,7 +388,16 @@ def canonical_model_id(model_id: str | None) -> str | None:
     if value.endswith("/generatecontent"):
         value = value[: -len("/generatecontent")]
     catalog = _catalog_by_id()
-    suffixes = (":generatecontent", ":streamgeneratecontent", "@latest", "@stable")
+    suffixes = (
+        ":generatecontent",
+        ":streamgeneratecontent",
+        ":predictlongrunning",
+        ":predict",
+        ":generatevideo",
+        ":generatevideos",
+        "@latest",
+        "@stable",
+    )
     while True:
         for suffix in suffixes:
             if value.endswith(suffix):

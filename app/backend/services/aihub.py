@@ -34,6 +34,7 @@ from schemas.aihub import (
     TranscribeAudioResponse,
 )
 from services.model_gateway_connection_profile import normalize_openai_compatible_base_url
+from services.model_catalog import canonical_model_id
 from services.model_request_policy import resolve_generation_request_policy
 from services.model_reasoning_policy import resolve_reasoning_effort
 from services.model_route_telemetry import model_route_telemetry_registry
@@ -81,6 +82,9 @@ VOICE_MAP: dict[tuple[str, str], str] = {
     # qwen3-tts-flash
     ("qwen3-tts-flash", "male"): "Ethan",
     ("qwen3-tts-flash", "female"): "Cherry",
+    # gemini-2.5-flash-preview-tts
+    ("gemini-2.5-flash-preview-tts", "male"): "Puck",
+    ("gemini-2.5-flash-preview-tts", "female"): "Zephyr",
     # gemini-2.5-pro-preview-tts
     ("gemini-2.5-pro-preview-tts", "male"): "Puck",
     ("gemini-2.5-pro-preview-tts", "female"): "Zephyr",
@@ -1154,7 +1158,8 @@ User instruction:
     @staticmethod
     def _get_voice(model: str, gender: str) -> str:
         """Get voice based on model and gender from mapping table."""
-        voice = VOICE_MAP.get((model, gender))
+        canonical_model = canonical_model_id(model) or model
+        voice = VOICE_MAP.get((canonical_model, gender)) or VOICE_MAP.get((model, gender))
         if voice:
             return voice
         return DEFAULT_VOICE.get(gender, "alloy")

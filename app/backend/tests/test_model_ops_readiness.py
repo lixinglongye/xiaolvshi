@@ -213,7 +213,7 @@ def test_model_ops_readiness_warns_on_gemini_official_family_roadmap_review():
     signals = _signals("pass")
     signals["gemini_official_model_family_roadmap_evidence"] = {
         "status": "review_required",
-        "summary": {"warn_count": 2, "fail_count": 0, "gap_family_count": 3},
+        "summary": {"warn_count": 2, "fail_count": 0, "gap_family_count": 1},
         "blocking_check_ids": [],
         "warning_check_ids": ["official-family-gap-queue", "preview-and-review-family-boundary"],
     }
@@ -594,7 +594,7 @@ def test_model_ops_route_includes_readiness():
     assert payload["gentxt_routing_guard"]["summary"]["gateway_called"] is False
     assert payload["gemini_variant_matrix"]["summary"]["catalog_model_count"] >= 8
     assert payload["catalog_source_audit"]["summary"]["source_reference_count"] == 2
-    assert payload["gemini_official_model_family_roadmap_evidence"]["summary"]["official_family_count"] == 6
+    assert payload["gemini_official_model_family_roadmap_evidence"]["summary"]["official_family_count"] == 7
     assert payload["gemini_official_model_family_roadmap_evidence"]["summary"]["gateway_called"] is False
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"

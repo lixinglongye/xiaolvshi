@@ -27,6 +27,8 @@ def test_media_speech_default_catalog_gate_tracks_current_defaults_and_future_ga
     assert gate["summary"]["missing_catalog_default_count"] == 3
     assert gate["summary"]["review_required_default_count"] == 3
     assert gate["summary"]["future_family_gap_count"] == 2
+    assert gate["summary"]["official_candidate_count"] == 13
+    assert gate["summary"]["candidate_catalog_known_count"] == 13
     assert gate["summary"]["gateway_called"] is False
     assert gate["summary"]["network_called"] is False
     assert gate["summary"]["configuration_written"] is False
@@ -50,12 +52,16 @@ def test_media_speech_default_catalog_gate_tracks_current_defaults_and_future_ga
     assert rows["video"]["default_release_action"] == "catalog_review_required"
     assert rows["video"]["budget_mode"] == "explicit-video-media"
     assert rows["video"]["endpoint_ids"] == ["aihub-genvideo"]
+    assert rows["video"]["official_candidate_catalog_known_count"] == 3
+    assert "veo-3.1-lite-generate-preview" in rows["video"]["official_candidate_catalog_models"]
     assert "model_not_in_local_catalog" in rows["video"]["endpoint_gap_codes"]
 
     assert rows["audio"]["default_model"] == "qwen3-tts-flash"
     assert rows["audio"]["default_catalog_status"] == "missing"
     assert rows["audio"]["budget_mode"] == "explicit-speech-media"
     assert rows["audio"]["endpoint_ids"] == ["aihub-genaudio"]
+    assert rows["audio"]["official_candidate_catalog_known_count"] == 3
+    assert "gemini-3.1-flash-tts-preview" in rows["audio"]["official_candidate_catalog_models"]
 
     assert rows["transcription"]["default_model"] == "scribe_v2"
     assert rows["transcription"]["default_catalog_status"] == "missing"
@@ -65,6 +71,8 @@ def test_media_speech_default_catalog_gate_tracks_current_defaults_and_future_ga
     assert rows["live-audio"]["default_model"] is None
     assert rows["live-audio"]["default_release_action"] == "future_route_gap"
     assert rows["live-audio"]["budget_mode"] == "future-route"
+    assert rows["live-audio"]["official_candidate_catalog_known_count"] == 2
+    assert "gemini-3.1-flash-live-preview" in rows["live-audio"]["official_candidate_catalog_models"]
     assert rows["embedding"]["default_model"] is None
     assert rows["embedding"]["default_release_action"] == "future_route_gap"
     assert rows["embedding"]["budget_mode"] == "future-route"

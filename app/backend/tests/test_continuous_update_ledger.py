@@ -323,6 +323,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
     assert "modelops-aihub-media-speech-default-catalog-gate" in completed_ids
+    assert "gemini-media-speech-review-catalog" in completed_ids
     assert "modelops-gemini-embedding-cheap-first-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
     assert "model-gateway-runtime-configuration" in completed_ids
@@ -1413,6 +1414,37 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    media_speech_review_catalog_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "gemini-media-speech-review-catalog"
+    )
+    assert media_speech_review_catalog_entry["category"] == "model_ops"
+    assert media_speech_review_catalog_entry["size"] == "medium"
+    assert media_speech_review_catalog_entry["status"] == "shipped"
+    assert "Veo 3.1 video" in media_speech_review_catalog_entry["impact"]
+    assert "Gemini TTS" in media_speech_review_catalog_entry["impact"]
+    assert "Gemini Live/native-audio" in media_speech_review_catalog_entry["impact"]
+    assert "kept out of high-frequency defaults" in media_speech_review_catalog_entry["impact"]
+    assert "Current APP_AI_VIDEO_MODEL" in media_speech_review_catalog_entry["impact"]
+    assert "APP_AI_AUDIO_MODEL" in media_speech_review_catalog_entry["impact"]
+    assert "APP_AI_TRANSCRIPTION_MODEL defaults remain unchanged" in media_speech_review_catalog_entry["impact"]
+    assert "audio/video candidate pricing stays explicit-review only" in media_speech_review_catalog_entry["impact"]
+    assert "default changes" in media_speech_review_catalog_entry["impact"]
+    assert "credentials" in media_speech_review_catalog_entry["impact"]
+    assert "app/backend/services/model_catalog.py" in media_speech_review_catalog_entry["evidence_paths"]
+    assert "app/backend/services/model_default_candidate_selector.py" in media_speech_review_catalog_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_official_model_family_roadmap.py" in media_speech_review_catalog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/gemini_model_variant_matrix.py" in media_speech_review_catalog_entry["evidence_paths"]
+    assert "app/backend/tests/test_gemini_model_variant_matrix.py" in media_speech_review_catalog_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in media_speech_review_catalog_entry["evidence_paths"]
+    assert "gemini-media-speech-review-catalog" in media_speech_review_catalog_entry["release_gate_links"]
+    assert "modelops-aihub-media-speech-default-catalog-gate" in media_speech_review_catalog_entry[
+        "release_gate_links"
+    ]
+    assert "gemini-variant-matrix" in media_speech_review_catalog_entry["release_gate_links"]
     gemini_embedding_preflight_entry = next(
         entry
         for entry in ledger["completed_updates"]
