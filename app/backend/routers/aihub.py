@@ -33,6 +33,8 @@ from services.aihub import (
 )
 from services.gemini_newapi_alias_capability_coverage import GeminiNewapiAliasCapabilityCoverageService
 from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
+from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
+from services.gemini_newapi_selector_replay import GeminiNewapiSelectorReplayService
 from services.gemini_model_variant_matrix import GeminiModelVariantMatrixService
 from services.model_capability_matrix import ModelCapabilityMatrixService
 from services.model_budget import budget_policy_for_api
@@ -338,6 +340,10 @@ async def list_models():
     gemini_newapi_alias_capability_coverage = GeminiNewapiAliasCapabilityCoverageService().build_coverage(
         {"observed_models": observed_gateway_models}
     )
+    gemini_newapi_model_selector = GeminiNewapiModelSelectorService().build_selector(
+        {"observed_models": observed_gateway_models}
+    )
+    gemini_newapi_selector_replay = GeminiNewapiSelectorReplayService().run_replay()
     catalog_candidate_patch_plan = ModelCatalogCandidatePatchPlanService().build_plan(
         signals={
             "gateway_probe_evaluation": gateway_probe_evaluation,
@@ -435,6 +441,8 @@ async def list_models():
         "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
         "runtime_explicit_model_fit_gate": runtime_explicit_model_fit_gate,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
+        "gemini_newapi_model_selector": gemini_newapi_model_selector,
+        "gemini_newapi_selector_replay": gemini_newapi_selector_replay,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
@@ -541,6 +549,8 @@ async def list_models():
         "observed_gateway_model_fit_matrix": observed_gateway_model_fit_matrix,
         "runtime_explicit_model_fit_gate": runtime_explicit_model_fit_gate,
         "gemini_newapi_alias_capability_coverage": gemini_newapi_alias_capability_coverage,
+        "gemini_newapi_model_selector": gemini_newapi_model_selector,
+        "gemini_newapi_selector_replay": gemini_newapi_selector_replay,
         "catalog_candidate_patch_plan": catalog_candidate_patch_plan,
         "catalog_candidate_impact_replay": catalog_candidate_impact_replay,
         "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
@@ -680,6 +690,44 @@ async def evaluate_gemini_newapi_alias_capability_coverage(payload: dict[str, An
     return {
         "success": True,
         "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(payload),
+    }
+
+
+@router.get("/models/gemini-newapi-model-selector")
+async def gemini_newapi_model_selector():
+    """Return metadata-only Gemini/NewAPI cheap-first selector evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_newapi_model_selector"],
+    }
+
+
+@router.post("/models/gemini-newapi-model-selector")
+async def evaluate_gemini_newapi_model_selector(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini/NewAPI task and model ids without gateway calls."""
+    return {
+        "success": True,
+        "data": GeminiNewapiModelSelectorService().build_selector(payload),
+    }
+
+
+@router.get("/models/gemini-newapi-selector-replay")
+async def gemini_newapi_selector_replay():
+    """Return deterministic Gemini/NewAPI selector replay evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gemini_newapi_selector_replay"],
+    }
+
+
+@router.post("/models/gemini-newapi-selector-replay")
+async def evaluate_gemini_newapi_selector_replay(payload: dict[str, Any]):
+    """Replay submitted selector scenarios without calling NewAPI."""
+    return {
+        "success": True,
+        "data": GeminiNewapiSelectorReplayService().run_replay(payload),
     }
 
 

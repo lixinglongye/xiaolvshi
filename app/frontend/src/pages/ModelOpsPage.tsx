@@ -30,6 +30,8 @@ import {
   getGeminiCheapFirstCoverageGate,
   getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
+  getModelOpsGeminiNewApiModelSelector,
+  getModelOpsGeminiNewApiSelectorReplay,
   getModelOpsGeminiResearchRefreshGate,
   getModelOpsObservedGeminiCoverageGapQueue,
   getModelOpsObservedGatewayModelFitMatrix,
@@ -50,6 +52,8 @@ import {
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
   type GeminiNewApiAliasCapabilityCoverage,
+  type ModelOpsGeminiNewApiModelSelector,
+  type ModelOpsGeminiNewApiSelectorReplay,
   type GeminiVariantMatrix,
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelOpsGeminiCheapFirstRoutePreflight,
@@ -491,6 +495,12 @@ function Inner() {
   const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
     useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
   const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
+  const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
+    useState<ModelOpsGeminiNewApiModelSelector | null>(null);
+  const [geminiNewApiModelSelectorError, setGeminiNewApiModelSelectorError] = useState('');
+  const [geminiNewApiSelectorReplay, setGeminiNewApiSelectorReplay] =
+    useState<ModelOpsGeminiNewApiSelectorReplay | null>(null);
+  const [geminiNewApiSelectorReplayError, setGeminiNewApiSelectorReplayError] = useState('');
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
@@ -587,6 +597,8 @@ function Inner() {
     setObservedGatewayModelFitMatrix(payload.observed_gateway_model_fit_matrix ?? null);
     setRuntimeExplicitModelFitGate(payload.runtime_explicit_model_fit_gate ?? null);
     setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
+    setGeminiNewApiModelSelector(payload.gemini_newapi_model_selector ?? null);
+    setGeminiNewApiSelectorReplay(payload.gemini_newapi_selector_replay ?? null);
     setGeminiResearchRefreshGate(payload.gemini_research_refresh_gate ?? null);
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
@@ -611,6 +623,10 @@ function Inner() {
     setRuntimeExplicitModelFitGate(null);
     setGeminiAliasCapabilityCoverageError('');
     setGeminiAliasCapabilityCoverage(null);
+    setGeminiNewApiModelSelectorError('');
+    setGeminiNewApiModelSelector(null);
+    setGeminiNewApiSelectorReplayError('');
+    setGeminiNewApiSelectorReplay(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
     setGeminiOfficialModelFamilyRoadmapEvidenceError('');
@@ -671,6 +687,8 @@ function Inner() {
         observedGatewayModelFitMatrixResult,
         runtimeExplicitModelFitGateResult,
         geminiAliasCapabilityCoverageResult,
+        geminiNewApiModelSelectorResult,
+        geminiNewApiSelectorReplayResult,
         geminiCheapFirstCoverageGateResult,
         geminiOfficialModelFamilyRoadmapEvidenceResult,
         geminiCheapFirstRoutePreflightResult,
@@ -690,6 +708,8 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.observed_gateway_model_fit_matrix, getModelOpsObservedGatewayModelFitMatrix),
         aggregateOrRequest(aggregatePayload?.runtime_explicit_model_fit_gate, getModelOpsRuntimeExplicitModelFitGate),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_alias_capability_coverage, getGeminiNewApiAliasCapabilityCoverage),
+        aggregateOrRequest(aggregatePayload?.gemini_newapi_model_selector, getModelOpsGeminiNewApiModelSelector),
+        aggregateOrRequest(aggregatePayload?.gemini_newapi_selector_replay, getModelOpsGeminiNewApiSelectorReplay),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_coverage_gate, getGeminiCheapFirstCoverageGate),
         aggregateOrRequest(
           aggregatePayload?.gemini_official_model_family_roadmap_evidence,
@@ -761,6 +781,24 @@ function Inner() {
           setGeminiAliasCapabilityCoverage(modelOpsResult.value.gemini_newapi_alias_capability_coverage ?? null);
           if (!modelOpsResult.value.gemini_newapi_alias_capability_coverage) {
             setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
+          }
+        }
+        if (geminiNewApiModelSelectorResult.status === 'fulfilled') {
+          setGeminiNewApiModelSelector(geminiNewApiModelSelectorResult.value);
+        } else {
+          console.error(geminiNewApiModelSelectorResult.reason);
+          setGeminiNewApiModelSelector(modelOpsResult.value.gemini_newapi_model_selector ?? null);
+          if (!modelOpsResult.value.gemini_newapi_model_selector) {
+            setGeminiNewApiModelSelectorError('Gemini/NewAPI model selector failed to load.');
+          }
+        }
+        if (geminiNewApiSelectorReplayResult.status === 'fulfilled') {
+          setGeminiNewApiSelectorReplay(geminiNewApiSelectorReplayResult.value);
+        } else {
+          console.error(geminiNewApiSelectorReplayResult.reason);
+          setGeminiNewApiSelectorReplay(modelOpsResult.value.gemini_newapi_selector_replay ?? null);
+          if (!modelOpsResult.value.gemini_newapi_selector_replay) {
+            setGeminiNewApiSelectorReplayError('Gemini/NewAPI selector replay failed to load.');
           }
         }
         if (geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
@@ -885,6 +923,12 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'fulfilled') {
         setGeminiAliasCapabilityCoverage(geminiAliasCapabilityCoverageResult.value);
       }
+      if (modelOpsResult.status === 'rejected' && geminiNewApiModelSelectorResult.status === 'fulfilled') {
+        setGeminiNewApiModelSelector(geminiNewApiModelSelectorResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiNewApiSelectorReplayResult.status === 'fulfilled') {
+        setGeminiNewApiSelectorReplay(geminiNewApiSelectorReplayResult.value);
+      }
       if (escalationBudgetResult.status === 'fulfilled') {
         setEscalationBudget(escalationBudgetResult.value);
       } else {
@@ -981,6 +1025,14 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
         console.error(geminiAliasCapabilityCoverageResult.reason);
         setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && geminiNewApiModelSelectorResult.status === 'rejected') {
+        console.error(geminiNewApiModelSelectorResult.reason);
+        setGeminiNewApiModelSelectorError('Gemini/NewAPI model selector failed to load.');
+      }
+      if (modelOpsResult.status === 'rejected' && geminiNewApiSelectorReplayResult.status === 'rejected') {
+        console.error(geminiNewApiSelectorReplayResult.reason);
+        setGeminiNewApiSelectorReplayError('Gemini/NewAPI selector replay failed to load.');
       }
       if (modelOpsResult.status === 'rejected' && observedGeminiCoverageGapQueueResult.status === 'rejected') {
         console.error(observedGeminiCoverageGapQueueResult.reason);
@@ -1540,6 +1592,19 @@ function Inner() {
   );
   const geminiAliasCapabilityClaimEntries = boundaryDisplayEntries(
     activeGeminiAliasCapabilityCoverage?.claim_boundary,
+  );
+  const activeGeminiNewApiModelSelector =
+    geminiNewApiModelSelector ?? data?.gemini_newapi_model_selector ?? null;
+  const geminiNewApiModelSelectorRows = activeGeminiNewApiModelSelector?.task_recommendations ?? [];
+  const geminiNewApiObservedModelRows = activeGeminiNewApiModelSelector?.observed_model_reviews ?? [];
+  const geminiNewApiModelSelectorPrivacyEntries = boundaryDisplayEntries(
+    activeGeminiNewApiModelSelector?.privacy_boundary,
+  );
+  const activeGeminiNewApiSelectorReplay =
+    geminiNewApiSelectorReplay ?? data?.gemini_newapi_selector_replay ?? null;
+  const geminiNewApiSelectorReplayRows = activeGeminiNewApiSelectorReplay?.replay_results ?? [];
+  const geminiNewApiSelectorReplayPrivacyEntries = boundaryDisplayEntries(
+    activeGeminiNewApiSelectorReplay?.privacy_boundary,
   );
   const activeGeminiCheapFirstCoverageGate =
     geminiCheapFirstCoverageGate ?? data?.gemini_cheap_first_coverage_gate ?? null;
@@ -6077,6 +6142,193 @@ function Inner() {
           </section>
         )}
 
+        {(activeGeminiNewApiModelSelector || geminiNewApiModelSelectorError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiNewApiModelSelector
+                    ? `${activeGeminiNewApiModelSelector.summary.recommendation_count ?? 0} recommendations / ${activeGeminiNewApiModelSelector.summary.cheap_first_ready_count ?? 0} cheap-first ready / ${activeGeminiNewApiModelSelector.summary.catalog_review_count ?? 0} catalog reviews`
+                    : 'metadata-only Gemini/NewAPI task selector evidence'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  gemini-newapi-model-selector
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiNewApiModelSelector?.status)}>
+                {activeGeminiNewApiModelSelector?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiNewApiModelSelectorError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiNewApiModelSelectorError}
+              </div>
+            )}
+
+            {activeGeminiNewApiModelSelector && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiModelSelector.summary.task_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiModelSelector.summary.cheap_first_ready_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiModelSelector.summary.premium_exception_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiModelSelector.summary.catalog_review_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">catalog reviews</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiModelSelector.summary.unknown_model_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">unknown models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiNewApiModelSelector.summary.raw_payload_echoed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">payload echoed</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Selected model</TableHead>
+                          <TableHead>Route</TableHead>
+                          <TableHead>Decision</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiNewApiModelSelectorRows.slice(0, 8).map((item) => (
+                          <TableRow key={`${item.task}-${item.selected_model}`}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{item.task}</div>
+                              <div className="mt-1 text-xs text-stone-500">
+                                {item.escalation_chain?.slice(0, 3).join(' -> ') || 'no escalation ladder'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div className="break-all font-mono font-semibold text-stone-950">
+                                {item.selected_model}
+                              </div>
+                              <div className="mt-1 font-mono text-[11px]">{item.canonical_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${costClass[item.cost_tier ?? ''] ?? 'bg-white'}`}>
+                                {item.cost_tier ?? 'unknown'}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {item.route_mode ?? '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className={statusClass(item.decision)}>
+                                {(item.decision ?? 'review').replace(/_/g, ' ')}
+                              </Badge>
+                              {item.warnings && item.warnings.length > 0 && (
+                                <div className="mt-2 text-amber-800">{item.warnings.slice(0, 2).join('; ')}</div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Observed model review</h3>
+                    <div className="space-y-3">
+                      {geminiNewApiObservedModelRows.slice(0, 5).map((review) => (
+                        <div key={`${review.raw_model}-${review.status}`} className="text-xs leading-5 text-stone-600">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="break-all font-mono font-semibold text-stone-950">
+                              {review.raw_model}
+                            </span>
+                            <Badge variant="outline" className={statusClass(review.status)}>
+                              {review.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 font-mono text-[11px]">{review.canonical_model ?? '-'}</div>
+                          {review.action && <div className="mt-1">{review.action}</div>}
+                        </div>
+                      ))}
+                      {geminiNewApiObservedModelRows.length === 0 && (
+                        <div className="text-xs leading-5 text-stone-600">
+                          No observed gateway model ids are attached to this selector snapshot.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Cheap-first ladders</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {activeGeminiNewApiModelSelector.cheap_first_ladders.slice(0, 3).map((ladder) => (
+                        <div key={ladder.task_group} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="font-mono font-semibold text-stone-950">{ladder.task_group}</div>
+                          <div className="mt-1">
+                            {(ladder.ladder ?? []).slice(0, 3).map((item) => item.model).join(' -> ') || '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiNewApiModelSelectorPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-xs leading-5 text-stone-600">
+                      Metadata-only selector output; no prompts, legal text, credentials, or raw model output are shown.
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeGeminiNewApiModelSelector.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
         {(activeGeminiAliasCapabilityCoverage || geminiAliasCapabilityCoverageError) && (
           <section className="mb-8">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -6303,6 +6555,180 @@ function Inner() {
                     <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                     <div className="space-y-2">
                       {activeGeminiAliasCapabilityCoverage.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiNewApiSelectorReplay || geminiNewApiSelectorReplayError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiNewApiSelectorReplay
+                    ? `${activeGeminiNewApiSelectorReplay.summary.scenario_count ?? 0} scenarios / ${activeGeminiNewApiSelectorReplay.summary.pass_count ?? 0} pass / ${activeGeminiNewApiSelectorReplay.summary.fail_count ?? 0} fail`
+                    : 'deterministic Gemini/NewAPI selector replay evidence'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  gemini-newapi-selector-replay
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeGeminiNewApiSelectorReplay?.status)}>
+                {activeGeminiNewApiSelectorReplay?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiNewApiSelectorReplayError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiNewApiSelectorReplayError}
+              </div>
+            )}
+
+            {activeGeminiNewApiSelectorReplay && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.scenario_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">scenarios</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.pass_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">pass</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.warn_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">warn</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.fail_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">fail</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.cheap_first_pass_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first pass</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiNewApiSelectorReplay.summary.premium_exception_count ?? 0}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">premium exceptions</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiNewApiSelectorReplay.summary.raw_payload_echoed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">payload echoed</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Scenario</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Selected model</TableHead>
+                        <TableHead>Decision</TableHead>
+                        <TableHead>Checks</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geminiNewApiSelectorReplayRows.slice(0, 9).map((result) => (
+                        <TableRow key={result.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{result.id}</div>
+                            <div className="mt-1 text-xs text-stone-500">
+                              max cost: {String(result.scenario?.max_cost_tier ?? '-')}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(result.status)}>
+                              {result.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">
+                            {String(result.scenario?.task ?? '-')}
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="break-all font-mono font-semibold text-stone-950">
+                              {result.actual?.selected_model ?? '-'}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px]">{result.actual?.canonical_model ?? '-'}</div>
+                            <Badge variant="outline" className={`mt-1 ${costClass[result.actual?.cost_tier ?? ''] ?? 'bg-white'}`}>
+                              {result.actual?.cost_tier ?? 'unknown'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>{result.actual?.decision?.replace(/_/g, ' ') ?? '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {result.actual?.route_mode ?? '-'}
+                            </div>
+                            {result.recommended_action && <div className="mt-1">{result.recommended_action}</div>}
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            {(result.checks ?? []).map((check) => (
+                              <div key={`${result.id}-${check.id}`} className="mb-1">
+                                <Badge variant="outline" className={statusClass(check.status)}>
+                                  {check.id}: {check.status}
+                                </Badge>
+                              </div>
+                            ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {geminiNewApiSelectorReplayPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-xs leading-5 text-stone-600">
+                      Deterministic replay only; no NewAPI calls, prompts, legal text, credentials, or raw outputs.
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Replay method</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>cheap_first_pass_count: {activeGeminiNewApiSelectorReplay.summary.cheap_first_pass_count ?? 0}</div>
+                      <div>catalog_review_count: {activeGeminiNewApiSelectorReplay.summary.catalog_review_count ?? 0}</div>
+                      <div>premium_exception_count: {activeGeminiNewApiSelectorReplay.summary.premium_exception_count ?? 0}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {activeGeminiNewApiSelectorReplay.validation_commands.slice(0, 3).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

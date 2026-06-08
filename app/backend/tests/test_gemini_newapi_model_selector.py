@@ -164,3 +164,34 @@ def test_gemini_newapi_model_selector_route_returns_template_and_assessment():
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["status"] == "needs_catalog_review"
+
+
+def test_aihub_gemini_newapi_model_selector_route_is_modelops_evidence():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    template_response = client.get("/api/v1/aihub/models/gemini-newapi-model-selector")
+    assert template_response.status_code == 200
+    template_payload = template_response.json()
+    assert template_payload["success"] is True
+    assert template_payload["data"]["summary"]["cheap_first_ready_count"] >= 4
+    assert template_payload["data"]["summary"]["raw_payload_echoed"] is False
+    assert template_payload["data"]["privacy_boundary"]["credentials_included"] is False
+
+    response = client.post(
+        "/api/v1/aihub/models/gemini-newapi-model-selector",
+        json={"observed_models": ["google/gemini-3.2-flash-lite"], "tasks": ["fast", "review"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["data"]["status"] == "needs_catalog_review"
+    assert payload["data"]["summary"]["catalog_review_count"] == 1

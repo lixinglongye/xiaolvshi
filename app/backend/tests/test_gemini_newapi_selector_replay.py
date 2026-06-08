@@ -154,3 +154,45 @@ def test_gemini_newapi_selector_replay_route_returns_template_and_assessment():
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["status"] == "pass"
+
+
+def test_aihub_gemini_newapi_selector_replay_route_is_modelops_evidence():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    template_response = client.get("/api/v1/aihub/models/gemini-newapi-selector-replay")
+    assert template_response.status_code == 200
+    template_payload = template_response.json()
+    assert template_payload["success"] is True
+    assert template_payload["data"]["status"] == "pass"
+    assert template_payload["data"]["summary"]["raw_payload_echoed"] is False
+    assert template_payload["data"]["privacy_boundary"]["newapi_called"] is False
+
+    response = client.post(
+        "/api/v1/aihub/models/gemini-newapi-selector-replay",
+        json={
+            "scenarios": [
+                {
+                    "id": "unknown-gemini",
+                    "task": "fast",
+                    "observed_models": ["google/gemini-3.2-flash-lite"],
+                    "expected_decision": "cheap_first_ready",
+                    "max_cost_tier": "lowest",
+                    "expected_selector_status": "needs_catalog_review",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["success"] is True
+    assert payload["data"]["status"] == "pass"
+    assert payload["data"]["summary"]["scenario_count"] == 1

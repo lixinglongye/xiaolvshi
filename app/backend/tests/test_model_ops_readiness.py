@@ -186,6 +186,29 @@ def test_model_ops_readiness_warns_on_gemini_route_preflight_review():
     assert result["warning_drilldown"][0]["privacy_boundary"]["gateway_called"] is False
 
 
+def test_model_ops_readiness_warns_on_gemini_newapi_model_selector_catalog_review():
+    signals = _signals("pass")
+    signals["gemini_newapi_model_selector"] = {
+        "status": "needs_catalog_review",
+        "summary": {"warn_count": 0, "fail_count": 0, "catalog_review_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["unknown-gemini-like-model"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gemini-newapi-model-selector" in result["warning_check_ids"]
+    assert "gemini-newapi-model-selector" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "gemini_newapi_model_selector"
+    assert drilldown["warning_category"] == "catalog_pricing_review"
+    assert "catalog" in drilldown["next_action"].lower()
+    assert "test_gemini_newapi_model_selector.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["gateway_called"] is False
+
+
 def test_model_ops_readiness_warns_on_gemini_official_family_roadmap_review():
     signals = _signals("pass")
     signals["gemini_official_model_family_roadmap_evidence"] = {
@@ -430,6 +453,12 @@ def test_model_ops_route_includes_readiness():
     assert "gemini_newapi_alias_capability_coverage" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gemini_newapi_model_selector" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert "gemini_newapi_selector_replay" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert "observed_gemini_coverage_gap_queue" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
@@ -442,6 +471,12 @@ def test_model_ops_route_includes_readiness():
     assert payload["runtime_explicit_model_fit_gate"]["summary"]["gateway_called"] is False
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["known_coverage_count"] >= 100
     assert payload["gemini_newapi_alias_capability_coverage"]["summary"]["gateway_called"] is False
+    assert payload["gemini_newapi_model_selector"]["summary"]["recommendation_count"] >= 7
+    assert payload["gemini_newapi_model_selector"]["summary"]["raw_payload_echoed"] is False
+    assert payload["gemini_newapi_model_selector"]["privacy_boundary"]["credentials_included"] is False
+    assert payload["gemini_newapi_selector_replay"]["status"] == "pass"
+    assert payload["gemini_newapi_selector_replay"]["summary"]["scenario_count"] >= 9
+    assert payload["gemini_newapi_selector_replay"]["privacy_boundary"]["newapi_called"] is False
     replay_check = next(
         check for check in payload["model_ops_readiness"]["checks"] if check["source_key"] == "catalog_candidate_impact_replay"
     )

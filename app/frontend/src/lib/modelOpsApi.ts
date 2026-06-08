@@ -1,5 +1,7 @@
 import { client } from '@/lib/api';
 import type {
+  GeminiNewApiModelSelectorEvidence,
+  GeminiNewApiSelectorReplayEvidence,
   ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
@@ -7,6 +9,8 @@ import type {
 } from './maintenanceApi';
 
 export type {
+  GeminiNewApiModelSelectorEvidence as ModelOpsGeminiNewApiModelSelector,
+  GeminiNewApiSelectorReplayEvidence as ModelOpsGeminiNewApiSelectorReplay,
   ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   ModelOpsLegalFixtureCheapFirstBenchmarkGateRow,
   ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
@@ -4248,6 +4252,8 @@ export type ModelOpsResponse = {
   observed_gateway_model_fit_matrix?: ModelOpsObservedGatewayModelFitMatrix;
   runtime_explicit_model_fit_gate?: ModelOpsRuntimeExplicitModelFitGate;
   gemini_newapi_alias_capability_coverage?: GeminiNewApiAliasCapabilityCoverage;
+  gemini_newapi_model_selector?: GeminiNewApiModelSelectorEvidence;
+  gemini_newapi_selector_replay?: GeminiNewApiSelectorReplayEvidence;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
   lifecycle_policy?: ModelLifecyclePolicy;
@@ -4368,6 +4374,10 @@ function hasModelOpsPayload(value: unknown): boolean {
     default_rows?: unknown;
     review_items?: unknown;
     embedding_rows?: unknown;
+    task_recommendations?: unknown;
+    observed_model_reviews?: unknown;
+    cheap_first_ladders?: unknown;
+    replay_results?: unknown;
     route_rows?: unknown;
     route_reviews?: unknown;
     user_need_reviews?: unknown;
@@ -4413,6 +4423,8 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.endpoint_rows) && Array.isArray(payload.coverage_matrix) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.default_rows) && Array.isArray(payload.review_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.embedding_rows) && Array.isArray(payload.route_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.task_recommendations) && Array.isArray(payload.observed_model_reviews) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.replay_results) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
@@ -4624,6 +4636,40 @@ export async function getGeminiNewApiAliasCapabilityCoverage(): Promise<GeminiNe
   return invokeModelOpsApi<GeminiNewApiAliasCapabilityCoverage>({
     url: '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiNewApiModelSelector(): Promise<GeminiNewApiModelSelectorEvidence> {
+  return invokeModelOpsApi<GeminiNewApiModelSelectorEvidence>({
+    url: '/api/v1/aihub/models/gemini-newapi-model-selector',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsGeminiNewApiModelSelector(
+  payload: Record<string, unknown>,
+): Promise<GeminiNewApiModelSelectorEvidence> {
+  return invokeModelOpsApi<GeminiNewApiModelSelectorEvidence>({
+    url: '/api/v1/aihub/models/gemini-newapi-model-selector',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsGeminiNewApiSelectorReplay(): Promise<GeminiNewApiSelectorReplayEvidence> {
+  return invokeModelOpsApi<GeminiNewApiSelectorReplayEvidence>({
+    url: '/api/v1/aihub/models/gemini-newapi-selector-replay',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsGeminiNewApiSelectorReplay(
+  payload: Record<string, unknown>,
+): Promise<GeminiNewApiSelectorReplayEvidence> {
+  return invokeModelOpsApi<GeminiNewApiSelectorReplayEvidence>({
+    url: '/api/v1/aihub/models/gemini-newapi-selector-replay',
+    method: 'POST',
+    data: payload,
   });
 }
 

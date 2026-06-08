@@ -116,6 +116,18 @@ const geminiAliasCapabilityCoveragePanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
   'model-ops Gemini/NewAPI alias capability coverage section',
 );
+const geminiNewApiModelSelectorPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+  'model-ops Gemini/NewAPI model selector section',
+);
+const geminiNewApiSelectorReplayPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+  'model-ops Gemini/NewAPI selector replay section',
+);
 const aihubMediaSpeechDefaultCatalogGatePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">AIHub media/speech default catalog gate</h2>',
@@ -1746,6 +1758,57 @@ const checks = [
       '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
       '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
       'model-ops observed Gemini coverage gap queue precedes alias coverage',
+    ),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiNewApiModelSelector', 'model-ops Gemini/NewAPI model selector exported type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiNewApiSelectorReplay', 'model-ops Gemini/NewAPI selector replay exported type'),
+  () => assertIncludes(modelOpsApi, 'gemini_newapi_model_selector?: GeminiNewApiModelSelectorEvidence', 'model-ops Gemini/NewAPI model selector response binding'),
+  () => assertIncludes(modelOpsApi, 'gemini_newapi_selector_replay?: GeminiNewApiSelectorReplayEvidence', 'model-ops Gemini/NewAPI selector replay response binding'),
+  () => assertIncludes(modelOpsApi, 'task_recommendations?: unknown', 'model-ops Gemini/NewAPI model selector payload guard task recommendations'),
+  () => assertIncludes(modelOpsApi, 'observed_model_reviews?: unknown', 'model-ops Gemini/NewAPI model selector payload guard observed reviews'),
+  () => assertIncludes(modelOpsApi, 'replay_results?: unknown', 'model-ops Gemini/NewAPI selector replay payload guard'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiNewApiModelSelector', 'model-ops Gemini/NewAPI model selector getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsGeminiNewApiModelSelector', 'model-ops Gemini/NewAPI model selector evaluator'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiNewApiSelectorReplay', 'model-ops Gemini/NewAPI selector replay getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsGeminiNewApiSelectorReplay', 'model-ops Gemini/NewAPI selector replay evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-newapi-model-selector', 'model-ops Gemini/NewAPI model selector endpoint'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-newapi-selector-replay', 'model-ops Gemini/NewAPI selector replay endpoint'),
+  () => assertIncludes(modelOpsPage, 'Gemini/NewAPI model selector', 'model-ops Gemini/NewAPI model selector panel'),
+  () => assertIncludes(modelOpsPage, 'geminiNewApiModelSelectorRows', 'model-ops Gemini/NewAPI model selector row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiNewApiObservedModelRows', 'model-ops Gemini/NewAPI observed model row binding'),
+  () => assertIncludes(modelOpsPage, 'Gemini/NewAPI selector replay', 'model-ops Gemini/NewAPI selector replay panel'),
+  () => assertIncludes(modelOpsPage, 'geminiNewApiSelectorReplayRows', 'model-ops Gemini/NewAPI selector replay row binding'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+      'model-ops Gemini/NewAPI model selector precedes alias coverage',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>',
+      'model-ops Gemini/NewAPI alias coverage precedes selector replay',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini cheap-first coverage gate</h2>',
+      'model-ops Gemini/NewAPI selector replay precedes cheap-first coverage gate',
+    ),
+  () =>
+    assertNotMatches(
+      geminiNewApiModelSelectorPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|email|phone|identity|messages|content)\b/i,
+      'model-ops Gemini/NewAPI model selector no secret or raw prompt/output fields',
+    ),
+  () =>
+    assertNotMatches(
+      geminiNewApiSelectorReplayPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|email|phone|identity|messages|content)\b/i,
+      'model-ops Gemini/NewAPI selector replay no secret or raw prompt/output fields',
     ),
   () => assertIncludes(modelOpsPage, 'Gemini cheap-first coverage gate', 'model-ops Gemini cheap-first coverage gate panel'),
   () => assertIncludes(modelOpsPage, 'getGeminiCheapFirstCoverageGate', 'model-ops Gemini cheap-first coverage gate API binding'),
