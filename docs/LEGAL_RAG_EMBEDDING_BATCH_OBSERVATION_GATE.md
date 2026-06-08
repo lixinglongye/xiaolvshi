@@ -4,6 +4,10 @@
 observation review after the embedding batch approval packet and before any
 index-commit review.
 
+Ready observations are reviewed separately by
+`legal-rag-embedding-index-commit-review-packet`; this gate itself never writes
+an index or records commit approval.
+
 ## Endpoint
 
 - `GET /api/v1/maintenance/legal-rag-embedding-batch-observation-gate`

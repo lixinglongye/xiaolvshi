@@ -227,6 +227,18 @@ and it does not return source ids, approval item ids, raw legal text, source
 chunks, embedding vectors, prompts, model outputs, gateway payloads,
 credentials, emails, live pricing claims, index writes, or retrieval quality.
 
+`legal-rag-embedding-index-commit-review-packet` is the shipped metadata-only
+maintainer review packet downstream of aggregate embedding observations. It
+turns ready observation rows into commit-review items with vector-slot match
+evidence, observed chunk/cost evidence, required maintainer/RAG-index/privacy
+signoffs, pre-commit checks, and prepare/hold/block actions before any real
+index commit. It does not approve committers, execute embeddings, collect
+committer identity, call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, indexes, databases, or the network, and it does not write
+indexes or return source ids, approval item ids, raw legal text, source chunks,
+embedding vectors, prompts, model outputs, gateway payloads, credentials,
+emails, live pricing claims, or retrieval quality.
+
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,

@@ -49,6 +49,7 @@ import {
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicBenchmarkSampler,
   evaluateLegalRagEmbeddingBatchObservationGate,
+  evaluateLegalRagEmbeddingIndexCommitReviewPacket,
   evaluateLegalRagRetrievalObservationGate,
   getLegalRagAbstentionEscalationGate,
   getLegalRagAuthorityCitationGate,
@@ -56,6 +57,7 @@ import {
   getLegalRagEmbeddingBatchApprovalPacket,
   getLegalRagEmbeddingBatchObservationGate,
   getLegalRagEmbeddingBatchBudgetGate,
+  getLegalRagEmbeddingIndexCommitReviewPacket,
   getLegalRagEmbeddingChunkPolicyGate,
   getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
@@ -139,6 +141,7 @@ import {
   type LegalRagEmbeddingBatchObservationGate,
   type LegalRagEmbeddingBatchBudgetGate,
   type LegalRagEmbeddingChunkPolicyGate,
+  type LegalRagEmbeddingIndexCommitReviewPacket,
   type LegalRagEmbeddingIndexDryRunGate,
   type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
@@ -459,6 +462,12 @@ function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
   );
 }
 
+function hasForbiddenEmbeddingIndexCommitReviewPayloadText(value: string) {
+  return /"(source_id|source_ids|approval_item_id|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|committer_email|committer_name|committer_identity|commit_signature)"\s*:/i.test(
+    value,
+  );
+}
+
 function hasForbiddenRetrievalObservationPayloadText(value: string) {
   return /"(query|question|retrieved_context|raw_legal_text|prompt|model_output|gateway_response|headers|authorization|api_key|email)"\s*:/i.test(
     value,
@@ -558,6 +567,8 @@ function Inner() {
     useState<LegalRagEmbeddingBatchApprovalPacket | null>(null);
   const [legalRagEmbeddingBatchObservationGate, setLegalRagEmbeddingBatchObservationGate] =
     useState<LegalRagEmbeddingBatchObservationGate | null>(null);
+  const [legalRagEmbeddingIndexCommitReviewPacket, setLegalRagEmbeddingIndexCommitReviewPacket] =
+    useState<LegalRagEmbeddingIndexCommitReviewPacket | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -682,6 +693,15 @@ function Inner() {
       return getLegalRagEmbeddingBatchObservationGate();
     }
     return evaluateLegalRagEmbeddingBatchObservationGate(payload);
+  };
+
+  const loadEmbeddingIndexCommitReviewSample = () => {
+    const payload = defaultLegalRagEmbeddingBatchObservationPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenEmbeddingIndexCommitReviewPayloadText(payloadText)) {
+      return getLegalRagEmbeddingIndexCommitReviewPacket();
+    }
+    return evaluateLegalRagEmbeddingIndexCommitReviewPacket(payload);
   };
 
   const load = async (nextLanguage = language) => {
@@ -1012,6 +1032,12 @@ function Inner() {
           label: 'Legal RAG embedding batch observation gate',
           run: loadEmbeddingBatchObservationSample,
           apply: (value) => setLegalRagEmbeddingBatchObservationGate(value as LegalRagEmbeddingBatchObservationGate),
+        },
+        {
+          label: 'Legal RAG embedding index commit review packet',
+          run: loadEmbeddingIndexCommitReviewSample,
+          apply: (value) =>
+            setLegalRagEmbeddingIndexCommitReviewPacket(value as LegalRagEmbeddingIndexCommitReviewPacket),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -11156,6 +11182,259 @@ function Inner() {
                         <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingIndexCommitReviewPacket &&
+              (() => {
+                const packet = legalRagEmbeddingIndexCommitReviewPacket;
+                const items = packet.commit_review_items ?? [];
+                const summary = packet.summary;
+                const privacy = packet.privacy_boundary;
+                const claim = packet.claim_boundary;
+                const summaryCounts = [
+                  { label: 'commit review items', value: summary.commit_review_item_count },
+                  { label: 'ready commit reviews', value: summary.ready_for_commit_review_count },
+                  { label: 'held commit reviews', value: summary.hold_for_commit_review_count },
+                  { label: 'blocked commit reviews', value: summary.blocked_commit_review_count },
+                  { label: 'required signoffs', value: summary.required_signoff_count },
+                  { label: 'observed vector slots', value: summary.observed_vector_slot_total },
+                  { label: 'expected vector slots', value: summary.expected_vector_slot_total },
+                  { label: 'observed chunks', value: summary.observed_chunk_total },
+                  { label: 'index commit allowed', value: String(summary.index_commit_allowed_by_packet) },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'approval item ids returned', value: privacy.returns_approval_item_ids },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'committer identity returned', value: privacy.returns_committer_identity },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                  { label: 'commit record written', value: privacy.writes_commit_record },
+                  { label: 'maintainer commit approval claimed', value: claim.maintainer_commit_approval_claimed },
+                  { label: 'index commit claimed', value: claim.index_commit_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding index commit review packet</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only maintainer review packet before any real embedding index commit
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[packet.status] ?? statusClass.review_required}>
+                        {displayToken(packet.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-5 xl:grid-cols-10">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Commit review item</TableHead>
+                            <TableHead>Status / action</TableHead>
+                            <TableHead>Vector and cost evidence</TableHead>
+                            <TableHead>Signoffs / checks</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {items.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">
+                                  #{item.queue_order} {displayToken(item.source_type)}
+                                </div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{item.id}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{item.embedding_model}</div>
+                              </TableCell>
+                              <TableCell className="space-y-1 text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[item.commit_review_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(item.commit_review_status)}
+                                </Badge>
+                                <div>commit_review_action: {displayToken(item.commit_review_action)}</div>
+                                <div>observation_status: {displayToken(item.observation_status)}</div>
+                                <div>observed_status: {displayToken(item.observed_status)}</div>
+                                <div>commit_record_written: {String(item.commit_record_written)}</div>
+                                <div>index_commit_allowed: {String(item.index_commit_allowed)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>observed_vector_slot_count: {item.observed_vector_slot_count}</div>
+                                <div>expected_vector_slot_count: {item.expected_vector_slot_count}</div>
+                                <div>vector_slot_delta: {item.vector_slot_delta}</div>
+                                <div>observed_chunk_count: {item.observed_chunk_count}</div>
+                                <div>expected_chunk_count: {item.expected_chunk_count}</div>
+                                <div>observed_cost_usd: {formatUsd(item.observed_cost_usd)}</div>
+                                <div>expected_cost_usd: {formatUsd(item.expected_cost_usd)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div className="mb-1 font-semibold text-stone-700">required_signoffs</div>
+                                <div className="mb-2 flex max-w-[260px] flex-wrap gap-1">
+                                  {(item.required_signoffs ?? []).length ? (
+                                    item.required_signoffs.map((role) => (
+                                      <Badge key={`${item.id}-${role}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                        {role}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span>-</span>
+                                  )}
+                                </div>
+                                <div className="mb-1 font-semibold text-stone-700">pre_commit_checks</div>
+                                <div className="flex max-w-[280px] flex-wrap gap-1">
+                                  {(item.pre_commit_checks ?? []).slice(0, 5).map((check) => (
+                                    <Badge key={`${item.id}-${check}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {check}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[300px] flex-wrap gap-1">
+                                  {(item.blocking_reason_codes ?? []).length
+                                    ? item.blocking_reason_codes.map((code) => (
+                                        <Badge key={`${item.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                          {code}
+                                        </Badge>
+                                      ))
+                                    : (item.reason_codes ?? []).map((code) => (
+                                        <Badge key={`${item.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                          {code}
+                                        </Badge>
+                                      ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['commit_review_status_counts', packet.commit_review_status_counts ?? {}],
+                            ['commit_review_action_counts', packet.commit_review_action_counts ?? {}],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(packet.linked_gate_summary ?? {}).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">commit_review_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {packet.commit_review_policy.method}</div>
+                          <div>requires ready observations: {String(packet.commit_review_policy.requires_ready_observation_rows)}</div>
+                          <div>requires no vector mismatch: {String(packet.commit_review_policy.requires_no_vector_slot_mismatch)}</div>
+                          <div>commit record written: {String(packet.commit_review_policy.commit_record_written)}</div>
+                          <div>index commit allowed: {String(packet.commit_review_policy.index_commit_allowed)}</div>
+                          <div>embedding creation allowed: {String(packet.commit_review_policy.embedding_creation_allowed)}</div>
+                          <div>model call allowed: {String(packet.commit_review_policy.model_call_allowed)}</div>
+                          <div>database write allowed: {String(packet.commit_review_policy.database_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_review_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {(packet.input_contract.accepted_review_fields ?? []).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>source_id_echoed: {String(packet.input_contract.source_id_echoed)}</div>
+                          <div>approval_item_id_echoed: {String(packet.input_contract.approval_item_id_echoed)}</div>
+                          <div>committer_identity_collected: {String(packet.input_contract.committer_identity_collected)}</div>
+                          <div>commit_record_written: {String(packet.input_contract.commit_record_written)}</div>
+                          <div>review_packet_only: {String(packet.input_contract.review_packet_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(packet.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(packet.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div
                               key={command}
                               className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"

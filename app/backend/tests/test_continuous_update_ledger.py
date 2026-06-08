@@ -449,6 +449,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-batch-budget-gate" in completed_ids
     assert "legal-rag-embedding-batch-approval-packet" in completed_ids
     assert "legal-rag-embedding-batch-observation-gate" in completed_ids
+    assert "legal-rag-embedding-index-commit-review-packet" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -649,6 +650,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-batch-budget-gate" not in queue_ids
     assert "legal-rag-embedding-batch-approval-packet" not in queue_ids
     assert "legal-rag-embedding-batch-observation-gate" not in queue_ids
+    assert "legal-rag-embedding-index-commit-review-packet" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -3283,6 +3285,62 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_legal_rag_embedding_batch_observation_gate.py "
         "tests/test_legal_rag_embedding_batch_approval_packet.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    commit_review_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-rag-embedding-index-commit-review-packet"
+    )
+    assert commit_review_entry["category"] == "benchmark"
+    assert commit_review_entry["size"] == "medium"
+    assert commit_review_entry["status"] == "shipped"
+    assert "metadata-only Legal RAG embedding index commit review packet" in commit_review_entry["impact"]
+    assert "ready aggregate embedding observations" in commit_review_entry["impact"]
+    assert "vector-slot match evidence" in commit_review_entry["impact"]
+    assert "observed chunk/cost evidence" in commit_review_entry["impact"]
+    assert "required maintainer/RAG-index/privacy signoffs" in commit_review_entry["impact"]
+    assert "pre-commit checks" in commit_review_entry["impact"]
+    assert "prepare/hold/block commit-review actions" in commit_review_entry["impact"]
+    assert "maintenance UI review" in commit_review_entry["impact"]
+    assert "without claiming maintainer commit approval" in commit_review_entry["impact"]
+    assert "executing embeddings" in commit_review_entry["impact"]
+    assert "NewAPI/Gemini/model calls" in commit_review_entry["impact"]
+    assert "index or database writes" in commit_review_entry["impact"]
+    assert "commit record writes" in commit_review_entry["impact"]
+    assert "committer identity collection" in commit_review_entry["impact"]
+    assert "source-id echoing" in commit_review_entry["impact"]
+    assert "approval item id echoing" in commit_review_entry["impact"]
+    assert "raw legal text" in commit_review_entry["impact"]
+    assert "source chunks" in commit_review_entry["impact"]
+    assert "embedding vectors" in commit_review_entry["impact"]
+    assert "credentials" in commit_review_entry["impact"]
+    assert "live pricing claims" in commit_review_entry["impact"]
+    assert "embedding/index/retrieval quality claims" in commit_review_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_index_commit_review_packet.py" in commit_review_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_index_commit_review_packet.py" in commit_review_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in commit_review_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_batch_observation_gate.py" in commit_review_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_batch_approval_packet.py" in commit_review_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in commit_review_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in commit_review_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in commit_review_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_INDEX_COMMIT_REVIEW_PACKET.md" in commit_review_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in commit_review_entry["evidence_paths"]
+    assert "legal-rag-embedding-index-commit-review-packet" in commit_review_entry["release_gate_links"]
+    assert "legal-rag-embedding-batch-observation-gate" in commit_review_entry["release_gate_links"]
+    assert "legal-rag-embedding-batch-approval-packet" in commit_review_entry["release_gate_links"]
+    assert "legal-rag-embedding-batch-budget-gate" in commit_review_entry["release_gate_links"]
+    assert "legal-rag-embedding-index-dry-run-gate" in commit_review_entry["release_gate_links"]
+    assert "legal-rag-embedding-chunk-policy-gate" in commit_review_entry["release_gate_links"]
+    assert "frontend-typecheck" in commit_review_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in commit_review_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_legal_rag_embedding_index_commit_review_packet.py "
+        "tests/test_legal_rag_embedding_batch_observation_gate.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
         "tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"

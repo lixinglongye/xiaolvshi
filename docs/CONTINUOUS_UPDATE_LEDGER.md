@@ -96,6 +96,21 @@ query, raw retrieved context, raw legal text, source chunks, embedding vectors,
 prompts, model outputs, gateway payloads, credentials, emails, live pricing
 claims, or embedding/index/retrieval quality claims.
 
+Current Legal RAG embedding index commit review slice:
+`legal-rag-embedding-index-commit-review-packet` adds metadata-only maintainer
+review evidence through `LegalRagEmbeddingIndexCommitReviewPacketService` at
+`/api/v1/maintenance/legal-rag-embedding-index-commit-review-packet`. It
+converts ready aggregate observations into commit-review items with vector-slot
+match evidence, observed chunk/cost evidence, required maintainer/RAG-index/
+privacy signoffs, pre-commit checks, and prepare/hold/block actions before any
+real index commit. It does not claim commit approval, execute embeddings, call
+NewAPI, Gemini, models, gateways, app AI endpoints, or the network; write
+indexes, databases, or commit records; collect committer identity; download
+datasets; or return source ids, approval item ids, raw query, raw retrieved
+context, raw legal text, source chunks, embedding vectors, prompts, model
+outputs, gateway payloads, credentials, emails, live pricing claims, or
+embedding/index/retrieval quality claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

@@ -75,6 +75,7 @@ from services.legal_rag_embedding_batch_observation_gate import LegalRagEmbeddin
 from services.legal_rag_embedding_batch_approval_packet import LegalRagEmbeddingBatchApprovalPacketService
 from services.legal_rag_embedding_batch_budget_gate import LegalRagEmbeddingBatchBudgetGateService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
+from services.legal_rag_embedding_index_commit_review_packet import LegalRagEmbeddingIndexCommitReviewPacketService
 from services.legal_rag_embedding_index_dry_run_gate import LegalRagEmbeddingIndexDryRunGateService
 from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
@@ -1471,6 +1472,43 @@ async def evaluate_legal_rag_embedding_batch_observation_gate(payload: dict[str,
     return {
         "success": True,
         "data": LegalRagEmbeddingBatchObservationGateService().build_gate(
+            rows if isinstance(rows, list) else None,
+            {"observations": observations} if isinstance(observations, list) else None,
+        ),
+    }
+
+
+@router.get("/legal-rag-embedding-index-commit-review-packet")
+async def get_legal_rag_embedding_index_commit_review_packet():
+    """Return metadata-only Legal RAG embedding index commit review evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingIndexCommitReviewPacketService().build_packet(),
+    }
+
+
+@router.post("/legal-rag-embedding-index-commit-review-packet")
+async def evaluate_legal_rag_embedding_index_commit_review_packet(payload: dict[str, Any]):
+    """Evaluate sanitized Legal RAG embedding index commit review evidence."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    observations = payload.get("observations")
+    if not isinstance(observations, list):
+        observations = payload.get("embedding_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("batch_observations")
+    if not isinstance(observations, list):
+        observations = payload.get("observation_rows")
+    if not isinstance(observations, list):
+        observations = payload.get("rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingIndexCommitReviewPacketService().build_packet(
             rows if isinstance(rows, list) else None,
             {"observations": observations} if isinstance(observations, list) else None,
         ),
