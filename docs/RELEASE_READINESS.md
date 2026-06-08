@@ -312,6 +312,20 @@ store or return source ids, raw query, raw retrieved context, raw legal text,
 source chunks, embedding vectors, prompts, model outputs, gateway payloads,
 credentials, emails, or client material.
 
+The optional `legal-rag-embedding-index-dry-run-gate` check records
+metadata-only Legal RAG embedding index dry-run evidence through
+`LegalRagEmbeddingIndexDryRunGateService` at
+`/api/v1/maintenance/legal-rag-embedding-index-dry-run-gate`. It reviews
+planned vector-slot counts, chunk-policy readiness, durable index persistence
+fields, repository validation, and commit-action blockers before any embedding
+index write. It is a dry-run manifest only; it must not be used to claim
+embedding creation, vector storage, index/database writes, retrieval quality,
+legal-answer quality, provider execution, or client delivery. It must not call
+NewAPI, Gemini, models, gateways, app AI endpoints, or the network, and it must
+not store or return source ids, raw query, raw retrieved context, raw legal
+text, source chunks, embedding vectors, prompts, model outputs, gateway
+payloads, credentials, emails, or client material.
+
 The `runtime-router-discovery-smoke` check is intentionally narrow: once its
 test evidence is merged and passing, it should verify that the main FastAPI app
 exposes the case workbench, legal RAG, and billing usage runtime paths in

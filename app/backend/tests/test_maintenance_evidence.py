@@ -67,6 +67,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG index coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding readiness gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding chunk policy gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding index dry-run gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG retrieval observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal adoption research bridge" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini/NewAPI model selector" in profile["release_management"]["release_readiness_controls"]
@@ -488,7 +489,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("multimodal embedding review boundaries" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG embedding chunk policy gate is metadata-only chunk planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("source-type split strategies" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding index dry-run gate is metadata-only manifest evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("planned vector-slot counts" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("durable index persistence fields" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("repository validation" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("commit-action blockers" in guardrail for guardrail in profile["application_guardrails"])
     assert any("writing indexes" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("writing indexes or databases" in guardrail for guardrail in profile["application_guardrails"])
     assert any("creating embeddings" in guardrail for guardrail in profile["application_guardrails"])
     assert any("source chunks" in guardrail for guardrail in profile["application_guardrails"])
     assert any("embedding vectors" in guardrail for guardrail in profile["application_guardrails"])

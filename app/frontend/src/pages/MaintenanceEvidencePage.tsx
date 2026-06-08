@@ -53,6 +53,7 @@ import {
   getLegalRagAuthorityCitationGate,
   getLegalRagBenchmarkAlignment,
   getLegalRagEmbeddingChunkPolicyGate,
+  getLegalRagEmbeddingIndexDryRunGate,
   getLegalRagEmbeddingReadinessGate,
   getLegalRagIndexCoverageGate,
   getMaintenanceLegalRagExportReadinessPacket,
@@ -131,6 +132,7 @@ import {
   type LegalRagAuthorityCitationGate,
   type LegalRagBenchmarkAlignment,
   type LegalRagEmbeddingChunkPolicyGate,
+  type LegalRagEmbeddingIndexDryRunGate,
   type LegalRagEmbeddingReadinessGate,
   type LegalRagIndexCoverageGate,
   type LegalRagRetrievalObservationGate,
@@ -463,6 +465,8 @@ function Inner() {
     useState<LegalRagEmbeddingReadinessGate | null>(null);
   const [legalRagEmbeddingChunkPolicyGate, setLegalRagEmbeddingChunkPolicyGate] =
     useState<LegalRagEmbeddingChunkPolicyGate | null>(null);
+  const [legalRagEmbeddingIndexDryRunGate, setLegalRagEmbeddingIndexDryRunGate] =
+    useState<LegalRagEmbeddingIndexDryRunGate | null>(null);
   const [legalRagHallucinationTriageGate, setLegalRagHallucinationTriageGate] =
     useState<LegalRagHallucinationTriageGate | null>(null);
   const [legalRagAbstentionEscalationGate, setLegalRagAbstentionEscalationGate] =
@@ -888,6 +892,11 @@ function Inner() {
           label: 'Legal RAG embedding chunk policy gate',
           run: getLegalRagEmbeddingChunkPolicyGate,
           apply: (value) => setLegalRagEmbeddingChunkPolicyGate(value as LegalRagEmbeddingChunkPolicyGate),
+        },
+        {
+          label: 'Legal RAG embedding index dry-run gate',
+          run: getLegalRagEmbeddingIndexDryRunGate,
+          apply: (value) => setLegalRagEmbeddingIndexDryRunGate(value as LegalRagEmbeddingIndexDryRunGate),
         },
         {
           label: 'Legal RAG retrieval diagnostics gate',
@@ -10083,6 +10092,246 @@ function Inner() {
                           ))}
                         </ul>
                         <h3 className="mb-3 mt-5 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingIndexDryRunGate &&
+              (() => {
+                const gate = legalRagEmbeddingIndexDryRunGate;
+                const rows = gate.dry_run_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const claim = gate.claim_boundary;
+                const summaryCounts = [
+                  { label: 'dry-run rows', value: summary.dry_run_row_count },
+                  { label: 'manifest ready rows', value: summary.manifest_ready_row_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'planned chunks', value: summary.planned_chunk_total },
+                  { label: 'planned vector slots', value: summary.planned_vector_slot_total },
+                  { label: 'manifest row limit', value: summary.max_laptop_safe_manifest_rows },
+                  { label: 'embedding default model', value: summary.embedding_default_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source ids returned', value: privacy.returns_source_ids },
+                  { label: 'raw legal text returned', value: privacy.returns_raw_legal_text },
+                  { label: 'source chunks returned', value: privacy.returns_source_chunks },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                  { label: 'network called', value: privacy.network_called },
+                  { label: 'index commit claimed', value: claim.index_commit_claimed },
+                  { label: 'vector store quality claimed', value: claim.vector_store_quality_claimed },
+                  { label: 'automatic index write claimed', value: claim.automatic_index_write_claimed },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding index dry-run gate</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Metadata-only index write manifest review after chunk policy and before any embedding persistence
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Source type</TableHead>
+                            <TableHead>Dry-run / commit</TableHead>
+                            <TableHead>Manifest estimates</TableHead>
+                            <TableHead>Manifest fields</TableHead>
+                            <TableHead>Linked gates</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{displayToken(row.source_type)}</div>
+                                <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                                <div className="mt-1 text-xs text-stone-500">
+                                  chunk policy: {displayToken(row.chunk_policy_status)}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.dry_run_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(row.dry_run_status)}
+                                </Badge>
+                                <div className="mt-2">commit_action: {displayToken(row.commit_action)}</div>
+                                <div>chunk_release_action: {displayToken(row.chunk_release_action)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>estimated_token_count: {row.estimated_token_count}</div>
+                                <div>planned_chunk_count: {row.planned_chunk_count}</div>
+                                <div>planned_vector_slot_count: {row.planned_vector_slot_count}</div>
+                                <div>over_laptop_safe_manifest_limit: {String(row.over_laptop_safe_manifest_limit)}</div>
+                                <div className="font-mono text-[11px]">{row.embedding_model}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[260px] flex-wrap gap-1">
+                                  {row.manifest_fields.map((field) => (
+                                    <Badge key={`${row.id}-${field}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {field}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[260px] flex-wrap gap-1">
+                                  {row.linked_gate_ids.map((gateId) => (
+                                    <Badge key={`${row.id}-${gateId}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {gateId}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[260px] flex-wrap gap-1">
+                                  {row.reason_codes.map((code) => (
+                                    <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['dry_run_status_counts', gate.dry_run_status_counts],
+                            ['commit_action_counts', gate.commit_action_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Linked gate summary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {Object.entries(gate.linked_gate_summary).map(([key, value]) => (
+                            <div key={key}>
+                              {displayToken(key)}: {formatInline(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">dry_run_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.dry_run_policy.method}</div>
+                          <div>requires ready chunks: {String(gate.dry_run_policy.requires_ready_chunk_policy_rows)}</div>
+                          <div>blocks on blocked chunks: {String(gate.dry_run_policy.blocks_on_blocked_chunk_policy)}</div>
+                          <div>embedding creation allowed: {String(gate.dry_run_policy.embedding_creation_allowed)}</div>
+                          <div>index write allowed: {String(gate.dry_run_policy.index_write_allowed)}</div>
+                          <div>database write allowed: {String(gate.dry_run_policy.database_write_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_manifest_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.accepted_manifest_fields.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">repository_persistence_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.repository_persistence_fields.slice(0, 12).map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
+                          <div>dry_run_only: {String(gate.input_contract.dry_run_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                         <div className="space-y-2">
                           {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
                             <div

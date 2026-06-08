@@ -1062,6 +1062,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-index-coverage-gate": "python -m pytest tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_index_binding.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-readiness-gate": "python -m pytest tests/test_legal_rag_embedding_readiness_gate.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_legal_rag_index_coverage_gate.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-chunk-policy-gate": "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-rag-embedding-index-dry-run-gate": "python -m pytest tests/test_legal_rag_embedding_index_dry_run_gate.py tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-benchmark-alignment": "python -m pytest tests/test_legal_rag_benchmark_alignment.py tests/test_legal_rag_retrieval_diagnostics_gate.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-retrieval-observation-gate": "python -m pytest tests/test_legal_rag_retrieval_observation_gate.py tests/test_legal_rag_selected_source_validation.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-benchmark-research-registry-ui": "npm run typecheck",
@@ -1950,6 +1951,26 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-chunk-policy-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-chunk-policy-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_EMBEDDING_CHUNK_POLICY_GATE.md" in checks["legal-rag-embedding-chunk-policy-gate"]["evidence_paths"]
+    assert "metadata-only Legal RAG embedding index dry-run evidence" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "planned vector slots" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "chunk-policy readiness" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "durable index persistence fields" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "repository validation" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "create embeddings" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "write indexes or databases" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "source chunks" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "embedding vectors" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "credentials" in checks["legal-rag-embedding-index-dry-run-gate"]["manual_note"]
+    assert "app/backend/services/legal_rag_embedding_index_dry_run_gate.py" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_index_dry_run_gate.py" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_chunk_policy_gate.py" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_source_durable_index_plan.py" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/backend/services/legal_source_index_repository.py" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_INDEX_DRY_RUN_GATE.md" in checks["legal-rag-embedding-index-dry-run-gate"]["evidence_paths"]
     assert "metadata-only Legal RAG benchmark alignment evidence" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "LegalBench-RAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]
     assert "CRAG" in checks["legal-rag-benchmark-alignment"]["manual_note"]

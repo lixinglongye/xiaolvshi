@@ -40,6 +40,19 @@ text, source chunks, embedding vectors, prompts, model outputs, gateway
 payloads, credentials, emails, or chunk/embedding/index/retrieval quality
 claims.
 
+Current Legal RAG embedding index dry-run slice:
+`legal-rag-embedding-index-dry-run-gate` adds metadata-only index manifest
+review evidence through `LegalRagEmbeddingIndexDryRunGateService` at
+`/api/v1/maintenance/legal-rag-embedding-index-dry-run-gate`. It turns
+chunk-policy rows into dry-run manifest rows with planned vector-slot counts,
+durable index persistence-field checks, repository-validation linkage, and
+commit-action blockers before any embedding index write. It does not call
+NewAPI, Gemini, models, gateways, app AI endpoints, or the network; create
+embeddings; write indexes or databases; download datasets; or return source ids,
+raw query, raw retrieved context, raw legal text, source chunks, embedding
+vectors, prompts, model outputs, gateway payloads, credentials, emails, or
+index/vector/retrieval quality claims.
+
 Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps

@@ -445,6 +445,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-index-coverage-gate" in completed_ids
     assert "legal-rag-embedding-readiness-gate" in completed_ids
     assert "legal-rag-embedding-chunk-policy-gate" in completed_ids
+    assert "legal-rag-embedding-index-dry-run-gate" in completed_ids
     assert "legal-rag-benchmark-alignment" in completed_ids
     assert "legal-rag-retrieval-observation-gate" in completed_ids
     assert "legal-rag-retrieval-observation-ui-binding" in completed_ids
@@ -641,6 +642,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-index-coverage-gate" not in queue_ids
     assert "legal-rag-embedding-readiness-gate" not in queue_ids
     assert "legal-rag-embedding-chunk-policy-gate" not in queue_ids
+    assert "legal-rag-embedding-index-dry-run-gate" not in queue_ids
     assert "legal-rag-benchmark-alignment" not in queue_ids
     assert "legal-rag-retrieval-observation-gate" not in queue_ids
     assert "legal-rag-retrieval-observation-ui-binding" not in queue_ids
@@ -3075,6 +3077,48 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-retrieval-diagnostics-gate" in chunk_policy_entry["release_gate_links"]
     assert "frontend-typecheck" in chunk_policy_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in chunk_policy_entry["release_gate_links"]
+
+    dry_run_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-rag-embedding-index-dry-run-gate"
+    )
+    assert dry_run_entry["category"] == "benchmark"
+    assert dry_run_entry["size"] == "medium"
+    assert dry_run_entry["status"] == "shipped"
+    assert "metadata-only Legal RAG embedding index dry-run gate" in dry_run_entry["impact"]
+    assert "reviewable index manifest rows" in dry_run_entry["impact"]
+    assert "planned vector-slot counts" in dry_run_entry["impact"]
+    assert "durable index persistence-field checks" in dry_run_entry["impact"]
+    assert "repository validation linkage" in dry_run_entry["impact"]
+    assert "commit-action blockers" in dry_run_entry["impact"]
+    assert "maintenance UI review" in dry_run_entry["impact"]
+    assert "without NewAPI/Gemini/model calls" in dry_run_entry["impact"]
+    assert "embedding creation" in dry_run_entry["impact"]
+    assert "index or database writes" in dry_run_entry["impact"]
+    assert "source-id echoing" in dry_run_entry["impact"]
+    assert "raw legal text" in dry_run_entry["impact"]
+    assert "source chunks" in dry_run_entry["impact"]
+    assert "embedding vectors" in dry_run_entry["impact"]
+    assert "credentials" in dry_run_entry["impact"]
+    assert "index/vector/retrieval quality claims" in dry_run_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_index_dry_run_gate.py" in dry_run_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_index_dry_run_gate.py" in dry_run_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in dry_run_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_chunk_policy_gate.py" in dry_run_entry["evidence_paths"]
+    assert "app/backend/services/legal_source_durable_index_plan.py" in dry_run_entry["evidence_paths"]
+    assert "app/backend/services/legal_source_index_repository.py" in dry_run_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in dry_run_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in dry_run_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in dry_run_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_INDEX_DRY_RUN_GATE.md" in dry_run_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in dry_run_entry["evidence_paths"]
+    assert "legal-rag-embedding-index-dry-run-gate" in dry_run_entry["release_gate_links"]
+    assert "legal-rag-embedding-chunk-policy-gate" in dry_run_entry["release_gate_links"]
+    assert "legal-rag-embedding-readiness-gate" in dry_run_entry["release_gate_links"]
+    assert "legal-source-durable-index-plan" in dry_run_entry["release_gate_links"]
+    assert "legal-source-index-repository" in dry_run_entry["release_gate_links"]
+    assert "legal-rag-index-coverage-gate" in dry_run_entry["release_gate_links"]
+    assert "frontend-typecheck" in dry_run_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in dry_run_entry["release_gate_links"]
     assert (
         "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py "
         "tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py "

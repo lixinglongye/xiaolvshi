@@ -72,6 +72,7 @@ from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitation
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
+from services.legal_rag_embedding_index_dry_run_gate import LegalRagEmbeddingIndexDryRunGateService
 from services.legal_rag_embedding_readiness_gate import LegalRagEmbeddingReadinessGateService
 from services.legal_rag_export_readiness_packet import LegalRagExportReadinessPacketService
 from services.legal_rag_hallucination_triage_gate import LegalRagHallucinationTriageGateService
@@ -1358,6 +1359,31 @@ async def evaluate_legal_rag_embedding_chunk_policy_gate(payload: dict[str, Any]
     return {
         "success": True,
         "data": LegalRagEmbeddingChunkPolicyGateService().build_gate(rows if isinstance(rows, list) else None),
+    }
+
+
+@router.get("/legal-rag-embedding-index-dry-run-gate")
+async def get_legal_rag_embedding_index_dry_run_gate():
+    """Return metadata-only Legal RAG embedding index dry-run evidence."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingIndexDryRunGateService().build_gate(),
+    }
+
+
+@router.post("/legal-rag-embedding-index-dry-run-gate")
+async def evaluate_legal_rag_embedding_index_dry_run_gate(payload: dict[str, Any]):
+    """Evaluate metadata-only Legal RAG embedding index dry-run rows."""
+    rows = payload.get("source_rows")
+    if not isinstance(rows, list):
+        rows = payload.get("sources")
+    if not isinstance(rows, list):
+        rows = payload.get("records")
+    if not isinstance(rows, list):
+        rows = payload.get("metadata_rows")
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingIndexDryRunGateService().build_gate(rows if isinstance(rows, list) else None),
     }
 
 

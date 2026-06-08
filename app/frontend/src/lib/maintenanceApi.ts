@@ -4155,6 +4155,144 @@ export type LegalRagEmbeddingChunkPolicyGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingIndexDryRunGateRow = {
+  id: string;
+  source_type: string;
+  chunk_policy_status: string;
+  chunk_release_action: string;
+  dry_run_status: string;
+  commit_action: string;
+  estimated_token_count: number;
+  planned_chunk_count: number;
+  planned_vector_slot_count: number;
+  over_laptop_safe_manifest_limit: boolean;
+  embedding_model: string;
+  canonical_embedding_model: string;
+  manifest_fields: string[];
+  reason_codes: string[];
+  linked_gate_ids: string[];
+  privacy_boundary: {
+    source_ids_returned: boolean;
+    raw_legal_text_returned: boolean;
+    source_chunks_returned: boolean;
+    embedding_vectors_returned: boolean;
+    database_written: boolean;
+    index_written: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingIndexDryRunGate = {
+  id: 'legal-rag-embedding-index-dry-run-gate' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    dry_run_row_count: number;
+    manifest_ready_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    planned_chunk_total: number;
+    planned_vector_slot_total: number;
+    manifest_over_laptop_safe_limit: boolean;
+    max_laptop_safe_manifest_rows: number;
+    embedding_default_model: string;
+    embedding_default_canonical_model: string;
+    chunk_policy_gate_status: string;
+    durable_index_plan_status: string;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    embeddings_created: boolean;
+    index_written: boolean;
+    database_written: boolean;
+    source_ids_returned: boolean;
+    raw_legal_text_included: boolean;
+    source_chunks_included: boolean;
+    embedding_vectors_included: boolean;
+    credentials_included: boolean;
+    [key: string]: unknown;
+  };
+  dry_run_rows: LegalRagEmbeddingIndexDryRunGateRow[];
+  dry_run_status_counts: Record<string, number>;
+  commit_action_counts: Record<string, number>;
+  linked_gate_summary: {
+    legal_rag_embedding_chunk_policy_gate?: string;
+    legal_rag_embedding_readiness_gate?: string;
+    legal_rag_index_coverage_gate?: string;
+    legal_source_durable_index_plan?: string;
+    legal_source_index_repository?: string;
+    embedding_default_model?: string;
+    chunk_policy_schema_version?: string;
+    durable_index_schema_version?: string;
+    [key: string]: unknown;
+  };
+  input_contract: {
+    accepted_source_fields: string[];
+    accepted_manifest_fields: string[];
+    repository_persistence_fields: string[];
+    forbidden_fields_ignored: string[];
+    source_id_echoed: boolean;
+    dry_run_only: boolean;
+    [key: string]: unknown;
+  };
+  dry_run_policy: {
+    method: string;
+    requires_ready_embedding_readiness_gate: boolean;
+    requires_ready_chunk_policy_rows: boolean;
+    blocks_on_blocked_chunk_policy: boolean;
+    review_on_review_required_chunk_policy: boolean;
+    max_laptop_safe_manifest_rows: number;
+    embedding_creation_allowed: boolean;
+    index_write_allowed: boolean;
+    database_write_allowed: boolean;
+    network_allowed: boolean;
+    [key: string]: unknown;
+  };
+  claim_boundary: {
+    legal_advice_claimed: boolean;
+    retrieval_quality_claimed: boolean;
+    embedding_quality_claimed: boolean;
+    chunk_quality_claimed: boolean;
+    index_quality_claimed: boolean;
+    index_commit_claimed: boolean;
+    vector_store_quality_claimed: boolean;
+    automatic_index_write_claimed: boolean;
+    allowed_claims?: string[];
+    forbidden_claims?: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_source_ids: boolean;
+    returns_raw_query: boolean;
+    returns_user_question: boolean;
+    returns_retrieved_context: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_chunks: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_credentials: boolean;
+    returns_gateway_payloads: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    creates_embeddings: boolean;
+    writes_index: boolean;
+    writes_database: boolean;
+    downloads_datasets: boolean;
+    network_called: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagRetrievalObservationGateRow = {
   id: string;
   query_intent: string;
@@ -4873,6 +5011,11 @@ type LegalRagEmbeddingReadinessGateResponse = {
 type LegalRagEmbeddingChunkPolicyGateResponse = {
   success: boolean;
   data: LegalRagEmbeddingChunkPolicyGate;
+};
+
+type LegalRagEmbeddingIndexDryRunGateResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingIndexDryRunGate;
 };
 
 type LegalRagRetrievalObservationGateResponse = {
@@ -6368,6 +6511,14 @@ export async function getLegalRagEmbeddingChunkPolicyGate(): Promise<LegalRagEmb
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagEmbeddingChunkPolicyGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingIndexDryRunGate(): Promise<LegalRagEmbeddingIndexDryRunGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-index-dry-run-gate',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingIndexDryRunGateResponse['data']>(resp);
 }
 
 export async function evaluateLegalRagRetrievalObservationGate(
