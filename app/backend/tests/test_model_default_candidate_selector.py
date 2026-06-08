@@ -1,3 +1,5 @@
+import json
+
 from services import model_catalog
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
 from services.gemini_newapi_model_selector import GeminiNewapiModelSelectorService
@@ -150,6 +152,51 @@ def test_default_candidate_selector_keeps_preview_and_unpriced_models_out_of_def
     ladder_rows = {row["model"]: row for row in ladder}
     assert ladder_rows["gemini-4.0-flash-lite"]["role"] == "explicit preview review"
     assert ladder_rows["gemini-4.0-flash-lite-unpriced"]["role"] == "explicit price review"
+
+
+def test_default_candidate_selector_accepts_task_subset_without_echoing_raw_values():
+    secret = "s" + "k-" + "a" * 24
+    selector = ModelDefaultCandidateSelectorService().build_selector(
+        {"tasks": ["fast", secret, "ocr", "fast", {"raw": "ignored"}]}
+    )
+    serialized = json.dumps(selector, ensure_ascii=False)
+    tasks = {item["task"] for item in selector["recommendations"]}
+
+    assert selector["status"] == "ready"
+    assert tasks == {"fast", "ocr", "review"}
+    assert selector["summary"]["submitted_task_count"] == 3
+    assert selector["summary"]["raw_payload_echoed"] is False
+    assert selector["privacy_boundary"]["credentials_included"] is False
+    assert secret not in serialized
+
+
+def test_model_default_candidate_selector_routes_are_available():
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router as aihub_router
+    from routers.maintenance import router as maintenance_router
+
+    app = fastapi.FastAPI()
+    app.include_router(aihub_router)
+    app.include_router(maintenance_router)
+    client = testclient.TestClient(app)
+
+    maintenance_response = client.get("/api/v1/maintenance/model-default-candidate-selector")
+    assert maintenance_response.status_code == 200
+    assert maintenance_response.json()["data"]["id"] == "model-default-candidate-selector"
+
+    aihub_response = client.post(
+        "/api/v1/aihub/models/model-default-candidate-selector",
+        json={"tasks": ["fast", "document-generation"]},
+    )
+    assert aihub_response.status_code == 200
+    payload = aihub_response.json()
+    assert payload["success"] is True
+    assert payload["data"]["summary"]["task_count"] == 2
+    assert payload["data"]["summary"]["raw_payload_echoed"] is False
+    assert {item["task"] for item in payload["data"]["recommendations"]} == {"fast", "document-generation"}
 
 
 def test_price_refresh_monitor_uses_catalog_derived_recommendation_for_drift(monkeypatch):

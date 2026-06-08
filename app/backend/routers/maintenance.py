@@ -107,6 +107,7 @@ from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLeg
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_cost_regression_snapshots import ModelCostRegressionSnapshotService
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.ocr_import_readiness_policy import OcrImportReadinessPolicyService
 from services.privacy_retention_rules import PrivacyRetentionRulesService
@@ -1016,6 +1017,24 @@ async def evaluate_gemini_newapi_alias_capability_coverage(payload: Any = Body(d
     return {
         "success": True,
         "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(payload),
+    }
+
+
+@router.get("/model-default-candidate-selector")
+async def get_model_default_candidate_selector():
+    """Return metadata-only Gemini/NewAPI default candidate selection evidence."""
+    return {
+        "success": True,
+        "data": ModelDefaultCandidateSelectorService().build_selector(),
+    }
+
+
+@router.post("/model-default-candidate-selector")
+async def evaluate_model_default_candidate_selector(payload: Any = Body(default=None)):
+    """Evaluate sanitized task names against local default candidate metadata."""
+    return {
+        "success": True,
+        "data": ModelDefaultCandidateSelectorService().build_selector(payload),
     }
 
 

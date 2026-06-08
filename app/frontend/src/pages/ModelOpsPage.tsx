@@ -21,6 +21,7 @@ import {
   evaluateModelOpsCheapFirstCanaryObservation,
   evaluateModelOpsCheapFirstEscalationBudget,
   evaluateGeminiCheapFirstRoutePreflight,
+  evaluateModelDefaultCandidateSelector,
   evaluateModelFailureUpgradeBudget,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
@@ -30,6 +31,7 @@ import {
   getGeminiCheapFirstCoverageGate,
   getGeminiCheapFirstRoutePreflight,
   getGeminiNewApiAliasCapabilityCoverage,
+  getModelDefaultCandidateSelector,
   getModelOpsGeminiNewApiModelSelector,
   getModelOpsGeminiNewApiSelectorReplay,
   getModelOpsGeminiResearchRefreshGate,
@@ -56,6 +58,7 @@ import {
   type ModelCatalogItem,
   type ModelCheapFirstCalibration,
   type GeminiNewApiAliasCapabilityCoverage,
+  type ModelDefaultCandidateSelector,
   type ModelOpsGeminiNewApiModelSelector,
   type ModelOpsGeminiNewApiSelectorReplay,
   type GeminiVariantMatrix,
@@ -246,6 +249,12 @@ function defaultObservedGeminiModelIntakePayload() {
   };
 }
 
+function defaultModelDefaultCandidateSelectorPayload() {
+  return {
+    tasks: ['fast', 'classification', 'ocr', 'review', 'document-generation', 'embedding'],
+  };
+}
+
 function defaultGeminiCheapFirstRoutePreflightPayload() {
   return {
     observed_models: [
@@ -388,6 +397,18 @@ function hasForbiddenObservedGeminiModelIntakePayloadText(value: string) {
   );
 }
 
+function hasForbiddenModelDefaultCandidatePayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b1[3-9]\d{9}\b/.test(value) ||
+    /\b\d{17}[\dXx]\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|gateway[_ -]?response|messages?|content)\b/i.test(
+      value,
+    ) ||
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
+  );
+}
+
 function hasForbiddenGeminiRoutePreflightPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -503,6 +524,12 @@ function Inner() {
   const [geminiAliasCapabilityCoverage, setGeminiAliasCapabilityCoverage] =
     useState<GeminiNewApiAliasCapabilityCoverage | null>(null);
   const [geminiAliasCapabilityCoverageError, setGeminiAliasCapabilityCoverageError] = useState('');
+  const [defaultCandidateSelector, setDefaultCandidateSelector] = useState<ModelDefaultCandidateSelector | null>(null);
+  const [defaultCandidateSelectorPayloadText, setDefaultCandidateSelectorPayloadText] = useState(
+    JSON.stringify(defaultModelDefaultCandidateSelectorPayload(), null, 2),
+  );
+  const [defaultCandidateSelectorLoading, setDefaultCandidateSelectorLoading] = useState(false);
+  const [defaultCandidateSelectorError, setDefaultCandidateSelectorError] = useState('');
   const [geminiNewApiModelSelector, setGeminiNewApiModelSelector] =
     useState<ModelOpsGeminiNewApiModelSelector | null>(null);
   const [geminiNewApiModelSelectorError, setGeminiNewApiModelSelectorError] = useState('');
@@ -618,6 +645,7 @@ function Inner() {
     setObservedGatewayModelFitMatrix(payload.observed_gateway_model_fit_matrix ?? null);
     setRuntimeExplicitModelFitGate(payload.runtime_explicit_model_fit_gate ?? null);
     setGeminiCheapFirstRoutePreflight(payload.gemini_cheap_first_route_preflight ?? null);
+    setDefaultCandidateSelector(payload.default_candidate_selector ?? null);
     setGeminiNewApiModelSelector(payload.gemini_newapi_model_selector ?? null);
     setGeminiNewApiSelectorReplay(payload.gemini_newapi_selector_replay ?? null);
     setGeminiResearchRefreshGate(payload.gemini_research_refresh_gate ?? null);
@@ -645,6 +673,8 @@ function Inner() {
     setRuntimeExplicitModelFitGate(null);
     setGeminiAliasCapabilityCoverageError('');
     setGeminiAliasCapabilityCoverage(null);
+    setDefaultCandidateSelectorError('');
+    setDefaultCandidateSelector(null);
     setGeminiNewApiModelSelectorError('');
     setGeminiNewApiModelSelector(null);
     setGeminiNewApiSelectorReplayError('');
@@ -717,6 +747,7 @@ function Inner() {
         observedGatewayModelFitMatrixResult,
         runtimeExplicitModelFitGateResult,
         geminiAliasCapabilityCoverageResult,
+        defaultCandidateSelectorResult,
         geminiNewApiModelSelectorResult,
         geminiNewApiSelectorReplayResult,
         geminiCheapFirstCoverageGateResult,
@@ -742,6 +773,7 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.observed_gateway_model_fit_matrix, getModelOpsObservedGatewayModelFitMatrix),
         aggregateOrRequest(aggregatePayload?.runtime_explicit_model_fit_gate, getModelOpsRuntimeExplicitModelFitGate),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_alias_capability_coverage, getGeminiNewApiAliasCapabilityCoverage),
+        aggregateOrRequest(aggregatePayload?.default_candidate_selector, getModelDefaultCandidateSelector),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_model_selector, getModelOpsGeminiNewApiModelSelector),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_selector_replay, getModelOpsGeminiNewApiSelectorReplay),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_coverage_gate, getGeminiCheapFirstCoverageGate),
@@ -822,6 +854,15 @@ function Inner() {
           setGeminiAliasCapabilityCoverage(modelOpsResult.value.gemini_newapi_alias_capability_coverage ?? null);
           if (!modelOpsResult.value.gemini_newapi_alias_capability_coverage) {
             setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
+          }
+        }
+        if (defaultCandidateSelectorResult.status === 'fulfilled') {
+          setDefaultCandidateSelector(defaultCandidateSelectorResult.value);
+        } else {
+          console.error(defaultCandidateSelectorResult.reason);
+          setDefaultCandidateSelector(modelOpsResult.value.default_candidate_selector ?? null);
+          if (!modelOpsResult.value.default_candidate_selector) {
+            setDefaultCandidateSelectorError('Model default candidate selector failed to load.');
           }
         }
         if (geminiNewApiModelSelectorResult.status === 'fulfilled') {
@@ -1125,6 +1166,10 @@ function Inner() {
         console.error(geminiAliasCapabilityCoverageResult.reason);
         setGeminiAliasCapabilityCoverageError('Gemini/NewAPI alias capability coverage failed to load.');
       }
+      if (modelOpsResult.status === 'rejected' && defaultCandidateSelectorResult.status === 'rejected') {
+        console.error(defaultCandidateSelectorResult.reason);
+        setDefaultCandidateSelectorError('Model default candidate selector failed to load.');
+      }
       if (modelOpsResult.status === 'rejected' && geminiNewApiModelSelectorResult.status === 'rejected') {
         console.error(geminiNewApiModelSelectorResult.reason);
         setGeminiNewApiModelSelectorError('Gemini/NewAPI model selector failed to load.');
@@ -1321,6 +1366,44 @@ function Inner() {
       );
     } finally {
       setObservedGeminiModelIntakeLoading(false);
+    }
+  };
+
+  const loadDefaultCandidateSelectorTemplate = () => {
+    setDefaultCandidateSelectorError('');
+    setDefaultCandidateSelectorPayloadText(JSON.stringify(defaultModelDefaultCandidateSelectorPayload(), null, 2));
+  };
+
+  const evaluateDefaultCandidateSelectorPayload = async () => {
+    setDefaultCandidateSelectorLoading(true);
+    setDefaultCandidateSelectorError('');
+    try {
+      const text = defaultCandidateSelectorPayloadText.trim();
+      if (!text) {
+        setDefaultCandidateSelectorError('Default candidate selector payload is empty.');
+        return;
+      }
+      if (hasForbiddenModelDefaultCandidatePayloadText(text)) {
+        setDefaultCandidateSelectorError(
+          'Default candidate selector input must contain task names only; remove keys, headers, prompts, contact details, document text, and raw model output.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setDefaultCandidateSelectorError('Default candidate selector payload must be a JSON object.');
+        return;
+      }
+      setDefaultCandidateSelector(await evaluateModelDefaultCandidateSelector(payload as Record<string, unknown>));
+    } catch (err) {
+      console.error(err);
+      setDefaultCandidateSelectorError(
+        err instanceof SyntaxError
+          ? 'Default candidate selector payload is not valid JSON.'
+          : 'Default candidate selector evaluation failed.',
+      );
+    } finally {
+      setDefaultCandidateSelectorLoading(false);
     }
   };
 
@@ -1719,6 +1802,20 @@ function Inner() {
   );
   const geminiAliasCapabilityClaimEntries = boundaryDisplayEntries(
     activeGeminiAliasCapabilityCoverage?.claim_boundary,
+  );
+  const activeDefaultCandidateSelector = defaultCandidateSelector ?? data?.default_candidate_selector ?? null;
+  const defaultCandidateSelectorRows = activeDefaultCandidateSelector?.recommendations ?? [];
+  const defaultCandidateTopRows = defaultCandidateSelectorRows.flatMap((row) =>
+    row.candidates.slice(0, 3).map((candidate) => ({
+      task: row.task,
+      selected_model: row.selected_model,
+      route_mode: row.route_mode,
+      high_frequency: row.high_frequency,
+      ...candidate,
+    })),
+  );
+  const defaultCandidateSelectorPrivacyEntries = boundaryDisplayEntries(
+    activeDefaultCandidateSelector?.privacy_boundary,
   );
   const activeGeminiNewApiModelSelector =
     geminiNewApiModelSelector ?? data?.gemini_newapi_model_selector ?? null;
@@ -6756,6 +6853,239 @@ function Inner() {
                           {command}
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeDefaultCandidateSelector || defaultCandidateSelectorError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Model default candidate selector</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeDefaultCandidateSelector
+                    ? `${activeDefaultCandidateSelector.summary.task_count} tasks / ${activeDefaultCandidateSelector.summary.default_eligible_candidate_count} default-eligible candidates / ${activeDefaultCandidateSelector.summary.review_only_candidate_count} review-only candidates`
+                    : 'metadata-only cheap-first default candidate evidence'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeDefaultCandidateSelector?.id ?? 'model-default-candidate-selector'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeDefaultCandidateSelector?.status)}>
+                {activeDefaultCandidateSelector?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {defaultCandidateSelectorError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {defaultCandidateSelectorError}
+              </div>
+            )}
+
+            {activeDefaultCandidateSelector && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.catalog_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">catalog models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.candidate_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">candidate models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.default_eligible_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default eligible</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.review_only_candidate_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review only</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeDefaultCandidateSelector.summary.high_frequency_task_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high frequency</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeDefaultCandidateSelector.summary.raw_payload_echoed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">payload echoed</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeDefaultCandidateSelector.summary.gateway_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">gateway called</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Selected model</TableHead>
+                          <TableHead>Route</TableHead>
+                          <TableHead>Candidates</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {defaultCandidateSelectorRows.map((row) => (
+                          <TableRow key={`${row.task}-${row.selected_model}`}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.task}</div>
+                              <div className="mt-1 text-xs text-stone-500">
+                                high-frequency: {String(row.high_frequency)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div className="break-all font-mono font-semibold text-stone-950">
+                                {row.selected_model}
+                              </div>
+                              <div className="mt-1 font-mono text-[11px]">
+                                fallback: {row.fallback_model}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={`${costClass[row.selected_cost_tier] ?? 'bg-white'}`}>
+                                {row.selected_cost_tier}
+                              </Badge>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.route_mode}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{row.eligible_candidate_count} eligible</div>
+                              <div>{row.review_only_candidate_count} review</div>
+                              <div>{row.candidate_count} total</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Candidate</TableHead>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Stage</TableHead>
+                          <TableHead>Review blockers</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {defaultCandidateTopRows.slice(0, 18).map((row) => (
+                          <TableRow key={`${row.task}-${row.model_id}-${row.candidate_stage}`}>
+                            <TableCell className="max-w-[260px]">
+                              <div className="break-all font-mono text-xs font-semibold text-stone-950">
+                                {row.model_id}
+                              </div>
+                              <div className="mt-1 text-[11px] text-stone-500">
+                                {row.family} / {row.latency_tier} / {row.pricing_status}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">{row.task}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.default_eligible ? 'pass' : 'warn')}>
+                                {row.candidate_stage.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1">
+                                <Badge variant="outline" className={`${costClass[row.cost_tier] ?? 'bg-white'}`}>
+                                  {row.cost_tier}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              {row.promotion_blockers.join(', ') || 'none'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Evaluate task subset</h3>
+                    <Textarea
+                      value={defaultCandidateSelectorPayloadText}
+                      onChange={(event) => setDefaultCandidateSelectorPayloadText(event.target.value)}
+                      className="min-h-[150px] font-mono text-xs"
+                    />
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" size="sm" onClick={loadDefaultCandidateSelectorTemplate}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Load template
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={evaluateDefaultCandidateSelectorPayload}
+                        disabled={defaultCandidateSelectorLoading}
+                      >
+                        {defaultCandidateSelectorLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <PlayCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Evaluate
+                      </Button>
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      Accepted input is a JSON object with task names only, for example fast, review, ocr, and embedding.
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        {defaultCandidateSelectorPrivacyEntries.map(([key, value]) => (
+                          <div key={key}>
+                            {key}: {value == null ? '-' : String(value)}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">
+                        Metadata-only selector: task labels, catalog IDs, price tiers, lifecycle status, and no-call/no-write flags.
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                      <div className="space-y-2">
+                        {activeDefaultCandidateSelector.validation_commands.map((command) => (
+                          <div
+                            key={command}
+                            className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                          >
+                            {command}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

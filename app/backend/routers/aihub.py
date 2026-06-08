@@ -11,7 +11,7 @@ import logging
 from time import monotonic
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from schemas.aihub import (
     AnalyzePdfRequest,
     AnalyzePdfResponse,
@@ -47,6 +47,7 @@ from services.model_catalog import catalog_for_api, task_default_model
 from services.model_configuration_audit import ModelConfigurationAuditService
 from services.model_cost_forecast import ModelCostForecastService
 from services.model_cost_guardrails import ModelCostGuardrailService
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 from services.model_default_optimization import ModelDefaultOptimizationService
 from services.model_default_recommendation_snapshot import ModelDefaultRecommendationSnapshotService
 from services.model_default_template_audit import ModelDefaultTemplateAuditService
@@ -321,6 +322,7 @@ async def list_models():
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
+    default_candidate_selector = ModelDefaultCandidateSelectorService().build_selector()
     cheap_first_calibration = GeminiNewapiCheapFirstCalibrationService().build_calibration()
     gemini_variant_matrix = GeminiModelVariantMatrixService().build_matrix(
         {"observed_models": observed_gateway_models}
@@ -467,6 +469,7 @@ async def list_models():
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
+        "default_candidate_selector": default_candidate_selector,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
@@ -595,6 +598,7 @@ async def list_models():
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
+        "default_candidate_selector": default_candidate_selector,
         "request_cost_bounds": request_cost_bounds,
         "cache_policy": cache_policy,
         "reasoning_policy": reasoning_policy,
@@ -794,6 +798,25 @@ async def evaluate_gemini_newapi_alias_capability_coverage(payload: dict[str, An
     return {
         "success": True,
         "data": GeminiNewapiAliasCapabilityCoverageService().build_coverage(payload),
+    }
+
+
+@router.get("/models/model-default-candidate-selector")
+async def model_default_candidate_selector():
+    """Return metadata-only Gemini/NewAPI default candidate selection evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["default_candidate_selector"],
+    }
+
+
+@router.post("/models/model-default-candidate-selector")
+async def evaluate_model_default_candidate_selector(payload: Any = Body(default=None)):
+    """Evaluate sanitized task names against local default candidate metadata."""
+    return {
+        "success": True,
+        "data": ModelDefaultCandidateSelectorService().build_selector(payload),
     }
 
 

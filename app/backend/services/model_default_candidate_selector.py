@@ -300,8 +300,9 @@ class ModelDefaultCandidateSelectorService:
         normalized = normalize_task(task)
         return TASK_POLICIES.get(normalized, TASK_POLICIES["review"])
 
-    def build_selector(self) -> dict[str, Any]:
-        rows = [self.recommendation(task) for task in TASK_POLICIES]
+    def build_selector(self, payload: Any | None = None) -> dict[str, Any]:
+        tasks = self._tasks_from_payload(payload)
+        rows = [self.recommendation(task) for task in tasks]
         return {
             "id": "model-default-candidate-selector",
             "status": "ready",
@@ -328,8 +329,11 @@ class ModelDefaultCandidateSelectorService:
                     for candidate in row["candidates"]
                     if candidate["review_required"]
                 ),
+                "submitted_task_count": len(tasks) if payload is not None else 0,
+                "raw_payload_echoed": False,
                 "metadata_only": True,
                 "gateway_called": False,
+                "network_called": False,
                 "configuration_written": False,
             },
             "recommendations": rows,
@@ -339,6 +343,29 @@ class ModelDefaultCandidateSelectorService:
                 "python -m pytest tests/test_gemini_newapi_cheap_first_policy.py tests/test_gemini_newapi_model_selector.py -q",
             ],
         }
+
+    def _tasks_from_payload(self, payload: Any | None) -> list[str]:
+        if payload is None:
+            return list(TASK_POLICIES)
+        raw_tasks: Any
+        if isinstance(payload, dict):
+            raw_tasks = payload.get("tasks", payload.get("task"))
+        else:
+            raw_tasks = None
+        if isinstance(raw_tasks, str):
+            raw_values = [raw_tasks]
+        elif isinstance(raw_tasks, list):
+            raw_values = raw_tasks
+        else:
+            raw_values = []
+        tasks: list[str] = []
+        for raw_value in raw_values[:20]:
+            if not isinstance(raw_value, str):
+                continue
+            task = self.policy_for_task(raw_value).task
+            if task not in tasks:
+                tasks.append(task)
+        return tasks or list(TASK_POLICIES)
 
     def _candidate_row(self, profile: ModelProfile, policy: TaskCandidatePolicy) -> dict[str, Any]:
         stable = profile.status == "stable"

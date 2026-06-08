@@ -134,6 +134,12 @@ const geminiNewApiModelSelectorPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
   'model-ops Gemini/NewAPI model selector section',
 );
+const modelDefaultCandidateSelectorPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Model default candidate selector</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+  'model-ops model default candidate selector section',
+);
 const geminiNewApiSelectorReplayPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI selector replay</h2>',
@@ -1924,8 +1930,47 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Model default candidate selector</h2>',
+      'model-ops model default candidate selector follows observed Gemini coverage gaps',
+    ),
+  () => assertIncludes(modelOpsApi, 'ModelDefaultCandidateSelector', 'model-ops model default candidate selector type'),
+  () => assertIncludes(modelOpsApi, 'ModelDefaultCandidateSelectorRecommendation', 'model-ops model default candidate selector recommendation type'),
+  () => assertIncludes(modelOpsApi, 'ModelDefaultCandidateSelectorCandidate', 'model-ops model default candidate selector candidate type'),
+  () => assertIncludes(modelOpsApi, 'default_candidate_selector?: ModelDefaultCandidateSelector', 'model-ops model default candidate selector response binding'),
+  () => assertIncludes(modelOpsApi, 'recommendations?: unknown', 'model-ops model default candidate selector payload guard'),
+  () => assertIncludes(modelOpsApi, 'getModelDefaultCandidateSelector', 'model-ops model default candidate selector getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelDefaultCandidateSelector', 'model-ops model default candidate selector evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/model-default-candidate-selector', 'model-ops model default candidate selector endpoint'),
+  () => assertIncludes(modelOpsPage, 'Model default candidate selector', 'model-ops model default candidate selector panel'),
+  () => assertIncludes(modelOpsPage, 'defaultCandidateSelectorRows', 'model-ops model default candidate selector row binding'),
+  () => assertIncludes(modelOpsPage, 'defaultCandidateTopRows', 'model-ops model default candidate selector candidate binding'),
+  () => assertIncludes(modelOpsPage, 'defaultModelDefaultCandidateSelectorPayload', 'model-ops model default candidate selector default payload'),
+  () => assertIncludes(modelOpsPage, 'hasForbiddenModelDefaultCandidatePayloadText', 'model-ops model default candidate selector payload guard'),
+  () => assertIncludes(modelOpsPage, 'raw_payload_echoed', 'model-ops model default candidate selector raw payload boundary'),
+  () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops model default candidate selector gateway boundary'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops model default candidate selector write boundary'),
+  () => assertIncludes(modelDefaultCandidateSelectorPanel, 'Evaluate task subset', 'model-ops model default candidate selector evaluation panel'),
+  () => assertIncludes(modelDefaultCandidateSelectorPanel, 'Privacy boundary', 'model-ops model default candidate selector privacy panel'),
+  () => assertIncludes(modelDefaultCandidateSelectorPanel, 'Validation commands', 'model-ops model default candidate selector validation panel'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Model default candidate selector</h2>',
       '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
-      'model-ops observed Gemini coverage gap queue precedes alias coverage',
+      'model-ops model default candidate selector precedes alias coverage',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '<h2 className="text-xl font-black text-stone-950">Model default candidate selector</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI model selector</h2>',
+      'model-ops model default candidate selector precedes Gemini/NewAPI selector',
+    ),
+  () =>
+    assertNotMatches(
+      modelDefaultCandidateSelectorPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|bearer_token|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|output_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|email|phone|identity|messages|content)\b/i,
+      'model-ops model default candidate selector no secret or raw request/output fields',
     ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiNewApiModelSelector', 'model-ops Gemini/NewAPI model selector exported type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiNewApiSelectorReplay', 'model-ops Gemini/NewAPI selector replay exported type'),

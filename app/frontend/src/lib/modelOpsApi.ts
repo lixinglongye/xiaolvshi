@@ -223,6 +223,77 @@ export type ModelDefaultOptimization = {
   recommended_actions: string[];
 };
 
+export type ModelDefaultCandidateSelectorPolicy = {
+  task: string;
+  required_capabilities: string[];
+  preferred_capabilities: string[];
+  max_default_cost_tier: string;
+  fallback_model: string;
+  route_mode: string;
+  high_frequency: boolean;
+  price_mode: string;
+};
+
+export type ModelDefaultCandidateSelectorCandidate = {
+  model_id: string;
+  family: string;
+  catalog_status: string;
+  cost_tier: string;
+  latency_tier: string;
+  pricing_status: string;
+  price_sort_value?: number | null;
+  input_usd_per_million_tokens?: number | null;
+  output_usd_per_million_tokens?: number | null;
+  output_usd_per_image?: number | null;
+  within_default_cost_tier: boolean;
+  default_eligible: boolean;
+  candidate_stage: string;
+  review_required: boolean;
+  promotion_blockers: string[];
+  preferred_capability_hits: string[];
+  missing_preferred_capabilities: string[];
+  capabilities: string[];
+};
+
+export type ModelDefaultCandidateSelectorRecommendation = {
+  task: string;
+  selected_model: string;
+  selected_family: string;
+  selected_cost_tier: string;
+  selected_latency_tier: string;
+  route_mode: string;
+  high_frequency: boolean;
+  fallback_model: string;
+  candidate_count: number;
+  eligible_candidate_count: number;
+  review_only_candidate_count: number;
+  policy: ModelDefaultCandidateSelectorPolicy;
+  candidates: ModelDefaultCandidateSelectorCandidate[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+};
+
+export type ModelDefaultCandidateSelector = {
+  id: string;
+  status: string;
+  summary: {
+    task_count: number;
+    catalog_model_count: number;
+    high_frequency_task_count: number;
+    candidate_model_count: number;
+    default_eligible_candidate_count: number;
+    review_only_candidate_count: number;
+    submitted_task_count: number;
+    raw_payload_echoed: boolean;
+    metadata_only: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+  };
+  recommendations: ModelDefaultCandidateSelectorRecommendation[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelGatewayCompatibilityRole = {
   id: string;
   label: string;
@@ -4639,6 +4710,7 @@ export type ModelOpsResponse = {
   model_configuration_audit?: ModelConfigurationAudit;
   default_template_audit?: ModelDefaultTemplateAudit;
   default_optimization?: ModelDefaultOptimization;
+  default_candidate_selector?: ModelDefaultCandidateSelector;
   gateway_compatibility?: ModelGatewayCompatibility;
   gateway_connection_profile?: ModelGatewayConnectionProfile;
   gateway_runtime_configuration?: ModelGatewayRuntimeConfiguration;
@@ -4741,6 +4813,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     summary?: unknown;
     checks?: unknown;
     recommended_actions?: unknown;
+    recommendations?: unknown;
     calibration_tasks?: unknown;
     calibration_rows?: unknown;
     model_rows?: unknown;
@@ -4804,6 +4877,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.method) && Boolean(payload.payload_shape))
       || (Array.isArray(payload.required) && Array.isArray(payload.optional) && Array.isArray(payload.forbidden))
       || (Boolean(payload.summary) && Array.isArray(payload.checks) && Array.isArray(payload.recommended_actions))
+      || (Boolean(payload.summary) && Array.isArray(payload.recommendations) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.calibration_tasks) && Array.isArray(payload.calibration_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.model_rows) && Array.isArray(payload.family_rows))
       || (Boolean(payload.summary) && Array.isArray(payload.family_rows) && Array.isArray(payload.high_frequency_task_rows) && Array.isArray(payload.gap_items))
@@ -5061,6 +5135,23 @@ export async function getGeminiNewApiAliasCapabilityCoverage(): Promise<GeminiNe
   return invokeModelOpsApi<GeminiNewApiAliasCapabilityCoverage>({
     url: '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage',
     method: 'GET',
+  });
+}
+
+export async function getModelDefaultCandidateSelector(): Promise<ModelDefaultCandidateSelector> {
+  return invokeModelOpsApi<ModelDefaultCandidateSelector>({
+    url: '/api/v1/aihub/models/model-default-candidate-selector',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelDefaultCandidateSelector(
+  payload: Record<string, unknown>,
+): Promise<ModelDefaultCandidateSelector> {
+  return invokeModelOpsApi<ModelDefaultCandidateSelector>({
+    url: '/api/v1/aihub/models/model-default-candidate-selector',
+    method: 'POST',
+    data: payload,
   });
 }
 
