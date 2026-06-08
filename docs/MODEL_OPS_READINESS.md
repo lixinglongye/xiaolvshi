@@ -261,11 +261,17 @@ and continue through unknown model review. Known catalog models without token
 pricing metadata are counted in `unpriced_model_count`, which keeps catalog
 pricing gaps separate from unknown gateway model traffic.
 
+`cheap_first_cascade_research_gate` is required release evidence. It ties the
+FrugalGPT cascade rationale and official Gemini Flash-Lite cheap-start source
+links to local route quality, escalation, failure-upgrade, calibration, and
+user-need evidence before any default model change.
+
 `cheap_first_release_decision` is a downstream release decision packet that uses
 readiness plus cheap-first calibration, Gemini variant review, catalog source
-audit, route preflight, route quality, failure upgrade budget, escalation budget, price refresh, and ModelOps performance
-signals to decide whether current cheap-first defaults can remain and whether
-new default promotion requires maintainer review.
+audit, route preflight, route quality, failure upgrade budget, escalation
+budget, price refresh, and ModelOps performance signals to decide whether
+current cheap-first defaults can remain and whether new default promotion
+requires maintainer review.
 
 The readiness warning drilldown is release evidence for maintainers reviewing cheap-first model changes. It makes warning ownership visible without exposing legal text, prompts, model output, provider credentials, request bodies, response bodies, or gateway payloads.
 
@@ -282,7 +288,7 @@ source-backed price, status, capability, and gateway evidence are refreshed.
 `model-ops-readiness` is a required release-readiness check. Maintainers should run:
 
 ```bash
-python -m pytest tests/test_model_failure_upgrade_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression
+python -m pytest tests/test_model_ops_cheap_first_cascade_research_gate.py tests/test_model_failure_upgrade_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression
 ```
 
 ## Safety
@@ -313,6 +319,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_ops_performance_budget.py`
 - `app/backend/services/model_route_quality_budget.py`
 - `app/backend/services/model_failure_upgrade_budget.py`
+- `app/backend/services/model_ops_cheap_first_cascade_research_gate.py`
 - `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
 - `app/backend/services/modelops_observed_gateway_model_fit_matrix.py`
 - `app/backend/services/model_ops_runtime_explicit_model_fit_gate.py`

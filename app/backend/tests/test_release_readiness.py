@@ -841,6 +841,41 @@ def test_model_failure_upgrade_budget_is_required_model_ops_gate():
     assert "docs/MODEL_FAILURE_UPGRADE_BUDGET.md" in check["evidence_paths"]
 
 
+def test_model_ops_cheap_first_cascade_research_gate_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "model-ops-cheap-first-cascade-research-gate"
+    ]
+    result = service.evaluate({"model-ops-cheap-first-cascade-research-gate": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "model-ops-cheap-first-cascade-research-gate")
+
+    assert commands == [
+        {
+            "check_id": "model-ops-cheap-first-cascade-research-gate",
+            "command": (
+                "python -m pytest tests/test_model_ops_cheap_first_cascade_research_gate.py "
+                "tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py "
+                "tests/test_model_failure_upgrade_budget.py tests/test_model_ops_readiness.py "
+                "tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only cheap-first cascade research evidence" in check["manual_note"]
+    assert "FrugalGPT-style cascade justification" in check["manual_note"]
+    assert "official Gemini Flash-Lite" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "change default routes" in check["manual_note"]
+    assert "app/backend/services/model_ops_cheap_first_cascade_research_gate.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_cascade_research_gate.py" in check["evidence_paths"]
+    assert "app/backend/services/model_route_quality_budget.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in check["evidence_paths"]
+    assert "app/backend/services/model_failure_upgrade_budget.py" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CASCADE_RESEARCH_GATE.md" in check["evidence_paths"]
+
+
 def test_modelops_legal_benchmark_risk_bridge_is_required_model_ops_gate():
     service = ReleaseReadinessService()
     commands = [

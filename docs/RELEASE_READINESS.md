@@ -36,6 +36,17 @@ public benchmark scores, or store raw legal text, benchmark samples, fixture
 snippets, prompts, model outputs, payloads, headers, emails, identifiers, or
 credentials.
 
+Additional required evidence:
+`model-ops-cheap-first-cascade-research-gate` records metadata-only cheap-first
+cascade research evidence. It joins FrugalGPT-style cascade justification,
+official Gemini Flash-Lite cheap-start links, route quality budgets, escalation
+budgets, failure-upgrade budgets, calibration evidence, and user-need handoff
+rows before default model changes. It does not call NewAPI, Gemini, OpenAI,
+Google, gateways, model endpoints, public datasets, or the network, write
+configuration, change default routes, shift traffic, claim production accuracy,
+or store raw legal text, prompts, model outputs, payloads, headers, identifiers,
+or credentials.
+
 Additional optional evidence: `legal-rag-authority-citation-gate` records
 metadata-only Legal RAG source authority and citation quality checks. It does
 not call NewAPI, Gemini, or gateways, download datasets, store raw legal text,

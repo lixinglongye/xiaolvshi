@@ -1805,6 +1805,42 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
+                id="modelops-cheap-first-cascade-research-gate",
+                title="Cheap-first cascade research gate",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only cheap-first cascade research evidence that ties FrugalGPT-style "
+                    "cascade justification and official Gemini Flash-Lite cheap-start positioning to local "
+                    "route quality, escalation budget, failure upgrade, calibration, and user-need handoff "
+                    "gates before any default model change, without NewAPI/Gemini/OpenAI/Google/gateway/"
+                    "network calls, configuration writes, traffic shifts, public benchmark downloads, "
+                    "raw prompts, legal text, model outputs, payloads, headers, identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_cheap_first_cascade_research_gate.py",
+                    "app/backend/tests/test_model_ops_cheap_first_cascade_research_gate.py",
+                    "app/backend/services/model_route_quality_budget.py",
+                    "app/backend/services/model_ops_cheap_first_escalation_budget.py",
+                    "app/backend/services/model_failure_upgrade_budget.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/routers/aihub.py",
+                    "docs/MODEL_OPS_CHEAP_FIRST_CASCADE_RESEARCH_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "model-ops-cheap-first-cascade-research-gate",
+                    "model-ops-readiness",
+                    "model-ops-cheap-first-escalation-budget",
+                    "model-failure-upgrade-budget",
+                    "model-ops-cheap-first-release-decision",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="gemini-catalog-source-audit",
                 title="Gemini catalog source audit",
                 category="model_ops",

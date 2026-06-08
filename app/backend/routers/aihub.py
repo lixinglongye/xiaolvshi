@@ -84,6 +84,9 @@ from services.model_ops_gentxt_task_guard import ModelOpsGenTxtTaskGuardService
 from services.model_ops_runtime_explicit_model_fit_gate import ModelOpsRuntimeExplicitModelFitGateService
 from services.model_ops_readiness import ModelOpsReadinessService
 from services.model_ops_cheap_first_escalation_budget import ModelOpsCheapFirstEscalationBudgetService
+from services.model_ops_cheap_first_cascade_research_gate import (
+    ModelOpsCheapFirstCascadeResearchGateService,
+)
 from services.model_ops_cheap_first_release_decision import ModelOpsCheapFirstReleaseDecisionService
 from services.model_ops_cheap_first_canary_approval_packet import ModelOpsCheapFirstCanaryApprovalPacketService
 from services.model_ops_cheap_first_canary_change_manifest import ModelOpsCheapFirstCanaryChangeManifestService
@@ -435,6 +438,16 @@ async def list_models():
             "user_need_release_bridge": user_need_release_bridge,
         }
     )
+    cheap_first_cascade_research_gate = ModelOpsCheapFirstCascadeResearchGateService().build_gate(
+        {
+            "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
+            "route_quality_budget": route_quality_budget,
+            "cheap_first_escalation_budget": cheap_first_escalation_budget,
+            "failure_upgrade_budget": failure_upgrade_budget,
+            "cheap_first_calibration": cheap_first_calibration,
+            "user_need_cheap_first_handoff": user_need_cheap_first_handoff,
+        }
+    )
     gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(
         {
             "gemini_cheap_first_route_preflight": gemini_cheap_first_route_preflight,
@@ -497,6 +510,7 @@ async def list_models():
         "gentxt_routing_guard": gentxt_routing_guard,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
+        "cheap_first_cascade_research_gate": cheap_first_cascade_research_gate,
         "model_ops_performance_budget": model_ops_performance_budget,
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
@@ -624,6 +638,7 @@ async def list_models():
         "gentxt_routing_guard": gentxt_routing_guard,
         "route_quality_budget": route_quality_budget,
         "cheap_first_escalation_budget": cheap_first_escalation_budget,
+        "cheap_first_cascade_research_gate": cheap_first_cascade_research_gate,
         "model_ops_performance_budget": model_ops_performance_budget,
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
@@ -1424,6 +1439,25 @@ async def evaluate_model_ops_cheap_first_escalation_budget(payload: dict[str, An
     return {
         "success": True,
         "data": ModelOpsCheapFirstEscalationBudgetService().build_budget(payload),
+    }
+
+
+@router.get("/models/cheap-first-cascade-research-gate")
+async def model_ops_cheap_first_cascade_research_gate():
+    """Return metadata-only cheap-first cascade research gate evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["cheap_first_cascade_research_gate"],
+    }
+
+
+@router.post("/models/cheap-first-cascade-research-gate")
+async def evaluate_model_ops_cheap_first_cascade_research_gate(payload: dict[str, Any]):
+    """Evaluate supplied metadata-only cheap-first cascade source signals."""
+    return {
+        "success": True,
+        "data": ModelOpsCheapFirstCascadeResearchGateService().build_gate(payload),
     }
 
 

@@ -303,6 +303,29 @@ def test_model_ops_readiness_warns_on_user_need_cheap_first_handoff_review():
     assert drilldown["privacy_boundary"]["metadata_only"] is True
 
 
+def test_model_ops_readiness_warns_on_cheap_first_cascade_research_review():
+    signals = _signals("pass")
+    signals["cheap_first_cascade_research_gate"] = {
+        "status": "review_required",
+        "summary": {"source_count": 7, "review_source_count": 1},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["local-gates-attached"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "cheap-first-cascade-research-gate" in result["warning_check_ids"]
+    assert "cheap-first-cascade-research-gate" not in result["blocking_check_ids"]
+    assert result["summary"]["required_warning_count"] == 1
+    drilldown = result["warning_drilldown"][0]
+    assert drilldown["source_key"] == "cheap_first_cascade_research_gate"
+    assert drilldown["warning_category"] == "cost_guardrail_review"
+    assert "cheap-first" in drilldown["next_action"]
+    assert "test_model_ops_cheap_first_cascade_research_gate.py" in drilldown["validation_hint"]
+    assert drilldown["privacy_boundary"]["network_called"] is False
+
+
 def test_model_ops_readiness_warns_on_aihub_endpoint_route_coverage_review():
     signals = _signals("pass")
     signals["aihub_endpoint_route_coverage_gate"] = {
@@ -661,8 +684,13 @@ def test_model_ops_route_includes_readiness():
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
     assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 14
     assert payload["cheap_first_escalation_budget"]["status"] == "pass"
+    assert payload["cheap_first_cascade_research_gate"]["summary"]["network_called"] is False
+    assert payload["cheap_first_cascade_research_gate"]["source_boundaries"]["changes_default_routes"] is False
     assert payload["failure_upgrade_budget"]["status"] == "pass"
     assert "cheap_first_escalation_budget" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
+    assert "cheap_first_cascade_research_gate" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
     assert "failure_upgrade_budget" in {

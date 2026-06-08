@@ -2967,6 +2967,26 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness" in failure_upgrade_entry["release_gate_links"]
     assert "model-ops-cheap-first-release-decision" in failure_upgrade_entry["release_gate_links"]
     assert "frontend-ui-regression" in failure_upgrade_entry["release_gate_links"]
+    cascade_research_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-cheap-first-cascade-research-gate"
+    )
+    assert cascade_research_entry["size"] == "medium"
+    assert cascade_research_entry["status"] == "shipped"
+    assert "cheap-first cascade research evidence" in cascade_research_entry["impact"]
+    assert "FrugalGPT-style" in cascade_research_entry["impact"]
+    assert "official Gemini Flash-Lite" in cascade_research_entry["impact"]
+    assert "route quality" in cascade_research_entry["impact"]
+    assert "failure upgrade" in cascade_research_entry["impact"]
+    assert "configuration writes" in cascade_research_entry["impact"]
+    assert "app/backend/services/model_ops_cheap_first_cascade_research_gate.py" in cascade_research_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_cascade_research_gate.py" in cascade_research_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in cascade_research_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in cascade_research_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in cascade_research_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_CASCADE_RESEARCH_GATE.md" in cascade_research_entry["evidence_paths"]
+    assert "model-ops-cheap-first-cascade-research-gate" in cascade_research_entry["release_gate_links"]
+    assert "model-ops-readiness" in cascade_research_entry["release_gate_links"]
+    assert "model-failure-upgrade-budget" in cascade_research_entry["release_gate_links"]
     refresh_entry = next(entry for entry in ledger["completed_updates"] if entry["id"] == "legal-benchmark-research-refresh")
     assert "app/backend/services/legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in refresh_entry["evidence_paths"]

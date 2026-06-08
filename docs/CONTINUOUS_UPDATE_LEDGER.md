@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current ModelOps cheap-first cascade research slice:
+`modelops-cheap-first-cascade-research-gate` adds a metadata-only gate that
+links FrugalGPT-style cascade justification, official Gemini Flash-Lite
+cheap-start positioning, local route quality budgets, escalation budgets,
+failure-upgrade budgets, calibration evidence, and user-need handoff rows before
+default model changes. It is exposed through
+`/api/v1/aihub/models/cheap-first-cascade-research-gate` and the aggregate
+`/api/v1/aihub/models` payload. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, public datasets, or the network; write
+configuration; change default routes; shift traffic; claim public benchmark
+scores; or return raw legal text, prompts, model outputs, payloads, headers,
+emails, identifiers, or credentials.
+
 Current ModelOps user-need handoff UI slice:
 `modelops-user-need-cheap-first-handoff-ui` adds a read-only `/model-ops`
 panel for the user-need cheap-first handoff. Maintainers can review
