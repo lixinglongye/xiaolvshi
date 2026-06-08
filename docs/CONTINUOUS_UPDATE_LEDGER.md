@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current ModelOps NewAPI channel bootstrap slice:
+`modelops-newapi-channel-bootstrap` adds a metadata-only cheap-first setup
+packet for NewAPI/YibuAPI/OpenAI-compatible Gemini channels. It normalizes bare
+channel URLs such as `https://yibuapi.com` to `/v1`, represents supplied key
+presence only as the `APP_AI_KEY` placeholder, joins gateway connection-profile
+and runtime-configuration evidence with observed Gemini intake, coverage-gap,
+and premium-exception review evidence, and exposes the packet through
+`/api/v1/aihub/models/newapi-channel-bootstrap`, the aggregate
+`/api/v1/aihub/models` payload, and `/model-ops`. It does not call NewAPI,
+Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the
+network; write `.env`, source configuration, default routes, or traffic; claim
+key validation or live model inventory; or return raw payloads, prompts, legal
+text, model outputs, gateway responses, Authorization headers, emails,
+identifiers, or credentials.
+
 Current ModelOps cheap-first cascade research slice:
 `modelops-cheap-first-cascade-research-gate` adds a metadata-only gate that
 links FrugalGPT-style cascade justification, official Gemini Flash-Lite

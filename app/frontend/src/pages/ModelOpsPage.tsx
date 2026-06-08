@@ -94,6 +94,7 @@ import {
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
+  type ModelOpsNewApiChannelBootstrap,
   type ModelOpsObservedGeminiModelIntakeQueue,
   type ModelOpsPerformanceBudget,
   type ModelOpsResponse,
@@ -2093,6 +2094,13 @@ function Inner() {
   const gatewayRuntimePolicyEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.configuration_policy);
   const gatewayRuntimePrivacyEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.privacy_boundary);
   const gatewayRuntimeClaimEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.claim_boundary);
+  const newapiChannelBootstrap: ModelOpsNewApiChannelBootstrap | null = data?.newapi_channel_bootstrap ?? null;
+  const newapiChannelRoleRows = newapiChannelBootstrap?.role_rows ?? [];
+  const newapiChannelSetupSteps = newapiChannelBootstrap?.setup_steps ?? [];
+  const newapiChannelChecks = newapiChannelBootstrap?.checks ?? [];
+  const newapiChannelEnvEntries = Object.entries(newapiChannelBootstrap?.recommended_env ?? {});
+  const newapiChannelPrivacyEntries = boundaryDisplayEntries(newapiChannelBootstrap?.privacy_boundary);
+  const newapiChannelClaimEntries = boundaryDisplayEntries(newapiChannelBootstrap?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -11252,6 +11260,192 @@ function Inner() {
                 <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
                 <div className="space-y-1 text-xs leading-5 text-stone-600">
                   {gatewayRuntimeClaimEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {newapiChannelBootstrap && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {newapiChannelBootstrap.summary.openai_compatible_path ? 'OpenAI path ready' : 'OpenAI path review'} /{' '}
+                  {newapiChannelBootstrap.summary.channel_key_present ? 'key placeholder ready' : 'key missing'} /{' '}
+                  {newapiChannelBootstrap.summary.cheap_first_ready_count} cheap-first roles ready
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(newapiChannelBootstrap.status)}>
+                {newapiChannelBootstrap.status}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4 lg:col-span-2">
+                <div className="truncate font-mono text-sm font-black text-stone-950">
+                  {newapiChannelBootstrap.channel.normalized_base_url_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">normalized channel URL</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {newapiChannelBootstrap.channel.api_key_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">key display</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {newapiChannelBootstrap.summary.premium_exception_review_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium reviews</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {newapiChannelBootstrap.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {newapiChannelBootstrap.summary.blocking_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Env</TableHead>
+                      <TableHead>Model</TableHead>
+                      <TableHead>Default</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {newapiChannelRoleRows.map((row) => (
+                      <TableRow key={`${row.role}-${row.env_name}`}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.role}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">task: {row.task}</div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-600">{row.env_name}</TableCell>
+                        <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                          <div className="font-mono text-stone-950">{row.recommended_model}</div>
+                          <div className="font-mono text-[11px]">{row.canonical_model ?? '-'}</div>
+                          <div className="mt-1">
+                            <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                              {row.cost_tier}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs leading-5 text-stone-600">
+                          <div>cheap_first_ready: {String(row.cheap_first_ready)}</div>
+                          <div>default_allowed_without_review: {String(row.default_allowed_without_review)}</div>
+                          <div>known_catalog_model: {String(row.known_catalog_model)}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Bootstrap checks</h3>
+                <div className="space-y-2">
+                  {newapiChannelChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Step</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Evidence</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {newapiChannelSetupSteps.map((step) => (
+                    <TableRow key={step.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{step.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{step.id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(step.status)}>
+                          {step.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{step.action}</TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        {step.evidence_links.join(', ')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended env</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {newapiChannelEnvEntries.slice(0, 10).map(([key, value]) => (
+                    <div key={key} className="break-all">
+                      <span className="font-mono text-stone-950">{key}</span>: {value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Channel boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>type: {newapiChannelBootstrap.channel.type}</div>
+                  <div>provider_family: {newapiChannelBootstrap.channel.provider_family}</div>
+                  <div>base_url_env: {newapiChannelBootstrap.channel.base_url_env}</div>
+                  <div>base_url_source: {newapiChannelBootstrap.channel.base_url_source}</div>
+                  <div>configuration_written: {String(newapiChannelBootstrap.summary.configuration_written)}</div>
+                  <div>gateway_called: {String(newapiChannelBootstrap.summary.gateway_called)}</div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {newapiChannelPrivacyEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {newapiChannelClaimEntries.slice(0, 8).map(([key, value]) => (
                     <div key={key}>
                       {key}: {String(value)}
                     </div>

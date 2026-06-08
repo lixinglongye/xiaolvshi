@@ -102,6 +102,7 @@ from services.model_ops_cheap_first_priority_queue import ModelOpsCheapFirstPrio
 from services.model_ops_default_change_queue import ModelOpsDefaultChangeQueueService
 from services.model_ops_gemini_default_change_review import ModelOpsGeminiDefaultChangeReviewService
 from services.model_ops_gemini_default_cost_impact import ModelOpsGeminiDefaultCostImpactService
+from services.model_ops_newapi_channel_bootstrap import ModelOpsNewapiChannelBootstrapService
 from services.model_ops_legal_benchmark_risk_bridge import ModelOpsLegalBenchmarkRiskBridgeService
 from services.model_ops_user_need_cheap_first_handoff import ModelOpsUserNeedCheapFirstHandoffService
 from services.model_ops_user_need_release_bridge import ModelOpsUserNeedReleaseBridgeService
@@ -317,6 +318,12 @@ async def list_models():
     default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_connection_profile = ModelGatewayConnectionProfileService().build_profile()
     gateway_runtime_configuration = ModelGatewayRuntimeConfigurationService().build_configuration()
+    newapi_channel_bootstrap = ModelOpsNewapiChannelBootstrapService().build_packet(
+        {
+            "base_url": gateway_connection_profile["connection"]["normalized_base_url_display"],
+            "observed_models": observed_gateway_models,
+        }
+    )
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     gateway_probe_evaluation = model_gateway_probe_evaluation_registry.latest()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
@@ -466,6 +473,7 @@ async def list_models():
         "gateway_compatibility": gateway_compatibility,
         "gateway_connection_profile": gateway_connection_profile,
         "gateway_runtime_configuration": gateway_runtime_configuration,
+        "newapi_channel_bootstrap": newapi_channel_bootstrap,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
@@ -595,6 +603,7 @@ async def list_models():
         "gateway_compatibility": gateway_compatibility,
         "gateway_connection_profile": gateway_connection_profile,
         "gateway_runtime_configuration": gateway_runtime_configuration,
+        "newapi_channel_bootstrap": newapi_channel_bootstrap,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
@@ -743,6 +752,25 @@ async def evaluate_model_gateway_runtime_configuration(payload: dict[str, Any]):
     return {
         "success": True,
         "data": ModelGatewayRuntimeConfigurationService().build_configuration(payload),
+    }
+
+
+@router.get("/models/newapi-channel-bootstrap")
+async def model_ops_newapi_channel_bootstrap():
+    """Return safe NewAPI-compatible channel bootstrap evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["newapi_channel_bootstrap"],
+    }
+
+
+@router.post("/models/newapi-channel-bootstrap")
+async def evaluate_model_ops_newapi_channel_bootstrap(payload: dict[str, Any]):
+    """Evaluate sanitized NewAPI channel metadata without network calls."""
+    return {
+        "success": True,
+        "data": ModelOpsNewapiChannelBootstrapService().build_packet(payload),
     }
 
 

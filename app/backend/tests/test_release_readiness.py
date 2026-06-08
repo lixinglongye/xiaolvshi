@@ -1623,6 +1623,46 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/routers/aihub.py" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
     assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
     assert "docs/MODEL_GATEWAY_RUNTIME_CONFIGURATION.md" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert checks["modelops-newapi-channel-bootstrap"]["required"] is True
+    assert checks["modelops-newapi-channel-bootstrap"]["blocks_release"] is True
+    assert "metadata-only NewAPI channel cheap-first bootstrap evidence" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["manual_note"]
+    assert "yibuapi/OpenAI-compatible channel URL normalization" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["manual_note"]
+    assert "APP_AI_KEY placeholder setup" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "cheap-first Gemini defaults" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "sanitized observed model intake" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "coverage-gap review" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "explicit-only premium exception review" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "does not call NewAPI" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "Gemini" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "OpenAI" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "Google" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "yibuapi" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "gateways" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "network" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "does not write environment files" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "default routes" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "traffic" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "API keys" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "Authorization headers" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "request bodies" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "response bodies" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "credentials" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_newapi_channel_bootstrap.py" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["evidence_paths"]
     assert checks["modelops-observed-gateway-model-fit-matrix"]["required"] is True
     assert checks["modelops-observed-gateway-model-fit-matrix"]["blocks_release"] is True
     assert "metadata-only observed gateway model fit matrix evidence" in checks["modelops-observed-gateway-model-fit-matrix"]["manual_note"]

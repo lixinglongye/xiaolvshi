@@ -1960,6 +1960,50 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]
     )
+    newapi_channel_bootstrap_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-newapi-channel-bootstrap"
+    )
+    assert newapi_channel_bootstrap_entry["size"] == "medium"
+    assert newapi_channel_bootstrap_entry["status"] == "shipped"
+    assert "NewAPI-compatible channel bootstrap evidence" in newapi_channel_bootstrap_entry["impact"]
+    assert "gateway connection profile" in newapi_channel_bootstrap_entry["impact"]
+    assert "runtime configuration" in newapi_channel_bootstrap_entry["impact"]
+    assert "observed Gemini intake" in newapi_channel_bootstrap_entry["impact"]
+    assert "premium exception review" in newapi_channel_bootstrap_entry["impact"]
+    assert "https://yibuapi.com-style channels" in newapi_channel_bootstrap_entry["impact"]
+    assert "APP_AI_KEY placeholder" in newapi_channel_bootstrap_entry["impact"]
+    assert "normalized /v1 base URLs" in newapi_channel_bootstrap_entry["impact"]
+    assert "cheap-first Gemini defaults" in newapi_channel_bootstrap_entry["impact"]
+    assert "explicit-only premium exceptions" in newapi_channel_bootstrap_entry["impact"]
+    assert "configuration writes" in newapi_channel_bootstrap_entry["impact"]
+    assert "gateway calls" in newapi_channel_bootstrap_entry["impact"]
+    assert "network calls" in newapi_channel_bootstrap_entry["impact"]
+    assert "credentials" in newapi_channel_bootstrap_entry["impact"]
+    assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in newapi_channel_bootstrap_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_model_ops_newapi_channel_bootstrap.py" in newapi_channel_bootstrap_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/aihub.py" in newapi_channel_bootstrap_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in newapi_channel_bootstrap_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in newapi_channel_bootstrap_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in newapi_channel_bootstrap_entry["evidence_paths"]
+    assert "modelops-newapi-channel-bootstrap" in newapi_channel_bootstrap_entry["release_gate_links"]
+    assert "model-gateway-connection-profile" in newapi_channel_bootstrap_entry["release_gate_links"]
+    assert "model-gateway-runtime-configuration" in newapi_channel_bootstrap_entry["release_gate_links"]
+    assert "modelops-observed-gemini-premium-exception-review" in newapi_channel_bootstrap_entry[
+        "release_gate_links"
+    ]
+    assert (
+        "python -m pytest tests/test_model_ops_newapi_channel_bootstrap.py "
+        "tests/test_model_gateway_connection_profile.py tests/test_model_gateway_runtime_configuration.py "
+        "tests/test_model_ops_observed_gemini_premium_exception_review.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+        "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && "
+        "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     observed_gateway_fit_entry = next(
         entry
         for entry in ledger["completed_updates"]

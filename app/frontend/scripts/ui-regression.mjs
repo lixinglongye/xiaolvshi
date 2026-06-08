@@ -155,8 +155,14 @@ const gatewayConnectionProfilePanel = sourceSection(
 const gatewayRuntimeConfigurationPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap</h2>',
   'model-ops gateway runtime configuration section',
+);
+const newapiChannelBootstrapPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  'model-ops NewAPI channel bootstrap section',
 );
 const geminiAliasCapabilityCoveragePanel = sourceSection(
   modelOpsPage,
@@ -2967,6 +2973,21 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'api_key_env', 'model-ops gateway runtime key env binding'),
   () => assertIncludes(modelOpsPage, 'runtime_probe_sequence', 'model-ops gateway runtime aggregate binding'),
   () => assertIncludes(modelOpsPage, 'configuration_policy', 'model-ops gateway runtime configuration policy binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsNewApiChannelBootstrap', 'model-ops NewAPI channel bootstrap type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsNewApiChannelBootstrapRole', 'model-ops NewAPI channel bootstrap role type'),
+  () => assertIncludes(modelOpsApi, 'newapi_channel_bootstrap?: ModelOpsNewApiChannelBootstrap', 'model-ops NewAPI channel bootstrap response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsNewApiChannelBootstrap', 'model-ops NewAPI channel bootstrap getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsNewApiChannelBootstrap', 'model-ops NewAPI channel bootstrap evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/newapi-channel-bootstrap', 'model-ops NewAPI channel bootstrap endpoint'),
+  () => assertIncludes(modelOpsPage, 'NewAPI channel bootstrap', 'model-ops NewAPI channel bootstrap panel'),
+  () => assertIncludes(modelOpsPage, 'newapiChannelBootstrap', 'model-ops NewAPI channel bootstrap binding'),
+  () => assertIncludes(modelOpsPage, 'newapiChannelRoleRows', 'model-ops NewAPI channel bootstrap role rows binding'),
+  () => assertIncludes(modelOpsPage, 'newapiChannelSetupSteps', 'model-ops NewAPI channel bootstrap setup steps binding'),
+  () => assertIncludes(modelOpsPage, 'newapiChannelEnvEntries', 'model-ops NewAPI channel bootstrap env binding'),
+  () => assertIncludes(modelOpsPage, 'premium_exception_review_count', 'model-ops NewAPI channel bootstrap premium review summary'),
+  () => assertIncludes(modelOpsPage, 'normalized_base_url_display', 'model-ops NewAPI channel bootstrap normalized URL display'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops NewAPI channel bootstrap no-write boundary'),
+  () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops NewAPI channel bootstrap no-gateway boundary'),
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Model catalog candidate impact replay</h2>',
@@ -2982,13 +3003,24 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
+    '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap</h2>',
+    'model-ops NewAPI channel bootstrap follows gateway runtime configuration',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap</h2>',
     '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
-    'model-ops gateway runtime configuration precedes gateway health plan',
+    'model-ops NewAPI channel bootstrap precedes gateway health plan',
   ),
   () => assertNotMatches(
     gatewayRuntimeConfigurationPanel,
     /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|email|phone|password)\b/i,
     'model-ops gateway runtime configuration no secrets or raw request/response fields',
+  ),
+  () => assertNotMatches(
+    newapiChannelBootstrapPanel,
+    /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|client_email|phone|password)\b/i,
+    'model-ops NewAPI channel bootstrap no secrets or raw request/response fields',
   ),
   () =>
     assertBefore(

@@ -117,6 +117,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini cheap-first route preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps AIHub endpoint route coverage gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps runtime explicit model fit gate" in profile["release_management"]["release_readiness_controls"]
+    assert "NewAPI channel cheap-first bootstrap" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
@@ -331,6 +332,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini/NewAPI alias capability coverage review" in model_signal["responsibility"]
     assert "default ladder review-boundary evidence" in model_signal["description"]
     assert "model default ladder review-boundary review" in model_signal["responsibility"]
+    assert "NewAPI channel cheap-first bootstrap evidence" in model_signal["description"]
+    assert "NewAPI channel bootstrap review" in model_signal["responsibility"]
     assert "Gemini official preview alias review evidence" in model_signal["description"]
     assert "Gemini official preview alias review" in model_signal["responsibility"]
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
@@ -413,6 +416,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/services/model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in evidence_paths
     assert "app/backend/services/model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
@@ -427,6 +431,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_cheap_first_canary_change_manifest.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_gemini_cheap_first_route_preflight.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_newapi_channel_bootstrap.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
@@ -441,6 +446,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/MODEL_OPS_CHEAP_FIRST_CANARY_CHANGE_MANIFEST.md" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md" in evidence_paths
     assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
+    assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in evidence_paths
     assert "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md" in evidence_paths
     assert "app/backend/tests/test_model_route_quality_budget.py" in evidence_paths
     assert "docs/MODEL_ROUTE_QUALITY_BUDGET.md" in evidence_paths
@@ -571,6 +577,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("fixture ids, document case ids, fact-consistency case ids, serial run order" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini/NewAPI model alias matrix is metadata-only alias evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("sanitized model ids to canonical catalog ids" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("NewAPI channel cheap-first bootstrap evidence is metadata-only setup evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("yibuapi/OpenAI-compatible URL normalization" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("APP_AI_KEY placeholder setup" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("linked cheap-first calibration task ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])

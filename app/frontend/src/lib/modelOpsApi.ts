@@ -1046,6 +1046,86 @@ export type ModelGatewayRuntimeConfiguration = {
   validation_commands: string[];
 };
 
+export type ModelOpsNewApiChannelBootstrapRole = {
+  role: string;
+  task: string;
+  env_name: string;
+  recommended_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  model_status: string;
+  cheap_first_role: boolean;
+  cheap_first_ready: boolean;
+  default_allowed_without_review: boolean;
+  reason: string;
+};
+
+export type ModelOpsNewApiChannelBootstrap = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    channel_url_configured: boolean;
+    channel_key_present: boolean;
+    normalized_base_url: string;
+    remote_bare_url_normalized_to_v1: boolean;
+    openai_compatible_path: boolean;
+    recommended_env_count: number;
+    cheap_first_role_count: number;
+    cheap_first_ready_count: number;
+    premium_exception_review_count: number;
+    observed_model_count: number;
+    coverage_gap_count: number;
+    setup_step_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+    traffic_shifted: boolean;
+  };
+  channel: {
+    type: string;
+    url_display: string;
+    normalized_base_url_display: string;
+    api_key_env: string;
+    api_key_display: string;
+    base_url_env: string;
+    base_url_source: string;
+    provider_family: string;
+  };
+  recommended_env: Record<string, string>;
+  role_rows: ModelOpsNewApiChannelBootstrapRole[];
+  setup_steps: Array<{
+    id: string;
+    title: string;
+    action: string;
+    status: string;
+    evidence_links: string[];
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+    evidence?: string[];
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_summaries: Record<string, Record<string, unknown>>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlan = {
   status: string;
   method: {
@@ -4720,6 +4800,7 @@ export type ModelOpsResponse = {
   gateway_compatibility?: ModelGatewayCompatibility;
   gateway_connection_profile?: ModelGatewayConnectionProfile;
   gateway_runtime_configuration?: ModelGatewayRuntimeConfiguration;
+  newapi_channel_bootstrap?: ModelOpsNewApiChannelBootstrap;
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
@@ -5075,6 +5156,23 @@ export async function evaluateModelGatewayRuntimeConfiguration(
 ): Promise<ModelGatewayRuntimeConfiguration> {
   return invokeModelOpsApi<ModelGatewayRuntimeConfiguration>({
     url: '/api/v1/aihub/models/gateway-runtime-configuration',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsNewApiChannelBootstrap(): Promise<ModelOpsNewApiChannelBootstrap> {
+  return invokeModelOpsApi<ModelOpsNewApiChannelBootstrap>({
+    url: '/api/v1/aihub/models/newapi-channel-bootstrap',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsNewApiChannelBootstrap(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsNewApiChannelBootstrap> {
+  return invokeModelOpsApi<ModelOpsNewApiChannelBootstrap>({
+    url: '/api/v1/aihub/models/newapi-channel-bootstrap',
     method: 'POST',
     data: payload,
   });
