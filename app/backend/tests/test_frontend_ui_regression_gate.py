@@ -65,6 +65,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "AIHub media/speech default catalog gate" in rows["/model-ops"]["protected_panels"]
     assert "Gemini embedding cheap-first preflight" in rows["/model-ops"]["protected_panels"]
     assert "Gateway connection profile" in rows["/model-ops"]["protected_panels"]
+    assert "Gateway runtime configuration" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first quality budget" in rows["/model-ops"]["protected_panels"]
     assert "Model failure upgrade budget" in rows["/model-ops"]["protected_panels"]
     assert "Legal micro benchmark preflight" in rows["/model-ops"]["protected_panels"]

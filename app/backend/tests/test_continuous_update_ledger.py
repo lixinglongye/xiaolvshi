@@ -294,6 +294,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-aihub-media-speech-default-catalog-gate" in completed_ids
     assert "modelops-gemini-embedding-cheap-first-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
+    assert "model-gateway-runtime-configuration" in completed_ids
     assert "modelops-observed-gateway-model-fit-matrix" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
@@ -1675,6 +1676,40 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_model_gateway_health_plan.py tests/test_aihub_runtime_routing.py "
         "tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && "
         "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    gateway_runtime_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-runtime-configuration"
+    )
+    assert gateway_runtime_entry["size"] == "medium"
+    assert gateway_runtime_entry["status"] == "shipped"
+    assert "runtime gateway configuration evidence" in gateway_runtime_entry["impact"]
+    assert "APP_AI_BASE_URL normalization" in gateway_runtime_entry["impact"]
+    assert "APP_AI_KEY placeholder" in gateway_runtime_entry["impact"]
+    assert "safe probe ordering" in gateway_runtime_entry["impact"]
+    assert "without writing env files" in gateway_runtime_entry["impact"]
+    assert "calling providers or the network" in gateway_runtime_entry["impact"]
+    assert "Authorization headers" in gateway_runtime_entry["impact"]
+    assert "request bodies" in gateway_runtime_entry["impact"]
+    assert "model outputs" in gateway_runtime_entry["impact"]
+    assert "credentials" in gateway_runtime_entry["impact"]
+    assert "app/backend/services/model_gateway_runtime_configuration.py" in gateway_runtime_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_gateway_runtime_configuration.py" in gateway_runtime_entry["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in gateway_runtime_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in gateway_runtime_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gateway_runtime_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gateway_runtime_entry["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_RUNTIME_CONFIGURATION.md" in gateway_runtime_entry["evidence_paths"]
+    assert "model-gateway-runtime-configuration" in gateway_runtime_entry["release_gate_links"]
+    assert "model-gateway-connection-profile" in gateway_runtime_entry["release_gate_links"]
+    assert "model-gateway-health-plan" in gateway_runtime_entry["release_gate_links"]
+    assert "model-runtime-router" in gateway_runtime_entry["release_gate_links"]
+    assert "model-ops-readiness" in gateway_runtime_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_gateway_runtime_configuration.py "
+        "tests/test_model_gateway_connection_profile.py tests/test_model_gateway_health_plan.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_frontend_ui_regression_gate.py -q"
         in ledger["validation_commands"]
     )
     observed_gateway_fit_entry = next(

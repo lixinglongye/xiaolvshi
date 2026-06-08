@@ -1810,6 +1810,13 @@ function Inner() {
   const gatewayConnectionChecks = gatewayConnectionProfile?.checks ?? [];
   const gatewayConnectionPrivacyEntries = boundaryDisplayEntries(gatewayConnectionProfile?.privacy_boundary);
   const gatewayConnectionClaimEntries = boundaryDisplayEntries(gatewayConnectionProfile?.claim_boundary);
+  const gatewayRuntimeConfiguration = data?.gateway_runtime_configuration ?? null;
+  const gatewayRuntimeRoleRows = gatewayRuntimeConfiguration?.role_rows ?? [];
+  const gatewayRuntimeChecks = gatewayRuntimeConfiguration?.checks ?? [];
+  const gatewayRuntimeProbeRows = gatewayRuntimeConfiguration?.runtime_probe_sequence ?? [];
+  const gatewayRuntimePolicyEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.configuration_policy);
+  const gatewayRuntimePrivacyEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.privacy_boundary);
+  const gatewayRuntimeClaimEntries = boundaryDisplayEntries(gatewayRuntimeConfiguration?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
@@ -9904,6 +9911,186 @@ function Inner() {
                 <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
                 <div className="space-y-1 text-xs leading-5 text-stone-600">
                   {gatewayConnectionClaimEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {gatewayRuntimeConfiguration && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {gatewayRuntimeConfiguration.summary.openai_compatible_path ? 'OpenAI path ready' : 'OpenAI path review'} /{' '}
+                  {gatewayRuntimeConfiguration.summary.api_key_configured ? 'key placeholder ready' : 'key missing'} /{' '}
+                  {gatewayRuntimeConfiguration.summary.cheap_first_ready_count} runtime roles cheap-first ready
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(gatewayRuntimeConfiguration.status)}>
+                {gatewayRuntimeConfiguration.status}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="truncate font-mono text-sm font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.runtime_env.base_url_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">runtime base URL</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="font-mono text-sm font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.runtime_env.api_key_display}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">key display</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.summary.high_frequency_role_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">high-frequency roles</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.summary.review_required_role_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">review roles</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.summary.warning_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">warnings</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {gatewayRuntimeConfiguration.summary.blocking_check_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">blocking</div>
+              </div>
+            </div>
+
+            <div className="mb-3 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Env</TableHead>
+                      <TableHead>Model</TableHead>
+                      <TableHead>Runtime action</TableHead>
+                      <TableHead>Reason</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {gatewayRuntimeRoleRows.map((row) => (
+                      <TableRow key={`${row.role}-${row.env_name}`}>
+                        <TableCell>
+                          <div className="font-semibold text-stone-950">{row.role}</div>
+                          <div className="mt-1 text-[11px] text-stone-500">task: {row.task}</div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-600">{row.env_name}</TableCell>
+                        <TableCell className="max-w-[260px] text-xs leading-5 text-stone-600">
+                          <div className="font-mono text-stone-950">{row.configured_model}</div>
+                          <div className="font-mono text-[11px]">{row.canonical_model ?? '-'}</div>
+                          <div className="mt-1">
+                            <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                              {row.cost_tier}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs leading-5 text-stone-600">
+                          <div>{row.runtime_action}</div>
+                          <div>known_catalog_model: {String(row.known_catalog_model)}</div>
+                          <div>cheap_first_ready: {String(row.cheap_first_ready)}</div>
+                        </TableCell>
+                        <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">{row.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Runtime checks</h3>
+                <div className="space-y-2">
+                  {gatewayRuntimeChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Step</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>URL</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Boundary</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayRuntimeProbeRows.map((row) => (
+                    <TableRow key={row.step}>
+                      <TableCell className="font-semibold text-stone-950">{row.step}</TableCell>
+                      <TableCell>{row.method}</TableCell>
+                      <TableCell className="font-mono text-xs text-stone-600">{row.url}</TableCell>
+                      <TableCell className="font-mono text-xs text-stone-600">{row.model ?? '-'}</TableCell>
+                      <TableCell className="max-w-[460px] text-xs leading-5 text-stone-600">
+                        <div>{row.payload_boundary}</div>
+                        <div className="mt-1 text-stone-500">before: {row.required_before}</div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Configuration policy</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>base_url_env: {gatewayRuntimeConfiguration.runtime_env.base_url_env}</div>
+                  <div>api_key_env: {gatewayRuntimeConfiguration.runtime_env.api_key_env}</div>
+                  <div>client_base_url_source: {gatewayRuntimeConfiguration.runtime_env.client_base_url_source}</div>
+                  {gatewayRuntimePolicyEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {gatewayRuntimePrivacyEntries.slice(0, 8).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  {gatewayRuntimeClaimEntries.slice(0, 8).map(([key, value]) => (
                     <div key={key}>
                       {key}: {String(value)}
                     </div>

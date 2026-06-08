@@ -1381,6 +1381,25 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/backend/tests/test_aihub_runtime_routing.py" in checks["model-gateway-connection-profile"]["evidence_paths"]
     assert "app/backend/routers/aihub.py" in checks["model-gateway-connection-profile"]["evidence_paths"]
     assert "docs/MODEL_GATEWAY_CONNECTION_PROFILE.md" in checks["model-gateway-connection-profile"]["evidence_paths"]
+    assert checks["model-gateway-runtime-configuration"]["required"] is True
+    assert checks["model-gateway-runtime-configuration"]["blocks_release"] is True
+    assert "metadata-only runtime gateway configuration evidence" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "APP_AI_BASE_URL normalization" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "APP_AI_KEY placeholder" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "safe probe ordering" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "does not call NewAPI" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "yibuapi" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "does not write environment files" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "API keys" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "Authorization headers" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "request bodies" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "credentials" in checks["model-gateway-runtime-configuration"]["manual_note"]
+    assert "app/backend/services/model_gateway_runtime_configuration.py" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert "app/backend/tests/test_model_gateway_runtime_configuration.py" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_RUNTIME_CONFIGURATION.md" in checks["model-gateway-runtime-configuration"]["evidence_paths"]
     assert checks["modelops-observed-gateway-model-fit-matrix"]["required"] is True
     assert checks["modelops-observed-gateway-model-fit-matrix"]["blocks_release"] is True
     assert "metadata-only observed gateway model fit matrix evidence" in checks["modelops-observed-gateway-model-fit-matrix"]["manual_note"]

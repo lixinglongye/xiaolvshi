@@ -107,8 +107,14 @@ const catalogCandidateImpactReplayPanel = sourceSection(
 const gatewayConnectionProfilePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
   'model-ops gateway connection profile section',
+);
+const gatewayRuntimeConfigurationPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  'model-ops gateway runtime configuration section',
 );
 const geminiAliasCapabilityCoveragePanel = sourceSection(
   modelOpsPage,
@@ -2072,6 +2078,22 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'runtime_base_url_source', 'model-ops gateway connection runtime source binding'),
   () => assertIncludes(modelOpsPage, 'api_key_display', 'model-ops gateway connection key placeholder binding'),
   () => assertIncludes(modelOpsPage, 'credentials_included', 'model-ops gateway connection credential boundary'),
+  () => assertIncludes(modelOpsApi, 'ModelGatewayRuntimeConfiguration', 'model-ops gateway runtime configuration type'),
+  () => assertIncludes(modelOpsApi, 'ModelGatewayRuntimeConfigurationRole', 'model-ops gateway runtime configuration role type'),
+  () => assertIncludes(modelOpsApi, 'gateway_runtime_configuration?: ModelGatewayRuntimeConfiguration', 'model-ops gateway runtime configuration response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelGatewayRuntimeConfiguration', 'model-ops gateway runtime configuration getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelGatewayRuntimeConfiguration', 'model-ops gateway runtime configuration evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gateway-runtime-configuration', 'model-ops gateway runtime configuration endpoint'),
+  () => assertIncludes(modelOpsApi, 'role_rows: ModelGatewayRuntimeConfigurationRole[]', 'model-ops gateway runtime configuration role rows type'),
+  () => assertIncludes(modelOpsApi, 'runtime_probe_sequence', 'model-ops gateway runtime configuration probe sequence type'),
+  () => assertIncludes(modelOpsPage, 'Gateway runtime configuration', 'model-ops gateway runtime configuration panel'),
+  () => assertIncludes(modelOpsPage, 'gatewayRuntimeConfiguration', 'model-ops gateway runtime configuration binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayRuntimeRoleRows', 'model-ops gateway runtime role rows binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayRuntimeProbeRows', 'model-ops gateway runtime probe rows binding'),
+  () => assertIncludes(modelOpsPage, 'client_base_url_source', 'model-ops gateway runtime client source binding'),
+  () => assertIncludes(modelOpsPage, 'api_key_env', 'model-ops gateway runtime key env binding'),
+  () => assertIncludes(modelOpsPage, 'runtime_probe_sequence', 'model-ops gateway runtime aggregate binding'),
+  () => assertIncludes(modelOpsPage, 'configuration_policy', 'model-ops gateway runtime configuration policy binding'),
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Model catalog candidate impact replay</h2>',
@@ -2081,8 +2103,19 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Gateway connection profile</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
+    'model-ops gateway runtime configuration follows gateway connection profile',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Gateway runtime configuration</h2>',
     '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
-    'model-ops gateway connection profile precedes gateway health plan',
+    'model-ops gateway runtime configuration precedes gateway health plan',
+  ),
+  () => assertNotMatches(
+    gatewayRuntimeConfigurationPanel,
+    /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|email|phone|password)\b/i,
+    'model-ops gateway runtime configuration no secrets or raw request/response fields',
   ),
   () =>
     assertBefore(

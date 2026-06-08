@@ -35,6 +35,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "configuration",
         "gateway_connection_profile",
     ),
+    ReadinessComponent(
+        "gateway-runtime-configuration",
+        "Gateway runtime configuration",
+        "configuration",
+        "gateway_runtime_configuration",
+    ),
     ReadinessComponent("gateway-health-plan", "Gateway health plan", "configuration", "gateway_health_plan"),
     ReadinessComponent("gemini-variant-matrix", "Gemini variant matrix", "configuration", "gemini_variant_matrix"),
     ReadinessComponent(
@@ -638,7 +644,7 @@ class ModelOpsReadinessService:
         if warning_category == "release_evidence_review":
             return "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_default_change_queue.py tests/test_model_ops_readiness.py -q"
         if warning_category == "configuration_review":
-            return "python -m pytest tests/test_model_configuration_audit.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_configuration_audit.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_runtime_configuration.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py -q"
         if warning_category == "resilience_review":
             return "python -m pytest tests/test_model_routing_replay.py tests/test_model_fallback_chains.py tests/test_model_ops_readiness.py -q"
         return "python -m pytest tests/test_model_ops_readiness.py -q"

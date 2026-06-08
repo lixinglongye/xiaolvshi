@@ -90,6 +90,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini model-list ingestion" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini catalog source audit" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway connection profile" in profile["release_management"]["release_readiness_controls"]
+    assert "Model gateway runtime configuration" in profile["release_management"]["release_readiness_controls"]
     assert "Model operations readiness warning drilldown" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps load performance budget" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps performance observation review" in profile["release_management"]["release_readiness_controls"]
@@ -205,6 +206,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_modelops_gemini_cheap_first_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_GEMINI_CHEAP_FIRST_COVERAGE_GATE.md" in evidence_paths
     assert "app/backend/services/model_gateway_connection_profile.py" in evidence_paths
+    assert "app/backend/services/model_gateway_runtime_configuration.py" in evidence_paths
+    assert "app/backend/tests/test_model_gateway_runtime_configuration.py" in evidence_paths
+    assert "docs/MODEL_GATEWAY_RUNTIME_CONFIGURATION.md" in evidence_paths
     assert "docs/MODEL_GATEWAY_CONNECTION_PROFILE.md" in evidence_paths
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths

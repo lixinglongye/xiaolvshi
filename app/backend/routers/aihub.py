@@ -56,6 +56,7 @@ from services.model_failure_upgrade_budget import ModelFailureUpgradeBudgetServi
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_connection_profile import ModelGatewayConnectionProfileService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
+from services.model_gateway_runtime_configuration import ModelGatewayRuntimeConfigurationService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_gateway_request_compatibility_gate import ModelGatewayRequestCompatibilityGateService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
@@ -306,6 +307,7 @@ async def list_models():
     observed_gateway_models = _observed_gateway_model_ids(gateway_compatibility)
     default_recommendation_snapshot = ModelDefaultRecommendationSnapshotService().build_snapshot(observed_gateway_models)
     gateway_connection_profile = ModelGatewayConnectionProfileService().build_profile()
+    gateway_runtime_configuration = ModelGatewayRuntimeConfigurationService().build_configuration()
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     gateway_probe_evaluation = model_gateway_probe_evaluation_registry.latest()
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
@@ -428,6 +430,7 @@ async def list_models():
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_connection_profile": gateway_connection_profile,
+        "gateway_runtime_configuration": gateway_runtime_configuration,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
@@ -551,6 +554,7 @@ async def list_models():
         "default_recommendation_snapshot": default_recommendation_snapshot,
         "gateway_compatibility": gateway_compatibility,
         "gateway_connection_profile": gateway_connection_profile,
+        "gateway_runtime_configuration": gateway_runtime_configuration,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
         "lifecycle_policy": lifecycle_policy,
@@ -675,6 +679,25 @@ async def evaluate_model_gateway_connection_profile(payload: dict[str, Any]):
     return {
         "success": True,
         "data": ModelGatewayConnectionProfileService().build_profile(payload),
+    }
+
+
+@router.get("/models/gateway-runtime-configuration")
+async def model_gateway_runtime_configuration():
+    """Return safe OpenAI-compatible runtime gateway configuration evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gateway_runtime_configuration"],
+    }
+
+
+@router.post("/models/gateway-runtime-configuration")
+async def evaluate_model_gateway_runtime_configuration(payload: dict[str, Any]):
+    """Evaluate sanitized runtime gateway configuration metadata without network calls."""
+    return {
+        "success": True,
+        "data": ModelGatewayRuntimeConfigurationService().build_configuration(payload),
     }
 
 

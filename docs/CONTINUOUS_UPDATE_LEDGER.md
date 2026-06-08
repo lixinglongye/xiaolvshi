@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current ModelOps gateway runtime configuration slice:
+`model-gateway-runtime-configuration` adds metadata-only runtime setup evidence
+for OpenAI-compatible NewAPI/YibuAPI/Gemini gateways. It verifies
+`APP_AI_BASE_URL` normalization, `APP_AI_KEY` placeholder use, cheap-first
+Gemini role defaults, and safe probe ordering before live gateway use, and
+exposes the packet through
+`/api/v1/aihub/models/gateway-runtime-configuration`. It does not call NewAPI,
+Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the
+network; write `.env`, source configuration, default routes, or traffic; or
+return API keys, Authorization headers, request bodies, response bodies,
+prompts, raw legal text, model outputs, gateway responses, credentials, emails,
+or user identifiers.
+
 Current ModelOps user-need release slice:
 `modelops-user-need-release-bridge` joins the user-need implementation priority
 queue with Gemini cheap-first route coverage and exposes it through

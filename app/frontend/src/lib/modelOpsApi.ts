@@ -892,6 +892,83 @@ export type ModelGatewayConnectionProfile = {
   validation_commands: string[];
 };
 
+export type ModelGatewayRuntimeConfigurationRole = {
+  role: string;
+  task: string;
+  env_name: string;
+  configured_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  model_status: string;
+  high_frequency_role: boolean;
+  cheap_first_ready: boolean;
+  runtime_action: string;
+  reason: string;
+};
+
+export type ModelGatewayRuntimeConfiguration = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    base_url_configured: boolean;
+    api_key_configured: boolean;
+    normalized_base_url: string;
+    openai_compatible_path: boolean;
+    remote_gateway: boolean;
+    runtime_env_var_count: number;
+    role_count: number;
+    known_role_count: number;
+    high_frequency_role_count: number;
+    cheap_first_ready_count: number;
+    review_required_role_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+    traffic_shifted: boolean;
+  };
+  runtime_env: {
+    base_url_env: string;
+    base_url_display: string;
+    api_key_env: string;
+    api_key_display: string;
+    client_base_url_source: string;
+    timeout_env: string;
+    timeout_seconds?: number | null;
+  };
+  role_rows: ModelGatewayRuntimeConfigurationRole[];
+  runtime_probe_sequence: Array<{
+    step: string;
+    method: string;
+    url: string;
+    model?: string | null;
+    required_before: string;
+    payload_boundary: string;
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  configuration_policy: Record<string, boolean | string | number | null>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type ModelGatewayHealthPlan = {
   status: string;
   method: {
@@ -4323,6 +4400,7 @@ export type ModelOpsResponse = {
   default_optimization?: ModelDefaultOptimization;
   gateway_compatibility?: ModelGatewayCompatibility;
   gateway_connection_profile?: ModelGatewayConnectionProfile;
+  gateway_runtime_configuration?: ModelGatewayRuntimeConfiguration;
   gemini_variant_matrix?: GeminiVariantMatrix;
   observed_gemini_model_intake_queue?: ModelOpsObservedGeminiModelIntakeQueue;
   observed_gemini_coverage_gap_queue?: ModelOpsObservedGeminiCoverageGapQueue;
@@ -4468,6 +4546,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     run_sequence?: unknown;
     rows?: unknown;
     task_rows?: unknown;
+    role_rows?: unknown;
+    runtime_probe_sequence?: unknown;
     default_targets?: unknown;
     required?: unknown;
     optional?: unknown;
@@ -4510,6 +4590,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.task_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.role_rows) && Array.isArray(payload.runtime_probe_sequence) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.rows) && Array.isArray(payload.default_targets) && Array.isArray(payload.validation_commands)),
   );
 }
@@ -4646,6 +4727,23 @@ export async function getModelGatewayConnectionProfile(): Promise<ModelGatewayCo
 export async function evaluateModelGatewayConnectionProfile(payload: Record<string, unknown>): Promise<ModelGatewayConnectionProfile> {
   return invokeModelOpsApi<ModelGatewayConnectionProfile>({
     url: '/api/v1/aihub/models/gateway-connection-profile',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelGatewayRuntimeConfiguration(): Promise<ModelGatewayRuntimeConfiguration> {
+  return invokeModelOpsApi<ModelGatewayRuntimeConfiguration>({
+    url: '/api/v1/aihub/models/gateway-runtime-configuration',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelGatewayRuntimeConfiguration(
+  payload: Record<string, unknown>,
+): Promise<ModelGatewayRuntimeConfiguration> {
+  return invokeModelOpsApi<ModelGatewayRuntimeConfiguration>({
+    url: '/api/v1/aihub/models/gateway-runtime-configuration',
     method: 'POST',
     data: payload,
   });

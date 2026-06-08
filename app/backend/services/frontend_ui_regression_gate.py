@@ -111,6 +111,7 @@ PAGE_GATES = (
                 "AIHub media/speech default catalog gate",
                 "Gemini embedding cheap-first preflight",
                 "Gateway connection profile",
+                "Gateway runtime configuration",
             "Cheap-first quality budget",
             "Model failure upgrade budget",
             "Legal micro benchmark preflight",

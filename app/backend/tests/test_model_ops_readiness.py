@@ -348,6 +348,27 @@ def test_model_ops_readiness_warns_on_gateway_connection_profile_review():
     assert result["warning_drilldown"][0]["privacy_boundary"]["credentials_included"] is False
 
 
+def test_model_ops_readiness_warns_on_gateway_runtime_configuration_review():
+    signals = _signals("pass")
+    signals["gateway_runtime_configuration"] = {
+        "status": "warn",
+        "summary": {"warn_count": 2, "fail_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["runtime-base-url-configured", "runtime-api-key-placeholder"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "gateway-runtime-configuration" in result["warning_check_ids"]
+    assert "gateway-runtime-configuration" not in result["blocking_check_ids"]
+    assert result["warning_drilldown"][0]["source_key"] == "gateway_runtime_configuration"
+    assert result["warning_drilldown"][0]["warning_category"] == "configuration_review"
+    assert "configuration" in result["warning_drilldown"][0]["next_action"].lower()
+    assert "test_model_gateway_runtime_configuration.py" in result["warning_drilldown"][0]["validation_hint"]
+    assert result["warning_drilldown"][0]["privacy_boundary"]["credentials_included"] is False
+
+
 def test_model_ops_readiness_fails_on_blocking_component():
     signals = _signals("pass")
     signals["cost_guardrails"] = {
@@ -455,6 +476,9 @@ def test_model_ops_route_includes_readiness():
     assert "gateway_probe_evaluation" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert "gateway_runtime_configuration" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }
     assert "gemini_variant_matrix" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
@@ -491,6 +515,9 @@ def test_model_ops_route_includes_readiness():
     assert "user_need_release_bridge" in {
         check["source_key"] for check in payload["model_ops_readiness"]["checks"]
     }
+    assert payload["gateway_runtime_configuration"]["id"] == "model-gateway-runtime-configuration"
+    assert payload["gateway_runtime_configuration"]["summary"]["credentials_included"] is False
+    assert payload["gateway_runtime_configuration"]["privacy_boundary"]["gateway_called"] is False
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["configuration_written"] is False
     assert payload["observed_gemini_coverage_gap_queue"]["summary"]["gateway_called"] is False
     assert payload["runtime_explicit_model_fit_gate"]["summary"]["configuration_written"] is False
