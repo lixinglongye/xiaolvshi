@@ -10,6 +10,10 @@ default-promotion decision. It helps keep the current cheap-first defaults in
 place while making catalog drift, missing pricing, route-quality gaps,
 single-failure retry-up risk, escalation-budget drift, and performance warnings
 visible before a new model is promoted.
+For legal-task defaults, the packet also consumes legal fixture benchmark gate,
+legal fixture default-promotion packet, and legal benchmark route-risk bridge
+metadata so benchmark/watchlist evidence is part of the final decision instead
+of a side panel.
 
 The packet is downstream of `model_ops_readiness`. It does not feed back into
 readiness and does not add another readiness component.
@@ -46,10 +50,13 @@ The service consumes existing signal metadata only:
 - `cheap_first_escalation_budget`
 - `price_refresh_monitor`
 - `model_ops_performance_budget`
+- `legal_fixture_cheap_first_benchmark_gate`
+- `legal_fixture_cheap_first_default_promotion_packet`
+- `legal_benchmark_risk_bridge`
 
 It reads status fields, check IDs, counts, and recommended actions. It does not
-rerun model calls, gateway probes, price scrapes, benchmark downloads, or legal
-document review jobs.
+rerun model calls, gateway probes, price scrapes, benchmark downloads, public
+dataset downloads, or legal document review jobs.
 
 ## Decision Logic
 
@@ -81,7 +88,9 @@ Maintainers can claim that the project has a metadata-only decision packet for
 reviewing cheap-first default changes. They can also claim that the packet
 aggregates existing ModelOps readiness, calibration, catalog, route-quality,
 failure-upgrade-budget, escalation-budget, price-refresh, and performance-budget
-signals.
+signals. For legal-task defaults, they can claim that metadata-only legal
+fixture gate, promotion packet, and route-risk bridge statuses are required
+before new cheap-first defaults are promoted.
 
 ## Must Not Claim
 
@@ -90,6 +99,8 @@ This packet does not prove:
 - live gateway health
 - NewAPI, Gemini, OpenAI, or Google account status
 - public benchmark scores
+- public benchmark execution
+- legal fixture execution on raw client text
 - production traffic coverage
 - real client legal accuracy
 - 24-hour continuous session completion
@@ -109,6 +120,7 @@ Run:
 ```powershell
 cd app/backend
 python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_failure_upgrade_budget.py tests/test_model_default_candidate_selector.py -q
+python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_model_ops_legal_benchmark_risk_bridge.py -q
 
 cd ../frontend
 npm run typecheck
@@ -123,6 +135,12 @@ Related files:
 - `app/backend/tests/test_model_ops_cheap_first_escalation_budget.py`
 - `app/backend/services/model_failure_upgrade_budget.py`
 - `app/backend/tests/test_model_failure_upgrade_budget.py`
+- `app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py`
+- `app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py`
+- `app/backend/services/modelops_legal_fixture_default_promotion_packet.py`
+- `app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py`
+- `app/backend/services/model_ops_legal_benchmark_risk_bridge.py`
+- `app/backend/tests/test_model_ops_legal_benchmark_risk_bridge.py`
 - `app/backend/routers/aihub.py`
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`

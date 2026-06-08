@@ -71,7 +71,7 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["summary"]["fact_consistency_case_count"] == 4
     assert gate["summary"]["fact_consistency_not_run_case_count"] == 4
     assert gate["summary"]["calibration_status"] == "pass"
-    assert gate["summary"]["calibration_task_count"] == 6
+    assert gate["summary"]["calibration_task_count"] == 7
     assert gate["summary"]["linked_calibration_task_count"] == 4
     assert gate["summary"]["calibration_blocking_count"] == 0
     assert gate["summary"]["calibration_warning_count"] == 0

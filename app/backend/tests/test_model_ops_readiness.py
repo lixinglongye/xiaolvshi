@@ -546,7 +546,7 @@ def test_model_ops_route_includes_readiness():
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 10
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 13
     assert payload["cheap_first_escalation_budget"]["status"] == "pass"
     assert payload["failure_upgrade_budget"]["status"] == "pass"
     assert "cheap_first_escalation_budget" in {
@@ -559,6 +559,12 @@ def test_model_ops_route_includes_readiness():
         check["source_key"] == "model_ops_readiness"
         for check in payload["cheap_first_release_decision"]["checks"]
     )
+    cheap_first_release_sources = {
+        check["source_key"] for check in payload["cheap_first_release_decision"]["checks"]
+    }
+    assert "legal_fixture_cheap_first_benchmark_gate" in cheap_first_release_sources
+    assert "legal_fixture_cheap_first_default_promotion_packet" in cheap_first_release_sources
+    assert "legal_benchmark_risk_bridge" in cheap_first_release_sources
     assert payload["default_change_queue"]["summary"]["queue_item_count"] >= 6
     assert payload["default_change_queue"]["summary"]["configuration_written"] is False
     assert "cheap_first_priority_queue" in {

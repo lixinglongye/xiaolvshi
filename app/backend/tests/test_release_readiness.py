@@ -552,21 +552,34 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
                 "python -m pytest tests/test_model_ops_cheap_first_release_decision.py "
                 "tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py "
                 "tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py "
-                "tests/test_model_failure_upgrade_budget.py tests/test_model_default_candidate_selector.py -q"
+                "tests/test_model_failure_upgrade_budget.py "
+                "tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py "
+                "tests/test_modelops_legal_fixture_default_promotion_packet.py "
+                "tests/test_model_ops_legal_benchmark_risk_bridge.py "
+                "tests/test_model_default_candidate_selector.py -q"
             ),
         }
     ]
     assert check["required"] is True
     assert check["blocks_release"] is True
     assert "metadata-only cheap-first release decision packet" in check["manual_note"]
+    assert "legal fixture benchmark gate" in check["manual_note"]
+    assert "legal benchmark route-risk bridge" in check["manual_note"]
     assert "does not call NewAPI" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
     assert "public benchmark scores" in check["manual_note"]
     assert "app/backend/services/model_ops_cheap_first_release_decision.py" in check["evidence_paths"]
     assert "app/backend/services/model_ops_cheap_first_escalation_budget.py" in check["evidence_paths"]
     assert "app/backend/services/model_failure_upgrade_budget.py" in check["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in check["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in check["evidence_paths"]
     assert "docs/MODEL_FAILURE_UPGRADE_BUDGET.md" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in check["evidence_paths"]
+    assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in check["evidence_paths"]
 
 
 def test_model_ops_cheap_first_escalation_budget_is_required_model_ops_gate():

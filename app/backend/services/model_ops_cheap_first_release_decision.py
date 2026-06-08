@@ -14,6 +14,9 @@ REQUIRED_SIGNAL_KEYS = (
     "failure_upgrade_budget",
     "price_refresh_monitor",
     "model_ops_performance_budget",
+    "legal_fixture_cheap_first_benchmark_gate",
+    "legal_fixture_cheap_first_default_promotion_packet",
+    "legal_benchmark_risk_bridge",
 )
 
 
@@ -93,6 +96,27 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 fail_reason="ModelOps performance budget has blocking load or timeout regressions.",
                 warn_reason="ModelOps performance budget has observation or timeout warnings.",
             ),
+            self._check_signal(
+                "legal-fixture-cheap-first-benchmark-gate",
+                "legal_fixture_cheap_first_benchmark_gate",
+                data.get("legal_fixture_cheap_first_benchmark_gate"),
+                fail_reason="Legal fixture cheap-first benchmark gate has blocked fixture, document, fact-consistency, or calibration evidence.",
+                warn_reason="Legal fixture benchmark evidence needs fixture, document, fact-consistency, or calibration review before default promotion.",
+            ),
+            self._check_signal(
+                "legal-fixture-default-promotion-packet",
+                "legal_fixture_cheap_first_default_promotion_packet",
+                data.get("legal_fixture_cheap_first_default_promotion_packet"),
+                fail_reason="Legal fixture default promotion packet is blocked by fixture, document, fact-consistency, or calibration evidence.",
+                warn_reason="Legal fixture default promotion packet is not ready or still needs maintainer review.",
+            ),
+            self._check_signal(
+                "legal-benchmark-risk-bridge",
+                "legal_benchmark_risk_bridge",
+                data.get("legal_benchmark_risk_bridge"),
+                fail_reason="Legal benchmark risk bridge has blocked legal route evidence.",
+                warn_reason="Legal benchmark risk bridge requires review for public benchmark license, premium exception, or route watchlist evidence.",
+            ),
         ]
         blocking = [check for check in checks if check["status"] == "fail"]
         warnings = [check for check in checks if check["status"] == "warn"]
@@ -109,8 +133,9 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "notes": [
                     "Consumes existing ModelOps evidence instead of re-running model, gateway, pricing, or benchmark checks.",
                     "Treats ModelOps readiness as the aggregate upstream release signal and does not feed this packet back into readiness.",
+                    "Requires metadata-only legal fixture benchmark, default-promotion packet, and legal benchmark route-risk evidence before promoting legal-task defaults.",
                     "Blocks cheap-first default changes only when a required source signal fails.",
-                    "Keeps catalog-review, unpriced-model, performance-observation, and other warn states as maintainer review.",
+                    "Keeps catalog-review, unpriced-model, legal fixture not-run/not-ready, legal benchmark watchlist, performance-observation, and other warn states as maintainer review.",
                     "Does not call Gemini, NewAPI, OpenAI, Google, or any gateway.",
                 ],
             },
@@ -139,6 +164,8 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "default_change_policy": release_decision["default_change_policy"],
                 "premium_exception_policy": "Premium, Pro, preview, and unknown Gemini-like models require explicit exception evidence before default promotion.",
                 "unknown_model_policy": "Unknown Gemini-like ids can stay explicit-only but cannot become high-frequency defaults without catalog source and pricing review.",
+                "legal_fixture_policy": "Legal fixture, document benchmark, fact-consistency, and calibration evidence can support legal-task defaults only through the metadata-only benchmark gate and promotion packet.",
+                "legal_benchmark_policy": "Legal benchmark route-risk bridge must be pass before new legal-task defaults are promoted; watchlist or license-review evidence requires maintainer review.",
             },
             "recommended_actions": self._recommended_actions(blocking, warnings),
             "privacy_boundary": {
@@ -158,7 +185,7 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "production_accuracy_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py -q",
+                "python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_model_ops_legal_benchmark_risk_bridge.py -q",
                 "cd ../frontend && npm run typecheck && npm run ui:regression",
             ],
         }
@@ -184,7 +211,17 @@ class ModelOpsCheapFirstReleaseDecisionService:
             status = "fail"
             decision_effect = "blocks_default_changes"
             reason = fail_reason
-        elif source_status in {"warn", "warning", "review_required", "manual_review", "needs_review"} or source_warning_ids:
+        elif source_status in {
+            "warn",
+            "warning",
+            "review_required",
+            "manual_review",
+            "needs_review",
+            "not_ready",
+            "not_run",
+            "ready_with_watchlist",
+            "ready_for_maintainer_review",
+        } or source_warning_ids:
             status = "warn"
             decision_effect = "requires_maintainer_review"
             reason = warn_reason
@@ -212,6 +249,30 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "catalog_review_count": self._safe_int(summary.get("catalog_review_count")),
                 "missing_pricing_count": self._safe_int(summary.get("missing_pricing_count")),
                 "slow_observation_count": self._safe_int(summary.get("slow_observation_count")),
+                "not_run_count": self._safe_int(summary.get("not_run_count")),
+                "not_ready_count": self._safe_int(summary.get("not_ready_count")),
+                "ready_for_review_count": self._safe_int(summary.get("ready_for_review_count")),
+                "review_required_count": self._safe_int(summary.get("review_required_count")),
+                "blocked_count": self._safe_int(summary.get("blocked_count")),
+                "selected_fixture_count": self._safe_int(summary.get("selected_fixture_count")),
+                "evaluated_fixture_count": self._safe_int(summary.get("evaluated_fixture_count")),
+                "default_evidence_allowed_count": self._safe_int(summary.get("default_evidence_allowed_count")),
+                "promotion_item_count": self._safe_int(summary.get("promotion_item_count")),
+                "linked_calibration_task_count": self._safe_int(summary.get("linked_calibration_task_count")),
+                "calibration_blocking_count": self._safe_int(summary.get("calibration_blocking_count")),
+                "calibration_warning_count": self._safe_int(summary.get("calibration_warning_count")),
+                "document_benchmark_failed_case_count": self._safe_int(summary.get("document_benchmark_failed_case_count")),
+                "document_benchmark_blocking_case_count": self._safe_int(
+                    summary.get("document_benchmark_blocking_case_count")
+                ),
+                "fact_consistency_blocking_case_count": self._safe_int(
+                    summary.get("fact_consistency_blocking_case_count")
+                ),
+                "route_review_count": self._safe_int(summary.get("route_review_count")),
+                "user_need_review_count": self._safe_int(summary.get("user_need_review_count")),
+                "premium_exception_route_count": self._safe_int(summary.get("premium_exception_route_count")),
+                "benchmark_license_watch_count": self._safe_int(summary.get("benchmark_license_watch_count")),
+                "default_change_queue_item_count": self._safe_int(summary.get("default_change_queue_item_count")),
             },
             "reason": reason,
         }

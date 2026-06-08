@@ -456,6 +456,7 @@ async def list_models():
         "legal_micro_benchmark_preflight": legal_micro_benchmark_preflight,
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+        "legal_benchmark_risk_bridge": preliminary_legal_benchmark_risk_bridge,
         "gemini_research_refresh_gate": gemini_research_refresh_gate,
     }
     base_model_ops_readiness = ModelOpsReadinessService().evaluate(model_ops_signals)
@@ -466,6 +467,16 @@ async def list_models():
     model_ops_signals["default_change_queue"] = default_change_queue
     legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(model_ops_signals)
     model_ops_signals["legal_benchmark_risk_bridge"] = legal_benchmark_risk_bridge
+    cheap_first_release_decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(model_ops_signals)
+    model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
+    default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
+    model_ops_signals["default_change_queue"] = default_change_queue
+    legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(model_ops_signals)
+    model_ops_signals["legal_benchmark_risk_bridge"] = legal_benchmark_risk_bridge
+    cheap_first_release_decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(model_ops_signals)
+    model_ops_signals["cheap_first_release_decision"] = cheap_first_release_decision
+    default_change_queue = ModelOpsDefaultChangeQueueService().build_queue(model_ops_signals)
+    model_ops_signals["default_change_queue"] = default_change_queue
     gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(model_ops_signals)
     model_ops_signals["gemini_research_refresh_gate"] = gemini_research_refresh_gate
     cheap_first_priority_queue = ModelOpsCheapFirstPriorityQueueService().build_queue(model_ops_signals)

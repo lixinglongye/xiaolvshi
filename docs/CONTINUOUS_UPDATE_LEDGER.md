@@ -626,6 +626,17 @@ NewAPI, Gemini, OpenAI, Google, gateways, or the network, shift traffic, or
 include real legal text, fixture snippets, generated document text, prompts,
 model outputs, credentials, or emails.
 
+Current cheap-first release legal benchmark binding evidence:
+`modelops-cheap-first-release-legal-benchmark-binding` binds the legal fixture
+benchmark gate, legal fixture default-promotion packet, and legal benchmark
+risk bridge into the cheap-first release decision. Failed fixture, document,
+fact-consistency, calibration, or route-risk evidence blocks legal-task default
+promotion; not-run, not-ready, public benchmark license review, premium
+exception, and route watchlist evidence stays maintainer-review-only. It does
+not write configuration, shift traffic, call model providers or gateways,
+download public datasets, or include raw legal text, benchmark samples, prompts,
+model outputs, credentials, or emails.
+
 This ledger records progress toward the long-running maintenance target without claiming completion before it is reviewable.
 
 ## Endpoint

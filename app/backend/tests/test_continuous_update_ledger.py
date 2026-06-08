@@ -301,6 +301,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids
     assert "modelops-legal-fixture-cheap-first-calibration-binding" in completed_ids
     assert "modelops-legal-fixture-modelops-ui-binding" in completed_ids
+    assert "modelops-cheap-first-release-legal-benchmark-binding" in completed_ids
     assert "modelops-agentic-grounded-defaults" in completed_ids
     assert "modelops-default-template-alignment" in completed_ids
     assert "modelops-gemini-default-change-review" in completed_ids
@@ -2068,6 +2069,49 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in modelops_ui_binding_entry["release_gate_links"]
     assert "gemini-newapi-cheap-first-calibration" in modelops_ui_binding_entry["release_gate_links"]
     assert "frontend-ui-regression-gate" in modelops_ui_binding_entry["release_gate_links"]
+    release_legal_binding_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-cheap-first-release-legal-benchmark-binding"
+    )
+    assert release_legal_binding_entry["size"] == "medium"
+    assert release_legal_binding_entry["status"] == "shipped"
+    assert "legal fixture cheap-first benchmark gate" in release_legal_binding_entry["impact"]
+    assert "legal fixture default promotion packet" in release_legal_binding_entry["impact"]
+    assert "legal benchmark risk bridge" in release_legal_binding_entry["impact"]
+    assert "cheap-first release decision" in release_legal_binding_entry["impact"]
+    assert "failed fixture/document/fact-consistency/calibration/route evidence" in release_legal_binding_entry["impact"]
+    assert "not-run, not-ready" in release_legal_binding_entry["impact"]
+    assert "public benchmark license" in release_legal_binding_entry["impact"]
+    assert "premium exception" in release_legal_binding_entry["impact"]
+    assert "configuration writes" in release_legal_binding_entry["impact"]
+    assert "public dataset downloads" in release_legal_binding_entry["impact"]
+    assert "raw legal text" in release_legal_binding_entry["impact"]
+    assert "credentials" in release_legal_binding_entry["impact"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in release_legal_binding_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in release_legal_binding_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in release_legal_binding_entry["evidence_paths"]
+    assert (
+        "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py"
+        in release_legal_binding_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/services/modelops_legal_fixture_default_promotion_packet.py"
+        in release_legal_binding_entry["evidence_paths"]
+    )
+    assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in release_legal_binding_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_default_change_queue.py" in release_legal_binding_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in release_legal_binding_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in release_legal_binding_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in release_legal_binding_entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in release_legal_binding_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in release_legal_binding_entry["evidence_paths"]
+    assert "modelops-cheap-first-release-legal-benchmark-binding" in release_legal_binding_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in release_legal_binding_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in release_legal_binding_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in release_legal_binding_entry["release_gate_links"]
+    assert "modelops-legal-benchmark-risk-bridge" in release_legal_binding_entry["release_gate_links"]
+    assert "model-route-legal-benchmark-risk-queue" in release_legal_binding_entry["release_gate_links"]
     agentic_defaults_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "modelops-agentic-grounded-defaults"
     )
