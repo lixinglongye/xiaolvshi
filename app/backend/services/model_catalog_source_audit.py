@@ -12,7 +12,7 @@ OFFICIAL_GEMINI_SOURCE_REFERENCES = (
         "title": "Gemini Developer API pricing",
         "url": "https://ai.google.dev/gemini-api/docs/pricing",
         "review_purpose": "Refresh paid-tier token and image pricing before changing defaults.",
-        "last_reviewed_on": "2026-06-08",
+        "last_reviewed_on": "2026-06-09",
         "max_review_age_days": 30,
         "review_scope": "paid-tier token pricing, image pricing, lifecycle-sensitive pricing notes, and cheap-first defaults",
     },
@@ -21,7 +21,7 @@ OFFICIAL_GEMINI_SOURCE_REFERENCES = (
         "title": "Gemini API model list",
         "url": "https://ai.google.dev/gemini-api/docs/models",
         "review_purpose": "Check model availability, lifecycle, capabilities, and naming before catalog promotion.",
-        "last_reviewed_on": "2026-06-08",
+        "last_reviewed_on": "2026-06-09",
         "max_review_age_days": 30,
         "review_scope": "model names, stable/preview/latest lifecycle posture, capabilities, and catalog promotion safety",
     },
@@ -29,7 +29,7 @@ OFFICIAL_GEMINI_SOURCE_REFERENCES = (
 HIGH_FREQUENCY_TASKS = ("fast", "classification", "ocr")
 HIGH_FREQUENCY_ROLE_NAMES = {"cheap", "fast", "ocr", "classification", "classifier"}
 SOURCE_HOST = "https://ai.google.dev/"
-SOURCE_REVIEW_SNAPSHOT_AS_OF = "2026-06-08"
+SOURCE_REVIEW_SNAPSHOT_AS_OF = "2026-06-09"
 
 
 class ModelCatalogSourceAuditService:

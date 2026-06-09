@@ -267,8 +267,8 @@ Current ModelOps official Gemini roadmap slice:
 `modelops-gemini-official-model-family-roadmap-evidence` exposes
 metadata-only official Gemini family coverage evidence in the AIHub ModelOps
 payload and UI. It keeps stable Gemini 2.5 Flash-Lite cheap-first text defaults
-separate from Gemini 3 review rows, explicit image rows, and Live/audio,
-embedding, and TTS roadmap gaps. It does not call providers, gateways, app AI
+separate from the refreshed Gemini 3.5/3.1 catalog rows, Gemini 3 review rows,
+explicit image rows, and Live/audio, embedding, and TTS roadmap gaps. It does not call providers, gateways, app AI
 endpoints, models, or the network; write configuration; change defaults; or
 return request bodies, response bodies, headers, prompts, raw payloads, legal
 text, model outputs, emails, credentials, or user identifiers.

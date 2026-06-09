@@ -102,7 +102,7 @@ outputs, payloads, emails, or credentials.
 - 高频、低风险任务使用 `gemini-2.5-flash-lite`：OCR、材料分类、Plan Mode 理解、预检、轻量结构化处理。
 - 法律审查主体流程使用 `gemini-2.5-flash`：风险识别、条款映射、法律分析、案件问答。
 - 只在必要时使用 `gemini-2.5-pro`：大 PDF、复杂推理、最终复核或低价模型失败后的人工指定升级。
-- Gemini 3 系列用于显式能力升级：`gemini-3.1-flash-lite` 适合低成本 agentic/grounding 任务，`gemini-3.5-flash` 适合更强的 grounded research，`gemini-3.1-pro-preview` 只作为预览 premium 复核候选。
+- Gemini 3 系列用于显式能力升级：`gemini-3.1-flash-lite` 适合低成本 agentic/grounding 任务，`gemini-3.5-flash` 已按官方价格刷新为稳定 premium 复核候选，`gemini-3.1-pro-preview` 和 `gemini-3.1-pro-preview-customtools` 只作为预览 premium 复核候选。
 
 这样做的依据是 Gemini 官方价格页将 `gemini-2.5-flash-lite` 描述为面向规模化使用的最小、最具成本效益模型，并给出低于 Flash/Pro 的输入输出价格。官方模型页也标注 `gemini-2.5-flash` 适合低延迟、高吞吐且需要推理的任务，`gemini-2.5-pro` 用于复杂任务和深度推理。
 
@@ -335,6 +335,7 @@ outputs, gateway responses, credentials, emails, or user identifiers.
 - `gemini-3.5-flash`
 - `gemini-3.1-pro`
 - `gemini-3.1-pro-preview`
+- `gemini-3.1-pro-preview-customtools`
 - `gemini-2.5-flash-image`
 - `gemini-3.1-flash-image`
 - `gemini-3-pro-image`
@@ -359,6 +360,13 @@ has not been confirmed from current source-review evidence, the model must stay
 `unpriced` and `review-only`. Do not hard-code a cost, include it in cheap-first
 savings claims, or promote it as `default_eligible` until price, status,
 capability, gateway evidence, and task budget fit are refreshed.
+
+As of the 2026-06-09 source refresh, `gemini-3.5-flash` is cataloged as a
+stable premium review candidate with token pricing, and
+`gemini-3-pro-image` is cataloged as a stable premium explicit-media candidate
+with image pricing. These updates do not change the high-frequency defaults:
+Flash-Lite remains first for cheap, fast, OCR, classification, agentic, and
+grounded-research paths unless a separate default-change review passes.
 
 ## Operational Notes
 

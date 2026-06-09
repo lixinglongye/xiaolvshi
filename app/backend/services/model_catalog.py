@@ -81,7 +81,7 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         id="gemini-3.1-flash-lite",
         provider="google",
         family="gemini",
-        cost_tier="low",
+        cost_tier="lowest",
         latency_tier="fast",
         capabilities=("text", "vision", "json", "audio", "video", "grounding", "agentic"),
         best_for=("agentic-routing", "translation", "simple-data-processing", "high-volume-tasks"),
@@ -96,15 +96,16 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         family="gemini",
         cost_tier="premium",
         latency_tier="fast",
-        capabilities=("text", "vision", "json", "grounding", "coding", "agentic"),
+        capabilities=("text", "vision", "json", "audio", "video", "grounding", "coding", "agentic"),
         best_for=("agentic-workflows", "coding", "grounded-research", "sustained-reasoning"),
-        notes="Gateway-observed Flash-like option; keep review-only until official availability and pricing are confirmed.",
-        pricing_note=(
-            "Provider or gateway pricing is not source-confirmed in the local catalog. "
-            "Keep unpriced and review-only until refreshed."
+        notes=(
+            "Official stable Flash option for stronger grounded and agentic work; standard pricing is high enough "
+            "that it must stay behind cheap prechecks and maintainer review for high-volume routes."
         ),
-        status="review",
-        context_window_tokens=1_000_000,
+        input_usd_per_million_tokens=1.50,
+        output_usd_per_million_tokens=9.00,
+        status="stable",
+        context_window_tokens=1_048_576,
     ),
     ModelProfile(
         id="gemini-3-flash-preview",
@@ -128,9 +129,13 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         latency_tier="slower",
         capabilities=("text", "vision", "json", "grounding", "long-context", "complex-reasoning", "agentic"),
         best_for=("complex-legal-reasoning", "grounded-research", "final-review", "hard-benchmark-cases"),
-        notes="Stable Pro option for difficult reasoning; require operator review before making it a default.",
+        notes=(
+            "Gateway-observed short alias for Gemini 3.1 Pro. Keep review-only unless it canonicalizes "
+            "to an official preview API name and the gateway price sheet is confirmed."
+        ),
         input_usd_per_million_tokens=2.00,
         output_usd_per_million_tokens=12.00,
+        status="review",
         context_window_tokens=1_000_000,
     ),
     ModelProfile(
@@ -142,6 +147,29 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         capabilities=("text", "vision", "json", "grounding", "long-context", "complex-reasoning", "agentic"),
         best_for=("complex-legal-reasoning", "grounded-research", "final-review", "hard-benchmark-cases"),
         notes="Preview Pro option for difficult reasoning; require operator review before making it a default.",
+        input_usd_per_million_tokens=2.00,
+        output_usd_per_million_tokens=12.00,
+        status="preview",
+        context_window_tokens=1_000_000,
+    ),
+    ModelProfile(
+        id="gemini-3.1-pro-preview-customtools",
+        provider="google",
+        family="gemini",
+        cost_tier="premium",
+        latency_tier="slower",
+        capabilities=(
+            "text",
+            "vision",
+            "json",
+            "grounding",
+            "long-context",
+            "complex-reasoning",
+            "agentic",
+            "custom-tools",
+        ),
+        best_for=("custom-tool-workflows", "complex-legal-reasoning", "grounded-research", "hard-benchmark-cases"),
+        notes="Official Gemini 3.1 Pro Preview variant with custom tool pricing; explicit operator review only.",
         input_usd_per_million_tokens=2.00,
         output_usd_per_million_tokens=12.00,
         status="preview",
@@ -184,9 +212,17 @@ GEMINI_MODEL_CATALOG: tuple[ModelProfile, ...] = (
         family="gemini",
         cost_tier="premium",
         latency_tier="slower",
-        capabilities=("image", "image-edit"),
-        best_for=("high-quality-image-generation",),
-        status="preview",
+        capabilities=("image", "image-edit", "text", "json"),
+        best_for=("high-quality-image-generation", "high-quality-image-editing"),
+        notes="Official higher-quality Gemini image model; explicit media route only because it is premium.",
+        input_usd_per_million_tokens=2.00,
+        output_usd_per_million_tokens=12.00,
+        output_usd_per_image=0.134,
+        pricing_note=(
+            "Google Gemini API paid tier, standard mode. Output image price is approximate for 1K/2K/4K output; "
+            "gateway billing and resolution settings may differ."
+        ),
+        status="stable",
     ),
     ModelProfile(
         id="veo-3.1-generate-preview",

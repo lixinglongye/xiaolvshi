@@ -46,9 +46,13 @@ def test_default_candidate_selector_preserves_current_low_cost_defaults():
     assert fast_ladder[0]["candidate_stage"] == "default_eligible"
     assert fast_ladder[0]["review_required"] is False
     assert fast_ladder[0]["promotion_blockers"] == []
-    assert fast_ladder[1]["candidate_stage"] == "review_only"
-    assert fast_ladder[1]["review_required"] is True
-    assert any(blocker.startswith("cost-tier:") for blocker in fast_ladder[1]["promotion_blockers"])
+    assert fast_ladder[1]["model"] == "gemini-3.1-flash-lite"
+    assert fast_ladder[1]["candidate_stage"] == "default_eligible"
+    assert fast_ladder[1]["review_required"] is False
+    assert fast_ladder[1]["promotion_blockers"] == []
+    assert fast_ladder[2]["candidate_stage"] == "review_only"
+    assert fast_ladder[2]["review_required"] is True
+    assert any(blocker.startswith("cost-tier:") for blocker in fast_ladder[2]["promotion_blockers"])
     assert selector_payload["summary"]["default_eligible_candidate_count"] >= fast["eligible_candidate_count"]
     assert selector_payload["summary"]["review_only_candidate_count"] >= fast["review_only_candidate_count"]
 

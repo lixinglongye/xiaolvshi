@@ -2814,8 +2814,10 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert gemini_official_roadmap_entry["size"] == "medium"
     assert gemini_official_roadmap_entry["status"] == "shipped"
     assert "metadata-only official Gemini family roadmap evidence" in gemini_official_roadmap_entry["impact"]
+    assert "official Gemini 3.5/3.1 refresh rows" in gemini_official_roadmap_entry["impact"]
     assert "cheap-first Flash-Lite defaults" in gemini_official_roadmap_entry["impact"]
-    assert "review-only Gemini 3/image rows" in gemini_official_roadmap_entry["impact"]
+    assert "review-only Gemini 3 rows" in gemini_official_roadmap_entry["impact"]
+    assert "explicit image rows" in gemini_official_roadmap_entry["impact"]
     assert "live/audio/embedding/TTS gap queues" in gemini_official_roadmap_entry["impact"]
     assert "without NewAPI/Gemini/OpenAI/Google/gateway/network calls" in gemini_official_roadmap_entry["impact"]
     assert "configuration writes" in gemini_official_roadmap_entry["impact"]
@@ -2825,6 +2827,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "headers" in gemini_official_roadmap_entry["impact"]
     assert "model outputs" in gemini_official_roadmap_entry["impact"]
     assert "credentials" in gemini_official_roadmap_entry["impact"]
+    assert "app/backend/services/model_catalog.py" in gemini_official_roadmap_entry["evidence_paths"]
     assert "app/backend/services/model_ops_gemini_official_model_family_roadmap.py" in gemini_official_roadmap_entry["evidence_paths"]
     assert "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py" in gemini_official_roadmap_entry["evidence_paths"]
     assert "app/backend/services/model_ops_readiness.py" in gemini_official_roadmap_entry["evidence_paths"]

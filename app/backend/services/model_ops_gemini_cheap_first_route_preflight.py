@@ -372,7 +372,7 @@ class ModelOpsGeminiCheapFirstRoutePreflightService:
             codes.append(f"lifecycle_{status}")
         if pricing == "unpriced":
             codes.append("pricing_missing")
-        if row.get("premium_exception_required"):
+        if row.get("premium_exception_required") or str(row.get("cost_tier") or "") == "premium":
             codes.append("premium_exception_review")
         if row.get("media_route_only"):
             codes.append("media_route_review")

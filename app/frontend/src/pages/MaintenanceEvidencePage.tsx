@@ -299,6 +299,8 @@ const geminiCheapFirstPolicySignals = [
 
 const modelPriceRefreshObservedModelsSample = [
   'google/gemini-9-flash-lite',
+  'models/gemini-3.1-flash-lite',
+  'google/gemini-3.5-flash',
   'models/gemini-3.1-pro-preview',
   'yibu/gemini-3.1-flash-image',
 ] as const;

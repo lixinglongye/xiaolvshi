@@ -28,9 +28,17 @@ def test_lifecycle_policy_passes_stable_cheap_first_defaults(monkeypatch):
     assert plan["status"] == "pass"
     assert plan["summary"]["deprecated_default_count"] == 0
     assert plan["summary"]["latest_alias_default_count"] == 0
+    assert plan["summary"]["scheduled_shutdown_replacement_count"] >= 2
+    assert plan["summary"]["configured_scheduled_shutdown_count"] >= 3
     assert _role(plan, "fast")["cheap_first_aligned"] is True
+    assert _role(plan, "fast")["replacement_model"] == "gemini-3.1-flash-lite"
+    assert _role(plan, "fast")["scheduled_shutdown_on"] == "2026-10-16"
+    assert _role(plan, "review")["replacement_model"] == "gemini-3.5-flash"
     assert _role(plan, "agentic")["model"] == "gemini-3.1-flash-lite"
     assert _role(plan, "grounded-research")["model"] == "gemini-3.1-flash-lite"
+    assert plan["alias_policy"]["scheduled_shutdown_replacements"]["gemini-2.5-flash-lite"][
+        "replacement_model"
+    ] == "gemini-3.1-flash-lite"
     assert "sk-" not in str(plan)
 
 
@@ -58,6 +66,33 @@ def test_lifecycle_policy_warns_on_preview_and_latest_defaults(monkeypatch):
     assert "preview-default-review" in plan["warning_check_ids"]
     assert _role(plan, "review")["lifecycle_state"] == "preview"
     assert _role(plan, "pdf")["lifecycle_state"] == "unstable_alias"
+
+
+def test_lifecycle_policy_warns_on_review_only_catalog_defaults(monkeypatch):
+    monkeypatch.setattr(model_lifecycle_policy, "cheap_text_model", lambda: "gemini-2.5-flash-lite")
+    monkeypatch.setattr(
+        model_lifecycle_policy,
+        "task_default_model",
+        lambda task: {
+            "fast": "gemini-2.5-flash-lite",
+            "ocr": "gemini-2.5-flash-lite",
+            "classification": "gemini-2.5-flash-lite",
+            "review": "gemini-3.1-pro",
+            "grounded-research": "gemini-3.1-flash-lite",
+            "agentic": "gemini-3.1-flash-lite",
+            "pdf": "gemini-2.5-pro",
+        }.get(task, "gemini-2.5-flash"),
+    )
+
+    plan = ModelLifecyclePolicyService().build_policy()
+
+    assert plan["status"] == "warn"
+    assert plan["summary"]["review_catalog_count"] >= 1
+    assert plan["summary"]["review_default_count"] == 2
+    assert "preview-default-review" in plan["warning_check_ids"]
+    assert _role(plan, "review")["lifecycle_state"] == "review"
+    assert _role(plan, "review")["default_allowed"] is False
+    assert "Review-only" in _role(plan, "review")["reason"]
 
 
 def test_lifecycle_policy_blocks_deprecated_defaults(monkeypatch):

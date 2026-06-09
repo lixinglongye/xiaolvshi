@@ -86,6 +86,7 @@ PAGE_GATES = (
                 "Performance observations",
                 "Gemini catalog source audit",
                 "Gemini official model family roadmap evidence",
+                "Gemini 3.5/3.1 catalog visibility",
                 "Observed Gemini model intake queue",
                 "Observed Gemini coverage gap queue",
                 "Model catalog candidate patch plan",

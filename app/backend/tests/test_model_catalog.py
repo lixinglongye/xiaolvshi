@@ -51,6 +51,10 @@ def test_canonical_model_id_recognizes_gateway_prefixes():
     assert model_catalog.canonical_model_id("yibuapi/google/gemini-2.5-flash-lite") == "gemini-2.5-flash-lite"
     assert model_catalog.canonical_model_id("publishers/google/models/gemini-3-flash-preview") == "gemini-3-flash-preview"
     assert model_catalog.canonical_model_id("models/gemini-3.1-pro") == "gemini-3.1-pro"
+    assert (
+        model_catalog.canonical_model_id("publishers/google/models/gemini-3.1-pro-preview-customtools")
+        == "gemini-3.1-pro-preview-customtools"
+    )
     assert model_catalog.canonical_model_id("yibu/gemini-3.1-flash-image") == "gemini-3.1-flash-image"
     assert (
         model_catalog.canonical_model_id("models/gemini-2.5-flash-preview-tts:generateContent")
@@ -108,16 +112,22 @@ def test_catalog_marks_configured_roles(monkeypatch):
     assert "grounded-research" in catalog["gemini-3.1-flash-lite"]["configured_roles"]
     assert catalog["gemini-2.5-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.10
     assert catalog["gemini-3.1-flash-lite"]["pricing"]["input_usd_per_million_tokens"] == 0.25
+    assert catalog["gemini-3.1-flash-lite"]["cost_tier"] == "lowest"
     assert catalog["gemini-3-flash-preview"]["status"] == "preview"
     assert catalog["gemini-3-flash-preview"]["pricing"]["input_usd_per_million_tokens"] == 0.50
     assert catalog["gemini-3.5-flash"]["cost_tier"] == "premium"
-    assert catalog["gemini-3.5-flash"]["status"] == "review"
-    assert catalog["gemini-3.5-flash"]["pricing"]["input_usd_per_million_tokens"] is None
-    assert catalog["gemini-3.5-flash"]["pricing"]["output_usd_per_million_tokens"] is None
-    assert catalog["gemini-3.1-pro"]["status"] == "stable"
+    assert catalog["gemini-3.5-flash"]["status"] == "stable"
+    assert catalog["gemini-3.5-flash"]["pricing"]["input_usd_per_million_tokens"] == 1.50
+    assert catalog["gemini-3.5-flash"]["pricing"]["output_usd_per_million_tokens"] == 9.00
+    assert catalog["gemini-3.1-pro"]["status"] == "review"
     assert catalog["gemini-3.1-pro-preview"]["status"] == "preview"
+    assert catalog["gemini-3.1-pro-preview-customtools"]["status"] == "preview"
+    assert "custom-tools" in catalog["gemini-3.1-pro-preview-customtools"]["capabilities"]
+    assert catalog["gemini-3.1-pro-preview-customtools"]["pricing"]["output_usd_per_million_tokens"] == 12.00
     assert catalog["gemini-3.1-flash-image"]["pricing"]["output_usd_per_image"] == 0.067
     assert "image-edit" in catalog["gemini-3.1-flash-image"]["capabilities"]
+    assert catalog["gemini-3-pro-image"]["status"] == "stable"
+    assert catalog["gemini-3-pro-image"]["pricing"]["output_usd_per_image"] == 0.134
     assert catalog["veo-3.1-generate-preview"]["status"] == "preview"
     assert "video-generation" in catalog["veo-3.1-generate-preview"]["capabilities"]
     assert catalog["veo-3.1-fast-generate-preview"]["status"] == "preview"
@@ -164,8 +174,9 @@ def test_estimate_token_cost_uses_catalog_pricing():
     assert cost == 0.30
     assert model_catalog.estimate_token_cost_usd("google/gemini-2.5-flash", 1_000_000, 500_000) == 1.55
     assert model_catalog.estimate_token_cost_usd("newapi/google/gemini-3-flash-preview", 1_000_000, 500_000) == 2.0
-    assert model_catalog.estimate_token_cost_usd("gemini-3.5-flash", 1_000_000, 500_000) is None
-    assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) is None
+    assert model_catalog.estimate_token_cost_usd("gemini-3.5-flash", 1_000_000, 500_000) == 6.0
+    assert model_catalog.estimate_token_cost_usd("models/gemini-3.1-pro-preview-customtools", 1_000_000, 500_000) == 8.0
+    assert model_catalog.estimate_token_cost_usd("gemini-3-pro-image", 1_000_000, 500_000) == 8.0
     assert model_catalog.estimate_token_cost_usd("models/gemini-2.5-flash-preview-tts", 1_000_000, 500_000) == 5.5
     assert model_catalog.estimate_token_cost_usd("models/gemini-3.1-flash-tts-preview", 1_000_000, 500_000) == 11.0
     assert model_catalog.estimate_token_cost_usd("gemini-3.1-flash-live-preview", 1_000_000, 500_000) == 6.75

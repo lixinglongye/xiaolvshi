@@ -1938,10 +1938,11 @@ class ContinuousUpdateLedgerService:
                 status="shipped",
                 impact=(
                     "Adds source-backed Gemini catalog audit evidence so official source URLs, source review "
-                    "freshness, default-promotion source blocks, price metadata gaps, preview/premium defaults, "
+                    "freshness, Gemini 3.5/3.1 official catalog refresh rows, default-promotion source blocks, price metadata gaps, preview/premium defaults, "
                     "and Flash-Lite cheap-first alignment are visible before model defaults change."
                 ),
                 evidence_paths=(
+                    "app/backend/services/model_catalog.py",
                     "app/backend/services/model_catalog_source_audit.py",
                     "app/backend/tests/test_model_catalog_source_audit.py",
                     "app/backend/services/model_ops_readiness.py",
@@ -1969,12 +1970,13 @@ class ContinuousUpdateLedgerService:
                 status="shipped",
                 impact=(
                     "Adds metadata-only official Gemini family roadmap evidence that maps official model families "
-                    "to local catalog coverage, cheap-first Flash-Lite defaults, review-only Gemini 3/image rows, "
+                    "to local catalog coverage, official Gemini 3.5/3.1 refresh rows, cheap-first Flash-Lite defaults, review-only Gemini 3 rows, explicit image rows, "
                     "and live/audio/embedding/TTS gap queues without NewAPI/Gemini/OpenAI/Google/gateway/network "
                     "calls, configuration writes, default changes, request bodies, response bodies, headers, raw "
                     "prompts, payloads, legal text, model outputs, emails, or credentials."
                 ),
                 evidence_paths=(
+                    "app/backend/services/model_catalog.py",
                     "app/backend/services/model_ops_gemini_official_model_family_roadmap.py",
                     "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py",
                     "app/backend/services/model_ops_readiness.py",

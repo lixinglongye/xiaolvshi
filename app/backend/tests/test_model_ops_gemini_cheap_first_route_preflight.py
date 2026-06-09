@@ -55,8 +55,13 @@ def test_gemini_cheap_first_route_preflight_builds_reviewable_plan():
     assert variant_rows["gemini-3.1-flash-lite"]["default_allowed_without_review"] is True
     assert variant_rows["gemini-2.5-pro"]["default_promotion_state"] == "review_required"
     assert "premium_exception_review" in variant_rows["gemini-2.5-pro"]["reason_codes"]
-    assert variant_rows["gemini-3-pro-image"]["default_promotion_state"] == "blocked"
-    assert "pricing_missing" in variant_rows["gemini-3-pro-image"]["reason_codes"]
+    assert variant_rows["gemini-3-pro-image"]["default_promotion_state"] == "review_required"
+    assert "media_route_review" in variant_rows["gemini-3-pro-image"]["reason_codes"]
+    assert "premium_exception_review" in variant_rows["gemini-3-pro-image"]["reason_codes"]
+    assert variant_rows["gemini-3.5-flash"]["default_promotion_state"] == "review_required"
+    assert "premium_exception_review" in variant_rows["gemini-3.5-flash"]["reason_codes"]
+    assert variant_rows["gemini-3.1-pro-preview-customtools"]["default_promotion_state"] == "review_required"
+    assert "lifecycle_preview" in variant_rows["gemini-3.1-pro-preview-customtools"]["reason_codes"]
 
 
 def test_gemini_cheap_first_route_preflight_links_official_sources_and_signals():

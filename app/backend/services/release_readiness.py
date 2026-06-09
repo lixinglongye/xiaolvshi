@@ -365,6 +365,7 @@ class ReleaseReadinessService:
                 required=True,
                 owner="engineering",
                 evidence_paths=(
+                    "app/backend/services/model_catalog.py",
                     "app/backend/services/model_catalog_source_audit.py",
                     "app/backend/tests/test_model_catalog_source_audit.py",
                     "app/backend/services/model_ops_readiness.py",
@@ -376,7 +377,7 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
                 manual_note=(
                     "This audits local Gemini catalog source URLs, source review freshness, pricing metadata, "
-                    "default-promotion source blocks, and cheap-first defaults only; it does not call Google, "
+                    "official Gemini 3.5/3.1 catalog refresh rows, default-promotion source blocks, and cheap-first defaults only; it does not call Google, "
                     "Gemini, NewAPI, OpenAI, or any gateway."
                 ),
             ),
@@ -387,6 +388,7 @@ class ReleaseReadinessService:
                 required=True,
                 owner="engineering",
                 evidence_paths=(
+                    "app/backend/services/model_catalog.py",
                     "app/backend/services/model_ops_gemini_official_model_family_roadmap.py",
                     "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py",
                     "app/backend/services/model_ops_readiness.py",

@@ -40,6 +40,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
     assert "Gemini official model family roadmap evidence" in rows["/model-ops"]["protected_panels"]
+    assert "Gemini 3.5/3.1 catalog visibility" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini model intake queue" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini coverage gap queue" in rows["/model-ops"]["protected_panels"]
     assert "Model catalog candidate patch plan" in rows["/model-ops"]["protected_panels"]

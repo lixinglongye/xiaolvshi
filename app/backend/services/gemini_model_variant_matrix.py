@@ -182,9 +182,7 @@ class GeminiModelVariantMatrixService:
         cost_tier = str(item.get("cost_tier") or "")
         media_capabilities = {
             "image",
-            "video",
             "video-generation",
-            "audio",
             "audio-generation",
             "tts",
             "live",

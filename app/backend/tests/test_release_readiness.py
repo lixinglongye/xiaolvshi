@@ -738,7 +738,9 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "metadata-only cheap-first calibration" in checks["gemini-newapi-cheap-first-calibration"]["manual_note"]
     assert "does not call Google" in checks["model-catalog-source-audit"]["manual_note"]
     assert "source review freshness" in checks["model-catalog-source-audit"]["manual_note"]
+    assert "official Gemini 3.5/3.1 catalog refresh rows" in checks["model-catalog-source-audit"]["manual_note"]
     assert "default-promotion source blocks" in checks["model-catalog-source-audit"]["manual_note"]
+    assert "app/backend/services/model_catalog.py" in checks["model-catalog-source-audit"]["evidence_paths"]
     assert "official Gemini model family roadmap evidence" in checks[
         "modelops-gemini-official-model-family-roadmap-evidence"
     ]["manual_note"]
@@ -754,6 +756,9 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
     assert "request bodies" in checks["modelops-gemini-official-model-family-roadmap-evidence"]["manual_note"]
     assert "credentials" in checks["modelops-gemini-official-model-family-roadmap-evidence"]["manual_note"]
     assert "app/backend/services/model_ops_gemini_official_model_family_roadmap.py" in checks[
+        "modelops-gemini-official-model-family-roadmap-evidence"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_catalog.py" in checks[
         "modelops-gemini-official-model-family-roadmap-evidence"
     ]["evidence_paths"]
     assert "app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py" in checks[

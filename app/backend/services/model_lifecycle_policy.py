@@ -17,6 +17,18 @@ DEPRECATED_MODEL_PREFIXES = (
     "gemini-1.5",
     "gemini-2.0",
 )
+SCHEDULED_SHUTDOWN_REPLACEMENTS: dict[str, dict[str, str]] = {
+    "gemini-2.5-flash-lite": {
+        "replacement_model": "gemini-3.1-flash-lite",
+        "shutdown_on": "2026-10-16",
+        "migration_note": "Official deprecation guidance recommends Gemini 3.1 Flash-Lite as the Flash-Lite replacement.",
+    },
+    "gemini-2.5-flash": {
+        "replacement_model": "gemini-3.5-flash",
+        "shutdown_on": "2026-10-16",
+        "migration_note": "Official deprecation guidance recommends Gemini 3.5 Flash as the Flash replacement.",
+    },
+}
 UNSTABLE_ALIAS_SUFFIXES = (
     "-latest",
     "-preview",
@@ -35,6 +47,9 @@ class ConfiguredModelRole:
     model_status: str
     default_allowed: bool
     cheap_first_aligned: bool
+    replacement_model: str | None
+    scheduled_shutdown_on: str | None
+    migration_note: str | None
     reason: str
 
     def to_api(self) -> dict[str, Any]:
@@ -69,9 +84,13 @@ class ModelLifecyclePolicyService:
                 "catalog_model_count": len(GEMINI_MODEL_CATALOG),
                 "stable_catalog_count": sum(1 for item in GEMINI_MODEL_CATALOG if item.status == "stable"),
                 "preview_catalog_count": sum(1 for item in GEMINI_MODEL_CATALOG if item.status == "preview"),
+                "review_catalog_count": sum(1 for item in GEMINI_MODEL_CATALOG if item.status == "review"),
+                "scheduled_shutdown_replacement_count": len(SCHEDULED_SHUTDOWN_REPLACEMENTS),
                 "configured_role_count": len(roles),
                 "default_allowed_count": sum(1 for role in roles if role.default_allowed),
+                "configured_scheduled_shutdown_count": sum(1 for role in roles if role.scheduled_shutdown_on),
                 "preview_default_count": sum(1 for role in roles if role.lifecycle_state == "preview"),
+                "review_default_count": sum(1 for role in roles if role.lifecycle_state == "review"),
                 "deprecated_default_count": sum(1 for role in roles if role.lifecycle_state == "deprecated"),
                 "latest_alias_default_count": sum(1 for role in roles if role.lifecycle_state == "unstable_alias"),
                 "unknown_default_count": sum(1 for role in roles if role.lifecycle_state == "unknown"),
@@ -109,6 +128,7 @@ class ModelLifecyclePolicyService:
         canonical = canonical_model_id(model)
         profile = next((item for item in GEMINI_MODEL_CATALOG if item.id == canonical), None)
         lifecycle_state = self._lifecycle_state(model, profile.status if profile else None)
+        replacement = SCHEDULED_SHUTDOWN_REPLACEMENTS.get(canonical or "")
         cost_tier = profile.cost_tier if profile else None
         max_cost_tier = str(TASK_GROUPS.get(task, {}).get("max_cost_tier", "premium"))
         default_allowed = self._default_allowed(lifecycle_state, cost_tier, max_cost_tier, task)
@@ -124,6 +144,9 @@ class ModelLifecyclePolicyService:
             model_status=profile.status if profile else "unknown",
             default_allowed=default_allowed,
             cheap_first_aligned=cheap_first_aligned,
+            replacement_model=replacement.get("replacement_model") if replacement else None,
+            scheduled_shutdown_on=replacement.get("shutdown_on") if replacement else None,
+            migration_note=replacement.get("migration_note") if replacement else None,
             reason=self._role_reason(
                 lifecycle_state=lifecycle_state,
                 default_allowed=default_allowed,
@@ -141,6 +164,8 @@ class ModelLifecyclePolicyService:
             return "deprecated"
         if status == "preview":
             return "preview"
+        if status == "review":
+            return "review"
         if status == "stable":
             return "stable"
         if any(check_value.endswith(suffix) for suffix in UNSTABLE_ALIAS_SUFFIXES):
@@ -179,6 +204,8 @@ class ModelLifecyclePolicyService:
                 return "Deprecated Gemini generation should be removed from defaults."
             if lifecycle_state in {"preview", "unstable_alias"}:
                 return "Preview/latest model aliases require explicit maintainer experiments before default use."
+            if lifecycle_state == "review":
+                return "Review-only model ids require maintainer approval before default use."
             if lifecycle_state == "unknown":
                 return "Gateway model is not in the local catalog; verify lifecycle and pricing before default use."
             return "Model lifecycle or cost tier is not allowed for this default."
@@ -189,6 +216,7 @@ class ModelLifecyclePolicyService:
     def _checks(self, roles: list[ConfiguredModelRole]) -> list[dict[str, Any]]:
         deprecated = [role.role for role in roles if role.lifecycle_state == "deprecated"]
         unstable = [role.role for role in roles if role.lifecycle_state in {"preview", "unstable_alias"}]
+        review_only = [role.role for role in roles if role.lifecycle_state == "review"]
         unknown = [role.role for role in roles if role.lifecycle_state == "unknown"]
         disallowed = [role.role for role in roles if not role.default_allowed]
         cheap_drift = [
@@ -208,10 +236,12 @@ class ModelLifecyclePolicyService:
             },
             {
                 "id": "preview-default-review",
-                "status": "warn" if unstable else "pass",
+                "status": "warn" if unstable or review_only else "pass",
                 "reason": "No preview or latest aliases are configured as unattended defaults."
-                if not unstable
-                else f"Preview/latest defaults require review: {', '.join(unstable)}.",
+                if not unstable and not review_only
+                else "Preview/latest/review-only defaults require review: "
+                + ", ".join(unstable + review_only)
+                + ".",
             },
             {
                 "id": "known-default-lifecycle",
@@ -239,11 +269,15 @@ class ModelLifecyclePolicyService:
     def _catalog_lifecycle(self) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         for profile in GEMINI_MODEL_CATALOG:
+            replacement = SCHEDULED_SHUTDOWN_REPLACEMENTS.get(profile.id)
             rows.append(
                 {
                     "model": profile.id,
                     "status": profile.status,
                     "cost_tier": profile.cost_tier,
+                    "replacement_model": replacement.get("replacement_model") if replacement else None,
+                    "scheduled_shutdown_on": replacement.get("shutdown_on") if replacement else None,
+                    "migration_note": replacement.get("migration_note") if replacement else None,
                     "default_policy": "allowed_when_task_budget_fits"
                     if profile.status == "stable"
                     else "explicit_experiment_only",
@@ -268,6 +302,7 @@ class ModelLifecyclePolicyService:
             "pass_through": "Unknown gateway model IDs may pass through request routing, but are not lifecycle-approved defaults.",
             "latest_alias_default_policy": "Do not use latest aliases as defaults; pin a concrete model ID after validation.",
             "deprecated_generations": list(DEPRECATED_MODEL_PREFIXES),
+            "scheduled_shutdown_replacements": dict(SCHEDULED_SHUTDOWN_REPLACEMENTS),
             "stable_default_examples": [
                 "gemini-2.5-flash-lite",
                 "gemini-2.5-flash",

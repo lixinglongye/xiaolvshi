@@ -86,7 +86,7 @@ def test_price_refresh_monitor_fails_when_fast_default_is_no_longer_low_price(mo
     assert any(signal["severity"] == "fail" for signal in payload["drift_signals"])
 
 
-def test_price_refresh_monitor_fails_when_image_default_lacks_price_metadata(monkeypatch):
+def test_price_refresh_monitor_fails_when_image_default_is_premium_even_when_priced(monkeypatch):
     monkeypatch.setattr(model_catalog.settings, "app_ai_image_model", "gemini-3-pro-image", raising=False)
 
     payload = _monitor()
@@ -96,10 +96,12 @@ def test_price_refresh_monitor_fails_when_image_default_lacks_price_metadata(mon
     assert payload["status"] == "fail"
     assert media_check["status"] == "fail"
     assert image["default_model"] == "gemini-3-pro-image"
-    assert image["has_price_metadata"] is False
+    assert image["has_price_metadata"] is True
+    assert image["output_usd_per_image"] == 0.134
+    assert image["cost_tier"] == "premium"
     assert image["recommended_model"] == "gemini-2.5-flash-image"
     assert any(
-        signal["id"] == "media-default-image" and signal["signal_type"] == "missing_price_metadata"
+        signal["id"] == "media-default-image" and signal["signal_type"] == "media_default_price_drift"
         for signal in payload["drift_signals"]
     )
 
@@ -110,7 +112,7 @@ def test_price_refresh_monitor_detects_missing_forecast_price_metadata():
             "profiles": [
                 {
                     "task": "review",
-                    "initial_model": "gemini-3-pro-image",
+                    "initial_model": "veo-3.1-fast-generate-preview",
                     "escalation_model": "gemini-2.5-pro",
                     "premium_baseline_model": "gemini-2.5-pro",
                 }
@@ -130,7 +132,7 @@ def test_price_refresh_monitor_detects_missing_forecast_price_metadata():
     assert forecast_check["status"] == "warn"
     assert forecast_check["summary"]["missing_price_metadata_count"] == 1
     assert missing_signals
-    assert missing_signals[0]["model"] == "gemini-3-pro-image"
+    assert missing_signals[0]["model"] == "veo-3.1-fast-generate-preview"
 
 
 def test_price_refresh_monitor_redacts_sensitive_observed_values():
