@@ -52,6 +52,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal document benchmark gap fixtures" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document benchmark coverage matrix" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document fact consistency benchmark" in profile["release_management"]["release_readiness_controls"]
+    assert "Small legal document benchmark runbook evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
     assert "User need public benchmark mapping" in profile["release_management"]["release_readiness_controls"]
     assert "Legal public fixture priority queue" in profile["release_management"]["release_readiness_controls"]
@@ -161,10 +162,13 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_document_benchmark_suite.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_coverage.py" in evidence_paths
     assert "app/backend/services/legal_document_coverage_claim_policy.py" in evidence_paths
+    assert "app/backend/services/small_legal_document_benchmark_runbook_evidence.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_benchmark_coverage.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_coverage_claim_policy.py" in evidence_paths
+    assert "app/backend/tests/test_small_legal_document_benchmark_runbook_evidence.py" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_COVERAGE_CLAIM_POLICY.md" in evidence_paths
+    assert "docs/SMALL_LEGAL_DOCUMENT_BENCHMARK_RUNBOOK_EVIDENCE.md" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_refresh.py" in evidence_paths
     assert "app/backend/tests/test_legal_benchmark_research_refresh.py" in evidence_paths
@@ -620,6 +624,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("linked cheap-first calibration task ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal document fact consistency benchmark is metadata-only amount/date/fact consistency evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("small legal document benchmark runbook evidence is metadata-only local runbook evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("public benchmark scores, production legal quality claims" in guardrail for guardrail in profile["application_guardrails"])
     assert any(
         "feedback user-need legal-document benchmark release packet joins privacy-safe feedback benchmark backlog rows"
         in guardrail

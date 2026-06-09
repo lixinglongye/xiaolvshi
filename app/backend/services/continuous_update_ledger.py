@@ -207,6 +207,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_route_telemetry_triage_queue.py -q",
                 "python -m pytest tests/test_route_telemetry_remediation_plan.py -q",
                 "python -m pytest tests/test_route_telemetry_result_archive.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_small_legal_document_benchmark_runbook_evidence.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_final_document_delivery_release_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
@@ -477,6 +478,39 @@ class ContinuousUpdateLedgerService:
 
     def _entries(self) -> list[LedgerEntry]:
         return [
+            LedgerEntry(
+                id="small-legal-document-benchmark-runbook-evidence",
+                title="Small legal document benchmark runbook evidence",
+                category="quality",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a metadata-only local legal-document delivery benchmark packet that joins "
+                    "structure/citation checks, fact consistency checks, and final delivery gates without "
+                    "model/network calls, public benchmark scores, raw legal text, prompts, generated text, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/small_legal_document_benchmark_runbook_evidence.py",
+                    "app/backend/tests/test_small_legal_document_benchmark_runbook_evidence.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/SMALL_LEGAL_DOCUMENT_BENCHMARK_RUNBOOK_EVIDENCE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "small-legal-document-benchmark-runbook-evidence",
+                    "legal-document-benchmark-suite",
+                    "legal-document-fact-consistency-benchmark",
+                    "final-document-delivery-release-gate",
+                ),
+                user_need_ids=(
+                    "traceable-legal-review",
+                    "document-delivery-readiness",
+                    "user-need-legal-document-benchmark-evidence",
+                ),
+            ),
             LedgerEntry(
                 id="model-gateway-probe-evaluation",
                 title="Sanitized model gateway probe evaluation",

@@ -2422,6 +2422,29 @@ const checks = [
   () => assertIncludes(maintenancePage, 'raw document text', 'final document delivery raw document boundary label'),
   () => assertIncludes(maintenancePage, 'client contact details', 'final document delivery contact boundary label'),
   () => assertIncludes(maintenancePage, 'provider settlement verified', 'final document delivery provider claim boundary'),
+  () => assertIncludes(maintenancePage, 'Small legal document benchmark runbook evidence', 'small legal document benchmark runbook evidence panel'),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getSmallLegalDocumentBenchmarkRunbookEvidence',
+      'small legal document benchmark runbook API binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'smallLegalDocumentBenchmarkRunbookEvidence',
+      'small legal document benchmark runbook state binding',
+    ),
+  () => assertIncludes(maintenancePage, 'max_parallel_requests', 'small legal document benchmark runbook serial cap'),
+  () => assertIncludes(maintenancePage, 'runbook_steps', 'small legal document benchmark runbook steps binding'),
+  () => assertIncludes(maintenancePage, 'evidence_rows', 'small legal document benchmark evidence rows binding'),
+  () => assertIncludes(maintenancePage, 'document_benchmark_rows', 'small legal document benchmark document rows binding'),
+  () => assertIncludes(maintenancePage, 'fact_consistency_rows', 'small legal document benchmark fact rows binding'),
+  () => assertIncludes(maintenancePage, 'delivery_gate_rows', 'small legal document benchmark delivery rows binding'),
+  () => assertIncludes(maintenancePage, 'public_benchmark_score_claimed', 'small legal document benchmark public score boundary'),
+  () => assertIncludes(maintenancePage, 'production_legal_quality_claimed', 'small legal document benchmark production claim boundary'),
+  () => assertIncludes(maintenancePage, 'returns_generated_text', 'small legal document benchmark generated text boundary'),
+  () => assertIncludes(maintenancePage, 'network_called', 'small legal document benchmark network boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -2433,8 +2456,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Small legal document benchmark runbook evidence</h2>',
+      'small legal document runbook evidence follows final document delivery gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Small legal document benchmark runbook evidence</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>',
-      'final document delivery gate precedes hallucination triage',
+      'small legal document runbook evidence precedes hallucination triage',
     ),
   () => assertIncludes(maintenanceApi, 'linked_public_source_ids', 'user need benchmark public source type'),
   () => assertIncludes(maintenanceApi, 'returns_public_benchmark_text', 'user need benchmark public text boundary type'),
@@ -2944,6 +2974,42 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'package_release_allowed', 'final document delivery package release type'),
   () => assertIncludes(maintenanceApi, 'final_docx_pdf_generated', 'final document delivery no generation claim type'),
   () => assertIncludes(maintenanceApi, 'live_payment_provider_settlement_verified', 'final document delivery provider claim type'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'SmallLegalDocumentBenchmarkRunbookEvidence',
+      'small legal document benchmark runbook evidence type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'SmallLegalDocumentBenchmarkRunbookEvidenceRow',
+      'small legal document benchmark runbook row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getSmallLegalDocumentBenchmarkRunbookEvidence',
+      'small legal document benchmark runbook API',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'evaluateSmallLegalDocumentBenchmarkRunbookEvidence',
+      'small legal document benchmark runbook evaluate API',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/small-document-runbook-evidence',
+      'small legal document benchmark runbook endpoint',
+    ),
+  () => assertIncludes(maintenanceApi, 'runbook_steps', 'small legal document benchmark runbook steps type'),
+  () => assertIncludes(maintenanceApi, 'document_benchmark_rows', 'small legal document benchmark document rows type'),
+  () => assertIncludes(maintenanceApi, 'fact_consistency_rows', 'small legal document benchmark fact rows type'),
+  () => assertIncludes(maintenanceApi, 'delivery_gate_rows', 'small legal document benchmark delivery rows type'),
+  () => assertIncludes(maintenanceApi, 'public_benchmark_score_claimed: boolean', 'small legal document benchmark public score type'),
+  () => assertIncludes(maintenanceApi, 'production_legal_quality_claimed: boolean', 'small legal document benchmark production claim type'),
   () => assertIncludes(modelOpsPage, 'Promise.allSettled', 'model-ops partial-load resilience'),
   () => assertIncludes(modelOpsPage, 'applyModelOpsPayload', 'model-ops early aggregate payload renderer'),
   () => assertIncludes(modelOpsPage, 'const modelOpsRequest = getModelOps()', 'model-ops shared aggregate request'),
@@ -4489,8 +4555,14 @@ const legalRagAnswerReleaseReadinessPanel = sourceSection(
 const finalDocumentDeliveryReleaseGatePanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Final document delivery release gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Small legal document benchmark runbook evidence</h2>',
   'maintenance final document delivery release gate section',
+);
+const smallLegalDocumentBenchmarkRunbookEvidencePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Small legal document benchmark runbook evidence</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal RAG hallucination triage gate</h2>',
+  'maintenance small legal document benchmark runbook evidence section',
 );
 const feedbackLifecyclePolicyPanel = sourceSection(
   maintenancePage,
@@ -4831,6 +4903,11 @@ assertNotMatches(
   finalDocumentDeliveryReleaseGatePanel,
   /\b(RAW_DOCUMENT_SHOULD_NOT_LEAK|UNSAFE_RAW_DIFF|UNSAFE_MODEL_OUTPUT|document_text|client_contact_details|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|billing_provider_payload|provider-payload|C:\\\\cases\\\\private|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance final document delivery release gate no raw document examples, contact details, provider payloads, credentials, prompts, model output, or emails',
+);
+assertNotMatches(
+  smallLegalDocumentBenchmarkRunbookEvidencePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_document_text|raw_legal_text|fixture_snippet|document_snippet|request_body|response_body|headers|gateway_payload|model_output|client_email|client@example\.invalid|client@example\.com|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK|phone|identity|benchmark_sample|sample_text|input_excerpt|output_text|public_score_value)\b/i,
+  'maintenance small legal document benchmark runbook evidence no raw legal/model/payload fields, benchmark text, contacts, or credentials',
 );
 assertNotMatches(
   maintenancePage,

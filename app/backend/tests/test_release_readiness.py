@@ -83,6 +83,50 @@ def test_legal_fixture_regression_comparison_is_optional_but_failed_evidence_blo
     assert "docs/LEGAL_FIXTURE_REGRESSION.md" in check["evidence_paths"]
 
 
+def test_small_legal_document_benchmark_runbook_evidence_is_release_reviewable():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "small-legal-document-benchmark-runbook-evidence"
+    ]
+    not_run_result = service.evaluate({"small-legal-document-benchmark-runbook-evidence": "not_run"})
+    failed_result = service.evaluate({"small-legal-document-benchmark-runbook-evidence": "fail"})
+    checks = {check["id"]: check for check in failed_result["checks"]}
+    check = checks["small-legal-document-benchmark-runbook-evidence"]
+
+    assert commands == [
+        {
+            "check_id": "small-legal-document-benchmark-runbook-evidence",
+            "command": "python -m pytest tests/test_small_legal_document_benchmark_runbook_evidence.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_final_document_delivery_release_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is False
+    assert check["blocks_release"] is False
+    assert "small-legal-document-benchmark-runbook-evidence" in not_run_result["not_run_check_ids"]
+    assert "small-legal-document-benchmark-runbook-evidence" in failed_result["failed_check_ids"]
+    assert failed_result["status"] == "blocked"
+    assert "metadata-only small legal-document benchmark runbook evidence" in check["manual_note"]
+    assert "structure/citation checks" in check["manual_note"]
+    assert "fact consistency checks" in check["manual_note"]
+    assert "final delivery gates" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "Gemini" in check["manual_note"]
+    assert "public datasets" in check["manual_note"]
+    assert "public benchmark scores" in check["manual_note"]
+    assert "production legal quality" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "generated text" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/small_legal_document_benchmark_runbook_evidence.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_small_legal_document_benchmark_runbook_evidence.py" in check["evidence_paths"]
+    assert "app/backend/services/final_document_delivery_release_gate.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in check["evidence_paths"]
+    assert "docs/SMALL_LEGAL_DOCUMENT_BENCHMARK_RUNBOOK_EVIDENCE.md" in check["evidence_paths"]
+
+
 def test_aihub_media_speech_default_catalog_gate_is_required_release_evidence():
     service = ReleaseReadinessService()
     commands = [

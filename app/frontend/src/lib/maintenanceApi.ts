@@ -7090,6 +7090,128 @@ export type LegalDocumentFactConsistencyEvaluation = {
   privacy_boundary: Record<string, unknown>;
 };
 
+export type SmallLegalDocumentBenchmarkRunbookEvidenceRow = {
+  id: string;
+  source: string;
+  status: string;
+  score?: number;
+  case_id?: string;
+  component_id?: string;
+  title?: string;
+  document_type?: string;
+  matter_type?: string;
+  ready?: boolean;
+  blocks_release?: boolean;
+  blocking_issue_count?: number;
+  blocker_ids?: string[];
+  required_section_count?: number;
+  expected_citation_count?: number;
+  expected_risk_label_count?: number;
+  amount_expectation_count?: number;
+  deadline_expectation_count?: number;
+  required_fact_count?: number;
+  contradiction_pair_count?: number;
+  missing_section_count?: number;
+  missing_citation_count?: number;
+  missing_risk_label_count?: number;
+  mismatched_amount_count?: number;
+  mismatched_deadline_count?: number;
+  contradiction_count?: number;
+  reason_codes?: string[];
+  hard_block?: boolean;
+  raw_document_snippet_returned?: boolean;
+  raw_document_text_returned?: boolean;
+  candidate_text_returned?: boolean;
+  client_contact_returned?: boolean;
+};
+
+export type SmallLegalDocumentBenchmarkRunbookStep = {
+  order: number;
+  id: string;
+  endpoint: string;
+  action: string;
+  expected_output: string;
+  model_call: boolean;
+  network_call: boolean;
+};
+
+export type SmallLegalDocumentBenchmarkRunbookCheck = {
+  id: string;
+  status: string;
+  reason: string;
+};
+
+export type SmallLegalDocumentBenchmarkRunbookEvidence = {
+  id: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    corpus_item_count: number;
+    document_case_count: number;
+    document_passed_case_count: number;
+    document_not_run_case_count: number;
+    fact_case_count: number;
+    fact_passed_case_count: number;
+    fact_not_run_case_count: number;
+    delivery_component_count: number;
+    delivery_ready_component_count: number;
+    ready_evidence_row_count: number;
+    blocked_evidence_row_count: number;
+    review_required_evidence_row_count: number;
+    raw_input_field_count: number;
+    max_parallel_requests: number;
+    model_calls: string;
+    network_access: string;
+    public_benchmark_score_claimed: boolean;
+    production_quality_claimed: boolean;
+    raw_payload_returned: boolean;
+  };
+  runbook_steps: SmallLegalDocumentBenchmarkRunbookStep[];
+  evidence_rows: SmallLegalDocumentBenchmarkRunbookEvidenceRow[];
+  document_benchmark_rows: SmallLegalDocumentBenchmarkRunbookEvidenceRow[];
+  fact_consistency_rows: SmallLegalDocumentBenchmarkRunbookEvidenceRow[];
+  delivery_gate_rows: SmallLegalDocumentBenchmarkRunbookEvidenceRow[];
+  checks: SmallLegalDocumentBenchmarkRunbookCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_endpoints: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_case_ids: boolean;
+    returns_document_case_ids: boolean;
+    returns_fact_consistency_case_ids: boolean;
+    returns_delivery_component_ids: boolean;
+    returns_document_snippets: boolean;
+    returns_fixture_snippets: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_raw_document_text: boolean;
+    returns_generated_text: boolean;
+    returns_prompt_text: boolean;
+    returns_raw_model_output: boolean;
+    returns_gateway_payloads: boolean;
+    returns_credentials: boolean;
+    external_dataset_downloads: boolean;
+    network_called: boolean;
+    model_calls: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+  };
+  claim_boundary: {
+    public_benchmark_score_claimed: boolean;
+    production_legal_quality_claimed: boolean;
+    client_document_coverage_claimed: boolean;
+    final_document_generated: boolean;
+    client_delivery_sent: boolean;
+    legal_advice_claimed: boolean;
+    allowed_claim: string;
+  };
+  validation_commands: string[];
+};
+
 type LegalReviewBenchmarkResponse = {
   success: boolean;
   data: LegalReviewBenchmark;
@@ -7123,6 +7245,11 @@ type LegalDocumentFactConsistencyBenchmarkResponse = {
 type LegalDocumentFactConsistencyEvaluationResponse = {
   success: boolean;
   data: LegalDocumentFactConsistencyEvaluation;
+};
+
+type SmallLegalDocumentBenchmarkRunbookEvidenceResponse = {
+  success: boolean;
+  data: SmallLegalDocumentBenchmarkRunbookEvidence;
 };
 
 type LegalReviewFixtureSmokeResponse = {
@@ -9040,6 +9167,37 @@ export async function evaluateLegalDocumentFactConsistencyBenchmark(
     return payload.data;
   }
   return payload as LegalDocumentFactConsistencyEvaluation;
+}
+
+export async function getSmallLegalDocumentBenchmarkRunbookEvidence(): Promise<SmallLegalDocumentBenchmarkRunbookEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/small-document-runbook-evidence',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | SmallLegalDocumentBenchmarkRunbookEvidenceResponse
+    | SmallLegalDocumentBenchmarkRunbookEvidence;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as SmallLegalDocumentBenchmarkRunbookEvidence;
+}
+
+export async function evaluateSmallLegalDocumentBenchmarkRunbookEvidence(
+  payload: Record<string, unknown> = {},
+): Promise<SmallLegalDocumentBenchmarkRunbookEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/small-document-runbook-evidence',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | SmallLegalDocumentBenchmarkRunbookEvidenceResponse
+    | SmallLegalDocumentBenchmarkRunbookEvidence;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as SmallLegalDocumentBenchmarkRunbookEvidence;
 }
 
 export async function getLegalResearchBacklog(): Promise<LegalResearchBacklog> {

@@ -239,6 +239,34 @@ def test_continuous_update_ledger_completed_entries_are_reviewable():
     assert all(entry["release_gate_links"] for entry in completed)
 
 
+def test_continuous_update_ledger_includes_small_document_runbook_evidence():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "small-legal-document-benchmark-runbook-evidence"
+    )
+
+    assert entry["category"] == "quality"
+    assert entry["size"] == "medium"
+    assert "structure/citation checks" in entry["impact"]
+    assert "fact consistency checks" in entry["impact"]
+    assert "final delivery gates" in entry["impact"]
+    assert "model/network calls" in entry["impact"]
+    assert "raw legal text" in entry["impact"]
+    assert "app/backend/services/small_legal_document_benchmark_runbook_evidence.py" in entry["evidence_paths"]
+    assert "app/backend/tests/test_small_legal_document_benchmark_runbook_evidence.py" in entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in entry["evidence_paths"]
+    assert "docs/SMALL_LEGAL_DOCUMENT_BENCHMARK_RUNBOOK_EVIDENCE.md" in entry["evidence_paths"]
+    assert "small-legal-document-benchmark-runbook-evidence" in entry["release_gate_links"]
+    assert "legal-document-fact-consistency-benchmark" in entry["release_gate_links"]
+    assert "final-document-delivery-release-gate" in entry["release_gate_links"]
+    assert "document-delivery-readiness" in entry["user_need_ids"]
+    assert any(
+        "tests/test_small_legal_document_benchmark_runbook_evidence.py" in command
+        for command in ledger["validation_commands"]
+    )
+
+
 def test_continuous_update_ledger_includes_modelops_legal_benchmark_risk_bridge_evidence():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     entry = next(

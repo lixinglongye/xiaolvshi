@@ -136,6 +136,9 @@ from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueServi
 from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
 from services.route_telemetry_result_archive import RouteTelemetryResultArchiveService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
+from services.small_legal_document_benchmark_runbook_evidence import (
+    SmallLegalDocumentBenchmarkRunbookEvidenceService,
+)
 from services.user_needs_radar import UserNeedsRadarService
 from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
 from services.user_need_gemini_route_coverage import UserNeedGeminiRouteCoverageService
@@ -1490,6 +1493,24 @@ async def get_small_legal_document_corpus_expansion():
     return {
         "success": True,
         "data": SmallLegalDocumentCorpusExpansionService().build_corpus(),
+    }
+
+
+@router.get("/legal-review-benchmark/small-document-runbook-evidence")
+async def get_small_legal_document_benchmark_runbook_evidence():
+    """Return small legal-document benchmark runbook evidence metadata."""
+    return {
+        "success": True,
+        "data": SmallLegalDocumentBenchmarkRunbookEvidenceService().build_evidence(),
+    }
+
+
+@router.post("/legal-review-benchmark/small-document-runbook-evidence")
+async def evaluate_small_legal_document_benchmark_runbook_evidence(payload: dict[str, Any]):
+    """Evaluate small legal-document benchmark runbook evidence without echoing raw material."""
+    return {
+        "success": True,
+        "data": SmallLegalDocumentBenchmarkRunbookEvidenceService().build_evidence(payload),
     }
 
 

@@ -30,6 +30,7 @@ The `/maintenance` page carries evidence for:
 - model route legal benchmark risk queue
 - legal RAG authority citation gate
 - legal RAG hallucination triage gate
+- small legal document benchmark runbook evidence
 - continuous update ledger
 - Gemini/NewAPI selector evidence
 
@@ -95,6 +96,11 @@ This gate does not:
 - call NewAPI, Gemini, gateways, download datasets, expose raw legal text,
   prompts, model outputs, or credentials for the Legal RAG authority citation
   gate
+- call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
+  the network, download public benchmark datasets, expose raw legal text,
+  snippets, generated text, prompts, model outputs, gateway payloads, or
+  credentials, or claim public benchmark scores, production legal quality, or
+  client delivery for the small legal document benchmark runbook evidence
 - call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
   the network, write configuration, change defaults, or expose request bodies,
   response bodies, headers, prompts, raw payloads, legal text, model outputs,

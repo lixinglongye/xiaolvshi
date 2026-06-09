@@ -41,6 +41,7 @@ import {
   getLegalBenchmarkFixtureCrosswalk,
   getLegalDocumentBenchmarkCoverage,
   getLegalDocumentFactConsistencyBenchmark,
+  getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
   getLegalBenchmarkResearchRegistry,
   getLegalDocumentBenchmarkLocalBaseline,
@@ -160,6 +161,7 @@ import {
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
   type LegalDocumentFactConsistencyBenchmark,
+  type SmallLegalDocumentBenchmarkRunbookEvidence,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkLicenseGate,
   type LegalPublicFixturePriorityQueue,
@@ -849,6 +851,8 @@ function Inner() {
     useState<LegalDocumentBenchmarkLocalBaseline | null>(null);
   const [legalDocumentFactConsistencyBenchmark, setLegalDocumentFactConsistencyBenchmark] =
     useState<LegalDocumentFactConsistencyBenchmark | null>(null);
+  const [smallLegalDocumentBenchmarkRunbookEvidence, setSmallLegalDocumentBenchmarkRunbookEvidence] =
+    useState<SmallLegalDocumentBenchmarkRunbookEvidence | null>(null);
   const [fixtureResponseNormalizer, setFixtureResponseNormalizer] = useState<LegalFixtureResponseNormalizer | null>(null);
   const [fixtureLocalRunReview, setFixtureLocalRunReview] = useState<LegalFixtureLocalRunReview | null>(null);
   const [normalizerPayloadText, setNormalizerPayloadText] = useState('');
@@ -1137,6 +1141,12 @@ function Inner() {
           label: 'Legal document fact consistency benchmark',
           run: getLegalDocumentFactConsistencyBenchmark,
           apply: (value) => setLegalDocumentFactConsistencyBenchmark(value as LegalDocumentFactConsistencyBenchmark),
+        },
+        {
+          label: 'Small legal document benchmark runbook evidence',
+          run: getSmallLegalDocumentBenchmarkRunbookEvidence,
+          apply: (value) =>
+            setSmallLegalDocumentBenchmarkRunbookEvidence(value as SmallLegalDocumentBenchmarkRunbookEvidence),
         },
         {
           label: 'Legal research backlog',
@@ -17104,6 +17114,213 @@ function Inner() {
                       ))}
                     </div>
                   </div>
+                </div>
+              </section>
+            )}
+
+            {smallLegalDocumentBenchmarkRunbookEvidence && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Small legal document benchmark runbook evidence</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Local-only delivery benchmark packet for document structure, citations, fact consistency, and final gate review
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[smallLegalDocumentBenchmarkRunbookEvidence.status] ?? statusClass.review_required}
+                    >
+                      {displayToken(smallLegalDocumentBenchmarkRunbookEvidence.status)}
+                    </Badge>
+                    <Badge variant="outline" className="bg-white">
+                      max_parallel_requests: {smallLegalDocumentBenchmarkRunbookEvidence.summary.max_parallel_requests}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  {[
+                    { label: 'corpus items', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.corpus_item_count },
+                    { label: 'document cases', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.document_case_count },
+                    { label: 'document rows', value: smallLegalDocumentBenchmarkRunbookEvidence.document_benchmark_rows.length },
+                    { label: 'document passed', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.document_passed_case_count },
+                    { label: 'fact cases', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.fact_case_count },
+                    { label: 'fact rows', value: smallLegalDocumentBenchmarkRunbookEvidence.fact_consistency_rows.length },
+                    { label: 'fact passed', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.fact_passed_case_count },
+                    { label: 'delivery rows', value: smallLegalDocumentBenchmarkRunbookEvidence.delivery_gate_rows.length },
+                    { label: 'delivery ready', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.delivery_ready_component_count },
+                    { label: 'blocked rows', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.blocked_evidence_row_count },
+                    { label: 'raw inputs dropped', value: smallLegalDocumentBenchmarkRunbookEvidence.summary.raw_input_field_count },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Runbook step</TableHead>
+                          <TableHead>Endpoint</TableHead>
+                          <TableHead>Model/network</TableHead>
+                          <TableHead>Expected output</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {smallLegalDocumentBenchmarkRunbookEvidence.runbook_steps.map((step) => (
+                          <TableRow key={step.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">
+                                {step.order}. {displayToken(step.id)}
+                              </div>
+                              <div className="mt-1 max-w-[380px] text-xs leading-5 text-stone-600">{step.action}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-[11px] text-stone-600">{step.endpoint}</TableCell>
+                            <TableCell className="text-xs text-stone-600">
+                              model {String(step.model_call)} / network {String(step.network_call)}
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              {step.expected_output}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Check</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Reason</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {smallLegalDocumentBenchmarkRunbookEvidence.checks.map((check) => (
+                          <TableRow key={check.id}>
+                            <TableCell className="font-mono text-[11px] text-stone-700">{check.id}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[check.status] ?? statusClass.review_required}>
+                                {displayToken(check.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Evidence row</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Score / Count</TableHead>
+                        <TableHead>Boundary</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {smallLegalDocumentBenchmarkRunbookEvidence.evidence_rows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">
+                              {displayToken(row.case_id ?? row.component_id ?? row.id)}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-500">{displayToken(row.document_type ?? row.matter_type ?? '-')}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-[11px] text-stone-600">{row.source}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.status] ?? statusClass.review_required}>
+                              {displayToken(row.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>score: {formatInline(row.score ?? '-')}</div>
+                            <div>
+                              sections/citations/facts:{' '}
+                              {formatInline(row.required_section_count ?? row.amount_expectation_count ?? row.blocking_issue_count ?? 0)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>snippet returned: {String(row.raw_document_snippet_returned ?? false)}</div>
+                            <div>text returned: {String(row.raw_document_text_returned ?? false)}</div>
+                            <div>candidate returned: {String(row.candidate_text_returned ?? false)}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Source endpoints</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      {Object.entries(smallLegalDocumentBenchmarkRunbookEvidence.source_endpoints).map(([key, value]) => (
+                        <div key={key}>
+                          <span className="font-semibold">{displayToken(key)}:</span> <span className="font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>metadata only: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.metadata_only)}</div>
+                      <div>document snippets: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.returns_document_snippets)}</div>
+                      <div>generated text: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.returns_generated_text)}</div>
+                      <div>gateway payloads: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.returns_gateway_payloads)}</div>
+                      <div>credentials: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.returns_credentials)}</div>
+                      <div>network called: {String(smallLegalDocumentBenchmarkRunbookEvidence.privacy_boundary.network_called)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>public score claimed: {String(smallLegalDocumentBenchmarkRunbookEvidence.claim_boundary.public_benchmark_score_claimed)}</div>
+                      <div>production quality: {String(smallLegalDocumentBenchmarkRunbookEvidence.claim_boundary.production_legal_quality_claimed)}</div>
+                      <div>client coverage: {String(smallLegalDocumentBenchmarkRunbookEvidence.claim_boundary.client_document_coverage_claimed)}</div>
+                      <div>final document generated: {String(smallLegalDocumentBenchmarkRunbookEvidence.claim_boundary.final_document_generated)}</div>
+                      <div>client delivery sent: {String(smallLegalDocumentBenchmarkRunbookEvidence.claim_boundary.client_delivery_sent)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {smallLegalDocumentBenchmarkRunbookEvidence.validation_commands.map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {smallLegalDocumentBenchmarkRunbookEvidence.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </section>
             )}

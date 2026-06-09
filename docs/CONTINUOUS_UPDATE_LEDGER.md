@@ -1,5 +1,23 @@
 # Continuous Update Ledger
 
+Current small legal document benchmark runbook evidence slice:
+`small-legal-document-benchmark-runbook-evidence` adds a metadata-only
+maintenance packet for low-resource legal-document delivery checks. It joins the
+small corpus expansion, deterministic legal document benchmark suite,
+fact-consistency benchmark, and final document delivery release gate into one
+serial runbook with `max_parallel_requests=1`, review/block status rows,
+source endpoint links, claim boundaries, and validation commands. The endpoint
+is available at
+`/api/v1/maintenance/legal-review-benchmark/small-document-runbook-evidence`
+and the evidence is visible on `/maintenance` before the Legal RAG hallucination
+triage gate. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, public datasets, or the network; write configuration; change
+defaults; shift traffic; return raw legal text, snippets, generated text,
+prompts, payloads, model output, gateway responses, emails, identifiers, or
+credentials; or claim public benchmark scores, production legal quality,
+client-document coverage, final document generation, legal advice, or client
+delivery.
+
 Current route telemetry result archive slice:
 `route-telemetry-result-archive` adds a metadata-only archive and cost ledger
 for cheap-first route telemetry. The evidence joins the local route telemetry
