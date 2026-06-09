@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current ModelOps selector replay workbench slice:
+`modelops-selector-replay-workbench` adds a metadata-only POST workbench to the
+ModelOps Gemini/NewAPI selector replay panel. Reviewers can paste or reset a
+small JSON scenario set, run the deterministic local replay endpoint, and see
+the sanitized result replace the panel evidence without leaving ModelOps. The
+slice binds the UI to `/api/v1/aihub/models/gemini-newapi-selector-replay`,
+adds loading-gated evaluation and client-side sensitive-input rejection, and
+extends release/ledger evidence with frontend typecheck and UI regression
+commands. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network; write configuration; change defaults; shift
+traffic; or return prompts, legal text, document bodies, request or response
+bodies, transport metadata, model result text, emails, identifiers, or
+credentials.
+
 Current runtime catalog-safe default fallback slice:
 `runtime-catalog-safe-default-fallback` adds runtime protection when text or
 embedding task defaults drift to unknown gateway ids, preview/review lifecycle

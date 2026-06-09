@@ -25,6 +25,7 @@ import {
   evaluateModelFailureUpgradeBudget,
   evaluateModelOpsGeminiDefaultChangeReview,
   evaluateModelOpsGeminiDefaultCostImpact,
+  evaluateModelOpsGeminiNewApiSelectorReplay,
   evaluateModelOpsObservedGeminiModelIntakeQueue,
   evaluateModelOpsPerformanceBudget,
   getCheapFirstCalibration,
@@ -259,6 +260,35 @@ function defaultModelDefaultCandidateSelectorPayload() {
   };
 }
 
+function defaultGeminiNewApiSelectorReplayPayload() {
+  return {
+    scenarios: [
+      {
+        id: 'fast-cheap-first-current',
+        task: 'fast',
+        expected_decision: 'cheap_first_ready',
+        max_cost_tier: 'lowest',
+        expected_selector_status: 'ready',
+      },
+      {
+        id: 'review-balanced-current',
+        task: 'review',
+        expected_decision: 'balanced_after_precheck',
+        max_cost_tier: 'low',
+        expected_selector_status: 'ready',
+      },
+      {
+        id: 'unknown-flash-lite-catalog-review',
+        task: 'fast',
+        observed_models: ['google/gemini-3.2-flash-lite'],
+        expected_decision: 'cheap_first_ready',
+        max_cost_tier: 'lowest',
+        expected_selector_status: 'needs_catalog_review',
+      },
+    ],
+  };
+}
+
 function defaultGeminiCheapFirstRoutePreflightPayload() {
   return {
     observed_models: [
@@ -413,6 +443,18 @@ function hasForbiddenModelDefaultCandidatePayloadText(value: string) {
   );
 }
 
+function hasForbiddenGeminiNewApiSelectorReplayPayloadText(value: string) {
+  return (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
+    /\b1[3-9]\d{9}\b/.test(value) ||
+    /\b\d{17}[\dXx]\b/.test(value) ||
+    /\b(api[_-]?key|authorization|password|secret|raw[_ -]?model[_ -]?output|raw[_ -]?prompt|raw[_ -]?response|prompt|headers?|email|phone|identity|legal[_ -]?text|document[_ -]?text|request[_ -]?body|response[_ -]?body|gateway[_ -]?response|messages?|content)\b/i.test(
+      value,
+    ) ||
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(value)
+  );
+}
+
 function hasForbiddenGeminiRoutePreflightPayloadText(value: string) {
   return (
     /\bsk-[A-Za-z0-9]{20,}\b/.test(value) ||
@@ -539,6 +581,10 @@ function Inner() {
   const [geminiNewApiModelSelectorError, setGeminiNewApiModelSelectorError] = useState('');
   const [geminiNewApiSelectorReplay, setGeminiNewApiSelectorReplay] =
     useState<ModelOpsGeminiNewApiSelectorReplay | null>(null);
+  const [geminiNewApiSelectorReplayPayloadText, setGeminiNewApiSelectorReplayPayloadText] = useState(
+    JSON.stringify(defaultGeminiNewApiSelectorReplayPayload(), null, 2),
+  );
+  const [geminiNewApiSelectorReplayLoading, setGeminiNewApiSelectorReplayLoading] = useState(false);
   const [geminiNewApiSelectorReplayError, setGeminiNewApiSelectorReplayError] = useState('');
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
@@ -1433,6 +1479,46 @@ function Inner() {
       );
     } finally {
       setDefaultCandidateSelectorLoading(false);
+    }
+  };
+
+  const loadGeminiNewApiSelectorReplayTemplate = () => {
+    setGeminiNewApiSelectorReplayError('');
+    setGeminiNewApiSelectorReplayPayloadText(JSON.stringify(defaultGeminiNewApiSelectorReplayPayload(), null, 2));
+  };
+
+  const evaluateGeminiNewApiSelectorReplayPayload = async () => {
+    setGeminiNewApiSelectorReplayLoading(true);
+    setGeminiNewApiSelectorReplayError('');
+    try {
+      const text = geminiNewApiSelectorReplayPayloadText.trim();
+      if (!text) {
+        setGeminiNewApiSelectorReplayError('Selector replay scenario input is empty.');
+        return;
+      }
+      if (hasForbiddenGeminiNewApiSelectorReplayPayloadText(text)) {
+        setGeminiNewApiSelectorReplayError(
+          'Selector replay input must contain scenario metadata only; remove keys, headers, prompts, contact details, document text, request or response bodies, and raw model output.',
+        );
+        return;
+      }
+      const payload = JSON.parse(text);
+      if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+        setGeminiNewApiSelectorReplayError('Selector replay input must be a JSON object.');
+        return;
+      }
+      setGeminiNewApiSelectorReplay(
+        await evaluateModelOpsGeminiNewApiSelectorReplay(payload as Record<string, unknown>),
+      );
+    } catch (err) {
+      console.error(err);
+      setGeminiNewApiSelectorReplayError(
+        err instanceof SyntaxError
+          ? 'Selector replay input is not valid JSON.'
+          : 'Gemini/NewAPI selector replay evaluation failed.',
+      );
+    } finally {
+      setGeminiNewApiSelectorReplayLoading(false);
     }
   };
 
@@ -7812,6 +7898,91 @@ function Inner() {
                       {String(activeGeminiNewApiSelectorReplay.summary.raw_payload_echoed)}
                     </div>
                     <div className="mt-1 text-sm text-stone-600">payload echoed</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-black uppercase text-stone-500">Scenario replay workbench</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={loadGeminiNewApiSelectorReplayTemplate}
+                        >
+                          <ClipboardList className="mr-2 h-4 w-4" />
+                          Template
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setGeminiNewApiSelectorReplayPayloadText('')}
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Reset
+                        </Button>
+                      </div>
+                    </div>
+                    <Textarea
+                      value={geminiNewApiSelectorReplayPayloadText}
+                      onChange={(event) => setGeminiNewApiSelectorReplayPayloadText(event.target.value)}
+                      className="min-h-[230px] font-mono text-xs"
+                    />
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={evaluateGeminiNewApiSelectorReplayPayload}
+                        disabled={geminiNewApiSelectorReplayLoading}
+                      >
+                        {geminiNewApiSelectorReplayLoading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <PlayCircle className="mr-2 h-4 w-4" />
+                        )}
+                        Evaluate replay
+                      </Button>
+                      <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                        metadata-only scenarios
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Accepted fields</h3>
+                      <div className="space-y-1 font-mono text-[11px] leading-5 text-stone-600">
+                        <div>scenarios[].id</div>
+                        <div>scenarios[].task</div>
+                        <div>scenarios[].explicit_model</div>
+                        <div>scenarios[].observed_models</div>
+                        <div>scenarios[].expected_decision</div>
+                        <div>scenarios[].max_cost_tier</div>
+                        <div>scenarios[].expected_selector_status</div>
+                      </div>
+                    </div>
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review boundary</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        <div>newapi_called: {String(activeGeminiNewApiSelectorReplay.privacy_boundary.newapi_called)}</div>
+                        <div>raw_payload_echoed: {String(activeGeminiNewApiSelectorReplay.summary.raw_payload_echoed)}</div>
+                        <div>sensitive_values_included: {String(activeGeminiNewApiSelectorReplay.privacy_boundary.credentials_included)}</div>
+                        <div>
+                          model_result_text_included:{' '}
+                          {String(
+                            activeGeminiNewApiSelectorReplay.privacy_boundary[
+                              ['raw', 'model', 'output', 'included'].join('_')
+                            ],
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs leading-5 text-stone-600">
+                        Scenario rows only; no gateway call, legal text, transport metadata, sensitive values, or model result text.
+                      </div>
+                    </div>
                   </div>
                 </div>
 

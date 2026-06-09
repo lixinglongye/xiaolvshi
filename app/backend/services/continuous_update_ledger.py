@@ -145,6 +145,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_catalog.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_model_variant_matrix.py tests/test_model_catalog_source_audit.py -q",
                 "python -m pytest tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_selector_replay.py -q",
+                "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q",
                 "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q",
                 "python -m pytest tests/test_gemini_model_variant_matrix.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -1750,6 +1751,42 @@ class ContinuousUpdateLedgerService:
                     "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md",
                 ),
                 release_gate_links=("gemini-newapi-selector-replay", "gemini-newapi-model-selector", "model-routing-replay"),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="modelops-selector-replay-workbench",
+                title="ModelOps selector replay workbench",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a ModelOps POST workbench for Gemini/NewAPI selector replay scenarios with a safe JSON "
+                    "template, metadata-only scenario fields, sensitive input guard, loading-gated evaluation, and "
+                    "same-panel replay result replacement. It does not call NewAPI/Gemini/OpenAI/Google/gateways or "
+                    "the network, write configuration, change defaults, shift traffic, echo submitted rationale, or "
+                    "return prompts, raw legal text, request or response bodies, transport metadata, model result text, "
+                    "emails, identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/gemini_newapi_selector_replay.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_gemini_newapi_selector_replay.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "gemini-newapi-selector-replay",
+                    "frontend-typecheck",
+                    "frontend-ui-regression-gate",
+                    "model-ops-readiness",
+                ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(

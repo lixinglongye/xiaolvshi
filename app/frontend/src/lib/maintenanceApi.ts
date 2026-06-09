@@ -3155,6 +3155,9 @@ export type GeminiNewApiSelectorReplayResult = {
     decision?: string;
     cost_tier?: string;
     route_mode?: string;
+    premium_exception?: boolean;
+    selector_status?: string | null;
+    catalog_review_count?: number;
     warnings?: string[];
   };
   checks?: GeminiNewApiSelectorReplayCheck[];
@@ -3169,9 +3172,14 @@ export type GeminiNewApiSelectorReplayEvidence = {
     warn_count?: number;
     fail_count?: number;
     cheap_first_pass_count?: number;
+    balanced_route_count?: number;
     premium_exception_count?: number;
     catalog_review_count?: number;
     raw_payload_echoed?: boolean;
+  };
+  method?: {
+    type?: string;
+    notes?: string[];
   };
   replay_results: GeminiNewApiSelectorReplayResult[];
   privacy_boundary: Record<string, unknown>;

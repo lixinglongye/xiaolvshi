@@ -322,11 +322,16 @@ class ReleaseReadinessService:
                 owner="engineering",
                 evidence_paths=(
                     "app/backend/services/gemini_newapi_selector_replay.py",
+                    "app/backend/routers/aihub.py",
                     "app/backend/tests/test_gemini_newapi_selector_replay.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md",
                 ),
-                validation_command="python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
-                manual_note="This replays selector scenarios deterministically without NewAPI calls; it stores model ids, tasks, checks, and warnings only.",
+                validation_command="python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                manual_note="This replays selector scenarios deterministically without NewAPI calls and exposes a ModelOps metadata-only POST workbench; it stores model ids, tasks, checks, warnings, and validation commands only.",
             ),
             ReleaseCheck(
                 id="gemini-newapi-cheap-first-calibration",

@@ -569,8 +569,10 @@ review/document_generation balanced-after-precheck, large_pdf/final_review
 premium exceptions, unknown Gemini-like catalog review, and high-frequency
 explicit premium blocking or warning. It stores only scenario ids, task labels,
 model ids, canonical ids, cost tiers, decisions, checks, warnings, and evidence
-paths; submitted rationale is not echoed and the check must not imply that
-NewAPI was called or that 24-hour maintenance completion is proven.
+paths; submitted rationale is not echoed. The ModelOps POST workbench uses the
+same local replay contract for metadata-only reviewer scenarios and adds
+frontend typecheck/UI regression coverage. The check must not imply that NewAPI
+was called or that 24-hour maintenance completion is proven.
 The continuous session run monitor check verifies metadata-only active-run
 monitoring for elapsed hours, current gaps, next checkpoints, missing required
 evidence, blockers, and next actions. It must not imply that 24h maintenance

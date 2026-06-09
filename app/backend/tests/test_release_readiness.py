@@ -691,7 +691,7 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         "gemini-newapi-observed-model-extraction": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_model_variant_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_model_catalog_candidate_patch_plan.py -q",
         "gemini-newapi-model-alias-matrix": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py -q",
         "gemini-newapi-alias-capability-coverage": "python -m pytest tests/test_gemini_newapi_observed_model_extraction.py tests/test_gemini_newapi_alias_capability_coverage.py tests/test_gemini_newapi_model_alias_matrix.py tests/test_gemini_newapi_model_selector.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
-        "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q",
+        "gemini-newapi-selector-replay": "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_cheap_first_policy.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "gemini-newapi-cheap-first-calibration": "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_run_report.py tests/test_model_cost_guardrails.py -q",
         "model-catalog-source-audit": "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_catalog.py tests/test_model_ops_readiness.py -q",
         "modelops-gemini-official-model-family-roadmap-evidence": "python -m pytest tests/test_model_ops_gemini_official_model_family_roadmap.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -735,6 +735,12 @@ def test_gemini_newapi_model_selector_is_required_model_ops_gate():
         "gemini-newapi-alias-capability-coverage"
     ]["manual_note"]
     assert "without NewAPI calls" in checks["gemini-newapi-selector-replay"]["manual_note"]
+    assert "ModelOps metadata-only POST workbench" in checks["gemini-newapi-selector-replay"]["manual_note"]
+    assert "app/backend/routers/aihub.py" in checks["gemini-newapi-selector-replay"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["gemini-newapi-selector-replay"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["gemini-newapi-selector-replay"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["gemini-newapi-selector-replay"]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks["gemini-newapi-selector-replay"]["evidence_paths"]
     assert "metadata-only cheap-first calibration" in checks["gemini-newapi-cheap-first-calibration"]["manual_note"]
     assert "does not call Google" in checks["model-catalog-source-audit"]["manual_note"]
     assert "source review freshness" in checks["model-catalog-source-audit"]["manual_note"]

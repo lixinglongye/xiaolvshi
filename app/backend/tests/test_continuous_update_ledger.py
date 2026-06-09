@@ -331,6 +331,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gemini-newapi-alias-capability-coverage" in completed_ids
     assert "gemini-official-preview-alias-review" in completed_ids
     assert "gemini-newapi-selector-replay" in completed_ids
+    assert "modelops-selector-replay-workbench" in completed_ids
     assert "gemini-newapi-cheap-first-calibration" in completed_ids
     assert "modelops-cheap-first-calibration-review-form" in completed_ids
     assert "gemini-model-variant-matrix" in completed_ids
@@ -340,6 +341,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-performance-observation-review" in completed_ids
     assert "modelops-performance-observation-release-binding" in completed_ids
     assert "modelops-first-paint-aggregate-binding" in completed_ids
+    selector_replay_workbench_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-selector-replay-workbench"
+    )
+    assert selector_replay_workbench_entry["category"] == "frontend_ui"
+    assert selector_replay_workbench_entry["size"] == "medium"
+    assert selector_replay_workbench_entry["status"] == "shipped"
+    assert "ModelOps POST workbench" in selector_replay_workbench_entry["impact"]
+    assert "metadata-only scenario fields" in selector_replay_workbench_entry["impact"]
+    assert "sensitive input guard" in selector_replay_workbench_entry["impact"]
+    assert "does not call NewAPI/Gemini/OpenAI/Google/gateways" in selector_replay_workbench_entry["impact"]
+    assert "return prompts" in selector_replay_workbench_entry["impact"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in selector_replay_workbench_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in selector_replay_workbench_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in selector_replay_workbench_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in selector_replay_workbench_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in selector_replay_workbench_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in selector_replay_workbench_entry["evidence_paths"]
+    assert "docs/GEMINI_NEWAPI_SELECTOR_REPLAY.md" in selector_replay_workbench_entry["evidence_paths"]
+    assert "gemini-newapi-selector-replay" in selector_replay_workbench_entry["release_gate_links"]
+    assert "frontend-typecheck" in selector_replay_workbench_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in selector_replay_workbench_entry["release_gate_links"]
+    assert "model-ops-readiness" in selector_replay_workbench_entry["release_gate_links"]
     performance_release_binding_entry = next(
         entry
         for entry in ledger["completed_updates"]
@@ -950,6 +975,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         in ledger["validation_commands"]
     )
     assert "python -m pytest tests/test_gemini_newapi_selector_replay.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_gemini_newapi_selector_replay.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && "
+        "cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     assert "python -m pytest tests/test_gemini_newapi_cheap_first_calibration.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_gemini_model_variant_matrix.py tests/test_model_ops_readiness.py -q" in ledger["validation_commands"]
     assert (

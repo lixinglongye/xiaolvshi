@@ -9,6 +9,8 @@ It is not a runtime model caller, gateway probe, or benchmark runner.
 ```http
 GET /api/v1/maintenance/gemini-newapi-selector-replay
 POST /api/v1/maintenance/gemini-newapi-selector-replay
+GET /api/v1/aihub/models/gemini-newapi-selector-replay
+POST /api/v1/aihub/models/gemini-newapi-selector-replay
 ```
 
 `GET` returns the fixed replay scenarios, expected cheap-first decisions,
@@ -20,6 +22,15 @@ checks, warnings, and evidence paths. Submitted free-text rationale is replaced
 with a generic metadata-only note and is not echoed. The endpoint must not
 accept secrets, prompts, raw legal material, raw gateway responses, or raw model
 output.
+
+The AIHub routes expose the same sanitized evidence to the ModelOps page. The
+ModelOps selector replay workbench posts local JSON scenario metadata to
+`/api/v1/aihub/models/gemini-newapi-selector-replay`, replaces the panel result
+with the deterministic replay response, and keeps the review boundary visible
+in the same panel. The workbench accepts scenario metadata only and rejects
+client-side input that looks like credentials, contact details, prompts,
+document text, request or response bodies, transport metadata, or raw model
+results before it calls the local backend endpoint.
 
 ## Purpose
 
@@ -174,6 +185,7 @@ existing lightweight checks:
 ```powershell
 cd app/frontend
 npm run typecheck
+npm run ui:regression
 ```
 
 Useful repository checks while editing docs:
@@ -192,3 +204,5 @@ git diff --check -- docs
 - `docs/MODEL_ESCALATION_POLICY.md`
 - `docs/RELEASE_READINESS.md`
 - `docs/CONTINUOUS_UPDATE_LEDGER.md`
+- `app/frontend/src/lib/modelOpsApi.ts`
+- `app/frontend/src/pages/ModelOpsPage.tsx`
