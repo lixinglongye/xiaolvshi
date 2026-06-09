@@ -164,6 +164,17 @@ models, or the network, write configuration, change defaults, shift traffic, or
 store headers, request bodies, messages, prompts, raw legal text, raw payloads,
 model outputs, gateway responses, emails, user identifiers, or credentials.
 
+Additional optional evidence: `modelops-request-execution-observation-gate`
+records metadata-only post-run request observation review for sanitized
+NewAPI/Gemini execution metadata. It compares observations with request
+execution preflight rows, cheap-first model alignment, fallback use, observed
+token/cost/latency metadata, coarse error categories, and local downgrade
+follow-through. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app
+AI endpoints, models, or the network, execute requests, write configuration,
+change defaults, shift traffic, or store headers, request bodies, messages,
+prompts, raw legal text, raw payloads, gateway responses, model outputs, emails,
+user identifiers, or credentials.
+
 Additional optional evidence: `modelops-gemini-cheap-first-route-preflight`
 records metadata-only Gemini route preflight checks for official source refresh
 notes, local task defaults, observed model id metadata from the ModelOps POST
@@ -298,6 +309,7 @@ POST /api/v1/maintenance/release-readiness
   "model-request-policy": "pass",
   "model-gateway-request-compatibility-gate": "pass",
   "modelops-request-execution-preflight": "pass",
+  "modelops-request-execution-observation-gate": "pass",
   "modelops-gemini-cheap-first-route-preflight": "pass",
   "model-request-cost-bounds": "pass",
   "model-cache-policy": "pass",

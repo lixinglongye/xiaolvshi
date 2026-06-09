@@ -4382,6 +4382,121 @@ export type ModelOpsRequestExecutionPreflightPayload = {
   }>;
 };
 
+export type ModelOpsRequestExecutionObservationRow = {
+  id: string;
+  request_id: string;
+  task: string;
+  preflight_match: boolean;
+  preflight_status: string;
+  preflight_resolved_model?: string | null;
+  observed_model: string;
+  canonical_observed_model?: string | null;
+  observed_status: string;
+  observed_input_tokens?: number | null;
+  observed_output_tokens?: number | null;
+  observed_total_tokens: number;
+  observed_cost_usd?: number | null;
+  preflight_cost_limit_usd?: number | null;
+  latency_ms?: number | null;
+  fallback_used: boolean;
+  error_category: string;
+  high_frequency_task: boolean;
+  cheap_first_observed: boolean;
+  local_downgrade_followed: boolean;
+  observation_status: string;
+  release_action: string;
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsRequestExecutionObservationGate = {
+  id: 'modelops-request-execution-observation-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    observation_count: number;
+    ready_observation_count: number;
+    review_observation_count: number;
+    blocked_observation_count: number;
+    matched_preflight_count: number;
+    high_frequency_observation_count: number;
+    cheap_first_observed_count: number;
+    local_downgrade_followed_count: number;
+    fallback_used_count: number;
+    observed_cost_usd_sum: number;
+    forbidden_payload_field_count: number;
+    raw_payload_echoed: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    credentials_included: boolean;
+  };
+  observation_rows: ModelOpsRequestExecutionObservationRow[];
+  checks: Array<{ id: string; status: string; reason: string; evidence_count?: number; evidence?: string[] }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  observation_policy: Record<string, string>;
+  privacy_boundary: {
+    metadata_only: boolean;
+    raw_payload_echoed: boolean;
+    request_body_included: boolean;
+    headers_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    gateway_response_included: boolean;
+    credentials_included: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    output_scope: string;
+  };
+  claim_boundary: {
+    live_gateway_execution_claimed: boolean;
+    model_quality_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    raw_run_replay_claimed: boolean;
+    automatic_default_change_claimed: boolean;
+    request_sent_by_gate: boolean;
+  };
+  recommended_actions: string[];
+  source_preflight: {
+    id?: string | null;
+    status?: string | null;
+    request_count?: number | null;
+    blocking_check_ids?: string[];
+  };
+  validation_commands: string[];
+};
+
+export type ModelOpsRequestExecutionObservationPayload = {
+  preflight?: ModelOpsRequestExecutionPreflightPayload;
+  observations?: Array<{
+    request_id?: string;
+    task?: string;
+    resolved_model?: string;
+    model?: string;
+    status?: string;
+    observed_input_tokens?: number;
+    observed_output_tokens?: number;
+    input_tokens?: number;
+    output_tokens?: number;
+    observed_cost_usd?: number;
+    cost_usd?: number;
+    latency_ms?: number;
+    fallback_used?: boolean;
+    error_category?: string;
+  }>;
+};
+
 export type ModelRequestCostBound = {
   id: string;
   task: string;
@@ -5308,6 +5423,7 @@ export type ModelOpsResponse = {
   request_policy?: ModelRequestPolicy;
   gateway_request_compatibility_gate?: ModelGatewayRequestCompatibilityGate;
   request_execution_preflight?: ModelOpsRequestExecutionPreflight;
+  request_execution_observation_gate?: ModelOpsRequestExecutionObservationGate;
   request_cost_bounds?: ModelRequestCostBounds;
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
@@ -5997,6 +6113,23 @@ export async function evaluateModelOpsRequestExecutionPreflight(
 ): Promise<ModelOpsRequestExecutionPreflight> {
   return invokeModelOpsApi<ModelOpsRequestExecutionPreflight>({
     url: '/api/v1/aihub/models/request-execution-preflight',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsRequestExecutionObservationGate(): Promise<ModelOpsRequestExecutionObservationGate> {
+  return invokeModelOpsApi<ModelOpsRequestExecutionObservationGate>({
+    url: '/api/v1/aihub/models/request-execution-observation-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsRequestExecutionObservationGate(
+  payload: ModelOpsRequestExecutionObservationPayload,
+): Promise<ModelOpsRequestExecutionObservationGate> {
+  return invokeModelOpsApi<ModelOpsRequestExecutionObservationGate>({
+    url: '/api/v1/aihub/models/request-execution-observation-gate',
     method: 'POST',
     data: payload,
   });

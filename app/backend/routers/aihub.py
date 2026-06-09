@@ -79,6 +79,7 @@ from services.model_ops_gemini_official_cheap_first_source_review import (
 from services.model_ops_gemini_embedding_cheap_first_preflight import (
     ModelOpsGeminiEmbeddingCheapFirstPreflightService,
 )
+from services.model_ops_request_execution_observation_gate import ModelOpsRequestExecutionObservationGateService
 from services.model_ops_request_execution_preflight import ModelOpsRequestExecutionPreflightService
 from services.model_ops_aihub_endpoint_route_coverage_gate import (
     ModelOpsAIHubEndpointRouteCoverageGateService,
@@ -427,6 +428,26 @@ async def list_models():
         }
     )
     request_execution_preflight = ModelOpsRequestExecutionPreflightService().build_preflight()
+    request_execution_observation_gate = (
+        ModelOpsRequestExecutionObservationGateService().build_gate(
+            {
+                "preflight": {
+                    "requests": [
+                        {
+                            "id": row.get("request_id"),
+                            "task": row.get("task"),
+                            "model": row.get("resolved_model") or row.get("requested_model") or "auto",
+                            "estimated_input_tokens": row.get("estimated_input_tokens"),
+                            "estimated_output_tokens": row.get("estimated_output_tokens"),
+                            "max_cost_usd": row.get("request_cost_limit_usd"),
+                        }
+                        for row in request_execution_preflight.get("request_rows", [])
+                        if isinstance(row, dict)
+                    ]
+                }
+            }
+        )
+    )
     aihub_endpoint_route_coverage_gate = ModelOpsAIHubEndpointRouteCoverageGateService().build_gate()
     aihub_media_speech_default_catalog_gate = (
         ModelOpsAIHubMediaSpeechDefaultCatalogGateService().build_gate()
@@ -527,6 +548,7 @@ async def list_models():
         "request_policy": request_policy,
         "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
         "request_execution_preflight": request_execution_preflight,
+        "request_execution_observation_gate": request_execution_observation_gate,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -662,6 +684,7 @@ async def list_models():
         "request_policy": request_policy,
         "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
         "request_execution_preflight": request_execution_preflight,
+        "request_execution_observation_gate": request_execution_observation_gate,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -1126,6 +1149,25 @@ async def evaluate_modelops_request_execution_preflight(payload: dict[str, Any])
     return {
         "success": True,
         "data": ModelOpsRequestExecutionPreflightService().build_preflight(payload),
+    }
+
+
+@router.get("/models/request-execution-observation-gate")
+async def modelops_request_execution_observation_gate():
+    """Return metadata-only request execution observation evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["request_execution_observation_gate"],
+    }
+
+
+@router.post("/models/request-execution-observation-gate")
+async def evaluate_modelops_request_execution_observation_gate(payload: dict[str, Any]):
+    """Evaluate sanitized post-run request metadata without gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsRequestExecutionObservationGateService().build_gate(payload),
     }
 
 

@@ -783,6 +783,18 @@ endpoints, models, or the network, write configuration, shift traffic, or
 include headers, request bodies, prompts, messages, raw payloads, legal text,
 model outputs, gateway responses, emails, user identifiers, or credentials.
 
+Current request execution observation evidence:
+`modelops-request-execution-observation-gate` adds shipped metadata-only
+post-run request observation evidence for sanitized NewAPI/Gemini execution
+metadata. It compares observed model ids, coarse status categories, fallback
+use, token/cost/latency metadata, and local downgrade follow-through with
+preflight rows so maintainers can see cheap-first drift and review exceptions
+after dry runs or live calls. It does not call providers, gateways, app AI
+endpoints, models, or the network, execute requests, write configuration,
+change defaults, shift traffic, or include headers, request bodies, messages,
+prompts, raw legal text, raw payloads, gateway responses, model outputs,
+emails, user identifiers, or credentials.
+
 Current request execution release-readiness binding:
 `modelops-request-execution-release-readiness-binding` promotes the request
 execution preflight into required release-readiness evidence. Release candidates

@@ -381,6 +381,16 @@ account inventory, or include request bodies, headers, messages, prompts, raw
 payloads, legal text, model outputs, gateway responses, credentials, emails, or
 user identifiers.
 
+`modelops-request-execution-observation-gate` is the shipped metadata-only
+post-run companion for sanitized request execution observations. It compares
+observed model ids, status categories, fallback use, token/cost/latency
+metadata, and local downgrade follow-through with the request execution
+preflight rows, then surfaces cheap-first drift and review exceptions in
+ModelOps without calling providers, gateways, app AI endpoints, or the network,
+changing defaults, shifting traffic, validating live account inventory, or
+storing headers, request bodies, prompts, legal text, gateway responses, model
+outputs, emails, user identifiers, or credentials.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

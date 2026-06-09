@@ -188,6 +188,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_gateway_request_compatibility_gate.py tests/test_model_request_policy.py tests/test_model_reasoning_policy.py tests/test_model_gateway_compatibility.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_request_execution_preflight.py tests/test_model_runtime_router.py tests/test_model_request_cost_bounds.py tests/test_model_gateway_request_compatibility_gate.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_request_execution_observation_gate.py tests/test_model_ops_request_execution_preflight.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_gateway_connection_profile.py tests/test_model_gateway_health_plan.py tests/test_aihub_runtime_routing.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_runtime_explicit_model_fit_gate.py tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -3495,6 +3496,50 @@ class ContinuousUpdateLedgerService:
                     "modelops-gemini-cheap-first-route-preflight",
                     "model-ops-readiness",
                     "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="modelops-request-execution-observation-gate",
+                title="Request execution observation gate",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only post-run request execution observation evidence for sanitized "
+                    "NewAPI/Gemini metadata. It compares observations with preflight rows, cheap-first "
+                    "alignment, token/cost/latency metadata, fallback use, coarse error categories, and "
+                    "local downgrade follow-through, without provider calls, gateway calls, network calls, "
+                    "request execution, configuration writes, default changes, traffic shifts, headers, "
+                    "request bodies, messages, prompts, raw legal text, gateway responses, model outputs, "
+                    "payloads, emails, user identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_request_execution_observation_gate.py",
+                    "app/backend/tests/test_model_ops_request_execution_observation_gate.py",
+                    "app/backend/services/model_ops_request_execution_preflight.py",
+                    "app/backend/tests/test_model_ops_request_execution_preflight.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_REQUEST_EXECUTION_OBSERVATION_GATE.md",
+                    "docs/MODELOPS_REQUEST_EXECUTION_PREFLIGHT.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "modelops-request-execution-observation-gate",
+                    "modelops-request-execution-preflight",
+                    "model-ops-readiness",
+                    "frontend-ui-regression-gate",
+                    "release-readiness",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),

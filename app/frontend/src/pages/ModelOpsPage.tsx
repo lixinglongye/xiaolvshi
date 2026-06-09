@@ -71,6 +71,7 @@ import {
   type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsGeminiCheapFirstRoutePreflightPayload,
   type ModelOpsRequestExecutionPreflight,
+  type ModelOpsRequestExecutionObservationGate,
   type ModelOpsGeminiResearchRefreshGate,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
@@ -2377,6 +2378,19 @@ function Inner() {
   const requestExecutionPolicyEntries = Object.entries(requestExecutionPreflight?.execution_policy ?? {});
   const requestExecutionPrivacyEntries = boundaryDisplayEntries(requestExecutionPreflight?.privacy_boundary);
   const requestExecutionClaimEntries = boundaryDisplayEntries(requestExecutionPreflight?.claim_boundary);
+  const requestExecutionObservationGate: ModelOpsRequestExecutionObservationGate | null =
+    data?.request_execution_observation_gate ?? null;
+  const requestExecutionObservationRows = requestExecutionObservationGate?.observation_rows ?? [];
+  const requestExecutionObservationChecks = requestExecutionObservationGate?.checks ?? [];
+  const requestExecutionObservationPolicyEntries = Object.entries(
+    requestExecutionObservationGate?.observation_policy ?? {},
+  );
+  const requestExecutionObservationPrivacyEntries = boundaryDisplayEntries(
+    requestExecutionObservationGate?.privacy_boundary,
+  );
+  const requestExecutionObservationClaimEntries = boundaryDisplayEntries(
+    requestExecutionObservationGate?.claim_boundary,
+  );
   const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
@@ -14114,6 +14128,142 @@ function Inner() {
                 </div>
                 <div className="mt-3 text-xs leading-5 text-stone-600">
                   validation: {requestExecutionPreflight.validation_commands[0]}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {requestExecutionObservationGate && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Request execution observation gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {requestExecutionObservationGate.summary.observation_count} observations /{' '}
+                  {requestExecutionObservationGate.summary.ready_observation_count} ready /{' '}
+                  {requestExecutionObservationGate.summary.review_observation_count} review /{' '}
+                  {requestExecutionObservationGate.summary.blocked_observation_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(requestExecutionObservationGate.status)}>
+                {requestExecutionObservationGate.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              {[
+                { label: 'matched preflight', value: requestExecutionObservationGate.summary.matched_preflight_count },
+                { label: 'cheap-first observed', value: requestExecutionObservationGate.summary.cheap_first_observed_count },
+                { label: 'fallback used', value: requestExecutionObservationGate.summary.fallback_used_count },
+                { label: 'local downgrade followed', value: requestExecutionObservationGate.summary.local_downgrade_followed_count },
+                { label: 'observed cost', value: formatUsd(requestExecutionObservationGate.summary.observed_cost_usd_sum) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                  <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Observation</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Observed model</TableHead>
+                    <TableHead>Run metadata</TableHead>
+                    <TableHead>Preflight link</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {requestExecutionObservationRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.request_id}</div>
+                        <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.observation_status)}>
+                          {row.observation_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">{row.observed_status}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[260px] font-mono text-xs text-stone-700">{row.observed_model}</div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <Badge variant="outline" className={row.cheap_first_observed ? statusClass('pass') : statusClass('warn')}>
+                            {row.cheap_first_observed ? 'cheap-first' : 'review model'}
+                          </Badge>
+                          {row.fallback_used && (
+                            <Badge variant="outline" className={statusClass('warn')}>
+                              fallback used
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        in {formatNumber(row.observed_input_tokens ?? 0)}
+                        <br />
+                        out {formatNumber(row.observed_output_tokens ?? 0)}
+                        <br />
+                        cost {formatUsd(row.observed_cost_usd)} / latency {formatNumber(row.latency_ms ?? 0)} ms
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        match {String(row.preflight_match)}
+                        <br />
+                        status {row.preflight_status}
+                        <br />
+                        limit {formatUsd(row.preflight_cost_limit_usd)}
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        <div className="font-semibold text-stone-800">{row.release_action.replace(/_/g, ' ')}</div>
+                        <div className="mt-1">{row.reason_codes.slice(0, 4).join(', ')}</div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Observation policy</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {requestExecutionObservationPolicyEntries.map(([key, value]) => (
+                    <div key={key}>
+                      <span className="font-mono text-stone-800">{key}</span>: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Boundary</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {[...requestExecutionObservationPrivacyEntries, ...requestExecutionObservationClaimEntries.slice(0, 4)].map(([key, value]) => (
+                    <div key={key} className="flex justify-between gap-3 border-b border-stone-950/10 pb-1">
+                      <span>{key}</span>
+                      <span className="font-mono">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Checks</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {requestExecutionObservationChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-stone-800">{check.id}</span>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-1">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  validation: {requestExecutionObservationGate.validation_commands[0]}
                 </div>
               </div>
             </div>
