@@ -93,16 +93,29 @@ def test_user_need_gemini_route_coverage_route_returns_payload():
 
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
-    from routers.maintenance import router
+    from routers.aihub import router as aihub_router
+    from routers.maintenance import router as maintenance_router
 
     app = fastapi.FastAPI()
-    app.include_router(router)
+    app.include_router(aihub_router)
+    app.include_router(maintenance_router)
+    client = testclient.TestClient(app)
 
-    response = testclient.TestClient(app).get("/api/v1/maintenance/user-needs/gemini-route-coverage")
+    response = client.get("/api/v1/maintenance/user-needs/gemini-route-coverage")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["id"] == "user-need-gemini-route-coverage"
     assert payload["data"]["summary"]["model_calls"] == "not_required"
+    assert payload["data"]["privacy_boundary"]["network_access"] is False
     assert payload["data"]["source_boundaries"]["changes_default_routes"] is False
+
+    aihub_response = client.get("/api/v1/aihub/models/user-need-gemini-route-coverage")
+
+    assert aihub_response.status_code == 200
+    aihub_payload = aihub_response.json()
+    assert aihub_payload["success"] is True
+    assert aihub_payload["data"]["id"] == "user-need-gemini-route-coverage"
+    assert aihub_payload["data"]["privacy_boundary"]["network_access"] is False
+    assert aihub_payload["data"]["source_boundaries"]["changes_default_routes"] is False

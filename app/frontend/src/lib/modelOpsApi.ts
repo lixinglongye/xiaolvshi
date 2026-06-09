@@ -9,6 +9,8 @@ import type {
   ModelOpsLegalFixtureEvidenceHandoff,
   ModelOpsLegalFixtureEvidenceHandoffCheck,
   ModelOpsLegalFixtureEvidenceHandoffRow,
+  UserNeedGeminiRouteCoverage,
+  UserNeedGeminiRouteCoverageRow,
 } from './maintenanceApi';
 
 export type {
@@ -21,12 +23,16 @@ export type {
   ModelOpsLegalFixtureEvidenceHandoff,
   ModelOpsLegalFixtureEvidenceHandoffCheck,
   ModelOpsLegalFixtureEvidenceHandoffRow,
+  UserNeedGeminiRouteCoverage as ModelOpsUserNeedGeminiRouteCoverage,
+  UserNeedGeminiRouteCoverageRow as ModelOpsUserNeedGeminiRouteCoverageRow,
 };
 
 export type RoutingAliases = Record<string, string>;
 
 export const MODEL_OPS_API_TIMEOUT_MS = 25_000;
 export const MODEL_OPS_TOTAL_TIMEOUT_MS = 25_000;
+const LOCAL_MODEL_OPS_BACKEND_ORIGIN =
+  import.meta.env.VITE_LOCAL_BACKEND_ORIGIN || import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export type ModelCatalogItem = {
   id: string;
@@ -4911,6 +4917,7 @@ export type ModelOpsResponse = {
   legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
+  user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
   user_need_release_bridge?: ModelOpsUserNeedReleaseBridge;
   user_need_cheap_first_handoff?: ModelOpsUserNeedCheapFirstHandoff;
   default_change_queue?: ModelOpsDefaultChangeQueue;
@@ -4933,6 +4940,23 @@ type ApiRequest = {
   method: 'GET' | 'POST';
   data?: Record<string, unknown>;
 };
+
+function isLocalModelOpsHost(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return import.meta.env.DEV && ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+}
+
+function localModelOpsBackendRequest(request: ApiRequest): ApiRequest | null {
+  if (!isLocalModelOpsHost() || !request.url.startsWith('/api/')) {
+    return null;
+  }
+  return {
+    ...request,
+    url: `${LOCAL_MODEL_OPS_BACKEND_ORIGIN.replace(/\/+$/, '')}${request.url}`,
+  };
+}
 
 function unwrapApiPayload(value: unknown): unknown {
   if (value && typeof value === 'object' && 'data' in value) {
@@ -5125,12 +5149,16 @@ async function fetchModelOpsApi<T>(request: ApiRequest): Promise<T> {
 async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
   let fetchError: unknown = null;
   if (typeof globalThis.fetch === 'function') {
-    try {
-      return await fetchModelOpsApi<T>(request);
-    } catch (err) {
-      fetchError = err;
-      if (isModelOpsTimeoutError(err)) {
-        throw err;
+    const localRequest = localModelOpsBackendRequest(request);
+    const fetchRequests = localRequest ? [localRequest] : [request];
+    for (const fetchRequest of fetchRequests) {
+      try {
+        return await fetchModelOpsApi<T>(fetchRequest);
+      } catch (err) {
+        fetchError = err;
+        if (isModelOpsTimeoutError(err)) {
+          throw err;
+        }
       }
     }
   }
@@ -5508,6 +5536,13 @@ export async function getModelOpsCheapFirstReleaseDecision(): Promise<ModelOpsCh
 export async function getModelOpsUserNeedReleaseBridge(): Promise<ModelOpsUserNeedReleaseBridge> {
   return invokeModelOpsApi<ModelOpsUserNeedReleaseBridge>({
     url: '/api/v1/aihub/models/user-need-release-bridge',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsUserNeedGeminiRouteCoverage(): Promise<UserNeedGeminiRouteCoverage> {
+  return invokeModelOpsApi<UserNeedGeminiRouteCoverage>({
+    url: '/api/v1/aihub/models/user-need-gemini-route-coverage',
     method: 'GET',
   });
 }

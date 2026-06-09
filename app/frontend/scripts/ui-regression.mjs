@@ -239,8 +239,14 @@ const observedGeminiCoverageGapQueuePanel = sourceSection(
 const modelOpsUserNeedReleaseBridgePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
-  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need Gemini route coverage</h2>',
   'model-ops user-need release bridge section',
+);
+const modelOpsUserNeedGeminiRouteCoveragePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need Gemini route coverage</h2>',
+  '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
+  'model-ops user-need Gemini route coverage section',
 );
 const modelOpsUserNeedCheapFirstHandoffPanel = sourceSection(
   modelOpsPage,
@@ -2947,6 +2953,8 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_cheap_first_default_promotion_packet', 'model-ops promotion packet aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.legal_fixture_evidence_handoff', 'model-ops legal fixture evidence handoff aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'getModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff fallback request'),
+  () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_gemini_route_coverage', 'model-ops user-need Gemini route coverage aggregate reuse'),
+  () => assertIncludes(modelOpsPage, 'getModelOpsUserNeedGeminiRouteCoverage', 'model-ops user-need Gemini route coverage fallback request'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.user_need_cheap_first_handoff', 'model-ops user-need cheap-first handoff aggregate reuse'),
   () => assertIncludes(modelOpsPage, 'getModelOpsUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff fallback request'),
   () => assertIncludes(modelOpsPage, 'aggregatePayload?.cheap_first_cascade_research_gate', 'model-ops cheap-first cascade research gate aggregate reuse'),
@@ -3909,7 +3917,7 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'same_origin_fetch_first', 'model-ops same-origin fetch budget type'),
   () => assertIncludes(modelOpsApi, 'evaluateModelOpsPerformanceBudget', 'model-ops performance budget evaluation API'),
   () => assertIncludes(modelOpsApi, 'fallback_after_timeout_disabled', 'model-ops timeout fallback disabled type'),
-  () => assertBefore(modelOpsApi, 'return await fetchModelOpsApi<T>(request);', 'client.apiCall.invoke', 'model-ops same-origin fetch before SDK fallback'),
+  () => assertBefore(modelOpsApi, 'return await fetchModelOpsApi<T>(fetchRequest);', 'client.apiCall.invoke', 'model-ops local/direct fetch before SDK fallback'),
   () => assertIncludes(modelOpsApi, 'ModelOpsPerformanceBudget', 'model-ops performance budget type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsCheapFirstReleaseDecision', 'model-ops cheap-first release decision type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsDefaultChangeQueue', 'model-ops default change queue type'),
@@ -4204,6 +4212,9 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'evaluateModelOpsObservedGatewayModelFitMatrix', 'model-ops observed gateway fit matrix evaluation API'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/observed-gateway-model-fit-matrix', 'model-ops observed gateway fit matrix endpoint'),
   () => assertIncludes(modelOpsApi, 'observed_gateway_model_fit_matrix', 'model-ops observed gateway fit matrix response binding'),
+  () => assertIncludes(modelOpsApi, 'LOCAL_MODEL_OPS_BACKEND_ORIGIN', 'model-ops local backend direct fallback origin'),
+  () => assertIncludes(modelOpsApi, 'localModelOpsBackendRequest', 'model-ops local backend direct fallback request'),
+  () => assertIncludes(modelOpsApi, "import.meta.env.DEV && ['127.0.0.1', 'localhost'].includes(window.location.hostname)", 'model-ops local-only direct fallback guard'),
   () => assertIncludes(modelOpsApi, 'GeminiNewApiAliasCapabilityCoverageRow', 'model-ops Gemini/NewAPI alias capability row type'),
   () => assertIncludes(modelOpsApi, "id: 'gemini-newapi-alias-capability-coverage' | string", 'model-ops Gemini/NewAPI alias capability typed id'),
   () => assertIncludes(modelOpsApi, 'gemini_newapi_alias_capability_coverage', 'model-ops Gemini/NewAPI alias capability response binding'),
@@ -4212,6 +4223,21 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-newapi-alias-capability-coverage', 'model-ops Gemini/NewAPI alias capability endpoint'),
   () => assertIncludes(modelOpsApi, 'task_alias_coverage', 'model-ops Gemini/NewAPI alias capability task coverage payload guard'),
   () => assertIncludes(modelOpsApi, 'accepted_alias_shapes', 'model-ops Gemini/NewAPI alias capability accepted shape payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedGeminiRouteCoverage', 'model-ops user-need Gemini route coverage type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedGeminiRouteCoverageRow', 'model-ops user-need Gemini route coverage row type'),
+  () => assertIncludes(modelOpsApi, 'user_need_gemini_route_coverage', 'model-ops user-need Gemini route coverage response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsUserNeedGeminiRouteCoverage', 'model-ops user-need Gemini route coverage API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/user-need-gemini-route-coverage', 'model-ops user-need Gemini route coverage endpoint'),
+  () => assertIncludes(modelOpsPage, 'ModelOps user-need Gemini route coverage', 'model-ops user-need Gemini route coverage panel'),
+  () => assertIncludes(modelOpsPage, 'activeUserNeedGeminiRouteCoverage', 'model-ops user-need Gemini route coverage active binding'),
+  () => assertIncludes(modelOpsPage, 'userNeedGeminiRouteCoverageRows', 'model-ops user-need Gemini route coverage row binding'),
+  () => assertIncludes(modelOpsPage, 'high_priority_route_protected_count', 'model-ops user-need Gemini high-priority route protection summary'),
+  () => assertIncludes(modelOpsPage, 'row.route_task_source', 'model-ops user-need Gemini route source binding'),
+  () => assertIncludes(modelOpsPage, 'row.linked_route_tasks', 'model-ops user-need Gemini linked route tasks display'),
+  () => assertIncludes(modelOpsPage, 'row.linked_default_models', 'model-ops user-need Gemini linked default models display'),
+  () => assertIncludes(modelOpsPage, 'row.review_reason_codes', 'model-ops user-need Gemini review reasons display'),
+  () => assertIncludes(modelOpsPage, 'changes_default_routes', 'model-ops user-need Gemini no default route change binding'),
+  () => assertIncludes(modelOpsPage, 'claims_default_route_changed', 'model-ops user-need Gemini claim boundary binding'),
   () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedCheapFirstHandoff', 'model-ops user-need cheap-first handoff type'),
   () => assertIncludes(modelOpsApi, 'ModelOpsUserNeedCheapFirstHandoffRow', 'model-ops user-need cheap-first handoff row type'),
   () => assertIncludes(modelOpsApi, 'user_need_cheap_first_handoff', 'model-ops user-need cheap-first handoff response binding'),
@@ -4229,8 +4255,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">ModelOps user-need release bridge</h2>',
+    '<h2 className="text-xl font-black text-stone-950">ModelOps user-need Gemini route coverage</h2>',
+    'model-ops release bridge precedes user-need Gemini route coverage',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">ModelOps user-need Gemini route coverage</h2>',
     '<h2 className="text-xl font-black text-stone-950">ModelOps user-need cheap-first handoff</h2>',
-    'model-ops release bridge precedes user-need handoff',
+    'model-ops user-need Gemini route coverage precedes user-need handoff',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -4854,6 +4886,11 @@ assertNotMatches(
   modelOpsUserNeedCheapFirstHandoffPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|benchmark_sample)\b/i,
   'model-ops user-need cheap-first handoff no secrets or raw benchmark/model/payload fields',
+);
+assertNotMatches(
+  modelOpsUserNeedGeminiRouteCoveragePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email|phone|identity|messages|content|fixture_snippet|benchmark_sample)\b/i,
+  'model-ops user-need Gemini route coverage no secrets or raw benchmark/model/payload fields',
 );
 assertNotMatches(
   cheapFirstEscalationBudgetPanel,

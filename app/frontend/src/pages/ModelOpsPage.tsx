@@ -53,6 +53,7 @@ import {
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
+  getModelOpsUserNeedGeminiRouteCoverage,
   getModelOpsUserNeedReleaseBridge,
   getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   getModelGatewayProbeTemplate,
@@ -92,6 +93,7 @@ import {
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
+  type ModelOpsUserNeedGeminiRouteCoverage,
   type ModelOpsUserNeedReleaseBridge,
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
@@ -635,6 +637,9 @@ function Inner() {
   const [legalBenchmarkRiskBridgeError, setLegalBenchmarkRiskBridgeError] = useState('');
   const [userNeedReleaseBridge, setUserNeedReleaseBridge] = useState<ModelOpsUserNeedReleaseBridge | null>(null);
   const [userNeedReleaseBridgeError, setUserNeedReleaseBridgeError] = useState('');
+  const [userNeedGeminiRouteCoverage, setUserNeedGeminiRouteCoverage] =
+    useState<ModelOpsUserNeedGeminiRouteCoverage | null>(null);
+  const [userNeedGeminiRouteCoverageError, setUserNeedGeminiRouteCoverageError] = useState('');
   const [userNeedCheapFirstHandoff, setUserNeedCheapFirstHandoff] =
     useState<ModelOpsUserNeedCheapFirstHandoff | null>(null);
   const [userNeedCheapFirstHandoffError, setUserNeedCheapFirstHandoffError] = useState('');
@@ -677,6 +682,7 @@ function Inner() {
     setFailureUpgradeBudget(payload.failure_upgrade_budget ?? null);
     setLegalBenchmarkRiskBridge(payload.legal_benchmark_risk_bridge ?? null);
     setUserNeedReleaseBridge(payload.user_need_release_bridge ?? null);
+    setUserNeedGeminiRouteCoverage(payload.user_need_gemini_route_coverage ?? null);
     setUserNeedCheapFirstHandoff(payload.user_need_cheap_first_handoff ?? null);
     setLegalMicroBenchmarkPreflight(payload.legal_micro_benchmark_preflight ?? null);
     setLegalFixtureCheapFirstBenchmarkGate(
@@ -761,6 +767,8 @@ function Inner() {
     setLegalBenchmarkRiskBridge(null);
     setUserNeedReleaseBridgeError('');
     setUserNeedReleaseBridge(null);
+    setUserNeedGeminiRouteCoverageError('');
+    setUserNeedGeminiRouteCoverage(null);
     setUserNeedCheapFirstHandoffError('');
     setUserNeedCheapFirstHandoff(null);
     setLegalMicroBenchmarkPreflightError('');
@@ -819,6 +827,7 @@ function Inner() {
         failureUpgradeBudgetResult,
         legalBenchmarkRiskBridgeResult,
         userNeedReleaseBridgeResult,
+        userNeedGeminiRouteCoverageResult,
         userNeedCheapFirstHandoffResult,
         legalMicroBenchmarkPreflightResult,
         legalFixtureCheapFirstBenchmarkGateResult,
@@ -858,6 +867,10 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.failure_upgrade_budget, getModelFailureUpgradeBudget),
         aggregateOrRequest(aggregatePayload?.legal_benchmark_risk_bridge, getModelOpsLegalBenchmarkRiskBridge),
         aggregateOrRequest(aggregatePayload?.user_need_release_bridge, getModelOpsUserNeedReleaseBridge),
+        aggregateOrRequest(
+          aggregatePayload?.user_need_gemini_route_coverage,
+          getModelOpsUserNeedGeminiRouteCoverage,
+        ),
         aggregateOrRequest(aggregatePayload?.user_need_cheap_first_handoff, getModelOpsUserNeedCheapFirstHandoff),
         aggregateOrRequest(aggregatePayload?.legal_micro_benchmark_preflight, getModelOpsLegalMicroBenchmarkPreflight),
         aggregateOrRequest(
@@ -1156,6 +1169,20 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.user_need_release_bridge)
         ) {
           setUserNeedReleaseBridgeError('ModelOps user-need release bridge failed to load.');
+        }
+      }
+      if (userNeedGeminiRouteCoverageResult.status === 'fulfilled') {
+        setUserNeedGeminiRouteCoverage(userNeedGeminiRouteCoverageResult.value);
+      } else {
+        console.error(userNeedGeminiRouteCoverageResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setUserNeedGeminiRouteCoverage(modelOpsResult.value.user_need_gemini_route_coverage ?? null);
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.user_need_gemini_route_coverage)
+        ) {
+          setUserNeedGeminiRouteCoverageError('ModelOps user-need Gemini route coverage failed to load.');
         }
       }
       if (userNeedCheapFirstHandoffResult.status === 'fulfilled') {
@@ -1853,6 +1880,15 @@ function Inner() {
   const userNeedReleaseBridgeClaimEntries = boundaryDisplayEntries(
     activeUserNeedReleaseBridge?.claim_boundary,
   );
+  const activeUserNeedGeminiRouteCoverage =
+    userNeedGeminiRouteCoverage ?? data?.user_need_gemini_route_coverage ?? null;
+  const userNeedGeminiRouteCoverageRows = activeUserNeedGeminiRouteCoverage?.coverage_rows ?? [];
+  const userNeedGeminiRouteCoveragePrivacyEntries = boundaryDisplayEntries(
+    activeUserNeedGeminiRouteCoverage?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
+  const userNeedGeminiRouteCoverageClaimEntries = boundaryDisplayEntries(
+    activeUserNeedGeminiRouteCoverage?.claim_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const activeUserNeedCheapFirstHandoff = userNeedCheapFirstHandoff ?? data?.user_need_cheap_first_handoff ?? null;
   const userNeedCheapFirstHandoffRows = activeUserNeedCheapFirstHandoff?.handoff_rows ?? [];
   const userNeedCheapFirstHandoffSections = activeUserNeedCheapFirstHandoff?.handoff_sections ?? [];
@@ -2748,6 +2784,163 @@ function Inner() {
                         {row.next_action}
                         <div className="mt-2 text-[11px] text-stone-500">
                           gates: {row.linked_release_gates.slice(0, 3).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {activeUserNeedGeminiRouteCoverage && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">ModelOps user-need Gemini route coverage</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeUserNeedGeminiRouteCoverage.summary.need_count} needs /{' '}
+                  {activeUserNeedGeminiRouteCoverage.summary.high_priority_route_protected_count} high-priority
+                  protected / {activeUserNeedGeminiRouteCoverage.summary.unmapped_need_count} unmapped
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(activeUserNeedGeminiRouteCoverage.status)}>
+                {activeUserNeedGeminiRouteCoverage.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            {userNeedGeminiRouteCoverageError && (
+              <div className="mb-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {userNeedGeminiRouteCoverageError}
+              </div>
+            )}
+            <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedGeminiRouteCoverage.summary.high_priority_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">high priority</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedGeminiRouteCoverage.summary.cheap_first_route_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cheap-first needs</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedGeminiRouteCoverage.summary.balanced_route_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">balanced needs</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedGeminiRouteCoverage.summary.premium_exception_need_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">premium reviews</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {activeUserNeedGeminiRouteCoverage.summary.route_task_count}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">route tasks</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {String(activeUserNeedGeminiRouteCoverage.summary.configuration_written)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">config written</div>
+              </div>
+            </div>
+            <div className="mb-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Source status</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  <div>benchmark: {activeUserNeedGeminiRouteCoverage.summary.source_user_need_coverage_status}</div>
+                  <div>route preflight: {activeUserNeedGeminiRouteCoverage.summary.source_route_preflight_status}</div>
+                  <div>calibration: {activeUserNeedGeminiRouteCoverage.summary.source_calibration_status}</div>
+                  <div>official sources: {activeUserNeedGeminiRouteCoverage.summary.official_source_count}</div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Boundary</div>
+                <div className="mt-2 space-y-1 text-xs leading-5 text-stone-600">
+                  {userNeedGeminiRouteCoveragePrivacyEntries.slice(0, 5).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                  {userNeedGeminiRouteCoverageClaimEntries.slice(0, 2).map(([key, value]) => (
+                    <div key={key}>
+                      {key.replace(/_/g, ' ')}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-sm font-black uppercase text-stone-500">Review endpoints</div>
+                <div className="mt-2 space-y-1 break-all font-mono text-[11px] leading-5 text-stone-600">
+                  <div>{activeUserNeedGeminiRouteCoverage.source_boundaries.coverage_endpoint}</div>
+                  <div>{activeUserNeedGeminiRouteCoverage.source_boundaries.route_preflight_endpoint}</div>
+                  <div>changes_default_routes: {String(activeUserNeedGeminiRouteCoverage.source_boundaries.changes_default_routes)}</div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User need</TableHead>
+                    <TableHead>Route status</TableHead>
+                    <TableHead>Gemini route tasks</TableHead>
+                    <TableHead>Review signals</TableHead>
+                    <TableHead>Next action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userNeedGeminiRouteCoverageRows.slice(0, 8).map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="max-w-[260px]">
+                        <div className="font-semibold text-stone-950">{row.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                        <div className="mt-1 text-[11px] text-stone-500">
+                          {row.priority_band} / priority {row.priority_score}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.route_coverage_status)}>
+                          {row.route_coverage_status.replace(/_/g, ' ')}
+                        </Badge>
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          default review: {String(row.default_allowed_without_review)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                        <div>source: {row.route_task_source}</div>
+                        <div>cheap-first: {row.cheap_first_route_count} / balanced: {row.balanced_route_count}</div>
+                        <div>premium: {row.premium_exception_route_count}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.linked_default_models.slice(0, 3).join(', ') || 'unmapped'}
+                        </div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          {row.linked_route_tasks.slice(0, 5).join(', ') || 'unmapped'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                        <div>benchmark: {row.benchmark_coverage_status}</div>
+                        <div>public: {row.public_benchmark_status}</div>
+                        <div>calibration: {row.calibration_status}</div>
+                        <div className="mt-1">
+                          blockers: {row.blocked_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                        <div className="mt-1">
+                          review: {row.review_reason_codes.slice(0, 3).join(', ') || 'none'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                        {row.next_actions[0] || 'Keep cheap-first route evidence attached to the user need.'}
+                        <div className="mt-2 text-[11px] text-stone-500">
+                          gates: {row.release_gate_links.slice(0, 3).join(', ') || 'unmapped'}
                         </div>
                       </TableCell>
                     </TableRow>

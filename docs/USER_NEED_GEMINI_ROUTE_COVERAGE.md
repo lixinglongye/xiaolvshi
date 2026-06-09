@@ -7,6 +7,7 @@ cheap-first routing evidence.
 
 ```http
 GET /api/v1/maintenance/user-needs/gemini-route-coverage
+GET /api/v1/aihub/models/user-need-gemini-route-coverage
 ```
 
 ## Purpose
@@ -20,6 +21,11 @@ unpriced variants remain review-only.
 This endpoint joins those three views so maintainers can review each need with
 the route task source, linked route tasks, default models, cost tiers, release
 actions, blockers, and next actions in one place.
+
+The evidence is rendered on both `/maintenance` and `/model-ops`. The ModelOps
+view uses the AIHub direct endpoint so route reviewers can inspect user-need
+coverage next to release-bridge and cheap-first handoff controls without
+opening the broader maintenance page.
 
 ## What It Returns
 
@@ -69,7 +75,10 @@ npm run ui:regression
 - `app/backend/services/user_need_benchmark_coverage.py`
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/model_ops_gemini_cheap_first_route_preflight.py`
+- `app/backend/routers/aihub.py`
 - `app/backend/routers/maintenance.py`
+- `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/lib/maintenanceApi.ts`
+- `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/src/pages/MaintenanceEvidencePage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`

@@ -315,8 +315,8 @@ class FrontendUiRegressionGateService:
                 },
                 {
                     "id": "user-need-gemini-route-coverage-regresses",
-                    "page": "/maintenance",
-                    "current_control": "Typecheck/build plus npm run ui:regression keep the user need Gemini route coverage panel, endpoint binding, linked route tasks, default models, official-source URLs, claim boundary, and privacy boundary in the maintenance source contract.",
+                    "page": "/maintenance + /model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the user need Gemini route coverage panels, maintenance endpoint binding, AIHub direct endpoint binding, linked route tasks, default models, official-source URLs, claim boundary, and privacy boundary in the maintenance and ModelOps source contracts.",
                     "regression_target": "Add browser-level mocked route-coverage API checks for Flash-Lite protected needs, premium review rows, unmapped route blockers, no default route changes, and forbidden raw route payload fields.",
                 },
                 {

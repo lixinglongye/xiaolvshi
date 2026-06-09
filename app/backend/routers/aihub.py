@@ -1235,6 +1235,16 @@ async def model_ops_user_need_release_bridge():
     }
 
 
+@router.get("/models/user-need-gemini-route-coverage")
+async def model_ops_user_need_gemini_route_coverage():
+    """Return metadata-only user-need to Gemini route coverage evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["user_need_gemini_route_coverage"],
+    }
+
+
 @router.get("/models/user-need-cheap-first-handoff")
 async def model_ops_user_need_cheap_first_handoff():
     """Return metadata-only user-need cheap-first handoff evidence."""

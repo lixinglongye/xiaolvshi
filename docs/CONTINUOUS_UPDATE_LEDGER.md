@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current ModelOps user-need Gemini route coverage slice:
+`user-need-gemini-route-coverage` is now visible from `/model-ops` through
+`/api/v1/aihub/models/user-need-gemini-route-coverage` in addition to the
+maintenance evidence page. The slice keeps the route coverage evidence
+metadata-only while showing high-priority Flash-Lite protection, linked Gemini
+route tasks, review reasons, default-model status, and no-default-route-change
+boundaries next to the ModelOps user-need release bridge and cheap-first
+handoff controls. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, models, public datasets, or the network; write
+configuration; change default routes; shift traffic; or return raw legal text,
+prompts, payloads, headers, model outputs, gateway responses, emails,
+identifiers, or credentials.
+
 Current ModelOps selector replay workbench slice:
 `modelops-selector-replay-workbench` adds a metadata-only POST workbench to the
 ModelOps Gemini/NewAPI selector replay panel. Reviewers can paste or reset a

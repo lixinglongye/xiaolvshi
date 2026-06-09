@@ -66,10 +66,12 @@ Additional optional evidence: `user-need-gemini-route-coverage` records
 metadata-only user-need route coverage against benchmark coverage, cheap-first
 calibration tasks, and Gemini route preflight rows. It shows Flash-Lite
 protected needs, premium/benchmark/license review gaps, and unmapped route
-blockers without calling models or gateways, importing public benchmark samples,
-writing configuration, changing default routes, shifting traffic, or storing raw
-legal text, prompts, route payloads, model outputs, credentials, emails, or user
-identifiers.
+blockers through `/api/v1/maintenance/user-needs/gemini-route-coverage`,
+`/api/v1/aihub/models/user-need-gemini-route-coverage`, `/maintenance`, and
+`/model-ops` without calling models or gateways, importing public benchmark
+samples, writing configuration, changing default routes, shifting traffic, or
+storing raw legal text, prompts, route payloads, model outputs, credentials,
+emails, or user identifiers.
 
 Additional required evidence: `modelops-user-need-cheap-first-handoff` records
 metadata-only reviewer handoff evidence for cheap-first default changes. It
