@@ -469,6 +469,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-observed-gateway-model-fit-matrix" in completed_ids
     assert "modelops-runtime-explicit-model-fit-gate" in completed_ids
     assert "modelops-request-execution-preflight" in completed_ids
+    assert "modelops-request-execution-release-readiness-binding" in completed_ids
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
@@ -692,6 +693,41 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "low-cost-routing" in request_execution_entry["user_need_ids"]
     assert "safe-ai-ops" in request_execution_entry["user_need_ids"]
     assert "modelops-request-execution-preflight" not in queue_ids
+    request_execution_release_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-request-execution-release-readiness-binding"
+    )
+    assert request_execution_release_entry["category"] == "model_ops"
+    assert request_execution_release_entry["size"] == "medium"
+    assert request_execution_release_entry["status"] == "shipped"
+    assert "required release-readiness evidence" in request_execution_release_entry["impact"]
+    assert "cheap-first fallback ordering" in request_execution_release_entry["impact"]
+    assert "token-cost estimates" in request_execution_release_entry["impact"]
+    assert "task cost bounds" in request_execution_release_entry["impact"]
+    assert "local downgrade visibility" in request_execution_release_entry["impact"]
+    assert "without provider calls" in request_execution_release_entry["impact"]
+    assert "request bodies" in request_execution_release_entry["impact"]
+    assert "credentials" in request_execution_release_entry["impact"]
+    assert "app/backend/services/release_readiness.py" in request_execution_release_entry["evidence_paths"]
+    assert "app/backend/tests/test_release_readiness.py" in request_execution_release_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_request_execution_preflight.py" in request_execution_release_entry[
+        "evidence_paths"
+    ]
+    assert "docs/RELEASE_READINESS.md" in request_execution_release_entry["evidence_paths"]
+    assert "docs/MODELOPS_REQUEST_EXECUTION_PREFLIGHT.md" in request_execution_release_entry["evidence_paths"]
+    assert "modelops-request-execution-preflight" in request_execution_release_entry["release_gate_links"]
+    assert "release-readiness" in request_execution_release_entry["release_gate_links"]
+    assert "model-gateway-request-compatibility-gate" in request_execution_release_entry["release_gate_links"]
+    assert "model-request-cost-bounds" in request_execution_release_entry["release_gate_links"]
+    assert "model-ops-readiness" in request_execution_release_entry["release_gate_links"]
+    assert "modelops-request-execution-release-readiness-binding" not in queue_ids
+    assert any(
+        "tests/test_model_ops_request_execution_preflight.py" in command
+        and "tests/test_release_readiness.py" in command
+        and "tests/test_continuous_update_ledger.py" in command
+        for command in ledger["validation_commands"]
+    )
     local_dev_reload_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "local-dev-reload-stability-guard"
     )

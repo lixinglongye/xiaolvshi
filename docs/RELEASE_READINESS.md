@@ -154,6 +154,16 @@ bounds. It does not call NewAPI, Gemini, OpenAI, Google, gateways, or the
 network, write configuration, shift traffic, or store headers, request bodies,
 prompts, raw legal text, model outputs, payloads, emails, or credentials.
 
+Additional required evidence: `modelops-request-execution-preflight` records
+metadata-only per-request execution review for sanitized NewAPI/Gemini request
+metadata before live calls. It joins runtime model resolution, cheap-first
+fallback ordering, estimated input/output token cost, task cost bounds,
+`max_tokens` policy, local downgrade visibility, and ModelOps UI review states.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, or the network, write configuration, change defaults, shift traffic, or
+store headers, request bodies, messages, prompts, raw legal text, raw payloads,
+model outputs, gateway responses, emails, user identifiers, or credentials.
+
 Additional optional evidence: `modelops-gemini-cheap-first-route-preflight`
 records metadata-only Gemini route preflight checks for official source refresh
 notes, local task defaults, observed model id metadata from the ModelOps POST
@@ -287,6 +297,7 @@ POST /api/v1/maintenance/release-readiness
   "model-reasoning-policy": "pass",
   "model-request-policy": "pass",
   "model-gateway-request-compatibility-gate": "pass",
+  "modelops-request-execution-preflight": "pass",
   "modelops-gemini-cheap-first-route-preflight": "pass",
   "model-request-cost-bounds": "pass",
   "model-cache-policy": "pass",

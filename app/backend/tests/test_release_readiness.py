@@ -675,6 +675,57 @@ def test_model_gateway_request_compatibility_gate_is_required_release_evidence()
     assert "docs/MODEL_GATEWAY_REQUEST_COMPATIBILITY_GATE.md" in check["evidence_paths"]
 
 
+def test_modelops_request_execution_preflight_is_required_release_evidence():
+    service = ReleaseReadinessService()
+    commands = [
+        item
+        for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-request-execution-preflight"
+    ]
+    result = service.evaluate({"modelops-request-execution-preflight": "not_run"})
+    check = next(check for check in result["checks"] if check["id"] == "modelops-request-execution-preflight")
+
+    assert commands == [
+        {
+            "check_id": "modelops-request-execution-preflight",
+            "command": "python -m pytest tests/test_model_ops_request_execution_preflight.py tests/test_model_runtime_router.py tests/test_model_request_cost_bounds.py tests/test_model_gateway_request_compatibility_gate.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only per-request execution preflight release evidence" in check["manual_note"]
+    assert "sanitized NewAPI/Gemini request metadata" in check["manual_note"]
+    assert "runtime model resolution" in check["manual_note"]
+    assert "cheap-first fallback ordering" in check["manual_note"]
+    assert "estimated input/output token costs" in check["manual_note"]
+    assert "task cost bounds" in check["manual_note"]
+    assert "local downgrade visibility" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "gateways" in check["manual_note"]
+    assert "network" in check["manual_note"]
+    assert "does not write configuration" in check["manual_note"]
+    assert "shift traffic" in check["manual_note"]
+    assert "headers" in check["manual_note"]
+    assert "request bodies" in check["manual_note"]
+    assert "messages" in check["manual_note"]
+    assert "prompts" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "model outputs" in check["manual_note"]
+    assert "gateway responses" in check["manual_note"]
+    assert "credentials" in check["manual_note"]
+    assert "app/backend/services/model_ops_request_execution_preflight.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_model_ops_request_execution_preflight.py" in check["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in check["evidence_paths"]
+    assert "app/backend/services/model_request_cost_bounds.py" in check["evidence_paths"]
+    assert "app/backend/services/model_gateway_request_compatibility_gate.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in check["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in check["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
+    assert "docs/MODELOPS_REQUEST_EXECUTION_PREFLIGHT.md" in check["evidence_paths"]
+
+
 def test_billing_preflight_route_is_optional_release_evidence():
     service = ReleaseReadinessService()
     commands = [

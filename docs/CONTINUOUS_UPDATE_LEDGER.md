@@ -783,6 +783,17 @@ endpoints, models, or the network, write configuration, shift traffic, or
 include headers, request bodies, prompts, messages, raw payloads, legal text,
 model outputs, gateway responses, emails, user identifiers, or credentials.
 
+Current request execution release-readiness binding:
+`modelops-request-execution-release-readiness-binding` promotes the request
+execution preflight into required release-readiness evidence. Release candidates
+must now explicitly validate sanitized per-request Gemini/NewAPI routing,
+cheap-first fallback order, token-cost estimates, task cost bounds,
+`max_tokens` policy, and local downgrade visibility before live-call claims. It
+does not call providers, gateways, models, app AI endpoints, or the network,
+write configuration, change defaults, shift traffic, or include headers,
+request bodies, messages, prompts, raw legal text, raw payloads, model outputs,
+gateway responses, emails, user identifiers, or credentials.
+
 Current runtime explicit unknown/lifecycle guard evidence:
 `model-runtime-explicit-unknown-lifecycle-guard` changes local routing so
 explicit unknown gateway models and non-stable preview/review lifecycle catalog

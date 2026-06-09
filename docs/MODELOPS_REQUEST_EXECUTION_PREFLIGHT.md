@@ -69,6 +69,11 @@ identifiers, API keys, Authorization headers, or credentials.
 
 ## Validation
 
+Release readiness tracks this gate as the required
+`modelops-request-execution-preflight` check. It must be passed or explicitly
+waived before a release candidate can claim request-level Gemini/NewAPI
+execution readiness.
+
 ```bash
 cd app/backend
 python -m pytest tests/test_model_ops_request_execution_preflight.py tests/test_model_ops_readiness.py tests/test_model_gateway_request_compatibility_gate.py tests/test_model_request_cost_bounds.py tests/test_frontend_ui_regression_gate.py tests/test_continuous_update_ledger.py -q
