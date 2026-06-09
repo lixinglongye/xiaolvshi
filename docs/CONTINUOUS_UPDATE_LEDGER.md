@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current legal document local baseline slice:
+`legal-document-local-rule-baseline-gate` adds a no-model local rule baseline
+over the small synthetic Chinese legal-document fixtures, exposes it on the
+maintenance page and
+`/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline`,
+and requires it inside the ModelOps legal fixture cheap-first benchmark gate
+and default promotion packet before cheap-first Gemini/NewAPI default evidence
+can be considered review-ready. It returns status, score, case ids, and match
+counts only. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network; write configuration; shift traffic; or
+return raw fixture snippets, local rule predictions, extracted field values,
+prompts, generated document text, model outputs, gateway payloads,
+credentials, emails, or client material.
+
 Current ModelOps NewAPI channel bootstrap slice:
 `modelops-newapi-channel-bootstrap` adds a metadata-only cheap-first setup
 packet for NewAPI/YibuAPI/OpenAI-compatible Gemini channels. It normalizes bare

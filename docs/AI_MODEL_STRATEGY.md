@@ -186,16 +186,17 @@ outputs, credentials, or emails.
 `modelops-legal-fixture-cheap-first-benchmark-gate` is the shipped
 metadata-only small legal-document cheap-first Gemini benchmark/risk gate
 evidence. It uses redacted fixture ids, document case ids, fact-consistency case
-ids, expected issue counts, document benchmark pass/fail counts, coverage-gap
-counts, linked Gemini/NewAPI cheap-first calibration task ids, calibration
-decisions, calibration release gates, cost metadata, and escalation metadata to
+ids, local rule baseline case ids and match counts, expected issue counts,
+document benchmark pass/fail counts, coverage-gap counts, linked Gemini/NewAPI
+cheap-first calibration task ids, calibration decisions, calibration release
+gates, cost metadata, and escalation metadata to
 decide whether a cheap-first result remains acceptable or needs
 review/escalation. It is visible through maintenance evidence, direct AIHub
 ModelOps endpoints, the aggregate `/api/v1/aihub/models` payload, and the
 ModelOps main page. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
 or the network, and it does not include real legal text, fixture snippets,
-candidate generated text, prompts, calibration payloads, model outputs,
-credentials, or emails.
+local rule predictions, extracted field values, candidate generated text,
+prompts, calibration payloads, model outputs, credentials, or emails.
 
 `legal-rag-embedding-batch-budget-gate` is the shipped metadata-only
 low-resource batch budget gate for Legal RAG embeddings. It consumes the
@@ -281,12 +282,14 @@ credentials, emails, or client material.
 `modelops-legal-fixture-cheap-first-default-promotion-packet` is the shipped
 metadata-only maintainer review packet for cheap-first legal fixture default
 promotion. It consumes the legal fixture gate, document benchmark metadata,
-fact-consistency metadata, and linked cheap-first calibration metadata, then
-exposes only ids, statuses, counts, calibration decisions/release gates, cost
-tiers, reason codes, and signoff roles. It never writes configuration, calls
+fact-consistency metadata, local rule baseline metadata, and linked cheap-first
+calibration metadata, then exposes only ids, statuses, counts, calibration
+decisions/release gates, cost tiers, reason codes, and signoff roles. It never
+writes configuration, calls
 NewAPI, Gemini, OpenAI, Google,
 gateways, or the network, shifts traffic, or claims that a default has been
-approved. The ModelOps main page now displays it next to the legal fixture gate
+approved. It does not return local rule predictions or extracted field values.
+The ModelOps main page now displays it next to the legal fixture gate
 so maintainers can review promotion readiness without opening maintenance-only
 evidence pages.
 

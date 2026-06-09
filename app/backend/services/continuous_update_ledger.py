@@ -3129,14 +3129,16 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence in maintenance and AIHub ModelOps payload/UI using redacted fixture ids, document case ids, fact-consistency case ids, linked cheap-first calibration task ids, calibration decisions, release gates, expected issue counts, amount/date/fact consistency counts, cost metadata, document benchmark pass/fail counts, coverage-gap counts, and escalation metadata only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real legal text, fixture snippets, generated document text, prompts, calibration payloads, model outputs, credentials, or emails.",
+                impact="Adds metadata-only small legal-document cheap-first Gemini benchmark/risk gate evidence in maintenance and AIHub ModelOps payload/UI using redacted fixture ids, document case ids, fact-consistency case ids, local rule baseline case ids and match counts, linked cheap-first calibration task ids, calibration decisions, release gates, expected issue counts, amount/date/fact consistency counts, cost metadata, document benchmark pass/fail counts, coverage-gap counts, and escalation metadata only, without NewAPI/Gemini/OpenAI/Google/gateway/network calls, real legal text, fixture snippets, local rule predictions, extracted field values, generated document text, prompts, calibration payloads, model outputs, credentials, or emails.",
                 evidence_paths=(
                     "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py",
                     "app/backend/services/gemini_newapi_cheap_first_calibration.py",
+                    "app/backend/services/legal_document_benchmark_fixtures.py",
                     "app/backend/services/legal_document_fact_consistency_benchmark.py",
                     "app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py",
                     "app/backend/tests/test_gemini_newapi_cheap_first_calibration.py",
                     "app/backend/tests/test_gemini_newapi_selector_replay.py",
+                    "app/backend/tests/test_legal_document_benchmark_fixtures.py",
                     "app/backend/tests/test_legal_document_fact_consistency_benchmark.py",
                     "app/backend/routers/aihub.py",
                     "app/backend/routers/maintenance.py",
@@ -3146,6 +3148,7 @@ class ContinuousUpdateLedgerService:
                     "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/frontend/scripts/ui-regression.mjs",
                     "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md",
                     "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md",
                     "app/backend/services/release_readiness.py",
                     "app/backend/services/continuous_update_ledger.py",
@@ -3161,6 +3164,7 @@ class ContinuousUpdateLedgerService:
                     "modelops-gemini-cheap-first-coverage-gate",
                     "gemini-newapi-cheap-first-calibration",
                     "model-route-legal-benchmark-risk-queue",
+                    "legal-document-benchmark-fixtures",
                     "legal-document-benchmark-coverage",
                     "legal-document-fact-consistency-benchmark",
                 ),
@@ -3687,15 +3691,19 @@ class ContinuousUpdateLedgerService:
                 status="shipped",
                 impact=(
                     "Adds deterministic readable zh-CN legal-document snippets, locale-quality metadata, "
-                    "mojibake regression checks, and local classification, extraction, deadline, and "
-                    "risk-label scoring without model calls."
+                    "mojibake regression checks, a no-model local rule baseline, and local classification, "
+                    "extraction, deadline, and risk-label scoring without model calls."
                 ),
                 evidence_paths=(
                     "app/backend/services/legal_document_benchmark_fixtures.py",
                     "app/backend/tests/test_legal_document_benchmark_fixtures.py",
                     "docs/LEGAL_DOCUMENT_BENCHMARK_FIXTURES.md",
                 ),
-                release_gate_links=("legal-review-benchmark",),
+                release_gate_links=(
+                    "legal-review-benchmark",
+                    "modelops-legal-fixture-cheap-first-benchmark-gate",
+                    "modelops-legal-fixture-cheap-first-default-promotion-packet",
+                ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing"),
             ),
             LedgerEntry(

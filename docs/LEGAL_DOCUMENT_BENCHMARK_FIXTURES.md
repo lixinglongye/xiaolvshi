@@ -70,12 +70,34 @@ metadata-only review surface is required.
 
 The evaluator scores classification, task-label coverage, risk-label coverage, and field coverage equally. It performs exact deterministic string checks only.
 
+`build_local_rule_baseline()` adds a no-model baseline over the same synthetic
+fixtures. It uses local keyword and regular-expression rules for document type,
+party pair, amount/claim, deadline, evidence, and risk-label detection, then
+passes those structured predictions through `evaluate_predictions()`. The
+baseline returns status, score, per-case match counts, rule descriptions, and
+privacy/claim boundaries only. It does not return the generated prediction
+payload, extracted field values, raw model outputs, gateway payloads, or
+credentials.
+
+The baseline is also exposed at:
+
+```http
+GET /api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline
+```
+
+The cheap-first default gate now requires this local baseline to pass before
+local legal fixture evidence can support a Gemini/NewAPI cheap-first default
+review. This keeps the lowest-cost model path tied to a laptop-safe legal
+document smoke check before any gateway or model-backed fixture run is used.
+
 ## Privacy And Resource Policy
 
 - No external model calls.
 - No network access.
 - No downloaded public datasets.
 - No real client documents, identity numbers, phone numbers, emails, addresses, gateway keys, or raw model outputs.
+- No local baseline prediction payloads or extracted field values are returned
+  from gate or promotion-packet evidence.
 - Keep snippets short enough for laptop pytest runs.
 - Maintenance UI panels must not render raw fixture snippets, prompt text,
   candidate generated text, gateway payloads, credentials, or client material.

@@ -70,6 +70,10 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["summary"]["fact_consistency_status"] == "not_run"
     assert gate["summary"]["fact_consistency_case_count"] == 4
     assert gate["summary"]["fact_consistency_not_run_case_count"] == 4
+    assert gate["summary"]["local_rule_baseline_status"] == "pass"
+    assert gate["summary"]["local_rule_baseline_score"] == 100
+    assert gate["summary"]["local_rule_baseline_case_count"] == 4
+    assert gate["summary"]["local_rule_baseline_raw_prediction_returned"] is False
     assert gate["summary"]["calibration_status"] == "pass"
     assert gate["summary"]["calibration_task_count"] == 7
     assert gate["summary"]["linked_calibration_task_count"] == 4
@@ -80,22 +84,32 @@ def test_legal_fixture_cheap_first_gate_is_not_run_and_metadata_only_by_default(
     assert gate["document_benchmark_summary"]["raw_candidate_text_returned"] is False
     assert gate["fact_consistency_summary"]["raw_document_text_returned"] is False
     assert gate["fact_consistency_summary"]["raw_candidate_text_returned"] is False
+    assert gate["local_rule_baseline_summary"]["status"] == "pass"
+    assert gate["local_rule_baseline_summary"]["score"] == 100
+    assert gate["local_rule_baseline_summary"]["baseline_predictions_returned"] is False
     assert gate["summary"]["raw_fixture_text_returned"] is False
     assert gate["summary"]["raw_model_output_returned"] is False
     assert gate["summary"]["newapi_called"] is False
     assert gate["routing_policy"]["gateway_call_allowed"] is False
     assert gate["routing_policy"]["document_benchmark_required_for_default_change"] is True
     assert gate["routing_policy"]["fact_consistency_required_for_default_change"] is True
+    assert gate["routing_policy"]["local_rule_baseline_required_for_default_change"] is True
     assert gate["routing_policy"]["calibration_required_for_default_change"] is True
+    assert "local legal document rule baseline pass" in gate["routing_policy"]["default_evidence_requires"]
     assert "linked cheap-first calibration rows pass" in gate["routing_policy"]["default_evidence_requires"]
     assert all(row["gate_status"] == "not_run" for row in gate["gate_rows"])
     assert all(row["calibration_status"] == "pass" for row in gate["gate_rows"])
     assert all(row["linked_calibration_task_ids"] for row in gate["gate_rows"])
     assert all(row["gate_status"] == "not_run" for row in gate["document_benchmark_rows"])
     assert all(row["gate_status"] == "not_run" for row in gate["fact_consistency_rows"])
+    assert all(row["gate_status"] == "pass" for row in gate["local_rule_baseline_rows"])
     assert all(row["raw_fixture_text_returned"] is False for row in gate["gate_rows"])
     assert all(row["raw_document_snippet_returned"] is False for row in gate["document_benchmark_rows"])
     assert all(row["raw_candidate_text_returned"] is False for row in gate["document_benchmark_rows"])
+    assert all(row["raw_prediction_returned"] is False for row in gate["local_rule_baseline_rows"])
+    assert gate["privacy_boundary"]["returns_local_rule_predictions"] is False
+    assert gate["privacy_boundary"]["returns_local_rule_extracted_values"] is False
+    assert gate["claim_boundary"]["local_rule_baseline_accuracy_claimed"] is False
     assert "input_excerpt" not in serialized
     assert "output_text" not in serialized
     assert "generated_text" not in serialized
@@ -151,6 +165,9 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
     assert gate["summary"]["fact_consistency_status"] == "pass"
     assert gate["summary"]["fact_consistency_score"] == 100
     assert gate["summary"]["fact_consistency_passed_case_count"] == 4
+    assert gate["summary"]["local_rule_baseline_status"] == "pass"
+    assert gate["summary"]["local_rule_baseline_score"] == 100
+    assert gate["local_rule_baseline_summary"]["case_count"] == 4
     assert gate["summary"]["raw_input_field_count"] >= 1
     assert gate["default_evidence_fixture_ids"] == [
         "fixture-service-agreement-small",
@@ -162,6 +179,7 @@ def test_legal_fixture_cheap_first_gate_allows_passing_fixture_and_document_evid
     assert all("cheap-first-calibration-pass" in row["reason_codes"] for row in gate["gate_rows"])
     assert all(row["gate_status"] == "pass" for row in gate["document_benchmark_rows"])
     assert all(row["gate_status"] == "pass" for row in gate["fact_consistency_rows"])
+    assert all(row["gate_status"] == "pass" for row in gate["local_rule_baseline_rows"])
     assert all("known-low-cost-gemini-cheap-first" in row["reason_codes"] for row in gate["gate_rows"])
 
 
@@ -182,7 +200,9 @@ def test_legal_fixture_cheap_first_gate_aihub_route_and_models_payload_include_s
     assert direct_payload["success"] is True
     assert direct_payload["data"]["summary"]["calibration_status"] == "pass"
     assert direct_payload["data"]["summary"]["linked_calibration_task_count"] == 4
+    assert direct_payload["data"]["summary"]["local_rule_baseline_status"] == "pass"
     assert direct_payload["data"]["privacy_boundary"]["returns_calibration_payloads"] is False
+    assert direct_payload["data"]["privacy_boundary"]["returns_local_rule_predictions"] is False
 
     models_response = client.get("/api/v1/aihub/models")
     assert models_response.status_code == 200
@@ -190,6 +210,7 @@ def test_legal_fixture_cheap_first_gate_aihub_route_and_models_payload_include_s
     gate = models_payload["legal_fixture_cheap_first_benchmark_gate"]
     assert gate["summary"]["calibration_status"] == "pass"
     assert gate["summary"]["linked_calibration_task_count"] == 4
+    assert gate["summary"]["local_rule_baseline_status"] == "pass"
     assert all(row["linked_calibration_task_ids"] for row in gate["gate_rows"])
     assert not SENSITIVE_PATTERN.search(json.dumps(gate, ensure_ascii=False))
 

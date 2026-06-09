@@ -1349,6 +1349,15 @@ async def get_legal_document_benchmark_fixtures():
     }
 
 
+@router.get("/legal-review-benchmark/document-fixtures/local-baseline")
+async def get_legal_document_benchmark_local_baseline():
+    """Return a no-model local rule baseline for tiny legal-document fixtures."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkFixturesService().build_local_rule_baseline(),
+    }
+
+
 @router.get("/legal-review-benchmark/document-coverage")
 async def get_legal_document_benchmark_coverage():
     """Return a metadata-only coverage matrix for local legal-document fixtures."""

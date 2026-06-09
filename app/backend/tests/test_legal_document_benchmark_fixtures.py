@@ -118,6 +118,35 @@ def test_legal_document_benchmark_default_evaluation_is_not_run():
     assert result["claim_boundary"]["live_model_accuracy_claimed"] is False
 
 
+def test_legal_document_benchmark_local_rule_baseline_runs_without_model_calls():
+    baseline = LegalDocumentBenchmarkFixturesService().build_local_rule_baseline()
+
+    assert baseline["status"] == "pass"
+    assert baseline["score"] == 100
+    assert baseline["summary"]["baseline_type"] == "local_rule_baseline"
+    assert baseline["summary"]["supports_low_resource_laptop"] is True
+    assert baseline["summary"]["model_calls"] == "not_required"
+    assert baseline["summary"]["network_access"] == "disabled"
+    assert baseline["summary"]["raw_prediction_payload_returned"] is False
+    assert baseline["privacy_boundary"]["returns_fixture_snippets"] is False
+    assert baseline["privacy_boundary"]["returns_raw_predictions"] is False
+    assert baseline["privacy_boundary"]["returns_extracted_field_values"] is False
+    assert baseline["privacy_boundary"]["baseline_predictions_returned"] is False
+    assert baseline["privacy_boundary"]["model_calls"] is False
+    assert baseline["privacy_boundary"]["network_access"] is False
+    assert baseline["claim_boundary"]["baseline_accuracy_claimed"] is False
+    assert baseline["claim_boundary"]["production_extraction_claimed"] is False
+    assert baseline["blocking_case_ids"] == []
+    assert {rule["id"] for rule in baseline["heuristic_rules"]} == {
+        "keyword-document-type",
+        "regex-amount-deadline",
+        "party-pair-detection",
+        "risk-keyword-labeling",
+    }
+    assert all(row["raw_prediction_returned"] is False for row in baseline["coverage_rows"])
+    assert all(row["matched_field_count"] == row["expected_field_count"] for row in baseline["coverage_rows"])
+
+
 def test_legal_document_benchmark_passes_complete_predictions():
     service = LegalDocumentBenchmarkFixturesService()
     suite = service.build_suite()
@@ -184,3 +213,10 @@ def test_legal_document_benchmark_fixture_route_returns_suite_and_evaluates_pred
     eval_payload = eval_response.json()
     assert eval_payload["success"] is True
     assert eval_payload["data"]["status"] == "not_run"
+
+    baseline_response = client.get("/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline")
+    assert baseline_response.status_code == 200
+    baseline_payload = baseline_response.json()
+    assert baseline_payload["success"] is True
+    assert baseline_payload["data"]["status"] == "pass"
+    assert baseline_payload["data"]["summary"]["baseline_type"] == "local_rule_baseline"

@@ -71,6 +71,10 @@ def test_legal_fixture_default_promotion_packet_is_not_ready_by_default():
     assert packet["summary"]["source_default_change_evidence_allowed"] is False
     assert packet["summary"]["document_benchmark_status"] == "not_run"
     assert packet["summary"]["fact_consistency_status"] == "not_run"
+    assert packet["summary"]["local_rule_baseline_status"] == "pass"
+    assert packet["summary"]["local_rule_baseline_score"] == 100
+    assert packet["summary"]["local_rule_baseline_case_count"] == 4
+    assert packet["summary"]["local_rule_baseline_raw_prediction_returned"] is False
     assert packet["summary"]["calibration_status"] == "pass"
     assert packet["summary"]["linked_calibration_task_count"] == 4
     assert packet["summary"]["configuration_written"] is False
@@ -79,9 +83,11 @@ def test_legal_fixture_default_promotion_packet_is_not_ready_by_default():
     assert packet["summary"]["raw_text_returned"] is False
     assert packet["privacy_boundary"]["returns_raw_fixture_text"] is False
     assert packet["privacy_boundary"]["returns_calibration_payloads"] is False
+    assert packet["privacy_boundary"]["returns_local_rule_predictions"] is False
     assert packet["privacy_boundary"]["returns_document_snippets"] is False
     assert packet["claim_boundary"]["automatic_default_change_claimed"] is False
     assert packet["claim_boundary"]["fact_consistency_benchmark_scores_claimed"] is False
+    assert packet["claim_boundary"]["local_rule_baseline_accuracy_claimed"] is False
     assert packet["claim_boundary"]["maintainer_approval_claimed"] is False
     assert all(item["promotion_status"] == "not_ready" for item in packet["promotion_items"])
     assert "generated_text" not in serialized
@@ -105,6 +111,9 @@ def test_legal_fixture_default_promotion_packet_ready_after_gate_and_document_be
     assert packet["summary"]["fact_consistency_status"] == "pass"
     assert packet["summary"]["fact_consistency_score"] == 100
     assert packet["summary"]["fact_consistency_case_count"] == 4
+    assert packet["summary"]["local_rule_baseline_status"] == "pass"
+    assert packet["summary"]["local_rule_baseline_score"] == 100
+    assert packet["summary"]["local_rule_baseline_case_count"] == 4
     assert packet["summary"]["document_coverage_status"] == "ready"
     assert packet["summary"]["calibration_status"] == "pass"
     assert packet["summary"]["linked_calibration_task_count"] == 4
@@ -114,17 +123,25 @@ def test_legal_fixture_default_promotion_packet_ready_after_gate_and_document_be
     assert packet["required_signoffs"] == ["maintainer_owner", "model_ops_reviewer", "legal_quality_reviewer"]
     assert packet["decision"]["default_change_allowed_by_packet"] is False
     assert packet["decision"]["requires_cheap_first_calibration_pass"] is True
+    assert packet["decision"]["requires_local_rule_baseline_pass"] is True
     assert packet["decision"]["configuration_change_allowed"] is False
     assert all(item["promotion_status"] == "ready_for_maintainer_review" for item in packet["promotion_items"])
     assert all(item["fact_consistency_status"] == "pass" for item in packet["promotion_items"])
+    assert all(item["local_rule_baseline_status"] == "pass" for item in packet["promotion_items"])
     assert all(item["calibration_status"] == "pass" for item in packet["promotion_items"])
     assert all(item["linked_calibration_task_ids"] for item in packet["promotion_items"])
     assert all("cheap-first calibration pass" in item["required_evidence"] for item in packet["promotion_items"])
+    assert all("local rule baseline pass" in item["required_evidence"] for item in packet["promotion_items"])
     assert all(item["configuration_change_allowed"] is False for item in packet["promotion_items"])
     assert all("maintainer signoff outside this service" in item["required_evidence"] for item in packet["promotion_items"])
     assert any(item["id"] == "fact-consistency-pass" and item["passed"] for item in packet["evidence_checklist"])
+    assert any(item["id"] == "local-rule-baseline-pass" and item["passed"] for item in packet["evidence_checklist"])
     assert any(item["id"] == "cheap-first-calibration-pass" and item["passed"] for item in packet["evidence_checklist"])
     assert packet["source_gate_links"]["cheap_first_calibration"] == "/api/v1/aihub/models/cheap-first-calibration"
+    assert (
+        packet["source_gate_links"]["document_fixture_local_baseline"]
+        == "/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline"
+    )
 
 
 def test_legal_fixture_default_promotion_packet_aihub_route_and_models_payload_include_signal():
@@ -143,14 +160,18 @@ def test_legal_fixture_default_promotion_packet_aihub_route_and_models_payload_i
     direct_payload = direct_response.json()
     assert direct_payload["success"] is True
     assert direct_payload["data"]["summary"]["calibration_status"] == "pass"
+    assert direct_payload["data"]["summary"]["local_rule_baseline_status"] == "pass"
     assert direct_payload["data"]["decision"]["requires_cheap_first_calibration_pass"] is True
+    assert direct_payload["data"]["decision"]["requires_local_rule_baseline_pass"] is True
     assert direct_payload["data"]["privacy_boundary"]["returns_calibration_payloads"] is False
+    assert direct_payload["data"]["privacy_boundary"]["returns_local_rule_predictions"] is False
 
     models_response = client.get("/api/v1/aihub/models")
     assert models_response.status_code == 200
     models_payload = models_response.json()
     packet = models_payload["legal_fixture_cheap_first_default_promotion_packet"]
     assert packet["summary"]["linked_calibration_task_count"] == 4
+    assert packet["summary"]["local_rule_baseline_status"] == "pass"
     assert packet["decision"]["configuration_change_allowed"] is False
     assert all(item["linked_calibration_task_ids"] for item in packet["promotion_items"])
     assert not SENSITIVE_PATTERN.search(json.dumps(packet, ensure_ascii=False))

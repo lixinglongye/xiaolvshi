@@ -8,6 +8,7 @@ from services.legal_fixture_model_matrix import LegalFixtureModelMatrixService
 from services.legal_fixture_quick_suite import LegalFixtureQuickSuiteService
 from services.legal_fixture_run_report import LegalFixtureRunReportService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_benchmark_suite import LegalDocumentBenchmarkSuiteService
 from services.gemini_newapi_cheap_first_calibration import GeminiNewapiCheapFirstCalibrationService
@@ -44,6 +45,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         evidence_bundle_service: LegalFixtureEvidenceBundleService | None = None,
         document_benchmark_service: LegalDocumentBenchmarkSuiteService | None = None,
         document_coverage_service: LegalDocumentBenchmarkCoverageService | None = None,
+        document_fixture_service: LegalDocumentBenchmarkFixturesService | None = None,
         fact_consistency_service: LegalDocumentFactConsistencyBenchmarkService | None = None,
         calibration_service: GeminiNewapiCheapFirstCalibrationService | None = None,
     ) -> None:
@@ -53,6 +55,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         self.evidence_bundle_service = evidence_bundle_service or LegalFixtureEvidenceBundleService()
         self.document_benchmark_service = document_benchmark_service or LegalDocumentBenchmarkSuiteService()
         self.document_coverage_service = document_coverage_service or LegalDocumentBenchmarkCoverageService()
+        self.document_fixture_service = document_fixture_service or LegalDocumentBenchmarkFixturesService()
         self.fact_consistency_service = fact_consistency_service or LegalDocumentFactConsistencyBenchmarkService()
         self.calibration_service = calibration_service or GeminiNewapiCheapFirstCalibrationService()
 
@@ -66,6 +69,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             self._fact_consistency_outputs(payload)
         )
         document_coverage = self.document_coverage_service.build_matrix()
+        local_rule_baseline = self.document_fixture_service.build_local_rule_baseline()
         calibration = self.calibration_service.build_calibration(self._calibration_payload(payload))
         calibration_by_fixture = self._calibration_by_fixture(calibration)
         matrix_by_fixture = {
@@ -112,6 +116,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         )
         fact_consistency_rows = self._fact_consistency_rows(fact_consistency_evaluation)
         fact_consistency_status = self._fact_consistency_status(fact_consistency_evaluation, fact_consistency_rows)
+        local_rule_baseline_rows = self._local_rule_baseline_rows(local_rule_baseline)
+        local_rule_baseline_status = self._local_rule_baseline_status(local_rule_baseline_rows)
         document_blocking_rows = [row for row in document_benchmark_rows if row["gate_status"] == "blocked"]
         document_warning_rows = [
             row for row in document_benchmark_rows if row["gate_status"] in {"review_required", "not_run"}
@@ -120,11 +126,18 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         fact_warning_rows = [
             row for row in fact_consistency_rows if row["gate_status"] in {"review_required", "not_run"}
         ]
+        local_rule_baseline_blocking_rows = [
+            row for row in local_rule_baseline_rows if row["gate_status"] == "blocked"
+        ]
+        local_rule_baseline_warning_rows = [
+            row for row in local_rule_baseline_rows if row["gate_status"] in {"review_required", "not_run"}
+        ]
         default_change_evidence_allowed = (
             bool(gate_rows)
             and all(row["gate_status"] == "pass" for row in gate_rows)
             and document_benchmark_status == "pass"
             and fact_consistency_status == "pass"
+            and local_rule_baseline_status == "pass"
             and document_coverage["status"] == "ready"
             and document_coverage["summary"]["missing_document_type_count"] == 0
             and not calibration_blocking_rows
@@ -140,12 +153,13 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 warning_rows,
                 document_benchmark_status,
                 fact_consistency_status,
+                local_rule_baseline_status,
             ),
             "method": {
                 "type": "modelops-legal-fixture-cheap-first-benchmark-gate",
                 "notes": [
-                    "Joins the laptop-safe quick suite, fixture model matrix, run report, evidence bundle, and legal document benchmark suite into one default-change gate.",
-                    "Cheap Gemini fixture results can support default retention only after selected fixtures, document benchmark cases, and fact consistency cases pass without high-priority actions.",
+                    "Joins the laptop-safe quick suite, fixture model matrix, run report, evidence bundle, legal document benchmark suite, fact consistency checks, and local rule baseline into one default-change gate.",
+                    "Cheap Gemini fixture results can support default retention only after selected fixtures, document benchmark cases, fact consistency cases, and the local rule baseline pass without high-priority actions.",
                     "The gate returns metadata only and never calls NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -191,6 +205,15 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "fact_consistency_amount_mismatch_count": fact_consistency_evaluation["amount_mismatch_count"],
                 "fact_consistency_deadline_mismatch_count": fact_consistency_evaluation["deadline_mismatch_count"],
                 "fact_consistency_contradiction_count": fact_consistency_evaluation["contradiction_count"],
+                "local_rule_baseline_status": local_rule_baseline_status,
+                "local_rule_baseline_score": local_rule_baseline["score"],
+                "local_rule_baseline_case_count": local_rule_baseline["summary"]["case_count"],
+                "local_rule_baseline_passed_case_count": local_rule_baseline["summary"]["passed_case_count"],
+                "local_rule_baseline_warning_case_count": local_rule_baseline["summary"]["warning_case_count"],
+                "local_rule_baseline_failed_case_count": local_rule_baseline["summary"]["failed_case_count"],
+                "local_rule_baseline_blocking_case_count": len(local_rule_baseline_blocking_rows),
+                "local_rule_baseline_review_case_count": len(local_rule_baseline_warning_rows),
+                "local_rule_baseline_raw_prediction_returned": False,
                 "calibration_status": calibration["status"],
                 "calibration_task_count": len(calibration.get("calibration_rows", [])),
                 "linked_calibration_task_count": len(linked_calibration_rows),
@@ -252,14 +275,37 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "raw_document_text_returned": False,
                 "raw_candidate_text_returned": False,
             },
+            "local_rule_baseline_summary": {
+                "status": local_rule_baseline_status,
+                "score": local_rule_baseline["score"],
+                "case_count": local_rule_baseline["summary"]["case_count"],
+                "passed_case_count": local_rule_baseline["summary"]["passed_case_count"],
+                "warning_case_count": local_rule_baseline["summary"]["warning_case_count"],
+                "failed_case_count": local_rule_baseline["summary"]["failed_case_count"],
+                "not_run_case_count": local_rule_baseline["summary"]["not_run_case_count"],
+                "blocking_case_count": len(local_rule_baseline_blocking_rows),
+                "review_case_count": len(local_rule_baseline_warning_rows),
+                "ruleset_version": local_rule_baseline["summary"]["ruleset_version"],
+                "model_calls": local_rule_baseline["summary"]["model_calls"],
+                "network_access": local_rule_baseline["summary"]["network_access"],
+                "raw_prediction_payload_returned": False,
+                "baseline_predictions_returned": False,
+            },
             "document_benchmark_rows": document_benchmark_rows,
             "fact_consistency_rows": fact_consistency_rows,
+            "local_rule_baseline_rows": local_rule_baseline_rows,
             "blocking_fixture_ids": [row["fixture_id"] for row in blocking_rows],
             "review_fixture_ids": [row["fixture_id"] for row in warning_rows],
             "blocking_document_case_ids": [row["case_id"] for row in document_blocking_rows],
             "review_document_case_ids": [row["case_id"] for row in document_warning_rows],
             "blocking_fact_consistency_case_ids": [row["case_id"] for row in fact_blocking_rows],
             "review_fact_consistency_case_ids": [row["case_id"] for row in fact_warning_rows],
+            "blocking_local_rule_baseline_case_ids": [
+                row["case_id"] for row in local_rule_baseline_blocking_rows
+            ],
+            "review_local_rule_baseline_case_ids": [
+                row["case_id"] for row in local_rule_baseline_warning_rows
+            ],
             "default_evidence_fixture_ids": [
                 row["fixture_id"] for row in passing_rows
             ] if default_change_evidence_allowed else [],
@@ -272,8 +318,10 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                     "no high priority improvement actions",
                     "legal document benchmark suite status pass",
                     "legal document fact consistency status pass",
+                    "local legal document rule baseline pass",
                     "no document benchmark PII hard block",
                     "no amount, deadline, or contradiction blockers",
+                    "no local baseline classification, risk, task, or field blockers",
                     "linked cheap-first calibration rows pass",
                     "known low-cost cheap-first model ladder",
                     "release evidence bundle reviewed",
@@ -282,12 +330,14 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                     "do not promote a new default from failed or not-run fixture evidence",
                     "do not promote a new default from failed or not-run legal document benchmark evidence",
                     "do not promote a new default from failed or not-run fact consistency evidence",
+                    "do not promote a new default from failed local rule baseline evidence",
                     "do not convert premium escalation candidates into defaults",
                     "do not claim public benchmark scores from metadata-only source mappings",
                 ],
                 "max_parallel_requests": quick_suite["summary"]["max_parallel_requests"],
                 "document_benchmark_required_for_default_change": True,
                 "fact_consistency_required_for_default_change": True,
+                "local_rule_baseline_required_for_default_change": True,
                 "calibration_required_for_default_change": True,
                 "default_change_evidence_allowed": default_change_evidence_allowed,
                 "configuration_write_allowed": False,
@@ -302,14 +352,19 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 document_benchmark_rows,
                 fact_consistency_status,
                 fact_consistency_rows,
+                local_rule_baseline_status,
+                local_rule_baseline_rows,
             ),
             "privacy_boundary": {
                 "metadata_only": True,
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
                 "returns_fact_consistency_case_ids": True,
+                "returns_local_rule_baseline_case_ids": True,
                 "returns_calibration_task_ids": True,
                 "returns_expected_signal_counts": True,
+                "returns_local_rule_predictions": False,
+                "returns_local_rule_extracted_values": False,
                 "returns_calibration_payloads": False,
                 "returns_raw_fixture_text": False,
                 "returns_fixture_excerpt": False,
@@ -332,13 +387,14 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "public_benchmark_scores_claimed": False,
                 "legal_document_benchmark_scores_claimed": False,
                 "fact_consistency_benchmark_scores_claimed": False,
+                "local_rule_baseline_accuracy_claimed": False,
                 "external_dataset_execution_claimed": False,
                 "live_gateway_quality_claimed": False,
                 "production_legal_accuracy_claimed": False,
                 "legal_advice_claimed": False,
             },
             "validation_commands": [
-                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py -q",
+                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_gemini_newapi_cheap_first_calibration.py tests/test_gemini_newapi_selector_replay.py tests/test_legal_fixture_quick_suite.py tests/test_legal_fixture_model_matrix.py tests/test_legal_fixture_run_report.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_fixtures.py tests/test_legal_document_fact_consistency_benchmark.py -q",
                 "npm run typecheck",
                 "npm run ui:regression",
             ],
@@ -608,6 +664,77 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
             return "review_required"
         return "pass"
 
+    def _local_rule_baseline_rows(self, baseline: dict[str, Any]) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for row in baseline.get("coverage_rows", []):
+            if not isinstance(row, dict):
+                continue
+            case_id = str(row.get("case_id") or "")
+            baseline_status = str(row.get("status") or "not_run")
+            gate_status = self._local_rule_baseline_gate_status(baseline_status)
+            rows.append(
+                {
+                    "id": f"{case_id}-local-rule-baseline-gate",
+                    "case_id": case_id,
+                    "title": str(row.get("title") or case_id),
+                    "document_type": str(row.get("document_type") or "unknown"),
+                    "matter_type": str(row.get("matter_type") or "unknown"),
+                    "baseline_status": baseline_status,
+                    "gate_status": gate_status,
+                    "score": int(row.get("score") or 0),
+                    "matched_task_count": int(row.get("matched_task_count") or 0),
+                    "expected_task_count": int(row.get("expected_task_count") or 0),
+                    "matched_risk_label_count": int(row.get("matched_risk_label_count") or 0),
+                    "expected_risk_label_count": int(row.get("expected_risk_label_count") or 0),
+                    "matched_field_count": int(row.get("matched_field_count") or 0),
+                    "expected_field_count": int(row.get("expected_field_count") or 0),
+                    "missing_field_count": int(row.get("missing_field_count") or 0),
+                    "default_change_blocker": gate_status in {"blocked", "not_run"},
+                    "reason_codes": self._local_rule_baseline_reason_codes(row, gate_status),
+                    "validation_target": "/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline",
+                    "raw_prediction_returned": False,
+                    "raw_extracted_field_values_returned": False,
+                    "gateway_called": False,
+                }
+            )
+        return rows
+
+    def _local_rule_baseline_gate_status(self, status: str) -> str:
+        if status == "pass":
+            return "pass"
+        if status == "warn":
+            return "review_required"
+        if status == "not_run":
+            return "not_run"
+        return "blocked"
+
+    def _local_rule_baseline_status(self, rows: list[dict[str, Any]]) -> str:
+        if not rows:
+            return "not_run"
+        if any(row["gate_status"] == "blocked" for row in rows):
+            return "blocked"
+        if any(row["gate_status"] in {"review_required", "not_run"} for row in rows):
+            return "review_required"
+        return "pass"
+
+    def _local_rule_baseline_reason_codes(self, row: dict[str, Any], gate_status: str) -> list[str]:
+        codes: list[str] = []
+        if gate_status == "pass":
+            codes.append("local-rule-baseline-ready")
+        elif gate_status == "review_required":
+            codes.append("local-rule-baseline-review-required")
+        elif gate_status == "not_run":
+            codes.append("local-rule-baseline-not-run")
+        else:
+            codes.append("local-rule-baseline-blocked")
+        if int(row.get("missing_field_count") or 0) > 0:
+            codes.append("local-rule-baseline-missing-fields")
+        if int(row.get("matched_task_count") or 0) < int(row.get("expected_task_count") or 0):
+            codes.append("local-rule-baseline-missing-tasks")
+        if int(row.get("matched_risk_label_count") or 0) < int(row.get("expected_risk_label_count") or 0):
+            codes.append("local-rule-baseline-missing-risk-labels")
+        return _dedupe(codes)
+
     def _source_by_fixture(self, quick_suite: dict[str, Any]) -> dict[str, list[dict[str, str]]]:
         rows: dict[str, list[dict[str, str]]] = {}
         for source in quick_suite.get("public_source_mapping", []):
@@ -768,14 +895,21 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         warning_rows: list[dict[str, Any]],
         document_benchmark_status: str,
         fact_consistency_status: str,
+        local_rule_baseline_status: str,
     ) -> str:
-        if blocking_rows or document_benchmark_status == "blocked" or fact_consistency_status == "blocked":
+        if (
+            blocking_rows
+            or document_benchmark_status == "blocked"
+            or fact_consistency_status == "blocked"
+            or local_rule_baseline_status == "blocked"
+        ):
             return "blocked"
         if (
             gate_rows
             and all(row["gate_status"] == "pass" for row in gate_rows)
             and document_benchmark_status == "pass"
             and fact_consistency_status == "pass"
+            and local_rule_baseline_status == "pass"
         ):
             return "ready"
         if (
@@ -788,7 +922,7 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         if warning_rows or document_benchmark_status in {"review_required", "not_run"} or fact_consistency_status in {
             "review_required",
             "not_run",
-        }:
+        } or local_rule_baseline_status in {"review_required", "not_run"}:
             return "ready_with_watchlist"
         return "not_run"
 
@@ -822,6 +956,8 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
         document_benchmark_rows: list[dict[str, Any]],
         fact_consistency_status: str,
         fact_consistency_rows: list[dict[str, Any]],
+        local_rule_baseline_status: str,
+        local_rule_baseline_rows: list[dict[str, Any]],
     ) -> list[str]:
         if blocking_rows:
             return [
@@ -865,9 +1001,25 @@ class ModelOpsLegalFixtureCheapFirstBenchmarkGateService:
                 "Review legal document fact consistency warnings before changing cheap-first defaults.",
                 "Fix missing amount, deadline, or required fact IDs while keeping benchmark evidence metadata-only.",
             ]
+        local_blockers = [row for row in local_rule_baseline_rows if row["gate_status"] == "blocked"]
+        if local_blockers:
+            return [
+                f"{row['case_id']}: clear local rule baseline blockers before changing cheap-first defaults."
+                for row in local_blockers[:4]
+            ]
+        if local_rule_baseline_status == "not_run":
+            return [
+                "Run the local legal document rule baseline before using cheap-first fixture evidence for a default change.",
+                "Keep baseline predictions internal; publish only status, scores, and match counts.",
+            ]
+        if local_rule_baseline_status == "review_required":
+            return [
+                "Review local rule baseline warnings before changing cheap-first defaults.",
+                "Fix classification, risk, task, or field coverage gaps while keeping local baseline output metadata-only.",
+            ]
         if passing_rows:
             return [
-                "Selected legal fixtures, document benchmark cases, and fact consistency cases passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
+                "Selected legal fixtures, document benchmark cases, fact consistency cases, and local rule baseline passed the cheap-first gate; keep defaults cheap-first and archive the evidence bundle.",
                 "Do not promote premium escalation candidates into defaults from this gate alone.",
             ]
         return ["Prepare selected fixture observations before evaluating the cheap-first benchmark gate."]

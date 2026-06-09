@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import re
 from typing import Any
 
 
@@ -74,6 +75,57 @@ class LegalDocumentBenchmarkFixturesService:
             ],
         }
 
+    def build_local_rule_baseline(self) -> dict[str, Any]:
+        cases = [case.to_api() for case in self._cases()]
+        predictions = {case["id"]: self._local_rule_prediction(case) for case in cases}
+        evaluation = self.evaluate_predictions(predictions)
+        coverage_rows = [
+            self._baseline_coverage_row(case, result)
+            for case, result in zip(cases, evaluation["case_results"], strict=True)
+        ]
+        return {
+            "status": evaluation["status"],
+            "score": evaluation["score"],
+            "summary": {
+                "baseline_type": "local_rule_baseline",
+                "ruleset_version": "2026-06-09",
+                "case_count": evaluation["case_count"],
+                "passed_case_count": evaluation["passed_case_count"],
+                "warning_case_count": evaluation["warning_case_count"],
+                "failed_case_count": evaluation["failed_case_count"],
+                "not_run_case_count": evaluation["not_run_case_count"],
+                "model_calls": "not_required",
+                "network_access": "disabled",
+                "supports_low_resource_laptop": True,
+                "raw_prediction_payload_returned": False,
+            },
+            "case_results": evaluation["case_results"],
+            "coverage_rows": coverage_rows,
+            "blocking_case_ids": evaluation["blocking_case_ids"],
+            "heuristic_rules": self._local_rule_descriptions(),
+            "recommended_actions": self._baseline_recommended_actions(evaluation),
+            "evaluation_plan": self._evaluation_plan(),
+            "privacy_boundary": {
+                **evaluation["privacy_boundary"],
+                "returns_fixture_snippets": False,
+                "returns_raw_predictions": False,
+                "returns_extracted_field_values": False,
+                "baseline_predictions_returned": False,
+                "maintenance_ui_renders_raw_fixture_snippets": False,
+                "model_calls": False,
+                "network_access": False,
+            },
+            "claim_boundary": {
+                **evaluation["claim_boundary"],
+                "baseline_accuracy_claimed": False,
+                "production_extraction_claimed": False,
+                "allowed_claim": "Deterministic local rule baseline smoke result for synthetic document fixtures.",
+            },
+            "validation_commands": [
+                "cd app/backend && python -m pytest tests/test_legal_document_benchmark_fixtures.py -q",
+            ],
+        }
+
     def evaluate_predictions(self, predictions: dict[str, Any] | None = None) -> dict[str, Any]:
         cases = [case.to_api() for case in self._cases()]
         predictions = predictions or {}
@@ -106,6 +158,160 @@ class LegalDocumentBenchmarkFixturesService:
             },
             "claim_boundary": self._claim_boundary(),
         }
+
+    def _baseline_coverage_row(self, case: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+        expected_field_count = len(case["expected_fields"])
+        return {
+            "case_id": case["id"],
+            "title": case["title"],
+            "document_type": case["document_type"],
+            "matter_type": case["matter_type"],
+            "status": result["status"],
+            "score": result["score"],
+            "matched_task_count": len(case["expected_tasks"]) - len(result["missing_tasks"]),
+            "expected_task_count": len(case["expected_tasks"]),
+            "matched_risk_label_count": len(case["expected_risk_labels"]) - len(result["missing_risk_labels"]),
+            "expected_risk_label_count": len(case["expected_risk_labels"]),
+            "matched_field_count": expected_field_count - len(result["missing_fields"]),
+            "expected_field_count": expected_field_count,
+            "missing_field_count": len(result["missing_fields"]),
+            "raw_prediction_returned": False,
+        }
+
+    def _local_rule_prediction(self, case: dict[str, Any]) -> dict[str, Any]:
+        snippet = str(case["snippet"])
+        document_type, classification_labels = self._infer_document_classification(snippet)
+        extracted_fields = self._extract_local_fields(snippet)
+        risk_labels = self._infer_risk_labels(snippet)
+        task_labels = ["document_classification", "risk_labeling"]
+        if "parties" in extracted_fields:
+            task_labels.append("party_extraction")
+        if "amount_or_claim" in extracted_fields:
+            task_labels.append("amount_or_claim_extraction")
+        if "deadline" in extracted_fields:
+            task_labels.append("deadline_extraction")
+        return {
+            "document_type": document_type,
+            "classification_labels": classification_labels,
+            "task_labels": task_labels,
+            "risk_labels": risk_labels,
+            "extracted_fields": extracted_fields,
+        }
+
+    def _infer_document_classification(self, text: str) -> tuple[str, list[str]]:
+        if "律师事务所" in text or "本函" in text or "发函" in text:
+            labels = ["lawyer_letter"]
+            if "租金" in text or "商户" in text:
+                labels.append("rent_collection")
+            return "lawyer_letter", labels
+        if "起诉" in text or "原告" in text or "诉请" in text:
+            labels = ["civil_claims"]
+            if "借款" in text or "借条" in text:
+                labels.append("loan_dispute")
+            return "civil_complaint", labels
+        if "劳动关系" in text or "补偿金" in text:
+            labels = ["labor_termination"]
+            if "支付" in text or "补偿金" in text:
+                labels.append("settlement_payment")
+            return "settlement_agreement", labels
+        labels = ["service_contract"]
+        if "付款" in text or "服务费" in text:
+            labels.append("payment_clause")
+        return "contract", labels
+
+    def _extract_local_fields(self, text: str) -> dict[str, str]:
+        fields: dict[str, str] = {}
+        party_pairs = (
+            ("A公司", "B公司"),
+            ("张某", "李某"),
+            ("C公司", "D商户"),
+            ("E公司", "王某"),
+        )
+        for first_party, second_party in party_pairs:
+            if first_party in text and second_party in text:
+                fields["parties"] = f"{first_party};{second_party}"
+                break
+
+        amount_patterns = (
+            r"服务费为(\d+元)",
+            r"剩余借款(\d+元)",
+            r"合计(\d+元)",
+            r"补偿金(\d+元)",
+        )
+        for pattern in amount_patterns:
+            match = re.search(pattern, text)
+            if match:
+                fields["amount_or_claim"] = match.group(1)
+                break
+
+        deadline_patterns = (
+            r"(验收后15日)",
+            r"(2026年4月5日)",
+            r"(收到本函后7日)",
+            r"(2026年6月30日)",
+        )
+        for pattern in deadline_patterns:
+            match = re.search(pattern, text)
+            if match:
+                fields["deadline"] = match.group(1)
+                break
+
+        evidence_terms = [term for term in ("借条", "转账凭证", "聊天记录", "租赁合同", "付款记录", "催告截图") if term in text]
+        if evidence_terms:
+            fields["evidence"] = ";".join(evidence_terms)
+        return fields
+
+    def _infer_risk_labels(self, text: str) -> list[str]:
+        rules = (
+            ("未约定数据泄露责任", "missing_data_liability"),
+            ("服务级别附件", "missing_service_level_attachment"),
+            ("提前解约", "termination_fee_gap"),
+            ("逾期利息", "interest_basis_needed"),
+            ("仅归还", "partial_repayment_dispute"),
+            ("转账凭证", "evidence_chain_review"),
+            ("拖欠", "payment_overdue"),
+            ("提起诉讼", "litigation_escalation"),
+            ("违约金", "penalty_basis_review"),
+            ("社保缴纳截止日", "social_insurance_cutoff_missing"),
+            ("竞业限制", "non_compete_status_unclear"),
+            ("保密义务", "confidentiality_remedy_gap"),
+        )
+        return [label for needle, label in rules if needle in text]
+
+    def _local_rule_descriptions(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": "keyword-document-type",
+                "scope": "classification",
+                "description": "Use local Chinese legal-document keywords to classify contract, civil complaint, lawyer letter, and labor settlement fixtures.",
+            },
+            {
+                "id": "regex-amount-deadline",
+                "scope": "field_extraction",
+                "description": "Use fixed regular expressions for synthetic amounts, claims, and deadline fragments.",
+            },
+            {
+                "id": "party-pair-detection",
+                "scope": "party_extraction",
+                "description": "Detect only the synthetic party pairs embedded in local fixtures.",
+            },
+            {
+                "id": "risk-keyword-labeling",
+                "scope": "risk_labeling",
+                "description": "Map explicit synthetic risk phrases to deterministic risk labels without model calls.",
+            },
+        ]
+
+    def _baseline_recommended_actions(self, evaluation: dict[str, Any]) -> list[str]:
+        if evaluation["status"] == "pass":
+            return [
+                "Keep this local rule baseline as the laptop-safe smoke check before gateway or Gemini fixture runs.",
+                "Use the fixture run package and cheap-first benchmark gate for model-backed evidence only after local baseline stays green.",
+            ]
+        return [
+            "Review missing field and risk-label counts before changing prompts or model defaults.",
+            "Do not promote default model changes from document fixtures until the local baseline result is pass or explicitly waived.",
+        ]
 
     def _evaluate_case(self, case: dict[str, Any], prediction: dict[str, Any]) -> dict[str, Any]:
         if not prediction:

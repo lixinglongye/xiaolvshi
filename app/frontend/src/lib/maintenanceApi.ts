@@ -6595,6 +6595,54 @@ export type LegalDocumentBenchmarkEvaluation = {
   claim_boundary: Record<string, unknown>;
 };
 
+export type LegalDocumentBenchmarkLocalBaselineCoverageRow = {
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  status: string;
+  score: number;
+  matched_task_count: number;
+  expected_task_count: number;
+  matched_risk_label_count: number;
+  expected_risk_label_count: number;
+  matched_field_count: number;
+  expected_field_count: number;
+  missing_field_count: number;
+  raw_prediction_returned: boolean;
+};
+
+export type LegalDocumentBenchmarkLocalBaseline = {
+  status: string;
+  score: number;
+  summary: {
+    baseline_type: string;
+    ruleset_version: string;
+    case_count: number;
+    passed_case_count: number;
+    warning_case_count: number;
+    failed_case_count: number;
+    not_run_case_count: number;
+    model_calls: string;
+    network_access: string;
+    supports_low_resource_laptop: boolean;
+    raw_prediction_payload_returned: boolean;
+  };
+  case_results: LegalDocumentBenchmarkCaseResult[];
+  coverage_rows: LegalDocumentBenchmarkLocalBaselineCoverageRow[];
+  blocking_case_ids: string[];
+  heuristic_rules: Array<{
+    id: string;
+    scope: string;
+    description: string;
+  }>;
+  recommended_actions: string[];
+  evaluation_plan: LegalDocumentBenchmarkEvaluationPlan;
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalDocumentFactConsistencyAmountExpectation = {
   id: string;
   value: number;
@@ -6704,6 +6752,11 @@ type LegalDocumentBenchmarkFixturesResponse = {
 type LegalDocumentBenchmarkEvaluationResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkEvaluation;
+};
+
+type LegalDocumentBenchmarkLocalBaselineResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkLocalBaseline;
 };
 
 type LegalDocumentFactConsistencyBenchmarkResponse = {
@@ -8539,6 +8592,20 @@ export async function evaluateLegalDocumentBenchmarkFixtures(
     return payload.data;
   }
   return payload as LegalDocumentBenchmarkEvaluation;
+}
+
+export async function getLegalDocumentBenchmarkLocalBaseline(): Promise<LegalDocumentBenchmarkLocalBaseline> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkLocalBaselineResponse
+    | LegalDocumentBenchmarkLocalBaseline;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkLocalBaseline;
 }
 
 export async function getLegalDocumentFactConsistencyBenchmark(): Promise<LegalDocumentFactConsistencyBenchmark> {

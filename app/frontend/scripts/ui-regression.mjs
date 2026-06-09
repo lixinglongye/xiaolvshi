@@ -1285,19 +1285,34 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkEvaluation', 'legal document benchmark evaluation type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkLocalBaseline', 'legal document benchmark local baseline type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkFixtures', 'legal document benchmark evaluation API binding'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkLocalBaseline', 'legal document benchmark local baseline API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-fixtures',
       'legal document benchmark fixtures endpoint',
     ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline',
+      'legal document benchmark local baseline endpoint',
+    ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures load task'),
   () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkFixtures({})', 'legal document benchmark not-run evaluation load task'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkLocalBaseline', 'legal document benchmark local baseline load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkFixtures', 'legal document benchmark fixtures state binding'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkEvaluation', 'legal document benchmark evaluation state binding'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkLocalBaseline', 'legal document benchmark local baseline state binding'),
   () => assertIncludes(maintenancePage, 'Legal document benchmark fixtures', 'legal document benchmark fixtures panel'),
+  () => assertIncludes(maintenancePage, 'Local rule baseline', 'legal document benchmark local baseline panel'),
+  () => assertIncludes(maintenancePage, 'supports_low_resource_laptop', 'legal document benchmark local baseline low-resource binding'),
+  () => assertIncludes(maintenancePage, 'raw_prediction_payload_returned', 'legal document benchmark local baseline raw prediction boundary'),
+  () => assertIncludes(maintenancePage, 'returns_raw_predictions', 'legal document benchmark local baseline raw prediction privacy boundary'),
+  () => assertIncludes(maintenancePage, 'production_extraction_claimed', 'legal document benchmark local baseline production claim boundary'),
   () => assertIncludes(maintenancePage, 'raw snippet rendered: false', 'legal document benchmark raw snippet UI boundary'),
   () => assertIncludes(maintenancePage, 'maintenance_ui_renders_raw_fixture_snippets', 'legal document benchmark explicit UI raw snippet boundary'),
   () => assertIncludes(maintenancePage, 'public_benchmark_score_claimed', 'legal document benchmark public score claim boundary'),
@@ -1327,6 +1342,13 @@ const checks = [
       'Legal document benchmark coverage',
       'Legal document benchmark fixtures',
       'document fixture suite follows document coverage',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      'Local rule baseline',
+      'Evaluation case',
+      'local baseline precedes empty-prediction evaluation table',
     ),
   () =>
     assertBefore(

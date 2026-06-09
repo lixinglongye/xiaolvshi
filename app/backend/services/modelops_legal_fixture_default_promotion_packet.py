@@ -35,10 +35,13 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         fact_consistency_summary = gate.get("fact_consistency_summary")
         if not isinstance(fact_consistency_summary, dict):
             fact_consistency_summary = {}
+        local_rule_baseline_summary = gate.get("local_rule_baseline_summary")
+        if not isinstance(local_rule_baseline_summary, dict):
+            local_rule_baseline_summary = {}
         privacy_boundary = gate.get("privacy_boundary") if isinstance(gate.get("privacy_boundary"), dict) else {}
 
         promotion_items = [
-            self._promotion_item(row, gate, document_summary, fact_consistency_summary)
+            self._promotion_item(row, gate, document_summary, fact_consistency_summary, local_rule_baseline_summary)
             for row in self._gate_rows(gate)
         ]
         ready_items = [item for item in promotion_items if item["promotion_status"] == "ready_for_maintainer_review"]
@@ -61,6 +64,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "requires_document_benchmark_pass": True,
                 "requires_document_coverage_ready": True,
                 "requires_fact_consistency_pass": True,
+                "requires_local_rule_baseline_pass": True,
                 "requires_cheap_first_calibration_pass": True,
             },
             "method": {
@@ -68,7 +72,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "notes": [
                     "Consumes the metadata-only legal fixture cheap-first benchmark gate.",
                     "Creates maintainer review items for cheap-first default evidence but never applies configuration.",
-                    "Requires fixture gate pass, document benchmark pass, fact consistency pass, cheap-first calibration pass, ready document coverage, and privacy-safe boundaries.",
+                    "Requires fixture gate pass, document benchmark pass, fact consistency pass, local rule baseline pass, cheap-first calibration pass, ready document coverage, and privacy-safe boundaries.",
                     "Does not call NewAPI, Gemini, OpenAI, Google, a gateway, or the network.",
                 ],
             },
@@ -120,6 +124,25 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                     fact_consistency_summary.get("contradiction_count")
                     or summary.get("fact_consistency_contradiction_count")
                 ),
+                "local_rule_baseline_status": str(
+                    local_rule_baseline_summary.get("status")
+                    or summary.get("local_rule_baseline_status")
+                    or "not_run"
+                ),
+                "local_rule_baseline_score": self._safe_int(
+                    local_rule_baseline_summary.get("score") or summary.get("local_rule_baseline_score")
+                ),
+                "local_rule_baseline_case_count": self._safe_int(
+                    local_rule_baseline_summary.get("case_count") or summary.get("local_rule_baseline_case_count")
+                ),
+                "local_rule_baseline_blocking_case_count": self._safe_int(
+                    local_rule_baseline_summary.get("blocking_case_count")
+                    or summary.get("local_rule_baseline_blocking_case_count")
+                ),
+                "local_rule_baseline_raw_prediction_returned": bool(
+                    local_rule_baseline_summary.get("raw_prediction_payload_returned")
+                    or summary.get("local_rule_baseline_raw_prediction_returned")
+                ),
                 "calibration_status": str(summary.get("calibration_status") or "not_run"),
                 "calibration_task_count": self._safe_int(summary.get("calibration_task_count")),
                 "linked_calibration_task_count": self._safe_int(summary.get("linked_calibration_task_count")),
@@ -144,6 +167,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 gate,
                 document_summary,
                 fact_consistency_summary,
+                local_rule_baseline_summary,
                 privacy_boundary,
             ),
             "recommended_actions": self._recommended_actions(status, promotion_items),
@@ -151,6 +175,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "cheap_first_benchmark_gate": "/api/v1/maintenance/legal-review-benchmark/cheap-first-benchmark-gate",
                 "cheap_first_calibration": "/api/v1/aihub/models/cheap-first-calibration",
                 "document_benchmark_suite": "/api/v1/maintenance/legal-review-benchmark/document-fixtures",
+                "document_fixture_local_baseline": "/api/v1/maintenance/legal-review-benchmark/document-fixtures/local-baseline",
                 "document_coverage": "/api/v1/maintenance/legal-review-benchmark/document-coverage",
                 "document_fact_consistency": "/api/v1/maintenance/legal-review-benchmark/document-fact-consistency",
             },
@@ -159,7 +184,9 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "returns_fixture_ids": True,
                 "returns_document_case_ids": True,
                 "returns_fact_consistency_case_ids": True,
+                "returns_local_rule_baseline_case_ids": True,
                 "returns_calibration_task_ids": True,
+                "returns_local_rule_predictions": False,
                 "returns_raw_fixture_text": False,
                 "returns_calibration_payloads": False,
                 "returns_document_snippets": False,
@@ -182,6 +209,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "public_benchmark_scores_claimed": False,
                 "legal_document_benchmark_scores_claimed": False,
                 "fact_consistency_benchmark_scores_claimed": False,
+                "local_rule_baseline_accuracy_claimed": False,
                 "production_accuracy_claimed": False,
                 "legal_advice_claimed": False,
             },
@@ -212,6 +240,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         gate: dict[str, Any],
         document_summary: dict[str, Any],
         fact_consistency_summary: dict[str, Any],
+        local_rule_baseline_summary: dict[str, Any],
     ) -> dict[str, Any]:
         gate_status = str(row.get("gate_status") or "not_run")
         document_status = str(
@@ -229,7 +258,19 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             or (gate.get("summary") or {}).get("fact_consistency_status")
             or "not_run"
         )
-        reason_codes = self._item_reason_codes(row, gate, document_status, coverage_status, fact_consistency_status)
+        local_rule_baseline_status = str(
+            local_rule_baseline_summary.get("status")
+            or (gate.get("summary") or {}).get("local_rule_baseline_status")
+            or "not_run"
+        )
+        reason_codes = self._item_reason_codes(
+            row,
+            gate,
+            document_status,
+            coverage_status,
+            fact_consistency_status,
+            local_rule_baseline_status,
+        )
         promotion_status = self._promotion_status(row, gate, reason_codes)
         fixture_id = str(row.get("fixture_id") or "unknown-fixture")
         return {
@@ -244,6 +285,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             "document_benchmark_status": document_status,
             "document_coverage_status": coverage_status,
             "fact_consistency_status": fact_consistency_status,
+            "local_rule_baseline_status": local_rule_baseline_status,
             "calibration_status": str(row.get("calibration_status") or "not_mapped"),
             "linked_calibration_task_ids": [str(item) for item in row.get("linked_calibration_task_ids", [])],
             "calibration_decisions": [str(item) for item in row.get("calibration_decisions", [])],
@@ -256,6 +298,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "legal fixture cheap-first gate pass",
                 "document benchmark pass",
                 "fact consistency pass",
+                "local rule baseline pass",
                 "cheap-first calibration pass",
                 "document coverage ready",
                 "metadata-only privacy boundary pass",
@@ -276,6 +319,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         document_status: str,
         coverage_status: str,
         fact_consistency_status: str,
+        local_rule_baseline_status: str,
     ) -> list[str]:
         codes = [str(code) for code in row.get("reason_codes", []) if str(code).strip()]
         if row.get("gate_status") != "pass":
@@ -286,6 +330,8 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
             codes.append("document-benchmark-not-pass")
         if fact_consistency_status != "pass":
             codes.append("fact-consistency-not-pass")
+        if local_rule_baseline_status != "pass":
+            codes.append("local-rule-baseline-not-pass")
         if row.get("calibration_status") != "pass":
             codes.append("cheap-first-calibration-not-pass")
         if coverage_status != "ready":
@@ -349,6 +395,7 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
         gate: dict[str, Any],
         document_summary: dict[str, Any],
         fact_consistency_summary: dict[str, Any],
+        local_rule_baseline_summary: dict[str, Any],
         privacy_boundary: dict[str, Any],
     ) -> list[dict[str, Any]]:
         summary = gate.get("summary") if isinstance(gate.get("summary"), dict) else {}
@@ -377,6 +424,15 @@ class ModelOpsLegalFixtureDefaultPromotionPacketService:
                 "fact-consistency-pass",
                 (fact_consistency_summary.get("status") or summary.get("fact_consistency_status")) == "pass",
                 str(fact_consistency_summary.get("status") or summary.get("fact_consistency_status") or "not_run"),
+            ),
+            (
+                "local-rule-baseline-pass",
+                (local_rule_baseline_summary.get("status") or summary.get("local_rule_baseline_status")) == "pass",
+                str(
+                    local_rule_baseline_summary.get("status")
+                    or summary.get("local_rule_baseline_status")
+                    or "not_run"
+                ),
             ),
             (
                 "cheap-first-calibration-pass",
