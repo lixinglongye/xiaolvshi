@@ -57,6 +57,21 @@ gateways, app AI endpoints, or the network, write configuration, change default
 routes, shift traffic, or return raw legal text, prompts, route payloads, model
 outputs, credentials, emails, or user identifiers.
 
+## Legal-Document Benchmark Evidence
+
+`user-need-legal-document-benchmark-evidence` is the release/ledger/maintenance
+evidence id for mapping user needs to local legal-document benchmark readiness.
+It joins this coverage map with synthetic `ldoc-*` document cases, document
+benchmark result statuses, fact consistency result statuses, local rule baseline
+status, and the cheap-first legal fixture gate.
+
+The evidence bridge is metadata-only. It does not download public datasets,
+import public benchmark samples, claim public benchmark scores or production
+legal quality, call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+or the network, change default models, or return raw legal text, fixture
+snippets, document snippets, prompts, model outputs, payload bodies,
+credentials, emails, or user identifiers.
+
 ## Safety
 
 The service does not call NewAPI, Gemini, OpenAI, public benchmark sources, or a gateway. It does not return fixture snippets, raw benchmark samples, public benchmark text, calibration payloads, raw model output, user feedback text, credentials, emails, phone numbers, identity numbers, prompts, or client documents. It returns IDs, counts, release-gate links, decisions, and metadata-only status fields.
@@ -78,6 +93,8 @@ python -m pytest tests/test_user_needs_radar.py tests/test_legal_review_benchmar
 - `app/backend/services/legal_public_benchmark_sampler.py`
 - `app/backend/services/gemini_newapi_cheap_first_calibration.py`
 - `app/backend/services/user_need_gemini_route_coverage.py`
+- `app/backend/services/user_need_legal_document_benchmark_evidence.py`
 - `app/backend/services/legal_research_backlog.py`
 - `app/backend/routers/maintenance.py`
 - `docs/USER_NEED_GEMINI_ROUTE_COVERAGE.md`
+- `docs/USER_NEED_LEGAL_DOCUMENT_BENCHMARK_EVIDENCE.md`

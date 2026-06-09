@@ -17,6 +17,15 @@ benchmark text, call models or gateways, change defaults, claim public benchmark
 scores, or return raw legal text, fixture snippets, small-corpus excerpts,
 prompts, model outputs, payloads, or credentials.
 
+Additional optional evidence: `user-need-legal-document-benchmark-evidence`
+records a metadata-only path from roadmap user needs to local legal-document
+benchmark evidence. It joins synthetic document case IDs, fact consistency
+checks, local rule baseline status, and cheap-first gate status. It does not
+download public datasets, import public benchmark text, call models or
+gateways, change defaults, claim public benchmark scores or production legal
+quality, or return raw legal text, fixture snippets, document snippets, prompts,
+model outputs, payload bodies, or credentials.
+
 Additional optional evidence: `legal-fixture-regression-comparison` records
 metadata-only baseline/current cheap-first fixture regression deltas. It is
 optional when not run, but a failed submitted comparison blocks release

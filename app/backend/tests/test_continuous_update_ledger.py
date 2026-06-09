@@ -723,6 +723,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-public-benchmark-mapping" in completed_ids
     assert "user-need-implementation-priority-queue" in completed_ids
     assert "user-need-gemini-route-coverage" in completed_ids
+    assert "user-need-legal-document-benchmark-evidence" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -857,6 +858,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-public-benchmark-mapping" not in queue_ids
     assert "user-need-implementation-priority-queue" not in queue_ids
     assert "user-need-gemini-route-coverage" not in queue_ids
+    assert "user-need-legal-document-benchmark-evidence" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
@@ -3251,6 +3253,86 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_legal_public_benchmark_sampler.py tests/test_legal_benchmark_fixture_crosswalk.py "
         "tests/test_user_need_benchmark_coverage.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    user_need_document_evidence_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "user-need-legal-document-benchmark-evidence"
+    )
+    assert user_need_document_evidence_entry["category"] == "benchmark"
+    assert user_need_document_evidence_entry["size"] == "medium"
+    assert user_need_document_evidence_entry["status"] == "shipped"
+    assert "metadata-only user-need to legal-document benchmark evidence" in user_need_document_evidence_entry["impact"]
+    assert "roadmap priorities" in user_need_document_evidence_entry["impact"]
+    assert "local synthetic document cases" in user_need_document_evidence_entry["impact"]
+    assert "fact consistency checks" in user_need_document_evidence_entry["impact"]
+    assert "local rule baseline" in user_need_document_evidence_entry["impact"]
+    assert "cheap-first gate status" in user_need_document_evidence_entry["impact"]
+    assert "public dataset downloads" in user_need_document_evidence_entry["impact"]
+    assert "public benchmark text imports" in user_need_document_evidence_entry["impact"]
+    assert "public benchmark score claims" in user_need_document_evidence_entry["impact"]
+    assert "model or gateway calls" in user_need_document_evidence_entry["impact"]
+    assert "raw legal text" in user_need_document_evidence_entry["impact"]
+    assert "document snippets" in user_need_document_evidence_entry["impact"]
+    assert "fixture snippets" in user_need_document_evidence_entry["impact"]
+    assert "payload bodies" in user_need_document_evidence_entry["impact"]
+    assert "model outputs" in user_need_document_evidence_entry["impact"]
+    assert "credentials" in user_need_document_evidence_entry["impact"]
+    assert (
+        "app/backend/services/user_need_legal_document_benchmark_evidence.py"
+        in user_need_document_evidence_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/tests/test_user_need_legal_document_benchmark_evidence.py"
+        in user_need_document_evidence_entry["evidence_paths"]
+    )
+    assert "app/backend/services/user_need_benchmark_coverage.py" in user_need_document_evidence_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/legal_document_benchmark_suite.py" in user_need_document_evidence_entry[
+        "evidence_paths"
+    ]
+    assert (
+        "app/backend/services/legal_document_fact_consistency_benchmark.py"
+        in user_need_document_evidence_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py"
+        in user_need_document_evidence_entry["evidence_paths"]
+    )
+    assert "app/backend/routers/maintenance.py" in user_need_document_evidence_entry["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in user_need_document_evidence_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in user_need_document_evidence_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/scripts/ui-regression.mjs" in user_need_document_evidence_entry["evidence_paths"]
+    assert (
+        "docs/USER_NEED_LEGAL_DOCUMENT_BENCHMARK_EVIDENCE.md"
+        in user_need_document_evidence_entry["evidence_paths"]
+    )
+    assert "user-need-legal-document-benchmark-evidence" in user_need_document_evidence_entry[
+        "release_gate_links"
+    ]
+    assert "user-need-benchmark-coverage" in user_need_document_evidence_entry["release_gate_links"]
+    assert "modelops-legal-fixture-cheap-first-benchmark-gate" in user_need_document_evidence_entry[
+        "release_gate_links"
+    ]
+    assert "frontend-ui-regression-gate" in user_need_document_evidence_entry["release_gate_links"]
+    assert "traceable-legal-review" in user_need_document_evidence_entry["user_need_ids"]
+    assert "privacy-safe-upload" in user_need_document_evidence_entry["user_need_ids"]
+    assert "cheap-first-review-routing" in user_need_document_evidence_entry["user_need_ids"]
+    assert "robust-extraction-quality" in user_need_document_evidence_entry["user_need_ids"]
+    assert "prompt-injection-resilience" in user_need_document_evidence_entry["user_need_ids"]
+    assert "plain-language-actionability" in user_need_document_evidence_entry["user_need_ids"]
+    assert (
+        "python -m pytest tests/test_user_need_legal_document_benchmark_evidence.py "
+        "tests/test_user_need_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py "
+        "tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_fixtures.py "
+        "tests/test_legal_document_fact_consistency_benchmark.py "
+        "tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck "
+        "&& npm run ui:regression"
         in ledger["validation_commands"]
     )
     route_queue_entry = next(

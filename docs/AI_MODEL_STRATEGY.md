@@ -304,6 +304,14 @@ download public datasets or import public benchmark samples, does not change
 default models or routes, and does not return raw legal text, fixture snippets,
 small-corpus excerpts, prompts, model outputs, gateway payloads, or credentials.
 
+`user-need-legal-document-benchmark-evidence` is the maintenance-side bridge
+that prevents cheap-first legal fixture evidence from being treated as
+user-need-ready until document benchmark status, fact-consistency status, local
+rule baseline status, and cheap-first gate status are visible together. It does
+not call models or gateways, does not change defaults, and does not return raw
+legal text, document snippets, fixture snippets, prompts, payload bodies, model
+outputs, or credentials.
+
 `modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
 preflight for Gemini cheap-first defaults. It joins official source refresh
 notes, local task defaults, the Gemini variant matrix, gateway alias capability

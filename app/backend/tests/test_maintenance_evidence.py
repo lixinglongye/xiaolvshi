@@ -59,6 +59,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
+    assert "User need legal-document benchmark evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Observed gateway model fit matrix" in profile["release_management"]["release_readiness_controls"]
     assert "User need implementation priority queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need Gemini route coverage" in profile["release_management"]["release_readiness_controls"]
@@ -168,6 +169,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_public_fixture_priority_queue.py" in evidence_paths
     assert "app/backend/tests/test_legal_public_fixture_priority_queue.py" in evidence_paths
     assert "docs/LEGAL_PUBLIC_FIXTURE_PRIORITY_QUEUE.md" in evidence_paths
+    assert "app/backend/services/user_need_legal_document_benchmark_evidence.py" in evidence_paths
+    assert "app/backend/tests/test_user_need_legal_document_benchmark_evidence.py" in evidence_paths
+    assert "docs/USER_NEED_LEGAL_DOCUMENT_BENCHMARK_EVIDENCE.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in evidence_paths
@@ -318,16 +322,21 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/USER_NEED_BENCHMARK_COVERAGE.md" in priority_signal["evidence_paths"]
     assert "docs/USER_NEEDS_RADAR.md" in priority_signal["evidence_paths"]
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
+    assert "user-need legal-document benchmark evidence bridges" in quality_signal["description"]
     assert "metadata-only legal document fact consistency benchmark evidence" in quality_signal["description"]
     assert "fact consistency" in quality_signal["description"]
     assert "metadata-only authority/citation gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval diagnostics gate evidence" in quality_signal["description"]
     assert "metadata-only retrieval observation gate evidence" in quality_signal["description"]
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
+    assert "user-need legal-document benchmark evidence review" in quality_signal["responsibility"]
     assert "fact-consistency benchmark review" in quality_signal["responsibility"]
     assert "authority/citation gate review" in quality_signal["responsibility"]
     assert "retrieval diagnostics gate review" in quality_signal["responsibility"]
     assert "retrieval observation gate review" in quality_signal["responsibility"]
+    assert "app/backend/services/user_need_legal_document_benchmark_evidence.py" in quality_signal["evidence_paths"]
+    assert "app/backend/tests/test_user_need_legal_document_benchmark_evidence.py" in quality_signal["evidence_paths"]
+    assert "docs/USER_NEED_LEGAL_DOCUMENT_BENCHMARK_EVIDENCE.md" in quality_signal["evidence_paths"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
     assert "Gemini/NewAPI observed model extraction evidence" in model_signal["description"]

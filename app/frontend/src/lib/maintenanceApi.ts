@@ -250,6 +250,113 @@ type UserNeedBenchmarkCoverageResponse = {
   data: UserNeedBenchmarkCoverage;
 };
 
+export type UserNeedLegalDocumentBenchmarkEvidenceRow = {
+  need_id: string;
+  title: string;
+  category: string;
+  priority_band: string;
+  priority_score: number;
+  evidence_status: string;
+  coverage_status: string;
+  document_case_ids: string[];
+  document_type_ids: string[];
+  document_coverage_axes: {
+    required_section_count: number;
+    expected_citation_count: number;
+    expected_risk_label_count: number;
+    banned_pii_category_count: number;
+  };
+  document_result_statuses: Record<string, string>;
+  fact_consistency_case_ids: string[];
+  fact_consistency_statuses: Record<string, string>;
+  local_rule_baseline_statuses: Record<string, string>;
+  linked_public_source_ids: string[];
+  linked_calibration_task_ids: string[];
+  cheap_first_gate_status: string;
+  cheap_first_default_change_allowed: boolean;
+  release_gate_links: string[];
+  reason_codes: string[];
+  next_actions: string[];
+  privacy_boundary: {
+    raw_document_text_returned: boolean;
+    raw_candidate_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    payload_returned: boolean;
+  };
+};
+
+export type UserNeedLegalDocumentBenchmarkEvidence = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    need_count: number;
+    high_priority_need_count: number;
+    ready_need_count: number;
+    review_required_need_count: number;
+    blocked_need_count: number;
+    not_run_need_count: number;
+    high_priority_blocked_need_count: number;
+    document_fixture_case_count: number;
+    document_coverage_status: string;
+    document_coverage_missing_type_count: number;
+    document_evaluation_status: string;
+    document_evaluation_score: number;
+    document_evaluation_not_run_case_count: number;
+    fact_consistency_status: string;
+    fact_consistency_score: number;
+    fact_consistency_not_run_case_count: number;
+    local_rule_baseline_status: string;
+    local_rule_baseline_score: number;
+    cheap_first_gate_status: string;
+    cheap_first_default_change_allowed: boolean;
+    raw_payload_returned: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  evidence_rows: UserNeedLegalDocumentBenchmarkEvidenceRow[];
+  ready_need_ids: string[];
+  blocked_need_ids: string[];
+  review_required_need_ids: string[];
+  not_run_need_ids: string[];
+  high_priority_blocked_need_ids: string[];
+  source_summaries: {
+    user_need_benchmark_coverage: UserNeedBenchmarkCoverage['summary'];
+    document_coverage: LegalDocumentBenchmarkCoverage['summary'];
+    document_evaluation: {
+      status: string;
+      score: number;
+      case_count: number;
+      blocking_case_ids: string[];
+    };
+    fact_consistency: {
+      status: string;
+      score: number;
+      case_count: number;
+      blocking_case_ids: string[];
+    };
+    local_rule_baseline: LegalDocumentBenchmarkLocalBaseline['summary'];
+    cheap_first_gate: ModelOpsLegalFixtureCheapFirstBenchmarkGate['summary'];
+  };
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean>;
+  claim_boundary: {
+    production_quality_claimed: boolean;
+    public_benchmark_score_claimed: boolean;
+    client_document_coverage_claimed: boolean;
+    default_model_changed: boolean;
+    allowed_claim: string;
+  };
+  validation_commands: string[];
+};
+
+type UserNeedLegalDocumentBenchmarkEvidenceResponse = {
+  success: boolean;
+  data: UserNeedLegalDocumentBenchmarkEvidence;
+};
+
 export type UserNeedGeminiRouteCoverageRow = {
   id: string;
   need_id: string;
@@ -8207,6 +8314,20 @@ export async function getUserNeedBenchmarkCoverage(): Promise<UserNeedBenchmarkC
     return payload.data;
   }
   return payload as UserNeedBenchmarkCoverage;
+}
+
+export async function getUserNeedLegalDocumentBenchmarkEvidence(): Promise<UserNeedLegalDocumentBenchmarkEvidence> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/user-needs/legal-document-benchmark-evidence',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | UserNeedLegalDocumentBenchmarkEvidenceResponse
+    | UserNeedLegalDocumentBenchmarkEvidence;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as UserNeedLegalDocumentBenchmarkEvidence;
 }
 
 export async function getUserNeedGeminiRouteCoverage(): Promise<UserNeedGeminiRouteCoverage> {

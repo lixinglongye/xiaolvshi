@@ -133,6 +133,7 @@ from services.user_needs_radar import UserNeedsRadarService
 from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
 from services.user_need_gemini_route_coverage import UserNeedGeminiRouteCoverageService
 from services.user_need_implementation_priority_queue import UserNeedImplementationPriorityQueueService
+from services.user_need_legal_document_benchmark_evidence import UserNeedLegalDocumentBenchmarkEvidenceService
 from services.admin_audit_policy import AdminAuditPolicyService
 from services.validation_event_evidence import ValidationEventEvidenceService
 
@@ -269,6 +270,24 @@ async def get_user_need_cheap_first_evidence_handoff():
     return {
         "success": True,
         "data": ModelOpsUserNeedCheapFirstHandoffService().build_handoff(),
+    }
+
+
+@router.get("/user-needs/legal-document-benchmark-evidence")
+async def get_user_need_legal_document_benchmark_evidence():
+    """Return user needs joined to local legal-document benchmark evidence."""
+    return {
+        "success": True,
+        "data": UserNeedLegalDocumentBenchmarkEvidenceService().build_bridge(),
+    }
+
+
+@router.post("/user-needs/legal-document-benchmark-evidence")
+async def build_user_need_legal_document_benchmark_evidence(payload: dict[str, Any]):
+    """Build user-need legal-document benchmark evidence from sanitized run metadata."""
+    return {
+        "success": True,
+        "data": UserNeedLegalDocumentBenchmarkEvidenceService().build_bridge(payload),
     }
 
 

@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current user-need legal-document evidence slice:
+`user-need-legal-document-benchmark-evidence` adds a metadata-only bridge from
+roadmap user needs to local legal-document benchmark evidence. It joins
+user-need benchmark coverage, synthetic `ldoc-*` document cases, fact
+consistency checks, local rule baseline status, and the cheap-first legal
+fixture gate, and exposes the bridge at
+`/api/v1/maintenance/user-needs/legal-document-benchmark-evidence` and the
+`/maintenance` page. It does not download public datasets, import public
+benchmark text, claim public benchmark scores or production legal quality, call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the
+network; change default models; write configuration; shift traffic; or return
+raw legal text, fixture snippets, document snippets, prompts, model outputs,
+payload bodies, credentials, emails, or client material.
+
 Current public benchmark fixture priority slice:
 `legal-public-fixture-priority-queue` adds a metadata-only queue that turns
 LawBench, LexEval, LegalBench, LegalBench-RAG, CUAD, LexGLUE, CaseGen, and

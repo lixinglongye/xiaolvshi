@@ -1121,6 +1121,92 @@ const checks = [
   () => assertIncludes(maintenancePage, 'queue_priority_score', 'user need implementation queue priority binding'),
   () => assertIncludes(maintenancePage, 'imports public samples', 'user need implementation queue public sample boundary'),
   () => assertIncludes(maintenancePage, 'uses raw legal text', 'user need implementation queue raw legal text boundary'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'UserNeedLegalDocumentBenchmarkEvidence',
+      'user need legal-document benchmark evidence type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'UserNeedLegalDocumentBenchmarkEvidenceRow',
+      'user need legal-document benchmark evidence row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getUserNeedLegalDocumentBenchmarkEvidence',
+      'user need legal-document benchmark evidence API binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/user-needs/legal-document-benchmark-evidence',
+      'user need legal-document benchmark evidence endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getUserNeedLegalDocumentBenchmarkEvidence',
+      'user need legal-document benchmark evidence load task',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'userNeedLegalDocumentBenchmarkEvidence',
+      'user need legal-document benchmark evidence state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'User need legal-document benchmark evidence',
+      'user need legal-document benchmark evidence panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'document_evaluation_status',
+      'user need legal-document benchmark evidence document evaluation status binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'fact_consistency_status',
+      'user need legal-document benchmark evidence fact consistency status binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'cheap_first_default_change_allowed',
+      'user need legal-document benchmark evidence cheap-first default flag',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'public_benchmark_score_claimed',
+      'user need legal-document benchmark evidence no public score claim binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'returns_raw_candidate_text',
+      'user need legal-document benchmark evidence raw candidate boundary binding',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
+      '<h2 className="text-xl font-black text-stone-950">User need legal-document benchmark evidence</h2>',
+      'user need legal-document benchmark evidence follows implementation queue',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">User need legal-document benchmark evidence</h2>',
+      '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+      'user need legal-document benchmark evidence precedes cheap-first handoff',
+    ),
   () => assertIncludes(maintenanceApi, 'ModelOpsUserNeedCheapFirstHandoff', 'maintenance user need cheap-first handoff type'),
   () =>
     assertIncludes(
@@ -4210,8 +4296,14 @@ const geminiDefaultCostImpactPanel = sourceSection(
 const userNeedImplementationQueuePanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">User need implementation priority queue</h2>',
-  '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">User need legal-document benchmark evidence</h2>',
   'maintenance user need implementation priority queue section',
+);
+const userNeedLegalDocumentBenchmarkEvidencePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">User need legal-document benchmark evidence</h2>',
+  '<h2 className="text-xl font-black text-stone-950">User need cheap-first handoff</h2>',
+  'maintenance user need legal-document benchmark evidence section',
 );
 const maintenanceUserNeedCheapFirstHandoffPanel = sourceSection(
   maintenancePage,
@@ -4468,6 +4560,11 @@ assertNotMatches(
   'maintenance user need implementation priority queue no secret or raw prompt/payload/legal text field names',
 );
 assertNotMatches(
+  userNeedLegalDocumentBenchmarkEvidencePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|document_text|fixture_snippet|sample_text|input_excerpt|output_text|request_body|response_body|headers|client_email|phone|identity)\b/i,
+  'maintenance user need legal-document benchmark evidence no secrets or raw document/model/payload fields',
+);
+assertNotMatches(
   maintenanceUserNeedCheapFirstHandoffPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|gateway_response|headers|client_contact_details|email|phone|identity|benchmark_sample)\b/i,
   'maintenance user need cheap-first handoff no secrets or raw benchmark/model/payload fields',
@@ -4534,7 +4631,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 38,
+      assertions: checks.length + 39,
     },
     null,
     2,

@@ -112,6 +112,7 @@ import {
   getUserNeedBenchmarkCoverage,
   getUserNeedGeminiRouteCoverage,
   getUserNeedImplementationPriorityQueue,
+  getUserNeedLegalDocumentBenchmarkEvidence,
   getUserNeedsRadar,
   normalizeLegalFixtureResponse,
   postMaintenanceContinuousSessionRunMonitor,
@@ -212,6 +213,7 @@ import {
   type UserNeedBenchmarkCoverage,
   type UserNeedGeminiRouteCoverage,
   type UserNeedImplementationPriorityQueue,
+  type UserNeedLegalDocumentBenchmarkEvidence,
   type UserNeedsRadar,
 } from '@/lib/maintenanceApi';
 
@@ -733,6 +735,8 @@ function Inner() {
   const [billingEntitlementGap, setBillingEntitlementGap] = useState<BillingEntitlementGap | null>(null);
   const [userNeeds, setUserNeeds] = useState<UserNeedsRadar | null>(null);
   const [userNeedBenchmarkCoverage, setUserNeedBenchmarkCoverage] = useState<UserNeedBenchmarkCoverage | null>(null);
+  const [userNeedLegalDocumentBenchmarkEvidence, setUserNeedLegalDocumentBenchmarkEvidence] =
+    useState<UserNeedLegalDocumentBenchmarkEvidence | null>(null);
   const [userNeedGeminiRouteCoverage, setUserNeedGeminiRouteCoverage] =
     useState<UserNeedGeminiRouteCoverage | null>(null);
   const [userNeedImplementationQueue, setUserNeedImplementationQueue] =
@@ -932,6 +936,12 @@ function Inner() {
           label: 'User need benchmark coverage',
           run: getUserNeedBenchmarkCoverage,
           apply: (value) => setUserNeedBenchmarkCoverage(value as UserNeedBenchmarkCoverage),
+        },
+        {
+          label: 'User need legal-document benchmark evidence',
+          run: getUserNeedLegalDocumentBenchmarkEvidence,
+          apply: (value) =>
+            setUserNeedLegalDocumentBenchmarkEvidence(value as UserNeedLegalDocumentBenchmarkEvidence),
         },
         {
           label: 'User need Gemini route coverage',
@@ -5059,6 +5069,226 @@ function Inner() {
                         {command}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {userNeedLegalDocumentBenchmarkEvidence && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">User need legal-document benchmark evidence</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      User needs joined to local legal-document benchmark, fact consistency, baseline, and cheap-first gate evidence
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      {userNeedLegalDocumentBenchmarkEvidence.method.type}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[userNeedLegalDocumentBenchmarkEvidence.status] ?? statusClass.warn}
+                  >
+                    {displayToken(userNeedLegalDocumentBenchmarkEvidence.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+                  {[
+                    { label: 'needs', value: userNeedLegalDocumentBenchmarkEvidence.summary.need_count },
+                    { label: 'ready needs', value: userNeedLegalDocumentBenchmarkEvidence.summary.ready_need_count },
+                    { label: 'not run', value: userNeedLegalDocumentBenchmarkEvidence.summary.not_run_need_count },
+                    { label: 'blocked', value: userNeedLegalDocumentBenchmarkEvidence.summary.blocked_need_count },
+                    {
+                      label: 'document score',
+                      value: userNeedLegalDocumentBenchmarkEvidence.summary.document_evaluation_score,
+                    },
+                    {
+                      label: 'fact score',
+                      value: userNeedLegalDocumentBenchmarkEvidence.summary.fact_consistency_score,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Source status</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>document_coverage_status: {displayToken(userNeedLegalDocumentBenchmarkEvidence.summary.document_coverage_status)}</div>
+                      <div>document_evaluation_status: {displayToken(userNeedLegalDocumentBenchmarkEvidence.summary.document_evaluation_status)}</div>
+                      <div>fact_consistency_status: {displayToken(userNeedLegalDocumentBenchmarkEvidence.summary.fact_consistency_status)}</div>
+                      <div>local_rule_baseline_status: {displayToken(userNeedLegalDocumentBenchmarkEvidence.summary.local_rule_baseline_status)}</div>
+                      <div>cheap_first_gate_status: {displayToken(userNeedLegalDocumentBenchmarkEvidence.summary.cheap_first_gate_status)}</div>
+                      <div>
+                        cheap_first_default_change_allowed:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.summary.cheap_first_default_change_allowed)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>
+                        production_quality_claimed:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.claim_boundary.production_quality_claimed)}
+                      </div>
+                      <div>
+                        public_benchmark_score_claimed:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.claim_boundary.public_benchmark_score_claimed)}
+                      </div>
+                      <div>
+                        client_document_coverage_claimed:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.claim_boundary.client_document_coverage_claimed)}
+                      </div>
+                      <div>
+                        default_model_changed:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.claim_boundary.default_model_changed)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>metadata_only: {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.metadata_only)}</div>
+                      <div>
+                        returns_document_snippets:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_document_snippets)}
+                      </div>
+                      <div>
+                        returns_fixture_snippets:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_fixture_snippets)}
+                      </div>
+                      <div>
+                        returns_public_benchmark_text:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_public_benchmark_text)}
+                      </div>
+                      <div>
+                        returns_raw_candidate_text:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_raw_candidate_text)}
+                      </div>
+                      <div>
+                        returns_raw_model_output:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_raw_model_output)}
+                      </div>
+                      <div>
+                        returns_prompt_text:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_prompt_text)}
+                      </div>
+                      <div>
+                        returns_payload_bodies:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_payload_bodies)}
+                      </div>
+                      <div>
+                        returns_credentials:{' '}
+                        {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.returns_credentials)}
+                      </div>
+                      <div>network_called: {String(userNeedLegalDocumentBenchmarkEvidence.privacy_boundary.network_called)}</div>
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-500">
+                      model calls: {userNeedLegalDocumentBenchmarkEvidence.summary.model_calls} / network:{' '}
+                      {userNeedLegalDocumentBenchmarkEvidence.summary.network_access}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User need</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Document evidence</TableHead>
+                        <TableHead>Fact and baseline</TableHead>
+                        <TableHead>Reasons</TableHead>
+                        <TableHead>Next action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {userNeedLegalDocumentBenchmarkEvidence.evidence_rows.slice(0, 8).map((row) => (
+                        <TableRow key={row.need_id}>
+                          <TableCell className="max-w-[300px]">
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.need_id}</div>
+                            <div className="mt-2 text-xs text-stone-600">{displayToken(row.category)}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <Badge
+                              variant="outline"
+                              className={statusClass[row.evidence_status] ?? statusClass.warn}
+                            >
+                              {displayToken(row.evidence_status)}
+                            </Badge>
+                            <div className="mt-2">coverage: {displayToken(row.coverage_status)}</div>
+                            <div>priority: {displayToken(row.priority_band)} / {row.priority_score}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>cases: {row.document_case_ids.join(', ') || '-'}</div>
+                            <div>types: {row.document_type_ids.join(', ') || '-'}</div>
+                            <div>
+                              axes: {row.document_coverage_axes.required_section_count} sections /{' '}
+                              {row.document_coverage_axes.expected_citation_count} citations /{' '}
+                              {row.document_coverage_axes.expected_risk_label_count} risks
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div>fact: {row.fact_consistency_case_ids.join(', ') || '-'}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              document_result_statuses: {Object.values(row.document_result_statuses).join(', ') || '-'}
+                            </div>
+                            <div className="font-mono text-[11px] text-stone-500">
+                              fact_consistency_statuses: {Object.values(row.fact_consistency_statuses).join(', ') || '-'}
+                            </div>
+                            <div className="font-mono text-[11px] text-stone-500">
+                              local_rule_baseline_statuses:{' '}
+                              {Object.values(row.local_rule_baseline_statuses).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div>{row.reason_codes.join(', ') || '-'}</div>
+                            <div className="mt-2">public: {row.linked_public_source_ids.join(', ') || '-'}</div>
+                            <div>calibration: {row.linked_calibration_task_ids.join(', ') || '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.next_actions[0] || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {userNeedLegalDocumentBenchmarkEvidence.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {userNeedLegalDocumentBenchmarkEvidence.validation_commands.slice(0, 3).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
