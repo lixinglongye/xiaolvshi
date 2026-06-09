@@ -19,6 +19,7 @@ def test_user_needs_radar_tracks_research_and_internal_sources():
     assert {
         "legalbench",
         "legalbench-rag",
+        "lawbench",
         "lexeval",
         "casegen",
         "stanford-legal-rag",
@@ -27,6 +28,7 @@ def test_user_needs_radar_tracks_research_and_internal_sources():
     }.issubset(source_ids)
     assert radar["summary"]["source_coverage"]["legalbench"] >= 1
     assert radar["summary"]["source_coverage"]["legalbench-rag"] >= 2
+    assert radar["summary"]["source_coverage"]["lawbench"] >= 3
     assert radar["summary"]["source_coverage"]["lexeval"] >= 2
     assert radar["summary"]["source_coverage"]["casegen"] >= 2
     assert radar["summary"]["source_coverage"]["internal-feedback-triage"] >= 3

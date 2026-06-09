@@ -3217,6 +3217,42 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    fixture_priority_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-public-fixture-priority-queue"
+    )
+    assert fixture_priority_entry["size"] == "medium"
+    assert fixture_priority_entry["status"] == "shipped"
+    assert "LawBench" in fixture_priority_entry["impact"]
+    assert "LexEval" in fixture_priority_entry["impact"]
+    assert "local rule baseline" in fixture_priority_entry["impact"]
+    assert "small-corpus metadata" in fixture_priority_entry["impact"]
+    assert "without dataset downloads" in fixture_priority_entry["impact"]
+    assert "public benchmark text imports" in fixture_priority_entry["impact"]
+    assert "public benchmark score claims" in fixture_priority_entry["impact"]
+    assert "model or gateway calls" in fixture_priority_entry["impact"]
+    assert "raw legal text" in fixture_priority_entry["impact"]
+    assert "fixture snippets" in fixture_priority_entry["impact"]
+    assert "prompts" in fixture_priority_entry["impact"]
+    assert "model outputs" in fixture_priority_entry["impact"]
+    assert "payloads" in fixture_priority_entry["impact"]
+    assert "credentials" in fixture_priority_entry["impact"]
+    assert "app/backend/services/legal_public_fixture_priority_queue.py" in fixture_priority_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_public_fixture_priority_queue.py" in fixture_priority_entry["evidence_paths"]
+    assert "app/backend/services/legal_benchmark_fixture_crosswalk.py" in fixture_priority_entry["evidence_paths"]
+    assert "app/backend/services/legal_document_benchmark_fixtures.py" in fixture_priority_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in fixture_priority_entry["evidence_paths"]
+    assert "docs/LEGAL_PUBLIC_FIXTURE_PRIORITY_QUEUE.md" in fixture_priority_entry["evidence_paths"]
+    assert "legal-public-fixture-priority-queue" in fixture_priority_entry["release_gate_links"]
+    assert "legal-benchmark-fixture-crosswalk" in fixture_priority_entry["release_gate_links"]
+    assert "traceable-legal-review" in fixture_priority_entry["user_need_ids"]
+    assert "plain-language-actionability" in fixture_priority_entry["user_need_ids"]
+    assert (
+        "python -m pytest tests/test_legal_public_fixture_priority_queue.py "
+        "tests/test_legal_public_benchmark_sampler.py tests/test_legal_benchmark_fixture_crosswalk.py "
+        "tests/test_user_need_benchmark_coverage.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     route_queue_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-route-legal-benchmark-risk-queue"
     )

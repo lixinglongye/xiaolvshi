@@ -1396,6 +1396,26 @@ const checks = [
   () => assertIncludes(maintenancePage, 'public benchmark scores claimed:', 'legal benchmark fixture crosswalk no public score claim label'),
   () => assertIncludes(maintenancePage, 'fixture snippets returned:', 'legal benchmark fixture crosswalk fixture text boundary'),
   () => assertIncludes(maintenancePage, 'datasets downloaded:', 'legal benchmark fixture crosswalk no dataset download boundary'),
+  () => assertIncludes(maintenanceApi, 'LegalPublicFixturePriorityQueue', 'public fixture priority queue type'),
+  () => assertIncludes(maintenanceApi, 'getLegalPublicFixturePriorityQueue', 'public fixture priority queue API binding'),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/public-fixture-priority-queue',
+      'public fixture priority queue endpoint',
+    ),
+  () => assertIncludes(maintenanceApi, 'lawbench_source_present: boolean', 'public fixture priority queue LawBench type binding'),
+  () => assertIncludes(maintenanceApi, 'recommended_synthetic_fixture_shapes', 'public fixture priority queue synthetic shape type'),
+  () => assertIncludes(maintenancePage, 'getLegalPublicFixturePriorityQueue', 'public fixture priority queue load task'),
+  () => assertIncludes(maintenancePage, 'publicFixturePriorityQueue', 'public fixture priority queue state binding'),
+  () => assertIncludes(maintenancePage, 'Legal public fixture priority queue', 'public fixture priority queue load label'),
+  () => assertIncludes(maintenancePage, 'Public fixture priority queue', 'public fixture priority queue panel'),
+  () => assertIncludes(maintenancePage, 'LawBench/LexEval/LegalBench signals', 'public fixture priority queue panel copy'),
+  () => assertIncludes(maintenancePage, 'lawbench_source_present', 'public fixture priority queue LawBench summary binding'),
+  () => assertIncludes(maintenancePage, 'recommended_synthetic_fixture_shapes', 'public fixture priority queue fixture shape binding'),
+  () => assertIncludes(maintenancePage, 'linked_high_priority_need_ids', 'public fixture priority queue high priority need binding'),
+  () => assertIncludes(maintenancePage, 'external datasets downloaded:', 'public fixture priority queue dataset boundary label'),
+  () => assertIncludes(maintenancePage, 'dataset examples returned:', 'public fixture priority queue raw dataset boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1414,8 +1434,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Public fixture priority queue</h2>',
+      'public fixture priority queue follows crosswalk',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Public fixture priority queue</h2>',
       '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence bundle</h2>',
-      'crosswalk precedes evidence bundle',
+      'public fixture priority queue precedes evidence bundle',
     ),
   () => assertIncludes(maintenancePage, 'Legal benchmark research refresh', 'legal benchmark research refresh panel'),
   () => assertIncludes(maintenancePage, 'getLegalBenchmarkResearchRefresh', 'legal benchmark research refresh route/API binding'),
@@ -4237,8 +4264,14 @@ const publicBenchmarkLicenseGatePanel = sourceSection(
 const legalBenchmarkFixtureCrosswalkPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark fixture crosswalk</h2>',
-  'Legal fixture evidence bundle',
+  '<h2 className="text-xl font-black text-stone-950">Public fixture priority queue</h2>',
   'maintenance legal benchmark fixture crosswalk section',
+);
+const publicFixturePriorityQueuePanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Public fixture priority queue</h2>',
+  'Legal fixture evidence bundle',
+  'maintenance public fixture priority queue section',
 );
 
 assertNotMatches(relevantSources, /\bsk-[A-Za-z0-9]{20,}\b/, 'frontend UI regression sources');
@@ -4475,6 +4508,11 @@ assertNotMatches(
   'maintenance legal benchmark fixture crosswalk no secrets or raw fixture/corpus/model fields',
 );
 assertNotMatches(
+  publicFixturePriorityQueuePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|secret_value|sample_text|synthetic_excerpt|input_excerpt|output_text|raw_prompt|prompt_payload|candidate_text|raw_model_output|gateway_response|request_body|response_body|headers)\b/i,
+  'maintenance public fixture priority queue no secrets or raw benchmark/fixture/model/payload fields',
+);
+assertNotMatches(
   geminiCheapFirstRoutePreflightPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|request_body|response_body|headers|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|email|phone|identity)\b/i,
   'model-ops Gemini cheap-first route preflight no secrets or raw model/payload/legal fields',
@@ -4496,7 +4534,7 @@ console.log(
       status: 'pass',
       checked_files: Object.values(files).filter((file) => file !== 'package.json'),
       command_gates: requiredScripts,
-      assertions: checks.length + 37,
+      assertions: checks.length + 38,
     },
     null,
     2,

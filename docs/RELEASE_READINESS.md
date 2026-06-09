@@ -9,6 +9,14 @@ metadata-only refresh evidence for LegalBench, LexGLUE, LegalBench-RAG, LexEval,
 CaseGen, COLIEE, and adoption bridge mappings. It does not download datasets, claim public benchmark scores,
 store external legal text, call models, or handle credentials.
 
+Additional optional evidence: `legal-public-fixture-priority-queue` records a
+metadata-only path from LawBench, LexEval, LegalBench, LegalBench-RAG, CUAD,
+LexGLUE, CaseGen, and corpus-scale source metadata into the next synthetic
+fixture work items. It does not download public datasets, import public
+benchmark text, call models or gateways, change defaults, claim public benchmark
+scores, or return raw legal text, fixture snippets, small-corpus excerpts,
+prompts, model outputs, payloads, or credentials.
+
 Additional optional evidence: `legal-fixture-regression-comparison` records
 metadata-only baseline/current cheap-first fixture regression deltas. It is
 optional when not run, but a failed submitted comparison blocks release

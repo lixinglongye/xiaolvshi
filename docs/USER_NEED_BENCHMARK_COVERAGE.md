@@ -12,7 +12,7 @@ GET /api/v1/maintenance/user-needs/benchmark-coverage
 
 The user-needs radar ranks product needs, while the legal benchmark suite and fixture services prove low-resource validation coverage. This endpoint joins those artifacts so maintainers can see which high-priority needs already have local synthetic benchmark cases, fixtures, research backlog items, release gates, and public benchmark research mappings.
 
-The endpoint also reads the metadata-only public benchmark sampler. This links LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law source plans to each user need by local fixture IDs, local `ldoc-*` document fixture IDs, and benchmark case IDs. It reports whether those public sources are still `license_review_required`, `sampling_ready`, or `catalog_only`; it does not download or return external examples.
+The endpoint also reads the metadata-only public benchmark sampler. This links LegalBench, LawBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law source plans to each user need by local fixture IDs, local `ldoc-*` document fixture IDs, and benchmark case IDs. It reports whether those public sources are still `license_review_required`, `sampling_ready`, or `catalog_only`; it does not download or return external examples.
 
 The endpoint also reads the Gemini/NewAPI cheap-first calibration service. Calibration rows are linked through each task's `user_need_ids`, so maintainers can see whether a user need is backed by passing selector replay, fixture, cost-guardrail, and cost-forecast evidence. The map returns calibration task IDs, release gates, status, and decisions only; it does not echo calibration payloads, prompts, gateway responses, or model output.
 

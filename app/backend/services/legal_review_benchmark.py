@@ -130,6 +130,11 @@ class LegalReviewBenchmarkService:
                         "signal": "Use multiple legal reasoning task families rather than one generic accuracy score.",
                     },
                     {
+                        "id": "lawbench",
+                        "url": "https://aclanthology.org/2024.emnlp-main.452/",
+                        "signal": "Use Chinese legal knowledge, reasoning, and application task families when planning zh-CN fixtures.",
+                    },
+                    {
                         "id": "ragas",
                         "url": "https://arxiv.org/abs/2309.15217",
                         "signal": "Track faithfulness, answer relevance, and context relevance for RAG-style outputs.",
@@ -371,6 +376,16 @@ class LegalReviewBenchmarkService:
                 import_policy="Catalog only for local development; run selected small tasks in CI after license review.",
                 size_note="Multi-task benchmark; avoid full ingestion on small local machines.",
                 license_note="Verify dataset and example license before importing raw examples.",
+            ),
+            BenchmarkSource(
+                id="lawbench",
+                title="LawBench Chinese legal LLM benchmark",
+                url="https://aclanthology.org/2024.emnlp-main.452/",
+                source_type="chinese-legal-knowledge-benchmark",
+                task_fit=("classification", "issue_spotting", "evidence_reasoning", "legal_document_structure"),
+                import_policy="Use task taxonomy and metadata only in local development; keep local tests on synthetic zh-CN fixtures.",
+                size_note="Twenty Chinese legal tasks; use capped reviewed samples only after license and attribution review.",
+                license_note="Verify paper, data, and task license before importing any raw Chinese legal examples.",
             ),
             BenchmarkSource(
                 id="cuad",

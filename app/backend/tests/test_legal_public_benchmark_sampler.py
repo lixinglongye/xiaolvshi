@@ -23,6 +23,13 @@ def test_public_benchmark_sampler_maps_sources_to_local_fixtures_and_cases():
     assert "fixture-service-agreement-small" in plans_by_id["cuad"]["local_fixture_ids"]
     assert "service-contract-risk" in plans_by_id["cuad"]["benchmark_case_ids"]
     assert "legal-rag-grounding" in plans_by_id["legalbench"]["benchmark_case_ids"]
+    assert "legal-rag-grounding" in plans_by_id["lawbench"]["benchmark_case_ids"]
+    assert "ldoc-civil-complaint-mini" in plans_by_id["lawbench"]["document_fixture_ids"]
+    assert "legal_reasoning_smoke" in {
+        batch["id"]
+        for batch in plan["sampling_batches"]
+        if "lawbench" in batch["source_ids"]
+    }
     assert "legal-rag-grounding" in plans_by_id["legalbench-rag"]["benchmark_case_ids"]
     assert "ldoc-legal-opinion-mini" in plans_by_id["legalbench-rag"]["document_fixture_ids"]
     assert "ldoc-contract-review-mini" in plans_by_id["lexeval"]["document_fixture_ids"]

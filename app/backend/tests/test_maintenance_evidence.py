@@ -54,6 +54,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal document fact consistency benchmark" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
     assert "User need public benchmark mapping" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal public fixture priority queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need cheap-first calibration mapping" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research registry UI" in profile["release_management"]["release_readiness_controls"]
     assert "Legal benchmark research refresh" in profile["release_management"]["release_readiness_controls"]
@@ -164,6 +165,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_adoption_research_bridge.py" in evidence_paths
     assert "app/backend/tests/test_legal_adoption_research_bridge.py" in evidence_paths
     assert "docs/LEGAL_ADOPTION_RESEARCH_BRIDGE.md" in evidence_paths
+    assert "app/backend/services/legal_public_fixture_priority_queue.py" in evidence_paths
+    assert "app/backend/tests/test_legal_public_fixture_priority_queue.py" in evidence_paths
+    assert "docs/LEGAL_PUBLIC_FIXTURE_PRIORITY_QUEUE.md" in evidence_paths
     assert "app/backend/services/gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/tests/test_gemini_newapi_model_selector.py" in evidence_paths
     assert "app/backend/services/gemini_newapi_observed_model_extraction.py" in evidence_paths

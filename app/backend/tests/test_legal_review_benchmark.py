@@ -18,7 +18,7 @@ def test_legal_review_benchmark_catalogs_public_sources_without_downloading():
     suite = LegalReviewBenchmarkService().build_suite()
     source_ids = {source["id"] for source in suite["public_sources"]}
 
-    assert {"legalbench", "cuad", "lexglue", "pile-of-law", "legalbench-rag", "lexeval", "casegen"}.issubset(
+    assert {"legalbench", "lawbench", "cuad", "lexglue", "pile-of-law", "legalbench-rag", "lexeval", "casegen"}.issubset(
         source_ids
     )
     assert suite["public_source_count"] == len(suite["public_sources"])

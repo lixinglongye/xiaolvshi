@@ -69,6 +69,11 @@ class LegalPublicBenchmarkSamplerService:
                         "use": "multi-task legal reasoning coverage",
                     },
                     {
+                        "id": "lawbench",
+                        "url": "https://aclanthology.org/2024.emnlp-main.452/",
+                        "use": "Chinese legal knowledge, reasoning, and application task coverage planning",
+                    },
+                    {
                         "id": "cuad",
                         "url": "https://www.atticusprojectai.org/cuad",
                         "use": "contract clause extraction and review sampling",
@@ -192,7 +197,11 @@ class LegalPublicBenchmarkSamplerService:
             },
             {
                 "id": "legal_reasoning_smoke",
-                "source_ids": [item["source_id"] for item in source_plans if item["source_id"] in {"legalbench", "lexglue"}],
+                "source_ids": [
+                    item["source_id"]
+                    for item in source_plans
+                    if item["source_id"] in {"legalbench", "lawbench", "lexglue"}
+                ],
                 "local_fixture_ids": ["fixture-lease-dispute-notice-small", "fixture-adversarial-upload-small"],
                 "target_endpoint": "/api/v1/maintenance/legal-review-benchmark",
                 "run_condition": "Run as small label-only or metadata-only samples before any raw text import.",
@@ -214,7 +223,7 @@ class LegalPublicBenchmarkSamplerService:
                 "source_ids": [
                     item["source_id"]
                     for item in source_plans
-                    if item["source_id"] in {"lexeval", "casegen"}
+                    if item["source_id"] in {"lawbench", "lexeval", "casegen"}
                 ],
                 "local_fixture_ids": ["fixture-lease-dispute-notice-small", "fixture-service-agreement-small"],
                 "document_fixture_ids": [
@@ -258,6 +267,23 @@ class LegalPublicBenchmarkSamplerService:
                 benchmark_case_ids=("lease-dispute-evidence", "instruction-injection-upload", "legal-rag-grounding"),
                 validation_targets=("citation_grounding", "evidence_plan", "release_decision"),
                 license_gate="source_task_license_and_attribution_required",
+            ),
+            PublicBenchmarkMapping(
+                source_id="lawbench",
+                priority="high",
+                resource_profile="chinese_legal_task_sampling",
+                sample_strategy="Use the Chinese legal task taxonomy to prioritize synthetic zh-CN document classification, reasoning, and application fixtures.",
+                local_fixture_ids=("fixture-lease-dispute-notice-small", "fixture-service-agreement-small"),
+                benchmark_case_ids=("lease-dispute-evidence", "service-contract-risk", "legal-rag-grounding"),
+                validation_targets=("field_coverage", "evidence_plan", "citation_grounding", "release_decision"),
+                license_gate="lawbench_data_license_attribution_and_jurisdiction_review_required",
+                document_fixture_ids=(
+                    "ldoc-civil-complaint-mini",
+                    "ldoc-lawyer-letter-mini",
+                    "ldoc-contract-review-mini",
+                    "ldoc-evidence-catalog-mini",
+                    "ldoc-legal-opinion-mini",
+                ),
             ),
             PublicBenchmarkMapping(
                 source_id="cuad",

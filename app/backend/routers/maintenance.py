@@ -68,6 +68,7 @@ from services.legal_adoption_research_bridge import LegalAdoptionResearchBridgeS
 from services.legal_external_research_digest import LegalExternalResearchDigestService
 from services.legal_public_benchmark_sampler import LegalPublicBenchmarkSamplerService
 from services.legal_public_benchmark_license_gate import LegalPublicBenchmarkLicenseGateService
+from services.legal_public_fixture_priority_queue import LegalPublicFixturePriorityQueueService
 from services.legal_research_backlog import LegalResearchBacklogService
 from services.legal_rag_authority_citation_gate import LegalRagAuthorityCitationGateService
 from services.legal_rag_abstention_escalation_gate import LegalRagAbstentionEscalationGateService
@@ -1337,6 +1338,15 @@ async def get_legal_benchmark_fixture_crosswalk():
     return {
         "success": True,
         "data": LegalBenchmarkFixtureCrosswalkService().build_crosswalk(),
+    }
+
+
+@router.get("/legal-review-benchmark/public-fixture-priority-queue")
+async def get_legal_public_fixture_priority_queue():
+    """Return the next synthetic fixture priority queue from public benchmark metadata."""
+    return {
+        "success": True,
+        "data": LegalPublicFixturePriorityQueueService().build_queue(),
     }
 
 

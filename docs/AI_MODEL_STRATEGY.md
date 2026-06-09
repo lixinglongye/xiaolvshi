@@ -293,6 +293,17 @@ The ModelOps main page now displays it next to the legal fixture gate
 so maintainers can review promotion readiness without opening maintenance-only
 evidence pages.
 
+`legal-public-fixture-priority-queue` is the maintenance-side metadata bridge
+from public legal benchmark source taxonomies into the next synthetic legal
+fixture work. It prioritizes LawBench, LexEval, LegalBench, LegalBench-RAG,
+CUAD, LexGLUE, CaseGen, and corpus-scale references by user-need links,
+local-baseline status, and document/corpus mapping gaps before maintainers
+expand cheap-first legal benchmark evidence. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, or the network, does not
+download public datasets or import public benchmark samples, does not change
+default models or routes, and does not return raw legal text, fixture snippets,
+small-corpus excerpts, prompts, model outputs, gateway payloads, or credentials.
+
 `modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
 preflight for Gemini cheap-first defaults. It joins official source refresh
 notes, local task defaults, the Gemini variant matrix, gateway alias capability

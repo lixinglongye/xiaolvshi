@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current public benchmark fixture priority slice:
+`legal-public-fixture-priority-queue` adds a metadata-only queue that turns
+LawBench, LexEval, LegalBench, LegalBench-RAG, CUAD, LexGLUE, CaseGen, and
+corpus-scale source metadata into the next synthetic legal-document fixture
+work items. It joins the public sampler, fixture crosswalk, user-need benchmark
+coverage, local legal-document rule baseline, and small-corpus metadata, and
+exposes the queue at
+`/api/v1/maintenance/legal-review-benchmark/public-fixture-priority-queue` and
+the `/maintenance` page. It does not download datasets, import public benchmark
+text, claim public benchmark scores, call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network; write configuration; shift
+traffic; or return raw legal text, fixture snippets, small-corpus excerpts,
+prompts, model outputs, gateway payloads, credentials, emails, or client
+material.
+
 Current legal document local baseline slice:
 `legal-document-local-rule-baseline-gate` adds a no-model local rule baseline
 over the small synthetic Chinese legal-document fixtures, exposes it on the

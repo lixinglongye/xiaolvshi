@@ -51,6 +51,7 @@ import {
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalFixtureEvidenceHandoff,
   getLegalPublicBenchmarkLicenseGate,
+  getLegalPublicFixturePriorityQueue,
   getLegalPublicBenchmarkSampler,
   evaluateLegalRagAnswerReleaseReadinessGate,
   evaluateLegalRagEmbeddingBatchObservationGate,
@@ -158,6 +159,7 @@ import {
   type LegalDocumentFactConsistencyBenchmark,
   type LegalKnowledgeAudit,
   type LegalPublicBenchmarkLicenseGate,
+  type LegalPublicFixturePriorityQueue,
   type LegalPublicBenchmarkSampler,
   type LegalRagAbstentionEscalationGate,
   type LegalRagAnswerReleaseReadinessGate,
@@ -793,6 +795,8 @@ function Inner() {
     useState<LegalPublicBenchmarkLicenseGate | null>(null);
   const [benchmarkFixtureCrosswalk, setBenchmarkFixtureCrosswalk] =
     useState<LegalBenchmarkFixtureCrosswalk | null>(null);
+  const [publicFixturePriorityQueue, setPublicFixturePriorityQueue] =
+    useState<LegalPublicFixturePriorityQueue | null>(null);
   const [fixtureEvidenceBundle, setFixtureEvidenceBundle] = useState<LegalFixtureEvidenceBundle | null>(null);
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
@@ -1156,6 +1160,11 @@ function Inner() {
           label: 'Legal benchmark fixture crosswalk',
           run: getLegalBenchmarkFixtureCrosswalk,
           apply: (value) => setBenchmarkFixtureCrosswalk(value as LegalBenchmarkFixtureCrosswalk),
+        },
+        {
+          label: 'Legal public fixture priority queue',
+          run: getLegalPublicFixturePriorityQueue,
+          apply: (value) => setPublicFixturePriorityQueue(value as LegalPublicFixturePriorityQueue),
         },
         {
           label: 'Legal fixture evidence bundle',
@@ -9148,6 +9157,202 @@ function Inner() {
                     <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                     <div className="space-y-2">
                       {benchmarkFixtureCrosswalk.validation_commands.slice(0, 3).map((command) => (
+                        <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {publicFixturePriorityQueue && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Public fixture priority queue</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      LawBench/LexEval/LegalBench signals converted into synthetic legal-document fixture work
+                    </div>
+                  </div>
+                  <Badge variant="outline" className={statusClass[publicFixturePriorityQueue.status] ?? statusClass.warn}>
+                    {displayToken(publicFixturePriorityQueue.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicFixturePriorityQueue.summary.queue_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">queued sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicFixturePriorityQueue.summary.high_priority_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">high priority</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicFixturePriorityQueue.summary.chinese_source_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">zh-CN sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicFixturePriorityQueue.summary.fixture_gap_row_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">fixture gaps</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {publicFixturePriorityQueue.summary.local_rule_baseline_score}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">
+                      baseline {displayToken(publicFixturePriorityQueue.summary.local_rule_baseline_status)}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(publicFixturePriorityQueue.summary.lawbench_source_present)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">LawBench mapped</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>User needs</TableHead>
+                        <TableHead>Fixture path</TableHead>
+                        <TableHead>Synthetic fixture shape</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {publicFixturePriorityQueue.queue_rows.slice(0, 8).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge variant="outline" className={statusClass[row.sampling_state] ?? statusClass.warn}>
+                                {displayToken(row.sampling_state)}
+                              </Badge>
+                              <Badge variant="outline" className={statusClass[row.gate_status] ?? statusClass.review_required}>
+                                {displayToken(row.gate_status)}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-2xl font-black text-stone-950">{row.priority_score}</div>
+                            <Badge variant="outline" className={priorityClass[row.priority_band] ?? priorityClass.medium}>
+                              {displayToken(row.priority_band)}
+                            </Badge>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {row.reason_codes.slice(0, 4).map((code) => (
+                                <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white text-[11px]">
+                                  {displayToken(code)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">High priority</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.linked_high_priority_need_ids.join(', ') || 'none'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">All linked</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.linked_user_need_ids.join(', ') || 'not mapped'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">ldoc-*</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.document_fixture_ids.join(', ') || 'not mapped'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">small-corpus-*</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.small_corpus_item_ids.join(', ') || 'not mapped'}
+                            </div>
+                            <div className="mt-2 font-semibold text-stone-950">batch</div>
+                            <div className="break-words font-mono text-[11px]">
+                              {row.sampling_batch_ids.join(', ') || 'none'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {row.recommended_synthetic_fixture_shapes.slice(0, 2).map((shape) => (
+                              <div key={`${row.id}-${shape.document_type}`} className="mb-2">
+                                <div className="font-mono text-[11px] font-semibold text-stone-950">
+                                  {shape.document_type}
+                                </div>
+                                <div>{shape.recommended_fixture_shape}</div>
+                              </div>
+                            ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Queue watchlists</h3>
+                    <div className="space-y-3 text-xs leading-5 text-stone-600">
+                      <div>
+                        <div className="font-semibold text-stone-950">High priority sources</div>
+                        <div className="break-words font-mono text-[11px]">
+                          {publicFixturePriorityQueue.high_priority_source_ids.join(', ') || 'none'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-stone-950">License watch</div>
+                        <div className="break-words font-mono text-[11px]">
+                          {publicFixturePriorityQueue.license_watch_source_ids.join(', ') || 'none'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-stone-950">Fixture gaps</div>
+                        <div className="break-words font-mono text-[11px]">
+                          {publicFixturePriorityQueue.fixture_gap_source_ids.join(', ') || 'none'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim/privacy boundary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>public benchmark score claimed: {String(publicFixturePriorityQueue.claim_boundary.public_benchmark_score_claimed)}</div>
+                      <div>dataset coverage claimed: {String(publicFixturePriorityQueue.claim_boundary.public_dataset_coverage_claimed)}</div>
+                      <div>default model changed: {String(publicFixturePriorityQueue.claim_boundary.default_model_changed)}</div>
+                      <div>public benchmark text returned: {String(publicFixturePriorityQueue.privacy_boundary.returns_public_benchmark_text)}</div>
+                      <div>dataset examples returned: {String(publicFixturePriorityQueue.privacy_boundary.returns_dataset_examples)}</div>
+                      <div>local fixture snippets returned: {String(publicFixturePriorityQueue.privacy_boundary.returns_local_fixture_snippets)}</div>
+                      <div>small corpus excerpts returned: {String(publicFixturePriorityQueue.privacy_boundary.returns_small_corpus_excerpts)}</div>
+                      <div>credentials returned: {String(publicFixturePriorityQueue.privacy_boundary.returns_credentials)}</div>
+                      <div>external datasets downloaded: {String(publicFixturePriorityQueue.privacy_boundary.external_dataset_downloads)}</div>
+                      <div>model calls: {String(publicFixturePriorityQueue.privacy_boundary.model_calls)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {publicFixturePriorityQueue.recommended_actions.slice(0, 5).map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <h3 className="mb-2 mt-4 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {publicFixturePriorityQueue.validation_commands.slice(0, 3).map((command) => (
                         <div key={command} className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600">
                           {command}
                         </div>

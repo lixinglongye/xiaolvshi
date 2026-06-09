@@ -40,6 +40,7 @@ def test_user_need_benchmark_coverage_maps_high_priority_needs_to_fixtures():
         == "keep_cheap_first_default"
     )
     assert "legalbench" in rows["traceable-legal-review"]["linked_public_source_ids"]
+    assert "lawbench" in rows["traceable-legal-review"]["linked_public_source_ids"]
     assert "legalbench-rag" in rows["traceable-legal-review"]["linked_public_source_ids"]
     assert "lexeval" in rows["traceable-legal-review"]["linked_public_source_ids"]
     assert "casegen" in rows["plain-language-actionability"]["linked_public_source_ids"]

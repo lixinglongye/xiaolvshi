@@ -3170,6 +3170,69 @@ export type LegalBenchmarkFixtureCrosswalk = {
   validation_commands: string[];
 };
 
+export type LegalPublicFixturePriorityQueue = {
+  status: string;
+  method: {
+    type: string;
+    purpose: string;
+    source_services: string[];
+    research_basis_source_ids: string[];
+  };
+  summary: {
+    source_count: number;
+    queue_row_count: number;
+    high_priority_row_count: number;
+    license_review_required_row_count: number;
+    fixture_gap_row_count: number;
+    chinese_source_count: number;
+    lawbench_source_present: boolean;
+    lexeval_source_present: boolean;
+    local_rule_baseline_status: string;
+    local_rule_baseline_score: number;
+    local_rule_baseline_required: boolean;
+    document_gap_count: number;
+    small_corpus_item_count: number;
+    max_samples_per_source: number;
+    model_calls: string;
+    network_access: string;
+    external_dataset_downloads: boolean;
+  };
+  queue_rows: Array<{
+    id: string;
+    source_id: string;
+    title: string;
+    priority_band: string;
+    priority_score: number;
+    sampling_state: string;
+    resource_profile: string;
+    validation_targets: string[];
+    linked_user_need_ids: string[];
+    linked_high_priority_need_ids: string[];
+    benchmark_case_ids: string[];
+    local_fixture_ids: string[];
+    document_fixture_ids: string[];
+    small_corpus_item_ids: string[];
+    sampling_batch_ids: string[];
+    recommended_synthetic_fixture_shapes: Array<{
+      document_type: string;
+      recommended_fixture_shape: string;
+    }>;
+    gate_status: string;
+    reason_codes: string[];
+    next_validation_target: string;
+    raw_text_returned: boolean;
+    model_calls: string;
+    network_access: string;
+  }>;
+  high_priority_source_ids: string[];
+  license_watch_source_ids: string[];
+  fixture_gap_source_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type LegalBenchmarkResearchRegistry = {
   status: string;
   method: {
@@ -6859,6 +6922,11 @@ type LegalBenchmarkFixtureCrosswalkResponse = {
   data: LegalBenchmarkFixtureCrosswalk;
 };
 
+type LegalPublicFixturePriorityQueueResponse = {
+  success: boolean;
+  data: LegalPublicFixturePriorityQueue;
+};
+
 type LegalBenchmarkResearchRegistryResponse = {
   success: boolean;
   data: LegalBenchmarkResearchRegistry;
@@ -8969,6 +9037,14 @@ export async function getLegalBenchmarkFixtureCrosswalk(): Promise<LegalBenchmar
     return payload.data;
   }
   return payload as LegalBenchmarkFixtureCrosswalk;
+}
+
+export async function getLegalPublicFixturePriorityQueue(): Promise<LegalPublicFixturePriorityQueue> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/public-fixture-priority-queue',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalPublicFixturePriorityQueueResponse['data']>(resp);
 }
 
 export async function getLegalReviewFixtureSmoke(): Promise<LegalReviewFixtureSmoke> {

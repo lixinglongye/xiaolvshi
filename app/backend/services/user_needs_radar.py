@@ -93,6 +93,12 @@ class UserNeedsRadarService:
                 signal="Legal RAG evaluation needs retrieval, citation, and grounding checks that are separate from general legal reasoning.",
             ),
             ResearchSource(
+                id="lawbench",
+                title="LawBench Chinese legal LLM benchmark",
+                url="https://aclanthology.org/2024.emnlp-main.452/",
+                signal="Chinese legal task coverage should include legal knowledge, reasoning, and application rather than generic chatbot checks.",
+            ),
+            ResearchSource(
                 id="lexeval",
                 title="LexEval Chinese legal benchmark",
                 url="https://arxiv.org/abs/2409.20288",
@@ -145,6 +151,7 @@ class UserNeedsRadarService:
                 source_ids=(
                     "legalbench",
                     "legalbench-rag",
+                    "lawbench",
                     "lexeval",
                     "stanford-legal-rag",
                     "local-maintenance-notes",
@@ -217,7 +224,13 @@ class UserNeedsRadarService:
                 impact=9,
                 effort=5,
                 confidence=8,
-                source_ids=("local-maintenance-notes", "internal-feedback-triage", "legal-research-backlog", "lexeval"),
+                source_ids=(
+                    "local-maintenance-notes",
+                    "internal-feedback-triage",
+                    "legal-research-backlog",
+                    "lawbench",
+                    "lexeval",
+                ),
                 evidence_paths=(
                     "app/backend/services/extraction_quality.py",
                     "app/backend/routers/deep_review.py",
@@ -263,7 +276,7 @@ class UserNeedsRadarService:
                 impact=8,
                 effort=6,
                 confidence=7,
-                source_ids=("local-maintenance-notes", "legal-research-backlog", "casegen", "lexeval"),
+                source_ids=("local-maintenance-notes", "legal-research-backlog", "casegen", "lawbench", "lexeval"),
                 evidence_paths=(
                     "app/frontend/src/pages/DeepReportPage.tsx",
                     "app/backend/services/report_quality_gate.py",

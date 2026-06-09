@@ -40,6 +40,11 @@ def test_fixture_crosswalk_maps_new_public_sources_to_document_and_corpus_fixtur
     assert "small-corpus-labor-001" in rows["legalbench-rag"]["small_corpus_item_ids"]
     assert rows["legalbench-rag"]["coverage_status"] == "ready"
 
+    assert "legal-rag-grounding" in rows["lawbench"]["benchmark_case_ids"]
+    assert "ldoc-civil-complaint-mini" in rows["lawbench"]["document_fixture_ids"]
+    assert "small-corpus-sales-003" in rows["lawbench"]["small_corpus_item_ids"]
+    assert rows["lawbench"]["coverage_status"] == "ready"
+
     assert "ldoc-contract-review-mini" in rows["lexeval"]["document_fixture_ids"]
     assert "small-corpus-service-004" in rows["lexeval"]["small_corpus_item_ids"]
     assert rows["lexeval"]["coverage_status"] == "ready"

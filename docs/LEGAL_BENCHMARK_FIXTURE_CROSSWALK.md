@@ -10,7 +10,7 @@ GET /api/v1/maintenance/legal-review-benchmark/fixture-crosswalk
 
 ## What It Maps
 
-- Public source IDs such as LegalBench, CUAD, LexGLUE, Pile of Law, LegalBench-RAG, LexEval, and CaseGen.
+- Public source IDs such as LegalBench, LawBench, CUAD, LexGLUE, Pile of Law, LegalBench-RAG, LexEval, and CaseGen.
 - Local legal-review benchmark case IDs such as `service-contract-risk`, `lease-dispute-evidence`, and `legal-rag-grounding`.
 - Synthetic fixture IDs such as `fixture-service-agreement-small` and `fixture-low-text-pdf-page-small`.
 - Local legal-document fixture IDs such as `ldoc-contract-review-mini`, `ldoc-evidence-catalog-mini`, and `ldoc-legal-opinion-mini`.
@@ -32,6 +32,8 @@ The response intentionally omits:
 ## Product Use
 
 Use the crosswalk before adding new benchmark samples or claiming broader legal coverage. A source should have a local fixture path and, for document-generation or legal-RAG claims, at least one `ldoc-*` document fixture mapping.
+
+Use `/api/v1/maintenance/legal-review-benchmark/public-fixture-priority-queue` after the crosswalk when you need the next synthetic fixture work items ranked by LawBench/LexEval/LegalBench source priority, high-priority user needs, local baseline status, and document/corpus mapping gaps.
 
 The `gap_queue` highlights sources that still need license review, document fixture mapping, or small-corpus mapping. Corpus-scale sources can remain catalog-only until a resource-controlled CI job is approved.
 

@@ -11,7 +11,7 @@ POST /api/v1/maintenance/legal-review-benchmark/public-sampler
 
 `GET` returns the default plan for LegalBench, CUAD, LexGLUE, LegalBench-RAG, LexEval, CaseGen, and Pile of Law.
 
-Use `/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk` when you need the same public sources joined to local benchmark case IDs, `fixture-*` IDs, `ldoc-*` document fixture IDs, and tiny `small-corpus-*` metadata IDs.
+Use `/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk` when you need the same public sources joined to local benchmark case IDs, `fixture-*` IDs, `ldoc-*` document fixture IDs, and tiny `small-corpus-*` metadata IDs. Use `/api/v1/maintenance/legal-review-benchmark/public-fixture-priority-queue` when you need those mappings ranked into the next synthetic fixture work queue.
 
 `POST` accepts explicit source and license-review settings:
 
@@ -50,6 +50,7 @@ Use `/api/v1/maintenance/legal-review-benchmark/fixture-crosswalk` when you need
 - `source_plans[].document_fixture_ids`: local `ldoc-*` legal-document fixture IDs used for Chinese legal generation and legal RAG planning.
 - `sampling_batches`: task-oriented batches that map public-source samples back to fixture, document-fixture, or benchmark endpoints.
 - `fixture-crosswalk`: companion endpoint that shows whether each public source has local fixture, legal-document fixture, and small-corpus coverage.
+- `public-fixture-priority-queue`: companion endpoint that prioritizes LawBench, LexEval, LegalBench, LegalBench-RAG, CUAD, LexGLUE, CaseGen, and corpus-scale references into synthetic fixture work items without importing public examples.
 - `resource_policy`: network, storage, and sample-size limits.
 - `validation_commands`: focused tests that prove the sampler and release evidence indexes are wired.
 
