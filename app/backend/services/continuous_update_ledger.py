@@ -2790,6 +2790,44 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "legal-rag", "safe-ai-ops", "product-readiness"),
             ),
             LedgerEntry(
+                id="legal-rag-embedding-batch-preview-runtime",
+                title="Legal RAG embedding batch preview runtime",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds POST /api/v1/legal-rag/embedding-batch-preview and "
+                    "LegalRagEmbeddingBatchPreviewService so maintainers can run a laptop-safe, small-batch "
+                    "cheap-first Legal RAG embedding smoke check through AIHubService.embed_text and "
+                    "gemini-embedding-001 routing while returning only sanitized vector dimensions, norms, hashes, "
+                    "route metadata, usage units, and no source text, source ids, embedding vectors, prompts, "
+                    "gateway payloads, credentials, index writes, or database writes."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_rag_embedding_batch_preview.py",
+                    "app/backend/routers/legal_rag.py",
+                    "app/backend/tests/test_legal_rag_embedding_batch_preview.py",
+                    "app/backend/tests/test_legal_rag_router.py",
+                    "app/backend/services/aihub.py",
+                    "app/backend/schemas/aihub.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/services/maintenance_evidence.py",
+                    "docs/LEGAL_RAG_EMBEDDING_BATCH_PREVIEW.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "legal-rag-embedding-batch-preview-runtime",
+                    "aihub-embedding-runtime",
+                    "legal-rag-embedding-batch-budget-gate",
+                    "legal-rag-embedding-readiness-gate",
+                    "modelops-gemini-embedding-cheap-first-preflight",
+                    "modelops-aihub-endpoint-route-coverage-gate",
+                ),
+                user_need_ids=("grounded-legal-output", "low-cost-routing", "legal-rag", "safe-ai-ops"),
+            ),
+            LedgerEntry(
                 id="modelops-aihub-media-speech-default-catalog-gate",
                 title="ModelOps AIHub media/speech default catalog gate",
                 category="model_ops",

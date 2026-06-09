@@ -77,6 +77,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG embedding chunk policy gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding index dry-run gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch budget gate" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding batch preview runtime" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch approval packet" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch observation gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding index commit review packet" in profile["release_management"]["release_readiness_controls"]
@@ -576,6 +577,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("laptop-safe chunk and token limits" in guardrail for guardrail in profile["application_guardrails"])
     assert any("local catalog batch-cost estimates" in guardrail for guardrail in profile["application_guardrails"])
     assert any("live pricing claims" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding batch preview runtime is maintainer-only executable smoke-test evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("configured AIHub embedding gateway" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("sanitized dimensions, norms, hashes" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("without writing indexes or databases" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG embedding batch approval packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("serial low-resource queue order" in guardrail for guardrail in profile["application_guardrails"])
     assert any("max_parallel_embedding_requests=1" in guardrail for guardrail in profile["application_guardrails"])

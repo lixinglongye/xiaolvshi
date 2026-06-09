@@ -661,6 +661,13 @@ source text or persisting embedding vectors in telemetry. This enables small
 maintainer-run Legal RAG embedding batches while keeping multimodal embedding
 and index writes behind separate review gates.
 
+`POST /api/v1/legal-rag/embedding-batch-preview` is the Legal RAG maintainer
+smoke-test layer on top of that runtime. It accepts up to five small chunks,
+calls `AIHubService.embed_text`, and returns only hashes, vector dimensions,
+norms, vector checksums, usage units, route metadata, and budget metadata. It
+does not write indexes or databases, return source text/source ids/embedding
+vectors, or echo prompts, gateway payloads, model outputs, or credentials.
+
 ## Default Recommendation Readiness Binding
 
 `model-ops-default-recommendation-readiness-binding` promotes

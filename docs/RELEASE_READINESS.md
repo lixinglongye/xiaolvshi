@@ -442,6 +442,16 @@ source ids, raw query, raw retrieved context, raw legal text, source chunks,
 embedding vectors, prompts, model outputs, gateway payloads, credentials,
 emails, or client material.
 
+The optional `legal-rag-embedding-batch-preview-runtime` check records the
+maintainer-only executable Legal RAG embedding preview at
+`/api/v1/legal-rag/embedding-batch-preview`. It can call the configured AIHub
+embedding gateway for small cheap-first batches, but it returns only sanitized
+hashes, vector dimensions, norms, vector checksums, usage units, and route
+metadata. It must not be used to claim durable index writes, database writes,
+retrieval quality, legal advice, returned source text/source ids, embedding
+vectors, prompts, gateway payloads, model outputs, credentials, emails, or
+client material.
+
 The optional `legal-rag-embedding-batch-approval-packet` check records
 metadata-only Legal RAG embedding batch approval packet evidence through
 `LegalRagEmbeddingBatchApprovalPacketService` at

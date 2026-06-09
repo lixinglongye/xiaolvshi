@@ -801,6 +801,14 @@ persisting vectors in telemetry, writing indexes, changing defaults, or
 returning credentials, headers, raw prompts, legal text, model outputs, or
 gateway payloads.
 
+`legal-rag-embedding-batch-preview-runtime` adds
+`POST /api/v1/legal-rag/embedding-batch-preview` and
+`LegalRagEmbeddingBatchPreviewService`. It lets maintainers run a small
+cheap-first embedding smoke check through AIHub while returning only sanitized
+hashes, dimensions, norms, vector checksums, usage units, and route metadata. It
+does not write indexes or databases and does not return source text, source ids,
+embedding vectors, prompts, gateway payloads, model outputs, or credentials.
+
 Current AIHub media/speech default catalog evidence:
 `modelops-aihub-media-speech-default-catalog-gate` adds shipped required
 metadata-only release evidence at

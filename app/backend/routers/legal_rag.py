@@ -4,7 +4,12 @@ from copy import deepcopy
 from typing import Any
 
 from core.database import get_db
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+from services.aihub import AIHubService
+from services.legal_rag_embedding_batch_preview import (
+    LegalRagEmbeddingBatchPreviewService,
+    LegalRagEmbeddingBatchPreviewValidationError,
+)
 from services.legal_rag_index_binding import (
     SAFE_SOURCE_METADATA_FIELDS,
     LegalRagIndexBindingService,
@@ -55,6 +60,26 @@ async def evaluate_legal_rag_retrieval(
         return {"success": True, "data": _safe_evaluation_result(result)}
     except (LegalSourceIndexValidationError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=_safe_error_detail(exc)) from exc
+
+
+@router.post("/embedding-batch-preview")
+async def preview_legal_rag_embedding_batch(
+    payload: dict[str, Any] | None = Body(default=None),
+):
+    service = LegalRagEmbeddingBatchPreviewService(aihub_service=AIHubService())
+    try:
+        preview = await service.build_preview(payload or {})
+        return {"success": True, "data": _drop_forbidden_keys(preview)}
+    except LegalRagEmbeddingBatchPreviewValidationError as exc:
+        raise HTTPException(status_code=400, detail=_safe_error_detail(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "error": "legal_rag_embedding_preview_unavailable",
+                "message": "Legal RAG embedding preview requires a configured AI gateway.",
+            },
+        ) from exc
 
 
 def _safe_retrieval_plan(plan: dict[str, Any]) -> dict[str, Any]:
