@@ -72,6 +72,20 @@ or the network, change default models, or return raw legal text, fixture
 snippets, document snippets, prompts, model outputs, payload bodies,
 credentials, emails, or user identifiers.
 
+## Feedback Benchmark Backlog
+
+`feedback-user-need-legal-document-benchmark-backlog` extends this coverage map
+from privacy-safe feedback clusters into legal-document benchmark backlog rows.
+It ranks create-fixture, review, blocked, and ready actions using feedback
+severity, cluster count, mapped user-need priority, local benchmark coverage,
+and legal-document evidence status.
+
+The feedback backlog bridge is metadata-only. It does not store or return raw
+feedback, PII, customer notes, uploaded document text, public benchmark text,
+fixture snippets, prompts, payload bodies, gateway responses, model outputs, or
+credentials. It also does not claim feedback resolution, public benchmark
+scores, production legal quality, or client-document coverage.
+
 ## Safety
 
 The service does not call NewAPI, Gemini, OpenAI, public benchmark sources, or a gateway. It does not return fixture snippets, raw benchmark samples, public benchmark text, calibration payloads, raw model output, user feedback text, credentials, emails, phone numbers, identity numbers, prompts, or client documents. It returns IDs, counts, release-gate links, decisions, and metadata-only status fields.

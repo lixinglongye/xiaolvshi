@@ -101,6 +101,7 @@ import {
   getModelPriceRefreshMonitor,
   getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
+  getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
   getGeminiNewApiCheapFirstPolicyEvidence,
   getGeminiNewApiModelAliasMatrixEvidence,
   getGeminiNewApiModelSelectorEvidence,
@@ -194,6 +195,7 @@ import {
   type MaintenanceNewApiChannelBootstrap,
   type MaintenanceValidationEventEvidence,
   type MaintenanceEvidenceProfile,
+  type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
@@ -746,6 +748,10 @@ function Inner() {
   const [frontendUiRegressionGate, setFrontendUiRegressionGate] = useState<FrontendUiRegressionGate | null>(null);
   const [productFeatureGaps, setProductFeatureGaps] = useState<ProductFeatureGapRadar | null>(null);
   const [feedbackRoadmap, setFeedbackRoadmap] = useState<FeedbackRoadmapCatalog | null>(null);
+  const [
+    feedbackUserNeedLegalDocumentBenchmarkBacklog,
+    setFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+  ] = useState<MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog | null>(null);
   const [feedbackLifecyclePolicy, setFeedbackLifecyclePolicy] = useState<FeedbackLifecyclePolicy | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
@@ -977,6 +983,14 @@ function Inner() {
           label: 'Feedback roadmap',
           run: getFeedbackRoadmapCatalog,
           apply: (value) => setFeedbackRoadmap(value as FeedbackRoadmapCatalog),
+        },
+        {
+          label: 'Feedback user-need legal-document benchmark backlog',
+          run: getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+          apply: (value) =>
+            setFeedbackUserNeedLegalDocumentBenchmarkBacklog(
+              value as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+            ),
         },
         {
           label: 'Feedback lifecycle policy',
@@ -8011,6 +8025,253 @@ function Inner() {
                     Unmapped needs: {feedbackRoadmap.coverage.unmapped_need_ids.join(', ')}
                   </div>
                 )}
+              </section>
+            )}
+
+            {feedbackUserNeedLegalDocumentBenchmarkBacklog && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark backlog</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.cluster_count} feedback clusters /{' '}
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.mapped_need_count} mapped needs /{' '}
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.document_type_suggestion_count} document
+                      suggestions
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[feedbackUserNeedLegalDocumentBenchmarkBacklog.status] ?? statusClass.review_required
+                    }
+                  >
+                    {displayToken(feedbackUserNeedLegalDocumentBenchmarkBacklog.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    {
+                      label: 'ready rows',
+                      value: feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.ready_row_count,
+                    },
+                    {
+                      label: 'create fixture',
+                      value: feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.create_fixture_row_count,
+                    },
+                    {
+                      label: 'review required',
+                      value: feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.review_required_row_count,
+                    },
+                    {
+                      label: 'blocked rows',
+                      value: feedbackUserNeedLegalDocumentBenchmarkBacklog.summary.blocked_row_count,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <div className="text-xs font-black uppercase text-stone-500">Method</div>
+                  <div className="mt-1 font-mono text-xs text-stone-700">
+                    {feedbackUserNeedLegalDocumentBenchmarkBacklog.method.type}
+                  </div>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    {feedbackUserNeedLegalDocumentBenchmarkBacklog.method.notes.slice(0, 4).map((note) => (
+                      <div key={note} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 text-sm text-stone-700">
+                        {note}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Feedback cluster</TableHead>
+                        <TableHead>User need</TableHead>
+                        <TableHead>Legal-document benchmark</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.backlog_rows.map((row) => (
+                        <TableRow key={row.cluster_id}>
+                          <TableCell className="align-top">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.cluster_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{displayToken(row.normalized_topic)}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge variant="outline" className={priorityClass[row.severity] ?? statusClass.warn}>
+                                {displayToken(row.severity)}
+                              </Badge>
+                              <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                                count {row.feedback_count}
+                              </Badge>
+                              <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                                safe refs {row.safe_evidence_ref_count}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-xs text-stone-600">
+                              segments: {row.affected_user_segment_tags.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="text-sm font-semibold text-stone-950">{row.primary_need_title}</div>
+                            <div className="mt-1 font-mono text-xs text-stone-700">{row.primary_need_id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge
+                                variant="outline"
+                                className={priorityClass[row.primary_need_priority_band] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.primary_need_priority_band)}
+                              </Badge>
+                              <Badge variant="outline" className={categoryClass[row.primary_need_category] ?? categoryClass.maintenance}>
+                                {displayToken(row.primary_need_category)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              user_need_ids: {row.mapped_need_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              release_gate_links: {row.release_gate_links.slice(0, 5).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="flex flex-wrap gap-1">
+                              <Badge variant="outline" className={statusClass[row.coverage_status] ?? statusClass.warn}>
+                                coverage {displayToken(row.coverage_status)}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.legal_document_evidence_status] ?? statusClass.warn}
+                              >
+                                evidence {displayToken(row.legal_document_evidence_status)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              benchmark_case_ids: {row.linked_benchmark_case_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              document_case_ids: {row.linked_document_case_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              document_type_ids: {row.linked_document_type_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-2 text-xs text-stone-700">
+                              suggested: {row.suggested_document_type_ids.join(', ') || 'none'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.benchmark_action_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.benchmark_action_status)}
+                              </Badge>
+                              <span className="font-mono text-xs font-semibold text-stone-700">
+                                score {row.priority_score}
+                              </span>
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              reason_codes: {row.reason_codes.join(', ') || '-'}
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-700">
+                              {row.next_actions[0] ?? 'Review this cluster against benchmark evidence.'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              suggested_fixture_ids: {row.suggested_fixture_ids.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-700">
+                      <div>metadata_only: {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.metadata_only)}</div>
+                      <div>
+                        returns_raw_feedback_text:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.returns_raw_feedback_text)}
+                      </div>
+                      <div>
+                        returns_public_benchmark_text:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.returns_public_benchmark_text)}
+                      </div>
+                      <div>
+                        returns_raw_model_output:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.returns_raw_model_output)}
+                      </div>
+                      <div>
+                        returns_payload_bodies:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.returns_payload_bodies)}
+                      </div>
+                      <div>
+                        returns_credentials:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.returns_credentials)}
+                      </div>
+                      <div>
+                        network_called: {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.privacy_boundary.network_called)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-700">
+                      <div>
+                        feedback_resolution_claimed:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.claim_boundary.feedback_resolution_claimed)}
+                      </div>
+                      <div>
+                        public_benchmark_score_claimed:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkBacklog.claim_boundary.public_benchmark_score_claimed)}
+                      </div>
+                      <div>
+                        client_document_coverage_claimed:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkBacklog.claim_boundary.client_document_coverage_claimed,
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 text-sm leading-6 text-stone-700">
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.claim_boundary.allowed_claim}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="mt-2 space-y-2 text-sm leading-6 text-stone-700">
+                      {feedbackUserNeedLegalDocumentBenchmarkBacklog.recommended_actions.slice(0, 4).map((action) => (
+                        <li key={action}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    {feedbackUserNeedLegalDocumentBenchmarkBacklog.validation_commands.slice(0, 3).map((command) => (
+                      <div
+                        key={command}
+                        className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                      >
+                        {command}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </section>
             )}
 

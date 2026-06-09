@@ -1179,6 +1179,96 @@ type FeedbackRoadmapCatalogResponse = {
   data: FeedbackRoadmapCatalog;
 };
 
+export type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklogItem = {
+  cluster_id: string;
+  normalized_topic: string;
+  severity: string;
+  feedback_count: number;
+  safe_evidence_ref_count: number;
+  affected_user_segment_tags: string[];
+  mapped_need_ids: string[];
+  primary_need_id: string;
+  primary_need_title: string;
+  primary_need_priority_band: string;
+  primary_need_category: string;
+  benchmark_action_status: string;
+  priority_score: number;
+  coverage_status: string;
+  legal_document_evidence_status: string;
+  linked_benchmark_case_ids: string[];
+  linked_document_case_ids: string[];
+  linked_document_type_ids: string[];
+  suggested_document_type_ids: string[];
+  suggested_fixture_ids: string[];
+  release_gate_links: string[];
+  reason_codes: string[];
+  next_actions: string[];
+};
+
+export type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    input_item_count: number;
+    processed_item_count: number;
+    cluster_count: number;
+    ready_row_count: number;
+    create_fixture_row_count: number;
+    review_required_row_count: number;
+    blocked_row_count: number;
+    high_or_critical_feedback_cluster_count: number;
+    mapped_need_count: number;
+    document_type_suggestion_count: number;
+    raw_feedback_returned: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  backlog_rows: MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklogItem[];
+  blocked_cluster_ids: string[];
+  create_fixture_cluster_ids: string[];
+  review_required_cluster_ids: string[];
+  source_summaries: {
+    feedback_clusters: Record<string, unknown>;
+    user_need_benchmark_coverage: Record<string, unknown>;
+    legal_document_evidence: Record<string, unknown>;
+    legal_document_coverage: Record<string, unknown>;
+  };
+  recommended_actions: string[];
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_raw_feedback: boolean;
+    returns_raw_feedback_text: boolean;
+    returns_feedback_body: boolean;
+    returns_user_feedback_text: boolean;
+    returns_pii: boolean;
+    returns_document_snippets: boolean;
+    returns_fixture_snippets: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_prompt_text: boolean;
+    returns_raw_model_output: boolean;
+    returns_payload_bodies: boolean;
+    returns_credentials: boolean;
+    model_calls: boolean;
+    network_called: boolean;
+  };
+  claim_boundary: {
+    production_quality_claimed: boolean;
+    feedback_resolution_claimed: boolean;
+    public_benchmark_score_claimed: boolean;
+    client_document_coverage_claimed: boolean;
+    allowed_claim: string;
+  };
+  validation_commands: string[];
+};
+
+type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklogResponse = {
+  success: boolean;
+  data: MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog;
+};
+
 export type FeedbackLifecycleState = {
   id: string;
   order: number;
@@ -8451,6 +8541,20 @@ export async function getFeedbackRoadmapCatalog(): Promise<FeedbackRoadmapCatalo
     return payload.data;
   }
   return payload as FeedbackRoadmapCatalog;
+}
+
+export async function getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog(): Promise<MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/feedback/user-need-legal-document-benchmark-backlog',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklogResponse
+    | MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog;
 }
 
 export async function getFeedbackLifecyclePolicy(): Promise<FeedbackLifecyclePolicy> {

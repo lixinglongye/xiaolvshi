@@ -312,6 +312,13 @@ not call models or gateways, does not change defaults, and does not return raw
 legal text, document snippets, fixture snippets, prompts, payload bodies, model
 outputs, or credentials.
 
+`feedback-user-need-legal-document-benchmark-backlog` is the feedback-driven
+maintenance backlog that maps privacy-safe feedback clusters into user-need and
+legal-document benchmark fixture/review actions before any cheap-first default
+claim is made. It does not call models or gateways, does not change defaults,
+and does not return raw feedback, PII, uploaded document text, prompts, payload
+bodies, model outputs, or credentials.
+
 `modelops-gemini-cheap-first-route-preflight` is the shipped metadata-only route
 preflight for Gemini cheap-first defaults. It joins official source refresh
 notes, local task defaults, the Gemini variant matrix, gateway alias capability

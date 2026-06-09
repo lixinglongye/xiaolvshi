@@ -1,5 +1,16 @@
 # Continuous Update Ledger
 
+Current feedback benchmark backlog slice:
+`feedback-user-need-legal-document-benchmark-backlog` adds a metadata-only
+bridge from privacy-safe feedback clusters to roadmap user needs and
+legal-document benchmark backlog rows. It ranks create-fixture, review, ready,
+and blocked actions from feedback severity, mapped user-need priority, local
+benchmark coverage, and legal-document evidence status. It is visible at
+`/api/v1/maintenance/feedback/user-need-legal-document-benchmark-backlog` and
+on the maintenance evidence page without returning raw feedback, PII, uploaded
+document text, prompts, payload bodies, model outputs, gateway responses, or
+credentials.
+
 Current user-need legal-document evidence slice:
 `user-need-legal-document-benchmark-evidence` adds a metadata-only bridge from
 roadmap user needs to local legal-document benchmark evidence. It joins

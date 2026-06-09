@@ -724,6 +724,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-implementation-priority-queue" in completed_ids
     assert "user-need-gemini-route-coverage" in completed_ids
     assert "user-need-legal-document-benchmark-evidence" in completed_ids
+    assert "feedback-user-need-legal-document-benchmark-backlog" in completed_ids
     assert "continuous-session-evidence-validator" not in queue_ids
     assert "continuous-session-timeline" not in queue_ids
     assert "continuous-session-run-monitor" not in queue_ids
@@ -859,6 +860,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "user-need-implementation-priority-queue" not in queue_ids
     assert "user-need-gemini-route-coverage" not in queue_ids
     assert "user-need-legal-document-benchmark-evidence" not in queue_ids
+    assert "feedback-user-need-legal-document-benchmark-backlog" not in queue_ids
     assert ledger["low_resource_test_policy"]["max_parallel_requests"] == 1
     assert ledger["low_resource_test_policy"]["network_access"] == "disabled_by_default"
     assert ledger["low_resource_test_policy"]["review_endpoint"] == "/api/v1/maintenance/legal-review-benchmark/local-run-review"
@@ -3333,6 +3335,66 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py "
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck "
         "&& npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    feedback_backlog_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "feedback-user-need-legal-document-benchmark-backlog"
+    )
+    assert feedback_backlog_entry["category"] == "maintenance"
+    assert feedback_backlog_entry["size"] == "medium"
+    assert feedback_backlog_entry["status"] == "shipped"
+    assert "metadata-only feedback-to-user-need legal-document benchmark backlog evidence" in feedback_backlog_entry[
+        "impact"
+    ]
+    assert "privacy-safe feedback" in feedback_backlog_entry["impact"]
+    assert "ranking fixture/review actions" in feedback_backlog_entry["impact"]
+    assert "raw feedback" in feedback_backlog_entry["impact"]
+    assert "PII" in feedback_backlog_entry["impact"]
+    assert "uploaded document text" in feedback_backlog_entry["impact"]
+    assert "public benchmark text" in feedback_backlog_entry["impact"]
+    assert "payload bodies" in feedback_backlog_entry["impact"]
+    assert "model outputs" in feedback_backlog_entry["impact"]
+    assert "credentials" in feedback_backlog_entry["impact"]
+    assert "feedback-resolution claims" in feedback_backlog_entry["impact"]
+    assert "client-document coverage claims" in feedback_backlog_entry["impact"]
+    assert "app/backend/services/feedback_user_need_legal_document_benchmark_backlog.py" in feedback_backlog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_feedback_user_need_legal_document_benchmark_backlog.py" in feedback_backlog_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/feedback_issue_cluster.py" in feedback_backlog_entry["evidence_paths"]
+    assert "app/backend/services/feedback_roadmap_alignment.py" in feedback_backlog_entry["evidence_paths"]
+    assert "app/backend/services/user_need_legal_document_benchmark_evidence.py" in feedback_backlog_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in feedback_backlog_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in feedback_backlog_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in feedback_backlog_entry["evidence_paths"]
+    assert "docs/FEEDBACK_USER_NEED_LEGAL_DOCUMENT_BENCHMARK_BACKLOG.md" in feedback_backlog_entry[
+        "evidence_paths"
+    ]
+    assert "feedback-user-need-legal-document-benchmark-backlog" in feedback_backlog_entry[
+        "release_gate_links"
+    ]
+    assert "feedback-issue-cluster" in feedback_backlog_entry["release_gate_links"]
+    assert "feedback-roadmap-alignment" in feedback_backlog_entry["release_gate_links"]
+    assert "user-need-legal-document-benchmark-evidence" in feedback_backlog_entry["release_gate_links"]
+    assert "user-need-implementation-priority-queue" in feedback_backlog_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in feedback_backlog_entry["release_gate_links"]
+    assert "traceable-legal-review" in feedback_backlog_entry["user_need_ids"]
+    assert "privacy-safe-upload" in feedback_backlog_entry["user_need_ids"]
+    assert "robust-extraction-quality" in feedback_backlog_entry["user_need_ids"]
+    assert "plain-language-actionability" in feedback_backlog_entry["user_need_ids"]
+    assert "feedback-to-roadmap-loop" in feedback_backlog_entry["user_need_ids"]
+    assert (
+        "python -m pytest tests/test_feedback_user_need_legal_document_benchmark_backlog.py "
+        "tests/test_feedback_issue_cluster.py tests/test_feedback_roadmap_alignment.py "
+        "tests/test_user_need_legal_document_benchmark_evidence.py "
+        "tests/test_user_need_implementation_priority_queue.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     route_queue_entry = next(

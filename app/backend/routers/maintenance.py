@@ -31,6 +31,9 @@ from services.evidence_exhibit_package_policy import EvidenceExhibitPackagePolic
 from services.feedback_issue_cluster import FeedbackIssueClusterService
 from services.feedback_lifecycle_policy import FeedbackLifecyclePolicyService
 from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
+from services.feedback_user_need_legal_document_benchmark_backlog import (
+    FeedbackUserNeedLegalDocumentBenchmarkBacklogService,
+)
 from services.final_document_delivery_release_gate import FinalDocumentDeliveryReleaseGateService
 from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
@@ -334,6 +337,24 @@ async def build_feedback_issue_clusters(payload: Any = Body(...)):
     return {
         "success": True,
         "data": FeedbackIssueClusterService().cluster(items if isinstance(items, list) else []),
+    }
+
+
+@router.get("/feedback/user-need-legal-document-benchmark-backlog")
+async def get_feedback_user_need_legal_document_benchmark_backlog():
+    """Return feedback clusters mapped to user-need benchmark backlog metadata."""
+    return {
+        "success": True,
+        "data": FeedbackUserNeedLegalDocumentBenchmarkBacklogService().build_backlog(),
+    }
+
+
+@router.post("/feedback/user-need-legal-document-benchmark-backlog")
+async def build_feedback_user_need_legal_document_benchmark_backlog(payload: dict[str, Any]):
+    """Build feedback-to-user-need benchmark backlog from privacy-safe feedback metadata."""
+    return {
+        "success": True,
+        "data": FeedbackUserNeedLegalDocumentBenchmarkBacklogService().build_backlog(payload),
     }
 
 

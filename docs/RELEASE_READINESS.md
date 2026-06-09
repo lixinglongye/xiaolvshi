@@ -26,6 +26,15 @@ gateways, change defaults, claim public benchmark scores or production legal
 quality, or return raw legal text, fixture snippets, document snippets, prompts,
 model outputs, payload bodies, or credentials.
 
+Additional optional evidence:
+`feedback-user-need-legal-document-benchmark-backlog` records a metadata-only
+path from privacy-safe feedback clusters to roadmap user needs and
+legal-document benchmark backlog rows. It does not store or return raw
+feedback, PII, customer notes, uploaded document text, fixture snippets, public
+benchmark text, prompts, payload bodies, model outputs, gateway responses, or
+credentials, and it does not claim feedback resolution, public benchmark scores,
+production legal quality, or client-document coverage.
+
 Additional optional evidence: `legal-fixture-regression-comparison` records
 metadata-only baseline/current cheap-first fixture regression deltas. It is
 optional when not run, but a failed submitted comparison blocks release
