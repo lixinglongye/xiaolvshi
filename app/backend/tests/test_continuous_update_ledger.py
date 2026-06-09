@@ -2481,6 +2481,42 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in legal_fixture_handoff_entry["release_gate_links"]
     assert "continuous-session-run-monitor" in legal_fixture_handoff_entry["release_gate_links"]
     assert "model-ops-readiness" in legal_fixture_handoff_entry["release_gate_links"]
+    regression_budget_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-legal-fixture-cheap-first-regression-budget"
+    )
+    assert regression_budget_entry["size"] == "medium"
+    assert regression_budget_entry["status"] == "shipped"
+    assert "low-resource regression budget" in regression_budget_entry["impact"]
+    assert "max_parallel_requests=1" in regression_budget_entry["impact"]
+    assert "cheap-first release decision" in regression_budget_entry["impact"]
+    assert "raw legal text" in regression_budget_entry["impact"]
+    assert "model outputs" in regression_budget_entry["impact"]
+    assert "credentials" in regression_budget_entry["impact"]
+    assert (
+        "app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py"
+        in regression_budget_entry["evidence_paths"]
+    )
+    assert (
+        "app/backend/tests/test_modelops_legal_fixture_cheap_first_regression_budget.py"
+        in regression_budget_entry["evidence_paths"]
+    )
+    assert "app/backend/services/legal_fixture_regression.py" in regression_budget_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in regression_budget_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in regression_budget_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in regression_budget_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in regression_budget_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in regression_budget_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in regression_budget_entry["evidence_paths"]
+    assert (
+        "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md"
+        in regression_budget_entry["evidence_paths"]
+    )
+    assert "modelops-legal-fixture-cheap-first-regression-budget" in regression_budget_entry["release_gate_links"]
+    assert "model-ops-cheap-first-release-decision" in regression_budget_entry["release_gate_links"]
+    assert "small-legal-document-benchmark-runbook-evidence" in regression_budget_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in regression_budget_entry["release_gate_links"]
     calibration_binding_entry = next(
         entry
         for entry in ledger["completed_updates"]

@@ -5067,6 +5067,97 @@ export type ModelCostGuardrails = {
   recommended_actions: string[];
 };
 
+export type ModelOpsLegalFixtureCheapFirstRegressionBudgetRow = {
+  id: string;
+  fixture_id: string;
+  title?: string | null;
+  cheap_first_model?: string | null;
+  model_cost_tier?: string | null;
+  gate_status: string;
+  promotion_status: string;
+  baseline_status: string;
+  current_status: string;
+  score_delta?: number | null;
+  cost_delta_usd?: number | null;
+  regression_reason_codes: string[];
+  budget_status: string;
+  budget_action: string;
+  reason_codes: string[];
+  default_change_allowed_by_budget: boolean;
+  requires_document_benchmark: boolean;
+  requires_fact_consistency: boolean;
+  requires_regression_pass: boolean;
+  gateway_called: boolean;
+  raw_fixture_text_returned: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalFixtureCheapFirstRegressionBudgetCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalFixtureCheapFirstRegressionBudget = {
+  id: string;
+  status: string;
+  decision: {
+    status: string;
+    default_change_allowed_by_budget: boolean;
+    current_cheap_first_default_allowed: boolean;
+    requires_regression_pass: boolean;
+    requires_benchmark_gate_ready: boolean;
+    requires_document_runbook_ready: boolean;
+    requires_promotion_packet_review: boolean;
+    max_parallel_requests: number;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+  };
+  summary: {
+    fixture_budget_row_count: number;
+    pass_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    not_run_count: number;
+    source_gate_status: string;
+    source_promotion_packet_status: string;
+    source_regression_status: string;
+    source_runbook_status: string;
+    regressed_fixture_count: number;
+    newly_blocking_fixture_count: number;
+    resolved_blocking_fixture_count: number;
+    document_benchmark_status: string;
+    fact_consistency_status: string;
+    runbook_ready_evidence_row_count: number;
+    runbook_blocked_evidence_row_count: number;
+    cheap_first_model_count: number;
+    max_parallel_requests: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_budget: boolean;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+  };
+  budget_rows: ModelOpsLegalFixtureCheapFirstRegressionBudgetRow[];
+  checks: ModelOpsLegalFixtureCheapFirstRegressionBudgetCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -5137,6 +5228,7 @@ export type ModelOpsResponse = {
   legal_fixture_cheap_first_benchmark_gate?: ModelOpsLegalFixtureCheapFirstBenchmarkGate;
   legal_fixture_cheap_first_default_promotion_packet?: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket;
   legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff;
+  legal_fixture_cheap_first_regression_budget?: ModelOpsLegalFixtureCheapFirstRegressionBudget;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -6006,6 +6098,13 @@ export async function getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket():
 export async function getModelOpsLegalFixtureEvidenceHandoff(): Promise<ModelOpsLegalFixtureEvidenceHandoff> {
   return invokeModelOpsApi<ModelOpsLegalFixtureEvidenceHandoff>({
     url: '/api/v1/aihub/models/legal-fixture-evidence-handoff',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalFixtureCheapFirstRegressionBudget(): Promise<ModelOpsLegalFixtureCheapFirstRegressionBudget> {
+  return invokeModelOpsApi<ModelOpsLegalFixtureCheapFirstRegressionBudget>({
+    url: '/api/v1/aihub/models/legal-fixture-cheap-first-regression-budget',
     method: 'GET',
   });
 }

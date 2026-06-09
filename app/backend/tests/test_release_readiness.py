@@ -883,6 +883,7 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
                 "tests/test_model_failure_upgrade_budget.py "
                 "tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py "
                 "tests/test_modelops_legal_fixture_default_promotion_packet.py "
+                "tests/test_modelops_legal_fixture_cheap_first_regression_budget.py "
                 "tests/test_model_ops_legal_benchmark_risk_bridge.py "
                 "tests/test_model_default_candidate_selector.py -q"
             ),
@@ -901,13 +902,53 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
     assert "app/backend/services/model_failure_upgrade_budget.py" in check["evidence_paths"]
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in check["evidence_paths"]
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in check["evidence_paths"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py" in check["evidence_paths"]
     assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in check["evidence_paths"]
     assert "docs/MODEL_FAILURE_UPGRADE_BUDGET.md" in check["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in check["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md" in check["evidence_paths"]
     assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in check["evidence_paths"]
+
+
+def test_modelops_legal_fixture_regression_budget_is_optional_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-legal-fixture-cheap-first-regression-budget"
+    ]
+    result = service.evaluate({"modelops-legal-fixture-cheap-first-regression-budget": "fail"})
+    check = next(
+        check
+        for check in result["checks"]
+        if check["id"] == "modelops-legal-fixture-cheap-first-regression-budget"
+    )
+
+    assert commands == [
+        {
+            "check_id": "modelops-legal-fixture-cheap-first-regression-budget",
+            "command": (
+                "python -m pytest tests/test_modelops_legal_fixture_cheap_first_regression_budget.py "
+                "tests/test_legal_fixture_regression.py tests/test_model_ops_cheap_first_release_decision.py "
+                "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+                "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q && cd ../frontend && "
+                "npm run typecheck && npm run ui:regression"
+            ),
+        }
+    ]
+    assert check["required"] is False
+    assert check["blocks_release"] is False
+    assert "low-resource regression budget evidence" in check["manual_note"]
+    assert "max_parallel_requests=1" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_regression_budget.py" in check["evidence_paths"]
+    assert "app/backend/services/legal_fixture_regression.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_cheap_first_release_decision.py" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md" in check["evidence_paths"]
 
 
 def test_model_ops_cheap_first_escalation_budget_is_required_model_ops_gate():

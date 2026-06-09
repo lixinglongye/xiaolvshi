@@ -16,6 +16,7 @@ REQUIRED_SIGNAL_KEYS = (
     "model_ops_performance_budget",
     "legal_fixture_cheap_first_benchmark_gate",
     "legal_fixture_cheap_first_default_promotion_packet",
+    "legal_fixture_cheap_first_regression_budget",
     "legal_benchmark_risk_bridge",
     "user_need_release_bridge",
 )
@@ -112,6 +113,13 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 warn_reason="Legal fixture default promotion packet is not ready or still needs maintainer review.",
             ),
             self._check_signal(
+                "legal-fixture-cheap-first-regression-budget",
+                "legal_fixture_cheap_first_regression_budget",
+                data.get("legal_fixture_cheap_first_regression_budget"),
+                fail_reason="Legal fixture regression budget is blocked by fixture regression, document runbook, benchmark gate, or promotion packet evidence.",
+                warn_reason="Legal fixture regression budget needs baseline/current cheap-first fixture results or maintainer review before default promotion.",
+            ),
+            self._check_signal(
                 "legal-benchmark-risk-bridge",
                 "legal_benchmark_risk_bridge",
                 data.get("legal_benchmark_risk_bridge"),
@@ -142,6 +150,7 @@ class ModelOpsCheapFirstReleaseDecisionService:
                     "Consumes existing ModelOps evidence instead of re-running model, gateway, pricing, or benchmark checks.",
                     "Treats ModelOps readiness as the aggregate upstream release signal and does not feed this packet back into readiness.",
                     "Requires metadata-only legal fixture benchmark, default-promotion packet, and legal benchmark route-risk evidence before promoting legal-task defaults.",
+                    "Requires a low-resource legal fixture regression budget so cheap-first legal defaults are reviewed against baseline/current fixture drift before default changes.",
                     "Requires user-need release bridge evidence so product priorities, implementation gaps, and Gemini route coverage stay attached to cheap-first default decisions.",
                     "Blocks cheap-first default changes only when a required source signal fails.",
                     "Keeps catalog-review, unpriced-model, legal fixture not-run/not-ready, legal benchmark watchlist, performance-observation, and other warn states as maintainer review.",
@@ -174,6 +183,7 @@ class ModelOpsCheapFirstReleaseDecisionService:
                 "premium_exception_policy": "Premium, Pro, preview, and unknown Gemini-like models require explicit exception evidence before default promotion.",
                 "unknown_model_policy": "Unknown Gemini-like ids can stay explicit-only but cannot become high-frequency defaults without catalog source and pricing review.",
                 "legal_fixture_policy": "Legal fixture, document benchmark, fact-consistency, and calibration evidence can support legal-task defaults only through the metadata-only benchmark gate and promotion packet.",
+                "legal_fixture_regression_policy": "Baseline/current legal fixture regression budget evidence must be ready or reviewed before cheap-first legal default changes.",
                 "legal_benchmark_policy": "Legal benchmark route-risk bridge must be pass before new legal-task defaults are promoted; watchlist or license-review evidence requires maintainer review.",
                 "user_need_policy": "High-priority user needs with blocked implementation or route evidence block default changes; license, premium exception, partial coverage, and medium or low priority blockers require maintainer review.",
             },

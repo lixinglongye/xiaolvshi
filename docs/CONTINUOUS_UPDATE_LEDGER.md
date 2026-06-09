@@ -1,5 +1,24 @@
 # Continuous Update Ledger
 
+Current legal fixture cheap-first regression budget slice:
+`modelops-legal-fixture-cheap-first-regression-budget` adds a metadata-only
+ModelOps and release-decision signal for low-resource cheap-first legal fixture
+reviews. It joins fixture regression comparison, cheap-first benchmark gate,
+default-promotion packet, and small-document runbook status into one budget
+with `max_parallel_requests=1`, fixture ids, source statuses, cost deltas,
+reason codes, review actions, and explicit no-default-change/no-gateway
+boundaries. The endpoint is available at
+`/api/v1/aihub/models/legal-fixture-cheap-first-regression-budget`, the
+aggregate ModelOps payload includes
+`legal_fixture_cheap_first_regression_budget`, and the evidence is visible on
+`/model-ops` between the default-promotion packet and evidence handoff. It does
+not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models,
+public datasets, or the network; write configuration; change defaults; shift
+traffic; return raw legal text, fixture snippets, generated document text,
+prompts, payloads, model output, gateway responses, emails, identifiers, or
+credentials; or claim maintainer approval, production quality, legal advice, or
+automatic default changes.
+
 Current Gemini official cheap-first source review slice:
 `modelops-gemini-official-cheap-first-source-review` adds metadata-only
 ModelOps evidence for the cheapest Gemini text defaults. It compares local
@@ -928,6 +947,16 @@ codes, and required signoff roles only. It does not write configuration, call
 NewAPI, Gemini, OpenAI, Google, gateways, or the network, shift traffic, or
 include real legal text, fixture snippets, generated document text, prompts,
 model outputs, credentials, or emails.
+
+Current legal fixture cheap-first regression budget evidence:
+`modelops-legal-fixture-cheap-first-regression-budget` adds shipped
+metadata-only low-resource regression budget evidence for legal fixture default
+reviews. It records fixture ids, source statuses, regression deltas, cost
+deltas, reason codes, and review actions only while feeding the cheap-first
+release decision and ModelOps readiness. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, public datasets, or the network, write configuration,
+shift traffic, claim approval, or return raw legal text, fixture snippets,
+generated document text, prompts, model outputs, credentials, or emails.
 
 Current legal fixture evidence handoff:
 `modelops-legal-fixture-evidence-handoff` adds an archive-safe metadata-only

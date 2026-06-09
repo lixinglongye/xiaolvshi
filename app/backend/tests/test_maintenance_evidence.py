@@ -131,6 +131,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps legal micro benchmark preflight" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first benchmark gate" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps legal fixture cheap-first default promotion packet" in profile["release_management"]["release_readiness_controls"]
+    assert "ModelOps legal fixture cheap-first regression budget" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps agentic grounded defaults" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps default template alignment audit" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps Gemini default change proposal review" in profile["release_management"]["release_readiness_controls"]
@@ -255,12 +256,15 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/LEGAL_DOCUMENT_FACT_CONSISTENCY_BENCHMARK.md" in evidence_paths
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
     assert "app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py" in evidence_paths
+    assert "app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py" in evidence_paths
+    assert "app/backend/tests/test_modelops_legal_fixture_cheap_first_regression_budget.py" in evidence_paths
     assert "app/backend/routers/maintenance.py" in evidence_paths
     assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in evidence_paths
     assert "app/frontend/scripts/ui-regression.mjs" in evidence_paths
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in evidence_paths
     assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in evidence_paths
+    assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md" in evidence_paths
     assert "app/backend/.env.example" in evidence_paths
     assert "README.md" in evidence_paths
     assert "app/backend/services/release_readiness.py" in evidence_paths

@@ -1,6 +1,7 @@
 import re
 
 from services.model_gateway_probe_evaluation import model_gateway_probe_evaluation_registry
+from services.model_ops_cheap_first_release_decision import REQUIRED_SIGNAL_KEYS
 from services.model_ops_readiness import MODEL_OPS_COMPONENTS, ModelOpsReadinessService
 
 
@@ -682,7 +683,7 @@ def test_model_ops_route_includes_readiness():
     assert payload["gateway_probe_evaluation"]["status"] == "not_run"
     assert payload["model_ops_performance_budget"]["status"] == "pass"
     assert payload["route_quality_budget"]["summary"]["cheap_start_task_count"] >= 6
-    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == 14
+    assert payload["cheap_first_release_decision"]["summary"]["required_signal_count"] == len(REQUIRED_SIGNAL_KEYS)
     assert payload["cheap_first_escalation_budget"]["status"] == "pass"
     assert payload["cheap_first_cascade_research_gate"]["summary"]["network_called"] is False
     assert payload["cheap_first_cascade_research_gate"]["source_boundaries"]["changes_default_routes"] is False
@@ -705,6 +706,7 @@ def test_model_ops_route_includes_readiness():
     }
     assert "legal_fixture_cheap_first_benchmark_gate" in cheap_first_release_sources
     assert "legal_fixture_cheap_first_default_promotion_packet" in cheap_first_release_sources
+    assert "legal_fixture_cheap_first_regression_budget" in cheap_first_release_sources
     assert "legal_benchmark_risk_bridge" in cheap_first_release_sources
     assert "user_need_release_bridge" in cheap_first_release_sources
     assert payload["user_need_release_bridge"]["summary"]["need_count"] >= 7

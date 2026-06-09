@@ -50,6 +50,7 @@ import {
   getModelOpsLegalBenchmarkRiskBridge,
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  getModelOpsLegalFixtureCheapFirstRegressionBudget,
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
@@ -91,6 +92,7 @@ import {
   type ModelOpsLegalBenchmarkRiskBridge,
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
+  type ModelOpsLegalFixtureCheapFirstRegressionBudget,
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
@@ -683,6 +685,10 @@ function Inner() {
   const [legalFixtureEvidenceHandoff, setLegalFixtureEvidenceHandoff] =
     useState<ModelOpsLegalFixtureEvidenceHandoff | null>(null);
   const [legalFixtureEvidenceHandoffError, setLegalFixtureEvidenceHandoffError] = useState('');
+  const [legalFixtureCheapFirstRegressionBudget, setLegalFixtureCheapFirstRegressionBudget] =
+    useState<ModelOpsLegalFixtureCheapFirstRegressionBudget | null>(null);
+  const [legalFixtureCheapFirstRegressionBudgetError, setLegalFixtureCheapFirstRegressionBudgetError] =
+    useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -719,6 +725,7 @@ function Inner() {
       payload.legal_fixture_cheap_first_default_promotion_packet ?? null,
     );
     setLegalFixtureEvidenceHandoff(payload.legal_fixture_evidence_handoff ?? null);
+    setLegalFixtureCheapFirstRegressionBudget(payload.legal_fixture_cheap_first_regression_budget ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -809,6 +816,8 @@ function Inner() {
     setLegalFixtureCheapFirstDefaultPromotionPacket(null);
     setLegalFixtureEvidenceHandoffError('');
     setLegalFixtureEvidenceHandoff(null);
+    setLegalFixtureCheapFirstRegressionBudgetError('');
+    setLegalFixtureCheapFirstRegressionBudget(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -864,6 +873,7 @@ function Inner() {
         legalFixtureCheapFirstBenchmarkGateResult,
         legalFixtureCheapFirstDefaultPromotionPacketResult,
         legalFixtureEvidenceHandoffResult,
+        legalFixtureCheapFirstRegressionBudgetResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -919,6 +929,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_fixture_evidence_handoff,
           getModelOpsLegalFixtureEvidenceHandoff,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_fixture_cheap_first_regression_budget,
+          getModelOpsLegalFixtureCheapFirstRegressionBudget,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1313,6 +1327,27 @@ function Inner() {
           || (modelOpsResult.status === 'fulfilled' && !modelOpsResult.value.legal_fixture_evidence_handoff)
         ) {
           setLegalFixtureEvidenceHandoffError('Legal fixture evidence handoff failed to load.');
+        }
+      }
+      if (legalFixtureCheapFirstRegressionBudgetResult.status === 'fulfilled') {
+        setLegalFixtureCheapFirstRegressionBudget(legalFixtureCheapFirstRegressionBudgetResult.value);
+      } else {
+        console.error(legalFixtureCheapFirstRegressionBudgetResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalFixtureCheapFirstRegressionBudget(
+            modelOpsResult.value.legal_fixture_cheap_first_regression_budget ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_fixture_cheap_first_regression_budget
+          )
+        ) {
+          setLegalFixtureCheapFirstRegressionBudgetError(
+            'Legal fixture cheap-first regression budget failed to load.',
+          );
         }
       }
       if (modelOpsResult.status === 'rejected' && geminiAliasCapabilityCoverageResult.status === 'rejected') {
@@ -1985,6 +2020,15 @@ function Inner() {
   const legalFixtureEvidenceHandoffClaimEntries = boundaryDisplayEntries(
     activeLegalFixtureEvidenceHandoff?.claim_boundary,
   );
+  const activeLegalFixtureCheapFirstRegressionBudget =
+    legalFixtureCheapFirstRegressionBudget
+    ?? data?.legal_fixture_cheap_first_regression_budget
+    ?? null;
+  const legalFixtureRegressionBudgetRows = activeLegalFixtureCheapFirstRegressionBudget?.budget_rows ?? [];
+  const legalFixtureRegressionBudgetChecks = activeLegalFixtureCheapFirstRegressionBudget?.checks ?? [];
+  const legalFixtureRegressionBudgetPrivacyEntries = boundaryDisplayEntries(
+    activeLegalFixtureCheapFirstRegressionBudget?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
     ? [
         {
@@ -5961,6 +6005,187 @@ function Inner() {
                 {legalFixtureCheapFirstDefaultPromotionPacketError && (
                   <div className="mt-2 text-xs font-semibold text-red-700">
                     {legalFixtureCheapFirstDefaultPromotionPacketError}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalFixtureCheapFirstRegressionBudget || legalFixtureCheapFirstRegressionBudgetError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal fixture cheap-first regression budget</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalFixtureCheapFirstRegressionBudget?.summary.fixture_budget_row_count)} fixtures /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstRegressionBudget?.summary.regressed_fixture_count)} regressed /{' '}
+                  {formatNumber(activeLegalFixtureCheapFirstRegressionBudget?.summary.max_parallel_requests)} parallel cap
+                </div>
+              </div>
+              {activeLegalFixtureCheapFirstRegressionBudget && (
+                <Badge variant="outline" className={statusClass(activeLegalFixtureCheapFirstRegressionBudget.status)}>
+                  {activeLegalFixtureCheapFirstRegressionBudget.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalFixtureCheapFirstRegressionBudget && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstRegressionBudget.summary.pass_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">passing rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstRegressionBudget.summary.review_required_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstRegressionBudget.summary.blocked_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstRegressionBudget.summary.source_regression_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">regression</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstRegressionBudget.summary.source_gate_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">benchmark gate</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalFixtureCheapFirstRegressionBudget.summary.source_runbook_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">runbook</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalFixtureCheapFirstRegressionBudget.decision.default_change_allowed_by_budget)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalFixtureCheapFirstRegressionBudget.summary.raw_input_field_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">redacted fields</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Fixture</TableHead>
+                          <TableHead>Budget</TableHead>
+                          <TableHead>Regression</TableHead>
+                          <TableHead>Cost</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalFixtureRegressionBudgetRows.slice(0, 6).map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.title ?? row.fixture_id}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.fixture_id}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.cheap_first_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.budget_status)}>
+                                {row.budget_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs leading-5 text-stone-600">
+                                gate {row.gate_status} / promotion {row.promotion_status}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>baseline {row.baseline_status}</div>
+                              <div>current {row.current_status}</div>
+                              <div>score delta {row.score_delta ?? '-'}</div>
+                              <div className="font-mono text-[11px] text-stone-500">
+                                {row.regression_reason_codes.join(', ') || 'stable'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">
+                              {formatUsd(row.cost_delta_usd)}
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <div>{row.budget_action.replace(/_/g, ' ')}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.reason_codes.slice(0, 3).join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Budget checks</h3>
+                    <div className="space-y-3">
+                      {legalFixtureRegressionBudgetChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {check.decision_effect.replace(/_/g, ' ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalFixtureCheapFirstRegressionBudget.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalFixtureRegressionBudgetPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source links</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeLegalFixtureCheapFirstRegressionBudget.source_links).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: <span className="font-mono text-[11px]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  configuration written: {String(activeLegalFixtureCheapFirstRegressionBudget.summary.configuration_written)} / gateway called:{' '}
+                  {String(activeLegalFixtureCheapFirstRegressionBudget.summary.gateway_called)} / network called:{' '}
+                  {String(activeLegalFixtureCheapFirstRegressionBudget.summary.network_called)} / source text returned:{' '}
+                  {String(activeLegalFixtureCheapFirstRegressionBudget.summary.raw_fixture_text_returned)} / model output returned:{' '}
+                  {String(activeLegalFixtureCheapFirstRegressionBudget.summary.raw_model_output_returned)}
+                </div>
+                {legalFixtureCheapFirstRegressionBudgetError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalFixtureCheapFirstRegressionBudgetError}
                   </div>
                 )}
               </>

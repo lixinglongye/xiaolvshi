@@ -11,9 +11,9 @@ place while making catalog drift, missing pricing, route-quality gaps,
 single-failure retry-up risk, escalation-budget drift, and performance warnings
 visible before a new model is promoted.
 For legal-task defaults, the packet also consumes legal fixture benchmark gate,
-legal fixture default-promotion packet, and legal benchmark route-risk bridge
-metadata so benchmark/watchlist evidence is part of the final decision instead
-of a side panel.
+legal fixture default-promotion packet, low-resource fixture regression budget,
+and legal benchmark route-risk bridge metadata so benchmark/watchlist evidence
+is part of the final decision instead of a side panel.
 For product-priority defaults, it consumes `user_need_release_bridge` so
 high-priority implementation and Gemini route blockers can stop default changes
 while public benchmark license, premium exception, partial coverage, and
@@ -56,6 +56,7 @@ The service consumes existing signal metadata only:
 - `model_ops_performance_budget`
 - `legal_fixture_cheap_first_benchmark_gate`
 - `legal_fixture_cheap_first_default_promotion_packet`
+- `legal_fixture_cheap_first_regression_budget`
 - `legal_benchmark_risk_bridge`
 - `user_need_release_bridge`
 
@@ -95,7 +96,9 @@ aggregates existing ModelOps readiness, calibration, catalog, route-quality,
 failure-upgrade-budget, escalation-budget, price-refresh, and performance-budget
 signals. For legal-task defaults, they can claim that metadata-only legal
 fixture gate, promotion packet, and route-risk bridge statuses are required
-before new cheap-first defaults are promoted.
+before new cheap-first defaults are promoted. They can also claim that a
+metadata-only low-resource regression budget links baseline/current fixture
+drift to default-promotion review without calling a model.
 
 ## Must Not Claim
 
@@ -125,7 +128,7 @@ Run:
 ```powershell
 cd app/backend
 python -m pytest tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py tests/test_model_catalog_source_audit.py tests/test_model_route_quality_budget.py tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_failure_upgrade_budget.py tests/test_model_default_candidate_selector.py -q
-python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_model_ops_legal_benchmark_risk_bridge.py -q
+python -m pytest tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_modelops_legal_fixture_default_promotion_packet.py tests/test_modelops_legal_fixture_cheap_first_regression_budget.py tests/test_model_ops_legal_benchmark_risk_bridge.py -q
 
 cd ../frontend
 npm run typecheck
@@ -144,6 +147,8 @@ Related files:
 - `app/backend/tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py`
 - `app/backend/services/modelops_legal_fixture_default_promotion_packet.py`
 - `app/backend/tests/test_modelops_legal_fixture_default_promotion_packet.py`
+- `app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py`
+- `app/backend/tests/test_modelops_legal_fixture_cheap_first_regression_budget.py`
 - `app/backend/services/model_ops_legal_benchmark_risk_bridge.py`
 - `app/backend/tests/test_model_ops_legal_benchmark_risk_bridge.py`
 - `app/backend/routers/aihub.py`
@@ -151,3 +156,4 @@ Related files:
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `app/frontend/scripts/ui-regression.mjs`
 - `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
+- `docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md`

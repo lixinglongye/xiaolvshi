@@ -22,6 +22,9 @@ from services.modelops_legal_fixture_cheap_first_benchmark_gate import (
 from services.modelops_legal_fixture_default_promotion_packet import (
     ModelOpsLegalFixtureDefaultPromotionPacketService,
 )
+from services.modelops_legal_fixture_cheap_first_regression_budget import (
+    ModelOpsLegalFixtureCheapFirstRegressionBudgetService,
+)
 
 
 SENSITIVE_PATTERN = re.compile(r"sk-[A-Za-z0-9]{20,}|password|secret|api[_-]?key|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+")
@@ -31,6 +34,12 @@ def _current_signals() -> dict:
     legal_fixture_gate = ModelOpsLegalFixtureCheapFirstBenchmarkGateService().build_gate()
     legal_promotion_packet = ModelOpsLegalFixtureDefaultPromotionPacketService().build_packet(
         {"source_gate": legal_fixture_gate}
+    )
+    legal_regression_budget = ModelOpsLegalFixtureCheapFirstRegressionBudgetService().build_budget(
+        {
+            "legal_fixture_cheap_first_benchmark_gate": legal_fixture_gate,
+            "legal_fixture_cheap_first_default_promotion_packet": legal_promotion_packet,
+        }
     )
     signals = {
         "cheap_first_calibration": GeminiNewapiCheapFirstCalibrationService().build_calibration(),
@@ -44,6 +53,7 @@ def _current_signals() -> dict:
         "model_ops_performance_budget": ModelOpsPerformanceBudgetService().build_budget(),
         "legal_fixture_cheap_first_benchmark_gate": legal_fixture_gate,
         "legal_fixture_cheap_first_default_promotion_packet": legal_promotion_packet,
+        "legal_fixture_cheap_first_regression_budget": legal_regression_budget,
         "legal_benchmark_risk_bridge": ModelOpsLegalBenchmarkRiskBridgeService().build_bridge(),
         "user_need_release_bridge": ModelOpsUserNeedReleaseBridgeService().build_bridge(),
     }
@@ -82,18 +92,21 @@ def test_cheap_first_release_decision_requires_review_for_current_catalog_watchl
     assert "gemini_cheap_first_route_preflight" in checks
     assert "legal_fixture_cheap_first_benchmark_gate" in checks
     assert "legal_fixture_cheap_first_default_promotion_packet" in checks
+    assert "legal_fixture_cheap_first_regression_budget" in checks
     assert "legal_benchmark_risk_bridge" in checks
     assert "user_need_release_bridge" in checks
     assert checks["catalog_source_audit"]["status"] == "warn"
     assert checks["gemini_cheap_first_route_preflight"]["status"] == "warn"
     assert checks["legal_fixture_cheap_first_benchmark_gate"]["status"] == "warn"
     assert checks["legal_fixture_cheap_first_default_promotion_packet"]["status"] == "warn"
+    assert checks["legal_fixture_cheap_first_regression_budget"]["status"] == "warn"
     assert checks["legal_benchmark_risk_bridge"]["status"] == "warn"
     assert checks["user_need_release_bridge"]["status"] == "warn"
     assert "catalog-source-audit-review" in decision["warning_check_ids"]
     assert "gemini-cheap-first-route-preflight-review" in decision["warning_check_ids"]
     assert "legal-fixture-cheap-first-benchmark-gate" in decision["warning_check_ids"]
     assert "legal-fixture-default-promotion-packet" in decision["warning_check_ids"]
+    assert "legal-fixture-cheap-first-regression-budget" in decision["warning_check_ids"]
     assert "legal-benchmark-risk-bridge" in decision["warning_check_ids"]
     assert "user-need-release-bridge" in decision["warning_check_ids"]
     assert checks["user_need_release_bridge"]["source_summary"]["need_count"] >= 7
@@ -219,6 +232,34 @@ def test_cheap_first_release_decision_blocks_failed_legal_fixture_gate():
     assert check["source_summary"]["fact_consistency_blocking_case_count"] == 1
 
 
+def test_cheap_first_release_decision_blocks_failed_legal_fixture_regression_budget():
+    signals = _all_pass_signals()
+    signals["legal_fixture_cheap_first_regression_budget"] = {
+        "status": "blocked",
+        "summary": {
+            "blocking_count": 1,
+            "blocked_count": 1,
+            "regressed_fixture_count": 1,
+            "newly_blocking_fixture_count": 1,
+        },
+        "blocking_check_ids": ["fixture-regression-pass"],
+        "warning_check_ids": [],
+    }
+
+    decision = ModelOpsCheapFirstReleaseDecisionService().build_decision(signals)
+    check = next(
+        check
+        for check in decision["checks"]
+        if check["source_key"] == "legal_fixture_cheap_first_regression_budget"
+    )
+
+    assert decision["status"] == "fail"
+    assert decision["release_decision"]["status"] == "blocked"
+    assert "legal-fixture-cheap-first-regression-budget" in decision["blocking_check_ids"]
+    assert "fixture-regression-pass" in decision["source_blocking_ids"]
+    assert check["source_summary"]["blocked_count"] == 1
+
+
 def test_cheap_first_release_decision_route_and_model_ops_payload_include_readiness_signal():
     import pytest
 
@@ -251,6 +292,7 @@ def test_cheap_first_release_decision_route_and_model_ops_payload_include_readin
     )
     assert "legal_fixture_cheap_first_benchmark_gate" in source_keys
     assert "legal_fixture_cheap_first_default_promotion_packet" in source_keys
+    assert "legal_fixture_cheap_first_regression_budget" in source_keys
     assert "legal_benchmark_risk_bridge" in source_keys
     assert "user_need_release_bridge" in source_keys
     assert payload["user_need_release_bridge"]["id"] == "modelops-user-need-release-bridge"
