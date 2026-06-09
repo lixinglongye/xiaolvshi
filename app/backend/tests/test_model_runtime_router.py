@@ -1,3 +1,4 @@
+from services import model_budget
 from services.model_runtime_router import resolve_runtime_model, runtime_router_policy_for_api
 
 
@@ -31,6 +32,57 @@ def test_runtime_router_downgrades_fast_premium_without_explicit_allowance():
         "resolved_to_recommended_model",
     )
     assert route.to_api()["reason_codes"] == list(route.reason_codes)
+
+
+def test_runtime_router_downgrades_premium_configured_fast_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_fast_model", "gemini-2.5-pro", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_premium_requires_review", True, raising=False)
+
+    route = resolve_runtime_model(None, task="fast")
+
+    assert route.task == "fast"
+    assert route.requested_resolved_model == "gemini-2.5-pro"
+    assert route.resolved_model == "gemini-2.5-flash-lite"
+    assert route.recommended_model == "gemini-2.5-flash-lite"
+    assert route.is_over_budget is True
+    assert route.requires_operator_review is True
+    assert route.explicit_model_requested is False
+    assert route.explicit_model_fit_status == "default"
+    assert route.routed_to_recommended_model is True
+    assert "task_default_selected" in route.reason_codes
+    assert "unsafe_task_default_routed_to_recommended" in route.reason_codes
+    assert "Configured task default gemini-2.5-pro" in route.reason
+
+
+def test_runtime_router_downgrades_unknown_configured_classifier_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_classifier_model", "gateway-private-gemini", raising=False)
+
+    route = resolve_runtime_model("auto", task="classification")
+
+    assert route.requested_resolved_model == "gateway-private-gemini"
+    assert route.resolved_model == "gemini-2.5-flash-lite"
+    assert route.requested_model_status == "unknown"
+    assert route.requires_operator_review is True
+    assert route.explicit_model_requested is False
+    assert route.routed_to_recommended_model is True
+    assert "unknown_catalog_model" in route.reason_codes
+    assert "unsafe_task_default_routed_to_recommended" in route.reason_codes
+    assert "gateway_passthrough" not in route.reason_codes
+    assert "Configured task default gateway-private-gemini" in route.reason
+
+
+def test_runtime_router_downgrades_preview_configured_ocr_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ocr_model", "gemini-3-flash-preview", raising=False)
+
+    route = resolve_runtime_model(None, task="ocr")
+
+    assert route.requested_canonical_model == "gemini-3-flash-preview"
+    assert route.requested_model_status == "preview"
+    assert route.resolved_model == "gemini-2.5-flash-lite"
+    assert route.routed_to_recommended_model is True
+    assert "lifecycle_preview" in route.reason_codes
+    assert "non_stable_model_routed_to_recommended" in route.reason_codes
+    assert "unsafe_task_default_routed_to_recommended" in route.reason_codes
 
 
 def test_runtime_router_allows_over_budget_model_when_explicit():

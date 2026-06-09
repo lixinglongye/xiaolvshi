@@ -9,6 +9,8 @@ from services.model_catalog import canonical_model_id, model_profile
 from services.model_task_inference import task_inference_policy_for_api
 
 
+DEFAULT_FALLBACK_EXCEPTION_TASKS = {"pdf", "image", "video", "audio", "transcription"}
+
 ROUTE_REASON_CODES = (
     "task_default_selected",
     "known_catalog_model",
@@ -25,6 +27,7 @@ ROUTE_REASON_CODES = (
     "over_task_budget",
     "operator_review_required",
     "routed_to_recommended_model",
+    "unsafe_task_default_routed_to_recommended",
     "explicit_over_budget_allowed",
     "within_task_budget",
     "resolved_to_recommended_model",
@@ -142,6 +145,7 @@ def resolve_runtime_model(
                 "over_task_budget",
                 "operator_review_required",
                 "routed_to_recommended_model",
+                "unsafe_task_default_routed_to_recommended",
                 "explicit_over_budget_allowed",
             }
         ),
@@ -165,9 +169,15 @@ def _should_use_recommended(
     requested_profile: Any,
     allow_over_budget_model: bool,
 ) -> bool:
-    if allow_over_budget_model:
+    if allow_over_budget_model and explicit_model_requested:
         return False
     if decision.is_over_budget or decision.requires_operator_review:
+        return True
+    if _default_model_needs_fit_review(
+        decision,
+        explicit_model_requested=explicit_model_requested,
+        requested_profile=requested_profile,
+    ):
         return True
     return _explicit_model_needs_fit_review(
         decision,
@@ -212,6 +222,8 @@ def _route_reason_codes(
         codes.append("operator_review_required")
     if routed_to_recommended_model:
         codes.append("routed_to_recommended_model")
+        if not explicit_model_requested:
+            codes.append("unsafe_task_default_routed_to_recommended")
     elif allow_over_budget_model and (
         requested_decision.is_over_budget or requested_decision.requires_operator_review
     ):
@@ -236,12 +248,29 @@ def _route_reason(
     routed_to_recommended_model: bool,
 ) -> str:
     if routed_to_recommended_model:
+        if not explicit_model_requested and not requested_decision.is_known_model:
+            return (
+                f"Configured task default {requested_decision.resolved_model} is not in the local catalog; "
+                f"routed to {selected_decision.resolved_model} until price, lifecycle, and task fit are reviewed."
+            )
+        non_stable_status = _non_stable_status(requested_profile)
+        if not explicit_model_requested and non_stable_status:
+            return (
+                f"Configured task default {requested_decision.resolved_model} has lifecycle status "
+                f"{non_stable_status}; routed to {selected_decision.resolved_model} until it is reviewed for "
+                "runtime use."
+            )
+        if not explicit_model_requested:
+            return (
+                f"Configured task default {requested_decision.resolved_model} is above the "
+                f"{requested_decision.task} budget or requires operator review; routed to "
+                f"{selected_decision.resolved_model}."
+            )
         if explicit_model_requested and not requested_decision.is_known_model:
             return (
                 f"Requested gateway model {requested_decision.resolved_model} is not in the local catalog; "
                 f"routed to {selected_decision.resolved_model} until price, lifecycle, and task fit are reviewed."
             )
-        non_stable_status = _non_stable_status(requested_profile)
         if explicit_model_requested and non_stable_status:
             return (
                 f"Requested model {requested_decision.resolved_model} has lifecycle status {non_stable_status}; "
@@ -287,6 +316,11 @@ def _requires_runtime_review(
 ) -> bool:
     return bool(
         decision.requires_operator_review
+        or _default_model_needs_fit_review(
+            decision,
+            explicit_model_requested=explicit_model_requested,
+            requested_profile=requested_profile,
+        )
         or _explicit_model_needs_fit_review(
             decision,
             explicit_model_requested=explicit_model_requested,
@@ -302,6 +336,19 @@ def _explicit_model_needs_fit_review(
     requested_profile: Any,
 ) -> bool:
     if not explicit_model_requested:
+        return False
+    if not decision.is_known_model:
+        return True
+    return _non_stable_status(requested_profile) != ""
+
+
+def _default_model_needs_fit_review(
+    decision: ModelBudgetDecision,
+    *,
+    explicit_model_requested: bool,
+    requested_profile: Any,
+) -> bool:
+    if explicit_model_requested or decision.task in DEFAULT_FALLBACK_EXCEPTION_TASKS:
         return False
     if not decision.is_known_model:
         return True
@@ -363,6 +410,7 @@ def runtime_router_policy_for_api() -> dict[str, Any]:
         },
         "enforcement": [
             "Default text calls use deterministic task inference instead of always using fast routing.",
+            "Unsafe configured text defaults route to catalog-safe stable, priced, within-budget recommendations.",
             "Explicit over-budget models are downgraded to the task recommended model unless allow_over_budget_model is true.",
             "Unknown gateway-specific explicit model names are downgraded to the task recommended model unless allow_over_budget_model is true.",
             "Preview or review-lifecycle explicit models are downgraded to stable task recommendations unless allow_over_budget_model is true.",

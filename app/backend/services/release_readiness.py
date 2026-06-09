@@ -1045,12 +1045,15 @@ class ReleaseReadinessService:
                 required=True,
                 owner="engineering",
                 evidence_paths=(
+                    "app/backend/services/model_budget.py",
+                    "app/backend/services/model_default_candidate_selector.py",
                     "app/backend/services/model_runtime_router.py",
+                    "app/backend/tests/test_model_budget.py",
                     "app/backend/tests/test_model_runtime_router.py",
                     "app/backend/tests/test_aihub_runtime_routing.py",
                     "docs/MODEL_RUNTIME_ROUTER.md",
                 ),
-                validation_command="python -m pytest tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py -q",
+                validation_command="python -m pytest tests/test_model_budget.py tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py -q",
             ),
             ReleaseCheck(
                 id="runtime-route-reason-codes",
@@ -1059,9 +1062,11 @@ class ReleaseReadinessService:
                 required=True,
                 owner="engineering",
                 evidence_paths=(
+                    "app/backend/services/model_budget.py",
                     "app/backend/services/model_runtime_router.py",
                     "app/backend/services/route_telemetry_repository.py",
                     "app/backend/services/route_telemetry_persistence_plan.py",
+                    "app/backend/tests/test_model_budget.py",
                     "app/backend/tests/test_model_runtime_router.py",
                     "app/backend/tests/test_route_telemetry_repository.py",
                     "app/backend/tests/test_route_telemetry_persistence_plan.py",
@@ -1074,7 +1079,7 @@ class ReleaseReadinessService:
                     "docs/ROUTE_TELEMETRY_PERSISTENCE_PLAN.md",
                     "docs/RELEASE_READINESS.md",
                 ),
-                validation_command="python -m pytest tests/test_model_runtime_router.py tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_aihub_runtime_routing.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                validation_command="python -m pytest tests/test_model_budget.py tests/test_model_runtime_router.py tests/test_route_telemetry_repository.py tests/test_route_telemetry_persistence_plan.py tests/test_aihub_runtime_routing.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 manual_note="This verifies allowlisted runtime route reason codes and sanitized repository reason-code counts for cheap-first downgrades, unknown catalog models, over-budget requests, operator-review gates, and explicit reviewed overrides without storing prompts, raw legal text, model outputs, payloads, emails, credentials, writing configuration, or calling gateways.",
             ),
             ReleaseCheck(

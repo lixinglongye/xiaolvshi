@@ -446,6 +446,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-repository" in completed_ids
     assert "route-telemetry-catalog-cost-estimation" in completed_ids
     assert "runtime-route-reason-codes" in completed_ids
+    assert "runtime-catalog-safe-default-fallback" in completed_ids
     assert "pdf-image-route-telemetry" in completed_ids
     assert "image-auto-route-default" in completed_ids
     assert "image-price-refresh-monitor" in completed_ids
@@ -888,6 +889,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert (
         "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py "
         "tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_budget.py tests/test_model_runtime_router.py "
+        "tests/test_aihub_runtime_routing.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py -q"
         in ledger["validation_commands"]
     )
     assert (
@@ -2967,6 +2974,31 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-ops-readiness" in route_reason_entry["release_gate_links"]
     assert "frontend-typecheck" in route_reason_entry["release_gate_links"]
     assert "frontend-ui-regression" in route_reason_entry["release_gate_links"]
+
+    catalog_safe_default_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "runtime-catalog-safe-default-fallback"
+    )
+    assert catalog_safe_default_entry["category"] == "model_ops"
+    assert catalog_safe_default_entry["size"] == "medium"
+    assert catalog_safe_default_entry["status"] == "shipped"
+    assert "configured task defaults drift" in catalog_safe_default_entry["impact"]
+    assert "unknown gateway ids" in catalog_safe_default_entry["impact"]
+    assert "preview or review lifecycle models" in catalog_safe_default_entry["impact"]
+    assert "stable, priced, within-budget catalog recommendation" in catalog_safe_default_entry["impact"]
+    assert "unsafe_task_default_routed_to_recommended" in catalog_safe_default_entry["impact"]
+    assert "gateway calls" in catalog_safe_default_entry["impact"]
+    assert "app/backend/services/model_budget.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "app/backend/services/model_runtime_router.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "app/backend/services/model_default_candidate_selector.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_budget.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_runtime_router.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in catalog_safe_default_entry["evidence_paths"]
+    assert "docs/MODEL_RUNTIME_ROUTER.md" in catalog_safe_default_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in catalog_safe_default_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in catalog_safe_default_entry["evidence_paths"]
+    assert "model-runtime-router" in catalog_safe_default_entry["release_gate_links"]
+    assert "runtime-route-reason-codes" in catalog_safe_default_entry["release_gate_links"]
+    assert "route-telemetry-repository" in catalog_safe_default_entry["release_gate_links"]
 
     reason_hotspot_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-reason-code-hotspots"

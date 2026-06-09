@@ -223,15 +223,15 @@ def test_route_telemetry_repository_keeps_explicit_unknown_gateway_passthrough_u
 
 def test_route_telemetry_repository_counts_known_catalog_models_without_token_prices(tmp_path):
     service = RouteTelemetryRepositoryService(tmp_path)
-    route = resolve_runtime_model("gemini-3-pro-image", task="image", allow_over_budget_model=True)
+    route = resolve_runtime_model("veo-3.1-lite-generate-preview", task="video", allow_over_budget_model=True)
     result = service.append_route_decision(
         route=route,
         task_inference=TaskInference(
-            requested_task="image",
-            task="image",
+            requested_task="video",
+            task="video",
             source="explicit",
             confidence=1.0,
-            signals=("requested:image",),
+            signals=("requested:video",),
             reason="test",
         ),
         success=True,

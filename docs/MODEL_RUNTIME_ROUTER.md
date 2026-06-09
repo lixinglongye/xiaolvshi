@@ -32,6 +32,7 @@ media/speech tasks. `model=auto-video`, `model=auto-audio`, and
 - Omitted model + `task=auto` -> deterministic task inference before model routing.
 - Omitted model + `task=fast` -> `gemini-2.5-flash-lite`.
 - Omitted model + `task=review` -> `gemini-2.5-flash`.
+- If a configured text default for fast, OCR, classification, review, grounded research, agentic, or embedding drifts to an unknown, preview/review-lifecycle, or over-budget model, runtime routing keeps the configured value visible in `requested_resolved_model` but sends the call to the catalog-safe stable, priced, within-budget task recommendation.
 - Explicit premium model + `task=fast` -> downgraded to `gemini-2.5-flash-lite` unless `allow_over_budget_model=true`.
 - `model=auto` + `task=image` -> `gemini-2.5-flash-image` unless `APP_AI_IMAGE_MODEL` is configured.
 - Media endpoint omitted model + `task=video`, `task=audio`, or `task=transcription` -> the explicit media/speech task default, with non-catalog gateway ids remaining review-only until pricing and lifecycle are documented.
@@ -48,6 +49,7 @@ media/speech tasks. `model=auto-video`, `model=auto-audio`, and
 Each runtime route now includes bounded allowlisted `reason_codes` for maintainer review.
 Examples include `task_default_selected`, `over_task_budget`,
 `operator_review_required`, `routed_to_recommended_model`,
+`unsafe_task_default_routed_to_recommended`,
 `unknown_catalog_model`, `unknown_gateway_routed_to_recommended`,
 `lifecycle_preview`, `non_stable_model_routed_to_recommended`,
 `gateway_passthrough`, and `explicit_gateway_passthrough_allowed`.
@@ -85,6 +87,8 @@ The router records only model names, task names, cost tier metadata, bounded rea
 ## Related files
 
 - `app/backend/services/model_runtime_router.py`
+- `app/backend/services/model_budget.py`
+- `app/backend/services/model_default_candidate_selector.py`
 - `app/backend/services/model_route_telemetry.py`
 - `app/backend/services/model_task_inference.py`
 - `app/backend/services/model_ops_gentxt_task_guard.py`
@@ -92,6 +96,7 @@ The router records only model names, task names, cost tier metadata, bounded rea
 - `app/backend/services/aihub.py`
 - `app/backend/schemas/aihub.py`
 - `app/backend/tests/test_model_runtime_router.py`
+- `app/backend/tests/test_model_budget.py`
 - `app/backend/tests/test_model_route_telemetry.py`
 - `app/backend/tests/test_model_task_inference.py`
 - `app/backend/tests/test_model_ops_gentxt_task_guard.py`

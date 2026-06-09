@@ -13,6 +13,7 @@ from typing import Any
 
 from core.config import settings
 from services.model_catalog import model_profile, resolve_model, task_default_model
+from services.model_default_candidate_selector import ModelDefaultCandidateSelectorService
 
 
 TASK_GROUPS: dict[str, dict[str, Any]] = {
@@ -79,6 +80,15 @@ TASK_GROUPS: dict[str, dict[str, Any]] = {
 }
 
 COST_TIER_RANK = {"lowest": 0, "low": 1, "medium": 2, "premium": 3}
+CATALOG_SAFE_DEFAULT_TASKS = {
+    "fast",
+    "ocr",
+    "classification",
+    "review",
+    "grounded-research",
+    "agentic",
+    "embedding",
+}
 
 
 @dataclass(frozen=True)
@@ -142,7 +152,7 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
     normalized_task = normalize_budget_task(task)
     policy = TASK_GROUPS[normalized_task]
     resolved_model = resolve_model(model, task=normalized_task)
-    recommended_model = task_default_model(normalized_task)
+    recommended_model = _catalog_safe_recommended_model(normalized_task)
     profile = model_profile(resolved_model)
     cost_tier = profile.cost_tier if profile else None
     max_cost_tier = str(policy["max_cost_tier"])
@@ -160,6 +170,11 @@ def model_budget_decision(model: str | None = None, *, task: str = "fast") -> Mo
         reason += " Requested model is above the task budget; use the recommended model unless an operator approves."
     elif not is_known_model:
         reason += " Model is not in the local catalog; route is allowed but pricing and tier are unverified."
+    if _default_like_request(model) and resolved_model != recommended_model:
+        reason += (
+            " Configured task default differs from the catalog-safe recommendation; runtime routing should "
+            "use the recommended stable, priced, within-budget model unless a reviewed exception applies."
+        )
 
     return ModelBudgetDecision(
         task=normalized_task,
@@ -205,3 +220,15 @@ def _is_over_budget(*, cost_tier: str | None, max_cost_tier: str) -> bool:
     if cost_tier is None:
         return False
     return COST_TIER_RANK.get(cost_tier, 99) > COST_TIER_RANK.get(max_cost_tier, 99)
+
+
+def _catalog_safe_recommended_model(task: str) -> str:
+    configured_default = task_default_model(task)
+    if task not in CATALOG_SAFE_DEFAULT_TASKS:
+        return configured_default
+    return ModelDefaultCandidateSelectorService().recommended_model_for_task(task, fallback=configured_default)
+
+
+def _default_like_request(model: str | None) -> bool:
+    value = (model or "").strip().lower()
+    return value == "" or value == "auto" or value.startswith("auto-")

@@ -22,7 +22,43 @@ def test_budget_policy_flags_premium_model_for_fast_task(monkeypatch):
     assert decision.cost_tier == "premium"
     assert decision.is_over_budget
     assert decision.requires_operator_review
-    assert decision.recommended_model == model_budget.task_default_model("fast")
+    assert decision.recommended_model == "gemini-2.5-flash-lite"
+
+
+def test_budget_policy_keeps_bad_fast_default_visible_but_recommends_catalog_safe_model(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_fast_model", "gemini-2.5-pro", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_premium_requires_review", True, raising=False)
+
+    decision = model_budget.model_budget_decision(None, task="fast")
+
+    assert decision.resolved_model == "gemini-2.5-pro"
+    assert decision.recommended_model == "gemini-2.5-flash-lite"
+    assert decision.is_over_budget is True
+    assert decision.requires_operator_review is True
+    assert "catalog-safe recommendation" in decision.reason
+
+
+def test_budget_policy_recommends_catalog_safe_model_for_unknown_classifier_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_classifier_model", "gateway-private-gemini", raising=False)
+
+    decision = model_budget.model_budget_decision("auto", task="classification")
+
+    assert decision.resolved_model == "gateway-private-gemini"
+    assert decision.recommended_model == "gemini-2.5-flash-lite"
+    assert decision.is_known_model is False
+    assert decision.is_over_budget is False
+    assert "pricing and tier are unverified" in decision.reason
+
+
+def test_budget_policy_recommends_catalog_safe_model_for_preview_ocr_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ocr_model", "gemini-3-flash-preview", raising=False)
+
+    decision = model_budget.model_budget_decision(None, task="ocr")
+
+    assert decision.resolved_model == "gemini-3-flash-preview"
+    assert decision.recommended_model == "gemini-2.5-flash-lite"
+    assert decision.cost_tier == "medium"
+    assert decision.is_over_budget is True
 
 
 def test_budget_policy_allows_pdf_premium_exception(monkeypatch):
@@ -87,13 +123,13 @@ def test_budget_policy_uses_low_cost_agentic_and_grounded_defaults(monkeypatch):
     assert agentic.task == "agentic"
     assert agentic.resolved_model == "gemini-3.1-flash-lite"
     assert agentic.budget_mode == "cheap-first-agentic"
-    assert agentic.cost_tier == "low"
+    assert agentic.cost_tier == "lowest"
     assert agentic.max_cost_tier == "low"
     assert not agentic.is_over_budget
     assert grounded.task == "grounded-research"
     assert grounded.resolved_model == "gemini-3.1-flash-lite"
     assert grounded.budget_mode == "cheap-first-grounded"
-    assert grounded.cost_tier == "low"
+    assert grounded.cost_tier == "lowest"
     assert grounded.max_cost_tier == "low"
     assert not grounded.is_over_budget
 

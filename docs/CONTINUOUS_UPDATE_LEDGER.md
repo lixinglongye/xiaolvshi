@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current runtime catalog-safe default fallback slice:
+`runtime-catalog-safe-default-fallback` adds runtime protection when text or
+embedding task defaults drift to unknown gateway ids, preview/review lifecycle
+models, unpriced catalog rows, or models above the task budget. The budget
+policy keeps the configured value visible for operations evidence, while the
+runtime router sends the actual AIHub request to the stable, priced,
+within-budget catalog recommendation and labels the downgrade with
+`unsafe_task_default_routed_to_recommended`. PDF and media exception routes are
+unchanged. The evidence does not call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, models, or the network; write configuration; change defaults;
+shift traffic; or return prompts, legal text, payloads, model outputs, gateway
+responses, headers, emails, identifiers, or credentials.
+
 Current feedback benchmark release packet slice:
 `feedback-user-need-legal-document-benchmark-release-packet` adds a
 metadata-only bridge from feedback benchmark backlog rows into release-review
@@ -779,7 +792,8 @@ emails, or credentials.
 Current runtime route reason-code evidence:
 `runtime-route-reason-codes` adds bounded route policy labels for cheap-first
 downgrades, unknown catalog models, over-budget requests, operator-review
-gates, and explicit reviewed overrides. The repository persists only sanitized
+gates, unsafe configured task defaults, and explicit reviewed overrides. The
+repository persists only sanitized
 reason-code lists and aggregate counts, and the ModelOps table shows those
 counts without storing prompts, legal text, model outputs, payloads, emails, or
 credentials.

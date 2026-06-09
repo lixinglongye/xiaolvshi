@@ -66,6 +66,8 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 
 `runtime_router` 将 `task`、`model` 和 `allow_over_budget_model` 转换为实际模型；默认会把超预算或需要人工复核的显式模型降级到任务推荐模型。
 
+Runtime default drift is also guarded: for text and embedding tasks, if the configured task default points at an unknown gateway id, a preview/review lifecycle model, an unpriced catalog row, or a model above the task budget, `model_budget` keeps that configured value visible for operations evidence but `model_runtime_router` sends the request to the catalog-safe stable, priced, within-budget recommendation from `model_default_candidate_selector`. PDF and media defaults remain explicit exception routes.
+
 `reasoning_policy` 为 Gemini/OpenAI-compatible `reasoning_effort` 设置任务默认值：高频 fast/OCR/classification 尽量关闭或最小化 thinking，法律 review 使用 low，PDF/复杂复核才使用 high。未知网关模型会省略该参数以保持透传兼容。
 
 `request_policy` 为 `temperature` 和 `max_tokens` 设置任务级默认值和上限：高频分类、OCR 和预检请求默认短输出、低温度，法律 review/PDF 保留更大的显式输出预算，JSON 输出会降低温度上限以减少解析失败和重试成本。

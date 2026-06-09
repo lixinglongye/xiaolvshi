@@ -216,7 +216,10 @@ outputs, credentials, or emails.
 
 Additional required evidence: `runtime-route-reason-codes` records allowlisted
 policy labels for runtime cheap-first decisions and aggregates them as
-`reason_code_counts` in the local route telemetry repository. Unknown submitted
+`reason_code_counts` in the local route telemetry repository. It includes
+`unsafe_task_default_routed_to_recommended` for configured text defaults that
+drift to unknown, non-stable, unpriced, or over-budget models before runtime
+fallback sends the request to the catalog-safe recommendation. Unknown submitted
 labels are normalized to `unknown_reason_code`; prompts, legal text, payload
 fragments, model output, credentials, and emails remain excluded.
 

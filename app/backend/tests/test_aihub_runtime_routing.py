@@ -13,6 +13,7 @@ from schemas.aihub import (
     TranscribeAudioRequest,
 )
 from services import route_telemetry_repository
+from services import model_budget
 from services.model_catalog import estimate_token_cost_usd
 from services.model_route_telemetry import model_route_telemetry_registry
 from services.model_usage import model_usage_registry
@@ -501,6 +502,40 @@ async def test_gentxt_downgrades_fast_premium_request_by_default():
     assert repository["daily_buckets"][0]["reason_code_counts"]["operator_review_required"] == 1
     assert repository["daily_buckets"][0]["reason_code_counts"]["routed_to_recommended_model"] == 1
     assert repository["daily_buckets"][0]["estimated_cost_usd_sum"] == expected_cost
+
+
+@pytest.mark.asyncio
+async def test_gentxt_downgrades_premium_configured_fast_default(monkeypatch):
+    monkeypatch.setattr(model_budget.settings, "app_ai_fast_model", "gemini-2.5-pro", raising=False)
+    monkeypatch.setattr(model_budget.settings, "app_ai_premium_requires_review", True, raising=False)
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.gentxt(
+        GenTxtRequest(
+            messages=[ChatMessage(role="user", content="classify this")],
+            task="fast",
+        )
+    )
+
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash-lite"
+    assert response.model == "gemini-2.5-flash-lite"
+    assert response.budget_decision["requested_model"] is None
+    assert response.budget_decision["requested_resolved_model"] == "gemini-2.5-pro"
+    assert response.budget_decision["recommended_model"] == "gemini-2.5-flash-lite"
+    assert response.budget_decision["routed_to_recommended_model"] is True
+    assert "unsafe_task_default_routed_to_recommended" in response.budget_decision["reason_codes"]
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["summary"]["downgrade_ratio"] == 1.0
+    repository = RouteTelemetryRepositoryService().build_repository()
+    expected_cost = estimate_token_cost_usd("gemini-2.5-flash-lite", 11, 7)
+    assert repository["totals"]["downgrade_count"] == 1
+    assert repository["totals"]["estimated_cost_usd_sum"] == expected_cost
+    assert repository["daily_buckets"][0]["reason_code_counts"]["unsafe_task_default_routed_to_recommended"] == 1
+    assert "classify this" not in str(repository)
 
 
 @pytest.mark.asyncio

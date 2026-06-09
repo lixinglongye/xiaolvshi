@@ -135,6 +135,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_gateway_runtime_configuration.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_health_plan.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_frontend_ui_regression_gate.py -q",
                 "python -m pytest tests/test_model_ops_newapi_channel_bootstrap.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_runtime_configuration.py tests/test_model_ops_observed_gemini_premium_exception_review.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_gateway_probe_runbook_gate.py tests/test_model_gateway_health_plan.py tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_runtime_configuration.py tests/test_model_ops_newapi_channel_bootstrap.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_budget.py tests/test_model_runtime_router.py tests/test_aihub_runtime_routing.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_gemini_newapi_model_selector.py -q",
@@ -4310,6 +4311,42 @@ class ContinuousUpdateLedgerService:
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("cheap-first-review-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="runtime-catalog-safe-default-fallback",
+                title="Runtime catalog-safe default fallback",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Protects AIHub text and embedding calls when configured task defaults drift to unknown gateway ids, "
+                    "preview or review lifecycle models, unpriced catalog rows, or models above the task budget. "
+                    "Budget evidence keeps the configured default visible, while runtime routing sends the request to "
+                    "the stable, priced, within-budget catalog recommendation and records "
+                    "unsafe_task_default_routed_to_recommended without storing prompts, raw legal text, model outputs, "
+                    "payloads, emails, credentials, config writes, default changes, traffic shifts, or gateway calls."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_budget.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_model_budget.py",
+                    "app/backend/tests/test_model_runtime_router.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/MODEL_RUNTIME_ROUTER.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "model-runtime-router",
+                    "runtime-route-reason-codes",
+                    "route-telemetry-repository",
+                    "model-ops-readiness",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(
                 id="pdf-image-route-telemetry",
