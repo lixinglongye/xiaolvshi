@@ -39,6 +39,13 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+function clearLocalAuthStorage() {
+  if (typeof window === 'undefined') return;
+  for (const key of ['token', 'expires_at', 'token_type']) {
+    window.localStorage.removeItem(key);
+  }
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +64,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 401) {
+        clearLocalAuthStorage();
+      }
       if (status !== 401) {
         console.error('Auth check failed:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');

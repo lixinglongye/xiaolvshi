@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/contexts/I18nContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +9,22 @@ import { Scale } from 'lucide-react';
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const isLocalDev =
     typeof window !== 'undefined' &&
     ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+  const localDevLoginUrl =
+    typeof window !== 'undefined'
+      ? `/api/v1/auth/dev-login?role=admin&frontend_origin=${encodeURIComponent(window.location.origin)}`
+      : '/api/v1/auth/dev-login?role=admin';
 
-  if (loading) {
+  useEffect(() => {
+    if (loading || user || !isLocalDev || typeof window === 'undefined') return;
+    if (window.location.pathname.startsWith('/auth/')) return;
+    window.location.href = localDevLoginUrl;
+  }, [isLocalDev, loading, localDevLoginUrl, user]);
+
+  if (loading || (!user && isLocalDev)) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <LoadingSpinner />
@@ -40,18 +50,6 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
             >
               {t('btn_login')}
             </Button>
-            {isLocalDev && (
-              <Button
-                variant="outline"
-                className="w-full mt-3"
-                onClick={() => {
-                  const frontendOrigin = encodeURIComponent(window.location.origin);
-                  window.location.href = `/api/v1/auth/dev-login?role=admin&frontend_origin=${frontendOrigin}`;
-                }}
-              >
-                {lang === 'zh' ? '本地测试登录（管理员）' : 'Local test login (admin)'}
-              </Button>
-            )}
           </CardContent>
         </Card>
       </div>
