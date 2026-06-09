@@ -1438,6 +1438,96 @@ const checks = [
       'public_benchmark_score_claimed',
       'maintenance feedback user-need legal-document benchmark backlog claim boundary',
     ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket',
+      'maintenance feedback user-need legal-document benchmark release packet type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacketRow',
+      'maintenance feedback user-need legal-document benchmark release packet row type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket',
+      'maintenance feedback user-need legal-document benchmark release packet API binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/feedback/user-need-legal-document-benchmark-release-packet',
+      'maintenance feedback user-need legal-document benchmark release packet endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'Feedback user-need legal-document benchmark release packet',
+      'maintenance feedback user-need legal-document benchmark release packet panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'feedbackUserNeedLegalDocumentBenchmarkReleasePacket',
+      'maintenance feedback user-need legal-document benchmark release packet state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket',
+      'maintenance feedback user-need legal-document benchmark release packet load task',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'release_action_status',
+      'maintenance feedback user-need legal-document benchmark release packet action status binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'customer_resolution_allowed',
+      'maintenance feedback user-need legal-document benchmark release packet customer gate binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'customer_resolution_claimed',
+      'maintenance feedback user-need legal-document benchmark release packet customer claim boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'lifecycle_blocking_check_ids',
+      'maintenance feedback user-need legal-document benchmark release packet lifecycle blocker binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'returns_customer_notes',
+      'maintenance feedback user-need legal-document benchmark release packet customer note boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'returns_public_resolution_text',
+      'maintenance feedback user-need legal-document benchmark release packet public resolution boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'customer_notification_claimed',
+      'maintenance feedback user-need legal-document benchmark release packet notification claim boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'validation_commands',
+      'maintenance feedback user-need legal-document benchmark release packet validation binding',
+    ),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecycleState', 'maintenance feedback lifecycle state type'),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecycleTransition', 'maintenance feedback lifecycle transition type'),
   () => assertIncludes(maintenanceApi, 'FeedbackLifecycleCheck', 'maintenance feedback lifecycle check type'),
@@ -1478,8 +1568,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark backlog</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark release packet</h2>',
+      'feedback user-need legal-document benchmark release packet follows backlog',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark release packet</h2>',
       '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
-      'feedback lifecycle policy follows feedback benchmark backlog',
+      'feedback lifecycle policy follows feedback benchmark release packet',
     ),
   () =>
     assertBefore(
@@ -4282,8 +4379,14 @@ const feedbackLifecyclePolicyPanel = sourceSection(
 const feedbackUserNeedLegalDocumentBenchmarkBacklogPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark backlog</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark release packet</h2>',
   'maintenance feedback user-need legal-document benchmark backlog section',
+);
+const feedbackUserNeedLegalDocumentBenchmarkReleasePacketPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark release packet</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Feedback lifecycle policy</h2>',
+  'maintenance feedback user-need legal-document benchmark release packet section',
 );
 const geminiCheapFirstCoveragePanel = sourceSection(
   modelOpsPage,
@@ -4570,6 +4673,11 @@ assertNotMatches(
   feedbackUserNeedLegalDocumentBenchmarkBacklogPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_feedback|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_email|email|phone|identity|benchmark_sample|sample_text|input_excerpt|output_text)\b/i,
   'maintenance feedback user-need legal-document benchmark backlog no raw feedback/document/model/payload fields or credentials',
+);
+assertNotMatches(
+  feedbackUserNeedLegalDocumentBenchmarkReleasePacketPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_feedback|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|client_email|email|phone|identity|customer_note|public_resolution_note|public_resolution|customer_message|notification_text|benchmark_sample|sample_text|input_excerpt|output_text)\b/i,
+  'maintenance feedback user-need legal-document benchmark release packet no raw feedback/customer/document/model/payload fields or credentials',
 );
 assertNotMatches(
   finalDocumentDeliveryReleaseGatePanel,

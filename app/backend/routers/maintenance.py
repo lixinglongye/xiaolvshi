@@ -34,6 +34,9 @@ from services.feedback_roadmap_alignment import FeedbackRoadmapAlignmentService
 from services.feedback_user_need_legal_document_benchmark_backlog import (
     FeedbackUserNeedLegalDocumentBenchmarkBacklogService,
 )
+from services.feedback_user_need_legal_document_benchmark_release_packet import (
+    FeedbackUserNeedLegalDocumentBenchmarkReleasePacketService,
+)
 from services.final_document_delivery_release_gate import FinalDocumentDeliveryReleaseGateService
 from services.frontend_ui_regression_gate import FrontendUiRegressionGateService
 from services.gemini_newapi_cheap_first_policy import GeminiNewapiCheapFirstPolicyService
@@ -355,6 +358,24 @@ async def build_feedback_user_need_legal_document_benchmark_backlog(payload: dic
     return {
         "success": True,
         "data": FeedbackUserNeedLegalDocumentBenchmarkBacklogService().build_backlog(payload),
+    }
+
+
+@router.get("/feedback/user-need-legal-document-benchmark-release-packet")
+async def get_feedback_user_need_legal_document_benchmark_release_packet():
+    """Return feedback benchmark backlog release packet metadata."""
+    return {
+        "success": True,
+        "data": FeedbackUserNeedLegalDocumentBenchmarkReleasePacketService().build_packet(),
+    }
+
+
+@router.post("/feedback/user-need-legal-document-benchmark-release-packet")
+async def build_feedback_user_need_legal_document_benchmark_release_packet(payload: dict[str, Any]):
+    """Build feedback benchmark release packet from privacy-safe observation metadata."""
+    return {
+        "success": True,
+        "data": FeedbackUserNeedLegalDocumentBenchmarkReleasePacketService().build_packet(payload),
     }
 
 

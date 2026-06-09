@@ -1269,6 +1269,94 @@ type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklogResponse = {
   data: MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog;
 };
 
+export type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacketRow = {
+  cluster_id: string;
+  normalized_topic: string;
+  primary_need_id: string;
+  primary_need_title: string;
+  severity: string;
+  high_risk: boolean;
+  feedback_count: number;
+  priority_score: number;
+  benchmark_action_status: string;
+  legal_document_evidence_status: string;
+  implementation_action_status: string;
+  lifecycle_current_state?: string | null;
+  lifecycle_next_allowed_states: string[];
+  lifecycle_blocking_check_ids: string[];
+  release_action_status: string;
+  release_action_rank: number;
+  customer_resolution_allowed: boolean;
+  customer_resolution_claimed: boolean;
+  release_gate_links: string[];
+  linked_document_case_ids: string[];
+  suggested_fixture_ids: string[];
+  reason_codes: string[];
+  next_actions: string[];
+};
+
+export type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket = {
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    release_row_count: number;
+    customer_resolution_ready_count: number;
+    release_review_required_count: number;
+    blocked_release_count: number;
+    high_risk_blocked_count: number;
+    source_backlog_status?: string | null;
+    source_implementation_queue_status?: string | null;
+    raw_feedback_returned: boolean;
+    customer_resolution_claimed: boolean;
+    model_calls: string;
+    network_access: string;
+  };
+  release_rows: MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacketRow[];
+  customer_resolution_ready_cluster_ids: string[];
+  release_review_required_cluster_ids: string[];
+  blocked_cluster_ids: string[];
+  high_risk_blocked_cluster_ids: string[];
+  source_summaries: {
+    feedback_benchmark_backlog: Record<string, unknown>;
+    user_need_implementation_queue: Record<string, unknown>;
+  };
+  recommended_actions: string[];
+  privacy_boundary: {
+    metadata_only: boolean;
+    returns_raw_feedback: boolean;
+    returns_raw_feedback_text: boolean;
+    returns_customer_notes: boolean;
+    returns_public_resolution_text: boolean;
+    returns_pii: boolean;
+    returns_document_snippets: boolean;
+    returns_fixture_snippets: boolean;
+    returns_public_benchmark_text: boolean;
+    returns_prompt_text: boolean;
+    returns_raw_model_output: boolean;
+    returns_payload_bodies: boolean;
+    returns_credentials: boolean;
+    model_calls: boolean;
+    network_called: boolean;
+  };
+  claim_boundary: {
+    feedback_resolution_claimed: boolean;
+    customer_notification_claimed: boolean;
+    production_quality_claimed: boolean;
+    public_benchmark_score_claimed: boolean;
+    client_document_coverage_claimed: boolean;
+    allowed_claim: string;
+  };
+  validation_commands: string[];
+};
+
+type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacketResponse = {
+  success: boolean;
+  data: MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket;
+};
+
 export type FeedbackLifecycleState = {
   id: string;
   order: number;
@@ -8555,6 +8643,20 @@ export async function getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklo
     return payload.data;
   }
   return payload as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog;
+}
+
+export async function getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket(): Promise<MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/feedback/user-need-legal-document-benchmark-release-packet',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacketResponse
+    | MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket;
 }
 
 export async function getFeedbackLifecyclePolicy(): Promise<FeedbackLifecyclePolicy> {

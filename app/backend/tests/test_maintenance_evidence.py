@@ -61,6 +61,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Model route legal benchmark risk queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need legal-document benchmark evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Feedback user-need legal-document benchmark backlog" in profile["release_management"]["release_readiness_controls"]
+    assert (
+        "Feedback user-need legal-document benchmark release packet"
+        in profile["release_management"]["release_readiness_controls"]
+    )
     assert "Observed gateway model fit matrix" in profile["release_management"]["release_readiness_controls"]
     assert "User need implementation priority queue" in profile["release_management"]["release_readiness_controls"]
     assert "User need Gemini route coverage" in profile["release_management"]["release_readiness_controls"]
@@ -608,6 +612,14 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("linked cheap-first calibration task ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal document fact consistency benchmark is metadata-only amount/date/fact consistency evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any(
+        "feedback user-need legal-document benchmark release packet joins privacy-safe feedback benchmark backlog rows"
+        in guardrail
+        for guardrail in profile["application_guardrails"]
+    )
+    assert any("customer-resolution gates" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("public resolution text" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("customer-notification claims" in guardrail for guardrail in profile["application_guardrails"])
     assert any("case ids, counts, and reason codes only" in guardrail for guardrail in profile["application_guardrails"])
     assert any(
         "legal document benchmark fixture UI" in guardrail and "does not render raw fixture snippets" in guardrail

@@ -1,5 +1,17 @@
 # Continuous Update Ledger
 
+Current feedback benchmark release packet slice:
+`feedback-user-need-legal-document-benchmark-release-packet` adds a
+metadata-only bridge from feedback benchmark backlog rows into release-review
+and customer-visible resolution gates. It joins privacy-safe feedback clusters,
+feedback lifecycle checks, user-need implementation queue status,
+legal-document benchmark evidence, and sanitized release observations without
+returning raw feedback, customer notes, public resolution text, PII, uploaded
+document text, fixture snippets, public benchmark text, prompts, payload
+bodies, gateway responses, model outputs, or credentials. It does not claim
+feedback resolution, customer notification, production legal quality, public
+benchmark scores, or client-document coverage.
+
 Current feedback benchmark backlog slice:
 `feedback-user-need-legal-document-benchmark-backlog` adds a metadata-only
 bridge from privacy-safe feedback clusters to roadmap user needs and

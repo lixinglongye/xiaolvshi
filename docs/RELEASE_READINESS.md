@@ -35,6 +35,17 @@ benchmark text, prompts, payload bodies, model outputs, gateway responses, or
 credentials, and it does not claim feedback resolution, public benchmark scores,
 production legal quality, or client-document coverage.
 
+Additional optional evidence:
+`feedback-user-need-legal-document-benchmark-release-packet` records a
+metadata-only path from feedback benchmark backlog rows to release-review and
+customer-visible resolution gates. It joins feedback lifecycle checks,
+implementation queue status, legal-document benchmark evidence, and sanitized
+release observations without returning raw feedback, customer notes, public
+resolution text, PII, uploaded document text, fixture snippets, public
+benchmark text, prompts, payload bodies, gateway responses, model outputs, or
+credentials. It does not claim feedback resolution, customer notification,
+production legal quality, public benchmark scores, or client-document coverage.
+
 Additional optional evidence: `legal-fixture-regression-comparison` records
 metadata-only baseline/current cheap-first fixture regression deltas. It is
 optional when not run, but a failed submitted comparison blocks release

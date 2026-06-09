@@ -3397,6 +3397,58 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    feedback_release_packet_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "feedback-user-need-legal-document-benchmark-release-packet"
+    )
+    assert feedback_release_packet_entry["category"] == "maintenance"
+    assert feedback_release_packet_entry["size"] == "medium"
+    assert feedback_release_packet_entry["status"] == "shipped"
+    assert "metadata-only feedback benchmark release packet evidence" in feedback_release_packet_entry["impact"]
+    assert "feedback lifecycle checks" in feedback_release_packet_entry["impact"]
+    assert "release observations" in feedback_release_packet_entry["impact"]
+    assert "customer-resolution gates" in feedback_release_packet_entry["impact"]
+    assert "raw feedback" in feedback_release_packet_entry["impact"]
+    assert "customer notes" in feedback_release_packet_entry["impact"]
+    assert "public resolution text" in feedback_release_packet_entry["impact"]
+    assert "customer-notification claims" in feedback_release_packet_entry["impact"]
+    assert "production-quality claims" in feedback_release_packet_entry["impact"]
+    assert "client-document coverage claims" in feedback_release_packet_entry["impact"]
+    assert "app/backend/services/feedback_user_need_legal_document_benchmark_release_packet.py" in feedback_release_packet_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_feedback_user_need_legal_document_benchmark_release_packet.py" in feedback_release_packet_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/services/feedback_lifecycle_policy.py" in feedback_release_packet_entry["evidence_paths"]
+    assert "app/backend/services/user_need_implementation_priority_queue.py" in feedback_release_packet_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in feedback_release_packet_entry["evidence_paths"]
+    assert "docs/FEEDBACK_USER_NEED_LEGAL_DOCUMENT_BENCHMARK_RELEASE_PACKET.md" in feedback_release_packet_entry[
+        "evidence_paths"
+    ]
+    assert "feedback-user-need-legal-document-benchmark-release-packet" in feedback_release_packet_entry[
+        "release_gate_links"
+    ]
+    assert "feedback-user-need-legal-document-benchmark-backlog" in feedback_release_packet_entry[
+        "release_gate_links"
+    ]
+    assert "feedback-lifecycle-policy" in feedback_release_packet_entry["release_gate_links"]
+    assert "user-need-implementation-priority-queue" in feedback_release_packet_entry["release_gate_links"]
+    assert "user-need-legal-document-benchmark-evidence" in feedback_release_packet_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in feedback_release_packet_entry["release_gate_links"]
+    assert "traceable-legal-review" in feedback_release_packet_entry["user_need_ids"]
+    assert "privacy-safe-upload" in feedback_release_packet_entry["user_need_ids"]
+    assert "plain-language-actionability" in feedback_release_packet_entry["user_need_ids"]
+    assert (
+        "python -m pytest tests/test_feedback_user_need_legal_document_benchmark_release_packet.py "
+        "tests/test_feedback_user_need_legal_document_benchmark_backlog.py tests/test_feedback_lifecycle_policy.py "
+        "tests/test_user_need_implementation_priority_queue.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     route_queue_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-route-legal-benchmark-risk-queue"
     )

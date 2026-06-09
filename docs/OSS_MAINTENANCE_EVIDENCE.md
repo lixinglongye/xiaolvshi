@@ -16,6 +16,14 @@ and user-need coverage, but it must not claim gateway calls, model-default
 writes, public benchmark scores, dataset downloads, raw legal text handling, or
 credentials.
 
+Feedback benchmark release packet evidence is metadata-only. It may describe
+repository-backed review of feedback benchmark backlog rows against lifecycle
+checks, implementation queue status, legal-document benchmark evidence, release
+observations, and customer-resolution gates, but it must not claim feedback
+resolution, customer notification, production legal quality, public benchmark
+scores, real client-document coverage, gateway calls, raw feedback handling,
+customer-note retention, public resolution text retention, or credentials.
+
 Legal RAG authority citation gate evidence is metadata-only. It may describe
 repository-backed authority-tier, jurisdiction, freshness, selected-source, and
 citation-map source-id checks, but it must not claim NewAPI/Gemini/gateway

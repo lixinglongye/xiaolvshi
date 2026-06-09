@@ -1336,6 +1336,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-public-fixture-priority-queue": "python -m pytest tests/test_legal_public_fixture_priority_queue.py tests/test_legal_public_benchmark_sampler.py tests/test_legal_benchmark_fixture_crosswalk.py tests/test_user_need_benchmark_coverage.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "user-need-legal-document-benchmark-evidence": "python -m pytest tests/test_user_need_legal_document_benchmark_evidence.py tests/test_user_need_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_fixtures.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "feedback-user-need-legal-document-benchmark-backlog": "python -m pytest tests/test_feedback_user_need_legal_document_benchmark_backlog.py tests/test_feedback_issue_cluster.py tests/test_feedback_roadmap_alignment.py tests/test_user_need_legal_document_benchmark_evidence.py tests/test_user_need_implementation_priority_queue.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "feedback-user-need-legal-document-benchmark-release-packet": "python -m pytest tests/test_feedback_user_need_legal_document_benchmark_release_packet.py tests/test_feedback_user_need_legal_document_benchmark_backlog.py tests/test_feedback_lifecycle_policy.py tests/test_user_need_implementation_priority_queue.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "model-route-legal-benchmark-risk-queue": "python -m pytest tests/test_model_route_legal_benchmark_risk_queue.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q",
         "user-need-implementation-priority-queue": "python -m pytest tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "user-need-gemini-route-coverage": "python -m pytest tests/test_user_need_gemini_route_coverage.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -1593,6 +1594,47 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     ]["evidence_paths"]
     assert "docs/FEEDBACK_USER_NEED_LEGAL_DOCUMENT_BENCHMARK_BACKLOG.md" in checks[
         "feedback-user-need-legal-document-benchmark-backlog"
+    ]["evidence_paths"]
+    assert "metadata-only feedback user-need legal-document benchmark release packet evidence" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["manual_note"]
+    assert "feedback lifecycle checks" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["manual_note"]
+    assert "release observations" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["manual_note"]
+    assert "customer-resolution gates" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["manual_note"]
+    assert "raw feedback" in checks["feedback-user-need-legal-document-benchmark-release-packet"]["manual_note"]
+    assert "customer notes" in checks["feedback-user-need-legal-document-benchmark-release-packet"]["manual_note"]
+    assert "public resolution text" in checks["feedback-user-need-legal-document-benchmark-release-packet"][
+        "manual_note"
+    ]
+    assert "customer notification" in checks["feedback-user-need-legal-document-benchmark-release-packet"][
+        "manual_note"
+    ]
+    assert "production legal quality" in checks["feedback-user-need-legal-document-benchmark-release-packet"][
+        "manual_note"
+    ]
+    assert "client-document coverage" in checks["feedback-user-need-legal-document-benchmark-release-packet"][
+        "manual_note"
+    ]
+    assert "app/backend/services/feedback_user_need_legal_document_benchmark_release_packet.py" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_feedback_user_need_legal_document_benchmark_release_packet.py" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["evidence_paths"]
+    assert "app/backend/services/feedback_lifecycle_policy.py" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
+    ]["evidence_paths"]
+    assert "docs/FEEDBACK_USER_NEED_LEGAL_DOCUMENT_BENCHMARK_RELEASE_PACKET.md" in checks[
+        "feedback-user-need-legal-document-benchmark-release-packet"
     ]["evidence_paths"]
     assert "metadata-only risk queue evidence" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]
     assert "does not call gateways" in checks["model-route-legal-benchmark-risk-queue"]["manual_note"]

@@ -102,6 +102,7 @@ import {
   getFeedbackLifecyclePolicy,
   getFeedbackRoadmapCatalog,
   getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+  getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket,
   getGeminiNewApiCheapFirstPolicyEvidence,
   getGeminiNewApiModelAliasMatrixEvidence,
   getGeminiNewApiModelSelectorEvidence,
@@ -196,6 +197,7 @@ import {
   type MaintenanceValidationEventEvidence,
   type MaintenanceEvidenceProfile,
   type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+  type MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket,
   type MaintenanceLanguage,
   type MatterAuditRetentionPolicy,
   type ModelCostRegressionSnapshots,
@@ -270,6 +272,7 @@ const statusClass: Record<string, string> = {
   cadence_reviewable: 'border-amber-200 bg-amber-50 text-amber-900',
   ocr_needed: 'border-amber-200 bg-amber-50 text-amber-900',
   review_recommended: 'border-amber-200 bg-amber-50 text-amber-900',
+  release_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   pass_with_warnings: 'border-amber-200 bg-amber-50 text-amber-900',
   license_review_required: 'border-amber-200 bg-amber-50 text-amber-900',
   ready_with_gaps: 'border-amber-200 bg-amber-50 text-amber-900',
@@ -292,6 +295,7 @@ const statusClass: Record<string, string> = {
   in_progress: 'border-sky-200 bg-sky-50 text-sky-800',
   planned: 'border-stone-200 bg-stone-50 text-stone-700',
   shipped: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  customer_resolution_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
 };
 
 const billingEntitlementGapTrackedSignals = [
@@ -752,6 +756,10 @@ function Inner() {
     feedbackUserNeedLegalDocumentBenchmarkBacklog,
     setFeedbackUserNeedLegalDocumentBenchmarkBacklog,
   ] = useState<MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog | null>(null);
+  const [
+    feedbackUserNeedLegalDocumentBenchmarkReleasePacket,
+    setFeedbackUserNeedLegalDocumentBenchmarkReleasePacket,
+  ] = useState<MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket | null>(null);
   const [feedbackLifecyclePolicy, setFeedbackLifecyclePolicy] = useState<FeedbackLifecyclePolicy | null>(null);
   const [continuousLedger, setContinuousLedger] = useState<ContinuousUpdateLedger | null>(null);
   const [continuousSessionTimeline, setContinuousSessionTimeline] =
@@ -990,6 +998,14 @@ function Inner() {
           apply: (value) =>
             setFeedbackUserNeedLegalDocumentBenchmarkBacklog(
               value as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkBacklog,
+            ),
+        },
+        {
+          label: 'Feedback user-need legal-document benchmark release packet',
+          run: getMaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket,
+          apply: (value) =>
+            setFeedbackUserNeedLegalDocumentBenchmarkReleasePacket(
+              value as MaintenanceFeedbackUserNeedLegalDocumentBenchmarkReleasePacket,
             ),
         },
         {
@@ -8270,6 +8286,290 @@ function Inner() {
                         {command}
                       </div>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {feedbackUserNeedLegalDocumentBenchmarkReleasePacket && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">Feedback user-need legal-document benchmark release packet</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary.release_row_count} release rows /{' '}
+                      {
+                        feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary
+                          .customer_resolution_ready_count
+                      }{' '}
+                      customer-ready /{' '}
+                      {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary.blocked_release_count} blocked
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      statusClass[feedbackUserNeedLegalDocumentBenchmarkReleasePacket.status] ??
+                      statusClass.review_required
+                    }
+                  >
+                    {displayToken(feedbackUserNeedLegalDocumentBenchmarkReleasePacket.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    {
+                      label: 'release_row_count',
+                      value: feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary.release_row_count,
+                    },
+                    {
+                      label: 'customer_resolution_ready_count',
+                      value:
+                        feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary
+                          .customer_resolution_ready_count,
+                    },
+                    {
+                      label: 'release_review_required_count',
+                      value:
+                        feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary
+                          .release_review_required_count,
+                    },
+                    {
+                      label: 'blocked_release_count',
+                      value: feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary.blocked_release_count,
+                    },
+                    {
+                      label: 'high_risk_blocked_count',
+                      value: feedbackUserNeedLegalDocumentBenchmarkReleasePacket.summary.high_risk_blocked_count,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                      <div className="mt-1 break-words font-mono text-[11px] text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <div className="text-xs font-black uppercase text-stone-500">Method</div>
+                  <div className="mt-1 font-mono text-xs text-stone-700">
+                    {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.method.type}
+                  </div>
+                  <div className="mt-2 grid gap-2 md:grid-cols-3">
+                    {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.method.notes.slice(0, 3).map((note) => (
+                      <div
+                        key={note}
+                        className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 text-sm leading-6 text-stone-700"
+                      >
+                        {note}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Feedback cluster</TableHead>
+                        <TableHead>Benchmark gates</TableHead>
+                        <TableHead>Lifecycle blockers</TableHead>
+                        <TableHead>Release action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.release_rows.map((row) => (
+                        <TableRow key={row.cluster_id}>
+                          <TableCell className="align-top">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{row.cluster_id}</div>
+                            <div className="mt-1 text-sm font-semibold text-stone-950">{row.primary_need_title}</div>
+                            <div className="mt-1 font-mono text-xs text-stone-700">{row.primary_need_id}</div>
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <Badge variant="outline" className={priorityClass[row.severity] ?? statusClass.warn}>
+                                {displayToken(row.severity)}
+                              </Badge>
+                              {row.high_risk && (
+                                <Badge variant="outline" className={statusClass.blocked}>
+                                  high risk
+                                </Badge>
+                              )}
+                              <Badge variant="outline" className="border-stone-200 bg-white text-stone-700">
+                                count {row.feedback_count}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              release_gate_links: {row.release_gate_links.slice(0, 5).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="flex flex-wrap gap-1">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.benchmark_action_status] ?? statusClass.review_required}
+                              >
+                                benchmark {displayToken(row.benchmark_action_status)}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  statusClass[row.legal_document_evidence_status] ?? statusClass.review_required
+                                }
+                              >
+                                evidence {displayToken(row.legal_document_evidence_status)}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.implementation_action_status] ?? statusClass.warn}
+                              >
+                                implementation {displayToken(row.implementation_action_status)}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              linked_document_case_ids: {row.linked_document_case_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              suggested_fixture_ids: {row.suggested_fixture_ids.join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="font-mono text-xs text-stone-700">
+                              lifecycle_current_state: {displayToken(row.lifecycle_current_state ?? 'unknown')}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              lifecycle_next_allowed_states: {row.lifecycle_next_allowed_states.join(', ') || '-'}
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-stone-600">
+                              lifecycle_blocking_check_ids: {row.lifecycle_blocking_check_ids.join(', ') || '-'}
+                            </div>
+                            <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-700">
+                              <div>customer_resolution_allowed: {String(row.customer_resolution_allowed)}</div>
+                              <div>customer_resolution_claimed: {String(row.customer_resolution_claimed)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <Badge
+                              variant="outline"
+                              className={statusClass[row.release_action_status] ?? statusClass.review_required}
+                            >
+                              {displayToken(row.release_action_status)}
+                            </Badge>
+                            <div className="mt-2 font-mono text-xs font-semibold text-stone-700">
+                              rank {row.release_action_rank} / score {row.priority_score}
+                            </div>
+                            <div className="mt-2 break-words font-mono text-[11px] text-stone-600">
+                              reason_codes: {row.reason_codes.join(', ') || '-'}
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-700">
+                              {row.next_actions[0] ?? 'Keep this row in maintainer release review.'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-700">
+                      <div>
+                        metadata_only:{' '}
+                        {String(feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary.metadata_only)}
+                      </div>
+                      <div>
+                        returns_customer_notes:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary
+                            .returns_customer_notes,
+                        )}
+                      </div>
+                      <div>
+                        returns_public_resolution_text:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary
+                            .returns_public_resolution_text,
+                        )}
+                      </div>
+                      <div>
+                        returns_raw_feedback_text:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary
+                            .returns_raw_feedback_text,
+                        )}
+                      </div>
+                      <div>
+                        returns_payload_bodies:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary
+                            .returns_payload_bodies,
+                        )}
+                      </div>
+                      <div>
+                        returns_credentials:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.privacy_boundary.returns_credentials,
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-700">
+                      <div>
+                        feedback_resolution_claimed:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.claim_boundary
+                            .feedback_resolution_claimed,
+                        )}
+                      </div>
+                      <div>
+                        customer_notification_claimed:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.claim_boundary
+                            .customer_notification_claimed,
+                        )}
+                      </div>
+                      <div>
+                        public_benchmark_score_claimed:{' '}
+                        {String(
+                          feedbackUserNeedLegalDocumentBenchmarkReleasePacket.claim_boundary
+                            .public_benchmark_score_claimed,
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 text-sm leading-6 text-stone-700">
+                      {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.claim_boundary.allowed_claim}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="mt-2 space-y-2 text-sm leading-6 text-stone-700">
+                      {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.recommended_actions
+                        .slice(0, 4)
+                        .map((action) => (
+                          <li key={action}>{action}</li>
+                        ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    {feedbackUserNeedLegalDocumentBenchmarkReleasePacket.validation_commands
+                      .slice(0, 3)
+                      .map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
                   </div>
                 </div>
               </section>
