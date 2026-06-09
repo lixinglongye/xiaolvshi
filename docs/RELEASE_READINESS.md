@@ -1,5 +1,16 @@
 # Release Readiness
 
+Additional required evidence:
+`modelops-gemini-official-cheap-first-source-review` records metadata-only
+official-source and price-ratio review for Gemini cheap-first defaults. It
+compares local catalog rows for Gemini 2.5 Flash-Lite, Flash, and Pro, checks
+high-frequency default alignment, links source freshness/default-promotion
+blockers, and exposes privacy/non-claim boundaries through ModelOps without
+calling NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
+the network; writing configuration; changing defaults; shifting traffic; or
+returning API keys, Authorization headers, request bodies, response bodies,
+prompts, raw payloads, legal text, model outputs, emails, or credentials.
+
 Recent optional evidence: `legal-document-benchmark-coverage`, `legal-document-benchmark-coverage-ui`, `legal-document-benchmark-fixture-ui`, `frontend-ui-regression-gate`, and `legal-document-coverage-claim-policy` expose the local legal-document fixture coverage matrix and fixture-suite evaluator in backend release checks, the maintenance UI, reviewer-facing UI regression gates, and a claim-review route. The fixture service now carries readable zh-CN locale-quality metadata and mojibake regression checks. The UI fixture panel deliberately does not render raw fixture snippets, and the checks do not claim external benchmark scores, model-run accuracy, universal document support, or real client-document testing.
 
 Additional optional evidence: `legal-document-benchmark-gap-fixtures` validates the synthetic evidence-catalog, settlement-agreement, and legal-opinion fixtures against the same low-resource benchmark suite.

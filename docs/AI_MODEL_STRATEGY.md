@@ -56,6 +56,19 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `gateway_runtime_configuration` adds the runtime setup guard between the connection profile and health plan. It verifies `APP_AI_BASE_URL` normalization, `APP_AI_KEY` placeholder display, cheap-first Gemini role defaults, and safe probe order (`/models` -> cheap JSON -> small fixture smoke) without calling a provider, writing `.env`, changing defaults, shifting traffic, or returning keys, headers, prompts, request/response bodies, raw legal text, model outputs, gateway responses, emails, or user identifiers.
 `modelops-newapi-channel-bootstrap` adds the reviewer-facing setup packet for a NewAPI/YibuAPI/OpenAI-compatible channel. It normalizes a bare channel URL to `/v1`, converts supplied key presence into the `APP_AI_KEY` placeholder, joins connection-profile/runtime-configuration/observed-model intake/coverage-gap/premium-exception review evidence, and recommends cheap-first Gemini env defaults before any live request. The packet is visible in both `/model-ops` and `/maintenance` so operations and release reviewers see the same sanitized bootstrap state. It does not call NewAPI, Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the network; write `.env` or defaults; shift traffic; or return raw payloads, prompts, legal text, model outputs, gateway responses, emails, identifiers, or credentials.
 
+`modelops-gemini-official-cheap-first-source-review` is the metadata-only
+source and price-ratio review for the cheap-first Gemini text defaults. It
+links the official Gemini models and pricing pages as review anchors, compares
+local catalog prices for `gemini-2.5-flash-lite`, `gemini-2.5-flash`, and
+`gemini-2.5-pro`, and checks that high-frequency cheap, fast, classification,
+and OCR routes remain Flash-Lite aligned before default-promotion claims are
+allowed. It does not scrape live pricing, call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network, write configuration, change
+defaults, shift traffic, claim pricing accuracy, claim automatic default
+changes, or expose keys, Authorization headers, request bodies, response
+bodies, prompts, raw payloads, legal text, model outputs, emails, identifiers,
+or credentials.
+
 `model-gateway-probe-runbook-gate` adds the ordered maintainer runbook between gateway health planning and probe evaluation. It requires runtime/channel normalization and secret-boundary review, then list-models evidence, cheap JSON probe evidence, optional image smoke, small synthetic legal fixture smoke, and default-change review in that order. The gate is visible in `/model-ops` and the aggregate ModelOps API, but it does not call NewAPI, Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the network; write configuration; change defaults; shift traffic; or return raw probe payloads, prompts, legal text, model outputs, gateway responses, headers, emails, identifiers, or credentials.
 `gateway_probe_evaluation` 接收维护者手动运行 `/v1/models` 和 tiny chat probe 后的脱敏结果，评估网关实际可用 Gemini 模型，并给出 cheap-first `.env` 推荐。
 `lifecycle_policy` 检查 Gemini/NewAPI 默认模型是否固定到稳定、具体、低价优先的模型 ID；preview 模型和 `latest` 别名只能作为显式实验，Gemini 1.x、1.5 和 2.0 代停用模型不得作为默认值。

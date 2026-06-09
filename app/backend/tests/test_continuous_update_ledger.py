@@ -482,6 +482,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-cost-impact" in completed_ids
     assert "modelops-observed-gemini-model-intake-queue" in completed_ids
     assert "modelops-observed-gemini-coverage-gap-queue" in completed_ids
+    assert "modelops-gemini-official-cheap-first-source-review" in completed_ids
     assert "modelops-gemini-official-model-family-roadmap-evidence" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
@@ -832,6 +833,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-cost-impact" not in queue_ids
     assert "modelops-observed-gemini-model-intake-queue" not in queue_ids
     assert "modelops-observed-gemini-coverage-gap-queue" not in queue_ids
+    assert "modelops-gemini-official-cheap-first-source-review" not in queue_ids
     assert "modelops-gemini-official-model-family-roadmap-evidence" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "runtime-route-reason-codes" not in queue_ids
@@ -2918,6 +2920,78 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-default-change-review" in premium_exception_entry["release_gate_links"]
     assert "modelops-gemini-default-cost-impact" in premium_exception_entry["release_gate_links"]
     assert "frontend-ui-regression" in premium_exception_entry["release_gate_links"]
+
+    gemini_official_cheap_first_source_review_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-gemini-official-cheap-first-source-review"
+    )
+    assert gemini_official_cheap_first_source_review_entry["category"] == "model_ops"
+    assert gemini_official_cheap_first_source_review_entry["size"] == "medium"
+    assert gemini_official_cheap_first_source_review_entry["status"] == "shipped"
+    assert "metadata-only official Gemini cheap-first source review evidence" in (
+        gemini_official_cheap_first_source_review_entry["impact"]
+    )
+    assert "Gemini 2.5 Flash-Lite, Flash, and Pro local catalog prices" in (
+        gemini_official_cheap_first_source_review_entry["impact"]
+    )
+    assert "Flash-Lite output cost ratios" in gemini_official_cheap_first_source_review_entry["impact"]
+    assert "high-frequency defaults remain Flash-Lite aligned" in (
+        gemini_official_cheap_first_source_review_entry["impact"]
+    )
+    assert "source freshness/default-promotion blockers" in (
+        gemini_official_cheap_first_source_review_entry["impact"]
+    )
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network/model calls" in (
+        gemini_official_cheap_first_source_review_entry["impact"]
+    )
+    assert "configuration writes" in gemini_official_cheap_first_source_review_entry["impact"]
+    assert "traffic shifts" in gemini_official_cheap_first_source_review_entry["impact"]
+    assert "Authorization headers" in gemini_official_cheap_first_source_review_entry["impact"]
+    assert "automatic default-change claims" in gemini_official_cheap_first_source_review_entry["impact"]
+    assert "app/backend/services/model_ops_gemini_official_cheap_first_source_review.py" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/backend/tests/test_model_ops_gemini_official_cheap_first_source_review.py" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/backend/services/model_catalog_source_audit.py" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/backend/services/release_readiness.py" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/backend/services/frontend_ui_regression_gate.py" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/frontend/src/lib/modelOpsApi.ts" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "app/frontend/scripts/ui-regression.mjs" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "docs/MODELOPS_GEMINI_OFFICIAL_CHEAP_FIRST_SOURCE_REVIEW.md" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "docs/AI_MODEL_STRATEGY.md" in gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in (
+        gemini_official_cheap_first_source_review_entry["evidence_paths"]
+    )
+    assert "modelops-gemini-official-cheap-first-source-review" in (
+        gemini_official_cheap_first_source_review_entry["release_gate_links"]
+    )
+    assert "model-catalog-source-audit" in gemini_official_cheap_first_source_review_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in (
+        gemini_official_cheap_first_source_review_entry["release_gate_links"]
+    )
+    assert "model-ops-cheap-first-release-decision" in (
+        gemini_official_cheap_first_source_review_entry["release_gate_links"]
+    )
+    assert "model-ops-readiness" in gemini_official_cheap_first_source_review_entry["release_gate_links"]
+    assert "frontend-ui-regression" in gemini_official_cheap_first_source_review_entry["release_gate_links"]
 
     gemini_official_roadmap_entry = next(
         entry

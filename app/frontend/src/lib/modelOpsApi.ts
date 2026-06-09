@@ -1520,6 +1520,106 @@ export type ModelCatalogSourceAudit = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiOfficialCheapFirstSourceReviewPriceRow = {
+  model_id: string;
+  catalog_status: string;
+  cost_tier: string;
+  latency_tier: string;
+  capabilities: string[];
+  input_usd_per_million_tokens: number | null;
+  output_usd_per_million_tokens: number | null;
+  pricing_status: string;
+  pricing_source_url: string;
+  cheap_first_default_allowed: boolean;
+  requires_operator_review: boolean;
+};
+
+export type ModelOpsGeminiOfficialCheapFirstSourceReviewComparisonRow = {
+  model_id: string;
+  cost_tier: string;
+  input_cost_ratio_vs_flash_lite: number | null;
+  output_cost_ratio_vs_flash_lite: number | null;
+  default_policy: string;
+  review_reason: string;
+};
+
+export type ModelOpsGeminiOfficialCheapFirstSourceReviewTaskRow = {
+  task: string;
+  default_model: string;
+  catalog_status: string;
+  cost_tier: string;
+  flash_lite_aligned: boolean;
+  high_frequency: boolean;
+  requires_review: boolean;
+  review_reason: string;
+};
+
+export type ModelOpsGeminiOfficialCheapFirstSourceReviewSourceRow = {
+  id?: string | null;
+  title?: string | null;
+  url?: string | null;
+  freshness_status?: string | null;
+  review_age_days?: number | null;
+  max_review_age_days?: number | null;
+  default_promotion_allowed?: boolean | null;
+  required_action?: string | null;
+};
+
+export type ModelOpsGeminiOfficialCheapFirstSourceReview = {
+  id: 'modelops-gemini-official-cheap-first-source-review' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    review_model_count: number;
+    priced_text_model_count: number;
+    cheap_first_task_count: number;
+    cheap_first_flash_lite_task_count: number;
+    premium_or_review_task_count: number;
+    source_review_count: number;
+    source_review_stale_count: number;
+    default_promotion_block_count: number;
+    flash_lite_input_cost_usd_per_million: number | null;
+    flash_lite_output_cost_usd_per_million: number | null;
+    largest_output_cost_ratio_vs_flash_lite: number | null;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_returned: boolean;
+  };
+  official_source_rows: ModelOpsGeminiOfficialCheapFirstSourceReviewSourceRow[];
+  price_rows: ModelOpsGeminiOfficialCheapFirstSourceReviewPriceRow[];
+  comparison_rows: ModelOpsGeminiOfficialCheapFirstSourceReviewComparisonRow[];
+  task_default_rows: ModelOpsGeminiOfficialCheapFirstSourceReviewTaskRow[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+    evidence?: string[];
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: {
+    network_called: boolean;
+    gateway_called: boolean;
+    configuration_written: boolean;
+    credentials_included: boolean;
+    raw_payload_returned?: boolean;
+    [key: string]: boolean | string | undefined;
+  };
+  claim_boundary: {
+    automatic_default_change_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    [key: string]: boolean | string;
+  };
+  validation_commands: string[];
+};
+
 export type ModelOpsGeminiOfficialModelFamilyRoadmapFamilyRow = {
   family_id: string;
   display_name: string;
@@ -5016,6 +5116,7 @@ export type ModelOpsResponse = {
   cheap_first_calibration?: ModelCheapFirstCalibration;
   price_refresh_monitor?: ModelPriceRefreshMonitor;
   catalog_source_audit?: ModelCatalogSourceAudit;
+  gemini_official_cheap_first_source_review?: ModelOpsGeminiOfficialCheapFirstSourceReview;
   gemini_official_model_family_roadmap_evidence?: ModelOpsGeminiOfficialModelFamilyRoadmapEvidence;
   gemini_embedding_cheap_first_preflight?: ModelOpsGeminiEmbeddingCheapFirstPreflight;
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
@@ -5620,6 +5721,13 @@ export async function getModelDefaultTemplateAudit(): Promise<ModelDefaultTempla
 export async function getModelCatalogSourceAudit(): Promise<ModelCatalogSourceAudit> {
   return invokeModelOpsApi<ModelCatalogSourceAudit>({
     url: '/api/v1/aihub/models/catalog-source-audit',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiOfficialCheapFirstSourceReview(): Promise<ModelOpsGeminiOfficialCheapFirstSourceReview> {
+  return invokeModelOpsApi<ModelOpsGeminiOfficialCheapFirstSourceReview>({
+    url: '/api/v1/aihub/models/gemini-official-cheap-first-source-review',
     method: 'GET',
   });
 }

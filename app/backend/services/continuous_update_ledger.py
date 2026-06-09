@@ -156,6 +156,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_ops_cheap_first_escalation_budget.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_failure_upgrade_budget.py tests/test_model_ops_readiness.py tests/test_model_ops_cheap_first_release_decision.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_ops_gemini_official_cheap_first_source_review.py tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_ops_gemini_official_model_family_roadmap.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_candidate_patch_plan.py tests/test_model_ops_observed_gemini_model_intake_queue.py tests/test_model_gateway_probe_evaluation.py tests/test_model_ops_readiness.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_model_catalog_candidate_impact_replay.py tests/test_model_default_candidate_selector.py tests/test_model_capability_matrix.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2223,6 +2224,53 @@ class ContinuousUpdateLedgerService:
                     "frontend-typecheck",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="modelops-gemini-official-cheap-first-source-review",
+                title="Gemini official cheap-first source review",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only official Gemini cheap-first source review evidence that compares "
+                    "Gemini 2.5 Flash-Lite, Flash, and Pro local catalog prices, exposes Flash-Lite output "
+                    "cost ratios, checks high-frequency defaults remain Flash-Lite aligned, links source "
+                    "freshness/default-promotion blockers, and shows explicit privacy and non-claim "
+                    "boundaries without NewAPI/Gemini/OpenAI/Google/gateway/network/model calls, "
+                    "configuration writes, traffic shifts, API keys, Authorization headers, request bodies, "
+                    "response bodies, prompts, raw payloads, raw legal text, model outputs, emails, or "
+                    "automatic default-change claims."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_gemini_official_cheap_first_source_review.py",
+                    "app/backend/tests/test_model_ops_gemini_official_cheap_first_source_review.py",
+                    "app/backend/services/model_catalog_source_audit.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_GEMINI_OFFICIAL_CHEAP_FIRST_SOURCE_REVIEW.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-gemini-official-cheap-first-source-review",
+                    "model-catalog-source-audit",
+                    "modelops-gemini-cheap-first-route-preflight",
+                    "model-ops-cheap-first-release-decision",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
                 id="modelops-gemini-official-model-family-roadmap-evidence",

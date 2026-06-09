@@ -1,5 +1,23 @@
 # Continuous Update Ledger
 
+Current Gemini official cheap-first source review slice:
+`modelops-gemini-official-cheap-first-source-review` adds metadata-only
+ModelOps evidence for the cheapest Gemini text defaults. It compares local
+catalog pricing for Gemini 2.5 Flash-Lite, Flash, and Pro, exposes Flash-Lite
+input/output price ratios, checks high-frequency defaults remain Flash-Lite
+aligned, and links source freshness/default-promotion blockers from the Gemini
+catalog source audit. The endpoint is available at
+`/api/v1/aihub/models/gemini-official-cheap-first-source-review`, the aggregate
+ModelOps payload includes `gemini_official_cheap_first_source_review`, and the
+evidence is visible on `/model-ops` between the catalog source audit and the
+official model family roadmap. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network; write configuration; change
+defaults; shift traffic; return API keys, Authorization headers, request
+bodies, response bodies, prompts, raw payloads, raw legal text, model outputs,
+emails, identifiers, or credentials; or claim pricing accuracy, production
+quality, account inventory, live gateway readiness, or automatic default
+changes.
+
 Current small legal document benchmark runbook evidence slice:
 `small-legal-document-benchmark-runbook-evidence` adds a metadata-only
 maintenance packet for low-resource legal-document delivery checks. It joins the

@@ -140,6 +140,12 @@ const catalogCandidatePatchPlanPanel = sourceSection(
   'Model catalog candidate impact replay',
   'model-ops catalog candidate patch plan section',
 );
+const geminiOfficialCheapFirstSourceReviewPanel = sourceSection(
+  modelOpsPage,
+  '{(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (',
+  '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+  'model-ops Gemini official cheap-first source review section',
+);
 const geminiOfficialModelFamilyRoadmapEvidencePanel = sourceSection(
   modelOpsPage,
   '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
@@ -3929,6 +3935,43 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'default_promotion_source_block_count', 'model-ops Gemini source default-promotion block summary'),
   () => assertIncludes(modelOpsPage, 'catalogSourceRows', 'model-ops Gemini catalog source row binding'),
   () => assertIncludes(modelOpsPage, 'catalog_source_audit', 'model-ops Gemini catalog source audit response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiOfficialCheapFirstSourceReview', 'model-ops Gemini official cheap-first source review type'),
+  () => assertIncludes(modelOpsApi, 'gemini_official_cheap_first_source_review', 'model-ops Gemini official cheap-first source review response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiOfficialCheapFirstSourceReview', 'model-ops Gemini official cheap-first source review API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-official-cheap-first-source-review', 'model-ops Gemini official cheap-first source review endpoint'),
+  () => assertIncludes(modelOpsApi, 'comparison_rows', 'model-ops Gemini official cheap-first comparison rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'task_default_rows', 'model-ops Gemini official cheap-first task rows payload guard'),
+  () => assertIncludes(modelOpsApi, 'largest_output_cost_ratio_vs_flash_lite', 'model-ops Gemini official cheap-first cost ratio guard'),
+  () => assertIncludes(modelOpsApi, 'automatic_default_change_claimed', 'model-ops Gemini official cheap-first non-claim guard'),
+  () => assertIncludes(modelOpsPage, 'Gemini official cheap-first source review', 'model-ops Gemini official cheap-first source review panel'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialCheapFirstSourceReview', 'model-ops Gemini official cheap-first state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialCheapFirstComparisonRows', 'model-ops Gemini official cheap-first comparison row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialCheapFirstTaskRows', 'model-ops Gemini official cheap-first task row binding'),
+  () => assertIncludes(modelOpsPage, 'output_cost_ratio_vs_flash_lite', 'model-ops Gemini official cheap-first output ratio binding'),
+  () => assertIncludes(modelOpsPage, 'flash_lite_aligned', 'model-ops Gemini official cheap-first default alignment binding'),
+  () => assertIncludes(modelOpsPage, 'default_promotion_allowed', 'model-ops Gemini official cheap-first source promotion binding'),
+  () => assertIncludes(modelOpsPage, 'network called', 'model-ops Gemini official cheap-first network boundary display'),
+  () => assertIncludes(modelOpsPage, 'automatic_default_change_claimed', 'model-ops Gemini official cheap-first automatic-default non-claim display'),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '{data?.catalog_source_audit && (',
+      '{(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (',
+      'model-ops Gemini official cheap-first source review follows catalog source audit',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '{(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (',
+      '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+      'model-ops Gemini official roadmap follows cheap-first source review',
+    ),
+  () =>
+    assertNotMatches(
+      geminiOfficialCheapFirstSourceReviewPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|email)\b/i,
+      'model-ops Gemini official cheap-first source review no secrets or raw request/prompt/output fields',
+    ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official model family roadmap evidence type'),
   () => assertIncludes(modelOpsApi, 'gemini_official_model_family_roadmap_evidence', 'model-ops Gemini official model family roadmap evidence response binding'),
   () => assertIncludes(modelOpsApi, 'getModelOpsGeminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official model family roadmap evidence API'),

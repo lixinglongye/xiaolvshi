@@ -86,6 +86,7 @@ PAGE_GATES = (
                 "ModelOps load guard",
                 "Performance observations",
                 "Gemini catalog source audit",
+                "Gemini official cheap-first source review",
                 "Gemini official model family roadmap evidence",
                 "Gemini 3.5/3.1 catalog visibility",
                 "Observed Gemini model intake queue",
@@ -228,6 +229,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps Gemini embedding cheap-first preflight UI evidence is metadata only: no raw embedding vectors, source chunks, request bodies, response bodies, headers, credentials, emails, or index document text are displayed or returned.",
                     "ModelOps gateway connection profile UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request bodies, response bodies, headers, raw prompts, raw payloads, raw legal text, raw model output, emails, credentials, or user identifiers.",
                     "ModelOps observed Gemini coverage gap queue UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, raw prompts, payloads, model output, legal text, emails, or credentials.",
+                    "ModelOps Gemini official cheap-first source review UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, default changes, traffic shifts, pricing accuracy claims, automatic default-change claims, API keys, Authorization headers, request bodies, response bodies, prompts, raw payloads, legal text, model output, emails, or credentials.",
                     "ModelOps Gemini official model family roadmap evidence UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, prompts, raw payloads, model output, legal text, emails, or credentials.",
                     "ModelOps Gemini/NewAPI alias capability coverage UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, request bodies, response bodies, headers, raw prompts, payloads, model output, legal text, emails, or credentials.",
                     "ModelOps gateway request compatibility gate UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/network calls, configuration writes, traffic shifts, headers, request bodies, prompts, raw legal text, model output, payloads, emails, or credentials.",
@@ -328,6 +330,12 @@ class FrontendUiRegressionGateService:
                     "page": "/model-ops",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini/NewAPI alias capability coverage panel in the ModelOps source contract.",
                     "regression_target": "Add browser-level mocked alias-capability API checks for yibu/NewAPI/action-suffix aliases, unknown models, external models, and privacy-boundary rows.",
+                },
+                {
+                    "id": "gemini-official-cheap-first-source-review-regresses",
+                    "page": "/model-ops",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the Gemini official cheap-first source review panel, API binding, comparison rows, task default rows, source rows, and privacy/non-claim boundaries in the ModelOps source contract.",
+                    "regression_target": "Add browser-level mocked cheap-first source review checks for Flash-Lite/Flash/Pro price ratios, source freshness blockers, high-frequency default drift, and forbidden raw request/model fields.",
                 },
                 {
                     "id": "gemini-official-model-family-roadmap-evidence-regresses",

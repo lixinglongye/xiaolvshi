@@ -70,6 +70,9 @@ from services.model_ops_gemini_research_refresh_gate import ModelOpsGeminiResear
 from services.model_ops_gemini_official_model_family_roadmap import (
     ModelOpsGeminiOfficialModelFamilyRoadmapService,
 )
+from services.model_ops_gemini_official_cheap_first_source_review import (
+    ModelOpsGeminiOfficialCheapFirstSourceReviewService,
+)
 from services.model_ops_gemini_embedding_cheap_first_preflight import (
     ModelOpsGeminiEmbeddingCheapFirstPreflightService,
 )
@@ -353,6 +356,11 @@ async def list_models():
         {"observed_models": observed_gateway_models}
     )
     catalog_source_audit = ModelCatalogSourceAuditService().build_audit()
+    gemini_official_cheap_first_source_review = (
+        ModelOpsGeminiOfficialCheapFirstSourceReviewService().build_review(
+            {"catalog_source_audit": catalog_source_audit}
+        )
+    )
     gemini_official_model_family_roadmap_evidence = (
         ModelOpsGeminiOfficialModelFamilyRoadmapService().build_roadmap()
     )
@@ -521,6 +529,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
+        "gemini_official_cheap_first_source_review": gemini_official_cheap_first_source_review,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
         "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
@@ -653,6 +662,7 @@ async def list_models():
         "cheap_first_calibration": cheap_first_calibration,
         "gemini_variant_matrix": gemini_variant_matrix,
         "catalog_source_audit": catalog_source_audit,
+        "gemini_official_cheap_first_source_review": gemini_official_cheap_first_source_review,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
         "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
@@ -1072,6 +1082,18 @@ async def model_catalog_source_audit():
     return {
         "success": True,
         "data": ModelCatalogSourceAuditService().build_audit(),
+    }
+
+
+@router.get("/models/gemini-official-cheap-first-source-review")
+async def modelops_gemini_official_cheap_first_source_review():
+    """Return metadata-only official source review for Gemini cheap-first defaults."""
+    source_audit = ModelCatalogSourceAuditService().build_audit()
+    return {
+        "success": True,
+        "data": ModelOpsGeminiOfficialCheapFirstSourceReviewService().build_review(
+            {"catalog_source_audit": source_audit}
+        ),
     }
 
 

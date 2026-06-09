@@ -55,6 +55,7 @@ import {
   getModelOpsUserNeedCheapFirstHandoff,
   getModelOpsUserNeedGeminiRouteCoverage,
   getModelOpsUserNeedReleaseBridge,
+  getModelOpsGeminiOfficialCheapFirstSourceReview,
   getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   getModelGatewayProbeTemplate,
   getModelOps,
@@ -95,6 +96,7 @@ import {
   type ModelOpsUserNeedCheapFirstHandoff,
   type ModelOpsUserNeedGeminiRouteCoverage,
   type ModelOpsUserNeedReleaseBridge,
+  type ModelOpsGeminiOfficialCheapFirstSourceReview,
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
@@ -613,6 +615,9 @@ function Inner() {
   const [geminiCheapFirstCoverageGate, setGeminiCheapFirstCoverageGate] =
     useState<ModelOpsGeminiCheapFirstCoverageGate | null>(null);
   const [geminiCheapFirstCoverageGateError, setGeminiCheapFirstCoverageGateError] = useState('');
+  const [geminiOfficialCheapFirstSourceReview, setGeminiOfficialCheapFirstSourceReview] =
+    useState<ModelOpsGeminiOfficialCheapFirstSourceReview | null>(null);
+  const [geminiOfficialCheapFirstSourceReviewError, setGeminiOfficialCheapFirstSourceReviewError] = useState('');
   const [geminiOfficialModelFamilyRoadmapEvidence, setGeminiOfficialModelFamilyRoadmapEvidence] =
     useState<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence | null>(null);
   const [geminiOfficialModelFamilyRoadmapEvidenceError, setGeminiOfficialModelFamilyRoadmapEvidenceError] =
@@ -731,6 +736,7 @@ function Inner() {
     setGeminiNewApiModelSelector(payload.gemini_newapi_model_selector ?? null);
     setGeminiNewApiSelectorReplay(payload.gemini_newapi_selector_replay ?? null);
     setGeminiResearchRefreshGate(payload.gemini_research_refresh_gate ?? null);
+    setGeminiOfficialCheapFirstSourceReview(payload.gemini_official_cheap_first_source_review ?? null);
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
     setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
@@ -763,6 +769,8 @@ function Inner() {
     setGeminiNewApiSelectorReplay(null);
     setGeminiCheapFirstCoverageGateError('');
     setGeminiCheapFirstCoverageGate(null);
+    setGeminiOfficialCheapFirstSourceReviewError('');
+    setGeminiOfficialCheapFirstSourceReview(null);
     setGeminiOfficialModelFamilyRoadmapEvidenceError('');
     setGeminiOfficialModelFamilyRoadmapEvidence(null);
     setGeminiCheapFirstRoutePreflightError('');
@@ -837,6 +845,7 @@ function Inner() {
         geminiNewApiModelSelectorResult,
         geminiNewApiSelectorReplayResult,
         geminiCheapFirstCoverageGateResult,
+        geminiOfficialCheapFirstSourceReviewResult,
         geminiOfficialModelFamilyRoadmapEvidenceResult,
         geminiCheapFirstRoutePreflightResult,
         geminiResearchRefreshGateResult,
@@ -865,6 +874,10 @@ function Inner() {
         aggregateOrRequest(aggregatePayload?.gemini_newapi_model_selector, getModelOpsGeminiNewApiModelSelector),
         aggregateOrRequest(aggregatePayload?.gemini_newapi_selector_replay, getModelOpsGeminiNewApiSelectorReplay),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_coverage_gate, getGeminiCheapFirstCoverageGate),
+        aggregateOrRequest(
+          aggregatePayload?.gemini_official_cheap_first_source_review,
+          getModelOpsGeminiOfficialCheapFirstSourceReview,
+        ),
         aggregateOrRequest(
           aggregatePayload?.gemini_official_model_family_roadmap_evidence,
           getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
@@ -988,6 +1001,19 @@ function Inner() {
             setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
           }
         }
+        if (geminiOfficialCheapFirstSourceReviewResult.status === 'fulfilled') {
+          setGeminiOfficialCheapFirstSourceReview(geminiOfficialCheapFirstSourceReviewResult.value);
+        } else {
+          console.error(geminiOfficialCheapFirstSourceReviewResult.reason);
+          setGeminiOfficialCheapFirstSourceReview(
+            modelOpsResult.value.gemini_official_cheap_first_source_review ?? null,
+          );
+          if (!modelOpsResult.value.gemini_official_cheap_first_source_review) {
+            setGeminiOfficialCheapFirstSourceReviewError(
+              'Gemini official cheap-first source review failed to load.',
+            );
+          }
+        }
         if (geminiOfficialModelFamilyRoadmapEvidenceResult.status === 'fulfilled') {
           setGeminiOfficialModelFamilyRoadmapEvidence(geminiOfficialModelFamilyRoadmapEvidenceResult.value);
         } else {
@@ -1080,6 +1106,9 @@ function Inner() {
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'fulfilled') {
         setGeminiCheapFirstCoverageGate(geminiCheapFirstCoverageGateResult.value);
+      }
+      if (modelOpsResult.status === 'rejected' && geminiOfficialCheapFirstSourceReviewResult.status === 'fulfilled') {
+        setGeminiOfficialCheapFirstSourceReview(geminiOfficialCheapFirstSourceReviewResult.value);
       }
       if (
         modelOpsResult.status === 'rejected'
@@ -1333,6 +1362,15 @@ function Inner() {
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstCoverageGateResult.status === 'rejected') {
         console.error(geminiCheapFirstCoverageGateResult.reason);
         setGeminiCheapFirstCoverageGateError('Gemini cheap-first coverage gate failed to load.');
+      }
+      if (
+        modelOpsResult.status === 'rejected'
+        && geminiOfficialCheapFirstSourceReviewResult.status === 'rejected'
+      ) {
+        console.error(geminiOfficialCheapFirstSourceReviewResult.reason);
+        setGeminiOfficialCheapFirstSourceReviewError(
+          'Gemini official cheap-first source review failed to load.',
+        );
       }
       if (
         modelOpsResult.status === 'rejected'
@@ -2208,6 +2246,19 @@ function Inner() {
   const catalogSourceChecks = data?.catalog_source_audit?.checks ?? [];
   const catalogSourceDefaultRows = data?.catalog_source_audit?.high_frequency_defaults ?? [];
   const catalogSourceReviewRows = data?.catalog_source_audit?.source_review_records ?? [];
+  const activeGeminiOfficialCheapFirstSourceReview =
+    geminiOfficialCheapFirstSourceReview ?? data?.gemini_official_cheap_first_source_review ?? null;
+  const geminiOfficialCheapFirstComparisonRows =
+    activeGeminiOfficialCheapFirstSourceReview?.comparison_rows ?? [];
+  const geminiOfficialCheapFirstTaskRows = activeGeminiOfficialCheapFirstSourceReview?.task_default_rows ?? [];
+  const geminiOfficialCheapFirstSourceRows =
+    activeGeminiOfficialCheapFirstSourceReview?.official_source_rows ?? [];
+  const geminiOfficialCheapFirstPrivacyEntries = boundaryDisplayEntries(
+    activeGeminiOfficialCheapFirstSourceReview?.privacy_boundary,
+  ).filter(([key]) => !/(raw_prompt|prompt_payload|request_body|response_body|headers|email)/i.test(key));
+  const geminiOfficialCheapFirstClaimEntries = boundaryDisplayEntries(
+    activeGeminiOfficialCheapFirstSourceReview?.claim_boundary,
+  );
   const activeGeminiOfficialModelFamilyRoadmapEvidence =
     geminiOfficialModelFamilyRoadmapEvidence ?? data?.gemini_official_model_family_roadmap_evidence ?? null;
   const geminiOfficialModelFamilyRows = activeGeminiOfficialModelFamilyRoadmapEvidence?.family_rows ?? [];
@@ -10699,6 +10750,245 @@ function Inner() {
                 </TableBody>
               </Table>
             </div>
+          </section>
+        )}
+
+        {(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">
+                  Gemini official cheap-first source review
+                </h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiOfficialCheapFirstSourceReview
+                    ? `${activeGeminiOfficialCheapFirstSourceReview.summary.priced_text_model_count} priced text models / ${activeGeminiOfficialCheapFirstSourceReview.summary.cheap_first_flash_lite_task_count} Flash-Lite defaults / ${activeGeminiOfficialCheapFirstSourceReview.summary.default_promotion_block_count} source blocks`
+                    : 'metadata-only Gemini cheap-first source review'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiOfficialCheapFirstSourceReview?.id
+                    ?? 'modelops-gemini-official-cheap-first-source-review'}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass(activeGeminiOfficialCheapFirstSourceReview?.status)}
+              >
+                {activeGeminiOfficialCheapFirstSourceReview?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiOfficialCheapFirstSourceReviewError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiOfficialCheapFirstSourceReviewError}
+              </div>
+            )}
+
+            {activeGeminiOfficialCheapFirstSourceReview && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialCheapFirstSourceReview.summary.review_model_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review models</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeGeminiOfficialCheapFirstSourceReview.summary.cheap_first_task_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">cheap-first tasks</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatUsd(activeGeminiOfficialCheapFirstSourceReview.summary.flash_lite_output_cost_usd_per_million)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">Flash-Lite output / 1M</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialCheapFirstSourceReview.summary.largest_output_cost_ratio_vs_flash_lite ?? '-'}x
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">largest output ratio</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {activeGeminiOfficialCheapFirstSourceReview.summary.source_review_stale_count}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">stale sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {String(activeGeminiOfficialCheapFirstSourceReview.summary.network_called)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">network called</div>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Default policy</TableHead>
+                          <TableHead>Input ratio</TableHead>
+                          <TableHead>Output ratio</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiOfficialCheapFirstComparisonRows.map((row) => (
+                          <TableRow key={row.model_id}>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                              <div className="mt-1 text-xs text-stone-600">{row.cost_tier}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[340px] text-xs leading-5 text-stone-600">
+                              <div>{row.default_policy}</div>
+                              <div className="mt-1 text-stone-500">{row.review_reason}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">
+                              {row.input_cost_ratio_vs_flash_lite == null
+                                ? '-'
+                                : `${row.input_cost_ratio_vs_flash_lite}x`}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">
+                              {row.output_cost_ratio_vs_flash_lite == null
+                                ? '-'
+                                : `${row.output_cost_ratio_vs_flash_lite}x`}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Default model</TableHead>
+                          <TableHead>flash_lite_aligned</TableHead>
+                          <TableHead>Review</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiOfficialCheapFirstTaskRows.map((row) => (
+                          <TableRow key={row.task}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.task}</div>
+                              <div className="mt-1 text-xs text-stone-600">
+                                {row.high_frequency ? 'high frequency' : 'review route'} / {row.cost_tier}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-700">{row.default_model}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.flash_lite_aligned ? 'pass' : 'warn')}>
+                                {String(row.flash_lite_aligned)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              <div>{row.requires_review ? 'requires review' : 'ready'}</div>
+                              <div className="mt-1 text-stone-500">{row.review_reason}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Official source rows</h3>
+                    <div className="space-y-2">
+                      {geminiOfficialCheapFirstSourceRows.map((source) => (
+                        <a
+                          key={source.id ?? source.url ?? source.title ?? 'source'}
+                          href={source.url ?? '#'}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600 hover:border-stone-950/30"
+                        >
+                          <div className="font-semibold text-stone-950">{source.title ?? source.id ?? 'official source'}</div>
+                          <div className="mt-1 break-all font-mono text-[11px] text-stone-500">{source.url ?? '-'}</div>
+                          <div className="mt-1">
+                            freshness: {source.freshness_status ?? '-'} / default_promotion_allowed:{' '}
+                            {String(source.default_promotion_allowed)}
+                          </div>
+                          <div className="mt-1 text-stone-500">{source.required_action ?? '-'}</div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Boundary review</h3>
+                    <div className="mb-3 rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600">
+                      <div>
+                        automatic_default_change_claimed:{' '}
+                        {String(
+                          activeGeminiOfficialCheapFirstSourceReview.claim_boundary.automatic_default_change_claimed,
+                        )}
+                      </div>
+                      <div>
+                        pricing_accuracy_claimed:{' '}
+                        {String(activeGeminiOfficialCheapFirstSourceReview.claim_boundary.pricing_accuracy_claimed)}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {geminiOfficialCheapFirstPrivacyEntries.map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-xs"
+                        >
+                          <span className="font-mono text-stone-600">{key}</span>
+                          <span className="font-semibold text-stone-950">{String(value)}</span>
+                        </div>
+                      ))}
+                      {geminiOfficialCheapFirstClaimEntries.map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-xs"
+                        >
+                          <span className="font-mono text-stone-600">{key}</span>
+                          <span className="font-semibold text-stone-950">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Actions and checks</h3>
+                    <div className="space-y-2">
+                      {activeGeminiOfficialCheapFirstSourceReview.checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-mono text-stone-700">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeGeminiOfficialCheapFirstSourceReview.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
         )}
 

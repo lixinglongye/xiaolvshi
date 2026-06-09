@@ -387,6 +387,45 @@ class ReleaseReadinessService:
                 ),
             ),
             ReleaseCheck(
+                id="modelops-gemini-official-cheap-first-source-review",
+                title="Gemini official cheap-first source review",
+                category="model_ops",
+                required=True,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_ops_gemini_official_cheap_first_source_review.py",
+                    "app/backend/tests/test_model_ops_gemini_official_cheap_first_source_review.py",
+                    "app/backend/services/model_catalog_source_audit.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/backend/tests/test_frontend_ui_regression_gate.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_GEMINI_OFFICIAL_CHEAP_FIRST_SOURCE_REVIEW.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_model_ops_gemini_official_cheap_first_source_review.py "
+                    "tests/test_model_catalog_source_audit.py tests/test_model_ops_readiness.py "
+                    "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+                    "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck "
+                    "&& npm run ui:regression"
+                ),
+                manual_note=(
+                    "This is metadata-only official Gemini cheap-first source review evidence for Flash-Lite, "
+                    "Flash, and Pro pricing ratios, high-frequency default alignment, source freshness, and "
+                    "default-promotion blockers; it does not call NewAPI, Gemini, OpenAI, Google, gateways, "
+                    "app AI endpoints, models, or the network, write configuration, change defaults, shift "
+                    "traffic, claim pricing accuracy, claim automatic default changes, or return API keys, "
+                    "Authorization headers, request bodies, response bodies, prompts, raw payloads, raw legal "
+                    "text, model outputs, emails, or credentials."
+                ),
+            ),
+            ReleaseCheck(
                 id="modelops-gemini-official-model-family-roadmap-evidence",
                 title="Gemini official model family roadmap evidence",
                 category="model_ops",

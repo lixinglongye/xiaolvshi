@@ -97,6 +97,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "ModelOps Gemini variant review form" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini model-list ingestion" in profile["release_management"]["release_readiness_controls"]
     assert "Gemini catalog source audit" in profile["release_management"]["release_readiness_controls"]
+    assert "Gemini official cheap-first source review" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway connection profile" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway runtime configuration" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway probe runbook gate" in profile["release_management"]["release_readiness_controls"]
@@ -373,6 +374,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "sanitized ModelOps Gemini variant review" in model_signal["description"]
     assert "sanitized gateway model-list ingestion" in model_signal["description"]
     assert "Gemini catalog source audit" in model_signal["description"]
+    assert "Gemini official cheap-first source review" in model_signal["description"]
+    assert "Gemini official cheap-first source review" in model_signal["responsibility"]
     assert "model catalog candidate patch planning" in model_signal["description"]
     assert "ModelOps cheap-first release decision review" in model_signal["description"]
     assert "ModelOps user-need release bridge review" in model_signal["description"]
@@ -469,7 +472,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_newapi_channel_bootstrap.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
+    assert "app/backend/tests/test_model_ops_gemini_official_cheap_first_source_review.py" in evidence_paths
     assert "docs/MODEL_CATALOG_SOURCE_AUDIT.md" in evidence_paths
+    assert "docs/MODELOPS_GEMINI_OFFICIAL_CHEAP_FIRST_SOURCE_REVIEW.md" in evidence_paths
     assert "docs/MODEL_CATALOG_CANDIDATE_PATCH_PLAN.md" in evidence_paths
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in evidence_paths
     assert "docs/MODEL_OPS_USER_NEED_RELEASE_BRIDGE.md" in evidence_paths
@@ -608,6 +613,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("Gemini cheap-first coverage gate is metadata-only coverage evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Gemini cheap-first route preflight is metadata-only route review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("official source refresh notes, local task defaults, variant review states" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Gemini official cheap-first source review is metadata-only official-source and price-ratio evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("compares Flash-Lite, Flash, and Pro local catalog prices" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("claiming pricing accuracy or automatic default changes" in guardrail for guardrail in profile["application_guardrails"])
     assert any("gateway responses, credentials, emails, or user identifiers" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal micro benchmark preflight is metadata-only low-resource legal benchmark run-planning evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("fixture ids, document case ids, fact-consistency case ids, serial run order" in guardrail for guardrail in profile["application_guardrails"])

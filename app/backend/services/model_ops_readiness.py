@@ -93,6 +93,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
     ),
     ReadinessComponent("catalog-source-audit", "Gemini catalog source audit", "configuration", "catalog_source_audit"),
     ReadinessComponent(
+        "gemini-official-cheap-first-source-review",
+        "Gemini official cheap-first source review",
+        "configuration",
+        "gemini_official_cheap_first_source_review",
+    ),
+    ReadinessComponent(
         "gemini-official-model-family-roadmap-evidence",
         "Gemini official model family roadmap evidence",
         "configuration",

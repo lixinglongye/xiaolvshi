@@ -40,6 +40,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "ModelOps load guard" in rows["/model-ops"]["protected_panels"]
     assert "Performance observations" in rows["/model-ops"]["protected_panels"]
     assert "Gemini catalog source audit" in rows["/model-ops"]["protected_panels"]
+    assert "Gemini official cheap-first source review" in rows["/model-ops"]["protected_panels"]
     assert "Gemini official model family roadmap evidence" in rows["/model-ops"]["protected_panels"]
     assert "Gemini 3.5/3.1 catalog visibility" in rows["/model-ops"]["protected_panels"]
     assert "Observed Gemini model intake queue" in rows["/model-ops"]["protected_panels"]
@@ -144,10 +145,15 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps AIHub media/speech default catalog gate UI evidence is metadata only" in payload_text
     assert "ModelOps Gemini embedding cheap-first preflight UI evidence is metadata only" in payload_text
     assert "ModelOps gateway connection profile UI evidence is metadata only" in payload_text
+    assert "ModelOps Gemini official cheap-first source review UI evidence is metadata only" in payload_text
+    assert "pricing accuracy claims" in payload_text
+    assert "automatic default-change claims" in payload_text
+    assert "Authorization headers" in payload_text
     assert "ModelOps Gemini official model family roadmap evidence UI evidence is metadata only" in payload_text
     assert "aihub-endpoint-route-coverage-gate-regresses" in payload_text
     assert "aihub-media-speech-default-catalog-gate-regresses" in payload_text
     assert "gemini-embedding-cheap-first-preflight-regresses" in payload_text
+    assert "gemini-official-cheap-first-source-review-regresses" in payload_text
     assert "observed-gateway-model-fit-matrix-regresses" in payload_text
     assert "runtime-explicit-model-fit-gate-regresses" in payload_text
     assert "gemini-official-model-family-roadmap-evidence-regresses" in payload_text
@@ -159,6 +165,9 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "forbidden raw request/model/audio fields" in payload_text
     assert "raw embedding vectors" in payload_text
     assert "source chunks" in payload_text
+    assert "comparison rows" in payload_text
+    assert "task default rows" in payload_text
+    assert "source rows" in payload_text
     assert "index document text" in payload_text
     assert "forbidden raw embedding/index fields" in payload_text
     assert "review-only model boundaries" in payload_text

@@ -40,6 +40,7 @@ The `/model-ops` page carries evidence for:
 - ModelOps load guard
 - Performance observations
 - Gemini catalog source audit
+- Gemini official cheap-first source review
 - Gemini official model family roadmap evidence
 - Cheap-first release decision
 - Default change queue
@@ -105,6 +106,12 @@ This gate does not:
   the network, write configuration, change defaults, or expose request bodies,
   response bodies, headers, prompts, raw payloads, legal text, model outputs,
   emails, or credentials for the Gemini official model family roadmap evidence
+- call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
+  the network, write configuration, change defaults, shift traffic, claim live
+  pricing accuracy, claim automatic default changes, or expose API keys,
+  Authorization headers, request bodies, response bodies, prompts, raw payloads,
+  legal text, model outputs, emails, or credentials for the Gemini official
+  cheap-first source review
 - call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or
   the network, write configuration, change defaults, shift traffic, or expose
   request bodies, response bodies, headers, prompts, raw payloads, audio,
