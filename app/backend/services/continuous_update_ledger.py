@@ -3456,6 +3456,48 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
+                id="modelops-request-execution-preflight",
+                title="Request execution preflight",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only per-request execution preflight evidence for sanitized NewAPI/Gemini "
+                    "request metadata. It joins runtime model resolution, cheap-first default ladders, fallback "
+                    "ordering, estimated token cost, request cost bounds, policy max_tokens, local downgrade "
+                    "visibility, and ModelOps UI review before live calls, without calling providers or gateways, "
+                    "writing configuration, shifting traffic, or returning headers, request bodies, prompts, "
+                    "messages, raw legal text, model outputs, payloads, emails, user identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_ops_request_execution_preflight.py",
+                    "app/backend/tests/test_model_ops_request_execution_preflight.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_request_cost_bounds.py",
+                    "app/backend/services/model_gateway_request_compatibility_gate.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODELOPS_REQUEST_EXECUTION_PREFLIGHT.md",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "modelops-request-execution-preflight",
+                    "model-gateway-request-compatibility-gate",
+                    "model-request-cost-bounds",
+                    "modelops-runtime-explicit-model-fit-gate",
+                    "modelops-gemini-cheap-first-route-preflight",
+                    "model-ops-readiness",
+                    "frontend-ui-regression-gate",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
                 id="model-runtime-explicit-unknown-lifecycle-guard",
                 title="Runtime explicit unknown and lifecycle guard",
                 category="model_ops",

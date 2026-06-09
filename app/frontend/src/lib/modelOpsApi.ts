@@ -4261,6 +4261,127 @@ export type ModelGatewayRequestCompatibilityGate = {
   validation_commands: string[];
 };
 
+export type ModelOpsRequestExecutionPreflightFallbackRow = {
+  order: number;
+  model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  catalog_status: string;
+  cheap_first_candidate: boolean;
+  premium_candidate: boolean;
+  pricing_estimate_available: boolean;
+};
+
+export type ModelOpsRequestExecutionPreflightRow = {
+  id: string;
+  request_id: string;
+  task: string;
+  requested_model?: string | null;
+  resolved_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  max_cost_tier: string;
+  budget_mode: string;
+  allow_over_budget_model: boolean;
+  requires_operator_review: boolean;
+  routed_to_recommended_model: boolean;
+  recommended_model: string;
+  high_frequency_task: boolean;
+  cheap_first_aligned: boolean;
+  estimated_input_tokens: number;
+  estimated_output_tokens: number;
+  estimated_total_tokens: number;
+  estimated_request_cost_usd?: number | null;
+  request_cost_limit_usd: number;
+  pricing_estimate_available: boolean;
+  request_policy: {
+    effective_max_tokens: number;
+    max_tokens_adjusted: boolean;
+    cost_mode: string;
+  };
+  fallback_rows: ModelOpsRequestExecutionPreflightFallbackRow[];
+  execution_status: string;
+  release_action: string;
+  reason_codes: string[];
+  next_action: string;
+};
+
+export type ModelOpsRequestExecutionPreflight = {
+  id: 'modelops-request-execution-preflight' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    request_count: number;
+    ready_request_count: number;
+    review_request_count: number;
+    blocked_request_count: number;
+    high_frequency_request_count: number;
+    cheap_first_ready_count: number;
+    local_downgrade_count: number;
+    unknown_price_count: number;
+    estimated_cost_usd_sum: number;
+    forbidden_payload_field_count: number;
+    raw_payload_echoed: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    credentials_included: boolean;
+  };
+  request_rows: ModelOpsRequestExecutionPreflightRow[];
+  checks: Array<{ id: string; status: string; reason: string; evidence_count?: number; evidence?: string[] }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  execution_policy: Record<string, string>;
+  privacy_boundary: {
+    metadata_only: boolean;
+    raw_payload_echoed: boolean;
+    request_body_included: boolean;
+    headers_included: boolean;
+    prompts_included: boolean;
+    raw_legal_text_included: boolean;
+    raw_model_output_included: boolean;
+    credentials_included: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    output_scope: string;
+  };
+  claim_boundary: {
+    live_gateway_execution_claimed: boolean;
+    actual_gateway_inventory_claimed: boolean;
+    pricing_accuracy_claimed: boolean;
+    model_quality_claimed: boolean;
+    automatic_default_change_claimed: boolean;
+    request_sent: boolean;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
+export type ModelOpsRequestExecutionPreflightPayload = {
+  requests?: Array<{
+    id?: string;
+    task?: string;
+    model?: string;
+    estimated_input_tokens?: number;
+    estimated_output_tokens?: number;
+    max_tokens?: number;
+    max_cost_usd?: number;
+    allow_over_budget_model?: boolean;
+    fallback_chain?: string[];
+  }>;
+};
+
 export type ModelRequestCostBound = {
   id: string;
   task: string;
@@ -5186,6 +5307,7 @@ export type ModelOpsResponse = {
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
   gateway_request_compatibility_gate?: ModelGatewayRequestCompatibilityGate;
+  request_execution_preflight?: ModelOpsRequestExecutionPreflight;
   request_cost_bounds?: ModelRequestCostBounds;
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
@@ -5352,6 +5474,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     fact_consistency_items?: unknown;
     run_sequence?: unknown;
     rows?: unknown;
+    request_rows?: unknown;
     task_rows?: unknown;
     role_rows?: unknown;
     runtime_probe_sequence?: unknown;
@@ -5857,6 +5980,23 @@ export async function evaluateModelGatewayRequestCompatibilityGate(
 ): Promise<ModelGatewayRequestCompatibilityGate> {
   return invokeModelOpsApi<ModelGatewayRequestCompatibilityGate>({
     url: '/api/v1/aihub/models/gateway-request-compatibility-gate',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsRequestExecutionPreflight(): Promise<ModelOpsRequestExecutionPreflight> {
+  return invokeModelOpsApi<ModelOpsRequestExecutionPreflight>({
+    url: '/api/v1/aihub/models/request-execution-preflight',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsRequestExecutionPreflight(
+  payload: ModelOpsRequestExecutionPreflightPayload,
+): Promise<ModelOpsRequestExecutionPreflight> {
+  return invokeModelOpsApi<ModelOpsRequestExecutionPreflight>({
+    url: '/api/v1/aihub/models/request-execution-preflight',
     method: 'POST',
     data: payload,
   });

@@ -79,6 +79,7 @@ from services.model_ops_gemini_official_cheap_first_source_review import (
 from services.model_ops_gemini_embedding_cheap_first_preflight import (
     ModelOpsGeminiEmbeddingCheapFirstPreflightService,
 )
+from services.model_ops_request_execution_preflight import ModelOpsRequestExecutionPreflightService
 from services.model_ops_aihub_endpoint_route_coverage_gate import (
     ModelOpsAIHubEndpointRouteCoverageGateService,
 )
@@ -425,6 +426,7 @@ async def list_models():
             "gemini_cheap_first_coverage_gate": gemini_cheap_first_coverage_gate,
         }
     )
+    request_execution_preflight = ModelOpsRequestExecutionPreflightService().build_preflight()
     aihub_endpoint_route_coverage_gate = ModelOpsAIHubEndpointRouteCoverageGateService().build_gate()
     aihub_media_speech_default_catalog_gate = (
         ModelOpsAIHubMediaSpeechDefaultCatalogGateService().build_gate()
@@ -524,6 +526,7 @@ async def list_models():
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
+        "request_execution_preflight": request_execution_preflight,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -658,6 +661,7 @@ async def list_models():
         "reasoning_policy": reasoning_policy,
         "request_policy": request_policy,
         "gateway_request_compatibility_gate": gateway_request_compatibility_gate,
+        "request_execution_preflight": request_execution_preflight,
         "route_telemetry": route_telemetry,
         "route_telemetry_repository": route_telemetry_repository,
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
@@ -1103,6 +1107,25 @@ async def evaluate_model_gateway_request_compatibility_gate(payload: dict[str, A
     return {
         "success": True,
         "data": ModelGatewayRequestCompatibilityGateService().build_gate(payload),
+    }
+
+
+@router.get("/models/request-execution-preflight")
+async def modelops_request_execution_preflight():
+    """Return metadata-only request execution preflight evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["request_execution_preflight"],
+    }
+
+
+@router.post("/models/request-execution-preflight")
+async def evaluate_modelops_request_execution_preflight(payload: dict[str, Any]):
+    """Evaluate sanitized request execution metadata without gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsRequestExecutionPreflightService().build_preflight(payload),
     }
 
 

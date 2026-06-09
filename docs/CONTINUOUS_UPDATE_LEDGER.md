@@ -772,6 +772,17 @@ changes, traffic shifts, API keys, Authorization headers, request bodies,
 response bodies, headers, messages, prompts, raw payloads, legal text, model
 outputs, gateway responses, credentials, emails, or user identifiers.
 
+Current request execution preflight evidence:
+`modelops-request-execution-preflight` adds shipped metadata-only per-request
+execution evidence for sanitized NewAPI/Gemini runtime metadata. It joins local
+runtime routing, cheap-first task ladders, fallback ordering, estimated token
+cost, request cost bounds, and ModelOps UI review so maintainers can see which
+requests are ready, review-required, locally downgraded, or blocked before live
+calls. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, or the network, write configuration, shift traffic, or
+include headers, request bodies, prompts, messages, raw payloads, legal text,
+model outputs, gateway responses, emails, user identifiers, or credentials.
+
 Current runtime explicit unknown/lifecycle guard evidence:
 `model-runtime-explicit-unknown-lifecycle-guard` changes local routing so
 explicit unknown gateway models and non-stable preview/review lifecycle catalog

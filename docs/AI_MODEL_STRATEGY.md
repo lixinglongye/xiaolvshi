@@ -370,6 +370,17 @@ defaults, shift traffic, validate live account inventory, or include request or
 response bodies, headers, messages, prompts, raw payloads, legal text, model
 outputs, gateway responses, credentials, emails, or user identifiers.
 
+`modelops-request-execution-preflight` is the shipped metadata-only per-request
+execution review gate for sanitized NewAPI/Gemini runtime metadata. It combines
+runtime model resolution, cheap-first default ladders, fallback ordering,
+estimated input/output token cost, task request cost bounds, local downgrade
+visibility, and ModelOps UI review states before live calls. It does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the
+network, write configuration, change defaults, shift traffic, validate live
+account inventory, or include request bodies, headers, messages, prompts, raw
+payloads, legal text, model outputs, gateway responses, credentials, emails, or
+user identifiers.
+
 ## Current Gemini Coverage
 
 目录中列出并公开给 `/api/aihub/models` 的模型包括：

@@ -70,6 +70,7 @@ import {
   type ModelOpsGeminiCheapFirstCoverageGate,
   type ModelOpsGeminiCheapFirstRoutePreflight,
   type ModelOpsGeminiCheapFirstRoutePreflightPayload,
+  type ModelOpsRequestExecutionPreflight,
   type ModelOpsGeminiResearchRefreshGate,
   type ModelOpsAIHubEndpointRouteCoverageGate,
   type ModelOpsAIHubMediaSpeechDefaultCatalogGate,
@@ -2370,6 +2371,12 @@ function Inner() {
   const gatewayRequestCompatibilityClaimEntries = boundaryDisplayEntries(
     gatewayRequestCompatibilityGate?.claim_boundary,
   );
+  const requestExecutionPreflight: ModelOpsRequestExecutionPreflight | null = data?.request_execution_preflight ?? null;
+  const requestExecutionRows = requestExecutionPreflight?.request_rows ?? [];
+  const requestExecutionChecks = requestExecutionPreflight?.checks ?? [];
+  const requestExecutionPolicyEntries = Object.entries(requestExecutionPreflight?.execution_policy ?? {});
+  const requestExecutionPrivacyEntries = boundaryDisplayEntries(requestExecutionPreflight?.privacy_boundary);
+  const requestExecutionClaimEntries = boundaryDisplayEntries(requestExecutionPreflight?.claim_boundary);
   const requestCostBoundRows = data?.request_cost_bounds?.task_bounds ?? [];
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
@@ -13965,6 +13972,148 @@ function Inner() {
                 </div>
                 <div className="mt-3 text-xs leading-5 text-stone-600">
                   validation: {gatewayRequestCompatibilityGate.validation_commands[0]}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {requestExecutionPreflight && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Request execution preflight</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {requestExecutionPreflight.summary.request_count} requests /{' '}
+                  {requestExecutionPreflight.summary.ready_request_count} ready /{' '}
+                  {requestExecutionPreflight.summary.review_request_count} review /{' '}
+                  {requestExecutionPreflight.summary.blocked_request_count} blocked
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(requestExecutionPreflight.status)}>
+                {requestExecutionPreflight.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              {[
+                { label: 'high-frequency', value: requestExecutionPreflight.summary.high_frequency_request_count },
+                { label: 'cheap-first ready', value: requestExecutionPreflight.summary.cheap_first_ready_count },
+                { label: 'local downgrades', value: requestExecutionPreflight.summary.local_downgrade_count },
+                { label: 'unknown prices', value: requestExecutionPreflight.summary.unknown_price_count },
+                { label: 'estimated cost', value: formatUsd(requestExecutionPreflight.summary.estimated_cost_usd_sum) },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                  <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Request</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Resolved model</TableHead>
+                    <TableHead>Tokens and cost</TableHead>
+                    <TableHead>Fallbacks</TableHead>
+                    <TableHead>Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {requestExecutionRows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-mono text-xs font-semibold text-stone-950">{row.request_id}</div>
+                        <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(row.execution_status)}>
+                          {row.execution_status.replace(/_/g, ' ')}
+                        </Badge>
+                        {row.routed_to_recommended_model && (
+                          <div className="mt-2 text-[11px] text-stone-500">local downgrade applied</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[260px] font-mono text-xs text-stone-700">{row.resolved_model}</div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <Badge variant="outline" className={costClass[row.cost_tier] ?? 'bg-white'}>
+                            {row.cost_tier}
+                          </Badge>
+                          <Badge variant="outline" className={row.cheap_first_aligned ? statusClass('pass') : statusClass('warn')}>
+                            {row.cheap_first_aligned ? 'cheap-first' : 'review route'}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs leading-5 text-stone-600">
+                        in {formatNumber(row.estimated_input_tokens)}
+                        <br />
+                        out {formatNumber(row.estimated_output_tokens)}
+                        <br />
+                        cost {formatUsd(row.estimated_request_cost_usd)} / limit {formatUsd(row.request_cost_limit_usd)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex max-w-[300px] flex-wrap gap-1">
+                          {row.fallback_rows.slice(0, 4).map((fallback) => (
+                            <Badge
+                              key={`${row.id}-${fallback.order}-${fallback.model}`}
+                              variant="outline"
+                              className={fallback.cheap_first_candidate ? statusClass('pass') : statusClass('warn')}
+                            >
+                              {fallback.order}. {fallback.model}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                        <div className="font-semibold text-stone-800">{row.release_action.replace(/_/g, ' ')}</div>
+                        <div className="mt-1">{row.reason_codes.slice(0, 4).join(', ')}</div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Execution policy</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {requestExecutionPolicyEntries.map(([key, value]) => (
+                    <div key={key}>
+                      <span className="font-mono text-stone-800">{key}</span>: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Boundary</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {[...requestExecutionPrivacyEntries, ...requestExecutionClaimEntries.slice(0, 4)].map(([key, value]) => (
+                    <div key={key} className="flex justify-between gap-3 border-b border-stone-950/10 pb-1">
+                      <span>{key}</span>
+                      <span className="font-mono">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                <h3 className="font-semibold text-stone-950">Checks</h3>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-stone-600">
+                  {requestExecutionChecks.map((check) => (
+                    <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-stone-800">{check.id}</span>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-1">{check.reason}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-600">
+                  validation: {requestExecutionPreflight.validation_commands[0]}
                 </div>
               </div>
             </div>
