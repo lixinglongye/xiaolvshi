@@ -677,6 +677,28 @@ class ReleaseReadinessService:
                 validation_command="python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q",
             ),
             ReleaseCheck(
+                id="model-gateway-live-probe",
+                title="Opt-in model gateway live probe coverage",
+                category="model_ops",
+                required=False,
+                owner="engineering",
+                evidence_paths=(
+                    "app/backend/services/model_gateway_live_probe.py",
+                    "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/tests/test_model_gateway_probe_evaluation.py",
+                    "docs/MODEL_GATEWAY_PROBE_EVALUATION.md",
+                ),
+                validation_command="python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py -q",
+                manual_note=(
+                    "This is an opt-in maintainer live probe for OpenAI-compatible Gemini/NewAPI gateways. Dry-run "
+                    "mode does not call the network; live mode requires execute=true plus APP_AI_BASE_URL and APP_AI_KEY "
+                    "in local secrets. It returns sanitized model IDs, status, HTTP status, JSON booleans, and latency "
+                    "only, and does not return API keys, Authorization headers, raw prompts, raw gateway responses, "
+                    "model outputs, legal text, emails, image URLs, base64 payloads, or credentials."
+                ),
+            ),
+            ReleaseCheck(
                 id="model-gateway-probe-runbook-gate",
                 title="Model gateway probe runbook gate",
                 category="model_ops",

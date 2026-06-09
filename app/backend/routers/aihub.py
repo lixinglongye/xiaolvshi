@@ -57,6 +57,7 @@ from services.model_failure_upgrade_budget import ModelFailureUpgradeBudgetServi
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
 from services.model_gateway_connection_profile import ModelGatewayConnectionProfileService
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
+from services.model_gateway_live_probe import ModelGatewayLiveProbeService
 from services.model_gateway_runtime_configuration import ModelGatewayRuntimeConfigurationService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
 from services.model_gateway_probe_runbook_gate import ModelGatewayProbeRunbookGateService
@@ -756,6 +757,20 @@ async def evaluate_gateway_probe(payload: dict[str, Any]):
     result = ModelGatewayProbeEvaluationService().evaluate(payload)
     model_gateway_probe_evaluation_registry.record(result)
     _clear_model_ops_payload_cache()
+    return {
+        "success": True,
+        "data": result,
+    }
+
+
+@router.post("/models/gateway-live-probe")
+async def run_gateway_live_probe(payload: dict[str, Any] | None = Body(default=None)):
+    """Run an opt-in live gateway probe and return sanitized metadata only."""
+    result = await ModelGatewayLiveProbeService().run(payload or {})
+    evaluation = result.get("evaluation") if isinstance(result.get("evaluation"), dict) else None
+    if evaluation:
+        model_gateway_probe_evaluation_registry.record(evaluation)
+        _clear_model_ops_payload_cache()
     return {
         "success": True,
         "data": result,

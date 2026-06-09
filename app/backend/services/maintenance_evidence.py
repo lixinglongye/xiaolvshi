@@ -377,6 +377,7 @@ class MaintenanceEvidenceService:
                     "app/backend/services/model_ops_newapi_channel_bootstrap.py",
                     "app/backend/services/model_gateway_health_plan.py",
                     "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/services/model_gateway_live_probe.py",
                     "app/backend/services/model_gateway_probe_runbook_gate.py",
                     "app/backend/services/model_lifecycle_policy.py",
                     "app/backend/services/model_ops_readiness.py",

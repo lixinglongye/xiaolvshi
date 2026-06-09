@@ -7,6 +7,7 @@
 ```http
 GET /api/v1/aihub/models/gateway-probe-template
 POST /api/v1/aihub/models/gateway-probe-evaluation
+POST /api/v1/aihub/models/gateway-live-probe
 ```
 
 ## Payload
@@ -43,6 +44,42 @@ It fails closed when submitted payloads include raw or secret-bearing fields suc
 
 `POST /api/v1/aihub/models/gateway-probe-evaluation` also records the latest sanitized evaluation result in process memory. `GET /api/v1/aihub/models` then reuses that snapshot for `gateway_probe_evaluation`, `gateway_probe_runbook_gate`, and `model_ops_readiness`, so a browser refresh keeps the most recent manual evidence instead of reverting to `not_run`. The registry stores only the evaluated result, never the submitted payload. If a payload is rejected for forbidden raw or secret-bearing fields, the stored snapshot keeps the fail status, sanitized check IDs, summary counts, and actions, but drops model rows and `.env` recommendations.
 
+## Maintainer Live Probe
+
+`POST /api/v1/aihub/models/gateway-live-probe` provides a safer bridge between the dry-run runbook and a real NewAPI/Gemini-compatible gateway.
+
+Default dry-run request:
+
+```json
+{
+  "models": ["gemini-2.5-flash-lite"],
+  "max_models": 1
+}
+```
+
+Dry-run mode never calls the gateway. It returns the planned `list_models` and tiny chat JSON contracts, the configured base URL shape, and whether `APP_AI_KEY` is present.
+
+Live request:
+
+```json
+{
+  "execute": true,
+  "models": ["gemini-2.5-flash-lite"],
+  "max_models": 1
+}
+```
+
+Live mode requires `APP_AI_BASE_URL` and `APP_AI_KEY` in local or deployment secrets. It calls `models.list()` and then probes at most three selected chat models with a static non-client JSON prompt. The endpoint returns only sanitized metadata:
+
+- selected model IDs,
+- pass/warn/fail status,
+- HTTP status,
+- JSON parse boolean,
+- latency in milliseconds,
+- a nested `gateway_probe_evaluation` result.
+
+It never returns API keys, Authorization headers, raw gateway responses, raw prompts, user documents, emails, image URLs, base64 data, or model output text. When live execution produces an evaluation result, the router records that sanitized evaluation in the existing in-process readiness registry.
+
 ## What It Reports
 
 - observed gateway models and canonical local Gemini model IDs,
@@ -68,6 +105,8 @@ It fails closed when submitted payloads include raw or secret-bearing fields suc
 8. Review `gateway_probe_runbook_gate` to confirm list-models, cheap JSON probe, optional image smoke, legal fixture smoke, and default-change review are in order.
 9. Review `.env` recommendations before changing defaults.
 
+For maintainer environments, steps 2-4 can be replaced by `POST /gateway-live-probe` with `execute=true`. Keep `max_models` small and cheap-first, then run the legal fixture quick suite before promoting any defaults.
+
 ## Validation
 
 ```bash
@@ -81,6 +120,7 @@ Do not submit or commit API keys, bearer tokens, Authorization headers, user pro
 ## Related Files
 
 - `app/backend/services/model_gateway_probe_evaluation.py`
+- `app/backend/services/model_gateway_live_probe.py`
 - `app/backend/tests/test_model_gateway_probe_evaluation.py`
 - `app/backend/services/model_gateway_health_plan.py`
 - `app/backend/routers/aihub.py`

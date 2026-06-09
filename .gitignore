@@ -18,6 +18,7 @@ app/backend/.venv/
 # Backend runtime artifacts
 app/backend/logs/
 app/backend/local_storage/
+app/backend/*.log
 app/backend/*.db
 app/backend/*.sqlite
 app/backend/*.sqlite3
@@ -29,9 +30,11 @@ app/frontend/dist/
 app/frontend/output/
 app/frontend/.playwright-cli/
 app/frontend/.mgx/*.log
+app/frontend/*.log
 .vite/
 
 # Generated or uploaded local files
+artifacts/
 uploads/
 tmp/
 *.tmp

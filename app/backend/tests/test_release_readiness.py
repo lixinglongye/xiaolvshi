@@ -1954,6 +1954,22 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in checks[
         "modelops-newapi-channel-bootstrap"
     ]["evidence_paths"]
+    assert checks["model-gateway-live-probe"]["required"] is False
+    assert checks["model-gateway-live-probe"]["blocks_release"] is False
+    assert "opt-in maintainer live probe" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "execute=true" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "APP_AI_BASE_URL" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "APP_AI_KEY" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "sanitized model IDs" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "API keys" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "Authorization headers" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "raw gateway responses" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "model outputs" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "credentials" in checks["model-gateway-live-probe"]["manual_note"]
+    assert "app/backend/services/model_gateway_live_probe.py" in checks["model-gateway-live-probe"]["evidence_paths"]
+    assert "app/backend/services/model_gateway_probe_evaluation.py" in checks["model-gateway-live-probe"]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["model-gateway-live-probe"]["evidence_paths"]
+    assert "tests/test_model_gateway_probe_evaluation.py" in checks["model-gateway-live-probe"]["validation_command"]
     assert checks["model-gateway-probe-runbook-gate"]["required"] is False
     assert checks["model-gateway-probe-runbook-gate"]["blocks_release"] is False
     assert "metadata-only model gateway probe runbook evidence" in checks["model-gateway-probe-runbook-gate"]["manual_note"]

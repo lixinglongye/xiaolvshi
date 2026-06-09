@@ -6,6 +6,7 @@ from services.model_gateway_probe_evaluation import (
     ModelGatewayProbeEvaluationService,
     model_gateway_probe_evaluation_registry,
 )
+from services.model_gateway_live_probe import ModelGatewayLiveProbeService
 
 
 @pytest.fixture(autouse=True)
@@ -291,3 +292,123 @@ def test_gateway_probe_evaluation_uses_current_defaults_for_change_detection(mon
     )
 
     assert any(row["requires_change"] for row in result["recommended_env"])
+
+
+class _FakeModelRow:
+    def __init__(self, model_id: str) -> None:
+        self.id = model_id
+
+
+class _FakeModels:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def list(self):
+        self.calls += 1
+        return type(
+            "FakeModelList",
+            (),
+            {
+                "data": [
+                    _FakeModelRow("gemini-2.5-flash-lite"),
+                    _FakeModelRow("gemini-2.5-flash"),
+                    _FakeModelRow("gemini-2.5-pro"),
+                ]
+            },
+        )()
+
+
+class _FakeLiveMessage:
+    content = '{"ok": true, "task": "gateway_probe"}'
+
+
+class _FakeLiveChoice:
+    message = _FakeLiveMessage()
+
+
+class _FakeLiveResponse:
+    choices = [_FakeLiveChoice()]
+
+
+class _FakeLiveCompletions:
+    def __init__(self) -> None:
+        self.calls = []
+
+    async def create(self, **params):
+        self.calls.append(params)
+        return _FakeLiveResponse()
+
+
+class _FakeLiveChat:
+    def __init__(self) -> None:
+        self.completions = _FakeLiveCompletions()
+
+
+class _FakeLiveClient:
+    def __init__(self) -> None:
+        self.models = _FakeModels()
+        self.chat = _FakeLiveChat()
+
+
+@pytest.mark.asyncio
+async def test_gateway_live_probe_dry_run_does_not_call_gateway():
+    result = await ModelGatewayLiveProbeService().run({"models": ["gemini-2.5-flash-lite"]})
+
+    assert result["status"] == "dry_run"
+    assert result["summary"]["gateway_called"] is False
+    assert result["planned_probes"]["chat_models"] == ["gemini-2.5-flash-lite"]
+    assert "sk-" not in str(result)
+
+
+@pytest.mark.asyncio
+async def test_gateway_live_probe_executes_fake_client_and_returns_sanitized_evaluation():
+    fake_client = _FakeLiveClient()
+
+    result = await ModelGatewayLiveProbeService().run(
+        {"execute": True, "models": ["gemini-2.5-flash-lite"], "max_models": 1},
+        client=fake_client,
+    )
+
+    assert result["status"] == "pass"
+    assert fake_client.models.calls == 1
+    assert fake_client.chat.completions.calls[0]["model"] == "gemini-2.5-flash-lite"
+    assert fake_client.chat.completions.calls[0]["max_tokens"] == 32
+    assert result["summary"]["gateway_called"] is True
+    assert result["summary"]["raw_outputs_returned"] is False
+    assert result["chat_probe_results"]["gemini-2.5-flash-lite"]["json_ok"] is True
+    assert result["evaluation"]["status"] == "pass"
+    assert "gateway_probe" not in str(result)
+    assert "Bearer " not in str(result)
+    assert "sk-" not in str(result)
+
+
+@pytest.mark.asyncio
+async def test_gateway_live_probe_blocks_execute_when_runtime_config_missing(monkeypatch):
+    from services import model_gateway_live_probe
+
+    monkeypatch.setattr(model_gateway_live_probe.settings, "app_ai_base_url", None)
+    monkeypatch.setattr(model_gateway_live_probe.settings, "app_ai_key", None)
+
+    result = await ModelGatewayLiveProbeService().run({"execute": True})
+
+    assert result["status"] == "blocked"
+    assert result["summary"]["gateway_called"] is False
+    assert "live-probe-configured" in result["blocking_check_ids"]
+
+
+def test_gateway_live_probe_route_returns_dry_run_contract():
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.aihub import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    response = client.post("/api/v1/aihub/models/gateway-live-probe", json={"models": ["gemini-2.5-flash-lite"]})
+
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["status"] == "dry_run"
+    assert payload["summary"]["gateway_called"] is False
+    assert payload["planned_probes"]["chat_models"] == ["gemini-2.5-flash-lite"]

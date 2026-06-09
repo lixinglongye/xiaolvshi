@@ -528,6 +528,29 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("low-cost-routing", "safe-ai-ops"),
             ),
             LedgerEntry(
+                id="model-gateway-live-probe",
+                title="Opt-in live Gemini/NewAPI gateway probe",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a maintainer-only live gateway probe contract that defaults to dry-run, executes only with "
+                    "execute=true and local APP_AI_BASE_URL/APP_AI_KEY secrets, probes cheap Gemini chat models with a "
+                    "static JSON prompt, feeds sanitized status/latency/JSON metadata into gateway probe evaluation, "
+                    "and never returns API keys, Authorization headers, raw prompts, model outputs, raw gateway "
+                    "responses, legal text, emails, image URLs, or base64 payloads."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_gateway_live_probe.py",
+                    "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/tests/test_model_gateway_probe_evaluation.py",
+                    "docs/MODEL_GATEWAY_PROBE_EVALUATION.md",
+                ),
+                release_gate_links=("model-gateway-live-probe", "model-gateway-probe-evaluation", "model-ops-readiness"),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
                 id="model-gateway-probe-runbook-gate",
                 title="Model gateway probe runbook gate",
                 category="model_ops",

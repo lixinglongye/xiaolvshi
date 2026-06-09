@@ -509,6 +509,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "gateway-probe-secret-value-guard" in completed_ids
     assert "gateway-probe-readiness-binding" in completed_ids
     assert "gateway-probe-latest-evidence-store" in completed_ids
+    assert "model-gateway-live-probe" in completed_ids
     assert "model-ops-readiness-required-optional-summary" in completed_ids
     assert "model-ops-readiness-warning-drilldown" in completed_ids
     assert "route-telemetry-ops-summary" in completed_ids
