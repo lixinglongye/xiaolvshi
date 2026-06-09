@@ -90,6 +90,7 @@ import {
   getMaintenanceEvidence,
   getMaintenanceGateSnapshot,
   getMaintenanceGitHistoryEvidence,
+  getMaintenanceNewApiChannelBootstrap,
   getMaintenanceContinuousSessionRunMonitor,
   getMaintenanceValidationEventEvidence,
   getMatterAuditRetentionPolicy,
@@ -185,6 +186,7 @@ import {
   type MaintenanceContinuousSessionReviewPacket,
   type MaintenanceGateSnapshot,
   type MaintenanceGitHistoryEvidence,
+  type MaintenanceNewApiChannelBootstrap,
   type MaintenanceValidationEventEvidence,
   type MaintenanceEvidenceProfile,
   type MaintenanceLanguage,
@@ -791,6 +793,8 @@ function Inner() {
   const [fixtureModelMatrix, setFixtureModelMatrix] = useState<LegalFixtureModelMatrix | null>(null);
   const [geminiNewApiCheapFirstPolicy, setGeminiNewApiCheapFirstPolicy] =
     useState<GeminiNewApiCheapFirstPolicy | null>(null);
+  const [maintenanceNewApiChannelBootstrap, setMaintenanceNewApiChannelBootstrap] =
+    useState<MaintenanceNewApiChannelBootstrap | null>(null);
   const [maintenanceObservedGeminiCoverageGapQueue, setMaintenanceObservedGeminiCoverageGapQueue] =
     useState<ModelOpsObservedGeminiCoverageGapQueue | null>(null);
   const [maintenanceObservedGeminiPremiumExceptionReview, setMaintenanceObservedGeminiPremiumExceptionReview] =
@@ -1158,6 +1162,11 @@ function Inner() {
           apply: (value) => setGeminiNewApiCheapFirstPolicy(value as GeminiNewApiCheapFirstPolicy),
         },
         {
+          label: 'NewAPI channel bootstrap readiness packet',
+          run: getMaintenanceNewApiChannelBootstrap,
+          apply: (value) => setMaintenanceNewApiChannelBootstrap(value as MaintenanceNewApiChannelBootstrap),
+        },
+        {
           label: 'Observed Gemini coverage gap queue',
           run: getMaintenanceObservedGeminiCoverageGapQueue,
           apply: (value) =>
@@ -1454,6 +1463,12 @@ function Inner() {
   const heartbeatRecommendedActions = maintenanceHeartbeatEvidence?.recommended_actions ?? [];
   const heartbeatValidationCommands = maintenanceHeartbeatEvidence?.validation_commands ?? [];
   const heartbeatReadyStatus = readinessStatus(maintenanceHeartbeatEvidence?.summary.ready_for_goal_claim);
+  const maintenanceNewApiChannelRoleRows = maintenanceNewApiChannelBootstrap?.role_rows ?? [];
+  const maintenanceNewApiChannelSetupSteps = maintenanceNewApiChannelBootstrap?.setup_steps ?? [];
+  const maintenanceNewApiChannelChecks = maintenanceNewApiChannelBootstrap?.checks ?? [];
+  const maintenanceNewApiChannelEnvEntries = Object.entries(maintenanceNewApiChannelBootstrap?.recommended_env ?? {});
+  const maintenanceNewApiChannelPrivacyEntries = safeBoundaryEntries(maintenanceNewApiChannelBootstrap?.privacy_boundary);
+  const maintenanceNewApiChannelClaimEntries = safeBoundaryEntries(maintenanceNewApiChannelBootstrap?.claim_boundary);
   const gitHistoryCommitCount = gitHistoryEvidence?.summary.commit_count ?? gitHistoryEvidence?.commit_events.length ?? 0;
   const gitHistoryLongestWindowHours =
     gitHistoryEvidence?.summary.longest_window_hours ??
@@ -9453,6 +9468,238 @@ function Inner() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {maintenanceNewApiChannelBootstrap && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap readiness packet</h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      Metadata-only setup evidence for channel URL normalization, key placeholder handling,
+                      cheap-first Gemini defaults, and explicit-only premium exceptions.
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-stone-500">
+                      modelops-newapi-channel-bootstrap
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[maintenanceNewApiChannelBootstrap.status] ?? statusClass.review_required}
+                  >
+                    {displayToken(maintenanceNewApiChannelBootstrap.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  {[
+                    {
+                      label: 'normalized URL',
+                      value: maintenanceNewApiChannelBootstrap.channel.normalized_base_url_display,
+                    },
+                    {
+                      label: 'key placeholder',
+                      value: maintenanceNewApiChannelBootstrap.channel.api_key_display,
+                    },
+                    {
+                      label: 'cheap-first ready',
+                      value: maintenanceNewApiChannelBootstrap.summary.cheap_first_ready_count,
+                    },
+                    {
+                      label: 'premium reviews',
+                      value: maintenanceNewApiChannelBootstrap.summary.premium_exception_review_count,
+                    },
+                    {
+                      label: 'warnings',
+                      value: maintenanceNewApiChannelBootstrap.summary.warning_check_count,
+                    },
+                    {
+                      label: 'blocking',
+                      value: maintenanceNewApiChannelBootstrap.summary.blocking_check_count,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-3">
+                      <div className="break-words text-lg font-black text-stone-950">
+                        {formatInline(metric.value)}
+                      </div>
+                      <div className="mt-1 text-xs text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <div className="border-b border-stone-950/10 px-4 py-3">
+                      <h3 className="text-sm font-black uppercase text-stone-500">Cheap-first role readiness</h3>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Env</TableHead>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Default</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {maintenanceNewApiChannelRoleRows.map((row) => (
+                          <TableRow key={`${row.role}-${row.env_name}`}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{displayToken(row.role)}</div>
+                              <div className="mt-1 text-[11px] text-stone-500">task: {displayToken(row.task)}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-stone-600">{row.env_name}</TableCell>
+                            <TableCell className="max-w-[260px]">
+                              <div className="font-mono text-xs font-semibold text-stone-950">
+                                {row.recommended_model}
+                              </div>
+                              <div className="mt-1 text-[11px] text-stone-500">{row.canonical_model ?? '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={row.cheap_first_ready ? statusClass.ready : statusClass.warn}>
+                                {row.cheap_first_ready ? 'ready' : 'review'}
+                              </Badge>
+                              <div className="mt-1 text-[11px] text-stone-500">
+                                {row.cost_tier} / {row.model_status}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <div>allowed: {String(row.default_allowed_without_review)}</div>
+                              <div className="mt-1">{row.reason}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Bootstrap checks</h3>
+                    <div className="space-y-2">
+                      {maintenanceNewApiChannelChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-xs font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <div className="border-b border-stone-950/10 px-4 py-3">
+                    <h3 className="text-sm font-black uppercase text-stone-500">Setup steps</h3>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Step</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Action</TableHead>
+                        <TableHead>Evidence</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {maintenanceNewApiChannelSetupSteps.map((step) => (
+                        <TableRow key={step.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{step.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{step.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[step.status] ?? statusClass.warn}>
+                              {displayToken(step.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">
+                            {step.action}
+                          </TableCell>
+                          <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                            {step.evidence_links.join(', ')}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-4">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended env</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {maintenanceNewApiChannelEnvEntries.slice(0, 10).map(([key, value]) => (
+                        <div key={key} className="break-all">
+                          <span className="font-mono font-semibold text-stone-950">{key}</span>: {value}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Channel boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>type: {maintenanceNewApiChannelBootstrap.channel.type}</div>
+                      <div>provider: {maintenanceNewApiChannelBootstrap.channel.provider_family}</div>
+                      <div>base URL env: {maintenanceNewApiChannelBootstrap.channel.base_url_env}</div>
+                      <div>base URL source: {maintenanceNewApiChannelBootstrap.channel.base_url_source}</div>
+                      <div>configuration_written: {String(maintenanceNewApiChannelBootstrap.summary.configuration_written)}</div>
+                      <div>gateway_called: {String(maintenanceNewApiChannelBootstrap.summary.gateway_called)}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {maintenanceNewApiChannelPrivacyEntries.slice(0, 8).map(([key, value]) => (
+                        <div key={key}>
+                          {displayToken(key)}: {formatInline(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {maintenanceNewApiChannelClaimEntries.slice(0, 8).map(([key, value]) => (
+                        <div key={key}>
+                          {displayToken(key)}: {formatInline(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                    <ul className="space-y-2 text-xs leading-5 text-stone-600">
+                      {maintenanceNewApiChannelBootstrap.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {maintenanceNewApiChannelBootstrap.validation_commands.map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 font-mono text-xs text-stone-700"
+                        >
+                          {command}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

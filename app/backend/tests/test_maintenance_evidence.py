@@ -418,6 +418,8 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in evidence_paths
     assert "app/backend/services/model_ops_observed_gemini_premium_exception_review.py" in evidence_paths
+    assert "app/frontend/src/lib/maintenanceApi.ts" in evidence_paths
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in evidence_paths
     assert "app/backend/tests/test_model_catalog_source_audit.py" in evidence_paths
     assert "app/backend/tests/test_model_catalog_candidate_patch_plan.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_cheap_first_release_decision.py" in evidence_paths

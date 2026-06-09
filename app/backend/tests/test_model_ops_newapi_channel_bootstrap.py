@@ -105,3 +105,42 @@ def test_newapi_channel_bootstrap_get_route_is_in_model_ops_aggregate():
     assert aggregate.status_code == 200
     assert direct.json()["data"]["id"] == "modelops-newapi-channel-bootstrap"
     assert aggregate.json()["newapi_channel_bootstrap"]["id"] == "modelops-newapi-channel-bootstrap"
+
+
+def test_newapi_channel_bootstrap_maintenance_routes_are_metadata_only():
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    from routers.maintenance import router
+
+    app = fastapi.FastAPI()
+    app.include_router(router)
+    client = testclient.TestClient(app)
+
+    direct = client.get("/api/v1/maintenance/gemini/newapi-channel-bootstrap")
+    response = client.post(
+        "/api/v1/maintenance/gemini/newapi-channel-bootstrap",
+        json={
+            "url": "https://yibuapi.com",
+            "key": "SENTINEL_CHANNEL_SECRET",
+            "observed_models": ["gemini-2.5-flash-lite", "gemini-2.5-pro"],
+            "raw_payload": "raw request body text should not echo",
+        },
+    )
+
+    assert direct.status_code == 200
+    assert response.status_code == 200
+    assert direct.json()["data"]["id"] == "modelops-newapi-channel-bootstrap"
+    payload = response.json()["data"]
+    rendered = json.dumps(payload, ensure_ascii=False)
+    assert payload["id"] == "modelops-newapi-channel-bootstrap"
+    assert payload["summary"]["normalized_base_url"] == "https://yibuapi.com/v1"
+    assert payload["summary"]["gateway_called"] is False
+    assert payload["summary"]["network_called"] is False
+    assert payload["summary"]["configuration_written"] is False
+    assert payload["summary"]["raw_payload_echoed"] is False
+    assert payload["channel"]["api_key_display"] == "{{APP_AI_KEY}}"
+    assert payload["recommended_env"]["APP_AI_KEY"] == "{{APP_AI_KEY}}"
+    assert payload["privacy_boundary"]["credential_material_included"] is False
+    assert payload["privacy_boundary"]["authorization_headers_included"] is False
+    assert "SENTINEL_CHANNEL_SECRET" not in rendered
+    assert "raw request body text should not echo" not in rendered

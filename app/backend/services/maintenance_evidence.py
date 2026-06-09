@@ -434,6 +434,8 @@ class MaintenanceEvidenceService:
                     "docs/MODELOPS_OBSERVED_GATEWAY_MODEL_FIT_MATRIX.md",
                     "docs/MODELOPS_OBSERVED_GEMINI_COVERAGE_GAP_QUEUE.md",
                     "docs/MODELOPS_OBSERVED_GEMINI_PREMIUM_EXCEPTION_REVIEW.md",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/backend/tests/test_model_price_refresh_monitor.py",
                     "app/backend/tests/test_model_cost_regression_snapshots.py",
                     "app/backend/tests/test_route_telemetry_persistence_plan.py",

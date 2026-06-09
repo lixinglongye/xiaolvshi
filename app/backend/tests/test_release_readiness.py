@@ -1636,6 +1636,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "sanitized observed model intake" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
     assert "coverage-gap review" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
     assert "explicit-only premium exception review" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
+    assert "maintenance UI review" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
     assert "does not call NewAPI" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
     assert "Gemini" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
     assert "OpenAI" in checks["modelops-newapi-channel-bootstrap"]["manual_note"]
@@ -1658,8 +1659,15 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "modelops-newapi-channel-bootstrap"
     ]["evidence_paths"]
     assert "app/backend/routers/aihub.py" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
     assert "app/frontend/src/lib/modelOpsApi.ts" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
     assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["modelops-newapi-channel-bootstrap"]["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "modelops-newapi-channel-bootstrap"
+    ]["evidence_paths"]
+    assert "npm run typecheck" in checks["modelops-newapi-channel-bootstrap"]["validation_command"]
+    assert "npm run ui:regression" in checks["modelops-newapi-channel-bootstrap"]["validation_command"]
     assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in checks[
         "modelops-newapi-channel-bootstrap"
     ]["evidence_paths"]

@@ -11,6 +11,9 @@ routine routes on cheap-first Gemini defaults.
 - Recommend cheap-first environment defaults for high-frequency legal workflows.
 - Join observed Gemini model intake, coverage-gap, and premium exception review summaries.
 - Keep Pro, preview, and premium variants explicit-only until maintainer and cost-owner review.
+- Expose the same reviewer packet through AIHub ModelOps and maintenance evidence:
+  `/api/v1/aihub/models/newapi-channel-bootstrap`,
+  `/api/v1/maintenance/gemini/newapi-channel-bootstrap`, `/model-ops`, and `/maintenance`.
 
 ## Non-Goals
 

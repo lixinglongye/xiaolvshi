@@ -89,8 +89,14 @@ const geminiAliasMatrixPanel = sourceSection(
 const geminiCheapFirstPolicyPanel = sourceSection(
   maintenancePage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+  '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap readiness packet</h2>',
   'maintenance Gemini/NewAPI cheap-first policy panel',
+);
+const maintenanceNewApiChannelBootstrapPanel = sourceSection(
+  maintenancePage,
+  '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap readiness packet</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+  'maintenance NewAPI channel bootstrap readiness packet panel',
 );
 const maintenanceObservedGeminiCoverageGapQueuePanel = sourceSection(
   maintenancePage,
@@ -400,6 +406,128 @@ const checks = [
       geminiCheapFirstPolicyPanel,
       /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|raw_model|raw_model_output|generated_text|candidate_text|document_text|client_contact_details|request_body|response_body|gateway_response|headers/i,
       'maintenance Gemini/NewAPI cheap-first policy sensitive field guard',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'MaintenanceNewApiChannelBootstrap',
+      'maintenance NewAPI channel bootstrap type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'MaintenanceNewApiChannelBootstrapRole',
+      'maintenance NewAPI channel bootstrap role type',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'getMaintenanceNewApiChannelBootstrap',
+      'maintenance NewAPI channel bootstrap getter',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      'evaluateMaintenanceNewApiChannelBootstrap',
+      'maintenance NewAPI channel bootstrap evaluator',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/gemini/newapi-channel-bootstrap',
+      'maintenance NewAPI channel bootstrap endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'NewAPI channel bootstrap readiness packet',
+      'maintenance NewAPI channel bootstrap panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceNewApiChannelBootstrap',
+      'maintenance NewAPI channel bootstrap state binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceNewApiChannelRoleRows',
+      'maintenance NewAPI channel bootstrap role rows binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceNewApiChannelSetupSteps',
+      'maintenance NewAPI channel bootstrap setup steps binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'maintenanceNewApiChannelEnvEntries',
+      'maintenance NewAPI channel bootstrap env binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'normalized_base_url_display',
+      'maintenance NewAPI channel bootstrap normalized URL binding',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'configuration_written',
+      'maintenance NewAPI channel bootstrap no-write boundary',
+    ),
+  () =>
+    assertIncludes(
+      maintenancePage,
+      'gateway_called',
+      'maintenance NewAPI channel bootstrap no-gateway boundary',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI cheap-first policy</h2>',
+      '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap readiness packet</h2>',
+      'maintenance NewAPI channel bootstrap follows Gemini cheap-first policy',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">NewAPI channel bootstrap readiness packet</h2>',
+      '<h2 className="text-xl font-black text-stone-950">Observed Gemini coverage gap queue</h2>',
+      'maintenance NewAPI channel bootstrap precedes observed Gemini queue',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceNewApiChannelBootstrapPanel,
+      'Cheap-first role readiness',
+      'maintenance NewAPI channel bootstrap role readiness panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceNewApiChannelBootstrapPanel,
+      'Bootstrap checks',
+      'maintenance NewAPI channel bootstrap checks panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceNewApiChannelBootstrapPanel,
+      'Recommended env',
+      'maintenance NewAPI channel bootstrap recommended env panel',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceNewApiChannelBootstrapPanel,
+      'Validation commands',
+      'maintenance NewAPI channel bootstrap validation commands panel',
+    ),
+  () =>
+    assertNotMatches(
+      maintenanceNewApiChannelBootstrapPanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|password|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|client_email|phone)\b/i,
+      'maintenance NewAPI channel bootstrap no secrets or raw request/response fields',
     ),
   () =>
     assertIncludes(

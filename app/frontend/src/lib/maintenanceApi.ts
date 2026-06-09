@@ -698,6 +698,91 @@ type ModelOpsObservedGeminiPremiumExceptionReviewResponse = {
   data: ModelOpsObservedGeminiPremiumExceptionReview;
 };
 
+export type MaintenanceNewApiChannelBootstrapRole = {
+  role: string;
+  task: string;
+  env_name: string;
+  recommended_model: string;
+  canonical_model?: string | null;
+  known_catalog_model: boolean;
+  cost_tier: string;
+  model_status: string;
+  cheap_first_role: boolean;
+  cheap_first_ready: boolean;
+  default_allowed_without_review: boolean;
+  reason: string;
+};
+
+export type MaintenanceNewApiChannelBootstrap = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    channel_url_configured: boolean;
+    channel_key_present: boolean;
+    normalized_base_url: string;
+    remote_bare_url_normalized_to_v1: boolean;
+    openai_compatible_path: boolean;
+    recommended_env_count: number;
+    cheap_first_role_count: number;
+    cheap_first_ready_count: number;
+    premium_exception_review_count: number;
+    observed_model_count: number;
+    coverage_gap_count: number;
+    setup_step_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+    traffic_shifted: boolean;
+  };
+  channel: {
+    type: string;
+    url_display: string;
+    normalized_base_url_display: string;
+    api_key_env: string;
+    api_key_display: string;
+    base_url_env: string;
+    base_url_source: string;
+    provider_family: string;
+  };
+  recommended_env: Record<string, string>;
+  role_rows: MaintenanceNewApiChannelBootstrapRole[];
+  setup_steps: Array<{
+    id: string;
+    title: string;
+    action: string;
+    status: string;
+    evidence_links: string[];
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+    evidence?: string[];
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_summaries: Record<string, Record<string, unknown>>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
+type MaintenanceNewApiChannelBootstrapResponse = {
+  success: boolean;
+  data: MaintenanceNewApiChannelBootstrap;
+};
+
 export type FrontendUiRegressionCommandGate = {
   id: string;
   command: string;
@@ -8055,6 +8140,25 @@ export async function getMaintenanceObservedGeminiCoverageGapQueue(): Promise<Mo
     return payload.data;
   }
   return payload as ModelOpsObservedGeminiCoverageGapQueue;
+}
+
+export async function getMaintenanceNewApiChannelBootstrap(): Promise<MaintenanceNewApiChannelBootstrap> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini/newapi-channel-bootstrap',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<MaintenanceNewApiChannelBootstrapResponse['data']>(resp);
+}
+
+export async function evaluateMaintenanceNewApiChannelBootstrap(
+  payload: Record<string, unknown> = {},
+): Promise<MaintenanceNewApiChannelBootstrap> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/gemini/newapi-channel-bootstrap',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<MaintenanceNewApiChannelBootstrapResponse['data']>(resp);
 }
 
 export async function getMaintenanceObservedGeminiPremiumExceptionReview(): Promise<ModelOpsObservedGeminiPremiumExceptionReview> {

@@ -2894,7 +2894,8 @@ class ContinuousUpdateLedgerService:
                 impact=(
                     "Adds metadata-only NewAPI-compatible channel bootstrap evidence that joins gateway connection "
                     "profile, runtime configuration, observed Gemini intake, coverage-gap, and premium exception "
-                    "review signals into a maintainer setup packet for https://yibuapi.com-style channels, APP_AI_KEY "
+                    "review signals into a maintainer setup packet and maintenance evidence panel for "
+                    "https://yibuapi.com-style channels, APP_AI_KEY "
                     "placeholder use, normalized /v1 base URLs, cheap-first Gemini defaults, explicit-only premium "
                     "exceptions, and no configuration writes, gateway calls, network calls, traffic shifts, raw prompts, "
                     "request bodies, response bodies, model outputs, legal text, emails, or credentials."
@@ -2917,8 +2918,11 @@ class ContinuousUpdateLedgerService:
                     "app/backend/tests/test_maintenance_evidence.py",
                     "app/backend/tests/test_frontend_ui_regression_gate.py",
                     "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/lib/maintenanceApi.ts",
                     "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
                     "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/routers/maintenance.py",
                     "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md",
                     "docs/AI_MODEL_STRATEGY.md",
                     "docs/CONTINUOUS_UPDATE_LEDGER.md",

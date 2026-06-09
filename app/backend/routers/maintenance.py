@@ -106,6 +106,8 @@ from services.modelops_legal_fixture_evidence_handoff import ModelOpsLegalFixtur
 from services.modelops_legal_fixture_default_promotion_packet import ModelOpsLegalFixtureDefaultPromotionPacketService
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_gateway_compatibility import ModelGatewayCompatibilityService
+from services.model_gateway_connection_profile import ModelGatewayConnectionProfileService
+from services.model_ops_newapi_channel_bootstrap import ModelOpsNewapiChannelBootstrapService
 from services.model_ops_observed_gemini_coverage_gap_queue import ModelOpsObservedGeminiCoverageGapQueueService
 from services.model_ops_observed_gemini_premium_exception_review import (
     ModelOpsObservedGeminiPremiumExceptionReviewService,
@@ -971,19 +973,46 @@ async def evaluate_gemini_newapi_cheap_first_policy(payload: dict[str, Any]):
     }
 
 
-@router.get("/gemini/observed-coverage-gap-queue")
-async def get_gemini_observed_coverage_gap_queue():
-    """Return metadata-only Gemini family and cheap-first task coverage gaps."""
+def _observed_gateway_models_for_maintenance() -> list[Any]:
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
-    observed_gateway_models = [
+    return [
         item.get("model")
         for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
         if item.get("model")
     ]
+
+
+@router.get("/gemini/newapi-channel-bootstrap")
+async def get_gemini_newapi_channel_bootstrap():
+    """Return metadata-only NewAPI channel bootstrap evidence for maintenance review."""
+    gateway_connection_profile = ModelGatewayConnectionProfileService().build_profile()
+    return {
+        "success": True,
+        "data": ModelOpsNewapiChannelBootstrapService().build_packet(
+            {
+                "base_url": gateway_connection_profile["connection"]["normalized_base_url_display"],
+                "observed_models": _observed_gateway_models_for_maintenance(),
+            }
+        ),
+    }
+
+
+@router.post("/gemini/newapi-channel-bootstrap")
+async def evaluate_gemini_newapi_channel_bootstrap(payload: dict[str, Any]):
+    """Evaluate sanitized NewAPI channel bootstrap metadata without gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsNewapiChannelBootstrapService().build_packet(payload),
+    }
+
+
+@router.get("/gemini/observed-coverage-gap-queue")
+async def get_gemini_observed_coverage_gap_queue():
+    """Return metadata-only Gemini family and cheap-first task coverage gaps."""
     return {
         "success": True,
         "data": ModelOpsObservedGeminiCoverageGapQueueService().build_queue(
-            {"observed_models": observed_gateway_models}
+            {"observed_models": _observed_gateway_models_for_maintenance()}
         ),
     }
 
@@ -991,16 +1020,10 @@ async def get_gemini_observed_coverage_gap_queue():
 @router.get("/gemini/observed-premium-exception-review")
 async def get_gemini_observed_premium_exception_review():
     """Return metadata-only review packet for observed premium Gemini variants."""
-    gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
-    observed_gateway_models = [
-        item.get("model")
-        for item in gateway_compatibility.get("configured_roles", []) + gateway_compatibility.get("gateway_examples", [])
-        if item.get("model")
-    ]
     return {
         "success": True,
         "data": ModelOpsObservedGeminiPremiumExceptionReviewService().build_review(
-            {"observed_models": observed_gateway_models}
+            {"observed_models": _observed_gateway_models_for_maintenance()}
         ),
     }
 

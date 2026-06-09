@@ -8,12 +8,13 @@ presence only as the `APP_AI_KEY` placeholder, joins gateway connection-profile
 and runtime-configuration evidence with observed Gemini intake, coverage-gap,
 and premium-exception review evidence, and exposes the packet through
 `/api/v1/aihub/models/newapi-channel-bootstrap`, the aggregate
-`/api/v1/aihub/models` payload, and `/model-ops`. It does not call NewAPI,
-Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the
-network; write `.env`, source configuration, default routes, or traffic; claim
-key validation or live model inventory; or return raw payloads, prompts, legal
-text, model outputs, gateway responses, Authorization headers, emails,
-identifiers, or credentials.
+`/api/v1/aihub/models` payload, `/api/v1/maintenance/gemini/newapi-channel-bootstrap`,
+`/model-ops`, and `/maintenance`. It does not call NewAPI, Gemini, OpenAI,
+Google, yibuapi, gateways, app AI endpoints, models, or the network; write
+`.env`, source configuration, default routes, or traffic; claim key validation
+or live model inventory; or return raw payloads, prompts, legal text, model
+outputs, gateway responses, Authorization headers, emails, identifiers, or
+credentials.
 
 Current ModelOps cheap-first cascade research slice:
 `modelops-cheap-first-cascade-research-gate` adds a metadata-only gate that
