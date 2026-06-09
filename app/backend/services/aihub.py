@@ -22,6 +22,8 @@ import httpx
 from openai import AsyncOpenAI
 from schemas.aihub import AnalyzePdfRequest, AnalyzePdfResponse
 from schemas.aihub import (
+    EmbedTextRequest,
+    EmbedTextResponse,
     GenAudioRequest,
     GenAudioResponse,
     GenImgRequest,
@@ -201,6 +203,30 @@ class AIHubService:
             reason="Endpoint provided an explicit routing task.",
         )
 
+    @staticmethod
+    def _normalized_embedding_inputs(input_value: str | list[str]) -> list[str]:
+        values = [input_value] if isinstance(input_value, str) else list(input_value)
+        normalized = [str(value or "").strip() for value in values]
+        if not normalized or any(not value for value in normalized):
+            raise ValueError("Embedding input must contain at least one non-empty text item.")
+        return normalized
+
+    @staticmethod
+    def _embedding_vectors_from_response(response: object) -> list[list[float]]:
+        rows = getattr(response, "data", None)
+        if rows is None and isinstance(response, dict):
+            rows = response.get("data")
+        if not isinstance(rows, list):
+            return []
+        vectors: list[list[float]] = []
+        for row in rows:
+            embedding = getattr(row, "embedding", None)
+            if embedding is None and isinstance(row, dict):
+                embedding = row.get("embedding")
+            if isinstance(embedding, list):
+                vectors.append([float(value) for value in embedding])
+        return vectors
+
     def _record_route_telemetry(
         self,
         *,
@@ -227,6 +253,74 @@ class AIHubService:
             latency_ms=latency_ms,
             error_category=error_category,
         )
+
+    async def embed_text(self, request: EmbedTextRequest) -> EmbedTextResponse:
+        """Generate embeddings through the configured OpenAI-compatible gateway."""
+        inputs = self._normalized_embedding_inputs(request.input)
+        task_inference = self._endpoint_task_inference(
+            requested_task="embedding",
+            task="embedding",
+            endpoint="embeddings",
+            signals=(f"batch_size:{len(inputs)}",),
+        )
+        route = resolve_runtime_model(
+            request.model,
+            task=task_inference.task,
+            allow_over_budget_model=request.allow_over_budget_model,
+        )
+        model = route.resolved_model
+        started_at = time.time()
+        try:
+            client = self._require_ai_client()
+            params: dict[str, Any] = {
+                "model": model,
+                "input": inputs[0] if isinstance(request.input, str) else inputs,
+                "encoding_format": request.encoding_format,
+            }
+            if request.dimensions is not None:
+                params["dimensions"] = request.dimensions
+
+            response = await client.embeddings.create(**params)
+            embeddings = self._embedding_vectors_from_response(response)
+            if len(embeddings) != len(inputs):
+                raise RuntimeError("Embedding response vector count does not match input count")
+
+            usage = self._usage_from_response(response)
+            self._record_model_usage(model=model, task="embedding", started_at=started_at, success=True, usage=usage)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=True,
+                usage=usage,
+                latency_ms=int((time.time() - started_at) * 1000),
+            )
+            return EmbedTextResponse(
+                embeddings=embeddings,
+                model=model,
+                task=route.task,
+                budget_decision=route.to_api(),
+                task_inference=task_inference.to_api(),
+                usage=usage,
+                usage_units={
+                    "unit": "embedding_vector",
+                    "input_count": len(inputs),
+                    "output_vector_count": len(embeddings),
+                    "dimension_count": len(embeddings[0]) if embeddings else 0,
+                    "input_character_count": sum(len(value) for value in inputs),
+                    "encoding_format": request.encoding_format,
+                },
+            )
+        except Exception as e:
+            self._record_model_usage(model=model, task="embedding", started_at=started_at, success=False)
+            self._record_route_telemetry(
+                route=route,
+                task_inference=task_inference,
+                success=False,
+                latency_ms=int((time.time() - started_at) * 1000),
+                error_category=type(e).__name__,
+            )
+            logger.error(f"embedding error: {e}")
+            raise
 
     async def gentxt(self, request: GenTxtRequest) -> GenTxtResponse:
         """

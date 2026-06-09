@@ -661,8 +661,8 @@ def test_model_ops_route_includes_readiness():
         payload["observed_gateway_model_fit_matrix"]["summary"]["cheap_first_task_count"]
     )
     assert "high-frequency-cheap-fit" not in payload["observed_gateway_model_fit_matrix"]["blocking_check_ids"]
-    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["endpoint_count"] == 7
-    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 7
+    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["endpoint_count"] == 8
+    assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["runtime_routed_count"] == 8
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["legacy_unrouted_count"] == 0
     assert payload["aihub_endpoint_route_coverage_gate"]["summary"]["gateway_called"] is False
     assert payload["aihub_media_speech_default_catalog_gate"]["summary"]["default_task_count"] == 4

@@ -6,6 +6,7 @@ import pytest
 from schemas.aihub import (
     AnalyzePdfRequest,
     ChatMessage,
+    EmbedTextRequest,
     GenAudioRequest,
     GenImgRequest,
     GenTxtRequest,
@@ -87,6 +88,16 @@ class _FakeTranscriptionResponse:
     text = "TRANSCRIBED_OUTPUT_SHOULD_NOT_PERSIST"
 
 
+class _FakeEmbeddingItem:
+    def __init__(self, embedding: list[float]) -> None:
+        self.embedding = embedding
+
+
+class _FakeEmbeddingResponse:
+    data = [_FakeEmbeddingItem([0.1, 0.2, 0.3]), _FakeEmbeddingItem([0.4, 0.5, 0.6])]
+    usage = _FakeUsage()
+
+
 class _FakeCompletions:
     def __init__(self) -> None:
         self.calls: list[dict] = []
@@ -156,6 +167,15 @@ class _FakeTranscriptions:
         return _FakeTranscriptionResponse()
 
 
+class _FakeEmbeddings:
+    def __init__(self) -> None:
+        self.create_calls: list[dict] = []
+
+    async def create(self, **params):
+        self.create_calls.append(params)
+        return _FakeEmbeddingResponse()
+
+
 class _FakeAudio:
     def __init__(self) -> None:
         self.speech = _FakeSpeech()
@@ -191,6 +211,7 @@ class _FakeClient:
         self.images = _FakeImages()
         self.videos = _FakeVideos()
         self.audio = _FakeAudio()
+        self.embeddings = _FakeEmbeddings()
 
 
 class _FakeStreamingClient(_FakeClient):
@@ -461,6 +482,50 @@ def test_gentxt_stream_route_emits_metadata_sse_before_content(monkeypatch):
     assert '"type": "content"' in body
     assert '"content": "hello"' in body
     assert "[DONE]" in body
+
+
+def test_embeddings_route_returns_vectors_without_echoing_input(monkeypatch):
+    import pytest
+
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    import routers.aihub as aihub_router
+
+    class FakeEmbeddingService:
+        async def embed_text(self, request):
+            assert request.input == ["PRIVATE SOURCE TEXT SHOULD NOT ECHO"]
+            return {
+                "embeddings": [[0.1, 0.2, 0.3]],
+                "model": "gemini-embedding-001",
+                "task": "embedding",
+                "budget_decision": {"budget_mode": "cheap-first-embedding"},
+                "task_inference": {"task": "embedding", "source": "explicit"},
+                "usage": {"prompt_tokens": 3, "completion_tokens": 0, "total_tokens": 3},
+                "usage_units": {
+                    "unit": "embedding_vector",
+                    "input_count": 1,
+                    "output_vector_count": 1,
+                    "dimension_count": 3,
+                    "input_character_count": len("PRIVATE SOURCE TEXT SHOULD NOT ECHO"),
+                    "encoding_format": "float",
+                },
+            }
+
+    monkeypatch.setattr(aihub_router, "AIHubService", FakeEmbeddingService)
+    app = fastapi.FastAPI()
+    app.include_router(aihub_router.router)
+
+    response = testclient.TestClient(app).post(
+        "/api/v1/aihub/embeddings",
+        json={"input": ["PRIVATE SOURCE TEXT SHOULD NOT ECHO"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["model"] == "gemini-embedding-001"
+    assert payload["task"] == "embedding"
+    assert payload["embeddings"] == [[0.1, 0.2, 0.3]]
+    assert "PRIVATE SOURCE TEXT" not in json.dumps(payload, ensure_ascii=False)
 
 
 @pytest.mark.asyncio
@@ -819,6 +884,53 @@ async def test_genaudio_records_sanitized_runtime_route_telemetry():
     assert repository["daily_buckets"][0]["unknown_model_count"] == 1
     assert "PRIVATE AUDIO TEXT" not in rendered
     assert "generated-private-audio" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_embed_text_uses_cheap_first_embedding_default_and_sanitized_telemetry():
+    model_usage_registry.reset()
+    model_route_telemetry_registry.reset()
+    service = AIHubService()
+    fake_client = _FakeClient()
+    service.client = fake_client
+
+    response = await service.embed_text(
+        EmbedTextRequest(
+            input=[
+                "PRIVATE LEGAL RAG CHUNK ONE SHOULD NOT PERSIST",
+                "PRIVATE LEGAL RAG CHUNK TWO SHOULD NOT PERSIST",
+            ],
+        )
+    )
+
+    assert fake_client.embeddings.create_calls[0]["model"] == "gemini-embedding-001"
+    assert fake_client.embeddings.create_calls[0]["encoding_format"] == "float"
+    assert fake_client.embeddings.create_calls[0]["input"] == [
+        "PRIVATE LEGAL RAG CHUNK ONE SHOULD NOT PERSIST",
+        "PRIVATE LEGAL RAG CHUNK TWO SHOULD NOT PERSIST",
+    ]
+    assert response.model == "gemini-embedding-001"
+    assert response.task == "embedding"
+    assert response.embeddings == [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
+    assert response.usage == {"prompt_tokens": 11, "completion_tokens": 7, "total_tokens": 18}
+    assert response.usage_units["unit"] == "embedding_vector"
+    assert response.usage_units["input_count"] == 2
+    assert response.usage_units["output_vector_count"] == 2
+    assert response.usage_units["dimension_count"] == 3
+    assert response.budget_decision["budget_mode"] == "cheap-first-embedding"
+    assert response.budget_decision["requested_model"] is None
+    assert response.task_inference["task"] == "embedding"
+
+    usage = model_usage_registry.snapshot()["models"]["gemini-embedding-001"]
+    assert usage["tasks"] == {"embedding": 1}
+    route_snapshot = model_route_telemetry_registry.snapshot()
+    assert route_snapshot["by_task"]["embedding"]["explicit_task"] == 1
+    repository = RouteTelemetryRepositoryService().build_repository()
+    rendered = str(repository)
+    assert repository["daily_buckets"][0]["task"] == "embedding"
+    assert repository["daily_buckets"][0]["resolved_model"] == "gemini-embedding-001"
+    assert "PRIVATE LEGAL RAG CHUNK" not in rendered
+    assert "[0.1, 0.2, 0.3]" not in rendered
 
 
 @pytest.mark.asyncio

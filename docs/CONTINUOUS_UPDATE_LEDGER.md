@@ -783,14 +783,23 @@ headers, gateway responses, or credentials.
 
 Current AIHub endpoint route coverage evidence:
 `modelops-aihub-endpoint-route-coverage-gate` adds shipped metadata-only
-endpoint route coverage evidence for text, streaming text, PDF, image, video,
-audio, and transcription AIHub routes. It shows runtime-router coverage,
+endpoint route coverage evidence for text, streaming text, PDF, embeddings,
+image, video, audio, and transcription AIHub routes. It shows runtime-router coverage,
 budget-decision coverage, route telemetry coverage, response route-payload
-coverage, and media/speech catalog review gaps without calling NewAPI, Gemini, OpenAI,
+coverage, and media/speech/embedding catalog review gaps without calling NewAPI, Gemini, OpenAI,
 Google, gateways, app AI endpoints, models, or the network, writing
 configuration, shifting traffic, or including request/response bodies, headers,
 prompts, raw payloads, legal text, model outputs, gateway responses,
 credentials, emails, or user identifiers.
+
+Current AIHub embedding runtime evidence:
+`aihub-embedding-runtime` adds `POST /api/v1/aihub/embeddings` and
+`AIHubService.embed_text` for cheap-first Legal RAG text embeddings. It routes
+through `gemini-embedding-001`, records sanitized usage and route telemetry, and
+returns route metadata plus numeric vectors without echoing source text,
+persisting vectors in telemetry, writing indexes, changing defaults, or
+returning credentials, headers, raw prompts, legal text, model outputs, or
+gateway payloads.
 
 Current AIHub media/speech default catalog evidence:
 `modelops-aihub-media-speech-default-catalog-gate` adds shipped required

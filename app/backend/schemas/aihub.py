@@ -107,6 +107,55 @@ class GenTxtResponse(BaseModel):
     usage: Optional[dict] = Field(default=None, description="Token usage statistics.")
 
 
+# ==================== Embeddings ====================
+
+
+class EmbedTextRequest(BaseModel):
+    """Generate text embeddings for Legal RAG indexing or retrieval."""
+
+    input: Union[str, List[str]] = Field(
+        ...,
+        description="Text input or batch of text inputs. The response never echoes this text.",
+    )
+    model: Optional[str] = Field(
+        default=None,
+        description="Optional embedding model. If omitted, APP_AI_EMBEDDING_MODEL is used.",
+    )
+    allow_over_budget_model: bool = Field(
+        default=False,
+        description="Allow explicit multimodal or over-budget embedding models after operator review.",
+    )
+    encoding_format: Literal["float"] = Field(
+        default="float",
+        description="OpenAI-compatible embedding encoding format. The runtime currently returns numeric vectors only.",
+    )
+    dimensions: Optional[int] = Field(
+        default=None,
+        description="Optional embedding dimension override when the gateway/model supports it.",
+    )
+
+
+class EmbedTextResponse(BaseModel):
+    """Text embedding response with routing metadata and without input text echo."""
+
+    embeddings: List[List[float]] = Field(..., description="Embedding vectors returned by the gateway.")
+    model: str = Field(..., description="Name of the embedding model used.")
+    task: str = Field(default="embedding", description="Normalized routing task used for the request.")
+    budget_decision: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Runtime model routing decision without input text, vectors in telemetry, or credentials.",
+    )
+    task_inference: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Deterministic task inference metadata without input text or credentials.",
+    )
+    usage: Optional[dict[str, Any]] = Field(default=None, description="Token usage statistics when provided.")
+    usage_units: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Embedding usage units such as input count and vector dimensions without input text.",
+    )
+
+
 # ==================== Generate Image ====================
 
 

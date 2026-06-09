@@ -15,6 +15,8 @@ from fastapi import APIRouter, Body, HTTPException, status
 from schemas.aihub import (
     AnalyzePdfRequest,
     AnalyzePdfResponse,
+    EmbedTextRequest,
+    EmbedTextResponse,
     GenAudioRequest,
     GenAudioResponse,
     GenImgRequest,
@@ -1725,6 +1727,26 @@ async def generate_text(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=extract_error_message(e))
     except Exception as e:
         logger.error(f"Text generation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=extract_error_message(e),
+        )
+
+
+@router.post("/embeddings", response_model=EmbedTextResponse)
+async def generate_embeddings(request: EmbedTextRequest):
+    """Generate cheap-first text embeddings for Legal RAG indexing and retrieval."""
+    try:
+        service = AIHubService()
+        return await service.embed_text(request)
+    except ValueError as e:
+        message = extract_error_message(e)
+        if "Embedding input" in message:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+        logger.error(f"AI service configuration error: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=message)
+    except Exception as e:
+        logger.error(f"Embedding generation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=extract_error_message(e),

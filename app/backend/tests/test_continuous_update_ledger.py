@@ -461,6 +461,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-coverage-gate" in completed_ids
     assert "modelops-gemini-cheap-first-route-preflight" in completed_ids
     assert "modelops-aihub-media-speech-default-catalog-gate" in completed_ids
+    assert "aihub-embedding-runtime" in completed_ids
     assert "gemini-media-speech-review-catalog" in completed_ids
     assert "modelops-gemini-embedding-cheap-first-preflight" in completed_ids
     assert "model-gateway-request-compatibility-gate" in completed_ids
@@ -1455,7 +1456,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "budget-decision coverage" in aihub_route_coverage_entry["impact"]
     assert "route telemetry coverage" in aihub_route_coverage_entry["impact"]
     assert "response route-payload coverage" in aihub_route_coverage_entry["impact"]
-    assert "media/speech catalog review gaps" in aihub_route_coverage_entry["impact"]
+    assert "media/speech/embedding catalog review gaps" in aihub_route_coverage_entry["impact"]
     assert "without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls" in aihub_route_coverage_entry["impact"]
     assert "configuration writes" in aihub_route_coverage_entry["impact"]
     assert "traffic shifts" in aihub_route_coverage_entry["impact"]
@@ -1494,6 +1495,29 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    embedding_runtime_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "aihub-embedding-runtime"
+    )
+    assert embedding_runtime_entry["size"] == "medium"
+    assert embedding_runtime_entry["status"] == "shipped"
+    assert embedding_runtime_entry["category"] == "model_ops"
+    assert "POST /api/v1/aihub/embeddings" in embedding_runtime_entry["impact"]
+    assert "AIHubService.embed_text" in embedding_runtime_entry["impact"]
+    assert "gemini-embedding-001" in embedding_runtime_entry["impact"]
+    assert "runtime router enforcement" in embedding_runtime_entry["impact"]
+    assert "sanitized usage recording" in embedding_runtime_entry["impact"]
+    assert "route telemetry" in embedding_runtime_entry["impact"]
+    assert "without echoing source text" in embedding_runtime_entry["impact"]
+    assert "persisting embedding vectors" in embedding_runtime_entry["impact"]
+    assert "writing indexes" in embedding_runtime_entry["impact"]
+    assert "credentials" in embedding_runtime_entry["impact"]
+    assert "app/backend/services/aihub.py" in embedding_runtime_entry["evidence_paths"]
+    assert "app/backend/schemas/aihub.py" in embedding_runtime_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in embedding_runtime_entry["evidence_paths"]
+    assert "app/backend/tests/test_aihub_runtime_routing.py" in embedding_runtime_entry["evidence_paths"]
+    assert "docs/AI_MODEL_STRATEGY.md" in embedding_runtime_entry["evidence_paths"]
+    assert "modelops-gemini-embedding-cheap-first-preflight" in embedding_runtime_entry["release_gate_links"]
+    assert "legal-rag-embedding-readiness-gate" in embedding_runtime_entry["release_gate_links"]
     media_speech_default_catalog_entry = next(
         entry
         for entry in ledger["completed_updates"]

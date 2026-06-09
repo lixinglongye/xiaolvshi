@@ -2730,7 +2730,7 @@ class ContinuousUpdateLedgerService:
                 category="model_ops",
                 size="medium",
                 status="shipped",
-                impact="Adds metadata-only AIHub endpoint route coverage gate evidence that inventories gentxt, gentxt streaming, PDF analysis, image generation, video generation, audio generation, and transcription route wiring so maintainers can see runtime-router coverage, budget-decision coverage, route telemetry coverage, response route-payload coverage, and media/speech catalog review gaps without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request or response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
+                impact="Adds metadata-only AIHub endpoint route coverage gate evidence that inventories gentxt, gentxt streaming, PDF analysis, embeddings, image generation, video generation, audio generation, and transcription route wiring so maintainers can see runtime-router coverage, budget-decision coverage, route telemetry coverage, response route-payload coverage, and media/speech/embedding catalog review gaps without NewAPI/Gemini/OpenAI/Google/gateway/app-AI/model/network calls, configuration writes, traffic shifts, request or response bodies, headers, prompts, raw payloads, legal text, model outputs, gateway responses, credentials, emails, or user identifiers.",
                 evidence_paths=(
                     "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py",
                     "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py",
@@ -2755,6 +2755,39 @@ class ContinuousUpdateLedgerService:
                     "frontend-ui-regression-gate",
                 ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
+            ),
+            LedgerEntry(
+                id="aihub-embedding-runtime",
+                title="AIHub cheap-first embedding runtime",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds POST /api/v1/aihub/embeddings and AIHubService.embed_text so Legal RAG can execute "
+                    "cheap-first text embeddings through the OpenAI-compatible gateway using gemini-embedding-001, "
+                    "runtime router enforcement, sanitized usage recording, route telemetry, and response route "
+                    "metadata without echoing source text, persisting embedding vectors in telemetry, changing "
+                    "defaults, writing indexes, or returning credentials, headers, raw prompts, raw legal text, "
+                    "model outputs, or gateway payloads."
+                ),
+                evidence_paths=(
+                    "app/backend/services/aihub.py",
+                    "app/backend/schemas/aihub.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py",
+                    "app/backend/tests/test_aihub_runtime_routing.py",
+                    "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py",
+                    "docs/AI_MODEL_STRATEGY.md",
+                    "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md",
+                    "docs/MODEL_OPS_READINESS.md",
+                ),
+                release_gate_links=(
+                    "modelops-aihub-endpoint-route-coverage-gate",
+                    "modelops-gemini-embedding-cheap-first-preflight",
+                    "legal-rag-embedding-readiness-gate",
+                    "model-ops-readiness",
+                ),
+                user_need_ids=("low-cost-routing", "legal-rag", "safe-ai-ops", "product-readiness"),
             ),
             LedgerEntry(
                 id="modelops-aihub-media-speech-default-catalog-gate",

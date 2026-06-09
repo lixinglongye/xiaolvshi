@@ -24,6 +24,7 @@ The gate covers:
 - `POST /api/v1/aihub/gentxt`
 - `POST /api/v1/aihub/gentxt` with `stream=true`
 - `POST /api/v1/aihub/analyzepdf`
+- `POST /api/v1/aihub/embeddings`
 - `POST /api/v1/aihub/genimg`
 - `POST /api/v1/aihub/genvideo`
 - `POST /api/v1/aihub/genaudio`
@@ -36,18 +37,23 @@ Each row reports `uses_runtime_router`, `uses_budget_decision`,
 
 ## Current Findings
 
-Text, streaming text, PDF analysis, image generation, video generation, audio
-generation, and transcription use runtime routing and route telemetry.
-Text, streaming text, PDF analysis, image generation, video generation, audio
-generation, and transcription currently return route payload metadata to
-callers. Streaming text emits a metadata SSE event before content chunks, while
-the legacy service wrapper still yields content-only chunks for internal
-callers. Image, video, audio, and transcription responses also expose sanitized
-usage units for cost review without returning prompts, PDF bytes, image bytes,
-audio, transcripts, output URLs, request bodies, response bodies, headers,
-model outputs, or credentials.
+Text, streaming text, PDF analysis, embeddings, image generation, video
+generation, audio generation, and transcription use runtime routing and route
+telemetry. Text, streaming text, PDF analysis, embeddings, image generation,
+video generation, audio generation, and transcription currently return route
+payload metadata to callers. Streaming text emits a metadata SSE event before
+content chunks, while the legacy service wrapper still yields content-only
+chunks for internal callers. Embeddings, image, video, audio, and
+transcription responses also expose sanitized usage units for cost review
+without returning prompts, source text, PDF bytes, image bytes, audio,
+transcripts, output URLs, request bodies, response bodies, headers, model
+outputs, or credentials.
 
-Video generation, audio generation, and transcription now use explicit media/speech budget tasks. Their default gateway model ids remain `model_not_in_local_catalog` review items until pricing, lifecycle, and gateway behavior are documented.
+Embeddings now use the cheap-first `embedding` budget task and default to
+`gemini-embedding-001`. Video generation, audio generation, and transcription
+use explicit media/speech budget tasks. Their default gateway model ids remain
+`model_not_in_local_catalog` review items until pricing, lifecycle, and gateway
+behavior are documented.
 
 ## Boundary
 

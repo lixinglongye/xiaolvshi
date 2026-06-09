@@ -417,6 +417,8 @@ class MaintenanceEvidenceService:
                     "app/backend/services/model_reasoning_policy.py",
                     "app/backend/services/model_request_policy.py",
                     "app/backend/services/model_request_cost_bounds.py",
+                    "app/backend/services/aihub.py",
+                    "app/backend/schemas/aihub.py",
                     "app/backend/services/model_cache_policy.py",
                     "app/backend/services/model_route_telemetry.py",
                     "app/backend/services/model_route_guardrails.py",

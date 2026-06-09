@@ -652,6 +652,15 @@ include source text, raw legal text, source chunks, embedding vectors,
 request/response bodies, headers, prompts, raw payloads, model outputs, gateway
 responses, credentials, emails, or user identifiers.
 
+`POST /api/v1/aihub/embeddings` is the runtime bridge for cheap-first Legal
+RAG embedding execution. It resolves `APP_AI_EMBEDDING_MODEL` through the
+runtime router, defaults to `gemini-embedding-001`, calls the
+OpenAI-compatible `embeddings.create` method, records sanitized usage and route
+telemetry, and returns numeric vectors plus route metadata without echoing input
+source text or persisting embedding vectors in telemetry. This enables small
+maintainer-run Legal RAG embedding batches while keeping multimodal embedding
+and index writes behind separate review gates.
+
 ## Default Recommendation Readiness Binding
 
 `model-ops-default-recommendation-readiness-binding` promotes

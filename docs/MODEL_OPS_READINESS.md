@@ -192,12 +192,13 @@ payloads, legal text, model output, gateway responses, credentials, emails, or
 user identifiers.
 
 `aihub-endpoint-route-coverage-gate` is required metadata-only evidence for
-AIHub endpoint wiring. It inventories text, streaming text, PDF, image, video,
-audio, and transcription endpoints for runtime-router coverage, budget-decision
-coverage, route telemetry coverage, usage recording, response route payloads,
-and media/speech catalog review gaps. It does not call providers, gateways,
-app AI endpoints, models, or the network, and it does not claim that
-media/speech defaults are price-benchmarked.
+AIHub endpoint wiring. It inventories text, streaming text, PDF, embeddings,
+image, video, audio, and transcription endpoints for runtime-router coverage,
+budget-decision coverage, route telemetry coverage, usage recording, response
+route payloads, and media/speech/embedding catalog review gaps. It does not
+call providers, gateways, app AI endpoints, models, or the network, and it does
+not claim that media/speech defaults are price-benchmarked or that embedding
+index writes are complete.
 
 `aihub-media-speech-default-catalog-gate` is required metadata-only evidence for
 AIHub media and speech default review. It is exposed at

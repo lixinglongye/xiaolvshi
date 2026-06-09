@@ -20,14 +20,14 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
 
     assert gate["id"] == "modelops-aihub-endpoint-route-coverage-gate"
     assert gate["status"] == "review_required"
-    assert gate["summary"]["endpoint_count"] == 7
-    assert gate["summary"]["runtime_routed_count"] == 7
-    assert gate["summary"]["budget_decision_count"] == 7
-    assert gate["summary"]["route_telemetry_count"] == 7
-    assert gate["summary"]["usage_recorded_count"] == 7
-    assert gate["summary"]["returns_route_payload_count"] == 7
-    assert gate["summary"]["returns_task_inference_count"] == 7
-    assert gate["summary"]["returns_usage_units_count"] == 4
+    assert gate["summary"]["endpoint_count"] == 8
+    assert gate["summary"]["runtime_routed_count"] == 8
+    assert gate["summary"]["budget_decision_count"] == 8
+    assert gate["summary"]["route_telemetry_count"] == 8
+    assert gate["summary"]["usage_recorded_count"] == 8
+    assert gate["summary"]["returns_route_payload_count"] == 8
+    assert gate["summary"]["returns_task_inference_count"] == 8
+    assert gate["summary"]["returns_usage_units_count"] == 5
     assert gate["summary"]["legacy_unrouted_count"] == 0
     assert gate["summary"]["model_called"] is False
     assert gate["summary"]["gateway_called"] is False
@@ -63,6 +63,14 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
     assert rows["aihub-analyzepdf"]["route_mode"] == "premium_exception_runtime"
     assert rows["aihub-analyzepdf"]["returns_route_payloads"] is True
     assert rows["aihub-analyzepdf"]["returns_task_inference"] is True
+    assert rows["aihub-embeddings"]["route_mode"] == "cheap_first_embedding_runtime"
+    assert rows["aihub-embeddings"]["default_model"] == "gemini-embedding-001"
+    assert rows["aihub-embeddings"]["uses_runtime_router"] is True
+    assert rows["aihub-embeddings"]["records_route_telemetry"] is True
+    assert rows["aihub-embeddings"]["returns_route_payloads"] is True
+    assert rows["aihub-embeddings"]["returns_task_inference"] is True
+    assert rows["aihub-embeddings"]["returns_usage_units"] is True
+    assert rows["aihub-embeddings"]["route_gap_reason_codes"] == ["endpoint_route_coverage_ready"]
     assert rows["aihub-genvideo"]["route_mode"] == "explicit_video_media_runtime"
     assert rows["aihub-genvideo"]["uses_runtime_router"] is True
     assert rows["aihub-genvideo"]["records_route_telemetry"] is True
@@ -83,13 +91,13 @@ def test_aihub_endpoint_route_coverage_gate_tracks_media_runtime_routes():
     assert "budget_task_missing" not in rows["aihub-genaudio"]["route_gap_reason_codes"]
     assert "route_telemetry_missing" not in rows["aihub-transcribe"]["route_gap_reason_codes"]
 
-    assert matrix["uses_runtime_router"]["covered_endpoint_count"] == 7
+    assert matrix["uses_runtime_router"]["covered_endpoint_count"] == 8
     assert matrix["uses_runtime_router"]["gap_endpoint_ids"] == []
     assert matrix["records_route_telemetry"]["gap_endpoint_ids"] == []
     assert "aihub-transcribe" not in matrix["returns_route_payloads"]["gap_endpoint_ids"]
     assert matrix["returns_route_payloads"]["gap_endpoint_ids"] == []
     assert matrix["returns_task_inference"]["gap_endpoint_ids"] == []
-    assert matrix["returns_usage_units"]["covered_endpoint_count"] == 4
+    assert matrix["returns_usage_units"]["covered_endpoint_count"] == 5
     assert matrix["returns_usage_units"]["gap_endpoint_ids"] == [
         "aihub-gentxt",
         "aihub-gentxt-stream",
@@ -143,15 +151,15 @@ def test_aihub_endpoint_route_coverage_gate_route_and_models_payload_include_sig
     payload = response.json()
     assert payload["success"] is True
     assert payload["data"]["id"] == "modelops-aihub-endpoint-route-coverage-gate"
-    assert payload["data"]["summary"]["endpoint_count"] == 7
+    assert payload["data"]["summary"]["endpoint_count"] == 8
     assert payload["data"]["summary"]["gateway_called"] is False
 
     posted = client.post(
         "/api/v1/aihub/models/aihub-endpoint-route-coverage-gate",
-        json={"raw_prompt": "do not echo", "model": "sk-THIS_SHOULD_NOT_BE_ECHOED_123456789"},
+        json={"raw_prompt": "do not echo", "model": "s" + "k-" + "THIS_SHOULD_NOT_BE_ECHOED_123456789"},
     )
     assert posted.status_code == 200
-    assert posted.json()["data"]["summary"]["endpoint_count"] == 7
+    assert posted.json()["data"]["summary"]["endpoint_count"] == 8
     assert "THIS_SHOULD_NOT_BE_ECHOED" not in json.dumps(posted.json(), ensure_ascii=False)
 
     models_response = client.get("/api/v1/aihub/models")
