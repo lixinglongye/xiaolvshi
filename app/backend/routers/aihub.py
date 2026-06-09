@@ -59,6 +59,7 @@ from services.model_gateway_connection_profile import ModelGatewayConnectionProf
 from services.model_gateway_health_plan import ModelGatewayHealthPlanService
 from services.model_gateway_runtime_configuration import ModelGatewayRuntimeConfigurationService
 from services.model_gateway_probe_evaluation import ModelGatewayProbeEvaluationService, model_gateway_probe_evaluation_registry
+from services.model_gateway_probe_runbook_gate import ModelGatewayProbeRunbookGateService
 from services.model_gateway_request_compatibility_gate import ModelGatewayRequestCompatibilityGateService
 from services.model_lifecycle_policy import ModelLifecyclePolicyService
 from services.modelops_gemini_cheap_first_coverage_gate import ModelOpsGeminiCheapFirstCoverageGateService
@@ -326,6 +327,14 @@ async def list_models():
     )
     gateway_health_plan = ModelGatewayHealthPlanService().build_plan()
     gateway_probe_evaluation = model_gateway_probe_evaluation_registry.latest()
+    gateway_probe_runbook_gate = ModelGatewayProbeRunbookGateService().build_gate(
+        {
+            "gateway_health_plan": gateway_health_plan,
+            "gateway_runtime_configuration": gateway_runtime_configuration,
+            "newapi_channel_bootstrap": newapi_channel_bootstrap,
+            "gateway_probe_evaluation": gateway_probe_evaluation,
+        }
+    )
     request_cost_bounds = ModelRequestCostBoundsService().evaluate()
     cache_policy = ModelCachePolicyService().build_policy(forecast)
     lifecycle_policy = ModelLifecyclePolicyService().build_policy()
@@ -476,6 +485,7 @@ async def list_models():
         "newapi_channel_bootstrap": newapi_channel_bootstrap,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
+        "gateway_probe_runbook_gate": gateway_probe_runbook_gate,
         "lifecycle_policy": lifecycle_policy,
         "default_candidate_selector": default_candidate_selector,
         "request_cost_bounds": request_cost_bounds,
@@ -606,6 +616,7 @@ async def list_models():
         "newapi_channel_bootstrap": newapi_channel_bootstrap,
         "gateway_health_plan": gateway_health_plan,
         "gateway_probe_evaluation": gateway_probe_evaluation,
+        "gateway_probe_runbook_gate": gateway_probe_runbook_gate,
         "lifecycle_policy": lifecycle_policy,
         "default_candidate_selector": default_candidate_selector,
         "request_cost_bounds": request_cost_bounds,
@@ -714,6 +725,25 @@ async def evaluate_gateway_probe(payload: dict[str, Any]):
     return {
         "success": True,
         "data": result,
+    }
+
+
+@router.get("/models/gateway-probe-runbook-gate")
+async def model_gateway_probe_runbook_gate():
+    """Return safe ordered gateway probe runbook evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["gateway_probe_runbook_gate"],
+    }
+
+
+@router.post("/models/gateway-probe-runbook-gate")
+async def evaluate_model_gateway_probe_runbook_gate(payload: dict[str, Any]):
+    """Evaluate sanitized gateway probe runbook metadata without network calls."""
+    return {
+        "success": True,
+        "data": ModelGatewayProbeRunbookGateService().build_gate(payload),
     }
 
 

@@ -1252,6 +1252,60 @@ export type ModelGatewayProbeEvaluation = {
   privacy_note: string;
 };
 
+export type ModelGatewayProbeRunbookGate = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    step_count: number;
+    ready_step_count: number;
+    review_step_count: number;
+    blocked_step_count: number;
+    blocking_check_count: number;
+    warning_check_count: number;
+    next_step_id?: string | null;
+    source_health_status?: string | null;
+    source_runtime_status?: string | null;
+    source_channel_status?: string | null;
+    source_probe_status?: string | null;
+    cheap_probe_pass_count: number;
+    image_probe_pass_count: number;
+    forbidden_payload_field_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    credentials_included: boolean;
+    raw_payload_echoed: boolean;
+    default_model_changed: boolean;
+    traffic_shifted: boolean;
+  };
+  runbook_steps: Array<{
+    id: string;
+    title: string;
+    status: string;
+    source_statuses: string[];
+    action: string;
+    evidence_links: string[];
+  }>;
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  source_summaries: Record<string, Record<string, unknown>>;
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelCheapFirstCalibration = {
   status: string;
   method: {
@@ -4811,6 +4865,7 @@ export type ModelOpsResponse = {
   gemini_newapi_selector_replay?: GeminiNewApiSelectorReplayEvidence;
   gateway_health_plan?: ModelGatewayHealthPlan;
   gateway_probe_evaluation?: ModelGatewayProbeEvaluation;
+  gateway_probe_runbook_gate?: ModelGatewayProbeRunbookGate;
   lifecycle_policy?: ModelLifecyclePolicy;
   reasoning_policy?: ModelReasoningPolicy;
   request_policy?: ModelRequestPolicy;
@@ -5124,6 +5179,23 @@ export async function getModelGatewayProbeTemplate(): Promise<ModelGatewayProbeT
 export async function evaluateModelGatewayProbe(payload: Record<string, unknown>): Promise<ModelGatewayProbeEvaluation> {
   return invokeModelOpsApi<ModelGatewayProbeEvaluation>({
     url: '/api/v1/aihub/models/gateway-probe-evaluation',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelGatewayProbeRunbookGate(): Promise<ModelGatewayProbeRunbookGate> {
+  return invokeModelOpsApi<ModelGatewayProbeRunbookGate>({
+    url: '/api/v1/aihub/models/gateway-probe-runbook-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelGatewayProbeRunbookGate(
+  payload: Record<string, unknown>,
+): Promise<ModelGatewayProbeRunbookGate> {
+  return invokeModelOpsApi<ModelGatewayProbeRunbookGate>({
+    url: '/api/v1/aihub/models/gateway-probe-runbook-gate',
     method: 'POST',
     data: payload,
   });

@@ -104,14 +104,15 @@ def test_gateway_health_plan_warns_unknown_gateway_models(monkeypatch):
 def test_gateway_health_plan_blocks_unpriced_image_default(monkeypatch):
     monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_base_url", "https://yibuapi.com/v1")
     monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_key", "configured")
-    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_image_model", "gemini-3-pro-image")
+    monkeypatch.setattr(model_gateway_health_plan.settings, "app_ai_image_model", "newapi/gemini-custom-image")
 
     plan = ModelGatewayHealthPlanService().build_plan()
 
     assert plan["status"] == "fail"
     assert "image-probe-priced-model" in plan["blocking_check_ids"]
     image_role = next(row for row in plan["role_models"] if row["role"] == "image")
-    assert image_role["cost_tier"] == "premium"
+    assert image_role["cost_tier"] is None
+    assert image_role["is_known_model"] is False
     assert image_role["output_usd_per_image"] is None
 
 

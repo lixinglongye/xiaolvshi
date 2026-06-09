@@ -2012,6 +2012,48 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
+    gateway_probe_runbook_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "model-gateway-probe-runbook-gate"
+    )
+    assert gateway_probe_runbook_entry["size"] == "medium"
+    assert gateway_probe_runbook_entry["status"] == "shipped"
+    assert "ordered runbook gate" in gateway_probe_runbook_entry["impact"]
+    assert "runtime/channel normalization" in gateway_probe_runbook_entry["impact"]
+    assert "list-models before cheap JSON probes" in gateway_probe_runbook_entry["impact"]
+    assert "optional image smoke after text probes" in gateway_probe_runbook_entry["impact"]
+    assert "legal fixture smoke after cheap probe evidence" in gateway_probe_runbook_entry["impact"]
+    assert "maintainer review before default changes" in gateway_probe_runbook_entry["impact"]
+    assert "without calling gateways" in gateway_probe_runbook_entry["impact"]
+    assert "writing configuration" in gateway_probe_runbook_entry["impact"]
+    assert "changing defaults" in gateway_probe_runbook_entry["impact"]
+    assert "shifting traffic" in gateway_probe_runbook_entry["impact"]
+    assert "raw payloads" in gateway_probe_runbook_entry["impact"]
+    assert "model outputs" in gateway_probe_runbook_entry["impact"]
+    assert "gateway responses" in gateway_probe_runbook_entry["impact"]
+    assert "credentials" in gateway_probe_runbook_entry["impact"]
+    assert "app/backend/services/model_gateway_probe_runbook_gate.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/backend/tests/test_model_gateway_probe_runbook_gate.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/backend/services/model_gateway_probe_evaluation.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/backend/services/model_gateway_runtime_configuration.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md" in gateway_probe_runbook_entry["evidence_paths"]
+    assert "model-gateway-probe-runbook-gate" in gateway_probe_runbook_entry["release_gate_links"]
+    assert "model-gateway-probe-evaluation" in gateway_probe_runbook_entry["release_gate_links"]
+    assert "model-gateway-health-plan" in gateway_probe_runbook_entry["release_gate_links"]
+    assert "model-gateway-runtime-configuration" in gateway_probe_runbook_entry["release_gate_links"]
+    assert "modelops-newapi-channel-bootstrap" in gateway_probe_runbook_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_model_gateway_probe_runbook_gate.py "
+        "tests/test_model_gateway_health_plan.py tests/test_model_gateway_probe_evaluation.py "
+        "tests/test_model_gateway_runtime_configuration.py tests/test_model_ops_newapi_channel_bootstrap.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+        "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
     observed_gateway_fit_entry = next(
         entry
         for entry in ledger["completed_updates"]

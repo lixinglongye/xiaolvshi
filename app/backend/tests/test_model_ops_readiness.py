@@ -26,7 +26,7 @@ def test_model_ops_readiness_passes_when_all_components_are_ready():
     assert result["release_recommendation"] == "ready_for_model_ops_release"
     assert result["summary"]["component_count"] == len(MODEL_OPS_COMPONENTS)
     assert result["summary"]["required_component_count"] == len([component for component in MODEL_OPS_COMPONENTS if component.required])
-    assert result["summary"]["optional_component_count"] == 1
+    assert result["summary"]["optional_component_count"] == len([component for component in MODEL_OPS_COMPONENTS if not component.required])
     assert result["summary"]["required_warning_count"] == 0
     assert result["summary"]["optional_review_count"] == 0
     assert result["summary"]["required_failure_count"] == 0

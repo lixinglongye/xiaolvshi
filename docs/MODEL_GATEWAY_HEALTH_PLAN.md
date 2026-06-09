@@ -31,7 +31,7 @@ The plan returns three maintainer-run probes:
 These requests are examples only. The backend does not send them automatically.
 Run the image probe only after the model-list and cheap JSON probes pass, because it is billed per generated image rather than per tiny token budget.
 
-After manually running the probes, submit sanitized model IDs, HTTP status, JSON success, image count, and latency to [MODEL_GATEWAY_PROBE_EVALUATION.md](MODEL_GATEWAY_PROBE_EVALUATION.md). Do not include Authorization headers, prompts, documents, image URLs, base64 data, or raw model output.
+After manually running the probes, submit sanitized model IDs, HTTP status, JSON success, image count, and latency to [MODEL_GATEWAY_PROBE_EVALUATION.md](MODEL_GATEWAY_PROBE_EVALUATION.md). [MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md](MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md) then checks the ordered rollout path from list-models through cheap JSON probe, optional image smoke, small legal fixture smoke, and maintainer default-change review. Do not include Authorization headers, prompts, documents, image URLs, base64 data, or raw model output.
 
 ## Validation
 
@@ -49,5 +49,6 @@ The service reads configuration presence, base URL shape, model IDs, cost tiers,
 - `app/backend/tests/test_model_gateway_health_plan.py`
 - `app/backend/routers/aihub.py`
 - `app/backend/services/model_ops_readiness.py`
+- `docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md`
 - `docs/MODEL_GATEWAY_COMPATIBILITY.md`
 - `docs/MODEL_LIFECYCLE_POLICY.md`

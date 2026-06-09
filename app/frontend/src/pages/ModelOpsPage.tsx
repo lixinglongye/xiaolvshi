@@ -76,6 +76,7 @@ import {
   type ModelOpsRuntimeExplicitModelFitGate,
   type ModelGatewayHealthPlanRole,
   type ModelGatewayProbeEvaluation,
+  type ModelGatewayProbeRunbookGate,
   type ModelOpsCheapFirstCanaryApprovalPacket,
   type ModelOpsCheapFirstCanaryChangeManifest,
   type ModelOpsCheapFirstCanaryObservation,
@@ -2103,6 +2104,11 @@ function Inner() {
   const newapiChannelClaimEntries = boundaryDisplayEntries(newapiChannelBootstrap?.claim_boundary);
   const gatewayHealthRows = data?.gateway_health_plan?.role_models ?? [];
   const gatewayHealthContracts = data?.gateway_health_plan?.dry_run_contracts ?? [];
+  const gatewayProbeRunbookGate: ModelGatewayProbeRunbookGate | null = data?.gateway_probe_runbook_gate ?? null;
+  const gatewayProbeRunbookSteps = gatewayProbeRunbookGate?.runbook_steps ?? [];
+  const gatewayProbeRunbookChecks = gatewayProbeRunbookGate?.checks ?? [];
+  const gatewayProbeRunbookPrivacyEntries = boundaryDisplayEntries(gatewayProbeRunbookGate?.privacy_boundary);
+  const gatewayProbeRunbookClaimEntries = boundaryDisplayEntries(gatewayProbeRunbookGate?.claim_boundary);
   const activeProbeEvaluation = probeEvaluation ?? data?.gateway_probe_evaluation ?? null;
   const probeEnvRows = activeProbeEvaluation?.recommended_env ?? [];
   const probeCheckRows = activeProbeEvaluation?.checks ?? [];
@@ -11575,6 +11581,145 @@ function Inner() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </section>
+        )}
+
+        {gatewayProbeRunbookGate && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Gateway probe runbook gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {gatewayProbeRunbookGate.summary.ready_step_count}/{gatewayProbeRunbookGate.summary.step_count} ready steps /{' '}
+                  {gatewayProbeRunbookGate.summary.cheap_probe_pass_count} cheap probes /{' '}
+                  next {gatewayProbeRunbookGate.summary.next_step_id ?? 'complete'}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(gatewayProbeRunbookGate.status)}>
+                {gatewayProbeRunbookGate.status}
+              </Badge>
+            </div>
+
+            <div className="mb-3 grid gap-3 md:grid-cols-5">
+              {[
+                { label: 'ready_step_count', value: gatewayProbeRunbookGate.summary.ready_step_count },
+                { label: 'review_step_count', value: gatewayProbeRunbookGate.summary.review_step_count },
+                { label: 'blocked_step_count', value: gatewayProbeRunbookGate.summary.blocked_step_count },
+                { label: 'cheap_probe_pass_count', value: gatewayProbeRunbookGate.summary.cheap_probe_pass_count },
+                { label: 'forbidden_payload_field_count', value: gatewayProbeRunbookGate.summary.forbidden_payload_field_count },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                  <div className="mt-1 break-words font-mono text-[11px] text-stone-600">{item.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Runbook step</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Evidence</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayProbeRunbookSteps.map((step) => (
+                    <TableRow key={step.id}>
+                      <TableCell>
+                        <div className="font-semibold text-stone-950">{step.title}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">{step.id}</div>
+                        <div className="mt-1 font-mono text-[11px] text-stone-500">
+                          source_statuses: {step.source_statuses.join(', ') || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(step.status)}>
+                          {step.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[520px] text-xs leading-5 text-stone-600">{step.action}</TableCell>
+                      <TableCell className="max-w-[280px] text-xs leading-5 text-stone-600">
+                        {step.evidence_links.join(', ')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Check</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Reason</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gatewayProbeRunbookChecks.map((check) => (
+                    <TableRow key={check.id}>
+                      <TableCell className="font-mono text-xs font-semibold text-stone-950">{check.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[640px] text-xs leading-5 text-stone-600">{check.reason}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                <div className="space-y-2 text-xs leading-5 text-stone-600">
+                  {gatewayProbeRunbookGate.recommended_actions.slice(0, 4).map((action) => (
+                    <div key={action}>{action}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source status</h3>
+                <div className="space-y-1 font-mono text-[11px] text-stone-600">
+                  <div>source_health_status: {gatewayProbeRunbookGate.summary.source_health_status ?? '-'}</div>
+                  <div>source_runtime_status: {gatewayProbeRunbookGate.summary.source_runtime_status ?? '-'}</div>
+                  <div>source_channel_status: {gatewayProbeRunbookGate.summary.source_channel_status ?? '-'}</div>
+                  <div>source_probe_status: {gatewayProbeRunbookGate.summary.source_probe_status ?? '-'}</div>
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>credentials_included: {String(gatewayProbeRunbookGate.summary.credentials_included)}</div>
+                  <div>raw_payload_echoed: {String(gatewayProbeRunbookGate.summary.raw_payload_echoed)}</div>
+                  <div>gateway_called: {String(gatewayProbeRunbookGate.summary.gateway_called)}</div>
+                  <div>network_called: {String(gatewayProbeRunbookGate.summary.network_called)}</div>
+                  {gatewayProbeRunbookPrivacyEntries.slice(0, 4).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                <div className="space-y-1 text-xs leading-5 text-stone-600">
+                  <div>default_model_changed: {String(gatewayProbeRunbookGate.summary.default_model_changed)}</div>
+                  <div>traffic_shifted: {String(gatewayProbeRunbookGate.summary.traffic_shifted)}</div>
+                  {gatewayProbeRunbookClaimEntries.slice(0, 6).map(([key, value]) => (
+                    <div key={key}>
+                      {key}: {String(value)}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         )}

@@ -1806,6 +1806,53 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "docs/MODEL_OPS_NEWAPI_CHANNEL_BOOTSTRAP.md" in checks[
         "modelops-newapi-channel-bootstrap"
     ]["evidence_paths"]
+    assert checks["model-gateway-probe-runbook-gate"]["required"] is False
+    assert checks["model-gateway-probe-runbook-gate"]["blocks_release"] is False
+    assert "metadata-only model gateway probe runbook evidence" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "runtime/channel normalization" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "list-models first" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "cheap JSON probe" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "optional image smoke" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "legal fixture smoke" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "default-change review" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "does not call NewAPI" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "Gemini" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "OpenAI" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "Google" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "yibuapi" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "network" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "does not change defaults" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "shift traffic" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "API keys" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "Authorization headers" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "raw probe payloads" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "model outputs" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "gateway responses" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "credentials" in checks["model-gateway-probe-runbook-gate"]["manual_note"]
+    assert "app/backend/services/model_gateway_probe_runbook_gate.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_model_gateway_probe_runbook_gate.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_gateway_probe_evaluation.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_gateway_runtime_configuration.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["evidence_paths"]
+    assert "app/backend/services/model_ops_newapi_channel_bootstrap.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in checks["model-gateway-probe-runbook-gate"]["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in checks["model-gateway-probe-runbook-gate"]["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in checks["model-gateway-probe-runbook-gate"]["evidence_paths"]
+    assert "docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md" in checks["model-gateway-probe-runbook-gate"]["evidence_paths"]
+    assert "tests/test_model_gateway_probe_runbook_gate.py" in checks[
+        "model-gateway-probe-runbook-gate"
+    ]["validation_command"]
+    assert "npm run typecheck" in checks["model-gateway-probe-runbook-gate"]["validation_command"]
+    assert "npm run ui:regression" in checks["model-gateway-probe-runbook-gate"]["validation_command"]
     assert checks["modelops-observed-gateway-model-fit-matrix"]["required"] is True
     assert checks["modelops-observed-gateway-model-fit-matrix"]["blocks_release"] is True
     assert "metadata-only observed gateway model fit matrix evidence" in checks["modelops-observed-gateway-model-fit-matrix"]["manual_note"]

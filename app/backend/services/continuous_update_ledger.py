@@ -134,6 +134,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_health_plan.py tests/test_model_catalog.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_model_gateway_runtime_configuration.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_health_plan.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_frontend_ui_regression_gate.py -q",
                 "python -m pytest tests/test_model_ops_newapi_channel_bootstrap.py tests/test_model_gateway_connection_profile.py tests/test_model_gateway_runtime_configuration.py tests/test_model_ops_observed_gemini_premium_exception_review.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_model_gateway_probe_runbook_gate.py tests/test_model_gateway_health_plan.py tests/test_model_gateway_probe_evaluation.py tests/test_model_gateway_runtime_configuration.py tests/test_model_ops_newapi_channel_bootstrap.py tests/test_model_ops_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_deep_review_ocr_readiness_runtime.py tests/test_ocr_import_readiness_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_case_access_control.py tests/test_case_permission_runtime_router.py tests/test_case_role_permission_matrix.py tests/test_case_team_access_policy.py -q && cd ../frontend && npm run typecheck",
                 "python -m pytest tests/test_gemini_newapi_model_selector.py -q",
@@ -487,6 +488,48 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("model-gateway-probe-evaluation", "model-ops-readiness"),
                 user_need_ids=("low-cost-routing", "safe-ai-ops"),
+            ),
+            LedgerEntry(
+                id="model-gateway-probe-runbook-gate",
+                title="Model gateway probe runbook gate",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a metadata-only ordered runbook gate for NewAPI/Gemini gateway rollout: runtime/channel "
+                    "normalization, secret-boundary verification, list-models before cheap JSON probes, optional image "
+                    "smoke after text probes, legal fixture smoke after cheap probe evidence, and maintainer review "
+                    "before default changes. It exposes safe runbook status in AIHub ModelOps without calling gateways "
+                    "or the network, writing configuration, changing defaults, shifting traffic, or returning raw "
+                    "payloads, prompts, legal text, model outputs, gateway responses, headers, emails, credentials, "
+                    "or user identifiers."
+                ),
+                evidence_paths=(
+                    "app/backend/services/model_gateway_probe_runbook_gate.py",
+                    "app/backend/tests/test_model_gateway_probe_runbook_gate.py",
+                    "app/backend/services/model_gateway_health_plan.py",
+                    "app/backend/services/model_gateway_probe_evaluation.py",
+                    "app/backend/services/model_gateway_runtime_configuration.py",
+                    "app/backend/services/model_ops_newapi_channel_bootstrap.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/routers/aihub.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "model-gateway-probe-runbook-gate",
+                    "model-gateway-probe-evaluation",
+                    "model-gateway-health-plan",
+                    "model-gateway-runtime-configuration",
+                    "modelops-newapi-channel-bootstrap",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility", "product-readiness"),
             ),
             LedgerEntry(
                 id="model-gateway-probe-ui",

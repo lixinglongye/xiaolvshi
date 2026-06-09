@@ -41,7 +41,7 @@ POST /api/v1/aihub/models/gateway-probe-evaluation
 The evaluator also accepts `model_ids` as a plain array and chat or image probe rows as arrays. It only needs model IDs, HTTP status, JSON success, image counts, and latency.
 It fails closed when submitted payloads include raw or secret-bearing fields such as `Authorization`, `api_key`, `prompt`, `messages`, `image_url`, `b64_json`, `raw_response`, or model output text. It also scans string values for key-like tokens, bearer tokens, email addresses, URLs, and data-URI/base64 image payloads. The response reports only sanitized paths and risk labels, not the matched values.
 
-`POST /api/v1/aihub/models/gateway-probe-evaluation` also records the latest sanitized evaluation result in process memory. `GET /api/v1/aihub/models` then reuses that snapshot for `gateway_probe_evaluation` and `model_ops_readiness`, so a browser refresh keeps the most recent manual evidence instead of reverting to `not_run`. The registry stores only the evaluated result, never the submitted payload. If a payload is rejected for forbidden raw or secret-bearing fields, the stored snapshot keeps the fail status, sanitized check IDs, summary counts, and actions, but drops model rows and `.env` recommendations.
+`POST /api/v1/aihub/models/gateway-probe-evaluation` also records the latest sanitized evaluation result in process memory. `GET /api/v1/aihub/models` then reuses that snapshot for `gateway_probe_evaluation`, `gateway_probe_runbook_gate`, and `model_ops_readiness`, so a browser refresh keeps the most recent manual evidence instead of reverting to `not_run`. The registry stores only the evaluated result, never the submitted payload. If a payload is rejected for forbidden raw or secret-bearing fields, the stored snapshot keeps the fail status, sanitized check IDs, summary counts, and actions, but drops model rows and `.env` recommendations.
 
 ## What It Reports
 
@@ -65,7 +65,8 @@ It fails closed when submitted payloads include raw or secret-bearing fields suc
 5. Remove Authorization headers, bearer tokens, API keys, prompts, documents, image URLs, base64 payloads, emails, and raw model output.
 6. Submit only sanitized model IDs, probe status, HTTP status, image count, JSON boolean, and latency in `/model-ops` or to `/gateway-probe-evaluation`.
 7. Refresh `/model-ops` or `GET /api/v1/aihub/models` to confirm readiness is using the latest sanitized manual evidence.
-8. Review `.env` recommendations before changing defaults.
+8. Review `gateway_probe_runbook_gate` to confirm list-models, cheap JSON probe, optional image smoke, legal fixture smoke, and default-change review are in order.
+9. Review `.env` recommendations before changing defaults.
 
 ## Validation
 
@@ -86,4 +87,5 @@ Do not submit or commit API keys, bearer tokens, Authorization headers, user pro
 - `app/frontend/src/lib/modelOpsApi.ts`
 - `app/frontend/src/pages/ModelOpsPage.tsx`
 - `docs/MODEL_GATEWAY_HEALTH_PLAN.md`
+- `docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md`
 - `docs/AI_MODEL_STRATEGY.md`

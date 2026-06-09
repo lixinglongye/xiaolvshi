@@ -82,6 +82,18 @@ or live model inventory; or return raw payloads, prompts, legal text, model
 outputs, gateway responses, Authorization headers, emails, identifiers, or
 credentials.
 
+Current ModelOps gateway probe runbook gate slice:
+`model-gateway-probe-runbook-gate` adds a metadata-only ordered rollout gate
+for NewAPI/Gemini gateway probes. It joins runtime/channel normalization,
+secret-boundary verification, list-models evidence, cheap JSON probe status,
+optional image smoke, small synthetic legal fixture smoke, and maintainer
+default-change review into `/api/v1/aihub/models/gateway-probe-runbook-gate`
+and the ModelOps page. It does not call NewAPI, Gemini, OpenAI, Google,
+yibuapi, gateways, app AI endpoints, models, or the network; write
+configuration; change defaults; shift traffic; or return raw probe payloads,
+prompts, legal text, model outputs, gateway responses, headers, emails,
+identifiers, or credentials.
+
 Current ModelOps cheap-first cascade research slice:
 `modelops-cheap-first-cascade-research-gate` adds a metadata-only gate that
 links FrugalGPT-style cascade justification, official Gemini Flash-Lite

@@ -111,6 +111,13 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "gateway_probe_evaluation",
         required=False,
     ),
+    ReadinessComponent(
+        "gateway-probe-runbook-gate",
+        "Gateway probe runbook gate",
+        "manual_evidence",
+        "gateway_probe_runbook_gate",
+        required=False,
+    ),
     ReadinessComponent("lifecycle-policy", "Gemini lifecycle policy", "configuration", "lifecycle_policy"),
     ReadinessComponent(
         "gemini-cheap-first-coverage-gate",

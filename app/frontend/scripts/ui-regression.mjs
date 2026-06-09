@@ -176,6 +176,18 @@ const newapiChannelBootstrapPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
   'model-ops NewAPI channel bootstrap section',
 );
+const gatewayHealthPlanPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway probe runbook gate</h2>',
+  'model-ops gateway health plan section',
+);
+const gatewayProbeRunbookGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Gateway probe runbook gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Gateway probe evaluation</h2>',
+  'model-ops gateway probe runbook gate section',
+);
 const geminiAliasCapabilityCoveragePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Gemini/NewAPI alias capability coverage</h2>',
@@ -3477,6 +3489,21 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'normalized_base_url_display', 'model-ops NewAPI channel bootstrap normalized URL display'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops NewAPI channel bootstrap no-write boundary'),
   () => assertIncludes(modelOpsPage, 'gateway_called', 'model-ops NewAPI channel bootstrap no-gateway boundary'),
+  () => assertIncludes(modelOpsApi, 'ModelGatewayProbeRunbookGate', 'model-ops gateway probe runbook gate type'),
+  () => assertIncludes(modelOpsApi, 'gateway_probe_runbook_gate?: ModelGatewayProbeRunbookGate', 'model-ops gateway probe runbook response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelGatewayProbeRunbookGate', 'model-ops gateway probe runbook getter'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelGatewayProbeRunbookGate', 'model-ops gateway probe runbook evaluator'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gateway-probe-runbook-gate', 'model-ops gateway probe runbook endpoint'),
+  () => assertIncludes(modelOpsPage, 'Gateway probe runbook gate', 'model-ops gateway probe runbook panel'),
+  () => assertIncludes(modelOpsPage, 'gatewayProbeRunbookGate', 'model-ops gateway probe runbook binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayProbeRunbookSteps', 'model-ops gateway probe runbook steps binding'),
+  () => assertIncludes(modelOpsPage, 'gatewayProbeRunbookChecks', 'model-ops gateway probe runbook checks binding'),
+  () => assertIncludes(modelOpsPage, 'ready_step_count', 'model-ops gateway probe runbook ready summary'),
+  () => assertIncludes(modelOpsPage, 'next_step_id', 'model-ops gateway probe runbook next step binding'),
+  () => assertIncludes(modelOpsPage, 'source_statuses', 'model-ops gateway probe runbook source status binding'),
+  () => assertIncludes(modelOpsPage, 'forbidden_payload_field_count', 'model-ops gateway probe runbook forbidden field summary'),
+  () => assertIncludes(modelOpsPage, 'default_model_changed', 'model-ops gateway probe runbook no default change boundary'),
+  () => assertIncludes(modelOpsPage, 'traffic_shifted', 'model-ops gateway probe runbook no traffic shift boundary'),
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Model catalog candidate impact replay</h2>',
@@ -3501,6 +3528,18 @@ const checks = [
     '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
     'model-ops NewAPI channel bootstrap precedes gateway health plan',
   ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Gateway health plan</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Gateway probe runbook gate</h2>',
+    'model-ops gateway probe runbook follows gateway health plan',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Gateway probe runbook gate</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Gateway probe evaluation</h2>',
+    'model-ops gateway probe evaluation follows runbook gate',
+  ),
   () => assertNotMatches(
     gatewayRuntimeConfigurationPanel,
     /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|email|phone|password)\b/i,
@@ -3510,6 +3549,11 @@ const checks = [
     newapiChannelBootstrapPanel,
     /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|client_email|phone|password)\b/i,
     'model-ops NewAPI channel bootstrap no secrets or raw request/response fields',
+  ),
+  () => assertNotMatches(
+    gatewayProbeRunbookGatePanel,
+    /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|authorization|bearer_token|raw_prompt|prompt_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|gateway_response|client_email|email|phone|password|raw_legal_text|document_text)\b/i,
+    'model-ops gateway probe runbook no secrets or raw request/response fields',
   ),
   () =>
     assertBefore(

@@ -98,6 +98,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Gemini catalog source audit" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway connection profile" in profile["release_management"]["release_readiness_controls"]
     assert "Model gateway runtime configuration" in profile["release_management"]["release_readiness_controls"]
+    assert "Model gateway probe runbook gate" in profile["release_management"]["release_readiness_controls"]
     assert "Model operations readiness warning drilldown" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps load performance budget" in profile["release_management"]["release_readiness_controls"]
     assert "ModelOps performance observation review" in profile["release_management"]["release_readiness_controls"]
@@ -226,8 +227,11 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/model_gateway_connection_profile.py" in evidence_paths
     assert "app/backend/services/model_gateway_runtime_configuration.py" in evidence_paths
     assert "app/backend/tests/test_model_gateway_runtime_configuration.py" in evidence_paths
+    assert "app/backend/services/model_gateway_probe_runbook_gate.py" in evidence_paths
+    assert "app/backend/tests/test_model_gateway_probe_runbook_gate.py" in evidence_paths
     assert "docs/MODEL_GATEWAY_RUNTIME_CONFIGURATION.md" in evidence_paths
     assert "docs/MODEL_GATEWAY_CONNECTION_PROFILE.md" in evidence_paths
+    assert "docs/MODEL_GATEWAY_PROBE_RUNBOOK_GATE.md" in evidence_paths
     assert "app/backend/services/model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "app/backend/tests/test_model_ops_aihub_endpoint_route_coverage_gate.py" in evidence_paths
     assert "docs/MODELOPS_AIHUB_ENDPOINT_ROUTE_COVERAGE_GATE.md" in evidence_paths
@@ -608,6 +612,10 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("NewAPI channel cheap-first bootstrap evidence is metadata-only setup evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("yibuapi/OpenAI-compatible URL normalization" in guardrail for guardrail in profile["application_guardrails"])
     assert any("APP_AI_KEY placeholder setup" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Model gateway probe runbook gate is metadata-only ordered rollout evidence" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("list-models first, cheap JSON probes, optional image smoke" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("maintainer default-change review without calling NewAPI" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("raw probe payloads, prompts, raw legal text, model outputs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("legal fixture cheap-first default promotion packet is metadata-only maintainer review evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("linked cheap-first calibration task ids" in guardrail for guardrail in profile["application_guardrails"])
     assert any("calibration payloads" in guardrail for guardrail in profile["application_guardrails"])
