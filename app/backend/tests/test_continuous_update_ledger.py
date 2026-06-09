@@ -636,6 +636,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-index-dry-run-gate" in completed_ids
     assert "legal-rag-embedding-batch-budget-gate" in completed_ids
     assert "legal-rag-embedding-batch-preflight" in completed_ids
+    assert "legal-rag-embedding-batch-preflight-ui-binding" in completed_ids
     assert "legal-rag-embedding-batch-preview-runtime" in completed_ids
     assert "legal-rag-embedding-batch-approval-packet" in completed_ids
     assert "legal-rag-embedding-batch-observation-gate" in completed_ids
@@ -898,6 +899,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-index-dry-run-gate" not in queue_ids
     assert "legal-rag-embedding-batch-budget-gate" not in queue_ids
     assert "legal-rag-embedding-batch-preflight" not in queue_ids
+    assert "legal-rag-embedding-batch-preflight-ui-binding" not in queue_ids
     assert "legal-rag-embedding-batch-preview-runtime" not in queue_ids
     assert "legal-rag-embedding-batch-approval-packet" not in queue_ids
     assert "legal-rag-embedding-batch-observation-gate" not in queue_ids
@@ -1549,6 +1551,27 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-batch-preflight" in embedding_preflight_entry["release_gate_links"]
     assert "legal-rag-embedding-batch-preview-runtime" in embedding_preflight_entry["release_gate_links"]
     assert "modelops-gemini-embedding-cheap-first-preflight" in embedding_preflight_entry["release_gate_links"]
+    embedding_preflight_ui_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-rag-embedding-batch-preflight-ui-binding"
+    )
+    assert embedding_preflight_ui_entry["size"] == "medium"
+    assert embedding_preflight_ui_entry["status"] == "shipped"
+    assert embedding_preflight_ui_entry["category"] == "frontend_ui"
+    assert "maintenance-page visibility" in embedding_preflight_ui_entry["impact"]
+    assert "duplicate-hash counts" in embedding_preflight_ui_entry["impact"]
+    assert "PII and secret signal totals" in embedding_preflight_ui_entry["impact"]
+    assert "typed maintenance API bindings" in embedding_preflight_ui_entry["impact"]
+    assert "static UI regression coverage" in embedding_preflight_ui_entry["impact"]
+    assert "without rendering source text" in embedding_preflight_ui_entry["impact"]
+    assert "app/frontend/src/lib/maintenanceApi.ts" in embedding_preflight_ui_entry["evidence_paths"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in embedding_preflight_ui_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in embedding_preflight_ui_entry["evidence_paths"]
+    assert "app/backend/services/legal_rag_embedding_batch_preflight.py" in embedding_preflight_ui_entry["evidence_paths"]
+    assert "legal-rag-embedding-batch-preflight" in embedding_preflight_ui_entry["release_gate_links"]
+    assert "frontend-typecheck" in embedding_preflight_ui_entry["release_gate_links"]
+    assert "frontend-ui-regression-gate" in embedding_preflight_ui_entry["release_gate_links"]
     embedding_preview_entry = next(
         entry
         for entry in ledger["completed_updates"]

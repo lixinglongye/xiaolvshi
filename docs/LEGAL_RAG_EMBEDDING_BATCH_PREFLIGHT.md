@@ -42,3 +42,13 @@ python -m pytest tests/test_release_readiness.py tests/test_continuous_update_le
 ```
 
 Use this preflight before the executable embedding preview when reviewing legal RAG source chunks on a low-resource machine.
+
+## Maintenance UI
+
+The maintenance evidence page loads a sanitized sample through
+`evaluateLegalRagEmbeddingBatchPreflight` and displays only review metadata:
+row counts, duplicate-hash counts, signal totals, token and cost estimates,
+hashed identifiers, policy flags, input-contract fields, and validation
+commands. The UI regression script checks the API bindings, state binding,
+sample loader, forbidden-payload guard, status distributions, and privacy
+boundary labels.

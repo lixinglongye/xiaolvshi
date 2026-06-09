@@ -3889,9 +3889,12 @@ class ReleaseReadinessService:
                     "app/backend/services/release_readiness.py",
                     "app/backend/services/continuous_update_ledger.py",
                     "app/backend/services/maintenance_evidence.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
                     "docs/LEGAL_RAG_EMBEDDING_BATCH_PREFLIGHT.md",
                 ),
-                validation_command="python -m pytest tests/test_legal_rag_embedding_batch_preflight.py tests/test_legal_rag_embedding_batch_preview.py tests/test_legal_rag_router.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
+                validation_command="python -m pytest tests/test_legal_rag_embedding_batch_preflight.py tests/test_legal_rag_embedding_batch_preview.py tests/test_legal_rag_router.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 manual_note="This is local metadata-only Legal RAG embedding batch preflight evidence before the executable preview runtime; it estimates cheap-first Gemini embedding tokens and cost, hashes chunk ids and text, flags duplicate chunks, PII signals, preview-size overages, and secret-like inputs without calling NewAPI, Gemini, models, gateways, or the network, creating embeddings, writing indexes or databases, or returning source text, source ids, sensitive values, embedding vectors, prompts, gateway payloads, model outputs, credentials, or legal advice claims.",
             ),
             ReleaseCheck(

@@ -54,6 +54,7 @@ import {
   getLegalPublicBenchmarkLicenseGate,
   getLegalPublicFixturePriorityQueue,
   getLegalPublicBenchmarkSampler,
+  evaluateLegalRagEmbeddingBatchPreflight,
   evaluateLegalRagAnswerReleaseReadinessGate,
   evaluateLegalRagEmbeddingBatchObservationGate,
   evaluateLegalRagEmbeddingIndexCommitReviewPacket,
@@ -67,6 +68,7 @@ import {
   getLegalRagEmbeddingBatchApprovalPacket,
   getLegalRagEmbeddingBatchObservationGate,
   getLegalRagEmbeddingBatchBudgetGate,
+  getLegalRagEmbeddingBatchPreflight,
   getLegalRagEmbeddingIndexCommitReviewPacket,
   getLegalRagEmbeddingIndexPostCommitVerificationGate,
   getLegalRagEmbeddingRetrievalDiagnosticsHandoffGate,
@@ -173,6 +175,7 @@ import {
   type LegalRagEmbeddingBatchApprovalPacket,
   type LegalRagEmbeddingBatchObservationGate,
   type LegalRagEmbeddingBatchBudgetGate,
+  type LegalRagEmbeddingBatchPreflight,
   type LegalRagEmbeddingChunkPolicyGate,
   type LegalRagEmbeddingIndexCommitReviewPacket,
   type LegalRagEmbeddingIndexPostCommitVerificationGate,
@@ -249,6 +252,8 @@ const statusClass: Record<string, string> = {
   pass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   ready_for_review: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  ready_for_preview: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  allow_embedding_batch_preview: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   complete: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   approval_ready: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -478,6 +483,22 @@ function defaultLegalRagAnswerReleaseReadinessPayload() {
   return defaultLegalRagRetrievalObservationPayload();
 }
 
+function defaultLegalRagEmbeddingBatchPreflightPayload() {
+  return {
+    model: 'auto-embedding',
+    chunks: [
+      {
+        chunk_id: 'preflight-template-001',
+        text: 'Clean synthetic contract clause for local embedding preflight.',
+      },
+      {
+        chunk_id: 'preflight-statute-001',
+        text: 'Clean synthetic statute summary with citation anchor and no sensitive values.',
+      },
+    ],
+  };
+}
+
 function defaultLegalRagEmbeddingBatchObservationPayload() {
   return {
     source_rows: [
@@ -590,6 +611,12 @@ function defaultLegalRagEmbeddingRetrievalDiagnosticsHandoffPayload() {
 
 function hasForbiddenEmbeddingBatchObservationPayloadText(value: string) {
   return /"(source_id|source_ids|source_approval_item_id|raw_text|raw_legal_text|source_chunk|source_chunks|chunk_text|raw_embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|email|approver_email|approver_name|approver_identity)"\s*:/i.test(
+    value,
+  );
+}
+
+function hasForbiddenEmbeddingBatchPreflightPayloadText(value: string) {
+  return /"(embedding|embedding_vector|embedding_vectors|vector|vectors|prompt|model_output|gateway_payload|gateway_response|request_body|response_body|headers|authorization|api_key|password|secret|access_token|refresh_token)"\s*:/i.test(
     value,
   );
 }
@@ -713,6 +740,8 @@ function Inner() {
     useState<LegalRagEmbeddingIndexDryRunGate | null>(null);
   const [legalRagEmbeddingBatchBudgetGate, setLegalRagEmbeddingBatchBudgetGate] =
     useState<LegalRagEmbeddingBatchBudgetGate | null>(null);
+  const [legalRagEmbeddingBatchPreflight, setLegalRagEmbeddingBatchPreflight] =
+    useState<LegalRagEmbeddingBatchPreflight | null>(null);
   const [legalRagEmbeddingBatchApprovalPacket, setLegalRagEmbeddingBatchApprovalPacket] =
     useState<LegalRagEmbeddingBatchApprovalPacket | null>(null);
   const [legalRagEmbeddingBatchObservationGate, setLegalRagEmbeddingBatchObservationGate] =
@@ -891,6 +920,15 @@ function Inner() {
       return getLegalRagEmbeddingBatchObservationGate();
     }
     return evaluateLegalRagEmbeddingBatchObservationGate(payload);
+  };
+
+  const loadEmbeddingBatchPreflightSample = () => {
+    const payload = defaultLegalRagEmbeddingBatchPreflightPayload();
+    const payloadText = JSON.stringify(payload);
+    if (hasForbiddenEmbeddingBatchPreflightPayloadText(payloadText)) {
+      return getLegalRagEmbeddingBatchPreflight();
+    }
+    return evaluateLegalRagEmbeddingBatchPreflight(payload);
   };
 
   const loadEmbeddingIndexCommitReviewSample = () => {
@@ -1354,6 +1392,11 @@ function Inner() {
           label: 'Legal RAG embedding batch budget gate',
           run: getLegalRagEmbeddingBatchBudgetGate,
           apply: (value) => setLegalRagEmbeddingBatchBudgetGate(value as LegalRagEmbeddingBatchBudgetGate),
+        },
+        {
+          label: 'Legal RAG embedding batch preflight',
+          run: loadEmbeddingBatchPreflightSample,
+          apply: (value) => setLegalRagEmbeddingBatchPreflight(value as LegalRagEmbeddingBatchPreflight),
         },
         {
           label: 'Legal RAG embedding batch approval packet',
@@ -14675,6 +14718,240 @@ function Inner() {
                           </div>
                           <div>source_id_echoed: {String(gate.input_contract.source_id_echoed)}</div>
                           <div>budget_only: {String(gate.input_contract.budget_only)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Recommended actions</h3>
+                        <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                          {(gate.recommended_actions ?? []).map((action) => (
+                            <li key={action} className="flex gap-2">
+                              <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                              <span>{action}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                        <div className="space-y-2">
+                          {(gate.validation_commands ?? []).slice(0, 4).map((command) => (
+                            <div
+                              key={command}
+                              className="break-all rounded-[8px] border border-stone-950/10 bg-white p-2 font-mono text-[11px] text-stone-600"
+                            >
+                              {command}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+            {legalRagEmbeddingBatchPreflight &&
+              (() => {
+                const gate = legalRagEmbeddingBatchPreflight;
+                const rows = gate.preflight_rows ?? [];
+                const summary = gate.summary;
+                const privacy = gate.privacy_boundary;
+                const summaryCounts = [
+                  { label: 'preflight rows', value: summary.preflight_row_count },
+                  { label: 'ready rows', value: summary.ready_row_count },
+                  { label: 'review rows', value: summary.review_row_count },
+                  { label: 'blocked rows', value: summary.blocked_row_count },
+                  { label: 'duplicate hashes', value: summary.duplicate_text_hash_count },
+                  { label: 'PII signals', value: summary.pii_signal_count },
+                  { label: 'secret signals', value: summary.secret_signal_count },
+                  { label: 'estimated tokens', value: summary.estimated_token_total },
+                  { label: 'estimated cost', value: formatUsd(summary.estimated_cost_usd) },
+                  { label: 'resolved model', value: summary.resolved_model },
+                ];
+                const boundaryRows = [
+                  { label: 'source text returned', value: summary.source_text_returned },
+                  { label: 'source ids returned', value: summary.source_ids_returned },
+                  { label: 'sensitive values returned', value: privacy.returns_sensitive_values },
+                  { label: 'embedding vectors returned', value: privacy.returns_embedding_vectors },
+                  { label: 'prompts returned', value: privacy.returns_prompts },
+                  { label: 'model outputs returned', value: privacy.returns_model_outputs },
+                  { label: 'gateway payloads returned', value: privacy.returns_gateway_payloads },
+                  { label: 'credentials returned', value: privacy.returns_credentials },
+                  { label: 'calls gateway', value: privacy.calls_gateway },
+                  { label: 'creates embeddings', value: privacy.creates_embeddings },
+                  { label: 'index writes', value: privacy.writes_index },
+                  { label: 'database writes', value: privacy.writes_database },
+                ];
+
+                return (
+                  <section className="mb-8">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-xl font-black text-stone-950">Legal RAG embedding batch preflight</h2>
+                        <div className="mt-1 text-sm text-stone-600">
+                          Local input audit before the executable embedding batch preview runtime
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.review_required}>
+                        {displayToken(gate.status)}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 grid gap-3 md:grid-cols-5 xl:grid-cols-10">
+                      {summaryCounts.map((item) => (
+                        <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                          <div className="text-2xl font-black text-stone-950">{formatInline(item.value)}</div>
+                          <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Preflight chunk</TableHead>
+                            <TableHead>Status / action</TableHead>
+                            <TableHead>Local estimates</TableHead>
+                            <TableHead>Signals</TableHead>
+                            <TableHead>Reason codes</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow key={row.ordinal_ref}>
+                              <TableCell>
+                                <div className="font-semibold text-stone-950">{row.ordinal_ref}</div>
+                                <div className="mt-1 break-all font-mono text-[11px] text-stone-500">
+                                  {row.input_chunk_id_hash}
+                                </div>
+                                <div className="mt-1 break-all font-mono text-[11px] text-stone-500">
+                                  {row.text_hash ?? 'no_text_hash'}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <Badge
+                                  variant="outline"
+                                  className={statusClass[row.preflight_status] ?? statusClass.review_required}
+                                >
+                                  {displayToken(row.preflight_status)}
+                                </Badge>
+                                <div className="mt-2">release_action: {displayToken(row.release_action)}</div>
+                                <div>preview_eligible: {String(row.preview_eligible)}</div>
+                                <div>duplicate_text_hash: {String(row.duplicate_text_hash)}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div>input_character_count: {row.input_character_count}</div>
+                                <div>estimated_token_count: {row.estimated_token_count}</div>
+                                <div>max preview chars: {summary.max_preview_chars_per_chunk}</div>
+                                <div>max preflight chars: {summary.max_preflight_chars_per_chunk}</div>
+                              </TableCell>
+                              <TableCell className="text-xs leading-5 text-stone-600">
+                                <div className="mb-1 font-semibold text-stone-700">sensitive_signal_types</div>
+                                <div className="mb-2 flex max-w-[240px] flex-wrap gap-1">
+                                  {row.sensitive_signal_types.length ? (
+                                    row.sensitive_signal_types.map((signal) => (
+                                      <Badge key={`${row.ordinal_ref}-${signal}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                        {signal}: {row.signal_counts[signal] ?? 0}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span>none</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex max-w-[280px] flex-wrap gap-1">
+                                  {row.reason_codes.map((code) => (
+                                    <Badge key={`${row.ordinal_ref}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                      {code}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    <div className="grid gap-3 lg:grid-cols-4">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Distributions</h3>
+                        <div className="space-y-3">
+                          {[
+                            ['preflight_status_counts', gate.preflight_status_counts],
+                            ['release_action_counts', gate.release_action_counts],
+                          ].map(([label, values]) => (
+                            <div key={String(label)}>
+                              <div className="mb-1 font-mono text-[11px] text-stone-500">{String(label)}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(values as Record<string, number>).map(([key, value]) => (
+                                  <Badge key={`${label}-${key}`} variant="outline" className="bg-white">
+                                    {displayToken(key)}: {value}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">preflight_policy</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          <div>method: {gate.preflight_policy.method}</div>
+                          <div>endpoint: {gate.preflight_policy.endpoint}</div>
+                          <div>requires preflight: {String(gate.preflight_policy.requires_preflight_before_runtime_preview)}</div>
+                          <div>blocks secret-like inputs: {String(gate.preflight_policy.blocks_secret_like_inputs)}</div>
+                          <div>reviews duplicate hashes: {String(gate.preflight_policy.reviews_duplicate_text_hashes)}</div>
+                          <div>reviews PII signals: {String(gate.preflight_policy.reviews_pii_signals)}</div>
+                          <div>model call allowed: {String(gate.preflight_policy.model_call_allowed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Input contract</h3>
+                        <div className="space-y-3 text-xs leading-5 text-stone-600">
+                          <div>
+                            <div className="mb-1 font-semibold text-stone-700">accepted_chunk_fields</div>
+                            <div className="flex flex-wrap gap-1">
+                              {gate.input_contract.accepted_chunk_fields.map((field) => (
+                                <Badge key={field} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {field}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>source_identifier_hashed: {String(gate.input_contract.source_identifier_hashed)}</div>
+                          <div>source_identifier_echoed: {String(gate.input_contract.source_identifier_echoed)}</div>
+                          <div>raw_text_echoed: {String(gate.input_contract.raw_text_echoed)}</div>
+                        </div>
+                      </div>
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                        <div className="space-y-2 text-xs leading-5 text-stone-600">
+                          {boundaryRows.map((item) => (
+                            <div key={item.label}>
+                              {item.label}: {includedBoundaryLabel(item.value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                      <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">
+                        <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Request reasons</h3>
+                        <div className="flex flex-wrap gap-1">
+                          {gate.request_reason_codes.length ? (
+                            gate.request_reason_codes.map((code) => (
+                              <Badge key={code} variant="outline" className="bg-white font-mono text-[11px]">
+                                {code}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Badge variant="outline" className="bg-white">
+                              no request blockers
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-5">

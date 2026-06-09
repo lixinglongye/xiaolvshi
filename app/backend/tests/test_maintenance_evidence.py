@@ -78,6 +78,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "Legal RAG embedding index dry-run gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch budget gate" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch preflight" in profile["release_management"]["release_readiness_controls"]
+    assert "Legal RAG embedding batch preflight UI binding" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch preview runtime" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch approval packet" in profile["release_management"]["release_readiness_controls"]
     assert "Legal RAG embedding batch observation gate" in profile["release_management"]["release_readiness_controls"]
@@ -583,6 +584,9 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert any("PII signals" in guardrail for guardrail in profile["application_guardrails"])
     assert any("secret-like inputs" in guardrail for guardrail in profile["application_guardrails"])
     assert any("returning source text" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("Legal RAG embedding batch preflight UI binding exposes reviewer-facing preflight status" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("without rendering source text" in guardrail for guardrail in profile["application_guardrails"])
+    assert any("validation commands on the maintenance page" in guardrail for guardrail in profile["application_guardrails"])
     assert any("Legal RAG embedding batch preview runtime is maintainer-only executable smoke-test evidence" in guardrail for guardrail in profile["application_guardrails"])
     assert any("configured AIHub embedding gateway" in guardrail for guardrail in profile["application_guardrails"])
     assert any("sanitized dimensions, norms, hashes" in guardrail for guardrail in profile["application_guardrails"])

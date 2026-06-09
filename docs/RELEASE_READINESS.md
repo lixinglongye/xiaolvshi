@@ -455,6 +455,14 @@ embeddings, write indexes or databases, or return source text, source ids,
 sensitive values, embedding vectors, prompts, model outputs, gateway payloads,
 credentials, emails, or client material.
 
+The same check now includes maintenance-page UI binding evidence in
+`app/frontend/src/lib/maintenanceApi.ts`,
+`app/frontend/src/pages/MaintenanceEvidencePage.tsx`, and
+`app/frontend/scripts/ui-regression.mjs`. Reviewers can inspect the preflight
+status, hashed identifiers, signal counts, policies, input contract, privacy
+boundary, and validation commands without rendering the underlying source text
+or sensitive values.
+
 The optional `legal-rag-embedding-batch-preview-runtime` check records the
 maintainer-only executable Legal RAG embedding preview at
 `/api/v1/legal-rag/embedding-batch-preview`. It can call the configured AIHub

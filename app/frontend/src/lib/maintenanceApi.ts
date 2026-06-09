@@ -5541,6 +5541,126 @@ export type LegalRagEmbeddingBatchBudgetGate = {
   validation_commands: string[];
 };
 
+export type LegalRagEmbeddingBatchPreflightRow = {
+  ordinal_ref: string;
+  input_chunk_id_hash: string;
+  text_hash: string | null;
+  input_character_count: number;
+  estimated_token_count: number;
+  duplicate_text_hash: boolean;
+  signal_counts: Record<string, number>;
+  sensitive_signal_types: string[];
+  preview_eligible: boolean;
+  preflight_status: string;
+  release_action: string;
+  reason_codes: string[];
+  privacy_boundary: {
+    source_id_returned: boolean;
+    raw_legal_text_returned: boolean;
+    sensitive_values_returned: boolean;
+    embedding_vectors_returned: boolean;
+    gateway_called: boolean;
+    model_called: boolean;
+    index_written: boolean;
+    database_written: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
+export type LegalRagEmbeddingBatchPreflight = {
+  id: 'legal-rag-embedding-batch-preflight' | string;
+  title?: string;
+  schema_version: string;
+  status: string;
+  summary: {
+    input_chunk_count: number;
+    preflight_row_count: number;
+    max_preflight_chunks: number;
+    max_preflight_chars_per_chunk: number;
+    max_preview_chunks: number;
+    max_preview_chars_per_chunk: number;
+    ready_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    duplicate_text_hash_count: number;
+    secret_signal_count: number;
+    pii_signal_count: number;
+    estimated_token_total: number;
+    estimated_cost_usd: number | null;
+    pricing_estimate_available: boolean;
+    requested_model: string;
+    resolved_model: string;
+    canonical_model: string | null;
+    model_cost_tier: string;
+    model_status: string;
+    preview_eligible: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    embeddings_created: boolean;
+    index_written: boolean;
+    database_written: boolean;
+    source_text_returned: boolean;
+    source_ids_returned: boolean;
+    embedding_vectors_returned: boolean;
+    credentials_returned: boolean;
+    [key: string]: unknown;
+  };
+  request_reason_codes: string[];
+  preflight_rows: LegalRagEmbeddingBatchPreflightRow[];
+  preflight_status_counts: Record<string, number>;
+  release_action_counts: Record<string, number>;
+  preflight_policy: {
+    method: string;
+    endpoint: string;
+    requires_preflight_before_runtime_preview: boolean;
+    blocks_secret_like_inputs: boolean;
+    reviews_duplicate_text_hashes: boolean;
+    reviews_pii_signals: boolean;
+    reviews_preview_over_limit_batches: boolean;
+    model_call_allowed: boolean;
+    gateway_call_allowed: boolean;
+    embedding_creation_allowed: boolean;
+    index_write_allowed: boolean;
+    database_write_allowed: boolean;
+    [key: string]: unknown;
+  };
+  input_contract: {
+    accepted_container_key: string;
+    accepted_chunk_fields: string[];
+    source_identifier_hashed: boolean;
+    source_identifier_echoed: boolean;
+    raw_text_echoed: boolean;
+    forbidden_fields_ignored: string[];
+    [key: string]: unknown;
+  };
+  privacy_boundary: {
+    metadata_only_response: boolean;
+    returns_chunk_text: boolean;
+    returns_raw_legal_text: boolean;
+    returns_source_ids: boolean;
+    returns_sensitive_values: boolean;
+    returns_embedding_vectors: boolean;
+    returns_prompts: boolean;
+    returns_model_outputs: boolean;
+    returns_gateway_payloads: boolean;
+    returns_credentials: boolean;
+    calls_newapi: boolean;
+    calls_gemini: boolean;
+    calls_gateway: boolean;
+    calls_model: boolean;
+    creates_embeddings: boolean;
+    writes_index: boolean;
+    writes_database: boolean;
+    [key: string]: unknown;
+  };
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalRagEmbeddingBatchApprovalPacketItem = {
   id: string;
   source_batch_budget_row_id: string;
@@ -7418,6 +7538,11 @@ type LegalRagEmbeddingIndexDryRunGateResponse = {
 type LegalRagEmbeddingBatchBudgetGateResponse = {
   success: boolean;
   data: LegalRagEmbeddingBatchBudgetGate;
+};
+
+type LegalRagEmbeddingBatchPreflightResponse = {
+  success: boolean;
+  data: LegalRagEmbeddingBatchPreflight;
 };
 
 type LegalRagEmbeddingBatchApprovalPacketResponse = {
@@ -9376,6 +9501,25 @@ export async function getLegalRagEmbeddingBatchBudgetGate(): Promise<LegalRagEmb
     method: 'GET',
   });
   return unwrapMaintenanceData<LegalRagEmbeddingBatchBudgetGateResponse['data']>(resp);
+}
+
+export async function getLegalRagEmbeddingBatchPreflight(): Promise<LegalRagEmbeddingBatchPreflight> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-batch-preflight',
+    method: 'GET',
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingBatchPreflightResponse['data']>(resp);
+}
+
+export async function evaluateLegalRagEmbeddingBatchPreflight(
+  payload: Record<string, unknown>,
+): Promise<LegalRagEmbeddingBatchPreflight> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-rag-embedding-batch-preflight',
+    method: 'POST',
+    data: payload,
+  });
+  return unwrapMaintenanceData<LegalRagEmbeddingBatchPreflightResponse['data']>(resp);
 }
 
 export async function getLegalRagEmbeddingBatchApprovalPacket(): Promise<LegalRagEmbeddingBatchApprovalPacket> {

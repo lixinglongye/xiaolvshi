@@ -6555,6 +6555,42 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "low-cost-routing", "legal-rag", "safe-ai-ops"),
             ),
             LedgerEntry(
+                id="legal-rag-embedding-batch-preflight-ui-binding",
+                title="Legal RAG embedding batch preflight UI binding",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds maintenance-page visibility for the Legal RAG embedding batch preflight so reviewers can "
+                    "inspect preflight row counts, duplicate-hash counts, PII and secret signal totals, local token/"
+                    "cost estimates, hashed chunk/text identifiers, preflight policy, input contract, privacy "
+                    "boundaries, recommended actions, and validation commands before any executable embedding preview. "
+                    "The UI uses typed maintenance API bindings and static UI regression coverage without rendering "
+                    "source text, source ids, sensitive values, embedding vectors, prompts, model outputs, gateway "
+                    "payloads, credentials, or legal advice claims."
+                ),
+                evidence_paths=(
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/legal_rag_embedding_batch_preflight.py",
+                    "app/backend/tests/test_legal_rag_embedding_batch_preflight.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "docs/LEGAL_RAG_EMBEDDING_BATCH_PREFLIGHT.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "legal-rag-embedding-batch-preflight",
+                    "frontend-typecheck",
+                    "frontend-ui-regression-gate",
+                    "legal-rag-embedding-batch-preview-runtime",
+                ),
+                user_need_ids=("reviewer-visibility", "grounded-legal-output", "legal-rag", "safe-ai-ops"),
+            ),
+            LedgerEntry(
                 id="legal-rag-embedding-batch-observation-gate",
                 title="Legal RAG embedding batch observation gate",
                 category="benchmark",

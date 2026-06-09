@@ -811,6 +811,15 @@ gateways, or the network; creating embeddings; writing indexes or databases; or
 returning source text, source ids, sensitive values, embedding vectors, prompts,
 gateway payloads, model outputs, or credentials.
 
+`legal-rag-embedding-batch-preflight-ui-binding` adds the maintenance-page
+review surface for that preflight. It exposes typed maintenance API bindings,
+sample evaluation, preflight row/status distributions, duplicate-hash and PII
+signal totals, hashed identifiers, local cost/token summaries, input-contract
+flags, privacy boundaries, and validation commands with static UI regression
+coverage. It does not render source text, source ids, sensitive values,
+embedding vectors, prompts, gateway payloads, model outputs, credentials, or
+legal advice claims.
+
 `legal-rag-embedding-batch-preview-runtime` adds
 `POST /api/v1/legal-rag/embedding-batch-preview` and
 `LegalRagEmbeddingBatchPreviewService`. It lets maintainers run a small
