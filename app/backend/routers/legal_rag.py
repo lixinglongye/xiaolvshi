@@ -6,6 +6,7 @@ from typing import Any
 from core.database import get_db
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from services.aihub import AIHubService
+from services.legal_rag_embedding_batch_preflight import LegalRagEmbeddingBatchPreflightService
 from services.legal_rag_embedding_batch_preview import (
     LegalRagEmbeddingBatchPreviewService,
     LegalRagEmbeddingBatchPreviewValidationError,
@@ -80,6 +81,14 @@ async def preview_legal_rag_embedding_batch(
                 "message": "Legal RAG embedding preview requires a configured AI gateway.",
             },
         ) from exc
+
+
+@router.post("/embedding-batch-preflight")
+async def preflight_legal_rag_embedding_batch(
+    payload: dict[str, Any] | None = Body(default=None),
+):
+    preflight = LegalRagEmbeddingBatchPreflightService().build_preflight(payload or {})
+    return {"success": True, "data": _drop_forbidden_keys(preflight)}
 
 
 def _safe_retrieval_plan(plan: dict[str, Any]) -> dict[str, Any]:

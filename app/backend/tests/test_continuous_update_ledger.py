@@ -635,6 +635,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-chunk-policy-gate" in completed_ids
     assert "legal-rag-embedding-index-dry-run-gate" in completed_ids
     assert "legal-rag-embedding-batch-budget-gate" in completed_ids
+    assert "legal-rag-embedding-batch-preflight" in completed_ids
     assert "legal-rag-embedding-batch-preview-runtime" in completed_ids
     assert "legal-rag-embedding-batch-approval-packet" in completed_ids
     assert "legal-rag-embedding-batch-observation-gate" in completed_ids
@@ -896,6 +897,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-rag-embedding-chunk-policy-gate" not in queue_ids
     assert "legal-rag-embedding-index-dry-run-gate" not in queue_ids
     assert "legal-rag-embedding-batch-budget-gate" not in queue_ids
+    assert "legal-rag-embedding-batch-preflight" not in queue_ids
     assert "legal-rag-embedding-batch-preview-runtime" not in queue_ids
     assert "legal-rag-embedding-batch-approval-packet" not in queue_ids
     assert "legal-rag-embedding-batch-observation-gate" not in queue_ids
@@ -1520,6 +1522,33 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "docs/AI_MODEL_STRATEGY.md" in embedding_runtime_entry["evidence_paths"]
     assert "modelops-gemini-embedding-cheap-first-preflight" in embedding_runtime_entry["release_gate_links"]
     assert "legal-rag-embedding-readiness-gate" in embedding_runtime_entry["release_gate_links"]
+    embedding_preflight_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-rag-embedding-batch-preflight"
+    )
+    assert embedding_preflight_entry["size"] == "medium"
+    assert embedding_preflight_entry["status"] == "shipped"
+    assert embedding_preflight_entry["category"] == "benchmark"
+    assert "POST /api/v1/legal-rag/embedding-batch-preflight" in embedding_preflight_entry["impact"]
+    assert "LegalRagEmbeddingBatchPreflightService" in embedding_preflight_entry["impact"]
+    assert "hashes chunk ids and text" in embedding_preflight_entry["impact"]
+    assert "cheap-first Gemini embedding tokens" in embedding_preflight_entry["impact"]
+    assert "duplicate chunks" in embedding_preflight_entry["impact"]
+    assert "PII signals" in embedding_preflight_entry["impact"]
+    assert "secret-like inputs" in embedding_preflight_entry["impact"]
+    assert "without NewAPI/Gemini/model/gateway/network calls" in embedding_preflight_entry["impact"]
+    assert "source text" in embedding_preflight_entry["impact"]
+    assert "embedding vectors" in embedding_preflight_entry["impact"]
+    assert "credentials" in embedding_preflight_entry["impact"]
+    assert "app/backend/services/legal_rag_embedding_batch_preflight.py" in embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_batch_preflight.py" in embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/legal_rag.py" in embedding_preflight_entry["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in embedding_preflight_entry["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_BATCH_PREFLIGHT.md" in embedding_preflight_entry["evidence_paths"]
+    assert "legal-rag-embedding-batch-preflight" in embedding_preflight_entry["release_gate_links"]
+    assert "legal-rag-embedding-batch-preview-runtime" in embedding_preflight_entry["release_gate_links"]
+    assert "modelops-gemini-embedding-cheap-first-preflight" in embedding_preflight_entry["release_gate_links"]
     embedding_preview_entry = next(
         entry
         for entry in ledger["completed_updates"]

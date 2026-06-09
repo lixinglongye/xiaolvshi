@@ -5,6 +5,10 @@ smoke-test route for Legal RAG embeddings:
 
 `POST /api/v1/legal-rag/embedding-batch-preview`
 
+Run `POST /api/v1/legal-rag/embedding-batch-preflight` first to locally audit
+chunk size, duplicate hashes, PII signals, and secret-like input blockers
+without calling the embedding gateway.
+
 The route accepts up to five small text chunks, calls the existing AIHub
 embedding runtime, and returns sanitized preview metadata only. It is designed
 for laptop-safe checks before any durable vector index work.

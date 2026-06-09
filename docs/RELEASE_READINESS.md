@@ -442,6 +442,19 @@ source ids, raw query, raw retrieved context, raw legal text, source chunks,
 embedding vectors, prompts, model outputs, gateway payloads, credentials,
 emails, or client material.
 
+The optional `legal-rag-embedding-batch-preflight` check records local
+metadata-only Legal RAG embedding input-audit evidence through
+`LegalRagEmbeddingBatchPreflightService` at
+`/api/v1/legal-rag/embedding-batch-preflight` and
+`/api/v1/maintenance/legal-rag-embedding-batch-preflight`. It estimates
+cheap-first Gemini embedding tokens and catalog cost, hashes chunk ids and
+text, flags duplicate chunks, PII signals, preview-size overages, and
+secret-like inputs before the executable preview runtime. It must not call
+NewAPI, Gemini, models, gateways, app AI endpoints, or the network, create
+embeddings, write indexes or databases, or return source text, source ids,
+sensitive values, embedding vectors, prompts, model outputs, gateway payloads,
+credentials, emails, or client material.
+
 The optional `legal-rag-embedding-batch-preview-runtime` check records the
 maintainer-only executable Legal RAG embedding preview at
 `/api/v1/legal-rag/embedding-batch-preview`. It can call the configured AIHub

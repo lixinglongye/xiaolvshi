@@ -1507,6 +1507,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-rag-embedding-chunk-policy-gate": "python -m pytest tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_rag_embedding_readiness_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-index-dry-run-gate": "python -m pytest tests/test_legal_rag_embedding_index_dry_run_gate.py tests/test_legal_rag_embedding_chunk_policy_gate.py tests/test_legal_source_durable_index_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-batch-budget-gate": "python -m pytest tests/test_legal_rag_embedding_batch_budget_gate.py tests/test_legal_rag_embedding_index_dry_run_gate.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-rag-embedding-batch-preflight": "python -m pytest tests/test_legal_rag_embedding_batch_preflight.py tests/test_legal_rag_embedding_batch_preview.py tests/test_legal_rag_router.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py -q",
         "legal-rag-embedding-batch-approval-packet": "python -m pytest tests/test_legal_rag_embedding_batch_approval_packet.py tests/test_legal_rag_embedding_batch_budget_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-batch-observation-gate": "python -m pytest tests/test_legal_rag_embedding_batch_observation_gate.py tests/test_legal_rag_embedding_batch_approval_packet.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-rag-embedding-index-commit-review-packet": "python -m pytest tests/test_legal_rag_embedding_index_commit_review_packet.py tests/test_legal_rag_embedding_batch_observation_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2798,6 +2799,21 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
     assert "docs/LEGAL_RAG_EMBEDDING_BATCH_BUDGET_GATE.md" in checks["legal-rag-embedding-batch-budget-gate"]["evidence_paths"]
+    assert "local metadata-only Legal RAG embedding batch preflight evidence" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "estimates cheap-first Gemini embedding tokens and cost" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "hashes chunk ids and text" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "duplicate chunks" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "PII signals" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "secret-like inputs" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "without calling NewAPI" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "creating embeddings" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "source text" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "sensitive values" in checks["legal-rag-embedding-batch-preflight"]["manual_note"]
+    assert "app/backend/services/legal_rag_embedding_batch_preflight.py" in checks["legal-rag-embedding-batch-preflight"]["evidence_paths"]
+    assert "app/backend/tests/test_legal_rag_embedding_batch_preflight.py" in checks["legal-rag-embedding-batch-preflight"]["evidence_paths"]
+    assert "app/backend/routers/legal_rag.py" in checks["legal-rag-embedding-batch-preflight"]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["legal-rag-embedding-batch-preflight"]["evidence_paths"]
+    assert "docs/LEGAL_RAG_EMBEDDING_BATCH_PREFLIGHT.md" in checks["legal-rag-embedding-batch-preflight"]["evidence_paths"]
     assert "executable Legal RAG embedding batch preview evidence" in checks["legal-rag-embedding-batch-preview-runtime"]["manual_note"]
     assert "configured AIHub embedding runtime" in checks["legal-rag-embedding-batch-preview-runtime"]["manual_note"]
     assert "cheap-first Gemini routing" in checks["legal-rag-embedding-batch-preview-runtime"]["manual_note"]

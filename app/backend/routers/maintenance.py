@@ -82,6 +82,7 @@ from services.legal_rag_answer_release_readiness_gate import LegalRagAnswerRelea
 from services.legal_rag_benchmark_alignment import LegalRagBenchmarkAlignmentService
 from services.legal_rag_embedding_batch_observation_gate import LegalRagEmbeddingBatchObservationGateService
 from services.legal_rag_embedding_batch_approval_packet import LegalRagEmbeddingBatchApprovalPacketService
+from services.legal_rag_embedding_batch_preflight import LegalRagEmbeddingBatchPreflightService
 from services.legal_rag_embedding_batch_budget_gate import LegalRagEmbeddingBatchBudgetGateService
 from services.legal_rag_embedding_chunk_policy_gate import LegalRagEmbeddingChunkPolicyGateService
 from services.legal_rag_embedding_index_commit_review_packet import LegalRagEmbeddingIndexCommitReviewPacketService
@@ -1642,6 +1643,24 @@ async def evaluate_legal_rag_embedding_batch_budget_gate(payload: dict[str, Any]
     return {
         "success": True,
         "data": LegalRagEmbeddingBatchBudgetGateService().build_gate(rows if isinstance(rows, list) else None),
+    }
+
+
+@router.get("/legal-rag-embedding-batch-preflight")
+async def get_legal_rag_embedding_batch_preflight():
+    """Return a metadata-only Legal RAG embedding batch preflight template."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchPreflightService().build_preflight(),
+    }
+
+
+@router.post("/legal-rag-embedding-batch-preflight")
+async def evaluate_legal_rag_embedding_batch_preflight(payload: dict[str, Any]):
+    """Evaluate local Legal RAG embedding batch input safety before gateway calls."""
+    return {
+        "success": True,
+        "data": LegalRagEmbeddingBatchPreflightService().build_preflight(payload),
     }
 
 

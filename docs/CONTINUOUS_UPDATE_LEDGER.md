@@ -801,6 +801,16 @@ persisting vectors in telemetry, writing indexes, changing defaults, or
 returning credentials, headers, raw prompts, legal text, model outputs, or
 gateway payloads.
 
+`legal-rag-embedding-batch-preflight` adds
+`POST /api/v1/legal-rag/embedding-batch-preflight` and the matching
+maintenance endpoint for local input audit before any executable embedding
+preview. It hashes chunk ids and text, estimates cheap-first Gemini embedding
+tokens and catalog cost, and flags duplicate chunks, PII signals, preview-size
+overages, and secret-like inputs without calling NewAPI, Gemini, models,
+gateways, or the network; creating embeddings; writing indexes or databases; or
+returning source text, source ids, sensitive values, embedding vectors, prompts,
+gateway payloads, model outputs, or credentials.
+
 `legal-rag-embedding-batch-preview-runtime` adds
 `POST /api/v1/legal-rag/embedding-batch-preview` and
 `LegalRagEmbeddingBatchPreviewService`. It lets maintainers run a small

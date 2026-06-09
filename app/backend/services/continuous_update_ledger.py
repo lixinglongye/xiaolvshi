@@ -6516,6 +6516,45 @@ class ContinuousUpdateLedgerService:
                 user_need_ids=("grounded-legal-output", "reviewer-visibility", "low-resource-testing"),
             ),
             LedgerEntry(
+                id="legal-rag-embedding-batch-preflight",
+                title="Legal RAG embedding batch preflight",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds POST /api/v1/legal-rag/embedding-batch-preflight, a matching maintenance endpoint, "
+                    "and LegalRagEmbeddingBatchPreflightService so maintainers can locally audit Legal RAG "
+                    "embedding input batches before the executable preview runtime. The preflight hashes chunk "
+                    "ids and text, estimates cheap-first Gemini embedding tokens and catalog cost, flags duplicate "
+                    "chunks, PII signals, preview-size overages, and secret-like inputs without NewAPI/Gemini/model/"
+                    "gateway/network calls, embedding creation, index or database writes, source text, source ids, "
+                    "sensitive values, embedding vectors, prompts, model outputs, gateway payloads, credentials, or "
+                    "legal advice claims."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_rag_embedding_batch_preflight.py",
+                    "app/backend/tests/test_legal_rag_embedding_batch_preflight.py",
+                    "app/backend/routers/legal_rag.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/tests/test_release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/tests/test_continuous_update_ledger.py",
+                    "app/backend/services/maintenance_evidence.py",
+                    "app/backend/tests/test_maintenance_evidence.py",
+                    "docs/LEGAL_RAG_EMBEDDING_BATCH_PREFLIGHT.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "legal-rag-embedding-batch-preflight",
+                    "legal-rag-embedding-batch-preview-runtime",
+                    "legal-rag-embedding-batch-budget-gate",
+                    "legal-rag-embedding-readiness-gate",
+                    "modelops-gemini-embedding-cheap-first-preflight",
+                ),
+                user_need_ids=("grounded-legal-output", "low-cost-routing", "legal-rag", "safe-ai-ops"),
+            ),
+            LedgerEntry(
                 id="legal-rag-embedding-batch-observation-gate",
                 title="Legal RAG embedding batch observation gate",
                 category="benchmark",

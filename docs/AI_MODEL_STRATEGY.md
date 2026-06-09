@@ -661,6 +661,15 @@ source text or persisting embedding vectors in telemetry. This enables small
 maintainer-run Legal RAG embedding batches while keeping multimodal embedding
 and index writes behind separate review gates.
 
+`POST /api/v1/legal-rag/embedding-batch-preflight` is the local input-audit
+layer before the executable Legal RAG embedding preview. It estimates
+cheap-first Gemini embedding tokens and catalog cost, hashes chunk ids and
+text, and flags duplicate chunks, PII signals, preview-size overages, and
+secret-like inputs without calling NewAPI, Gemini, AIHub, models, gateways, or
+the network. It does not create embeddings, write indexes/databases, or return
+source text, source ids, sensitive values, embedding vectors, prompts, gateway
+payloads, model outputs, or credentials.
+
 `POST /api/v1/legal-rag/embedding-batch-preview` is the Legal RAG maintainer
 smoke-test layer on top of that runtime. It accepts up to five small chunks,
 calls `AIHubService.embed_text`, and returns only hashes, vector dimensions,
