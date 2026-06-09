@@ -127,6 +127,28 @@ function formatUsd(value?: number | null) {
   return `$${value.toFixed(value < 0.01 ? 6 : 4)}`;
 }
 
+function metadataCount(value?: number | unknown[] | null) {
+  if (Array.isArray(value)) return value.length;
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function safeMetadataText(value: unknown, fallback = '-') {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) return fallback;
+  if (
+    /\bsk-[A-Za-z0-9]{20,}\b/.test(text)
+    || /\b1[3-9]\d{9}\b/.test(text)
+    || /\b\d{17}[\dXx]\b/.test(text)
+    || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(text)
+    || /\b(raw|prompt|legal[_ -]?text|document[_ -]?text|request|response|headers?|credentials?|secret|password|identity|user[_ -]?id|messages?|content|body|model[_ -]?output)\b/i.test(
+      text,
+    )
+  ) {
+    return 'redacted';
+  }
+  return text.length > 80 ? `${text.slice(0, 77)}...` : text;
+}
+
 function formatReasonCounts(value?: Record<string, number>) {
   const entries = Object.entries(value ?? {})
     .sort((first, second) => second[1] - first[1])
@@ -2257,6 +2279,21 @@ function Inner() {
   const cachePolicyRows = data?.cache_policy?.rules ?? [];
   const routeTelemetryRows = useMemo(() => Object.entries(data?.route_telemetry?.by_task ?? {}), [data]);
   const routeTelemetryRepositoryRows = data?.route_telemetry_repository?.daily_buckets ?? [];
+  const routeTelemetryResultArchive =
+    data?.route_telemetry_result_archive ?? data?.model_ops_route_telemetry_archive ?? null;
+  const routeTelemetryResultArchiveSummary = routeTelemetryResultArchive?.summary ?? {};
+  const routeTelemetryResultArchiveRows =
+    routeTelemetryResultArchive?.archive_rows
+    ?? routeTelemetryResultArchive?.source_sections
+    ?? [];
+  const routeTelemetryCostLedgerRows =
+    routeTelemetryResultArchive?.cost_ledger_rows
+    ?? routeTelemetryResultArchive?.ledger_rows
+    ?? [];
+  const routeTelemetryReleaseReviewRows = routeTelemetryResultArchive?.release_review_rows ?? [];
+  const routeTelemetryResultArchiveValidationCount = metadataCount(
+    routeTelemetryResultArchive?.validation_commands,
+  );
   const routeTelemetryOpsRows = data?.route_telemetry_ops_summary?.daily_rows ?? [];
   const routeTelemetryTriageRows = data?.route_telemetry_triage?.triage_items ?? [];
   const routeTelemetryRemediationRows = data?.route_telemetry_remediation?.remediation_steps ?? [];
@@ -13815,6 +13852,209 @@ function Inner() {
                         </TableCell>
                         <TableCell className="font-mono text-xs text-stone-700">
                           {formatUsd(row.estimated_cost_usd_sum)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
+        {routeTelemetryResultArchive && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Route telemetry result archive</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(
+                    routeTelemetryResultArchiveSummary.archive_day_count
+                      ?? routeTelemetryResultArchiveSummary.archive_result_count
+                      ?? routeTelemetryResultArchiveSummary.archived_result_count,
+                  )}{' '}
+                  archive days /{' '}
+                  {formatNumber(
+                    routeTelemetryResultArchiveSummary.cost_ledger_row_count
+                      ?? routeTelemetryResultArchiveSummary.ledger_entry_count
+                      ?? routeTelemetryResultArchiveSummary.cost_ledger_entry_count,
+                  )}{' '}
+                  cost ledger rows / {formatUsd(routeTelemetryResultArchiveSummary.estimated_cost_usd_sum)}
+                </div>
+              </div>
+              <Badge variant="outline" className={statusClass(routeTelemetryResultArchive.status)}>
+                {routeTelemetryResultArchive.status}
+              </Badge>
+            </div>
+            <div className="mb-3 grid gap-3 md:grid-cols-4">
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(
+                    routeTelemetryResultArchiveSummary.archive_day_count
+                      ?? routeTelemetryResultArchiveSummary.archive_result_count
+                      ?? routeTelemetryResultArchiveSummary.archived_result_count,
+                  )}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">archive days</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(
+                    routeTelemetryResultArchiveSummary.cost_ledger_row_count
+                      ?? routeTelemetryResultArchiveSummary.ledger_entry_count
+                      ?? routeTelemetryResultArchiveSummary.cost_ledger_entry_count,
+                  )}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">cost ledger rows</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(routeTelemetryResultArchiveSummary.release_review_row_count)}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">release review rows</div>
+              </div>
+              <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                <div className="text-2xl font-black text-stone-950">
+                  {formatNumber(
+                    routeTelemetryResultArchiveSummary.manual_review_step_count
+                      ?? routeTelemetryReleaseReviewRows.filter((row) => row.requires_operator_review).length,
+                  )}
+                </div>
+                <div className="mt-1 text-sm text-stone-600">manual reviews</div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+              <div className="grid gap-3 text-sm leading-6 text-stone-700 md:grid-cols-4">
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Scope</div>
+                  <div>{routeTelemetryResultArchive.privacy_boundary?.metadata_only === false ? 'review needed' : 'metadata-only'}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Config writes</div>
+                  <div>{routeTelemetryResultArchiveSummary.configuration_written ? 'review needed' : 'none'}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Gateway calls</div>
+                  <div>{routeTelemetryResultArchive.source_boundaries?.calls_gateways ? 'review needed' : 'none'}</div>
+                </div>
+                <div>
+                  <div className="mb-1 font-semibold text-stone-950">Validation refs</div>
+                  <div>
+                    {formatNumber(routeTelemetryResultArchiveValidationCount)} refs /{' '}
+                    {formatNumber(routeTelemetryResultArchive.blocking_check_ids?.length)} blocking
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Day</TableHead>
+                    <TableHead>Archive status</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead>Exceptions</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Reasons</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryResultArchiveRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-stone-500">
+                        No route telemetry archive rows yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryResultArchiveRows.map((row) => (
+                      <TableRow key={safeMetadataText(row.day, 'archive-day')}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">
+                          {safeMetadataText(row.day, 'archive-day')}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(row.archive_status)}>
+                            {safeMetadataText(row.archive_status, 'not listed')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatNumber(row.request_count)}
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            {formatNumber(row.success_count)}/{formatNumber(row.failure_count)} ok/fail
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {formatNumber(row.downgrade_count)} downgrade / {formatNumber(row.over_budget_count)} over budget
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            {formatNumber(row.operator_review_count)} operator / {formatNumber(row.unpriced_model_count)} unpriced
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">
+                          {formatUsd(row.estimated_cost_usd_sum)}
+                        </TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          {row.top_reason_codes?.length
+                            ? row.top_reason_codes
+                              .map((reason) => `${safeMetadataText(reason.reason_code)}:${formatNumber(reason.count)}`)
+                              .join(', ')
+                            : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task</TableHead>
+                    <TableHead>Model</TableHead>
+                    <TableHead>Cost ledger</TableHead>
+                    <TableHead>Requests</TableHead>
+                    <TableHead>Exceptions</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Reasons</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {routeTelemetryCostLedgerRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center text-stone-500">
+                        No route telemetry cost ledger rows yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    routeTelemetryCostLedgerRows.map((row) => (
+                      <TableRow key={`${safeMetadataText(row.task)}-${safeMetadataText(row.resolved_model)}`}>
+                        <TableCell className="font-mono text-xs font-semibold text-stone-950">
+                          {safeMetadataText(row.task, 'task')}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">
+                          {safeMetadataText(row.resolved_model, 'model')}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusClass(row.cost_ledger_status)}>
+                            {safeMetadataText(row.cost_ledger_status, 'not listed')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatNumber(row.request_count)}
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            {formatNumber(row.success_count)}/{formatNumber(row.failure_count)} ok/fail
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {formatNumber(row.downgrade_count)} downgrade / {formatNumber(row.over_budget_count)} over budget
+                          <div className="mt-1 text-[11px] text-stone-500">
+                            {formatNumber(row.operator_review_count)} operator / {formatNumber(row.unknown_model_count)} unknown
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-stone-700">
+                          {formatUsd(row.estimated_cost_usd_sum)}
+                        </TableCell>
+                        <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                          {formatReasonCounts(row.reason_code_counts)}
                         </TableCell>
                       </TableRow>
                     ))

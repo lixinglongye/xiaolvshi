@@ -134,6 +134,7 @@ from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
 from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
+from services.route_telemetry_result_archive import RouteTelemetryResultArchiveService
 from services.small_legal_document_corpus_expansion import SmallLegalDocumentCorpusExpansionService
 from services.user_needs_radar import UserNeedsRadarService
 from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
@@ -1270,6 +1271,15 @@ async def get_route_telemetry_remediation_plan():
     return {
         "success": True,
         "data": RouteTelemetryRemediationPlanService().build_plan(),
+    }
+
+
+@router.get("/route-telemetry-result-archive")
+async def get_route_telemetry_result_archive():
+    """Return metadata-only route telemetry result archive and cost ledger."""
+    return {
+        "success": True,
+        "data": RouteTelemetryResultArchiveService().build_archive(),
     }
 
 

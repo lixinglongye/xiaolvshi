@@ -486,6 +486,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-triage-queue" in completed_ids
     assert "route-telemetry-reason-code-hotspots" in completed_ids
     assert "route-telemetry-remediation-plan" in completed_ids
+    assert "route-telemetry-result-archive" in completed_ids
     assert "route-telemetry-ui-regression-contract" in completed_ids
     assert "legal-source-freshness-policy" in completed_ids
     assert "maintenance-dashboard-filtering" in completed_ids
@@ -820,6 +821,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-triage-queue" not in queue_ids
     assert "route-telemetry-reason-code-hotspots" not in queue_ids
     assert "route-telemetry-remediation-plan" not in queue_ids
+    assert "route-telemetry-result-archive" not in queue_ids
     assert "route-telemetry-ui-regression-contract" not in queue_ids
     assert "runtime-router-discovery-smoke" not in queue_ids
     assert "case-workbench-frontend-state-events" not in queue_ids
@@ -3104,6 +3106,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "route-telemetry-triage-queue" in route_telemetry_ui_entry["release_gate_links"]
     assert "route-telemetry-remediation-plan" in route_telemetry_ui_entry["release_gate_links"]
     assert "model-ops-readiness" in route_telemetry_ui_entry["release_gate_links"]
+
+    result_archive_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "route-telemetry-result-archive"
+    )
+    assert result_archive_entry["category"] == "model_ops"
+    assert result_archive_entry["size"] == "medium"
+    assert result_archive_entry["status"] == "shipped"
+    assert "metadata-only route telemetry result archive" in result_archive_entry["impact"]
+    assert "cost ledger evidence" in result_archive_entry["impact"]
+    assert "daily archive rows" in result_archive_entry["impact"]
+    assert "task/model cost ledger rows" in result_archive_entry["impact"]
+    assert "triage/remediation release-review links" in result_archive_entry["impact"]
+    assert "cheap-first review boundaries" in result_archive_entry["impact"]
+    assert "model calls" in result_archive_entry["impact"]
+    assert "gateway calls" in result_archive_entry["impact"]
+    assert "configuration writes" in result_archive_entry["impact"]
+    assert "default route changes" in result_archive_entry["impact"]
+    assert "request bodies" in result_archive_entry["impact"]
+    assert "response bodies" in result_archive_entry["impact"]
+    assert "headers" in result_archive_entry["impact"]
+    assert "gateway responses" in result_archive_entry["impact"]
+    assert "credentials" in result_archive_entry["impact"]
+    assert "app/backend/services/route_telemetry_result_archive.py" in result_archive_entry["evidence_paths"]
+    assert "app/backend/tests/test_route_telemetry_result_archive.py" in result_archive_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_readiness.py" in result_archive_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in result_archive_entry["evidence_paths"]
+    assert "app/backend/services/frontend_ui_regression_gate.py" in result_archive_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in result_archive_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in result_archive_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in result_archive_entry["evidence_paths"]
+    assert "docs/ROUTE_TELEMETRY_RESULT_ARCHIVE.md" in result_archive_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in result_archive_entry["evidence_paths"]
+    assert "route-telemetry-result-archive" in result_archive_entry["release_gate_links"]
+    assert "route-telemetry-repository" in result_archive_entry["release_gate_links"]
+    assert "route-telemetry-ops-summary" in result_archive_entry["release_gate_links"]
+    assert "route-telemetry-triage-queue" in result_archive_entry["release_gate_links"]
+    assert "route-telemetry-remediation-plan" in result_archive_entry["release_gate_links"]
+    assert "model-ops-readiness" in result_archive_entry["release_gate_links"]
+    assert "frontend-ui-regression" in result_archive_entry["release_gate_links"]
+    assert (
+        "python -m pytest tests/test_route_telemetry_result_archive.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
 
     readiness_drilldown_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "model-ops-readiness-warning-drilldown"

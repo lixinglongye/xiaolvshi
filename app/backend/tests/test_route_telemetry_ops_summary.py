@@ -154,7 +154,7 @@ def test_route_telemetry_ops_summary_warns_on_known_unpriced_catalog_models(tmp_
     repository = repository_service.append_events(
         [
             *[_event(f"route-event-{index:03d}") for index in range(19)],
-            _event("route-event-019", model="gemini-3-pro-image", estimated_cost_usd=0.0),
+            _event("route-event-019", model="veo-3.1-lite-generate-preview", estimated_cost_usd=0.0),
         ]
     )
 

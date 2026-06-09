@@ -206,6 +206,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_route_telemetry_ops_summary.py -q",
                 "python -m pytest tests/test_route_telemetry_triage_queue.py -q",
                 "python -m pytest tests/test_route_telemetry_remediation_plan.py -q",
+                "python -m pytest tests/test_route_telemetry_result_archive.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
@@ -4547,6 +4548,47 @@ class ContinuousUpdateLedgerService:
                     "docs/ROUTE_TELEMETRY_REMEDIATION_PLAN.md",
                 ),
                 release_gate_links=("route-telemetry-remediation-plan", "route-telemetry-triage-queue", "model-default-optimization"),
+                user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="route-telemetry-result-archive",
+                title="Route telemetry result archive and cost ledger",
+                category="model_ops",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds metadata-only route telemetry result archive and cost ledger evidence with daily archive rows, "
+                    "task/model cost ledger rows, triage/remediation release-review links, cheap-first review boundaries, "
+                    "and /model-ops UI visibility without model calls, gateway calls, configuration writes, default route "
+                    "changes, raw events, prompts, legal text, request bodies, response bodies, headers, gateway responses, "
+                    "model outputs, emails, identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/route_telemetry_result_archive.py",
+                    "app/backend/tests/test_route_telemetry_result_archive.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/backend/routers/aihub.py",
+                    "app/backend/services/model_ops_readiness.py",
+                    "app/backend/services/release_readiness.py",
+                    "app/backend/services/continuous_update_ledger.py",
+                    "app/backend/services/frontend_ui_regression_gate.py",
+                    "app/frontend/src/lib/modelOpsApi.ts",
+                    "app/frontend/src/pages/ModelOpsPage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/ROUTE_TELEMETRY_RESULT_ARCHIVE.md",
+                    "docs/ROUTE_TELEMETRY_OPS_SUMMARY.md",
+                    "docs/FRONTEND_UI_REGRESSION_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "route-telemetry-result-archive",
+                    "route-telemetry-repository",
+                    "route-telemetry-ops-summary",
+                    "route-telemetry-triage-queue",
+                    "route-telemetry-remediation-plan",
+                    "model-ops-readiness",
+                    "frontend-ui-regression",
+                ),
                 user_need_ids=("low-cost-routing", "safe-ai-ops", "reviewer-visibility"),
             ),
             LedgerEntry(

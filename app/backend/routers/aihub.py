@@ -135,6 +135,7 @@ from services.route_telemetry_repository import RouteTelemetryRepositoryService
 from services.route_telemetry_ops_summary import RouteTelemetryOpsSummaryService
 from services.route_telemetry_triage_queue import RouteTelemetryTriageQueueService
 from services.route_telemetry_remediation_plan import RouteTelemetryRemediationPlanService
+from services.route_telemetry_result_archive import RouteTelemetryResultArchiveService
 from services.user_need_benchmark_coverage import UserNeedBenchmarkCoverageService
 from services.user_need_gemini_route_coverage import UserNeedGeminiRouteCoverageService
 from services.user_need_implementation_priority_queue import UserNeedImplementationPriorityQueueService
@@ -313,6 +314,14 @@ async def list_models():
     route_telemetry_remediation = RouteTelemetryRemediationPlanService().build_plan(
         route_telemetry_triage,
         default_optimization,
+    )
+    route_telemetry_result_archive = RouteTelemetryResultArchiveService().build_archive(
+        {
+            "route_telemetry_repository": route_telemetry_repository,
+            "route_telemetry_ops_summary": route_telemetry_ops_summary,
+            "route_telemetry_triage": route_telemetry_triage,
+            "route_telemetry_remediation": route_telemetry_remediation,
+        }
     )
     gateway_compatibility = ModelGatewayCompatibilityService().evaluate()
     observed_gateway_models = _observed_gateway_model_ids(gateway_compatibility)
@@ -498,6 +507,7 @@ async def list_models():
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_telemetry_triage": route_telemetry_triage,
         "route_telemetry_remediation": route_telemetry_remediation,
+        "route_telemetry_result_archive": route_telemetry_result_archive,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,
@@ -629,6 +639,7 @@ async def list_models():
         "route_telemetry_ops_summary": route_telemetry_ops_summary,
         "route_telemetry_triage": route_telemetry_triage,
         "route_telemetry_remediation": route_telemetry_remediation,
+        "route_telemetry_result_archive": route_telemetry_result_archive,
         "route_guardrails": route_guardrails,
         "callsite_audit": callsite_audit,
         "budget_policy": budget_policy,
@@ -1252,6 +1263,16 @@ async def model_ops_user_need_cheap_first_handoff():
     return {
         "success": True,
         "data": models_payload["user_need_cheap_first_handoff"],
+    }
+
+
+@router.get("/models/route-telemetry-result-archive")
+async def model_ops_route_telemetry_result_archive():
+    """Return metadata-only route telemetry result archive and cost ledger."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["route_telemetry_result_archive"],
     }
 
 

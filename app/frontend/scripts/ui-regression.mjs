@@ -3006,11 +3006,15 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'modelOpsPerformanceRows', 'model-ops performance check row binding'),
   () => assertIncludes(modelOpsPage, 'Route telemetry', 'model-ops route telemetry panel'),
   () => assertIncludes(modelOpsPage, 'Route telemetry repository', 'model-ops route telemetry repository panel'),
+  () => assertIncludes(modelOpsPage, 'Route telemetry result archive', 'model-ops route telemetry result archive panel'),
   () => assertIncludes(modelOpsPage, 'Route telemetry ops summary', 'model-ops route telemetry ops summary panel'),
   () => assertIncludes(modelOpsPage, 'Route telemetry triage queue', 'model-ops route telemetry triage queue panel'),
   () => assertIncludes(modelOpsPage, 'Route telemetry remediation plan', 'model-ops route telemetry remediation plan panel'),
   () => assertIncludes(modelOpsPage, 'routeTelemetryRows', 'model-ops route telemetry row binding'),
   () => assertIncludes(modelOpsPage, 'routeTelemetryRepositoryRows', 'model-ops route telemetry repository row binding'),
+  () => assertIncludes(modelOpsPage, 'routeTelemetryResultArchiveRows', 'model-ops route telemetry archive row binding'),
+  () => assertIncludes(modelOpsPage, 'routeTelemetryCostLedgerRows', 'model-ops route telemetry cost ledger row binding'),
+  () => assertIncludes(modelOpsPage, 'safeMetadataText', 'model-ops route telemetry archive metadata display guard'),
   () => assertIncludes(modelOpsPage, 'formatReasonCounts(row.reason_code_counts)', 'model-ops route telemetry ops reason-code binding'),
   () => assertIncludes(modelOpsPage, 'item.reason_code ??', 'model-ops route telemetry triage reason-code binding'),
   () => assertIncludes(modelOpsPage, 'routeTelemetryOpsRows', 'model-ops route telemetry ops row binding'),
@@ -3024,19 +3028,29 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'newapi_called', 'model-ops route telemetry remediation no NewAPI-call binding'),
   () => assertIncludes(modelOpsPage, 'recommended_env_assignment', 'model-ops route telemetry remediation env suggestion binding'),
   () => assertBefore(modelOpsPage, 'Route telemetry', 'Route telemetry repository', 'model-ops route telemetry before repository'),
+  () => assertBefore(modelOpsPage, 'Route telemetry repository', 'Route telemetry result archive', 'model-ops route telemetry repository before result archive'),
+  () => assertBefore(modelOpsPage, 'Route telemetry result archive', 'Route telemetry ops summary', 'model-ops route telemetry result archive before ops summary'),
   () => assertBefore(modelOpsPage, 'Route telemetry repository', 'Route telemetry ops summary', 'model-ops route telemetry repository before ops summary'),
   () => assertBefore(modelOpsPage, 'Route telemetry ops summary', 'Route telemetry triage queue', 'model-ops route telemetry ops summary before triage queue'),
   () => assertBefore(modelOpsPage, 'Route telemetry triage queue', 'Route telemetry remediation plan', 'model-ops route telemetry triage queue before remediation plan'),
   () => assertBefore(modelOpsPage, 'Route telemetry remediation plan', 'Route guardrails', 'model-ops route telemetry remediation before route guardrails'),
   () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryRepository', 'model-ops route telemetry repository type'),
+  () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryResultArchive', 'model-ops route telemetry result archive type'),
   () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryOpsSummary', 'model-ops route telemetry ops summary type'),
   () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryTriage', 'model-ops route telemetry triage type'),
   () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryRemediation', 'model-ops route telemetry remediation type'),
   () => assertIncludes(modelOpsApi, 'ModelRouteTelemetryRecommendedEnv', 'model-ops route telemetry remediation env type'),
   () => assertIncludes(modelOpsApi, 'route_telemetry_repository?: ModelRouteTelemetryRepository', 'model-ops route telemetry repository response binding'),
+  () => assertIncludes(modelOpsApi, 'route_telemetry_result_archive?: ModelRouteTelemetryResultArchive', 'model-ops route telemetry result archive response binding'),
+  () => assertIncludes(modelOpsApi, 'model_ops_route_telemetry_archive?: ModelRouteTelemetryResultArchive', 'model-ops route telemetry archive aggregate alias'),
   () => assertIncludes(modelOpsApi, 'route_telemetry_ops_summary?: ModelRouteTelemetryOpsSummary', 'model-ops route telemetry ops response binding'),
   () => assertIncludes(modelOpsApi, 'route_telemetry_triage?: ModelRouteTelemetryTriage', 'model-ops route telemetry triage response binding'),
   () => assertIncludes(modelOpsApi, 'route_telemetry_remediation?: ModelRouteTelemetryRemediation', 'model-ops route telemetry remediation response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelRouteTelemetryResultArchive', 'model-ops route telemetry result archive API helper'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/route-telemetry-result-archive', 'model-ops route telemetry result archive endpoint'),
+  () => assertIncludes(modelOpsApi, 'archive_rows?: ModelRouteTelemetryResultArchiveRow[]', 'model-ops route telemetry archive row type'),
+  () => assertIncludes(modelOpsApi, 'cost_ledger_rows?: ModelRouteTelemetryCostLedgerRow[]', 'model-ops route telemetry cost ledger row type'),
+  () => assertIncludes(modelOpsApi, 'release_review_rows?: ModelRouteTelemetryReleaseReviewRow[]', 'model-ops route telemetry release review row type'),
   () => assertIncludes(modelOpsApi, 'raw_payload_storage_allowed: boolean', 'model-ops route telemetry raw-payload storage boundary type'),
   () => assertIncludes(modelOpsApi, 'reason_code_counts: Record<string, number>', 'model-ops route telemetry reason-code counts type'),
   () => assertIncludes(modelOpsApi, 'top_reason_codes: Array<{ reason_code: string; count: number; ratio: number }>', 'model-ops route telemetry top reason-code type'),
@@ -4571,6 +4585,32 @@ const routeTelemetryPanel = sourceSection(
   '<h2 className="text-xl font-black text-stone-950">Route guardrails</h2>',
   'model-ops route telemetry section',
 );
+const routeTelemetryResultArchivePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Route telemetry result archive</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Route telemetry ops summary</h2>',
+  'model-ops route telemetry result archive section',
+);
+assertIncludes(
+  routeTelemetryResultArchivePanel,
+  'Archive status',
+  'model-ops route telemetry result archive status column',
+);
+assertIncludes(
+  routeTelemetryResultArchivePanel,
+  'Cost ledger',
+  'model-ops route telemetry result archive cost ledger column',
+);
+assertIncludes(
+  routeTelemetryResultArchivePanel,
+  'metadata-only',
+  'model-ops route telemetry result archive metadata-only boundary',
+);
+assertNotMatches(
+  routeTelemetryResultArchivePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|raw[_ -]?prompt|prompt_payload|prompt|raw[_ -]?legal[_ -]?text|legal[_ -]?text|request[_ -]?bod(?:y|ies)|response[_ -]?bod(?:y|ies)|headers?|raw[_ -]?model[_ -]?output|model[_ -]?output|generated_text|candidate_text|document_text|client_email|email|phone|identity|user[_ -]?(?:id|identifier)|messages?|content)\b/i,
+  'model-ops route telemetry result archive no raw legal/request/model/personal fields',
+);
 const cheapFirstPriorityQueuePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Cheap-first priority queue</h2>',
@@ -4724,42 +4764,42 @@ assertNotMatches(
 );
 assertNotMatches(
   legalRagEmbeddingChunkPolicyPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding chunk policy no raw chunks, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingIndexDryRunPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding index dry-run no raw chunks, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingBatchBudgetPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding batch budget no raw chunks, raw legal text, source ids, secrets, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingBatchApprovalPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding batch approval no raw chunks, raw legal text, source ids, secrets, approver identity, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingBatchObservationPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding batch observation no raw chunks, raw legal text, source ids, secrets, approver identity, vectors, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingIndexCommitReviewPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding index commit review no raw chunks, raw legal text, source ids, secrets, committer identity, vectors, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingIndexPostCommitVerificationPanel,
-  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding index post-commit verification no raw chunks, raw legal text, source ids, secrets, committer identity, vectors, or emails',
 );
 assertNotMatches(
   legalRagEmbeddingRetrievalDiagnosticsHandoffPanel,
-  /\b(RAW_HANDOFF_TEXT|RAW_HANDOFF_TEXT_SHOULD_NOT_LEAK|RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|RAW_QUERY_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-handoff-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|handoff-client@example\.invalid|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_HANDOFF_TEXT|RAW_HANDOFF_TEXT_SHOULD_NOT_LEAK|RAW_EMBEDDING_VECTOR_SHOULD_NOT_LEAK|UNSAFE_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_APPROVAL_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|UNSAFE_BATCH_OBSERVATION_RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|RAW_INDEX_COMMIT_TEXT|RAW_INDEX_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_POST_COMMIT_TEXT|RAW_POST_COMMIT_TEXT_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|RAW_QUERY_SHOULD_NOT_LEAK|source_id_value|source-id-value|do-not-echo-source-id|do-not-echo-batch-source-id|do-not-echo-approval-source-id|do-not-echo-observation-source-id|do-not-echo-commit-source-id|do-not-echo-post-commit-source-id|do-not-echo-handoff-source-id|do-not-echo-committer-email|do-not-echo-commit-signature|committer-name-value|commit_signature_value|sk-[A-Za-z0-9]{20,}|client@example\.invalid|batch-client@example\.invalid|approval-client@example\.invalid|observation-client@example\.invalid|commit-client@example\.invalid|handoff-client@example\.invalid|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance Legal RAG embedding retrieval diagnostics handoff no raw handoff/query/context/legal text, source ids, secrets, committer identity, vectors, or emails',
 );
 assertNotMatches(
@@ -4769,12 +4809,12 @@ assertNotMatches(
 );
 assertNotMatches(
   legalRagAnswerReleaseReadinessPanel,
-  /\b(RAW_QUERY_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|SRC-CONTRACT-1|SRC-UNKNOWN-1|do-not-echo-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|client@example\.com|2725186241@qq\.com|lixinglong27@gmail\.com|credential_value|secret_value|prompt_payload|raw_model_output)\b/i,
+  /\b(RAW_QUERY_SHOULD_NOT_LEAK|RAW_CONTEXT_SHOULD_NOT_LEAK|RAW_LEGAL_TEXT_SHOULD_NOT_LEAK|source_id_value|source-id-value|SRC-CONTRACT-1|SRC-UNKNOWN-1|do-not-echo-source-id|sk-[A-Za-z0-9]{20,}|client@example\.invalid|client@example\.com|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK|credential_value|secret_value|prompt_payload|raw_model_output)\b/i,
   'maintenance Legal RAG answer release readiness no raw example values, source id values, secrets, prompts, model output, or emails',
 );
 assertNotMatches(
   feedbackLifecyclePolicyPanel,
-  /\b(raw_feedback_value|RAW_FEEDBACK_SHOULD_NOT_LEAK|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(raw_feedback_value|RAW_FEEDBACK_SHOULD_NOT_LEAK|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance feedback lifecycle policy no raw feedback values, secrets, prompts, model output, authorization, or emails',
 );
 assertNotMatches(
@@ -4789,7 +4829,7 @@ assertNotMatches(
 );
 assertNotMatches(
   finalDocumentDeliveryReleaseGatePanel,
-  /\b(RAW_DOCUMENT_SHOULD_NOT_LEAK|UNSAFE_RAW_DIFF|UNSAFE_MODEL_OUTPUT|document_text|client_contact_details|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|billing_provider_payload|provider-payload|C:\\\\cases\\\\private|2725186241@qq\.com|lixinglong27@gmail\.com)\b/i,
+  /\b(RAW_DOCUMENT_SHOULD_NOT_LEAK|UNSAFE_RAW_DIFF|UNSAFE_MODEL_OUTPUT|document_text|client_contact_details|client@example\.invalid|client@example\.com|sk-[A-Za-z0-9]{20,}|credential_value|secret_value|prompt_payload|raw_model_output|authorization|api_key|billing_provider_payload|provider-payload|C:\\\\cases\\\\private|PRIVATE_USER_EMAIL_SHOULD_NOT_LEAK|PRIVATE_ALT_EMAIL_SHOULD_NOT_LEAK)\b/i,
   'maintenance final document delivery release gate no raw document examples, contact details, provider payloads, credentials, prompts, model output, or emails',
 );
 assertNotMatches(

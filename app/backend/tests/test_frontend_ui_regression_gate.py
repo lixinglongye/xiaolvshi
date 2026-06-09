@@ -73,6 +73,8 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "ModelOps legal benchmark risk bridge" in rows["/model-ops"]["protected_panels"]
     assert "Cheap-first escalation budget" in rows["/model-ops"]["protected_panels"]
     assert "route telemetry repository" in rows["/model-ops"]["protected_panels"]
+    assert "route telemetry result archive" in rows["/model-ops"]["protected_panels"]
+    assert "route telemetry cost ledger" in rows["/model-ops"]["protected_panels"]
     assert "route telemetry ops summary" in rows["/model-ops"]["protected_panels"]
     assert "route telemetry triage queue" in rows["/model-ops"]["protected_panels"]
     assert "AI model provider" in rows["/settings"]["protected_panels"]
@@ -169,6 +171,12 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps catalog candidate impact replay UI evidence is metadata only" in payload_text
     assert "ModelOps cheap-first escalation budget UI evidence is metadata only" in payload_text
     assert "ModelOps route telemetry UI evidence is metadata only" in payload_text
+    assert "result archive" in payload_text
+    assert "cost ledger" in payload_text
+    assert "route-telemetry-result-archive-ui-contract-regresses" in payload_text
+    assert "archive_rows" in payload_text
+    assert "cost_ledger_rows" in payload_text
+    assert "release_review_rows" in payload_text
     assert "sanitized route counters" in payload_text
     assert "Settings AI provider status evidence is metadata only" in payload_text
     assert "configured/missing booleans" in payload_text

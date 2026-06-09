@@ -665,3 +665,17 @@ The guard is deterministic and local-only. It does not call NewAPI, Gemini,
 OpenAI, Google, gateways, app AI endpoints, models, or the network, and it does
 not return prompts, request bodies, response bodies, raw payloads, legal text,
 model outputs, gateway responses, credentials, emails, or user identifiers.
+## Route Telemetry Result Archive
+
+`route_telemetry_result_archive` is the reviewable archive layer for sanitized
+route telemetry. It joins the local route telemetry repository, operations
+summary, triage queue, and remediation plan into daily archive rows, task/model
+cost ledger rows, and release-review rows that maintainers can inspect before
+changing cheap-first defaults.
+
+The archive is metadata-only. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, or the network. It does not write
+configuration, change default routes, shift traffic, claim production health, or
+claim public benchmark scores. Unknown or unpriced gateway models stay
+review-only and unpriced until source-backed catalog and pricing evidence is
+refreshed.

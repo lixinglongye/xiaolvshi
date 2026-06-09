@@ -206,6 +206,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "runtime_evidence",
         "route_telemetry_remediation",
     ),
+    ReadinessComponent(
+        "route-telemetry-result-archive",
+        "Route telemetry result archive",
+        "runtime_evidence",
+        "route_telemetry_result_archive",
+    ),
     ReadinessComponent("route-guardrails", "Route guardrails", "runtime_evidence", "route_guardrails"),
     ReadinessComponent(
         "route-quality-budget",

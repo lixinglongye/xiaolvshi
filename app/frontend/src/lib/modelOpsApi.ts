@@ -4370,6 +4370,125 @@ export type ModelRouteTelemetryRepository = {
   validation_commands: string[];
 };
 
+export type ModelRouteTelemetryResultArchiveReasonCode = {
+  reason_code: string;
+  count: number;
+  ratio?: number;
+  severity?: string;
+  label?: string;
+};
+
+export type ModelRouteTelemetryResultArchiveRow = {
+  day: string;
+  request_count: number;
+  success_count: number;
+  failure_count: number;
+  downgrade_count: number;
+  over_budget_count: number;
+  operator_review_count: number;
+  premium_request_count: number;
+  unknown_model_count: number;
+  unpriced_model_count: number;
+  estimated_cost_usd_sum: number;
+  top_reason_codes: ModelRouteTelemetryResultArchiveReasonCode[];
+  reason_code_hotspots: ModelRouteTelemetryResultArchiveReasonCode[];
+  archive_status: string;
+};
+
+export type ModelRouteTelemetryCostLedgerRow = {
+  task: string;
+  resolved_model: string;
+  request_count: number;
+  success_count: number;
+  failure_count: number;
+  estimated_cost_usd_sum: number;
+  unknown_model_count: number;
+  unpriced_model_count: number;
+  over_budget_count: number;
+  operator_review_count: number;
+  downgrade_count: number;
+  reason_code_counts: Record<string, number>;
+  cost_ledger_status: string;
+};
+
+export type ModelRouteTelemetryReleaseReviewRow = {
+  id: string;
+  severity: string;
+  source_check_id: string;
+  task: string;
+  requires_env_change: boolean;
+  requires_operator_review: boolean;
+  recommended_model?: string | null;
+  recommended_env_assignment_present: boolean;
+  action: string;
+  release_gate_links: string[];
+  validation_commands: string[];
+};
+
+export type ModelRouteTelemetryResultArchive = {
+  id?: string;
+  title?: string;
+  status: string;
+  method?: {
+    type: string;
+    notes: string[];
+  };
+  summary?: {
+    stored_event_count?: number;
+    daily_bucket_count?: number;
+    archive_day_count?: number;
+    cost_ledger_row_count?: number;
+    release_review_row_count?: number;
+    request_count?: number;
+    downgrade_count?: number;
+    over_budget_count?: number;
+    operator_review_count?: number;
+    premium_request_count?: number;
+    unknown_model_count?: number;
+    unpriced_model_count?: number;
+    blocking_item_count?: number;
+    warning_item_count?: number;
+    remediation_step_count?: number;
+    env_change_count?: number;
+    manual_review_step_count?: number;
+    empty_repository?: boolean;
+    model_calls?: string;
+    network_access?: string;
+    configuration_written?: boolean;
+    raw_payload_storage_allowed?: boolean;
+    archive_result_count?: number;
+    archived_result_count?: number;
+    ledger_entry_count?: number;
+    cost_ledger_entry_count?: number;
+    cost_evidence_count?: number;
+    source_section_count?: number;
+    metadata_only?: boolean;
+    redaction_passed?: boolean;
+    sensitive_field_omission_count?: number;
+    estimated_cost_usd_sum?: number | null;
+  };
+  source_statuses?: Record<string, string>;
+  archive_rows?: ModelRouteTelemetryResultArchiveRow[];
+  cost_ledger_rows?: ModelRouteTelemetryCostLedgerRow[];
+  release_review_rows?: ModelRouteTelemetryReleaseReviewRow[];
+  source_sections?: ModelRouteTelemetryResultArchiveRow[];
+  ledger_rows?: ModelRouteTelemetryCostLedgerRow[];
+  checks?: Array<{
+    id: string;
+    status: string;
+    value?: number | string | boolean | null;
+    ratio?: number | null;
+  }>;
+  recommended_actions?: string[];
+  release_guardrails?: string[];
+  source_boundaries?: Record<string, boolean | string | number | null>;
+  privacy_boundary?: Record<string, boolean | string | number | null>;
+  claim_boundary?: Record<string, boolean | string | number | null>;
+  blocking_check_ids?: string[];
+  warning_check_ids?: string[];
+  validation_commands?: string[];
+};
+
 export type ModelRouteTelemetryOpsSummary = {
   status: string;
   method: {
@@ -4880,6 +4999,8 @@ export type ModelOpsResponse = {
   cache_policy?: ModelCachePolicy;
   route_telemetry?: ModelRouteTelemetry;
   route_telemetry_repository?: ModelRouteTelemetryRepository;
+  route_telemetry_result_archive?: ModelRouteTelemetryResultArchive;
+  model_ops_route_telemetry_archive?: ModelRouteTelemetryResultArchive;
   route_telemetry_ops_summary?: ModelRouteTelemetryOpsSummary;
   route_telemetry_triage?: ModelRouteTelemetryTriage;
   route_telemetry_remediation?: ModelRouteTelemetryRemediation;
@@ -5029,6 +5150,11 @@ function hasModelOpsPayload(value: unknown): boolean {
     handoff_rows?: unknown;
     handoff_evidence_summary?: unknown;
     source_endpoints?: unknown;
+    archive_rows?: unknown;
+    cost_ledger_rows?: unknown;
+    release_review_rows?: unknown;
+    source_sections?: unknown;
+    ledger_rows?: unknown;
     document_check_items?: unknown;
     fact_consistency_items?: unknown;
     run_sequence?: unknown;
@@ -5077,6 +5203,9 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.replay_results) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_reviews) && Array.isArray(payload.user_need_reviews) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.bridge_rows) && Array.isArray(payload.need_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.archive_rows) && Array.isArray(payload.cost_ledger_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.source_sections) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.ledger_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.fixture_run_items) && Array.isArray(payload.document_check_items) && Array.isArray(payload.fact_consistency_items) && Array.isArray(payload.run_sequence))
       || (Boolean(payload.summary) && Array.isArray(payload.gate_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.handoff_rows) && Boolean(payload.handoff_evidence_summary) && Array.isArray(payload.validation_commands))
@@ -5193,6 +5322,13 @@ async function invokeModelOpsApi<T>(request: ApiRequest): Promise<T> {
 export async function getModelOps(): Promise<ModelOpsResponse> {
   return invokeModelOpsApi<ModelOpsResponse>({
     url: '/api/v1/aihub/models',
+    method: 'GET',
+  });
+}
+
+export async function getModelRouteTelemetryResultArchive(): Promise<ModelRouteTelemetryResultArchive> {
+  return invokeModelOpsApi<ModelRouteTelemetryResultArchive>({
+    url: '/api/v1/aihub/models/route-telemetry-result-archive',
     method: 'GET',
   });
 }

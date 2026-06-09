@@ -55,6 +55,8 @@ The `/model-ops` page carries evidence for:
 - selector replay
 - route telemetry
 - route telemetry repository
+- route telemetry result archive
+- route telemetry cost ledger
 - route telemetry ops summary
 - route telemetry triage queue
 - route telemetry remediation
@@ -116,6 +118,11 @@ This gate does not:
   model outputs, gateway responses, emails, credentials, or user identifiers
   for the Gemini embedding cheap-first preflight
 - prove production model routing health
+- prove route telemetry result archive rows are production health evidence,
+  write configuration, call gateways, change routes, or expose raw events,
+  request bodies, response bodies, headers, gateway responses, model outputs,
+  emails, identifiers, or credentials for the route telemetry archive/cost
+  ledger panels
 - prove that route telemetry remediation suggestions have been applied, write
   configuration, call NewAPI/Gemini/gateways, or expose route prompts, request
   bodies, response bodies, headers, raw model output, emails, or credentials
@@ -133,5 +140,6 @@ assert:
 - one failing maintenance endpoint shows the partial-load banner while other
   panels remain visible
 - raw fixture snippets, credentials, and raw model outputs are never rendered
-- cheap-first and route telemetry repository, ops summary, triage, and
-  remediation warnings remain visible in model-ops scenarios
+- cheap-first and route telemetry repository, result archive, cost ledger, ops
+  summary, triage, and remediation warnings remain visible in model-ops
+  scenarios

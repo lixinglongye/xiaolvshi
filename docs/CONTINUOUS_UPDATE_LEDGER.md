@@ -1,5 +1,18 @@
 # Continuous Update Ledger
 
+Current route telemetry result archive slice:
+`route-telemetry-result-archive` adds a metadata-only archive and cost ledger
+for cheap-first route telemetry. The evidence joins the local route telemetry
+repository, ops summary, triage queue, and remediation plan into daily archive
+rows, task/model cost ledger rows, release-review links, ModelOps readiness,
+release readiness, and the `/model-ops` UI. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, or the network; write
+configuration; change default routes; shift traffic; claim production health;
+claim public benchmark scores; or return raw events, prompts, legal text,
+request bodies, response bodies, headers, gateway responses, model outputs,
+emails, identifiers, or credentials. Unknown or unpriced gateway models remain
+unpriced and review-only.
+
 Current ModelOps user-need Gemini route coverage slice:
 `user-need-gemini-route-coverage` is now visible from `/model-ops` through
 `/api/v1/aihub/models/user-need-gemini-route-coverage` in addition to the
