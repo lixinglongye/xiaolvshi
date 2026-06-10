@@ -65,6 +65,9 @@ from services.legal_document_benchmark_route_plan_execution_result_handoff impor
 from services.legal_document_benchmark_route_plan_execution_review_packet import (
     LegalDocumentBenchmarkRoutePlanExecutionReviewPacketService,
 )
+from services.legal_document_benchmark_route_plan_execution_claim_gate import (
+    LegalDocumentBenchmarkRoutePlanExecutionClaimGateService,
+)
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1601,6 +1604,24 @@ async def build_legal_document_benchmark_route_plan_execution_review_packet(payl
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanExecutionReviewPacketService().build_packet(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/execution-claim-gate")
+async def get_legal_document_benchmark_route_plan_execution_claim_gate():
+    """Return a metadata-only claim gate for route-plan execution evidence wording."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionClaimGateService().evaluate(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/execution-claim-gate")
+async def build_legal_document_benchmark_route_plan_execution_claim_gate(payload: dict[str, Any]):
+    """Evaluate public/release claims against route-plan execution review evidence."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionClaimGateService().evaluate(payload),
     }
 
 

@@ -733,6 +733,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan-execution-result-archive" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-result-handoff" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-review-packet" in completed_ids
+    assert "legal-document-benchmark-route-plan-execution-claim-gate" in completed_ids
     assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
@@ -1044,6 +1045,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_execution_review_packet.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_route_plan_execution_claim_gate_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-execution-claim-gate"
+    )
+    assert legal_document_benchmark_route_plan_execution_claim_gate_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_execution_claim_gate_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_execution_claim_gate_entry["status"] == "shipped"
+    assert "claim gate" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "metadata-only" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "public benchmark score" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "live provider execution" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "approval" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "default changes" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "traffic shifts" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "raw claim text" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_execution_claim_gate_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_claim_gate.py" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/maintenance.py" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_CLAIM_GATE.md" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-claim-gate" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-review-packet" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-result-handoff" in legal_document_benchmark_route_plan_execution_claim_gate_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py" in command
         for command in ledger["validation_commands"]
     )
     oss_maintenance_route_plan_research_alignment_entry = next(

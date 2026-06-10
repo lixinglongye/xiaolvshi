@@ -1652,6 +1652,10 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReviewPacketClaimRow', 'legal document benchmark route plan execution review packet claim row type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document benchmark route plan execution review packet API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document benchmark route plan execution review packet POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document benchmark route plan execution claim gate type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionClaimGateCheck', 'legal document benchmark route plan execution claim gate check type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document benchmark route plan execution claim gate API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document benchmark route plan execution claim gate POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1693,6 +1697,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-review-packet',
       'legal document benchmark route plan execution review packet endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-claim-gate',
+      'legal document benchmark route plan execution claim gate endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1807,6 +1817,24 @@ const checks = [
   () => assertIncludes(maintenancePage, 'ready_for_release_packet', 'legal document route plan execution review packet ready binding'),
   () => assertIncludes(maintenancePage, 'blocking_check_ids', 'legal document route plan execution review packet blocking ids'),
   () => assertIncludes(maintenancePage, 'warning_check_ids', 'legal document route plan execution review packet warning ids'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document route plan execution claim gate load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document route plan execution claim gate state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanExecutionClaimGate', 'legal document route plan execution claim gate handler'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionClaimGateLoading', 'legal document route plan execution claim gate loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionClaimGateError', 'legal document route plan execution claim gate error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document route plan execution claim gate POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan execution claim gate', 'legal document route plan execution claim gate panel'),
+  () => assertIncludes(maintenancePage, 'Refresh claim gate', 'legal document route plan execution claim gate button'),
+  () => assertIncludes(maintenancePage, 'claim_checks', 'legal document route plan execution claim gate checks'),
+  () => assertIncludes(maintenancePage, 'claim_hash', 'legal document route plan execution claim gate hash binding'),
+  () => assertIncludes(maintenancePage, 'detected_claim_types', 'legal document route plan execution claim gate detected types'),
+  () => assertIncludes(maintenancePage, 'reason_codes', 'legal document route plan execution claim gate reason codes'),
+  () => assertIncludes(maintenancePage, 'allowed_claim_template', 'legal document route plan execution claim gate allowed template'),
+  () => assertIncludes(maintenancePage, 'forbidden_claim_types', 'legal document route plan execution claim gate forbidden types'),
+  () => assertIncludes(maintenancePage, 'blocking_claim_hashes', 'legal document route plan execution claim gate blocking hashes'),
+  () => assertIncludes(maintenancePage, 'review_claim_hashes', 'legal document route plan execution claim gate review hashes'),
+  () => assertIncludes(maintenancePage, 'raw_claim_text_echoed', 'legal document route plan execution claim gate raw claim boundary'),
+  () => assertIncludes(maintenancePage, 'claim_hashes_only', 'legal document route plan execution claim gate hash-only boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1860,8 +1888,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
+      'legal document route plan execution claim gate follows review packet',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan execution review packet precedes fixtures',
+      'legal document route plan execution claim gate precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1934,11 +1969,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
         'legal document benchmark route plan execution review packet section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|public_benchmark_text|fixture_snippet|fixture_snippets|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|gateway_responses|model_output|model_outputs|client_email|email|phone|identity_number|client_identifier|client_identifiers|source_code/i,
       'legal document benchmark route plan execution review packet sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan execution claim gate section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|public_benchmark_text|fixture_snippet|fixture_snippets|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|gateway_responses|model_output|model_outputs|client_email|email|phone|identity_number|client_identifier|client_identifiers|source_code|claim_text_value|raw_claim_value/i,
+      'legal document benchmark route plan execution claim gate sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),

@@ -1,5 +1,21 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan execution claim gate slice:
+`legal-document-benchmark-route-plan-execution-claim-gate` adds a
+metadata-only release/support claim gate after the execution-review packet. It
+hashes proposed release wording, allows only ready review-packet-backed
+metadata-only claims, and blocks public benchmark score, live provider
+execution, approval, default-change, traffic-shift, production-quality, and
+sensitive-material claims. The endpoint is available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-claim-gate`.
+It does not echo raw claim text; call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, models, public datasets, or the network; execute benchmark
+runs; write release records, archive files, configuration, defaults, or traffic
+shifts; record approval; or return public benchmark text, raw legal text,
+fixture snippets, generated document text, prompts, request bodies, response
+bodies, headers, model outputs, gateway responses, emails, identifiers, or
+credentials.
+
 Current legal document benchmark route-plan execution review packet slice:
 `legal-document-benchmark-route-plan-execution-review-packet` adds a
 metadata-only reviewer packet after the execution-result handoff. It summarizes

@@ -3408,6 +3408,45 @@ class ReleaseReadinessService:
                 ),
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-route-plan-execution-claim-gate",
+                title="Legal document benchmark route plan execution claim gate",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_claim_gate.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_review_packet.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_review_packet.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_CLAIM_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py "
+                    "tests/test_legal_document_benchmark_route_plan_execution_review_packet.py "
+                    "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+                    "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && "
+                    "cd ../frontend && npm run typecheck && npm run ui:regression"
+                ),
+                manual_note=(
+                    "This builds a metadata-only legal-document benchmark route-plan execution claim gate "
+                    "that hashes proposed release/support claims and allows only ready review-packet-backed "
+                    "metadata-only wording. It blocks public benchmark scores, live NewAPI/Gemini execution "
+                    "claims, maintainer or release approval claims, default changes, traffic shifts, production "
+                    "quality claims, and sensitive material, without echoing raw claim text; calling NewAPI, "
+                    "Gemini, gateways, app AI endpoints, models, public datasets, or the network; executing "
+                    "benchmark runs; writing release records, archive files, configuration, defaults, or "
+                    "traffic shifts; recording approval; or returning public benchmark text, raw legal text, "
+                    "prompts, request bodies, response bodies, headers, model outputs, gateway responses, "
+                    "credentials, emails, or client identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage-ui",
                 title="Legal document benchmark coverage UI",
                 category="frontend_ui",

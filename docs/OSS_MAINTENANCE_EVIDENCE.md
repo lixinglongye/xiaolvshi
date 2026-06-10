@@ -40,6 +40,15 @@ changes, traffic shifts, configuration writes, or storage of raw legal text,
 prompts, request/response bodies, gateway responses, model outputs, emails,
 identifiers, or credentials.
 
+Legal document route-plan execution claim gate evidence may describe a
+repository-backed metadata-only claim gate that hashes proposed release/support
+wording and allows only ready review-packet-backed metadata-only claims. It must
+not echo raw claim text, claim public benchmark scores, live provider execution,
+release approval, maintainer approval, default changes, traffic shifts,
+production quality, real client-document testing, or storage of raw legal text,
+prompts, request/response bodies, gateway responses, model outputs, emails,
+identifiers, or credentials.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

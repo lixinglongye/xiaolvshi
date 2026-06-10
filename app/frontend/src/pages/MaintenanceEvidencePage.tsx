@@ -54,6 +54,8 @@ import {
   evaluateLegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
   getLegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
   evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
+  getLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
+  evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -180,6 +182,7 @@ import {
   type LegalDocumentBenchmarkRoutePlanExecutionResultArchive,
   type LegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
   type LegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
+  type LegalDocumentBenchmarkRoutePlanExecutionClaimGate,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -937,6 +940,12 @@ function Inner() {
   ] = useState<LegalDocumentBenchmarkRoutePlanExecutionReviewPacket | null>(null);
   const [routePlanExecutionReviewPacketError, setRoutePlanExecutionReviewPacketError] = useState('');
   const [routePlanExecutionReviewPacketLoading, setRoutePlanExecutionReviewPacketLoading] = useState(false);
+  const [
+    legalDocumentBenchmarkRoutePlanExecutionClaimGate,
+    setLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
+  ] = useState<LegalDocumentBenchmarkRoutePlanExecutionClaimGate | null>(null);
+  const [routePlanExecutionClaimGateError, setRoutePlanExecutionClaimGateError] = useState('');
+  const [routePlanExecutionClaimGateLoading, setRoutePlanExecutionClaimGateLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1273,6 +1282,14 @@ function Inner() {
           apply: (value) =>
             setLegalDocumentBenchmarkRoutePlanExecutionReviewPacket(
               value as LegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
+            ),
+        },
+        {
+          label: 'Legal document benchmark route plan execution claim gate',
+          run: getLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
+          apply: (value) =>
+            setLegalDocumentBenchmarkRoutePlanExecutionClaimGate(
+              value as LegalDocumentBenchmarkRoutePlanExecutionClaimGate,
             ),
         },
         {
@@ -2070,6 +2087,21 @@ function Inner() {
       setRoutePlanExecutionReviewPacketError('Legal document benchmark route-plan execution review packet failed.');
     } finally {
       setRoutePlanExecutionReviewPacketLoading(false);
+    }
+  };
+
+  const runLegalDocumentRoutePlanExecutionClaimGate = async () => {
+    setRoutePlanExecutionClaimGateLoading(true);
+    setRoutePlanExecutionClaimGateError('');
+    try {
+      setLegalDocumentBenchmarkRoutePlanExecutionClaimGate(
+        await evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate({}),
+      );
+    } catch (err) {
+      console.error(err);
+      setRoutePlanExecutionClaimGateError('Legal document benchmark route-plan execution claim gate failed.');
+    } finally {
+      setRoutePlanExecutionClaimGateLoading(false);
     }
   };
 
@@ -10903,6 +10935,229 @@ function Inner() {
                   <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
                   <div className="grid gap-2 lg:grid-cols-2">
                     {legalDocumentBenchmarkRoutePlanExecutionReviewPacket.validation_commands.slice(0, 4).map((command) => (
+                      <code
+                        key={command}
+                        className="block rounded-[8px] bg-[#fbfaf6] px-3 py-2 text-xs leading-5 text-stone-700"
+                      >
+                        {command}
+                      </code>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlanExecutionClaimGate && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark route plan execution claim gate
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      review packet{' '}
+                      {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.review_packet_status)} /
+                      release action {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.release_action)}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentBenchmarkRoutePlanExecutionClaimGate.status] ?? statusClass.warn}
+                    >
+                      {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.status)}
+                    </Badge>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={runLegalDocumentRoutePlanExecutionClaimGate}
+                      disabled={routePlanExecutionClaimGateLoading}
+                    >
+                      {routePlanExecutionClaimGateLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      Refresh claim gate
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    { label: 'claims', value: legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.claim_count },
+                    { label: 'ready', value: legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.ready_claim_count },
+                    {
+                      label: 'review',
+                      value: legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.review_required_claim_count,
+                    },
+                    {
+                      label: 'blocked',
+                      value: legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.blocked_claim_count,
+                    },
+                    {
+                      label: 'metadata only',
+                      value: legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.metadata_only_claim_count,
+                    },
+                    {
+                      label: 'raw claim echoed',
+                      value: String(legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.raw_claim_text_echoed),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {routePlanExecutionClaimGateError && (
+                  <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {routePlanExecutionClaimGateError}
+                  </div>
+                )}
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Claim hash</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Detected types</TableHead>
+                        <TableHead>Reason codes</TableHead>
+                        <TableHead>Release action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentBenchmarkRoutePlanExecutionClaimGate.claim_checks.map((check) => (
+                        <TableRow key={check.claim_hash}>
+                          <TableCell>
+                            <div className="font-mono text-xs font-semibold text-stone-950">
+                              {shortHash(check.claim_hash)}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-500">allowed: {String(check.allowed)}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[320px] flex-wrap gap-1">
+                              {(check.detected_claim_types.length ? check.detected_claim_types : ['none']).map((claimType) => (
+                                <Badge key={`${check.claim_hash}-${claimType}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {displayToken(claimType)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex max-w-[360px] flex-wrap gap-1">
+                              {(check.reason_codes.length ? check.reason_codes : ['clear']).map((code) => (
+                                <Badge key={`${check.claim_hash}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                  {displayToken(code)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            {displayToken(check.release_action)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Allowed template</h3>
+                    <p className="text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkRoutePlanExecutionClaimGate.allowed_claim_template}
+                    </p>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      <div>ready for release packet: {String(legalDocumentBenchmarkRoutePlanExecutionClaimGate.summary.ready_for_release_packet)}</div>
+                      <div>policy: {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.policy_version)}</div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Forbidden claim types</h3>
+                    <div className="flex flex-wrap gap-1">
+                      {legalDocumentBenchmarkRoutePlanExecutionClaimGate.forbidden_claim_types.map((claimType) => (
+                        <Badge key={claimType} variant="outline" className="bg-white font-mono text-[11px]">
+                          {displayToken(claimType)}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="mt-3 grid gap-2 text-xs leading-5 text-stone-600">
+                      <div>blocking hashes: {legalDocumentBenchmarkRoutePlanExecutionClaimGate.blocking_claim_hashes.length}</div>
+                      <div>review hashes: {legalDocumentBenchmarkRoutePlanExecutionClaimGate.review_claim_hashes.length}</div>
+                      <div>claim hashes only: {includedBoundaryLabel(legalDocumentBenchmarkRoutePlanExecutionClaimGate.privacy_boundary.claim_hashes_only)}</div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source summary</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>source: {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.source_summary.execution_review_packet.id)}</div>
+                      <div>status: {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.source_summary.execution_review_packet.status)}</div>
+                      <div>
+                        ready packet:{' '}
+                        {String(legalDocumentBenchmarkRoutePlanExecutionClaimGate.source_summary.execution_review_packet.ready_for_release_packet)}
+                      </div>
+                      <div>
+                        release action:{' '}
+                        {displayToken(legalDocumentBenchmarkRoutePlanExecutionClaimGate.source_summary.execution_review_packet.release_action)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(legalDocumentBenchmarkRoutePlanExecutionClaimGate.privacy_boundary)
+                        .slice(0, 10)
+                        .map(([key, value]) => (
+                          <div key={`claim-gate-privacy-${key}`}>
+                            {displayToken(key)}: {includedBoundaryLabel(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(legalDocumentBenchmarkRoutePlanExecutionClaimGate.claim_boundary)
+                        .slice(0, 10)
+                        .map(([key, value]) => (
+                          <div key={`claim-gate-claim-${key}`}>
+                            {displayToken(key)}: {includedBoundaryLabel(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Gate actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkRoutePlanExecutionClaimGate.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                  <div className="grid gap-2 lg:grid-cols-2">
+                    {legalDocumentBenchmarkRoutePlanExecutionClaimGate.validation_commands.slice(0, 4).map((command) => (
                       <code
                         key={command}
                         className="block rounded-[8px] bg-[#fbfaf6] px-3 py-2 text-xs leading-5 text-stone-700"

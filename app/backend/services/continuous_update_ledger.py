@@ -226,6 +226,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_legal_document_benchmark_route_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_review_packet.py tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py tests/test_legal_document_benchmark_route_plan_execution_review_packet.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_maintenance_evidence.py tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
@@ -6330,6 +6331,43 @@ class ContinuousUpdateLedgerService:
                     "legal-document-benchmark-route-plan-execution-result-handoff",
                     "legal-document-benchmark-route-plan-execution-result-archive",
                     "legal-document-benchmark-route-plan-execution-readiness",
+                    "frontend-ui-regression",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
+            ),
+            LedgerEntry(
+                id="legal-document-benchmark-route-plan-execution-claim-gate",
+                title="Legal document benchmark route-plan execution claim gate",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a metadata-only claim gate for legal-document route-plan execution evidence, hashing "
+                    "proposed release/support claims and allowing only ready review-packet-backed metadata-only "
+                    "wording. It blocks public benchmark score claims, live provider execution claims, approval "
+                    "claims, default changes, traffic shifts, production-quality claims, and sensitive material "
+                    "without echoing raw claim text, calling models or gateways, executing benchmark runs, writing "
+                    "release records, archive files, configuration, defaults, or traffic shifts, recording "
+                    "approval, or returning public benchmark text, raw legal text, prompts, request bodies, "
+                    "response bodies, headers, model outputs, gateway responses, emails, identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_claim_gate.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_review_packet.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_review_packet.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_CLAIM_GATE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-route-plan-execution-claim-gate",
+                    "legal-document-benchmark-route-plan-execution-review-packet",
+                    "legal-document-benchmark-route-plan-execution-result-handoff",
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),

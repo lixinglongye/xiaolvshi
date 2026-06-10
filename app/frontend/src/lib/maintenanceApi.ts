@@ -7570,6 +7570,60 @@ export type LegalDocumentBenchmarkRoutePlanExecutionReviewPacket = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkRoutePlanExecutionClaimGateCheck = {
+  claim_hash: string;
+  status: string;
+  detected_claim_types: string[];
+  reason_codes: string[];
+  allowed: boolean;
+  release_action: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanExecutionClaimGate = {
+  id: string;
+  title: string;
+  status: string;
+  policy_version: string;
+  summary: {
+    claim_count: number;
+    ready_claim_count: number;
+    review_required_claim_count: number;
+    blocked_claim_count: number;
+    metadata_only_claim_count: number;
+    review_packet_status: string;
+    ready_for_release_packet: boolean;
+    release_action: string;
+    raw_claim_text_echoed: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    benchmark_executed: boolean;
+    release_record_written: boolean;
+    maintainer_approval_recorded: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+  };
+  claim_checks: LegalDocumentBenchmarkRoutePlanExecutionClaimGateCheck[];
+  blocking_claim_hashes: string[];
+  review_claim_hashes: string[];
+  source_summary: {
+    execution_review_packet: {
+      id: string;
+      status: string;
+      ready_for_release_packet: boolean;
+      release_action: string;
+      blocking_check_ids: string[];
+      warning_check_ids: string[];
+    };
+  };
+  allowed_claim_template: string;
+  forbidden_claim_types: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7966,6 +8020,11 @@ type LegalDocumentBenchmarkRoutePlanExecutionResultHandoffResponse = {
 type LegalDocumentBenchmarkRoutePlanExecutionReviewPacketResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlanExecutionReviewPacket;
+};
+
+type LegalDocumentBenchmarkRoutePlanExecutionClaimGateResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -10059,6 +10118,37 @@ export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPack
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionReviewPacket;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlanExecutionClaimGate(): Promise<LegalDocumentBenchmarkRoutePlanExecutionClaimGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-claim-gate',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionClaimGateResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlanExecutionClaimGate> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-claim-gate',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionClaimGateResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {
