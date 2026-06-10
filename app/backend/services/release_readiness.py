@@ -3165,6 +3165,43 @@ class ReleaseReadinessService:
                 ),
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-route-plan-replay",
+                title="Legal document benchmark route plan replay",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_replay.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_replay.py",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_REPLAY.md",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_route_plan_replay.py "
+                    "tests/test_legal_document_benchmark_route_plan.py "
+                    "tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py "
+                    "tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py "
+                    "tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q"
+                ),
+                manual_note=(
+                    "This replays metadata-only legal-document benchmark route-plan scenarios for default "
+                    "cheap-first routes, unapproved premium route-down behavior, and premium-default blocking. "
+                    "It does not call NewAPI, Gemini, gateways, app AI endpoints, models, public datasets, or "
+                    "the network; change defaults; shift traffic; execute benchmark runs; or return raw fixture "
+                    "snippets, prompts, scenario payloads, generated document text, model outputs, gateway "
+                    "responses, credentials, emails, or client identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage-ui",
                 title="Legal document benchmark coverage UI",
                 category="frontend_ui",

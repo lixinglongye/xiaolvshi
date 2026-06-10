@@ -727,6 +727,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-document-benchmark-coverage" in completed_ids
     assert "legal-document-benchmark-route-plan" in completed_ids
+    assert "legal-document-benchmark-route-plan-replay" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
     assert "legal-document-template-benchmark-alignment" in completed_ids
@@ -778,6 +779,40 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-gemini-cheap-first-route-preflight" in legal_document_benchmark_route_plan_entry[
         "release_gate_links"
     ]
+    legal_document_benchmark_route_plan_replay_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-document-benchmark-route-plan-replay"
+    )
+    assert legal_document_benchmark_route_plan_replay_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_replay_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_replay_entry["status"] == "shipped"
+    assert "route-plan replay scenarios" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "unapproved premium route-down behavior" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "premium-default blocking" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "model calls" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "scenario payloads" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_replay_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_replay.py" in legal_document_benchmark_route_plan_replay_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_replay.py" in legal_document_benchmark_route_plan_replay_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/maintenance.py" in legal_document_benchmark_route_plan_replay_entry["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_REPLAY.md" in legal_document_benchmark_route_plan_replay_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-replay" in legal_document_benchmark_route_plan_replay_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan" in legal_document_benchmark_route_plan_replay_entry[
+        "release_gate_links"
+    ]
+    assert "model-runtime-router" in legal_document_benchmark_route_plan_replay_entry["release_gate_links"]
+    assert "model-default-candidate-selector" in legal_document_benchmark_route_plan_replay_entry["release_gate_links"]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_replay.py" in command
+        for command in ledger["validation_commands"]
+    )
     legal_document_benchmark_route_plan_override_ui_entry = next(
         entry
         for entry in ledger["completed_updates"]
@@ -1213,6 +1248,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-document-benchmark-coverage" not in queue_ids
     assert "legal-document-benchmark-route-plan" not in queue_ids
+    assert "legal-document-benchmark-route-plan-replay" not in queue_ids
     assert "legal-document-benchmark-route-plan-override-ui" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids

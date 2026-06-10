@@ -42,6 +42,8 @@ import {
   getLegalDocumentBenchmarkCoverage,
   getLegalDocumentBenchmarkRoutePlan,
   evaluateLegalDocumentBenchmarkRoutePlan,
+  getLegalDocumentBenchmarkRoutePlanReplay,
+  evaluateLegalDocumentBenchmarkRoutePlanReplay,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -162,6 +164,7 @@ import {
   type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
   type LegalDocumentBenchmarkRoutePlan,
+  type LegalDocumentBenchmarkRoutePlanReplay,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -889,6 +892,10 @@ function Inner() {
   const [routePlanOverrideApproval, setRoutePlanOverrideApproval] = useState('blocked');
   const [routePlanOverrideError, setRoutePlanOverrideError] = useState('');
   const [routePlanOverrideLoading, setRoutePlanOverrideLoading] = useState(false);
+  const [legalDocumentBenchmarkRoutePlanReplay, setLegalDocumentBenchmarkRoutePlanReplay] =
+    useState<LegalDocumentBenchmarkRoutePlanReplay | null>(null);
+  const [routePlanReplayError, setRoutePlanReplayError] = useState('');
+  const [routePlanReplayLoading, setRoutePlanReplayLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1181,6 +1188,11 @@ function Inner() {
           label: 'Legal document benchmark route plan',
           run: getLegalDocumentBenchmarkRoutePlan,
           apply: (value) => setLegalDocumentBenchmarkRoutePlan(value as LegalDocumentBenchmarkRoutePlan),
+        },
+        {
+          label: 'Legal document benchmark route plan replay',
+          run: getLegalDocumentBenchmarkRoutePlanReplay,
+          apply: (value) => setLegalDocumentBenchmarkRoutePlanReplay(value as LegalDocumentBenchmarkRoutePlanReplay),
         },
         {
           label: 'Legal document benchmark fixtures',
@@ -1889,6 +1901,19 @@ function Inner() {
       setRoutePlanOverrideError('Legal document benchmark route override preview failed.');
     } finally {
       setRoutePlanOverrideLoading(false);
+    }
+  };
+
+  const runLegalDocumentRoutePlanReplay = async () => {
+    setRoutePlanReplayLoading(true);
+    setRoutePlanReplayError('');
+    try {
+      setLegalDocumentBenchmarkRoutePlanReplay(await evaluateLegalDocumentBenchmarkRoutePlanReplay({}));
+    } catch (err) {
+      console.error(err);
+      setRoutePlanReplayError('Legal document benchmark route plan replay failed.');
+    } finally {
+      setRoutePlanReplayLoading(false);
     }
   };
 
@@ -9409,6 +9434,178 @@ function Inner() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlanReplay && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark route plan replay
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkRoutePlanReplay.summary.pass_count}/
+                      {legalDocumentBenchmarkRoutePlanReplay.summary.scenario_count} scenarios passed /{' '}
+                      {legalDocumentBenchmarkRoutePlanReplay.summary.routed_to_recommended_count} routed down /{' '}
+                      {legalDocumentBenchmarkRoutePlanReplay.summary.premium_block_count} premium blocks
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentBenchmarkRoutePlanReplay.status] ?? statusClass.warn}
+                    >
+                      {displayToken(legalDocumentBenchmarkRoutePlanReplay.status)}
+                    </Badge>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={runLegalDocumentRoutePlanReplay}
+                      disabled={routePlanReplayLoading}
+                    >
+                      {routePlanReplayLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                      Run replay
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    { label: 'scenarios', value: legalDocumentBenchmarkRoutePlanReplay.summary.scenario_count },
+                    { label: 'failures', value: legalDocumentBenchmarkRoutePlanReplay.summary.fail_count },
+                    { label: 'blocked plans', value: legalDocumentBenchmarkRoutePlanReplay.summary.blocked_plan_count },
+                    {
+                      label: 'routed down',
+                      value: legalDocumentBenchmarkRoutePlanReplay.summary.routed_to_recommended_count,
+                    },
+                    { label: 'sensitive rejected', value: legalDocumentBenchmarkRoutePlanReplay.summary.rejected_sensitive_scenario_count },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {routePlanReplayError && (
+                  <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {routePlanReplayError}
+                  </div>
+                )}
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Scenario</TableHead>
+                        <TableHead>Expected route</TableHead>
+                        <TableHead>Actual route</TableHead>
+                        <TableHead>Checks</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentBenchmarkRoutePlanReplay.replay_results.map((result) => (
+                        <TableRow key={result.id}>
+                          <TableCell className="max-w-[280px]">
+                            <div className="font-semibold text-stone-950">{result.id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {result.scenario.case_id}
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className={statusClass[result.status] ?? statusClass.review_required}
+                            >
+                              {displayToken(result.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-[11px] text-stone-950">
+                              {result.scenario.expected_resolved_model}
+                            </div>
+                            <div>{displayToken(result.scenario.expected_primary_task)}</div>
+                            <div>{displayToken(result.scenario.expected_route_band)}</div>
+                            <div>blocked ids: {result.scenario.expected_blocking_check_ids.join(', ') || '-'}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            <div className="font-mono text-[11px] text-stone-950">
+                              {result.actual.resolved_model ?? '-'}
+                            </div>
+                            <div>{displayToken(result.actual.plan_status)}</div>
+                            <div>{displayToken(result.actual.route_band ?? '-')}</div>
+                            <div>recommended: {String(result.actual.routed_to_recommended_model)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[280px]">
+                            <div className="flex flex-wrap gap-1">
+                              {result.checks.map((check) => (
+                                <Badge
+                                  key={`${result.id}-${check.id}`}
+                                  variant="outline"
+                                  className={statusClass[check.status] ?? statusClass.warn}
+                                >
+                                  {check.id}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                            {result.recommended_action}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Replay checks</h3>
+                    <div className="space-y-2">
+                      {legalDocumentBenchmarkRoutePlanReplay.checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Replay boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>model calls: {legalDocumentBenchmarkRoutePlanReplay.summary.model_calls}</div>
+                      <div>network: {legalDocumentBenchmarkRoutePlanReplay.summary.network_access}</div>
+                      <div>fixture text returned: {String(legalDocumentBenchmarkRoutePlanReplay.summary.raw_fixture_snippets_returned)}</div>
+                      <div>model output returned: {String(legalDocumentBenchmarkRoutePlanReplay.summary.raw_outputs_returned)}</div>
+                      <div>
+                        public score:{' '}
+                        {String(legalDocumentBenchmarkRoutePlanReplay.claim_boundary.public_benchmark_score_claimed)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Replay actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkRoutePlanReplay.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </section>
             )}

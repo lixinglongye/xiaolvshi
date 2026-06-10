@@ -220,6 +220,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
+                "python -m pytest tests/test_legal_document_benchmark_route_plan_replay.py tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q",
@@ -6095,6 +6096,38 @@ class ContinuousUpdateLedgerService:
                     "model-runtime-router",
                     "model-default-candidate-selector",
                     "modelops-gemini-cheap-first-route-preflight",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
+            ),
+            LedgerEntry(
+                id="legal-document-benchmark-route-plan-replay",
+                title="Legal document benchmark route-plan replay",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds deterministic route-plan replay scenarios for local synthetic legal-document benchmark "
+                    "routes, checking default cheap-first behavior, unapproved premium route-down behavior, and "
+                    "premium-default blocking without model calls, network access, dataset downloads, raw snippets, "
+                    "prompts, scenario payloads, model outputs, gateway responses, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_replay.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_replay.py",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_REPLAY.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-route-plan-replay",
+                    "legal-document-benchmark-route-plan",
+                    "model-runtime-router",
+                    "model-default-candidate-selector",
                 ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
             ),

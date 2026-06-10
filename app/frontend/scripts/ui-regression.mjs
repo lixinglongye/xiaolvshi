@@ -1622,11 +1622,22 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanCheck', 'legal document benchmark route plan check type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanReplay', 'legal document benchmark route plan replay type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanReplayResult', 'legal document benchmark route plan replay result type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanReplayCheck', 'legal document benchmark route plan replay check type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanReplay', 'legal document benchmark route plan replay API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanReplay', 'legal document benchmark route plan replay POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan',
       'legal document benchmark route plan endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/replay',
+      'legal document benchmark route plan replay endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1654,6 +1665,21 @@ const checks = [
   () => assertIncludes(maintenancePage, 'route_band', 'legal document route plan band binding'),
   () => assertIncludes(maintenancePage, 'routed_to_recommended_model', 'legal document route plan recommendation binding'),
   () => assertIncludes(maintenancePage, 'public_benchmark_score_claimed', 'legal document route plan public benchmark claim boundary'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanReplay', 'legal document route plan replay load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanReplay', 'legal document route plan replay state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanReplay', 'legal document route plan replay handler'),
+  () => assertIncludes(maintenancePage, 'routePlanReplayLoading', 'legal document route plan replay loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanReplayError', 'legal document route plan replay error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanReplay', 'legal document route plan replay POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan replay', 'legal document route plan replay panel'),
+  () => assertIncludes(maintenancePage, 'Run replay', 'legal document route plan replay button'),
+  () => assertIncludes(maintenancePage, 'replay_results', 'legal document route plan replay results binding'),
+  () => assertIncludes(maintenancePage, 'premium_block_count', 'legal document route plan replay premium block metric'),
+  () => assertIncludes(maintenancePage, 'blocked_plan_count', 'legal document route plan replay blocked plan metric'),
+  () => assertIncludes(maintenancePage, 'rejected_sensitive_scenario_count', 'legal document route plan replay sensitive rejection metric'),
+  () => assertIncludes(maintenancePage, 'expected_blocking_check_ids', 'legal document route plan replay expected blocker binding'),
+  () => assertIncludes(maintenancePage, 'raw_fixture_snippets_returned', 'legal document route plan replay fixture boundary'),
+  () => assertIncludes(maintenancePage, 'raw_outputs_returned', 'legal document route plan replay output boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1664,20 +1690,38 @@ const checks = [
   () =>
     assertBefore(
       maintenancePage,
-      'Legal document benchmark cheap-first route plan',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark cheap-first route plan',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
+      'legal document route plan replay follows route plan',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan precedes fixtures',
+      'legal document route plan replay precedes fixtures',
     ),
   () =>
     assertNotMatches(
       sourceSection(
         maintenancePage,
         'Legal document benchmark cheap-first route plan',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
         'legal document benchmark route plan section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
       'legal document benchmark route plan sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan replay section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
+      'legal document benchmark route plan replay sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),

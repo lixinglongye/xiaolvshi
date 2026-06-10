@@ -49,6 +49,7 @@ from services.deep_review_selected_source_binding import DeepReviewSelectedSourc
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_document_benchmark_route_plan import LegalDocumentBenchmarkRoutePlanService
+from services.legal_document_benchmark_route_plan_replay import LegalDocumentBenchmarkRoutePlanReplayService
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1477,6 +1478,24 @@ async def build_legal_document_benchmark_route_plan(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanService().build_plan(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/replay")
+async def get_legal_document_benchmark_route_plan_replay():
+    """Replay route-plan scenarios without calling models or echoing raw material."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanReplayService().run_replay(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/replay")
+async def replay_legal_document_benchmark_route_plan(payload: dict[str, Any]):
+    """Evaluate submitted route-plan replay scenarios with sanitized metadata only."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanReplayService().run_replay(payload),
     }
 
 

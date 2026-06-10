@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan replay slice:
+`legal-document-benchmark-route-plan-replay` adds deterministic metadata-only
+scenario replay for the local legal-document benchmark route plan. It checks
+default cheap-first routes, unapproved premium route-down behavior, simulated
+approved premium blocking, and grounded legal-opinion routing before maintainers
+trust the route plan for benchmark execution planning. The endpoint is
+available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/replay`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; execute benchmark runs; change
+defaults; shift traffic; write configuration; or return raw fixture snippets,
+generated document text, prompts, submitted scenario rationale, model outputs,
+gateway responses, emails, identifiers, or credentials.
+
 Current legal document benchmark route override UI slice:
 `legal-document-benchmark-route-plan-override-ui` adds a maintenance-page
 override preview for the local legal-document benchmark route plan. Maintainers

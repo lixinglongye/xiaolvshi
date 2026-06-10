@@ -7070,6 +7070,85 @@ export type LegalDocumentBenchmarkRoutePlan = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkRoutePlanReplayScenario = {
+  id: string;
+  case_id: string;
+  override_primary_task?: string | null;
+  override_primary_model?: string | null;
+  override_approval: boolean;
+  expected_plan_status: string;
+  expected_primary_task: string;
+  expected_resolved_model: string;
+  expected_cost_tier: string;
+  expected_route_band: string;
+  expected_routed_to_recommended: boolean;
+  expected_blocking_check_ids: string[];
+  rationale: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanReplayCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  expected?: unknown;
+  actual?: unknown;
+  scenario_ids?: string[];
+};
+
+export type LegalDocumentBenchmarkRoutePlanReplayResult = {
+  id: string;
+  status: string;
+  scenario: LegalDocumentBenchmarkRoutePlanReplayScenario;
+  actual: {
+    plan_status: string;
+    case_id?: string | null;
+    document_type?: string | null;
+    override_applied: boolean;
+    primary_task?: string | null;
+    requested_model?: string | null;
+    resolved_model?: string | null;
+    cost_tier?: string | null;
+    route_band?: string | null;
+    routed_to_recommended_model?: boolean | null;
+    blocking_check_ids: string[];
+    warning_check_ids: string[];
+  };
+  checks: LegalDocumentBenchmarkRoutePlanReplayCheck[];
+  failures: string[];
+  recommended_action: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanReplay = {
+  id: string;
+  status: string;
+  method: {
+    type: string;
+    version: string;
+    inputs: string[];
+    notes: string[];
+  };
+  summary: {
+    scenario_count: number;
+    pass_count: number;
+    fail_count: number;
+    blocked_plan_count: number;
+    routed_to_recommended_count: number;
+    premium_block_count: number;
+    rejected_sensitive_scenario_count: number;
+    model_calls: string;
+    network_access: string;
+    raw_fixture_snippets_returned: boolean;
+    raw_outputs_returned: boolean;
+  };
+  replay_results: LegalDocumentBenchmarkRoutePlanReplayResult[];
+  checks: LegalDocumentBenchmarkRoutePlanReplayCheck[];
+  blocking_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7436,6 +7515,11 @@ type LegalDocumentBenchmarkCoverageResponse = {
 type LegalDocumentBenchmarkRoutePlanResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlan;
+};
+
+type LegalDocumentBenchmarkRoutePlanReplayResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlanReplay;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -9343,6 +9427,37 @@ export async function evaluateLegalDocumentBenchmarkRoutePlan(
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlan;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlanReplay(): Promise<LegalDocumentBenchmarkRoutePlanReplay> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/replay',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanReplayResponse
+    | LegalDocumentBenchmarkRoutePlanReplay;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlanReplay;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlanReplay(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlanReplay> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/replay',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanReplayResponse
+    | LegalDocumentBenchmarkRoutePlanReplay;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlanReplay;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {
