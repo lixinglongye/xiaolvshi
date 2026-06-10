@@ -1627,6 +1627,11 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanReplayCheck', 'legal document benchmark route plan replay check type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanReplay', 'legal document benchmark route plan replay API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanReplay', 'legal document benchmark route plan replay POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document benchmark route plan research alignment type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanResearchAlignmentRow', 'legal document benchmark route plan research alignment row type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanResearchAlignmentSource', 'legal document benchmark route plan research alignment source type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document benchmark route plan research alignment API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document benchmark route plan research alignment POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1638,6 +1643,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/replay',
       'legal document benchmark route plan replay endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/research-alignment',
+      'legal document benchmark route plan research alignment endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1680,6 +1691,21 @@ const checks = [
   () => assertIncludes(maintenancePage, 'expected_blocking_check_ids', 'legal document route plan replay expected blocker binding'),
   () => assertIncludes(maintenancePage, 'raw_fixture_snippets_returned', 'legal document route plan replay fixture boundary'),
   () => assertIncludes(maintenancePage, 'raw_outputs_returned', 'legal document route plan replay output boundary'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document route plan research alignment load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document route plan research alignment state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanResearchAlignment', 'legal document route plan research alignment handler'),
+  () => assertIncludes(maintenancePage, 'routePlanResearchAlignmentLoading', 'legal document route plan research alignment loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanResearchAlignmentError', 'legal document route plan research alignment error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document route plan research alignment POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan research alignment', 'legal document route plan research alignment panel'),
+  () => assertIncludes(maintenancePage, 'Run alignment', 'legal document route plan research alignment button'),
+  () => assertIncludes(maintenancePage, 'source_anchors', 'legal document route plan research alignment source anchors'),
+  () => assertIncludes(maintenancePage, 'alignment_rows', 'legal document route plan research alignment rows'),
+  () => assertIncludes(maintenancePage, 'linked_replay_summary', 'legal document route plan research alignment linked replay summary'),
+  () => assertIncludes(maintenancePage, 'paper_source_count', 'legal document route plan research alignment paper source metric'),
+  () => assertIncludes(maintenancePage, 'official_model_source_count', 'legal document route plan research alignment official source metric'),
+  () => assertIncludes(maintenancePage, 'route_plan_replay_status', 'legal document route plan research alignment replay status metric'),
+  () => assertIncludes(maintenancePage, 'raw_public_benchmark_text_returned', 'legal document route plan research alignment public text boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1698,8 +1724,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
+      'legal document route plan research alignment follows replay',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan replay precedes fixtures',
+      'legal document route plan research alignment precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1717,11 +1750,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan replay',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
         'legal document benchmark route plan replay section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
       'legal document benchmark route plan replay sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan research alignment section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
+      'legal document benchmark route plan research alignment sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),

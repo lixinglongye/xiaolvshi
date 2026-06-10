@@ -50,6 +50,9 @@ from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFix
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
 from services.legal_document_benchmark_route_plan import LegalDocumentBenchmarkRoutePlanService
 from services.legal_document_benchmark_route_plan_replay import LegalDocumentBenchmarkRoutePlanReplayService
+from services.legal_document_benchmark_route_plan_research_alignment import (
+    LegalDocumentBenchmarkRoutePlanResearchAlignmentService,
+)
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1496,6 +1499,24 @@ async def replay_legal_document_benchmark_route_plan(payload: dict[str, Any]):
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanReplayService().run_replay(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/research-alignment")
+async def get_legal_document_benchmark_route_plan_research_alignment():
+    """Return research/source alignment for route-plan replay evidence."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanResearchAlignmentService().build_alignment(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/research-alignment")
+async def build_legal_document_benchmark_route_plan_research_alignment(payload: dict[str, Any]):
+    """Evaluate route-plan research alignment from sanitized replay metadata."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanResearchAlignmentService().build_alignment(payload),
     }
 
 

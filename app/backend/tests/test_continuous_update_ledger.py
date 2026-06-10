@@ -728,6 +728,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage" in completed_ids
     assert "legal-document-benchmark-route-plan" in completed_ids
     assert "legal-document-benchmark-route-plan-replay" in completed_ids
+    assert "legal-document-benchmark-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
     assert "legal-document-template-benchmark-alignment" in completed_ids
@@ -811,6 +812,52 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-default-candidate-selector" in legal_document_benchmark_route_plan_replay_entry["release_gate_links"]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_replay.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_route_plan_research_alignment_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-research-alignment"
+    )
+    assert legal_document_benchmark_route_plan_research_alignment_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_research_alignment_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_research_alignment_entry["status"] == "shipped"
+    assert "Gemini official model/pricing URLs" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "impact"
+    ]
+    assert "FrugalGPT" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "LegalBench-RAG" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "LexEval" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "network calls" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "public benchmark text" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "scenario payloads" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_research_alignment_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_research_alignment.py" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_research_alignment.py" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/scripts/ui-regression.mjs" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_RESEARCH_ALIGNMENT.md" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-research-alignment" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-replay" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "release_gate_links"
+    ]
+    assert "legal-rag-benchmark-alignment" in legal_document_benchmark_route_plan_research_alignment_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_research_alignment.py" in command
         for command in ledger["validation_commands"]
     )
     legal_document_benchmark_route_plan_override_ui_entry = next(
@@ -1249,6 +1296,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-coverage" not in queue_ids
     assert "legal-document-benchmark-route-plan" not in queue_ids
     assert "legal-document-benchmark-route-plan-replay" not in queue_ids
+    assert "legal-document-benchmark-route-plan-research-alignment" not in queue_ids
     assert "legal-document-benchmark-route-plan-override-ui" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids

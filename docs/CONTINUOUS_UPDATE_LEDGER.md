@@ -1,5 +1,21 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan research alignment slice:
+`legal-document-benchmark-route-plan-research-alignment` maps the route-plan
+replay scenarios to stored Gemini official model/pricing URLs, FrugalGPT
+cheap-first cascade signals, LegalBench-RAG grounding signals, and LexEval
+zh-CN legal task-family signals. It exposes source anchors, alignment rows,
+linked replay status, release actions, and claim boundaries in the maintenance
+UI before maintainers cite public research as evidence for local cheap-first
+route planning. The endpoint is available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/research-alignment`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; download papers or benchmark data;
+execute benchmark runs; change defaults; shift traffic; write configuration; or
+return public benchmark text, raw fixture snippets, generated document text,
+prompts, submitted scenario rationale, model outputs, gateway responses, emails,
+identifiers, or credentials.
+
 Current legal document benchmark route-plan replay slice:
 `legal-document-benchmark-route-plan-replay` adds deterministic metadata-only
 scenario replay for the local legal-document benchmark route plan. It checks

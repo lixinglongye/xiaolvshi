@@ -44,6 +44,8 @@ import {
   evaluateLegalDocumentBenchmarkRoutePlan,
   getLegalDocumentBenchmarkRoutePlanReplay,
   evaluateLegalDocumentBenchmarkRoutePlanReplay,
+  getLegalDocumentBenchmarkRoutePlanResearchAlignment,
+  evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -165,6 +167,7 @@ import {
   type LegalDocumentBenchmarkCoverage,
   type LegalDocumentBenchmarkRoutePlan,
   type LegalDocumentBenchmarkRoutePlanReplay,
+  type LegalDocumentBenchmarkRoutePlanResearchAlignment,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -896,6 +899,10 @@ function Inner() {
     useState<LegalDocumentBenchmarkRoutePlanReplay | null>(null);
   const [routePlanReplayError, setRoutePlanReplayError] = useState('');
   const [routePlanReplayLoading, setRoutePlanReplayLoading] = useState(false);
+  const [legalDocumentBenchmarkRoutePlanResearchAlignment, setLegalDocumentBenchmarkRoutePlanResearchAlignment] =
+    useState<LegalDocumentBenchmarkRoutePlanResearchAlignment | null>(null);
+  const [routePlanResearchAlignmentError, setRoutePlanResearchAlignmentError] = useState('');
+  const [routePlanResearchAlignmentLoading, setRoutePlanResearchAlignmentLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1193,6 +1200,14 @@ function Inner() {
           label: 'Legal document benchmark route plan replay',
           run: getLegalDocumentBenchmarkRoutePlanReplay,
           apply: (value) => setLegalDocumentBenchmarkRoutePlanReplay(value as LegalDocumentBenchmarkRoutePlanReplay),
+        },
+        {
+          label: 'Legal document benchmark route plan research alignment',
+          run: getLegalDocumentBenchmarkRoutePlanResearchAlignment,
+          apply: (value) =>
+            setLegalDocumentBenchmarkRoutePlanResearchAlignment(
+              value as LegalDocumentBenchmarkRoutePlanResearchAlignment,
+            ),
         },
         {
           label: 'Legal document benchmark fixtures',
@@ -1914,6 +1929,21 @@ function Inner() {
       setRoutePlanReplayError('Legal document benchmark route plan replay failed.');
     } finally {
       setRoutePlanReplayLoading(false);
+    }
+  };
+
+  const runLegalDocumentRoutePlanResearchAlignment = async () => {
+    setRoutePlanResearchAlignmentLoading(true);
+    setRoutePlanResearchAlignmentError('');
+    try {
+      setLegalDocumentBenchmarkRoutePlanResearchAlignment(
+        await evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment({ route_plan_replay: {} }),
+      );
+    } catch (err) {
+      console.error(err);
+      setRoutePlanResearchAlignmentError('Legal document benchmark route-plan research alignment failed.');
+    } finally {
+      setRoutePlanResearchAlignmentLoading(false);
     }
   };
 
@@ -9599,6 +9629,219 @@ function Inner() {
                     <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Replay actions</h3>
                     <ul className="space-y-2 text-sm leading-6 text-stone-700">
                       {legalDocumentBenchmarkRoutePlanReplay.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlanResearchAlignment && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark route plan research alignment
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkRoutePlanResearchAlignment.summary.aligned_count}/
+                      {legalDocumentBenchmarkRoutePlanResearchAlignment.summary.dimension_count} dimensions aligned /{' '}
+                      {legalDocumentBenchmarkRoutePlanResearchAlignment.summary.source_count} source anchors / replay{' '}
+                      {displayToken(legalDocumentBenchmarkRoutePlanResearchAlignment.summary.route_plan_replay_status)}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentBenchmarkRoutePlanResearchAlignment.status] ?? statusClass.warn}
+                    >
+                      {displayToken(legalDocumentBenchmarkRoutePlanResearchAlignment.status)}
+                    </Badge>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={runLegalDocumentRoutePlanResearchAlignment}
+                      disabled={routePlanResearchAlignmentLoading}
+                    >
+                      {routePlanResearchAlignmentLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      Run alignment
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    { label: 'source anchors', value: legalDocumentBenchmarkRoutePlanResearchAlignment.summary.source_count },
+                    { label: 'paper sources', value: legalDocumentBenchmarkRoutePlanResearchAlignment.summary.paper_source_count },
+                    {
+                      label: 'official sources',
+                      value: legalDocumentBenchmarkRoutePlanResearchAlignment.summary.official_model_source_count,
+                    },
+                    { label: 'alignment gaps', value: legalDocumentBenchmarkRoutePlanResearchAlignment.summary.gap_count },
+                    {
+                      label: 'sensitive rejected',
+                      value: legalDocumentBenchmarkRoutePlanResearchAlignment.summary.rejected_sensitive_scenario_count,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {routePlanResearchAlignmentError && (
+                  <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {routePlanResearchAlignmentError}
+                  </div>
+                )}
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Alignment</TableHead>
+                          <TableHead>Sources</TableHead>
+                          <TableHead>Replay evidence</TableHead>
+                          <TableHead>Release action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkRoutePlanResearchAlignment.alignment_rows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.alignment_status] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.alignment_status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[280px]">
+                              <div className="flex flex-wrap gap-1">
+                                {row.source_ids.map((sourceId) => (
+                                  <Badge key={`${row.id}-${sourceId}`} variant="outline" className="bg-white">
+                                    {sourceId}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <div className="mt-2 text-xs leading-5 text-stone-600">{row.route_requirement}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                              <div>scenarios: {row.scenario_ids.join(', ')}</div>
+                              <div>models: {row.observed_models.join(', ') || '-'}</div>
+                              <div>bands: {row.observed_route_bands.join(', ') || '-'}</div>
+                              <div>gaps: {row.gap_reasons.join(', ') || '-'}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px] text-xs leading-5 text-stone-600">
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.release_action] ?? statusClass.review_required}
+                              >
+                                {displayToken(row.release_action)}
+                              </Badge>
+                              <div className="mt-2">{row.recommended_action}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source anchors</h3>
+                      <div className="space-y-3">
+                        {legalDocumentBenchmarkRoutePlanResearchAlignment.source_anchors.map((source) => (
+                          <div key={source.id} className="text-xs leading-5 text-stone-600">
+                            <div className="font-semibold text-stone-950">{source.title}</div>
+                            <div className="font-mono text-[11px]">{source.id}</div>
+                            <a
+                              className="break-all text-sky-700 underline"
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.url}
+                            </a>
+                            <div className="mt-1">{source.local_interpretation}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Linked replay</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        {Object.entries(legalDocumentBenchmarkRoutePlanResearchAlignment.linked_replay_summary).map(
+                          ([key, value]) => (
+                            <div key={key}>
+                              {key}: {String(value)}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Alignment checks</h3>
+                    <div className="space-y-2">
+                      {legalDocumentBenchmarkRoutePlanResearchAlignment.checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-2 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Research boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      <div>model calls: {legalDocumentBenchmarkRoutePlanResearchAlignment.summary.model_calls}</div>
+                      <div>network: {legalDocumentBenchmarkRoutePlanResearchAlignment.summary.network_access}</div>
+                      <div>dataset downloaded: {String(legalDocumentBenchmarkRoutePlanResearchAlignment.summary.dataset_downloaded)}</div>
+                      <div>
+                        public benchmark text returned:{' '}
+                        {String(legalDocumentBenchmarkRoutePlanResearchAlignment.summary.raw_public_benchmark_text_returned)}
+                      </div>
+                      <div>
+                        fixture text returned:{' '}
+                        {String(legalDocumentBenchmarkRoutePlanResearchAlignment.summary.raw_fixture_snippets_returned)}
+                      </div>
+                      <div>outputs returned: {String(legalDocumentBenchmarkRoutePlanResearchAlignment.summary.raw_outputs_returned)}</div>
+                      <div>
+                        public score:{' '}
+                        {String(
+                          legalDocumentBenchmarkRoutePlanResearchAlignment.claim_boundary.public_benchmark_score_claimed,
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Alignment actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkRoutePlanResearchAlignment.recommended_actions.map((action) => (
                         <li key={action} className="flex gap-2">
                           <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
                           <span>{action}</span>

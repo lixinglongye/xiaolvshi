@@ -7149,6 +7149,92 @@ export type LegalDocumentBenchmarkRoutePlanReplay = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkRoutePlanResearchAlignmentSource = {
+  id: string;
+  title: string;
+  url: string;
+  source_type: string;
+  signal: string;
+  local_interpretation: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanResearchAlignmentRow = {
+  id: string;
+  title: string;
+  source_ids: string[];
+  scenario_ids: string[];
+  user_need_ids: string[];
+  release_gate_links: string[];
+  alignment_status: string;
+  release_action: string;
+  route_requirement: string;
+  observed_models: string[];
+  observed_route_bands: string[];
+  missing_scenario_ids: string[];
+  failed_scenario_ids: string[];
+  gap_reasons: string[];
+  metadata_only: boolean;
+  recommended_action: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanResearchAlignmentCheck = {
+  id: string;
+  status: string;
+  reason: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanResearchAlignment = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    version: string;
+    notes: string[];
+  };
+  summary: {
+    source_count: number;
+    dimension_count: number;
+    aligned_count: number;
+    review_count: number;
+    gap_count: number;
+    route_plan_replay_status: string;
+    replay_scenario_count: number;
+    replay_failed_count: number;
+    premium_block_count: number;
+    routed_to_recommended_count: number;
+    rejected_sensitive_scenario_count: number;
+    official_model_source_count: number;
+    paper_source_count: number;
+    model_calls: string;
+    network_access: string;
+    dataset_downloaded: boolean;
+    raw_public_benchmark_text_returned: boolean;
+    raw_fixture_snippets_returned: boolean;
+    raw_outputs_returned: boolean;
+  };
+  source_anchors: LegalDocumentBenchmarkRoutePlanResearchAlignmentSource[];
+  source_urls: string[];
+  alignment_dimensions: Array<{
+    id: string;
+    title: string;
+    source_ids: string[];
+    scenario_ids: string[];
+    user_need_ids: string[];
+    route_requirement: string;
+    release_gate_links: string[];
+  }>;
+  alignment_rows: LegalDocumentBenchmarkRoutePlanResearchAlignmentRow[];
+  checks: LegalDocumentBenchmarkRoutePlanResearchAlignmentCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  linked_replay_summary: Record<string, string | number | boolean | null>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7520,6 +7606,11 @@ type LegalDocumentBenchmarkRoutePlanResponse = {
 type LegalDocumentBenchmarkRoutePlanReplayResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlanReplay;
+};
+
+type LegalDocumentBenchmarkRoutePlanResearchAlignmentResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlanResearchAlignment;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -9458,6 +9549,37 @@ export async function evaluateLegalDocumentBenchmarkRoutePlanReplay(
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlanReplay;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlanResearchAlignment(): Promise<LegalDocumentBenchmarkRoutePlanResearchAlignment> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/research-alignment',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanResearchAlignmentResponse
+    | LegalDocumentBenchmarkRoutePlanResearchAlignment;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlanResearchAlignment;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlanResearchAlignment> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/research-alignment',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanResearchAlignmentResponse
+    | LegalDocumentBenchmarkRoutePlanResearchAlignment;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlanResearchAlignment;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {
