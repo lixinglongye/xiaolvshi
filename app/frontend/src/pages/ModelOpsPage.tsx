@@ -55,6 +55,7 @@ import {
   getModelOpsLegalBenchmarkDefaultPromotionChecklist,
   getModelOpsLegalBenchmarkDefaultPromotionSignoffPacket,
   getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
+  getModelOpsLegalBenchmarkDefaultPromotionObservationGate,
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
@@ -104,6 +105,7 @@ import {
   type ModelOpsLegalBenchmarkDefaultPromotionChecklist,
   type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket,
   type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
+  type ModelOpsLegalBenchmarkDefaultPromotionObservationGate,
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
@@ -716,6 +718,9 @@ function Inner() {
   const [legalBenchmarkDefaultPromotionExecutionHandoff, setLegalBenchmarkDefaultPromotionExecutionHandoff] =
     useState<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff | null>(null);
   const [legalBenchmarkDefaultPromotionExecutionHandoffError, setLegalBenchmarkDefaultPromotionExecutionHandoffError] = useState('');
+  const [legalBenchmarkDefaultPromotionObservationGate, setLegalBenchmarkDefaultPromotionObservationGate] =
+    useState<ModelOpsLegalBenchmarkDefaultPromotionObservationGate | null>(null);
+  const [legalBenchmarkDefaultPromotionObservationGateError, setLegalBenchmarkDefaultPromotionObservationGateError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -757,6 +762,7 @@ function Inner() {
     setLegalBenchmarkDefaultPromotionChecklist(payload.legal_benchmark_default_promotion_checklist ?? null);
     setLegalBenchmarkDefaultPromotionSignoffPacket(payload.legal_benchmark_default_promotion_signoff_packet ?? null);
     setLegalBenchmarkDefaultPromotionExecutionHandoff(payload.legal_benchmark_default_promotion_execution_handoff ?? null);
+    setLegalBenchmarkDefaultPromotionObservationGate(payload.legal_benchmark_default_promotion_observation_gate ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -860,6 +866,8 @@ function Inner() {
     setLegalBenchmarkDefaultPromotionSignoffPacket(null);
     setLegalBenchmarkDefaultPromotionExecutionHandoffError('');
     setLegalBenchmarkDefaultPromotionExecutionHandoff(null);
+    setLegalBenchmarkDefaultPromotionObservationGateError('');
+    setLegalBenchmarkDefaultPromotionObservationGate(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -921,6 +929,7 @@ function Inner() {
         legalBenchmarkDefaultPromotionChecklistResult,
         legalBenchmarkDefaultPromotionSignoffPacketResult,
         legalBenchmarkDefaultPromotionExecutionHandoffResult,
+        legalBenchmarkDefaultPromotionObservationGateResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -1000,6 +1009,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_benchmark_default_promotion_execution_handoff,
           getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_benchmark_default_promotion_observation_gate,
+          getModelOpsLegalBenchmarkDefaultPromotionObservationGate,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1517,6 +1530,27 @@ function Inner() {
         ) {
           setLegalBenchmarkDefaultPromotionExecutionHandoffError(
             'Legal benchmark default-promotion execution handoff failed to load.',
+          );
+        }
+      }
+      if (legalBenchmarkDefaultPromotionObservationGateResult.status === 'fulfilled') {
+        setLegalBenchmarkDefaultPromotionObservationGate(legalBenchmarkDefaultPromotionObservationGateResult.value);
+      } else {
+        console.error(legalBenchmarkDefaultPromotionObservationGateResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalBenchmarkDefaultPromotionObservationGate(
+            modelOpsResult.value.legal_benchmark_default_promotion_observation_gate ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_benchmark_default_promotion_observation_gate
+          )
+        ) {
+          setLegalBenchmarkDefaultPromotionObservationGateError(
+            'Legal benchmark default-promotion observation gate failed to load.',
           );
         }
       }
@@ -2261,6 +2295,21 @@ function Inner() {
     activeLegalBenchmarkDefaultPromotionExecutionHandoff?.checks ?? [];
   const legalBenchmarkDefaultPromotionExecutionHandoffPrivacyEntries = boundaryDisplayEntries(
     activeLegalBenchmarkDefaultPromotionExecutionHandoff?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
+  const activeLegalBenchmarkDefaultPromotionObservationGate =
+    legalBenchmarkDefaultPromotionObservationGate
+    ?? data?.legal_benchmark_default_promotion_observation_gate
+    ?? null;
+  const legalBenchmarkDefaultPromotionObservationGateRows =
+    activeLegalBenchmarkDefaultPromotionObservationGate?.observation_rows ?? [];
+  const legalBenchmarkDefaultPromotionObservationGateRollbackWindowRows =
+    activeLegalBenchmarkDefaultPromotionObservationGate?.rollback_window_rows ?? [];
+  const legalBenchmarkDefaultPromotionObservationGateSourceRows =
+    activeLegalBenchmarkDefaultPromotionObservationGate?.source_status_rows ?? [];
+  const legalBenchmarkDefaultPromotionObservationGateChecks =
+    activeLegalBenchmarkDefaultPromotionObservationGate?.checks ?? [];
+  const legalBenchmarkDefaultPromotionObservationGatePrivacyEntries = boundaryDisplayEntries(
+    activeLegalBenchmarkDefaultPromotionObservationGate?.privacy_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
     ? [
@@ -7409,6 +7458,278 @@ function Inner() {
                 {legalBenchmarkDefaultPromotionExecutionHandoffError && (
                   <div className="mt-2 text-xs font-semibold text-red-700">
                     {legalBenchmarkDefaultPromotionExecutionHandoffError}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalBenchmarkDefaultPromotionObservationGate || legalBenchmarkDefaultPromotionObservationGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion observation gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate?.summary.source_count)} sources /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate?.summary.observation_row_count)} observation rows /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate?.summary.rollback_window_clear_count)} rollback clear
+                </div>
+              </div>
+              {activeLegalBenchmarkDefaultPromotionObservationGate && (
+                <Badge variant="outline" className={statusClass(activeLegalBenchmarkDefaultPromotionObservationGate.status)}>
+                  {activeLegalBenchmarkDefaultPromotionObservationGate.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalBenchmarkDefaultPromotionObservationGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate.summary.observation_ready_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate.summary.review_required_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate.summary.blocked_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate.summary.rollback_required_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">rollback required</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionObservationGate.summary.execution_handoff_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">execution handoff</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionObservationGate.summary.rollback_window_clear_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">rollback clear</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionObservationGate.decision.default_change_allowed_by_observation_gate)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionObservationGate.decision.rollback_execution_allowed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">rollback execution</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Source</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Counts</TableHead>
+                          <TableHead>Boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalBenchmarkDefaultPromotionObservationGateSourceRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.label}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_key}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.observation_status)}>
+                                {row.observation_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-600">
+                                source {row.source_status.replace(/_/g, ' ')}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>rows {formatNumber(row.row_count)}</div>
+                              <div>blocking {formatNumber(row.blocking_count)}</div>
+                              <div>warning {formatNumber(row.warning_count)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>config {String(row.configuration_written)}</div>
+                              <div>approval {String(row.approval_record_written)}</div>
+                              <div>signoff {String(row.signoff_record_written)}</div>
+                              <div>rollback {String(row.rollback_executed)}</div>
+                              <div>gateway {String(row.gateway_called)}</div>
+                              <div>network {String(row.network_called)}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Observation checks</h3>
+                    <div className="space-y-3">
+                      {legalBenchmarkDefaultPromotionObservationGateChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {check.source_key} / {check.decision_effect.replace(/_/g, ' ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalBenchmarkDefaultPromotionObservationGate.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Requirement</TableHead>
+                        <TableHead>Observation</TableHead>
+                        <TableHead>Gate</TableHead>
+                        <TableHead>Checks</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionObservationGateRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.requirement_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>post-change {row.post_change_observation_status.replace(/_/g, ' ')}</div>
+                            <div>route telemetry {row.route_telemetry_status.replace(/_/g, ' ')}</div>
+                            <div>benchmark smoke {row.legal_benchmark_smoke_status.replace(/_/g, ' ')}</div>
+                            <div>incident {row.incident_status.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.observation_gate_status)}>
+                              {row.observation_gate_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.proposed_default_model}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">
+                              change allowed {String(row.default_change_allowed_by_observation_gate)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {row.observation_checks.slice(0, 4).map((check) => (
+                              <div key={check}>{check}</div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            <div>{row.observation_action}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.slice(0, 4).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rollback window</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Checks</TableHead>
+                        <TableHead>Boundary</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionObservationGateRollbackWindowRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_observation_row_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>window {row.rollback_window_status.replace(/_/g, ' ')}</div>
+                            <div>incident {row.incident_status.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">{row.rollback_owner_role}</TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {row.rollback_window_checks.slice(0, 4).map((check) => (
+                              <div key={check}>{check}</div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>rollback_execution_allowed {String(row.rollback_execution_allowed)}</div>
+                            <div>rollback_executed {String(row.rollback_executed)}</div>
+                            <div>traffic_shift_allowed {String(row.traffic_shift_allowed)}</div>
+                            <div>configuration_change_allowed {String(row.configuration_change_allowed)}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Observation boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalBenchmarkDefaultPromotionObservationGatePrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source links</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeLegalBenchmarkDefaultPromotionObservationGate.source_links).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: <span className="font-mono text-[11px]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  configuration_written: {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.configuration_written)} / env file written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.env_file_written)} / approval record written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.approval_record_written)} / signoff record written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.signoff_record_written)} / rollback_executed:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.rollback_executed)} / gateway_called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.gateway_called)} / network_called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.network_called)} / newapi_called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.newapi_called)} / traffic_shifted:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.traffic_shifted)} / model output returned:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionObservationGate.summary.raw_model_output_returned)}
+                </div>
+                {legalBenchmarkDefaultPromotionObservationGateError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalBenchmarkDefaultPromotionObservationGateError}
                   </div>
                 )}
               </>

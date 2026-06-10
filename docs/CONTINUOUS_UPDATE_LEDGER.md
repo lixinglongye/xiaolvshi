@@ -1,5 +1,25 @@
 # Continuous Update Ledger
 
+Current legal benchmark default-promotion observation gate slice:
+`modelops-legal-benchmark-default-promotion-observation-gate` adds a
+metadata-only post-execution observation gate for cheap-first legal default
+review. It turns external execution handoff rows into observation rows,
+rollback-window rows, route telemetry checks, legal benchmark smoke checks, and
+incident-status review before maintainers accept any post-change quality claim.
+The endpoint is available at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-observation-gate`, the
+aggregate ModelOps payload includes
+`legal_benchmark_default_promotion_observation_gate`, and the evidence is
+visible on `/model-ops` between the execution handoff and evidence handoff
+sections. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, public datasets, or the network; write configuration; write
+env files; record approvals or signoffs; collect approver identity; execute
+rollback; change defaults; shift traffic; return raw legal text, fixture
+snippets, generated document text, prompts, payloads, model output, gateway
+responses, emails, identifiers, or credentials; or claim post-change production
+quality, public benchmark scores, legal advice, rollback execution, or
+automatic default changes.
+
 Current legal benchmark default-promotion execution handoff slice:
 `modelops-legal-benchmark-default-promotion-execution-handoff` adds a
 metadata-only execution handoff and rollback gate for cheap-first legal default

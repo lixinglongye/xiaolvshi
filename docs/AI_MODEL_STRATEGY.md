@@ -66,6 +66,16 @@ write configuration or `.env`; record approvals or signoffs; execute rollback;
 shift traffic; or return raw legal text, prompts, payloads, model outputs,
 gateway responses, emails, identifiers, or credentials.
 
+`modelops-legal-benchmark-default-promotion-observation-gate` is the
+metadata-only post-execution observation gate after the legal benchmark
+default-promotion execution handoff. It keeps post-change quality claims
+disabled until external route telemetry, legal benchmark smoke, rollback-window,
+and incident-status metadata are attached and clear. It does not call NewAPI,
+Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network;
+write configuration or `.env`; record approvals or signoffs; execute rollback;
+shift traffic; or return raw legal text, prompts, payloads, model outputs,
+gateway responses, emails, identifiers, or credentials.
+
 `modelops-gemini-official-cheap-first-source-review` is the metadata-only
 source and price-ratio review for the cheap-first Gemini text defaults. It
 links the official Gemini models and pricing pages as review anchors, compares

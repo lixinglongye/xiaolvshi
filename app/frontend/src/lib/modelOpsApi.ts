@@ -5968,6 +5968,155 @@ export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkDefaultPromotionObservationGateSourceStatusRow = {
+  id: string;
+  label: string;
+  source_key: string;
+  source_status: string;
+  observation_status: string;
+  row_count: number;
+  blocking_count: number;
+  warning_count: number;
+  configuration_written: boolean;
+  approval_record_written: boolean;
+  signoff_record_written: boolean;
+  rollback_executed: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  raw_payload_echoed: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionObservationGateRow = {
+  id: string;
+  source_handoff_row_id: string;
+  source_signoff_item_id: string;
+  requirement_id: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  model_cost_tier: string;
+  execution_status: string;
+  post_change_observation_status: string;
+  route_telemetry_status: string;
+  legal_benchmark_smoke_status: string;
+  rollback_window_status: string;
+  incident_status: string;
+  observation_gate_status: string;
+  observation_checks: string[];
+  blocking_reason_codes: string[];
+  reason_codes: string[];
+  configuration_change_allowed: boolean;
+  env_file_write_allowed: boolean;
+  approval_record_write_allowed: boolean;
+  signoff_record_write_allowed: boolean;
+  gateway_call_allowed: boolean;
+  traffic_shift_allowed: boolean;
+  rollback_execution_allowed: boolean;
+  default_change_allowed_by_observation_gate: boolean;
+  observation_action: string;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionObservationGateRollbackWindowRow = {
+  id: string;
+  source_observation_row_id: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  rollback_window_status: string;
+  incident_status: string;
+  rollback_owner_role: string;
+  rollback_window_checks: string[];
+  rollback_execution_allowed: boolean;
+  rollback_executed: boolean;
+  traffic_shift_allowed: boolean;
+  configuration_change_allowed: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionObservationGateCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionObservationGate = {
+  id: string;
+  title: string;
+  status: string;
+  observation_policy: {
+    post_change_observation_required: boolean;
+    route_telemetry_required: boolean;
+    legal_benchmark_smoke_required: boolean;
+    rollback_window_required: boolean;
+    incident_triage_required: boolean;
+    configuration_change_allowed: boolean;
+    env_file_write_allowed: boolean;
+    approval_record_write_allowed: boolean;
+    signoff_record_write_allowed: boolean;
+    gateway_call_allowed: boolean;
+    newapi_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    rollback_execution_allowed: boolean;
+    requires_execution_handoff_not_blocked: boolean;
+    requires_metadata_only_boundary: boolean;
+  };
+  decision: {
+    status: string;
+    observation_gate_ready: boolean;
+    default_change_allowed_by_observation_gate: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    rollback_execution_allowed: boolean;
+    release_action: string;
+  };
+  summary: {
+    source_count: number;
+    observation_row_count: number;
+    observation_ready_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    rollback_required_count: number;
+    not_run_count: number;
+    rollback_window_clear_count: number;
+    execution_handoff_status: string;
+    handoff_row_count: number;
+    ready_for_external_execution_count: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_observation_gate: boolean;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    signoff_record_written: boolean;
+    rollback_executed: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_payload_echoed: boolean;
+  };
+  source_status_rows: ModelOpsLegalBenchmarkDefaultPromotionObservationGateSourceStatusRow[];
+  observation_rows: ModelOpsLegalBenchmarkDefaultPromotionObservationGateRow[];
+  rollback_window_rows: ModelOpsLegalBenchmarkDefaultPromotionObservationGateRollbackWindowRow[];
+  checks: ModelOpsLegalBenchmarkDefaultPromotionObservationGateCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  required_observation_roles: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -6046,6 +6195,7 @@ export type ModelOpsResponse = {
   legal_benchmark_default_promotion_checklist?: ModelOpsLegalBenchmarkDefaultPromotionChecklist;
   legal_benchmark_default_promotion_signoff_packet?: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket;
   legal_benchmark_default_promotion_execution_handoff?: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff;
+  legal_benchmark_default_promotion_observation_gate?: ModelOpsLegalBenchmarkDefaultPromotionObservationGate;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -6128,6 +6278,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     budget_rows?: unknown;
     canary_steps?: unknown;
     observation_rows?: unknown;
+    rollback_window_rows?: unknown;
     promotion_items?: unknown;
     approval_items?: unknown;
     rollback_drill_items?: unknown;
@@ -6209,6 +6360,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.checklist_rows) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.signoff_items) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.handoff_rows) && Array.isArray(payload.rollback_gate_items) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.observation_rows) && Array.isArray(payload.rollback_window_rows) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
@@ -7008,6 +7160,23 @@ export async function evaluateModelOpsLegalBenchmarkDefaultPromotionExecutionHan
 ): Promise<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff> {
   return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff>({
     url: '/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function getModelOpsLegalBenchmarkDefaultPromotionObservationGate(): Promise<ModelOpsLegalBenchmarkDefaultPromotionObservationGate> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionObservationGate>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-observation-gate',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsLegalBenchmarkDefaultPromotionObservationGate(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsLegalBenchmarkDefaultPromotionObservationGate> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionObservationGate>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-observation-gate',
     method: 'POST',
     data: payload,
   });

@@ -4364,6 +4364,16 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff', 'model-ops legal benchmark default-promotion execution handoff endpoint'),
   () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_execution_handoff', 'model-ops legal benchmark default-promotion execution handoff response binding'),
   () => assertIncludes(modelOpsApi, 'rollback_gate_items?: unknown', 'model-ops legal benchmark default-promotion execution handoff payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionObservationGate', 'model-ops legal benchmark default-promotion observation gate type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionObservationGateRow', 'model-ops legal benchmark default-promotion observation gate row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionObservationGateSourceStatusRow', 'model-ops legal benchmark default-promotion observation gate source row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionObservationGateRollbackWindowRow', 'model-ops legal benchmark default-promotion observation gate rollback row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionObservationGateCheck', 'model-ops legal benchmark default-promotion observation gate check type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkDefaultPromotionObservationGate', 'model-ops legal benchmark default-promotion observation gate API helper'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsLegalBenchmarkDefaultPromotionObservationGate', 'model-ops legal benchmark default-promotion observation gate evaluation helper'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-observation-gate', 'model-ops legal benchmark default-promotion observation gate endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_observation_gate', 'model-ops legal benchmark default-promotion observation gate response binding'),
+  () => assertIncludes(modelOpsApi, 'rollback_window_rows?: unknown', 'model-ops legal benchmark default-promotion observation gate payload guard'),
   () => assertIncludes(modelOpsPage, 'Legal fixture cheap-first regression budget', 'model-ops legal fixture regression budget panel'),
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_budget', 'model-ops legal fixture regression budget default-change boundary'),
   () => assertIncludes(modelOpsPage, 'source_regression_status', 'model-ops legal fixture regression budget source status summary'),
@@ -4400,6 +4410,16 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'rollback_executed', 'model-ops legal benchmark default-promotion execution rollback executed boundary'),
   () => assertIncludes(modelOpsPage, 'traffic_shifted', 'model-ops legal benchmark default-promotion execution traffic boundary'),
   () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops legal benchmark default-promotion execution config boundary'),
+  () => assertIncludes(modelOpsPage, 'Legal benchmark default-promotion observation gate', 'model-ops legal benchmark default-promotion observation gate panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkDefaultPromotionObservationGate', 'model-ops legal benchmark default-promotion observation gate active binding'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionObservationGateRows', 'model-ops legal benchmark default-promotion observation rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionObservationGateRollbackWindowRows', 'model-ops legal benchmark default-promotion observation rollback rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionObservationGateSourceRows', 'model-ops legal benchmark default-promotion observation source rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionObservationGateChecks', 'model-ops legal benchmark default-promotion observation checks'),
+  () => assertIncludes(modelOpsPage, 'default_change_allowed_by_observation_gate', 'model-ops legal benchmark default-promotion observation default-change boundary'),
+  () => assertIncludes(modelOpsPage, 'post_change_observation_status', 'model-ops legal benchmark default-promotion observation status binding'),
+  () => assertIncludes(modelOpsPage, 'rollback_window_status', 'model-ops legal benchmark default-promotion observation rollback-window binding'),
+  () => assertIncludes(modelOpsPage, 'incident_status', 'model-ops legal benchmark default-promotion observation incident binding'),
   () => assertIncludes(modelOpsApi, 'legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff response binding'),
   () => assertIncludes(modelOpsApi, 'gate_rows', 'model-ops legal fixture benchmark gate payload guard'),
   () => assertIncludes(modelOpsApi, 'handoff_rows?: unknown', 'model-ops legal fixture evidence handoff payload guard'),
@@ -4477,8 +4497,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion observation gate</h2>',
+    'model-ops legal benchmark default-promotion observation gate follows execution handoff',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion observation gate</h2>',
     '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
-    'model-ops legal benchmark default-promotion execution handoff precedes evidence handoff',
+    'model-ops legal benchmark default-promotion observation gate precedes evidence handoff',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -5040,13 +5066,24 @@ assertNotMatches(
 const modelOpsLegalBenchmarkDefaultPromotionExecutionHandoffPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion observation gate</h2>',
   'model-ops legal benchmark default-promotion execution handoff section',
 );
 assertNotMatches(
   modelOpsLegalBenchmarkDefaultPromotionExecutionHandoffPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY|raw_prompt|prompt_payload|raw_payload|raw_model_output_value|raw_model_output_text|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email_address|phone_number|identity_value|identity_token|messages|fixture_snippet|benchmark_sample|input_excerpt|output_text)\b/i,
   'model-ops legal benchmark default-promotion execution handoff no secrets or raw benchmark/model/payload fields',
+);
+const modelOpsLegalBenchmarkDefaultPromotionObservationGatePanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion observation gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  'model-ops legal benchmark default-promotion observation gate section',
+);
+assertNotMatches(
+  modelOpsLegalBenchmarkDefaultPromotionObservationGatePanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY|raw_prompt|prompt_payload|raw_payload|raw_model_output_value|raw_model_output_text|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email_address|phone_number|identity_value|identity_token|messages|fixture_snippet|benchmark_sample|input_excerpt|output_text)\b/i,
+  'model-ops legal benchmark default-promotion observation gate no secrets or raw benchmark/model/payload fields',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
