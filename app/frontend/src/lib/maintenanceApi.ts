@@ -7624,6 +7624,54 @@ export type LegalDocumentBenchmarkRoutePlanExecutionClaimGate = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkReleaseScorecardComponentRow = {
+  id: string;
+  title: string;
+  status: string;
+  source_status: string;
+  release_action: string;
+  metrics: Record<string, number | string | boolean>;
+  blocking_ids: string[];
+  warning_ids: string[];
+};
+
+export type LegalDocumentBenchmarkReleaseScorecard = {
+  id: string;
+  title: string;
+  status: string;
+  policy_version: string;
+  summary: {
+    component_count: number;
+    ready_component_count: number;
+    review_required_component_count: number;
+    blocked_component_count: number;
+    scorecard_score: number;
+    document_case_count: number;
+    covered_document_type_count: number;
+    fact_case_count: number;
+    route_plan_status: string;
+    execution_claim_gate_status: string;
+    release_claim_ready: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    benchmark_executed: boolean;
+    release_record_written: boolean;
+    configuration_written: boolean;
+    traffic_shifted: boolean;
+    raw_text_returned: boolean;
+  };
+  component_rows: LegalDocumentBenchmarkReleaseScorecardComponentRow[];
+  blocking_component_ids: string[];
+  review_component_ids: string[];
+  source_summaries: Record<string, Record<string, number | string | boolean>>;
+  release_decision: Record<string, boolean | string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string>;
+  claim_boundary: Record<string, boolean | string>;
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -8025,6 +8073,11 @@ type LegalDocumentBenchmarkRoutePlanExecutionReviewPacketResponse = {
 type LegalDocumentBenchmarkRoutePlanExecutionClaimGateResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
+};
+
+type LegalDocumentBenchmarkReleaseScorecardResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkReleaseScorecard;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -10149,6 +10202,20 @@ export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate(
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionClaimGate;
+}
+
+export async function getLegalDocumentBenchmarkReleaseScorecard(): Promise<LegalDocumentBenchmarkReleaseScorecard> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-release-scorecard',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkReleaseScorecardResponse
+    | LegalDocumentBenchmarkReleaseScorecard;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkReleaseScorecard;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {

@@ -76,6 +76,9 @@ def test_maintenance_profile_links_reviewable_evidence():
         "Legal document benchmark route plan execution claim gate"
         in profile["release_management"]["release_readiness_controls"]
     )
+    assert "Legal document benchmark release scorecard" in profile["release_management"][
+        "release_readiness_controls"
+    ]
     assert "Legal document fact consistency benchmark" in profile["release_management"]["release_readiness_controls"]
     assert "Small legal document benchmark runbook evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
@@ -394,7 +397,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
     assert "user-need legal-document benchmark evidence bridges" in quality_signal["description"]
     assert "feedback user-need legal-document benchmark backlog rows" in quality_signal["description"]
-    assert "metadata-only legal document route-plan replay, research-alignment, execution-readiness, execution-result archive, release-evidence handoff, execution-review packet, and execution claim gate evidence" in quality_signal[
+    assert "metadata-only legal document route-plan replay, research-alignment, execution-readiness, execution-result archive, release-evidence handoff, execution-review packet, execution claim gate, and release-scorecard evidence" in quality_signal[
         "description"
     ]
     assert "metadata-only legal document fact consistency benchmark evidence" in quality_signal["description"]
@@ -405,7 +408,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
     assert "user-need legal-document benchmark evidence review" in quality_signal["responsibility"]
     assert "feedback-to-benchmark backlog review" in quality_signal["responsibility"]
-    assert "route-plan replay, research-alignment, execution-readiness, execution-result archive, handoff, review-packet, and claim-gate review" in quality_signal[
+    assert "route-plan replay, research-alignment, execution-readiness, execution-result archive, handoff, review-packet, claim-gate, and release-scorecard review" in quality_signal[
         "responsibility"
     ]
     assert "fact-consistency benchmark review" in quality_signal["responsibility"]
@@ -425,6 +428,11 @@ def test_maintenance_profile_links_reviewable_evidence():
         "evidence_paths"
     ]
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_CLAIM_GATE.md" in quality_signal["evidence_paths"]
+    assert "app/backend/services/legal_document_benchmark_release_scorecard.py" in quality_signal["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_benchmark_release_scorecard.py" in quality_signal[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_RELEASE_SCORECARD.md" in quality_signal["evidence_paths"]
     assert "public benchmark research mappings" in model_signal["description"]
     assert "Gemini variant matrix review" in model_signal["description"]
     assert "Gemini/NewAPI observed model extraction evidence" in model_signal["description"]
@@ -788,6 +796,21 @@ def test_maintenance_profile_links_reviewable_evidence():
         and "approval" in guardrail
         and "default changes" in guardrail
         and "traffic shifts" in guardrail
+        and "credentials" in guardrail
+        for guardrail in profile["application_guardrails"]
+    )
+    assert any(
+        "legal document benchmark release scorecard is metadata-only aggregate release evidence"
+        in guardrail
+        and "coverage matrix" in guardrail
+        and "fact consistency" in guardrail
+        and "cheap-first route plan" in guardrail
+        and "execution claim gate" in guardrail
+        and "public benchmark scores" in guardrail
+        and "live provider execution" in guardrail
+        and "production legal quality" in guardrail
+        and "real client-document coverage" in guardrail
+        and "raw legal text" in guardrail
         and "credentials" in guardrail
         for guardrail in profile["application_guardrails"]
     )

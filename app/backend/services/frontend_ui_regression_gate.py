@@ -57,6 +57,7 @@ PAGE_GATES = (
             "legal document benchmark route-plan execution result handoff",
             "legal document benchmark route-plan execution review packet",
             "legal document benchmark route-plan execution claim gate",
+            "legal document benchmark release scorecard",
             "public benchmark license gate",
             "legal benchmark fixture crosswalk",
             "legal benchmark research refresh",
@@ -245,6 +246,7 @@ class FrontendUiRegressionGateService:
                     "ModelOps legal benchmark risk bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, routing writes, dataset downloads, public benchmark scores, raw legal text, model output, prompts, or credentials.",
                     "ModelOps user-need release bridge UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google calls, gateway calls, route writes, dataset downloads, public benchmark scores, raw legal text, public sample text, model output, prompts, emails, identifiers, or credentials.",
                     "Small legal document benchmark runbook evidence UI evidence is metadata only: no NewAPI/Gemini/OpenAI/Google/gateway/model/network calls, no dataset downloads, no raw legal text, snippets, generated text, prompts, model output, gateway payloads, credentials, or public benchmark/production quality/client-delivery claims.",
+                    "Legal document benchmark release scorecard UI evidence is metadata only: it aggregates synthetic suite, coverage matrix, fact consistency, cheap-first route plan, coverage claim policy, and execution claim gate statuses without NewAPI/Gemini/OpenAI/Google/gateway/model/network calls, benchmark execution, dataset downloads, release writes, default changes, traffic shifts, public benchmark scores, production legal quality claims, raw legal text, fixture snippets, prompts, model output, gateway payloads, or credentials.",
                     "ModelOps cheap-first escalation budget UI evidence is metadata only: no gateway calls, automatic retries, traffic shifts, raw prompts, raw model output, legal text, request bodies, response bodies, headers, identifiers, or credentials.",
                     "ModelOps route telemetry UI evidence is metadata only: repository, result archive, cost ledger, ops summary, triage queue, and remediation panels use sanitized route counters and never render prompts, legal text, request bodies, response bodies, headers, raw model output, emails, or credentials.",
                     "Public benchmark license gate UI evidence is metadata only: no public benchmark sample text, fixture snippets, model output, gateway payloads, dataset downloads, public score claims, or credentials.",
@@ -407,6 +409,12 @@ class FrontendUiRegressionGateService:
                     "page": "/maintenance",
                     "current_control": "Typecheck/build plus npm run ui:regression keep the small legal document benchmark runbook evidence panel, endpoint binding, runbook_steps, evidence_rows, document_benchmark_rows, fact_consistency_rows, delivery_gate_rows, privacy boundary, and claim boundary in the maintenance source contract.",
                     "regression_target": "Add browser-level mocked runbook evidence API checks for ready, review-required, and blocked rows while asserting no raw legal text, snippets, generated text, prompts, model output, gateway payloads, credentials, public benchmark score claims, production quality claims, or client-delivery claims render.",
+                },
+                {
+                    "id": "legal-document-benchmark-release-scorecard-regresses",
+                    "page": "/maintenance",
+                    "current_control": "Typecheck/build plus npm run ui:regression keep the legal document benchmark release scorecard panel, endpoint binding, component_rows, release_decision, privacy boundary, and claim boundary in the maintenance source contract.",
+                    "regression_target": "Add browser-level mocked scorecard API checks for ready, review_required, and blocked components while asserting no raw legal text, fixture snippets, prompts, model output, gateway payloads, credentials, public scores, production quality claims, default changes, or traffic shifts render.",
                 },
                 {
                     "id": "raw-private-output-renders",

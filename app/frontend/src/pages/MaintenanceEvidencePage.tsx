@@ -56,6 +56,7 @@ import {
   evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
   getLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
   evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate,
+  getLegalDocumentBenchmarkReleaseScorecard,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -183,6 +184,7 @@ import {
   type LegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
   type LegalDocumentBenchmarkRoutePlanExecutionReviewPacket,
   type LegalDocumentBenchmarkRoutePlanExecutionClaimGate,
+  type LegalDocumentBenchmarkReleaseScorecard,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -946,6 +948,8 @@ function Inner() {
   ] = useState<LegalDocumentBenchmarkRoutePlanExecutionClaimGate | null>(null);
   const [routePlanExecutionClaimGateError, setRoutePlanExecutionClaimGateError] = useState('');
   const [routePlanExecutionClaimGateLoading, setRoutePlanExecutionClaimGateLoading] = useState(false);
+  const [legalDocumentBenchmarkReleaseScorecard, setLegalDocumentBenchmarkReleaseScorecard] =
+    useState<LegalDocumentBenchmarkReleaseScorecard | null>(null);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1291,6 +1295,11 @@ function Inner() {
             setLegalDocumentBenchmarkRoutePlanExecutionClaimGate(
               value as LegalDocumentBenchmarkRoutePlanExecutionClaimGate,
             ),
+        },
+        {
+          label: 'Legal document benchmark release scorecard',
+          run: getLegalDocumentBenchmarkReleaseScorecard,
+          apply: (value) => setLegalDocumentBenchmarkReleaseScorecard(value as LegalDocumentBenchmarkReleaseScorecard),
         },
         {
           label: 'Legal document benchmark fixtures',
@@ -11165,6 +11174,199 @@ function Inner() {
                         {command}
                       </code>
                     ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkReleaseScorecard && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark release scorecard
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkReleaseScorecard.summary.ready_component_count} ready /{' '}
+                      {legalDocumentBenchmarkReleaseScorecard.summary.review_required_component_count} review /{' '}
+                      {legalDocumentBenchmarkReleaseScorecard.summary.blocked_component_count} blocked components
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalDocumentBenchmarkReleaseScorecard.status] ?? statusClass.warn}
+                  >
+                    {displayToken(legalDocumentBenchmarkReleaseScorecard.status)}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-6">
+                  {[
+                    { label: 'scorecard score', value: legalDocumentBenchmarkReleaseScorecard.summary.scorecard_score },
+                    { label: 'components', value: legalDocumentBenchmarkReleaseScorecard.summary.component_count },
+                    { label: 'ready', value: legalDocumentBenchmarkReleaseScorecard.summary.ready_component_count },
+                    {
+                      label: 'review',
+                      value: legalDocumentBenchmarkReleaseScorecard.summary.review_required_component_count,
+                    },
+                    { label: 'blocked', value: legalDocumentBenchmarkReleaseScorecard.summary.blocked_component_count },
+                    {
+                      label: 'release claim',
+                      value: String(legalDocumentBenchmarkReleaseScorecard.summary.release_claim_ready),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Component</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Source status</TableHead>
+                        <TableHead>Release action</TableHead>
+                        <TableHead>Metrics</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentBenchmarkReleaseScorecard.component_rows.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.title}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass[row.status] ?? statusClass.warn}>
+                              {displayToken(row.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            {displayToken(row.source_status)}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            {displayToken(row.release_action)}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div className="space-y-1">
+                              {Object.entries(row.metrics)
+                                .slice(0, 5)
+                                .map(([key, value]) => (
+                                  <div key={`${row.id}-${key}`}>
+                                    {displayToken(key)}: {String(value)}
+                                  </div>
+                                ))}
+                            </div>
+                            {[...row.blocking_ids, ...row.warning_ids].length > 0 && (
+                              <div className="mt-2 flex max-w-[360px] flex-wrap gap-1">
+                                {[...row.blocking_ids, ...row.warning_ids].slice(0, 6).map((code) => (
+                                  <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                    {displayToken(code)}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release decision</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(legalDocumentBenchmarkReleaseScorecard.release_decision)
+                        .slice(0, 10)
+                        .map(([key, value]) => (
+                          <div key={`scorecard-decision-${key}`}>
+                            {displayToken(key)}: {includedBoundaryLabel(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Privacy boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(legalDocumentBenchmarkReleaseScorecard.privacy_boundary)
+                        .slice(0, 10)
+                        .map(([key, value]) => (
+                          <div key={`scorecard-privacy-${key}`}>
+                            {displayToken(key)}: {includedBoundaryLabel(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Claim boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {safeBoundaryEntries(legalDocumentBenchmarkReleaseScorecard.claim_boundary)
+                        .slice(0, 10)
+                        .map(([key, value]) => (
+                          <div key={`scorecard-claim-${key}`}>
+                            {displayToken(key)}: {includedBoundaryLabel(value)}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source summaries</h3>
+                    <div className="space-y-3">
+                      {Object.entries(legalDocumentBenchmarkReleaseScorecard.source_summaries)
+                        .slice(0, 6)
+                        .map(([sourceId, summary]) => (
+                          <div key={sourceId} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="mb-1 font-mono text-[11px] font-semibold text-stone-950">
+                              {displayToken(sourceId)}
+                            </div>
+                            <div className="space-y-1 text-xs leading-5 text-stone-600">
+                              {Object.entries(summary)
+                                .slice(0, 4)
+                                .map(([key, value]) => (
+                                  <div key={`${sourceId}-${key}`}>
+                                    {displayToken(key)}: {String(value)}
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Scorecard actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkReleaseScorecard.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {legalDocumentBenchmarkReleaseScorecard.validation_commands.slice(0, 3).map((command) => (
+                        <code
+                          key={command}
+                          className="block rounded-[8px] bg-white px-3 py-2 text-xs leading-5 text-stone-700"
+                        >
+                          {command}
+                        </code>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>

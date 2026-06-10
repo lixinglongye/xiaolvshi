@@ -68,6 +68,7 @@ from services.legal_document_benchmark_route_plan_execution_review_packet import
 from services.legal_document_benchmark_route_plan_execution_claim_gate import (
     LegalDocumentBenchmarkRoutePlanExecutionClaimGateService,
 )
+from services.legal_document_benchmark_release_scorecard import LegalDocumentBenchmarkReleaseScorecardService
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1622,6 +1623,24 @@ async def build_legal_document_benchmark_route_plan_execution_claim_gate(payload
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanExecutionClaimGateService().evaluate(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-release-scorecard")
+async def get_legal_document_benchmark_release_scorecard():
+    """Return a metadata-only release scorecard for legal-document benchmark evidence."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkReleaseScorecardService().build_scorecard(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-release-scorecard")
+async def build_legal_document_benchmark_release_scorecard(payload: dict[str, Any]):
+    """Build a release scorecard from local structured benchmark evidence only."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkReleaseScorecardService().build_scorecard(payload),
     }
 
 

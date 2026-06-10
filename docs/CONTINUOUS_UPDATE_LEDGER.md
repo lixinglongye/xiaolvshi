@@ -1,5 +1,22 @@
 # Continuous Update Ledger
 
+Current legal document benchmark release scorecard slice:
+`legal-document-benchmark-release-scorecard` adds a metadata-only aggregate
+release scorecard after the route-plan execution claim gate. It joins the
+synthetic document benchmark suite, coverage matrix, fact consistency suite,
+cheap-first route plan, coverage claim policy, and execution claim gate into
+ready/review/block components for reviewer handoff. The endpoint is available
+at `/api/v1/maintenance/legal-review-benchmark/document-release-scorecard`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; execute benchmark runs; write release
+records, archive files, configuration, defaults, or traffic shifts; record
+approval; or claim public benchmark scores, live provider execution, production
+legal quality, real client-document coverage, or default changes. It returns
+metadata only and must not return public benchmark text, raw legal text,
+fixture snippets, generated document text, prompts, request bodies, response
+bodies, headers, model outputs, gateway responses, emails, identifiers, or
+credentials.
+
 Current legal document benchmark route-plan execution claim gate slice:
 `legal-document-benchmark-route-plan-execution-claim-gate` adds a
 metadata-only release/support claim gate after the execution-review packet. It

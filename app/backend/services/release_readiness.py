@@ -3447,6 +3447,53 @@ class ReleaseReadinessService:
                 ),
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-release-scorecard",
+                title="Legal document benchmark release scorecard",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_release_scorecard.py",
+                    "app/backend/tests/test_legal_document_benchmark_release_scorecard.py",
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/services/legal_document_fact_consistency_benchmark.py",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/services/legal_document_coverage_claim_policy.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_claim_gate.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_RELEASE_SCORECARD.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_release_scorecard.py "
+                    "tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py "
+                    "tests/test_legal_document_fact_consistency_benchmark.py "
+                    "tests/test_legal_document_benchmark_route_plan.py "
+                    "tests/test_legal_document_coverage_claim_policy.py "
+                    "tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py "
+                    "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+                    "tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && "
+                    "cd ../frontend && npm run typecheck && npm run ui:regression"
+                ),
+                manual_note=(
+                    "This builds a metadata-only legal-document benchmark release scorecard that aggregates "
+                    "synthetic document benchmark suite, coverage matrix, fact consistency suite, cheap-first "
+                    "route plan, coverage claim policy, and execution claim gate status into release-ready, "
+                    "review-required, or blocked components. It does not call NewAPI, Gemini, gateways, app AI "
+                    "endpoints, models, public datasets, or the network; execute benchmark runs by itself; "
+                    "write release records, archive files, configuration, defaults, or traffic shifts; record "
+                    "approval; claim public benchmark scores, live provider execution, production legal quality, "
+                    "real client-document coverage, default changes, or traffic shifts; or return raw legal text, "
+                    "fixture snippets, prompts, request bodies, response bodies, headers, generated text, model "
+                    "outputs, gateway responses, credentials, emails, or client identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage-ui",
                 title="Legal document benchmark coverage UI",
                 category="frontend_ui",

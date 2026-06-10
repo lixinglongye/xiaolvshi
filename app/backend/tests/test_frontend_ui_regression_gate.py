@@ -32,6 +32,7 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert "legal document benchmark route-plan execution result handoff" in rows["/maintenance"]["protected_panels"]
     assert "legal document benchmark route-plan execution review packet" in rows["/maintenance"]["protected_panels"]
     assert "legal document benchmark route-plan execution claim gate" in rows["/maintenance"]["protected_panels"]
+    assert "legal document benchmark release scorecard" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark fixture crosswalk" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]
@@ -202,6 +203,20 @@ def test_frontend_ui_regression_gate_is_metadata_only():
     assert "ModelOps legal benchmark risk bridge UI evidence is metadata only" in payload_text
     assert "ModelOps user-need release bridge UI evidence is metadata only" in payload_text
     assert "Small legal document benchmark runbook evidence UI evidence is metadata only" in payload_text
+    assert "Legal document benchmark release scorecard UI evidence is metadata only" in payload_text
+    assert "coverage matrix" in payload_text
+    assert "fact consistency" in payload_text
+    assert "cheap-first route plan" in payload_text
+    assert "execution claim gate" in payload_text
+    assert "benchmark execution" in payload_text
+    assert "release writes" in payload_text
+    assert "default changes" in payload_text
+    assert "traffic shifts" in payload_text
+    assert "production legal quality claims" in payload_text
+    assert "legal-document-benchmark-release-scorecard-regresses" in payload_text
+    assert "component_rows" in payload_text
+    assert "release_decision" in payload_text
+    assert "scorecard API checks" in payload_text
     assert "small-legal-document-benchmark-runbook-evidence-regresses" in payload_text
     assert "runbook_steps" in payload_text
     assert "evidence_rows" in payload_text

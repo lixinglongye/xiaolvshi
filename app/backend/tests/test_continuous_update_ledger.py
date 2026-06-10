@@ -734,6 +734,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan-execution-result-handoff" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-review-packet" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-claim-gate" in completed_ids
+    assert "legal-document-benchmark-release-scorecard" in completed_ids
     assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
@@ -1090,6 +1091,60 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_release_scorecard_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-release-scorecard"
+    )
+    assert legal_document_benchmark_release_scorecard_entry["category"] == "benchmark"
+    assert legal_document_benchmark_release_scorecard_entry["size"] == "medium"
+    assert legal_document_benchmark_release_scorecard_entry["status"] == "shipped"
+    assert "release scorecard" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "metadata-only" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "synthetic document benchmark suite" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "coverage matrix" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "fact consistency suite" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "cheap-first route plan" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "execution claim gate" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "public benchmark scores" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "live provider execution" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "raw legal text" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "credentials" in legal_document_benchmark_release_scorecard_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_release_scorecard.py" in legal_document_benchmark_release_scorecard_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_release_scorecard.py" in legal_document_benchmark_release_scorecard_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/maintenance.py" in legal_document_benchmark_release_scorecard_entry["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_RELEASE_SCORECARD.md" in legal_document_benchmark_release_scorecard_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-release-scorecard" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-suite" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-coverage" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-fact-consistency-benchmark" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-coverage-claim-policy" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-claim-gate" in legal_document_benchmark_release_scorecard_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_release_scorecard.py" in command
         for command in ledger["validation_commands"]
     )
     oss_maintenance_route_plan_research_alignment_entry = next(

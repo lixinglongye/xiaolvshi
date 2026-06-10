@@ -49,6 +49,16 @@ production quality, real client-document testing, or storage of raw legal text,
 prompts, request/response bodies, gateway responses, model outputs, emails,
 identifiers, or credentials.
 
+Legal document benchmark release scorecard evidence may describe a
+repository-backed metadata-only aggregate of the synthetic suite, coverage
+matrix, fact consistency suite, cheap-first route plan, coverage claim policy,
+and execution claim gate. It must not claim benchmark execution, provider calls,
+public benchmark scores, production legal quality, release approval, maintainer
+approval, release-record writes, archive-file writes, default changes, traffic
+shifts, real client-document coverage, or storage of raw legal text, fixture
+snippets, prompts, request/response bodies, gateway responses, model outputs,
+emails, identifiers, or credentials.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

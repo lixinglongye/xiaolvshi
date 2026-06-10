@@ -1806,6 +1806,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-route-plan-execution-result-handoff": "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-route-plan-execution-review-packet": "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_review_packet.py tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-route-plan-execution-claim-gate": "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py tests/test_legal_document_benchmark_route_plan_execution_review_packet.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-document-benchmark-release-scorecard": "python -m pytest tests/test_legal_document_benchmark_release_scorecard.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_coverage_claim_policy.py tests/test_legal_document_benchmark_route_plan_execution_claim_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
         "legal-document-benchmark-route-plan-override-ui": "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-fixture-ui": "python -m pytest tests/test_legal_document_benchmark_fixtures.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2115,6 +2116,25 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     ]["evidence_paths"]
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_CLAIM_GATE.md" in checks[
         "legal-document-benchmark-route-plan-execution-claim-gate"
+    ]["evidence_paths"]
+    assert "release scorecard" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "metadata-only" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "public benchmark scores" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "live provider execution" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "production legal quality" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "raw legal text" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "credentials" in checks["legal-document-benchmark-release-scorecard"]["manual_note"]
+    assert "app/backend/services/legal_document_benchmark_release_scorecard.py" in checks[
+        "legal-document-benchmark-release-scorecard"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_benchmark_release_scorecard.py" in checks[
+        "legal-document-benchmark-release-scorecard"
+    ]["evidence_paths"]
+    assert "app/backend/routers/maintenance.py" in checks["legal-document-benchmark-release-scorecard"][
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_RELEASE_SCORECARD.md" in checks[
+        "legal-document-benchmark-release-scorecard"
     ]["evidence_paths"]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
     assert "route override preview" in checks["legal-document-benchmark-route-plan-override-ui"]["manual_note"]

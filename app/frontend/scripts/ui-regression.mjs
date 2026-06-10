@@ -1656,6 +1656,9 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionClaimGateCheck', 'legal document benchmark route plan execution claim gate check type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document benchmark route plan execution claim gate API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionClaimGate', 'legal document benchmark route plan execution claim gate POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkReleaseScorecard', 'legal document benchmark release scorecard type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkReleaseScorecardComponentRow', 'legal document benchmark release scorecard component row type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkReleaseScorecard', 'legal document benchmark release scorecard API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1703,6 +1706,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-claim-gate',
       'legal document benchmark route plan execution claim gate endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-release-scorecard',
+      'legal document benchmark release scorecard endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1835,6 +1844,16 @@ const checks = [
   () => assertIncludes(maintenancePage, 'review_claim_hashes', 'legal document route plan execution claim gate review hashes'),
   () => assertIncludes(maintenancePage, 'raw_claim_text_echoed', 'legal document route plan execution claim gate raw claim boundary'),
   () => assertIncludes(maintenancePage, 'claim_hashes_only', 'legal document route plan execution claim gate hash-only boundary'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkReleaseScorecard', 'legal document benchmark release scorecard load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkReleaseScorecard', 'legal document benchmark release scorecard state binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark release scorecard', 'legal document benchmark release scorecard panel'),
+  () => assertIncludes(maintenancePage, 'scorecard_score', 'legal document benchmark release scorecard score binding'),
+  () => assertIncludes(maintenancePage, 'component_rows', 'legal document benchmark release scorecard component rows'),
+  () => assertIncludes(maintenancePage, 'release_decision', 'legal document benchmark release scorecard release decision'),
+  () => assertIncludes(maintenancePage, 'release_claim_ready', 'legal document benchmark release scorecard claim readiness'),
+  () => assertIncludes(maintenancePage, 'privacy_boundary', 'legal document benchmark release scorecard privacy boundary'),
+  () => assertIncludes(maintenancePage, 'claim_boundary', 'legal document benchmark release scorecard claim boundary'),
+  () => assertIncludes(maintenancePage, 'source_summaries', 'legal document benchmark release scorecard source summaries'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1895,8 +1914,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark release scorecard',
+      'legal document release scorecard follows execution claim gate',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark release scorecard',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan execution claim gate precedes fixtures',
+      'legal document release scorecard precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1980,11 +2006,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution claim gate',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark release scorecard',
         'legal document benchmark route plan execution claim gate section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|public_benchmark_text|fixture_snippet|fixture_snippets|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|gateway_responses|model_output|model_outputs|client_email|email|phone|identity_number|client_identifier|client_identifiers|source_code|claim_text_value|raw_claim_value/i,
       'legal document benchmark route plan execution claim gate sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark release scorecard',
+        'Legal document benchmark fixtures',
+        'legal document benchmark release scorecard section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|raw_legal_text|document_text|generated_text|candidate_text|public_benchmark_text|fixture_snippet|fixture_snippets|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|gateway_responses|model_output|model_outputs|client_email|email|phone|identity_number|client_identifier|client_identifiers|source_code|claim_text_value|raw_claim_value|public_score_value/i,
+      'legal document benchmark release scorecard sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
