@@ -48,6 +48,7 @@ from services.git_history_evidence import GitHistoryEvidenceService
 from services.deep_review_selected_source_binding import DeepReviewSelectedSourceBindingService
 from services.legal_document_benchmark_fixtures import LegalDocumentBenchmarkFixturesService
 from services.legal_document_benchmark_coverage import LegalDocumentBenchmarkCoverageService
+from services.legal_document_benchmark_route_plan import LegalDocumentBenchmarkRoutePlanService
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1458,6 +1459,24 @@ async def evaluate_legal_document_coverage_claims(payload: LegalDocumentCoverage
     return {
         "success": True,
         "data": LegalDocumentCoverageClaimPolicyService().evaluate(payload.claims),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan")
+async def get_legal_document_benchmark_route_plan():
+    """Return a metadata-only cheap-first route plan for local document benchmark cases."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanService().build_plan(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan")
+async def build_legal_document_benchmark_route_plan(payload: dict[str, Any]):
+    """Evaluate benchmark route overrides without calling models or echoing raw material."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanService().build_plan(payload),
     }
 
 

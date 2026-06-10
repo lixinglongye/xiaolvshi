@@ -726,6 +726,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-task-runtime-notification-summary" in completed_ids
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-document-benchmark-coverage" in completed_ids
+    assert "legal-document-benchmark-route-plan" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
     assert "legal-document-template-benchmark-alignment" in completed_ids
     template_benchmark_alignment_entry = next(
@@ -752,6 +753,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-coverage-claim-policy" in template_benchmark_alignment_entry["release_gate_links"]
     assert "legal-document-benchmark-coverage-ui" in completed_ids
     assert "legal-document-benchmark-fixture-ui" in completed_ids
+    legal_document_benchmark_route_plan_entry = next(
+        entry for entry in ledger["completed_updates"] if entry["id"] == "legal-document-benchmark-route-plan"
+    )
+    assert legal_document_benchmark_route_plan_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_entry["status"] == "shipped"
+    assert "cheap-first Gemini route plan" in legal_document_benchmark_route_plan_entry["impact"]
+    assert "Flash-Lite prechecks" in legal_document_benchmark_route_plan_entry["impact"]
+    assert "premium-default blocking" in legal_document_benchmark_route_plan_entry["impact"]
+    assert "raw snippets" in legal_document_benchmark_route_plan_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan.py" in legal_document_benchmark_route_plan_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan.py" in legal_document_benchmark_route_plan_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/routers/maintenance.py" in legal_document_benchmark_route_plan_entry["evidence_paths"]
+    assert "legal-document-benchmark-route-plan" in legal_document_benchmark_route_plan_entry["release_gate_links"]
+    assert "legal-document-benchmark-coverage" in legal_document_benchmark_route_plan_entry["release_gate_links"]
+    assert "model-runtime-router" in legal_document_benchmark_route_plan_entry["release_gate_links"]
+    assert "model-default-candidate-selector" in legal_document_benchmark_route_plan_entry["release_gate_links"]
+    assert "modelops-gemini-cheap-first-route-preflight" in legal_document_benchmark_route_plan_entry[
+        "release_gate_links"
+    ]
     legal_document_benchmark_fixture_ui_entry = next(
         entry for entry in ledger["completed_updates"] if entry["id"] == "legal-document-benchmark-fixture-ui"
     )
@@ -1162,6 +1187,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "case-task-runtime-notification-summary" not in queue_ids
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-document-benchmark-coverage" not in queue_ids
+    assert "legal-document-benchmark-route-plan" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids
     assert "legal-document-benchmark-coverage-ui" not in queue_ids
@@ -1379,6 +1405,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ) in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
     assert "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q" in ledger["validation_commands"]
+    assert (
+        "python -m pytest tests/test_legal_document_benchmark_route_plan.py "
+        "tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py "
+        "tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py "
+        "tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q"
+        in ledger["validation_commands"]
+    )
     assert (
         "python -m pytest tests/test_legal_document_template_matrix.py "
         "tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py "

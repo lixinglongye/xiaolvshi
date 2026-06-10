@@ -6979,6 +6979,97 @@ export type LegalDocumentBenchmarkCoverage = {
   privacy_note: string;
 };
 
+export type LegalDocumentBenchmarkRoutePlanRoute = {
+  task?: string;
+  model?: string;
+  requested_model?: string | null;
+  resolved_model?: string;
+  canonical_model?: string | null;
+  cost_tier?: string | null;
+  budget_mode?: string;
+  max_cost_tier?: string;
+  requires_operator_review?: boolean;
+  routed_to_recommended_model?: boolean;
+  recommended_model?: string;
+  reason_codes: string[];
+};
+
+export type LegalDocumentBenchmarkRoutePlanLadderItem = {
+  order: number;
+  model: string;
+  cost_tier: string;
+  role: string;
+  default_eligible: boolean;
+  candidate_stage: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanCaseRow = {
+  case_id: string;
+  title: string;
+  document_type: string;
+  matter_type: string;
+  route_band: string;
+  cheap_precheck_required: boolean;
+  precheck_route: LegalDocumentBenchmarkRoutePlanRoute;
+  primary_task: string;
+  primary_route: LegalDocumentBenchmarkRoutePlanRoute;
+  escalation_ladder: LegalDocumentBenchmarkRoutePlanLadderItem[];
+  route_risk_score: number;
+  required_section_count: number;
+  expected_citation_count: number;
+  expected_risk_label_count: number;
+  estimated_precheck_cost_usd: number | null;
+  estimated_primary_cost_usd: number | null;
+  override_applied: boolean;
+  raw_fixture_snippet_returned: boolean;
+};
+
+export type LegalDocumentBenchmarkRoutePlanCheck = {
+  id: string;
+  status: string;
+  description: string;
+  case_ids: string[];
+  source?: string | null;
+};
+
+export type LegalDocumentBenchmarkRoutePlan = {
+  id: string;
+  status: string;
+  method: {
+    type: string;
+    version: string;
+    inputs: string[];
+    notes: string[];
+  };
+  summary: {
+    case_count: number;
+    cheap_precheck_case_count: number;
+    lowest_primary_case_count: number;
+    balanced_primary_case_count: number;
+    premium_primary_case_count: number;
+    routed_to_recommended_count: number;
+    override_count: number;
+    coverage_status: string;
+    coverage_document_type_count: number;
+    estimated_precheck_cost_usd: number;
+    estimated_primary_cost_usd: number;
+    model_calls: string;
+    network_access: string;
+    raw_fixture_snippets_returned: boolean;
+    raw_outputs_returned: boolean;
+  };
+  source_summaries: Record<string, Record<string, unknown>>;
+  route_policy: Record<string, unknown>;
+  case_route_rows: LegalDocumentBenchmarkRoutePlanCaseRow[];
+  checks: LegalDocumentBenchmarkRoutePlanCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7340,6 +7431,11 @@ type LegalReviewBenchmarkResponse = {
 type LegalDocumentBenchmarkCoverageResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkCoverage;
+};
+
+type LegalDocumentBenchmarkRoutePlanResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlan;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -9216,6 +9312,37 @@ export async function getLegalDocumentBenchmarkCoverage(): Promise<LegalDocument
     return payload.data;
   }
   return payload as LegalDocumentBenchmarkCoverage;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlan(): Promise<LegalDocumentBenchmarkRoutePlan> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanResponse
+    | LegalDocumentBenchmarkRoutePlan;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlan;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlan(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlan> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanResponse
+    | LegalDocumentBenchmarkRoutePlan;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlan;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {

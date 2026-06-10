@@ -3134,6 +3134,37 @@ class ReleaseReadinessService:
                 manual_note="This maps tiny synthetic legal-document fixtures to a metadata-only coverage matrix and next-fixture queue; it does not claim broad benchmark coverage, external dataset runs, model scores, or real client-document testing.",
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-route-plan",
+                title="Legal document benchmark cheap-first route plan",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_route_plan.py "
+                    "tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py "
+                    "tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py "
+                    "tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q"
+                ),
+                manual_note=(
+                    "This maps local synthetic legal-document benchmark cases to a cheap-first Gemini route plan "
+                    "with Flash-Lite prechecks, budgeted primary routes, and premium-default blocking. It does not "
+                    "call NewAPI, Gemini, gateways, or external datasets, and it does not return raw fixture "
+                    "snippets, prompts, generated document text, gateway responses, credentials, emails, or client "
+                    "identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage-ui",
                 title="Legal document benchmark coverage UI",
                 category="frontend_ui",

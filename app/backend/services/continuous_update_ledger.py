@@ -219,6 +219,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_small_legal_document_benchmark_runbook_evidence.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_fact_consistency_benchmark.py tests/test_final_document_delivery_release_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
+                "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
@@ -6063,6 +6064,38 @@ class ContinuousUpdateLedgerService:
                 ),
                 release_gate_links=("legal-document-benchmark-coverage", "legal-document-benchmark-suite"),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "reviewer-visibility"),
+            ),
+            LedgerEntry(
+                id="legal-document-benchmark-route-plan",
+                title="Legal document benchmark cheap-first route plan",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Maps each synthetic legal-document benchmark case to a cheap-first Gemini route plan with "
+                    "Flash-Lite prechecks, budgeted primary routes, premium-default blocking, and metadata-only "
+                    "cost estimates without model calls, dataset downloads, raw snippets, prompts, gateway "
+                    "responses, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "app/backend/services/legal_document_benchmark_suite.py",
+                    "app/backend/services/legal_document_benchmark_coverage.py",
+                    "app/backend/services/model_runtime_router.py",
+                    "app/backend/services/model_default_candidate_selector.py",
+                    "app/backend/routers/maintenance.py",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-route-plan",
+                    "legal-document-benchmark-coverage",
+                    "legal-document-benchmark-suite",
+                    "model-runtime-router",
+                    "model-default-candidate-selector",
+                    "modelops-gemini-cheap-first-route-preflight",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
             ),
             LedgerEntry(
                 id="legal-document-benchmark-gap-fixtures",

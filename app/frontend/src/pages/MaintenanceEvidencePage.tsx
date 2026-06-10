@@ -40,6 +40,7 @@ import {
   getLegalFixtureRunReport,
   getLegalBenchmarkFixtureCrosswalk,
   getLegalDocumentBenchmarkCoverage,
+  getLegalDocumentBenchmarkRoutePlan,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -159,6 +160,7 @@ import {
   type LegalBenchmarkResearchRegistry,
   type LegalBenchmarkResearchRefresh,
   type LegalDocumentBenchmarkCoverage,
+  type LegalDocumentBenchmarkRoutePlan,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -872,6 +874,8 @@ function Inner() {
   const [fixtureLocalRunPackage, setFixtureLocalRunPackage] = useState<LegalFixtureLocalRunPackage | null>(null);
   const [legalDocumentBenchmarkCoverage, setLegalDocumentBenchmarkCoverage] =
     useState<LegalDocumentBenchmarkCoverage | null>(null);
+  const [legalDocumentBenchmarkRoutePlan, setLegalDocumentBenchmarkRoutePlan] =
+    useState<LegalDocumentBenchmarkRoutePlan | null>(null);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1159,6 +1163,11 @@ function Inner() {
           label: 'Legal document benchmark coverage',
           run: getLegalDocumentBenchmarkCoverage,
           apply: (value) => setLegalDocumentBenchmarkCoverage(value as LegalDocumentBenchmarkCoverage),
+        },
+        {
+          label: 'Legal document benchmark route plan',
+          run: getLegalDocumentBenchmarkRoutePlan,
+          apply: (value) => setLegalDocumentBenchmarkRoutePlan(value as LegalDocumentBenchmarkRoutePlan),
         },
         {
           label: 'Legal document benchmark fixtures',
@@ -9091,6 +9100,165 @@ function Inner() {
                   <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Coverage actions</h3>
                   <ul className="space-y-2 text-sm leading-6 text-stone-700">
                     {legalDocumentBenchmarkCoverage.recommended_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlan && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark cheap-first route plan
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkRoutePlan.summary.cheap_precheck_case_count} Flash-Lite prechecks /{' '}
+                      {legalDocumentBenchmarkRoutePlan.summary.balanced_primary_case_count} balanced primary routes /{' '}
+                      {legalDocumentBenchmarkRoutePlan.summary.premium_primary_case_count} premium defaults
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={statusClass[legalDocumentBenchmarkRoutePlan.status] ?? statusClass.warn}
+                  >
+                    {legalDocumentBenchmarkRoutePlan.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-4">
+                  {[
+                    { label: 'benchmark cases', value: legalDocumentBenchmarkRoutePlan.summary.case_count },
+                    {
+                      label: 'routed to recommended',
+                      value: legalDocumentBenchmarkRoutePlan.summary.routed_to_recommended_count,
+                    },
+                    {
+                      label: 'precheck cost',
+                      value: `$${legalDocumentBenchmarkRoutePlan.summary.estimated_precheck_cost_usd.toFixed(6)}`,
+                    },
+                    {
+                      label: 'primary cost',
+                      value: `$${legalDocumentBenchmarkRoutePlan.summary.estimated_primary_cost_usd.toFixed(6)}`,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Case</TableHead>
+                          <TableHead>Route band</TableHead>
+                          <TableHead>Precheck route</TableHead>
+                          <TableHead>Primary route</TableHead>
+                          <TableHead>Cost estimate</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkRoutePlan.case_route_rows.map((row) => (
+                          <TableRow key={row.case_id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.title}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.case_id}</div>
+                              <Badge variant="outline" className="mt-2 bg-white font-mono text-[11px]">
+                                {row.document_type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[row.route_band] ?? 'border-sky-200 bg-sky-50 text-sky-800'}
+                              >
+                                {row.route_band.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-2 text-xs text-stone-500">risk {row.route_risk_score}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-950">{row.precheck_route.model}</div>
+                              <div>{row.precheck_route.cost_tier ?? 'unpriced'}</div>
+                              <div>{String(row.cheap_precheck_required)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div className="font-mono text-[11px] text-stone-950">
+                                {row.primary_route.resolved_model}
+                              </div>
+                              <div>{row.primary_task.replace(/_/g, ' ')}</div>
+                              <div>{row.primary_route.cost_tier ?? 'unpriced'}</div>
+                              <div>recommended: {String(row.primary_route.routed_to_recommended_model)}</div>
+                            </TableCell>
+                            <TableCell className="font-mono text-[11px] leading-5 text-stone-600">
+                              <div>pre ${row.estimated_precheck_cost_usd?.toFixed(6) ?? 'unpriced'}</div>
+                              <div>primary ${row.estimated_primary_cost_usd?.toFixed(6) ?? 'unpriced'}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Route policy</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        <div>precheck model: {String(legalDocumentBenchmarkRoutePlan.route_policy.precheck_model)}</div>
+                        <div>
+                          premium default allowed:{' '}
+                          {String(legalDocumentBenchmarkRoutePlan.route_policy.premium_default_allowed)}
+                        </div>
+                        <div>
+                          balanced after precheck:{' '}
+                          {String(legalDocumentBenchmarkRoutePlan.route_policy.balanced_after_precheck_allowed)}
+                        </div>
+                        <div>model calls: {legalDocumentBenchmarkRoutePlan.summary.model_calls}</div>
+                        <div>network: {legalDocumentBenchmarkRoutePlan.summary.network_access}</div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Checks</h3>
+                      <div className="space-y-2">
+                        {legalDocumentBenchmarkRoutePlan.checks.map((check) => (
+                          <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</div>
+                              <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                                {check.status}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 text-xs leading-5 text-stone-600">{check.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Boundary</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        <div>snippets: {String(legalDocumentBenchmarkRoutePlan.privacy_boundary.returns_fixture_snippets)}</div>
+                        <div>outputs: {String(legalDocumentBenchmarkRoutePlan.privacy_boundary.returns_raw_model_outputs)}</div>
+                        <div>prompts: {String(legalDocumentBenchmarkRoutePlan.privacy_boundary.returns_prompts)}</div>
+                        <div>public score: {String(legalDocumentBenchmarkRoutePlan.claim_boundary.public_benchmark_score_claimed)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Route actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {legalDocumentBenchmarkRoutePlan.recommended_actions.map((action) => (
                       <li key={action} className="flex gap-2">
                         <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
                         <span>{action}</span>

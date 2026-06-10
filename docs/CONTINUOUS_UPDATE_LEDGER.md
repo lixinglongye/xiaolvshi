@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route plan slice:
+`legal-document-benchmark-route-plan` adds a metadata-only cheap-first route
+plan for the local synthetic legal-document benchmark. It maps each benchmark
+case to Flash-Lite prechecks, budgeted primary routes, Gemini catalog escalation
+ladders, local cost estimates, and premium-default blocking before any
+maintainer treats the benchmark as executable route evidence. The endpoint is
+available at `/api/v1/maintenance/legal-review-benchmark/document-route-plan`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; change model defaults; execute
+benchmark runs; return raw fixture snippets, generated document text, prompts,
+payloads, model outputs, gateway responses, emails, identifiers, or
+credentials; or claim public benchmark scores, production accuracy, legal
+advice, real-client document coverage, or default-promotion approval.
+
 Current legal benchmark default-promotion observation gate slice:
 `modelops-legal-benchmark-default-promotion-observation-gate` adds a
 metadata-only post-execution observation gate for cheap-first legal default
