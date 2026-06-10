@@ -53,6 +53,9 @@ from services.legal_document_benchmark_route_plan_replay import LegalDocumentBen
 from services.legal_document_benchmark_route_plan_research_alignment import (
     LegalDocumentBenchmarkRoutePlanResearchAlignmentService,
 )
+from services.legal_document_benchmark_route_plan_execution_readiness import (
+    LegalDocumentBenchmarkRoutePlanExecutionReadinessService,
+)
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1517,6 +1520,24 @@ async def build_legal_document_benchmark_route_plan_research_alignment(payload: 
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanResearchAlignmentService().build_alignment(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/execution-readiness")
+async def get_legal_document_benchmark_route_plan_execution_readiness():
+    """Return a metadata-only route-plan execution readiness packet."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionReadinessService().build_packet(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/execution-readiness")
+async def build_legal_document_benchmark_route_plan_execution_readiness(payload: dict[str, Any]):
+    """Evaluate route-plan execution readiness from sanitized metadata only."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionReadinessService().build_packet(payload),
     }
 
 

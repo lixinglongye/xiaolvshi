@@ -7235,6 +7235,73 @@ export type LegalDocumentBenchmarkRoutePlanResearchAlignment = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkRoutePlanExecutionReadinessGate = {
+  id: string;
+  status: string;
+  reason: string;
+  release_action: string;
+};
+
+export type LegalDocumentBenchmarkRoutePlanExecutionReadiness = {
+  id: string;
+  title: string;
+  status: string;
+  summary: {
+    route_plan_status: string;
+    route_plan_case_count: number;
+    route_plan_override_count: number;
+    replay_status: string;
+    replay_scenario_count: number;
+    replay_failed_count: number;
+    research_alignment_status: string;
+    research_alignment_dimension_count: number;
+    research_alignment_gap_count: number;
+    source_anchor_count: number;
+    gate_count: number;
+    passing_gate_count: number;
+    warning_gate_count: number;
+    blocking_gate_count: number;
+    estimated_total_route_cost_usd: number;
+    model_calls: string;
+    network_access: string;
+    benchmark_execution: string;
+    manual_execution_ready: boolean;
+    maintainer_approval_recorded: boolean;
+  };
+  source_summaries: {
+    route_plan: Record<string, unknown>;
+    route_plan_replay: Record<string, unknown>;
+    research_alignment: Record<string, unknown>;
+  };
+  pre_execution_gates: LegalDocumentBenchmarkRoutePlanExecutionReadinessGate[];
+  blocking_gate_ids: string[];
+  warning_gate_ids: string[];
+  manual_run_packet: {
+    recommended_fixture_limit: number;
+    max_parallel_model_requests: number;
+    default_execution_mode: string;
+    default_model_strategy: string;
+    requires_maintainer_review: boolean;
+    records_approval: boolean;
+    executes_benchmark: boolean;
+    next_actions: string[];
+  };
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: {
+    public_benchmark_score_claimed: boolean;
+    paper_reproduction_claimed: boolean;
+    production_accuracy_claimed: boolean;
+    real_client_document_coverage_claimed: boolean;
+    default_model_changed: boolean;
+    traffic_shifted: boolean;
+    benchmark_executed: boolean;
+    maintainer_approval_claimed: boolean;
+    allowed_claim: string;
+    forbidden_claims: string[];
+  };
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7611,6 +7678,11 @@ type LegalDocumentBenchmarkRoutePlanReplayResponse = {
 type LegalDocumentBenchmarkRoutePlanResearchAlignmentResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlanResearchAlignment;
+};
+
+type LegalDocumentBenchmarkRoutePlanExecutionReadinessResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlanExecutionReadiness;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -9580,6 +9652,37 @@ export async function evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment(
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlanResearchAlignment;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlanExecutionReadiness(): Promise<LegalDocumentBenchmarkRoutePlanExecutionReadiness> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-readiness',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionReadinessResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionReadiness;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlanExecutionReadiness;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlanExecutionReadiness> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-readiness',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionReadinessResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionReadiness;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionReadiness;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {

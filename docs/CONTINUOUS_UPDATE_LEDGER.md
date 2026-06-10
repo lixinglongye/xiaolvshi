@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan execution readiness slice:
+`legal-document-benchmark-route-plan-execution-readiness` adds a metadata-only
+pre-run packet for the local synthetic legal-document benchmark route plan. It
+joins route-plan status, replay status, research/source alignment status,
+pre-execution gates, manual serial low-resource run settings, and claim
+boundaries before maintainers decide whether to run a tiny benchmark locally.
+The endpoint is available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-readiness`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; download papers or benchmark data;
+execute benchmark runs; record approval; change defaults; shift traffic; write
+configuration; or return public benchmark text, raw fixture snippets, generated
+document text, prompts, submitted scenario rationale, scenario payloads, model
+outputs, gateway responses, emails, identifiers, or credentials.
+
 Current OSS maintenance route-plan research alignment slice:
 `oss-maintenance-route-plan-research-alignment` binds the legal document
 route-plan replay and research-alignment evidence into the OSS maintenance

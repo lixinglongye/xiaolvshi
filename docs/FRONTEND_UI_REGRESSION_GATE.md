@@ -26,6 +26,7 @@ The `/maintenance` page carries evidence for:
 - partial evidence failure handling
 - user-need benchmark coverage
 - legal-document benchmark coverage
+- legal-document benchmark route-plan execution readiness
 - legal benchmark research refresh
 - model route legal benchmark risk queue
 - legal RAG authority citation gate

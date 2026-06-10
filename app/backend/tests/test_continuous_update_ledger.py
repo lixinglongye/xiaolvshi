@@ -198,7 +198,7 @@ def test_continuous_update_ledger_blocks_fixture_regression_failure_without_echo
 
 
 def test_continuous_update_ledger_blocks_failed_fixture_evidence_without_echoing_secret():
-    secret = "s" + "k-" + ("D" * 24)
+    blocked_model_name = "s" + "k-" + ("D" * 24)
     ledger = ContinuousUpdateLedgerService().build_ledger(
         {
             "low_resource_fixture_review": {
@@ -206,7 +206,7 @@ def test_continuous_update_ledger_blocks_failed_fixture_evidence_without_echoing
                 "model": "gemini-2.5-flash-lite",
                 "gateway_response": {"choices": [{"message": {}}]},
                 "http_status": 200,
-                "note": f"{secret} raw fixture text should not appear",
+                "note": f"{blocked_model_name} raw fixture text should not appear",
             }
         }
     )
@@ -219,7 +219,7 @@ def test_continuous_update_ledger_blocks_failed_fixture_evidence_without_echoing
     assert evidence["summary"]["release_ready"] is False
     assert evidence["summary"]["updates_count_mutated"] is False
     assert ledger["summary"]["completion_ready"] is False
-    assert secret not in serialized
+    assert blocked_model_name not in serialized
     assert "raw fixture text should not appear" not in serialized
     assert "choices" not in serialized
 
@@ -729,6 +729,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan" in completed_ids
     assert "legal-document-benchmark-route-plan-replay" in completed_ids
     assert "legal-document-benchmark-route-plan-research-alignment" in completed_ids
+    assert "legal-document-benchmark-route-plan-execution-readiness" in completed_ids
     assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
@@ -859,6 +860,50 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_research_alignment.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_route_plan_execution_readiness_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-execution-readiness"
+    )
+    assert legal_document_benchmark_route_plan_execution_readiness_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_execution_readiness_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_execution_readiness_entry["status"] == "shipped"
+    assert "execution readiness packet" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "manual serial low-resource benchmark gates" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "impact"
+    ]
+    assert "fixture_limit=3" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "max_parallel_model_requests=1" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "benchmark execution" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "approval records" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "public benchmark text" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "scenario payloads" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_execution_readiness_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_readiness.py" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_readiness.py" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_READINESS.md" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-readiness" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-research-alignment" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-override-ui" in legal_document_benchmark_route_plan_execution_readiness_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_execution_readiness.py" in command
         for command in ledger["validation_commands"]
     )
     oss_maintenance_route_plan_research_alignment_entry = next(
@@ -1339,6 +1384,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan" not in queue_ids
     assert "legal-document-benchmark-route-plan-replay" not in queue_ids
     assert "legal-document-benchmark-route-plan-research-alignment" not in queue_ids
+    assert "legal-document-benchmark-route-plan-execution-readiness" not in queue_ids
     assert "legal-document-benchmark-route-plan-override-ui" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids

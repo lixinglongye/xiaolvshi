@@ -46,6 +46,8 @@ import {
   evaluateLegalDocumentBenchmarkRoutePlanReplay,
   getLegalDocumentBenchmarkRoutePlanResearchAlignment,
   evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment,
+  getLegalDocumentBenchmarkRoutePlanExecutionReadiness,
+  evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -168,6 +170,7 @@ import {
   type LegalDocumentBenchmarkRoutePlan,
   type LegalDocumentBenchmarkRoutePlanReplay,
   type LegalDocumentBenchmarkRoutePlanResearchAlignment,
+  type LegalDocumentBenchmarkRoutePlanExecutionReadiness,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -903,6 +906,10 @@ function Inner() {
     useState<LegalDocumentBenchmarkRoutePlanResearchAlignment | null>(null);
   const [routePlanResearchAlignmentError, setRoutePlanResearchAlignmentError] = useState('');
   const [routePlanResearchAlignmentLoading, setRoutePlanResearchAlignmentLoading] = useState(false);
+  const [legalDocumentBenchmarkRoutePlanExecutionReadiness, setLegalDocumentBenchmarkRoutePlanExecutionReadiness] =
+    useState<LegalDocumentBenchmarkRoutePlanExecutionReadiness | null>(null);
+  const [routePlanExecutionReadinessError, setRoutePlanExecutionReadinessError] = useState('');
+  const [routePlanExecutionReadinessLoading, setRoutePlanExecutionReadinessLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1207,6 +1214,14 @@ function Inner() {
           apply: (value) =>
             setLegalDocumentBenchmarkRoutePlanResearchAlignment(
               value as LegalDocumentBenchmarkRoutePlanResearchAlignment,
+            ),
+        },
+        {
+          label: 'Legal document benchmark route plan execution readiness',
+          run: getLegalDocumentBenchmarkRoutePlanExecutionReadiness,
+          apply: (value) =>
+            setLegalDocumentBenchmarkRoutePlanExecutionReadiness(
+              value as LegalDocumentBenchmarkRoutePlanExecutionReadiness,
             ),
         },
         {
@@ -1944,6 +1959,21 @@ function Inner() {
       setRoutePlanResearchAlignmentError('Legal document benchmark route-plan research alignment failed.');
     } finally {
       setRoutePlanResearchAlignmentLoading(false);
+    }
+  };
+
+  const runLegalDocumentRoutePlanExecutionReadiness = async () => {
+    setRoutePlanExecutionReadinessLoading(true);
+    setRoutePlanExecutionReadinessError('');
+    try {
+      setLegalDocumentBenchmarkRoutePlanExecutionReadiness(
+        await evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness({ route_plan_replay: {} }),
+      );
+    } catch (err) {
+      console.error(err);
+      setRoutePlanExecutionReadinessError('Legal document benchmark route-plan execution readiness failed.');
+    } finally {
+      setRoutePlanExecutionReadinessLoading(false);
     }
   };
 
@@ -9849,6 +9879,200 @@ function Inner() {
                       ))}
                     </ul>
                   </div>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlanExecutionReadiness && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark route plan execution readiness
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.passing_gate_count}/
+                      {legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.gate_count} gates passing / manual run{' '}
+                      {String(legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.manual_execution_ready)}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentBenchmarkRoutePlanExecutionReadiness.status] ?? statusClass.warn}
+                    >
+                      {displayToken(legalDocumentBenchmarkRoutePlanExecutionReadiness.status)}
+                    </Badge>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={runLegalDocumentRoutePlanExecutionReadiness}
+                      disabled={routePlanExecutionReadinessLoading}
+                    >
+                      {routePlanExecutionReadinessLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      Run readiness
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    {
+                      label: 'route cases',
+                      value: legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.route_plan_case_count,
+                    },
+                    {
+                      label: 'replay scenarios',
+                      value: legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.replay_scenario_count,
+                    },
+                    {
+                      label: 'source anchors',
+                      value: legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.source_anchor_count,
+                    },
+                    {
+                      label: 'blocking gates',
+                      value: legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.blocking_gate_count,
+                    },
+                    {
+                      label: 'route cost',
+                      value: `$${legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.estimated_total_route_cost_usd}`,
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {routePlanExecutionReadinessError && (
+                  <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {routePlanExecutionReadinessError}
+                  </div>
+                )}
+
+                <div className="mb-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Gate</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Release action</TableHead>
+                          <TableHead>Reason</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalDocumentBenchmarkRoutePlanExecutionReadiness.pre_execution_gates.map((gate) => (
+                          <TableRow key={gate.id}>
+                            <TableCell className="font-mono text-[11px] font-semibold text-stone-950">
+                              {gate.id}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass[gate.status] ?? statusClass.warn}>
+                                {displayToken(gate.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass[gate.release_action] ?? statusClass.review_required}
+                              >
+                                {displayToken(gate.release_action)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="max-w-[420px] text-sm leading-5 text-stone-600">
+                              {gate.reason}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Manual run packet</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        <div>fixture limit: {legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.recommended_fixture_limit}</div>
+                        <div>
+                          parallel requests:{' '}
+                          {legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.max_parallel_model_requests}
+                        </div>
+                        <div>
+                          execution mode:{' '}
+                          {displayToken(legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.default_execution_mode)}
+                        </div>
+                        <div>
+                          model strategy:{' '}
+                          {displayToken(legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.default_model_strategy)}
+                        </div>
+                        <div>
+                          records approval:{' '}
+                          {String(legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.records_approval)}
+                        </div>
+                        <div>
+                          executes benchmark:{' '}
+                          {String(legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.executes_benchmark)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Readiness boundary</h3>
+                      <div className="space-y-1 text-xs leading-5 text-stone-600">
+                        <div>model calls: {legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.model_calls}</div>
+                        <div>network: {legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.network_access}</div>
+                        <div>
+                          benchmark execution:{' '}
+                          {displayToken(legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.benchmark_execution)}
+                        </div>
+                        <div>
+                          approval recorded:{' '}
+                          {String(legalDocumentBenchmarkRoutePlanExecutionReadiness.summary.maintainer_approval_recorded)}
+                        </div>
+                        <div>
+                          public score:{' '}
+                          {String(
+                            legalDocumentBenchmarkRoutePlanExecutionReadiness.claim_boundary.public_benchmark_score_claimed,
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  {Object.entries(legalDocumentBenchmarkRoutePlanExecutionReadiness.source_summaries).map(
+                    ([sourceId, summary]) => (
+                      <div key={sourceId} className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                        <h3 className="mb-2 text-sm font-black uppercase text-stone-500">{displayToken(sourceId)}</h3>
+                        <div className="space-y-1 text-xs leading-5 text-stone-600">
+                          {Object.entries(summary).slice(0, 8).map(([key, value]) => (
+                            <div key={`${sourceId}-${key}`}>
+                              {key}: {Array.isArray(value) ? value.join(', ') : String(value)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                <div className="mt-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                  <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Readiness actions</h3>
+                  <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                    {legalDocumentBenchmarkRoutePlanExecutionReadiness.manual_run_packet.next_actions.map((action) => (
+                      <li key={action} className="flex gap-2">
+                        <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                        <span>{action}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </section>
             )}

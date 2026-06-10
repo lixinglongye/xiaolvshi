@@ -8,6 +8,12 @@ network execution, external benchmark scores, public benchmark text validation,
 default-promotion approval, scenario-payload disclosure, real client-document
 coverage, or credential handling.
 
+Legal document route-plan execution-readiness evidence may describe
+repository-backed pre-run gates, manual serial low-resource settings, and
+cheap-first Gemini routing readiness. It must not claim that a benchmark has
+run, approval has been recorded, model defaults changed, traffic shifted, public
+benchmark scores were produced, or real client documents were tested.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

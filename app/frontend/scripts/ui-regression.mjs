@@ -1632,6 +1632,10 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanResearchAlignmentSource', 'legal document benchmark route plan research alignment source type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document benchmark route plan research alignment API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanResearchAlignment', 'legal document benchmark route plan research alignment POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document benchmark route plan execution readiness type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReadinessGate', 'legal document benchmark route plan execution readiness gate type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document benchmark route plan execution readiness API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document benchmark route plan execution readiness POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1649,6 +1653,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/research-alignment',
       'legal document benchmark route plan research alignment endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-readiness',
+      'legal document benchmark route plan execution readiness endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1706,6 +1716,20 @@ const checks = [
   () => assertIncludes(maintenancePage, 'official_model_source_count', 'legal document route plan research alignment official source metric'),
   () => assertIncludes(maintenancePage, 'route_plan_replay_status', 'legal document route plan research alignment replay status metric'),
   () => assertIncludes(maintenancePage, 'raw_public_benchmark_text_returned', 'legal document route plan research alignment public text boundary'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document route plan execution readiness load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document route plan execution readiness state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanExecutionReadiness', 'legal document route plan execution readiness handler'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionReadinessLoading', 'legal document route plan execution readiness loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionReadinessError', 'legal document route plan execution readiness error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document route plan execution readiness POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan execution readiness', 'legal document route plan execution readiness panel'),
+  () => assertIncludes(maintenancePage, 'Run readiness', 'legal document route plan execution readiness button'),
+  () => assertIncludes(maintenancePage, 'pre_execution_gates', 'legal document route plan execution readiness gates'),
+  () => assertIncludes(maintenancePage, 'manual_run_packet', 'legal document route plan execution readiness manual packet'),
+  () => assertIncludes(maintenancePage, 'manual_execution_ready', 'legal document route plan execution readiness ready metric'),
+  () => assertIncludes(maintenancePage, 'max_parallel_model_requests', 'legal document route plan execution readiness low-resource metric'),
+  () => assertIncludes(maintenancePage, 'estimated_total_route_cost_usd', 'legal document route plan execution readiness cost metric'),
+  () => assertIncludes(maintenancePage, 'maintainer_approval_recorded', 'legal document route plan execution readiness approval boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1731,8 +1755,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
+      'legal document route plan execution readiness follows research alignment',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan research alignment precedes fixtures',
+      'legal document route plan execution readiness precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1761,11 +1792,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan research alignment',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
         'legal document benchmark route plan research alignment section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
       'legal document benchmark route plan research alignment sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan execution readiness section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
+      'legal document benchmark route plan execution readiness sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
