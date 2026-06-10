@@ -321,6 +321,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "legal_benchmark_default_promotion_signoff_packet",
     ),
     ReadinessComponent(
+        "legal-benchmark-default-promotion-execution-handoff",
+        "Legal benchmark default-promotion execution handoff",
+        "release_evidence",
+        "legal_benchmark_default_promotion_execution_handoff",
+    ),
+    ReadinessComponent(
         "user-need-release-bridge",
         "User-need release bridge",
         "release_evidence",
@@ -487,6 +493,7 @@ class ModelOpsReadinessService:
             "manifest_ready",
             "monitor_only",
             "ready_for_external_change",
+            "ready_for_external_execution",
         }:
             return "pass"
         if value in {

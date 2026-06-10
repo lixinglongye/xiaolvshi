@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, Gemini official cheap-first source review, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, AIHub media runtime compatibility review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, legal benchmark default-promotion bridge, checklist, and signoff packet evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, Gemini official cheap-first source review, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, AIHub media runtime compatibility review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, legal benchmark default-promotion bridge, checklist, signoff packet, and execution handoff evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -31,21 +31,21 @@ The response includes:
     "status": "warn",
     "release_recommendation": "maintainer_review_required",
     "summary": {
-      "component_count": 64,
-      "required_component_count": 63,
+      "component_count": 65,
+      "required_component_count": 64,
       "optional_component_count": 1,
       "pass_count": 41,
-      "warn_count": 23,
+      "warn_count": 24,
       "fail_count": 0,
-      "required_warning_count": 22,
+      "required_warning_count": 23,
       "optional_review_count": 1,
       "required_failure_count": 0,
       "optional_failure_count": 0,
       "blocking_count": 0,
-      "warning_count": 23,
-      "warning_drilldown_count": 23,
+      "warning_count": 24,
+      "warning_drilldown_count": 24,
       "p0_warning_count": 0,
-      "p1_warning_count": 22,
+      "p1_warning_count": 23,
       "p2_warning_count": 1
     },
     "warning_category_counts": {},

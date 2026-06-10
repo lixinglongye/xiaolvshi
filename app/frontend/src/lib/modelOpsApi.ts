@@ -5820,6 +5820,154 @@ export type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffSourceStatusRow = {
+  id: string;
+  label: string;
+  source_key: string;
+  source_status: string;
+  execution_status: string;
+  row_count: number;
+  blocking_count: number;
+  warning_count: number;
+  configuration_written: boolean;
+  approval_record_written: boolean;
+  signoff_record_written: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  raw_payload_echoed: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRow = {
+  id: string;
+  source_signoff_item_id: string;
+  source_checklist_row_id: string;
+  requirement_id: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  model_cost_tier: string;
+  signoff_status: string;
+  external_signoff_status: string;
+  rollback_plan_status: string;
+  config_diff_status: string;
+  observation_plan_status: string;
+  execution_status: string;
+  required_execution_steps: string[];
+  rollback_checks: string[];
+  blocking_reason_codes: string[];
+  reason_codes: string[];
+  rollback_owner_role: string;
+  configuration_change_allowed: boolean;
+  env_file_write_allowed: boolean;
+  approval_record_write_allowed: boolean;
+  signoff_record_write_allowed: boolean;
+  gateway_call_allowed: boolean;
+  traffic_shift_allowed: boolean;
+  default_change_allowed_by_execution_handoff: boolean;
+  execution_action: string;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRollbackGateItem = {
+  id: string;
+  source_handoff_row_id: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  rollback_gate_status: string;
+  rollback_plan_status: string;
+  rollback_owner_role: string;
+  rollback_checks: string[];
+  rollback_execution_allowed: boolean;
+  rollback_executed: boolean;
+  traffic_shift_allowed: boolean;
+  configuration_change_allowed: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff = {
+  id: string;
+  title: string;
+  status: string;
+  execution_policy: {
+    execution_handoff_required: boolean;
+    external_signoff_required: boolean;
+    rollback_plan_required: boolean;
+    config_diff_review_required: boolean;
+    post_change_observation_required: boolean;
+    rollback_execution_allowed: boolean;
+    configuration_change_allowed: boolean;
+    env_file_write_allowed: boolean;
+    approval_record_write_allowed: boolean;
+    signoff_record_write_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    requires_signoff_packet_not_blocked: boolean;
+    requires_metadata_only_boundary: boolean;
+  };
+  decision: {
+    status: string;
+    execution_handoff_ready: boolean;
+    default_change_allowed_by_execution_handoff: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    rollback_execution_allowed: boolean;
+    release_action: string;
+  };
+  summary: {
+    source_count: number;
+    handoff_row_count: number;
+    ready_for_external_execution_count: number;
+    awaiting_external_signoff_count: number;
+    blocked_count: number;
+    not_run_count: number;
+    rollback_ready_count: number;
+    signoff_packet_status: string;
+    signoff_item_count: number;
+    signoff_ready_count: number;
+    signoff_blocked_count: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_execution_handoff: boolean;
+    rollback_execution_allowed: boolean;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    signoff_record_written: boolean;
+    rollback_executed: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_payload_echoed: boolean;
+  };
+  source_status_rows: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffSourceStatusRow[];
+  handoff_rows: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRow[];
+  rollback_gate_items: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRollbackGateItem[];
+  checks: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  required_execution_roles: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -5897,6 +6045,7 @@ export type ModelOpsResponse = {
   legal_benchmark_default_promotion_bridge?: ModelOpsLegalBenchmarkDefaultPromotionBridge;
   legal_benchmark_default_promotion_checklist?: ModelOpsLegalBenchmarkDefaultPromotionChecklist;
   legal_benchmark_default_promotion_signoff_packet?: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket;
+  legal_benchmark_default_promotion_execution_handoff?: ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -5987,6 +6136,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     source_status_rows?: unknown;
     checklist_rows?: unknown;
     signoff_items?: unknown;
+    rollback_gate_items?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
     route_task_rows?: unknown;
@@ -6058,6 +6208,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.checklist_rows) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.signoff_items) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.handoff_rows) && Array.isArray(payload.rollback_gate_items) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.checks) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
@@ -6842,6 +6993,23 @@ export async function getModelOpsLegalBenchmarkDefaultPromotionSignoffPacket(): 
   return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket>({
     url: '/api/v1/aihub/models/legal-benchmark-default-promotion-signoff-packet',
     method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff(): Promise<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff',
+    method: 'GET',
+  });
+}
+
+export async function evaluateModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff(
+  payload: Record<string, unknown>,
+): Promise<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff',
+    method: 'POST',
+    data: payload,
   });
 }
 

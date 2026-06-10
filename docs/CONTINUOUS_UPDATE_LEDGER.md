@@ -1,5 +1,26 @@
 # Continuous Update Ledger
 
+Current legal benchmark default-promotion execution handoff slice:
+`modelops-legal-benchmark-default-promotion-execution-handoff` adds a
+metadata-only execution handoff and rollback gate for cheap-first legal default
+review. It turns externally signed signoff packet rows into execution
+prerequisites, rollback gate items, config diff review checks, post-change
+observation requirements, source status rows, and required execution roles
+before maintainers perform any external legal-task Gemini default movement. The
+endpoint is available at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff`, the
+aggregate ModelOps payload includes
+`legal_benchmark_default_promotion_execution_handoff`, and the evidence is
+visible on `/model-ops` between the signoff packet and evidence handoff
+sections. It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI
+endpoints, models, public datasets, or the network; write configuration; write
+env files; record approvals or signoffs; collect approver identity; execute
+rollback; change defaults; shift traffic; return raw legal text, fixture
+snippets, generated document text, prompts, payloads, model output, gateway
+responses, emails, identifiers, or credentials; or claim maintainer approval,
+public benchmark scores, production quality, legal advice, rollback execution,
+or automatic default changes.
+
 Current legal benchmark default-promotion signoff packet slice:
 `modelops-legal-benchmark-default-promotion-signoff-packet` adds a
 metadata-only signoff packet for cheap-first legal default review. It turns

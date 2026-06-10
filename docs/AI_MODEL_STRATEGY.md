@@ -56,6 +56,16 @@ New API 文档说明，客户端可把平台地址配置为 OpenAI SDK 的 `base
 `gateway_runtime_configuration` adds the runtime setup guard between the connection profile and health plan. It verifies `APP_AI_BASE_URL` normalization, `APP_AI_KEY` placeholder display, cheap-first Gemini role defaults, and safe probe order (`/models` -> cheap JSON -> small fixture smoke) without calling a provider, writing `.env`, changing defaults, shifting traffic, or returning keys, headers, prompts, request/response bodies, raw legal text, model outputs, gateway responses, emails, or user identifiers.
 `modelops-newapi-channel-bootstrap` adds the reviewer-facing setup packet for a NewAPI/YibuAPI/OpenAI-compatible channel. It normalizes a bare channel URL to `/v1`, converts supplied key presence into the `APP_AI_KEY` placeholder, joins connection-profile/runtime-configuration/observed-model intake/coverage-gap/premium-exception review evidence, and recommends cheap-first Gemini env defaults before any live request. The packet is visible in both `/model-ops` and `/maintenance` so operations and release reviewers see the same sanitized bootstrap state. It does not call NewAPI, Gemini, OpenAI, Google, yibuapi, gateways, app AI endpoints, models, or the network; write `.env` or defaults; shift traffic; or return raw payloads, prompts, legal text, model outputs, gateway responses, emails, identifiers, or credentials.
 
+`modelops-legal-benchmark-default-promotion-execution-handoff` is the
+metadata-only execution handoff and rollback gate after the legal benchmark
+default-promotion signoff packet. It keeps cheap-first legal-task defaults
+unchanged until external signoff, config diff review, rollback plan metadata,
+and post-change observation metadata are attached. It does not call NewAPI,
+Gemini, OpenAI, Google, gateways, app AI endpoints, models, or the network;
+write configuration or `.env`; record approvals or signoffs; execute rollback;
+shift traffic; or return raw legal text, prompts, payloads, model outputs,
+gateway responses, emails, identifiers, or credentials.
+
 `modelops-gemini-official-cheap-first-source-review` is the metadata-only
 source and price-ratio review for the cheap-first Gemini text defaults. It
 links the official Gemini models and pricing pages as review anchors, compares

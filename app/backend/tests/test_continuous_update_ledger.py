@@ -374,6 +374,35 @@ def test_continuous_update_ledger_includes_modelops_legal_benchmark_default_prom
     )
 
 
+def test_continuous_update_ledger_includes_modelops_legal_benchmark_default_promotion_execution_handoff():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "modelops-legal-benchmark-default-promotion-execution-handoff"
+    )
+
+    assert entry["category"] == "model_ops"
+    assert entry["size"] == "medium"
+    assert "metadata-only legal benchmark default-promotion execution handoff" in entry["impact"]
+    assert "rollback gate evidence" in entry["impact"]
+    assert "rollback execution" in entry["impact"]
+    assert "gateway/network calls" in entry["impact"]
+    assert "raw legal text" in entry["impact"]
+    assert "app/backend/services/modelops_legal_benchmark_default_promotion_execution_handoff.py" in entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_benchmark_default_promotion_execution_handoff.py" in entry["evidence_paths"]
+    assert "app/backend/services/modelops_legal_benchmark_default_promotion_signoff_packet.py" in entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_BENCHMARK_DEFAULT_PROMOTION_EXECUTION_HANDOFF.md" in entry["evidence_paths"]
+    assert "modelops-legal-benchmark-default-promotion-execution-handoff" in entry["release_gate_links"]
+    assert "modelops-legal-benchmark-default-promotion-signoff-packet" in entry["release_gate_links"]
+    assert "model-ops-default-change-queue" in entry["release_gate_links"]
+    assert "low-cost-routing" in entry["user_need_ids"]
+    assert any(
+        "tests/test_modelops_legal_benchmark_default_promotion_execution_handoff.py" in command
+        for command in ledger["validation_commands"]
+    )
+
+
 def test_continuous_update_ledger_tracks_settings_ai_provider_status_card():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     entry = next(
@@ -559,6 +588,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-legal-micro-benchmark-preflight" in completed_ids
     assert "modelops-legal-benchmark-default-promotion-checklist" in completed_ids
     assert "modelops-legal-benchmark-default-promotion-signoff-packet" in completed_ids
+    assert "modelops-legal-benchmark-default-promotion-execution-handoff" in completed_ids
     assert "modelops-legal-fixture-cheap-first-benchmark-gate" in completed_ids
     assert "legal-document-fact-consistency-benchmark" in completed_ids
     assert "modelops-legal-fixture-cheap-first-default-promotion-packet" in completed_ids

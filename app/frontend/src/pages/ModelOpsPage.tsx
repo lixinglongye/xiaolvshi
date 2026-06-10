@@ -54,6 +54,7 @@ import {
   getModelOpsLegalBenchmarkDefaultPromotionBridge,
   getModelOpsLegalBenchmarkDefaultPromotionChecklist,
   getModelOpsLegalBenchmarkDefaultPromotionSignoffPacket,
+  getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
@@ -102,6 +103,7 @@ import {
   type ModelOpsLegalBenchmarkDefaultPromotionBridge,
   type ModelOpsLegalBenchmarkDefaultPromotionChecklist,
   type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket,
+  type ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
@@ -711,6 +713,9 @@ function Inner() {
   const [legalBenchmarkDefaultPromotionSignoffPacket, setLegalBenchmarkDefaultPromotionSignoffPacket] =
     useState<ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket | null>(null);
   const [legalBenchmarkDefaultPromotionSignoffPacketError, setLegalBenchmarkDefaultPromotionSignoffPacketError] = useState('');
+  const [legalBenchmarkDefaultPromotionExecutionHandoff, setLegalBenchmarkDefaultPromotionExecutionHandoff] =
+    useState<ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff | null>(null);
+  const [legalBenchmarkDefaultPromotionExecutionHandoffError, setLegalBenchmarkDefaultPromotionExecutionHandoffError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -751,6 +756,7 @@ function Inner() {
     setLegalBenchmarkDefaultPromotionBridge(payload.legal_benchmark_default_promotion_bridge ?? null);
     setLegalBenchmarkDefaultPromotionChecklist(payload.legal_benchmark_default_promotion_checklist ?? null);
     setLegalBenchmarkDefaultPromotionSignoffPacket(payload.legal_benchmark_default_promotion_signoff_packet ?? null);
+    setLegalBenchmarkDefaultPromotionExecutionHandoff(payload.legal_benchmark_default_promotion_execution_handoff ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -852,6 +858,8 @@ function Inner() {
     setLegalBenchmarkDefaultPromotionChecklist(null);
     setLegalBenchmarkDefaultPromotionSignoffPacketError('');
     setLegalBenchmarkDefaultPromotionSignoffPacket(null);
+    setLegalBenchmarkDefaultPromotionExecutionHandoffError('');
+    setLegalBenchmarkDefaultPromotionExecutionHandoff(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -912,6 +920,7 @@ function Inner() {
         legalBenchmarkDefaultPromotionBridgeResult,
         legalBenchmarkDefaultPromotionChecklistResult,
         legalBenchmarkDefaultPromotionSignoffPacketResult,
+        legalBenchmarkDefaultPromotionExecutionHandoffResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -987,6 +996,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_benchmark_default_promotion_signoff_packet,
           getModelOpsLegalBenchmarkDefaultPromotionSignoffPacket,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_benchmark_default_promotion_execution_handoff,
+          getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1483,6 +1496,27 @@ function Inner() {
         ) {
           setLegalBenchmarkDefaultPromotionSignoffPacketError(
             'Legal benchmark default-promotion signoff packet failed to load.',
+          );
+        }
+      }
+      if (legalBenchmarkDefaultPromotionExecutionHandoffResult.status === 'fulfilled') {
+        setLegalBenchmarkDefaultPromotionExecutionHandoff(legalBenchmarkDefaultPromotionExecutionHandoffResult.value);
+      } else {
+        console.error(legalBenchmarkDefaultPromotionExecutionHandoffResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalBenchmarkDefaultPromotionExecutionHandoff(
+            modelOpsResult.value.legal_benchmark_default_promotion_execution_handoff ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_benchmark_default_promotion_execution_handoff
+          )
+        ) {
+          setLegalBenchmarkDefaultPromotionExecutionHandoffError(
+            'Legal benchmark default-promotion execution handoff failed to load.',
           );
         }
       }
@@ -2212,6 +2246,21 @@ function Inner() {
     activeLegalBenchmarkDefaultPromotionSignoffPacket?.checks ?? [];
   const legalBenchmarkDefaultPromotionSignoffPacketPrivacyEntries = boundaryDisplayEntries(
     activeLegalBenchmarkDefaultPromotionSignoffPacket?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
+  const activeLegalBenchmarkDefaultPromotionExecutionHandoff =
+    legalBenchmarkDefaultPromotionExecutionHandoff
+    ?? data?.legal_benchmark_default_promotion_execution_handoff
+    ?? null;
+  const legalBenchmarkDefaultPromotionExecutionHandoffRows =
+    activeLegalBenchmarkDefaultPromotionExecutionHandoff?.handoff_rows ?? [];
+  const legalBenchmarkDefaultPromotionExecutionHandoffRollbackGateRows =
+    activeLegalBenchmarkDefaultPromotionExecutionHandoff?.rollback_gate_items ?? [];
+  const legalBenchmarkDefaultPromotionExecutionHandoffSourceRows =
+    activeLegalBenchmarkDefaultPromotionExecutionHandoff?.source_status_rows ?? [];
+  const legalBenchmarkDefaultPromotionExecutionHandoffChecks =
+    activeLegalBenchmarkDefaultPromotionExecutionHandoff?.checks ?? [];
+  const legalBenchmarkDefaultPromotionExecutionHandoffPrivacyEntries = boundaryDisplayEntries(
+    activeLegalBenchmarkDefaultPromotionExecutionHandoff?.privacy_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
     ? [
@@ -7085,6 +7134,281 @@ function Inner() {
                 {legalBenchmarkDefaultPromotionSignoffPacketError && (
                   <div className="mt-2 text-xs font-semibold text-red-700">
                     {legalBenchmarkDefaultPromotionSignoffPacketError}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalBenchmarkDefaultPromotionExecutionHandoff || legalBenchmarkDefaultPromotionExecutionHandoffError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff?.summary.source_count)} sources /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff?.summary.handoff_row_count)} handoff rows /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff?.summary.rollback_ready_count)} rollback ready
+                </div>
+              </div>
+              {activeLegalBenchmarkDefaultPromotionExecutionHandoff && (
+                <Badge variant="outline" className={statusClass(activeLegalBenchmarkDefaultPromotionExecutionHandoff.status)}>
+                  {activeLegalBenchmarkDefaultPromotionExecutionHandoff.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalBenchmarkDefaultPromotionExecutionHandoff && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.ready_for_external_execution_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready handoffs</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.awaiting_external_signoff_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">awaiting evidence</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.blocked_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.not_run_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">not run</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.signoff_packet_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">signoff packet</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.rollback_ready_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">rollback ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.decision.default_change_allowed_by_execution_handoff)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.decision.rollback_execution_allowed)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">rollback execution</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Source</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Counts</TableHead>
+                          <TableHead>Boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalBenchmarkDefaultPromotionExecutionHandoffSourceRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.label}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_key}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.execution_status)}>
+                                {row.execution_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-600">
+                                source {row.source_status.replace(/_/g, ' ')}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>rows {formatNumber(row.row_count)}</div>
+                              <div>blocking {formatNumber(row.blocking_count)}</div>
+                              <div>warning {formatNumber(row.warning_count)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>config {String(row.configuration_written)}</div>
+                              <div>approval {String(row.approval_record_written)}</div>
+                              <div>signoff {String(row.signoff_record_written)}</div>
+                              <div>gateway {String(row.gateway_called)}</div>
+                              <div>network {String(row.network_called)}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Execution checks</h3>
+                    <div className="space-y-3">
+                      {legalBenchmarkDefaultPromotionExecutionHandoffChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {check.source_key} / {check.decision_effect.replace(/_/g, ' ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalBenchmarkDefaultPromotionExecutionHandoff.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Requirement</TableHead>
+                        <TableHead>Evidence</TableHead>
+                        <TableHead>Execution</TableHead>
+                        <TableHead>Steps</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionExecutionHandoffRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.requirement_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>signoff {row.external_signoff_status.replace(/_/g, ' ')}</div>
+                            <div>rollback {row.rollback_plan_status.replace(/_/g, ' ')}</div>
+                            <div>config diff {row.config_diff_status.replace(/_/g, ' ')}</div>
+                            <div>observation {row.observation_plan_status.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.execution_status)}>
+                              {row.execution_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.proposed_default_model}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">
+                              change allowed {String(row.default_change_allowed_by_execution_handoff)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {row.required_execution_steps.slice(0, 4).map((step) => (
+                              <div key={step}>{step}</div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            <div>{row.execution_action}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.rollback_checks.slice(0, 4).join(', ')}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Rollback gate</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Checks</TableHead>
+                        <TableHead>Boundary</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionExecutionHandoffRollbackGateRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_handoff_row_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.rollback_gate_status)}>
+                              {row.rollback_gate_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-600">
+                              plan {row.rollback_plan_status.replace(/_/g, ' ')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">{row.rollback_owner_role}</TableCell>
+                          <TableCell className="max-w-[320px] text-xs leading-5 text-stone-600">
+                            {row.rollback_checks.slice(0, 4).map((check) => (
+                              <div key={check}>{check}</div>
+                            ))}
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>rollback_execution_allowed {String(row.rollback_execution_allowed)}</div>
+                            <div>rollback_executed {String(row.rollback_executed)}</div>
+                            <div>traffic_shift_allowed {String(row.traffic_shift_allowed)}</div>
+                            <div>configuration_change_allowed {String(row.configuration_change_allowed)}</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Execution boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalBenchmarkDefaultPromotionExecutionHandoffPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source links</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeLegalBenchmarkDefaultPromotionExecutionHandoff.source_links).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: <span className="font-mono text-[11px]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  configuration_written: {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.configuration_written)} / env file written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.env_file_written)} / approval record written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.approval_record_written)} / signoff record written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.signoff_record_written)} / rollback_executed:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.rollback_executed)} / gateway called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.gateway_called)} / network called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.network_called)} / NewAPI called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.newapi_called)} / traffic_shifted:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.traffic_shifted)} / model output returned:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionExecutionHandoff.summary.raw_model_output_returned)}
+                </div>
+                {legalBenchmarkDefaultPromotionExecutionHandoffError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalBenchmarkDefaultPromotionExecutionHandoffError}
                   </div>
                 )}
               </>

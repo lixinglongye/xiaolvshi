@@ -106,6 +106,49 @@ def test_model_ops_readiness_blocks_on_legal_default_promotion_signoff_blocker()
     assert drilldown["severity"] == "p0_blocking_required"
 
 
+def test_model_ops_readiness_warns_on_legal_default_promotion_execution_handoff_review():
+    signals = _signals("pass")
+    signals["legal_benchmark_default_promotion_execution_handoff"] = {
+        "status": "review_required",
+        "summary": {"warn_count": 0, "fail_count": 0},
+        "blocking_check_ids": [],
+        "warning_check_ids": ["external-execution-evidence-incomplete"],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "warn"
+    assert "legal-benchmark-default-promotion-execution-handoff" in result["warning_check_ids"]
+    assert "legal-benchmark-default-promotion-execution-handoff" not in result["blocking_check_ids"]
+    drilldown = next(
+        item for item in result["warning_drilldown"]
+        if item["source_key"] == "legal_benchmark_default_promotion_execution_handoff"
+    )
+    assert drilldown["warning_category"] == "release_evidence_review"
+    assert drilldown["severity"] == "p1_required_review"
+    assert drilldown["privacy_boundary"]["gateway_called"] is False
+
+
+def test_model_ops_readiness_blocks_on_legal_default_promotion_execution_handoff_blocker():
+    signals = _signals("pass")
+    signals["legal_benchmark_default_promotion_execution_handoff"] = {
+        "status": "blocked",
+        "summary": {"warn_count": 0, "fail_count": 1},
+        "blocking_check_ids": ["default-promotion-signoff-packet-attached-not-blocked"],
+        "warning_check_ids": [],
+    }
+
+    result = ModelOpsReadinessService().evaluate(signals)
+
+    assert result["status"] == "fail"
+    assert "legal-benchmark-default-promotion-execution-handoff" in result["blocking_check_ids"]
+    drilldown = next(
+        item for item in result["warning_drilldown"]
+        if item["source_key"] == "legal_benchmark_default_promotion_execution_handoff"
+    )
+    assert drilldown["severity"] == "p0_blocking_required"
+
+
 def test_model_ops_readiness_warns_on_review_required_gemini_variant_matrix():
     signals = _signals("pass")
     signals["gemini_variant_matrix"] = {

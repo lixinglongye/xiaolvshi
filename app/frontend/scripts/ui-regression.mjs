@@ -4354,6 +4354,16 @@ const checks = [
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-signoff-packet', 'model-ops legal benchmark default-promotion signoff packet endpoint'),
   () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_signoff_packet', 'model-ops legal benchmark default-promotion signoff packet response binding'),
   () => assertIncludes(modelOpsApi, 'signoff_items?: unknown', 'model-ops legal benchmark default-promotion signoff packet payload guard'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff', 'model-ops legal benchmark default-promotion execution handoff type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRow', 'model-ops legal benchmark default-promotion execution handoff row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffSourceStatusRow', 'model-ops legal benchmark default-promotion execution handoff source row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffRollbackGateItem', 'model-ops legal benchmark default-promotion execution handoff rollback gate type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionExecutionHandoffCheck', 'model-ops legal benchmark default-promotion execution handoff check type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff', 'model-ops legal benchmark default-promotion execution handoff API helper'),
+  () => assertIncludes(modelOpsApi, 'evaluateModelOpsLegalBenchmarkDefaultPromotionExecutionHandoff', 'model-ops legal benchmark default-promotion execution handoff evaluation helper'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-execution-handoff', 'model-ops legal benchmark default-promotion execution handoff endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_execution_handoff', 'model-ops legal benchmark default-promotion execution handoff response binding'),
+  () => assertIncludes(modelOpsApi, 'rollback_gate_items?: unknown', 'model-ops legal benchmark default-promotion execution handoff payload guard'),
   () => assertIncludes(modelOpsPage, 'Legal fixture cheap-first regression budget', 'model-ops legal fixture regression budget panel'),
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_budget', 'model-ops legal fixture regression budget default-change boundary'),
   () => assertIncludes(modelOpsPage, 'source_regression_status', 'model-ops legal fixture regression budget source status summary'),
@@ -4379,6 +4389,17 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionSignoffPacketChecks', 'model-ops legal benchmark default-promotion signoff packet checks'),
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_signoff_packet', 'model-ops legal benchmark default-promotion signoff packet default-change boundary'),
   () => assertIncludes(modelOpsPage, 'pre_signoff_checks', 'model-ops legal benchmark default-promotion signoff packet pre-check binding'),
+  () => assertIncludes(modelOpsPage, 'Legal benchmark default-promotion execution handoff / rollback gate', 'model-ops legal benchmark default-promotion execution handoff panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkDefaultPromotionExecutionHandoff', 'model-ops legal benchmark default-promotion execution handoff active binding'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionExecutionHandoffRows', 'model-ops legal benchmark default-promotion execution handoff rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionExecutionHandoffRollbackGateRows', 'model-ops legal benchmark default-promotion execution rollback rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionExecutionHandoffSourceRows', 'model-ops legal benchmark default-promotion execution source rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionExecutionHandoffChecks', 'model-ops legal benchmark default-promotion execution checks'),
+  () => assertIncludes(modelOpsPage, 'default_change_allowed_by_execution_handoff', 'model-ops legal benchmark default-promotion execution default-change boundary'),
+  () => assertIncludes(modelOpsPage, 'rollback_execution_allowed', 'model-ops legal benchmark default-promotion execution rollback allowed boundary'),
+  () => assertIncludes(modelOpsPage, 'rollback_executed', 'model-ops legal benchmark default-promotion execution rollback executed boundary'),
+  () => assertIncludes(modelOpsPage, 'traffic_shifted', 'model-ops legal benchmark default-promotion execution traffic boundary'),
+  () => assertIncludes(modelOpsPage, 'configuration_written', 'model-ops legal benchmark default-promotion execution config boundary'),
   () => assertIncludes(modelOpsApi, 'legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff response binding'),
   () => assertIncludes(modelOpsApi, 'gate_rows', 'model-ops legal fixture benchmark gate payload guard'),
   () => assertIncludes(modelOpsApi, 'handoff_rows?: unknown', 'model-ops legal fixture evidence handoff payload guard'),
@@ -4450,8 +4471,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion signoff packet</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
+    'model-ops legal benchmark default-promotion execution handoff follows signoff packet',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
     '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
-    'model-ops legal benchmark default-promotion signoff packet precedes evidence handoff',
+    'model-ops legal benchmark default-promotion execution handoff precedes evidence handoff',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -5002,13 +5029,24 @@ assertNotMatches(
 const modelOpsLegalBenchmarkDefaultPromotionSignoffPacketPanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion signoff packet</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
   'model-ops legal benchmark default-promotion signoff packet section',
 );
 assertNotMatches(
   modelOpsLegalBenchmarkDefaultPromotionSignoffPacketPanel,
   /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY|raw_prompt|prompt_payload|raw_payload|raw_model_output_value|raw_model_output_text|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email_address|phone_number|identity_value|identity_token|messages|fixture_snippet|benchmark_sample|input_excerpt|output_text)\b/i,
   'model-ops legal benchmark default-promotion signoff packet no secrets or raw benchmark/model/payload fields',
+);
+const modelOpsLegalBenchmarkDefaultPromotionExecutionHandoffPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion execution handoff / rollback gate</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  'model-ops legal benchmark default-promotion execution handoff section',
+);
+assertNotMatches(
+  modelOpsLegalBenchmarkDefaultPromotionExecutionHandoffPanel,
+  /\b(sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY|raw_prompt|prompt_payload|raw_payload|raw_model_output_value|raw_model_output_text|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_contact_details|client_email|email_address|phone_number|identity_value|identity_token|messages|fixture_snippet|benchmark_sample|input_excerpt|output_text)\b/i,
+  'model-ops legal benchmark default-promotion execution handoff no secrets or raw benchmark/model/payload fields',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
