@@ -1800,6 +1800,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-coverage": "python -m pytest tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py -q",
         "legal-document-benchmark-route-plan": "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
+        "legal-document-benchmark-route-plan-override-ui": "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-fixture-ui": "python -m pytest tests/test_legal_document_benchmark_fixtures.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-fact-consistency-benchmark": "python -m pytest tests/test_legal_document_fact_consistency_benchmark.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "frontend-ui-regression-gate": "python -m pytest tests/test_frontend_ui_regression_gate.py -q",
@@ -1931,6 +1932,21 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "evidence_paths"
     ]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
+    assert "route override preview" in checks["legal-document-benchmark-route-plan-override-ui"]["manual_note"]
+    assert "case id, primary task, model id, and approval mode" in checks[
+        "legal-document-benchmark-route-plan-override-ui"
+    ]["manual_note"]
+    assert "blocks credential-shaped model inputs" in checks[
+        "legal-document-benchmark-route-plan-override-ui"
+    ]["manual_note"]
+    assert "raw fixture snippets" in checks["legal-document-benchmark-route-plan-override-ui"]["manual_note"]
+    assert "credentials" in checks["legal-document-benchmark-route-plan-override-ui"]["manual_note"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in checks[
+        "legal-document-benchmark-route-plan-override-ui"
+    ]["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in checks[
+        "legal-document-benchmark-route-plan-override-ui"
+    ]["evidence_paths"]
     assert "synthetic legal document fixture suite" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
     assert "empty-prediction evaluator" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]
     assert "readable zh-CN fixture metadata" in checks["legal-document-benchmark-fixture-ui"]["manual_note"]

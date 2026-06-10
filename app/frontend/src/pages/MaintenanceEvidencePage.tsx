@@ -41,6 +41,7 @@ import {
   getLegalBenchmarkFixtureCrosswalk,
   getLegalDocumentBenchmarkCoverage,
   getLegalDocumentBenchmarkRoutePlan,
+  evaluateLegalDocumentBenchmarkRoutePlan,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -653,6 +654,12 @@ function hasForbiddenAnswerReleaseReadinessPayloadText(value: string) {
   );
 }
 
+function hasForbiddenRoutePlanOverrideModel(value: string) {
+  return /sk-[A-Za-z0-9_-]{20,}|authorization|api[_-]?key|password|secret|credential|bearer|token|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/i.test(
+    value,
+  );
+}
+
 type LedgerBucket = 'completed_updates' | 'next_update_queue';
 type LedgerEntryWithBucket = ContinuousUpdateLedgerEntry & { bucket: LedgerBucket };
 type MaintenanceLoadFailure = {
@@ -876,6 +883,12 @@ function Inner() {
     useState<LegalDocumentBenchmarkCoverage | null>(null);
   const [legalDocumentBenchmarkRoutePlan, setLegalDocumentBenchmarkRoutePlan] =
     useState<LegalDocumentBenchmarkRoutePlan | null>(null);
+  const [routePlanOverrideCaseId, setRoutePlanOverrideCaseId] = useState('');
+  const [routePlanOverrideTask, setRoutePlanOverrideTask] = useState('review');
+  const [routePlanOverrideModel, setRoutePlanOverrideModel] = useState('gemini-2.5-pro');
+  const [routePlanOverrideApproval, setRoutePlanOverrideApproval] = useState('blocked');
+  const [routePlanOverrideError, setRoutePlanOverrideError] = useState('');
+  const [routePlanOverrideLoading, setRoutePlanOverrideLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1836,6 +1849,46 @@ function Inner() {
     const request = fixtureLocalRunPackage?.request_files.find((item) => item.fixture_id === fixtureId);
     if (request) {
       setFixtureReviewModel(request.model);
+    }
+  };
+
+  const previewLegalDocumentRoutePlanOverride = async () => {
+    setRoutePlanOverrideLoading(true);
+    setRoutePlanOverrideError('');
+    try {
+      const caseId =
+        routePlanOverrideCaseId.trim() ||
+        legalDocumentBenchmarkRoutePlan?.case_route_rows[0]?.case_id ||
+        '';
+      if (!caseId) {
+        setRoutePlanOverrideError('Select a benchmark case before previewing a route override.');
+        return;
+      }
+      const primaryModel = routePlanOverrideModel.trim();
+      if (primaryModel && hasForbiddenRoutePlanOverrideModel(primaryModel)) {
+        setRoutePlanOverrideError('Model override must be a model id only. Remove credentials, emails, tokens, or headers.');
+        return;
+      }
+      const override: Record<string, unknown> = {
+        primary_task: routePlanOverrideTask,
+        allow_over_budget_model: routePlanOverrideApproval === 'approved',
+      };
+      if (primaryModel) {
+        override.primary_model = primaryModel;
+      }
+      setLegalDocumentBenchmarkRoutePlan(
+        await evaluateLegalDocumentBenchmarkRoutePlan({
+          case_route_overrides: {
+            [caseId]: override,
+          },
+        }),
+      );
+      setRoutePlanOverrideCaseId(caseId);
+    } catch (err) {
+      console.error(err);
+      setRoutePlanOverrideError('Legal document benchmark route override preview failed.');
+    } finally {
+      setRoutePlanOverrideLoading(false);
     }
   };
 
@@ -9152,6 +9205,97 @@ function Inner() {
                       <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-white p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black uppercase text-stone-500">Override preview</h3>
+                      <div className="mt-1 text-xs leading-5 text-stone-600">
+                        Preview a single metadata-only route override before any benchmark run or default change.
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={previewLegalDocumentRoutePlanOverride}
+                      disabled={routePlanOverrideLoading}
+                    >
+                      {routePlanOverrideLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Target className="h-4 w-4" />
+                      )}
+                      Preview override
+                    </Button>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+                    <label className="space-y-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      Benchmark case
+                      <Select
+                        value={routePlanOverrideCaseId || legalDocumentBenchmarkRoutePlan.case_route_rows[0]?.case_id || ''}
+                        onValueChange={setRoutePlanOverrideCaseId}
+                      >
+                        <SelectTrigger className="h-9 rounded-[8px] bg-white normal-case tracking-normal">
+                          <SelectValue placeholder="Select case" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {legalDocumentBenchmarkRoutePlan.case_route_rows.map((row) => (
+                            <SelectItem key={row.case_id} value={row.case_id}>
+                              {row.document_type.replace(/_/g, ' ')} / {row.case_id}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label className="space-y-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      Primary task
+                      <Select value={routePlanOverrideTask} onValueChange={setRoutePlanOverrideTask}>
+                        <SelectTrigger className="h-9 rounded-[8px] bg-white normal-case tracking-normal">
+                          <SelectValue placeholder="Select task" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['classification', 'fast', 'review', 'document-generation', 'grounded-research', 'pdf'].map(
+                            (task) => (
+                              <SelectItem key={task} value={task}>
+                                {task.replace(/-/g, ' ')}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    <label className="space-y-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      Model id
+                      <Input
+                        className="h-9 rounded-[8px] bg-white font-mono text-xs normal-case tracking-normal"
+                        value={routePlanOverrideModel}
+                        onChange={(event) => setRoutePlanOverrideModel(event.target.value)}
+                        placeholder="gemini-2.5-pro"
+                      />
+                    </label>
+                    <label className="space-y-1 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      Approval mode
+                      <Select value={routePlanOverrideApproval} onValueChange={setRoutePlanOverrideApproval}>
+                        <SelectTrigger className="h-9 rounded-[8px] bg-white normal-case tracking-normal">
+                          <SelectValue placeholder="Approval mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="blocked">No approval</SelectItem>
+                          <SelectItem value="approved">Simulate approval</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+                  </div>
+                  {routePlanOverrideError && (
+                    <div className="mt-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                      {routePlanOverrideError}
+                    </div>
+                  )}
+                  <div className="mt-3 text-xs leading-5 text-stone-500">
+                    The preview only sends case id, task, model id, and approval mode; credentials and raw document
+                    material are blocked at the UI boundary.
+                  </div>
                 </div>
 
                 <div className="mb-3 grid gap-3 lg:grid-cols-[1.25fr_0.75fr]">

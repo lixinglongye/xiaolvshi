@@ -1,5 +1,19 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route override UI slice:
+`legal-document-benchmark-route-plan-override-ui` adds a maintenance-page
+override preview for the local legal-document benchmark route plan. Maintainers
+can choose a synthetic benchmark case, primary task, model id, and approval mode
+to preview whether the cheap-first route plan blocks a premium default or routes
+back to the recommended Gemini model before any benchmark execution or default
+change. The UI only submits metadata under `case_route_overrides` and blocks
+credential-shaped model input. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, public datasets, or the network; save route
+overrides; change defaults; execute benchmark runs; return raw fixture snippets,
+generated document text, prompts, payload bodies, model outputs, gateway
+responses, headers, emails, identifiers, or credentials; or claim production
+quality, public benchmark scores, legal advice, or default-promotion approval.
+
 Current legal document benchmark route plan slice:
 `legal-document-benchmark-route-plan` adds a metadata-only cheap-first route
 plan for the local synthetic legal-document benchmark. It maps each benchmark

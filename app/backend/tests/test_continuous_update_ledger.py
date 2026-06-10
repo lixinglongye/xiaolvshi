@@ -727,6 +727,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" in completed_ids
     assert "legal-document-benchmark-coverage" in completed_ids
     assert "legal-document-benchmark-route-plan" in completed_ids
+    assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
     assert "legal-document-template-benchmark-alignment" in completed_ids
     template_benchmark_alignment_entry = next(
@@ -775,6 +776,30 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "model-runtime-router" in legal_document_benchmark_route_plan_entry["release_gate_links"]
     assert "model-default-candidate-selector" in legal_document_benchmark_route_plan_entry["release_gate_links"]
     assert "modelops-gemini-cheap-first-route-preflight" in legal_document_benchmark_route_plan_entry[
+        "release_gate_links"
+    ]
+    legal_document_benchmark_route_plan_override_ui_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-override-ui"
+    )
+    assert legal_document_benchmark_route_plan_override_ui_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_override_ui_entry["status"] == "shipped"
+    assert "route override preview" in legal_document_benchmark_route_plan_override_ui_entry["impact"]
+    assert "case id, primary task, model id, and approval mode" in legal_document_benchmark_route_plan_override_ui_entry[
+        "impact"
+    ]
+    assert "credential-shaped model input blocked" in legal_document_benchmark_route_plan_override_ui_entry["impact"]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_override_ui_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/scripts/ui-regression.mjs" in legal_document_benchmark_route_plan_override_ui_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-override-ui" in legal_document_benchmark_route_plan_override_ui_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan" in legal_document_benchmark_route_plan_override_ui_entry[
         "release_gate_links"
     ]
     legal_document_benchmark_fixture_ui_entry = next(
@@ -1188,6 +1213,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-suite" not in queue_ids
     assert "legal-document-benchmark-coverage" not in queue_ids
     assert "legal-document-benchmark-route-plan" not in queue_ids
+    assert "legal-document-benchmark-route-plan-override-ui" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids
     assert "legal-document-benchmark-coverage-ui" not in queue_ids
@@ -1410,6 +1436,12 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
         "tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py "
         "tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py "
         "tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_legal_document_benchmark_route_plan.py "
+        "tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression"
         in ledger["validation_commands"]
     )
     assert (

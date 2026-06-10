@@ -158,3 +158,11 @@ def test_legal_document_benchmark_route_plan_route_returns_template_and_assessme
     assert payload["success"] is True
     assert payload["data"]["status"] == "blocked"
     assert "no-premium-primary-defaults" in payload["data"]["blocking_check_ids"]
+    assert payload["data"]["summary"]["override_count"] == 1
+    assert payload["data"]["summary"]["network_access"] == "disabled"
+    assert payload["data"]["privacy_boundary"]["model_calls"] is False
+    assert payload["data"]["privacy_boundary"]["returns_credentials"] is False
+    rows = {row["case_id"]: row for row in payload["data"]["case_route_rows"]}
+    target = rows["ldoc-contract-review-mini"]
+    assert target["override_applied"] is True
+    assert target["primary_route"]["resolved_model"] == "gemini-2.5-pro"

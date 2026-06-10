@@ -3178,6 +3178,35 @@ class ReleaseReadinessService:
                 manual_note="This exposes fixture coverage gaps on the maintenance evidence page without rendering raw fixture snippets, prompts, model responses, or client material.",
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-route-plan-override-ui",
+                title="Legal document benchmark route plan override UI",
+                category="frontend_ui",
+                required=False,
+                owner="frontend",
+                evidence_paths=(
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_route_plan.py "
+                    "tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py "
+                    "tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && "
+                    "npm run ui:regression"
+                ),
+                manual_note=(
+                    "This exposes a metadata-only legal-document benchmark route override preview on the maintenance "
+                    "page so maintainers can test a case id, primary task, model id, and approval mode before any "
+                    "benchmark execution or default change. The UI blocks credential-shaped model inputs and does "
+                    "not render or submit raw fixture snippets, prompts, generated document text, gateway responses, "
+                    "headers, credentials, emails, or client identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-fixture-ui",
                 title="Legal document benchmark fixture UI",
                 category="frontend_ui",

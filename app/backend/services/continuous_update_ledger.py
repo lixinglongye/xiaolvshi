@@ -220,6 +220,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
+                "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_benchmark_research_refresh.py tests/test_legal_benchmark_research_registry.py tests/test_legal_adoption_research_bridge.py -q",
@@ -6096,6 +6097,35 @@ class ContinuousUpdateLedgerService:
                     "modelops-gemini-cheap-first-route-preflight",
                 ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
+            ),
+            LedgerEntry(
+                id="legal-document-benchmark-route-plan-override-ui",
+                title="Legal document benchmark route override UI",
+                category="frontend_ui",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a maintenance-page route override preview for synthetic legal-document benchmark cases "
+                    "so maintainers can test case id, primary task, model id, and approval mode against the "
+                    "cheap-first route plan before benchmark execution or default changes, with credential-shaped "
+                    "model input blocked at the UI boundary."
+                ),
+                evidence_paths=(
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-route-plan-override-ui",
+                    "legal-document-benchmark-route-plan",
+                    "frontend-ui-regression",
+                    "frontend-typecheck",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "reviewer-visibility"),
             ),
             LedgerEntry(
                 id="legal-document-benchmark-gap-fixtures",
