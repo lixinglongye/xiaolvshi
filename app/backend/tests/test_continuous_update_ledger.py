@@ -729,6 +729,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan" in completed_ids
     assert "legal-document-benchmark-route-plan-replay" in completed_ids
     assert "legal-document-benchmark-route-plan-research-alignment" in completed_ids
+    assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
     assert "legal-document-template-benchmark-alignment" in completed_ids
@@ -858,6 +859,47 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_research_alignment.py" in command
+        for command in ledger["validation_commands"]
+    )
+    oss_maintenance_route_plan_research_alignment_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "oss-maintenance-route-plan-research-alignment"
+    )
+    assert oss_maintenance_route_plan_research_alignment_entry["category"] == "maintenance"
+    assert oss_maintenance_route_plan_research_alignment_entry["size"] == "medium"
+    assert oss_maintenance_route_plan_research_alignment_entry["status"] == "shipped"
+    assert "OSS maintenance profile" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "release-readiness control list" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "quality signal evidence paths" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "application guardrails" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "model calls" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "public benchmark text" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "scenario payloads" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "credentials" in oss_maintenance_route_plan_research_alignment_entry["impact"]
+    assert "app/backend/services/maintenance_evidence.py" in oss_maintenance_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_maintenance_evidence.py" in oss_maintenance_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert (
+        "app/backend/services/legal_document_benchmark_route_plan_research_alignment.py"
+        in oss_maintenance_route_plan_research_alignment_entry["evidence_paths"]
+    )
+    assert "docs/OSS_MAINTENANCE_EVIDENCE.md" in oss_maintenance_route_plan_research_alignment_entry[
+        "evidence_paths"
+    ]
+    assert "oss-maintenance-evidence" in oss_maintenance_route_plan_research_alignment_entry["release_gate_links"]
+    assert "legal-document-benchmark-route-plan-replay" in oss_maintenance_route_plan_research_alignment_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-research-alignment" in oss_maintenance_route_plan_research_alignment_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_maintenance_evidence.py tests/test_legal_document_benchmark_route_plan_research_alignment.py"
+        in command
         for command in ledger["validation_commands"]
     )
     legal_document_benchmark_route_plan_override_ui_entry = next(

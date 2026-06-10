@@ -1,5 +1,13 @@
 # OSS Maintenance Evidence
 
+Legal document route-plan replay and research-alignment evidence is now part of
+the OSS maintenance profile. It may describe repository-backed cheap-first route
+planning, replay status, stored Gemini official model/pricing URLs, and
+FrugalGPT/LegalBench-RAG/LexEval source anchors, but it must not claim model or
+network execution, external benchmark scores, public benchmark text validation,
+default-promotion approval, scenario-payload disclosure, real client-document
+coverage, or credential handling.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

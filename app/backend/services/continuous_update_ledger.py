@@ -222,6 +222,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_replay.py tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_legal_document_benchmark_route_plan_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_maintenance_evidence.py tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
                 "python -m pytest tests/test_legal_document_coverage_claim_policy.py -q",
@@ -6167,6 +6168,36 @@ class ContinuousUpdateLedgerService:
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
+            ),
+            LedgerEntry(
+                id="oss-maintenance-route-plan-research-alignment",
+                title="OSS maintenance route-plan research alignment evidence",
+                category="maintenance",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Binds legal document route-plan replay and research-alignment evidence into the OSS "
+                    "maintenance profile, release-readiness control list, quality signal evidence paths, "
+                    "and application guardrails so support reviewers see cheap-first route planning and "
+                    "source-alignment boundaries without model calls, network calls, public benchmark text, "
+                    "scenario payloads, raw fixture snippets, prompts, model outputs, gateway responses, "
+                    "or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/maintenance_evidence.py",
+                    "app/backend/tests/test_maintenance_evidence.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_replay.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_research_alignment.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_research_alignment.py",
+                    "docs/OSS_MAINTENANCE_EVIDENCE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                ),
+                release_gate_links=(
+                    "oss-maintenance-evidence",
+                    "legal-document-benchmark-route-plan-replay",
+                    "legal-document-benchmark-route-plan-research-alignment",
+                ),
+                user_need_ids=("reviewer-visibility", "grounded-legal-output", "gemini-cheap-first-routing"),
             ),
             LedgerEntry(
                 id="legal-document-benchmark-route-plan-override-ui",

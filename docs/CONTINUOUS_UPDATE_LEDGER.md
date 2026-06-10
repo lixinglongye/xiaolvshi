@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current OSS maintenance route-plan research alignment slice:
+`oss-maintenance-route-plan-research-alignment` binds the legal document
+route-plan replay and research-alignment evidence into the OSS maintenance
+profile, release-readiness controls, quality signal evidence paths, and
+application guardrails. It makes the reviewer-facing maintenance endpoint show
+cheap-first route planning, replay status, and stored Gemini/FrugalGPT/
+LegalBench-RAG/LexEval source-alignment boundaries alongside other project
+maintenance evidence. It does not call NewAPI, Gemini, OpenAI, Google,
+gateways, app AI endpoints, models, public datasets, or the network; download
+papers or benchmark data; execute benchmark runs; change defaults; shift
+traffic; write configuration; or return public benchmark text, raw fixture
+snippets, generated document text, prompts, submitted scenario rationale,
+scenario payloads, model outputs, gateway responses, emails, identifiers, or
+credentials.
+
 Current legal document benchmark route-plan research alignment slice:
 `legal-document-benchmark-route-plan-research-alignment` maps the route-plan
 replay scenarios to stored Gemini official model/pricing URLs, FrugalGPT
