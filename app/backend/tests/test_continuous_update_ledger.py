@@ -489,6 +489,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-observed-gemini-coverage-gap-queue" in completed_ids
     assert "modelops-gemini-official-cheap-first-source-review" in completed_ids
     assert "modelops-gemini-official-model-family-roadmap-evidence" in completed_ids
+    assert "modelops-gemini-official-lifecycle-drift-gate" in completed_ids
     assert "small-legal-document-corpus-expansion" in completed_ids
     assert "legal-rag-failure-fixtures" in completed_ids
     assert "model-cost-regression-snapshots" in completed_ids
@@ -973,6 +974,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-observed-gemini-coverage-gap-queue" not in queue_ids
     assert "modelops-gemini-official-cheap-first-source-review" not in queue_ids
     assert "modelops-gemini-official-model-family-roadmap-evidence" not in queue_ids
+    assert "modelops-gemini-official-lifecycle-drift-gate" not in queue_ids
     assert "route-telemetry-repository" not in queue_ids
     assert "runtime-route-reason-codes" not in queue_ids
     assert "pdf-image-route-telemetry" not in queue_ids
@@ -1142,6 +1144,13 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     )
     assert (
         "python -m pytest tests/test_model_ops_gemini_official_model_family_roadmap.py "
+        "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
+        "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q "
+        "&& cd ../frontend && npm run typecheck && npm run ui:regression"
+        in ledger["validation_commands"]
+    )
+    assert (
+        "python -m pytest tests/test_model_ops_gemini_official_lifecycle_drift_gate.py "
         "tests/test_model_ops_readiness.py tests/test_release_readiness.py "
         "tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q "
         "&& cd ../frontend && npm run typecheck && npm run ui:regression"
@@ -3308,6 +3317,62 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "modelops-observed-gemini-coverage-gap-queue" in gemini_official_roadmap_entry["release_gate_links"]
     assert "model-ops-readiness" in gemini_official_roadmap_entry["release_gate_links"]
     assert "frontend-ui-regression" in gemini_official_roadmap_entry["release_gate_links"]
+
+    gemini_official_lifecycle_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "modelops-gemini-official-lifecycle-drift-gate"
+    )
+    assert gemini_official_lifecycle_entry["category"] == "model_ops"
+    assert gemini_official_lifecycle_entry["size"] == "medium"
+    assert gemini_official_lifecycle_entry["status"] == "shipped"
+    assert "metadata-only Gemini lifecycle drift gate evidence" in gemini_official_lifecycle_entry["impact"]
+    assert "stable Flash-Lite" in gemini_official_lifecycle_entry["impact"]
+    assert "gateway-observed Gemini/NewAPI names as review-only" in gemini_official_lifecycle_entry["impact"]
+    assert "preview/deprecated/shutdown lifecycle defaults" in gemini_official_lifecycle_entry["impact"]
+    assert "catalog lifecycle drift" in gemini_official_lifecycle_entry["impact"]
+    assert "without NewAPI/Gemini/OpenAI/Google/gateway/network/model calls" in (
+        gemini_official_lifecycle_entry["impact"]
+    )
+    assert "configuration writes" in gemini_official_lifecycle_entry["impact"]
+    assert "default changes" in gemini_official_lifecycle_entry["impact"]
+    assert "request bodies" in gemini_official_lifecycle_entry["impact"]
+    assert "response bodies" in gemini_official_lifecycle_entry["impact"]
+    assert "headers" in gemini_official_lifecycle_entry["impact"]
+    assert "model outputs" in gemini_official_lifecycle_entry["impact"]
+    assert "credentials" in gemini_official_lifecycle_entry["impact"]
+    assert "app/backend/services/model_catalog.py" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_official_lifecycle_drift_gate.py" in (
+        gemini_official_lifecycle_entry["evidence_paths"]
+    )
+    assert "app/backend/tests/test_model_ops_gemini_official_lifecycle_drift_gate.py" in (
+        gemini_official_lifecycle_entry["evidence_paths"]
+    )
+    assert "app/backend/services/model_ops_readiness.py" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/backend/services/release_readiness.py" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/backend/services/continuous_update_ledger.py" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/backend/routers/aihub.py" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/frontend/src/lib/modelOpsApi.ts" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "app/frontend/scripts/ui-regression.mjs" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "docs/MODELOPS_GEMINI_OFFICIAL_LIFECYCLE_DRIFT_GATE.md" in (
+        gemini_official_lifecycle_entry["evidence_paths"]
+    )
+    assert "docs/AI_MODEL_STRATEGY.md" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "docs/MODEL_OPS_READINESS.md" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "docs/CONTINUOUS_UPDATE_LEDGER.md" in gemini_official_lifecycle_entry["evidence_paths"]
+    assert "modelops-gemini-official-lifecycle-drift-gate" in (
+        gemini_official_lifecycle_entry["release_gate_links"]
+    )
+    assert "modelops-gemini-official-cheap-first-source-review" in (
+        gemini_official_lifecycle_entry["release_gate_links"]
+    )
+    assert "modelops-gemini-official-model-family-roadmap-evidence" in (
+        gemini_official_lifecycle_entry["release_gate_links"]
+    )
+    assert "modelops-gemini-cheap-first-route-preflight" in gemini_official_lifecycle_entry["release_gate_links"]
+    assert "model-ops-readiness" in gemini_official_lifecycle_entry["release_gate_links"]
+    assert "frontend-ui-regression" in gemini_official_lifecycle_entry["release_gate_links"]
 
     route_telemetry_catalog_cost_entry = next(
         entry

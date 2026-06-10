@@ -753,6 +753,9 @@ approver identity, apply the change, or shift traffic.
 - `app/backend/services/model_ops_gemini_official_model_family_roadmap.py`
 - `app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py`
 - `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
+- `app/backend/services/model_ops_gemini_official_lifecycle_drift_gate.py`
+- `app/backend/tests/test_model_ops_gemini_official_lifecycle_drift_gate.py`
+- `docs/MODELOPS_GEMINI_OFFICIAL_LIFECYCLE_DRIFT_GATE.md`
 - `app/backend/services/model_cost_regression_snapshots.py`
 - `app/backend/services/route_telemetry_persistence_plan.py`
 - `app/backend/services/maintenance_heartbeat_evidence.py`

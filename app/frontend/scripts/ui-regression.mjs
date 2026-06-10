@@ -143,8 +143,14 @@ const catalogCandidatePatchPlanPanel = sourceSection(
 const geminiOfficialCheapFirstSourceReviewPanel = sourceSection(
   modelOpsPage,
   '{(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (',
-  '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+  '{(activeGeminiOfficialLifecycleDriftGate || geminiOfficialLifecycleDriftGateError) && (',
   'model-ops Gemini official cheap-first source review section',
+);
+const geminiOfficialLifecycleDriftGatePanel = sourceSection(
+  modelOpsPage,
+  '{(activeGeminiOfficialLifecycleDriftGate || geminiOfficialLifecycleDriftGateError) && (',
+  '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
+  'model-ops Gemini official lifecycle drift gate section',
 );
 const geminiOfficialModelFamilyRoadmapEvidencePanel = sourceSection(
   modelOpsPage,
@@ -4054,14 +4060,45 @@ const checks = [
     assertBefore(
       modelOpsPage,
       '{(activeGeminiOfficialCheapFirstSourceReview || geminiOfficialCheapFirstSourceReviewError) && (',
+      '{(activeGeminiOfficialLifecycleDriftGate || geminiOfficialLifecycleDriftGateError) && (',
+      'model-ops Gemini lifecycle drift gate follows cheap-first source review',
+    ),
+  () =>
+    assertBefore(
+      modelOpsPage,
+      '{(activeGeminiOfficialLifecycleDriftGate || geminiOfficialLifecycleDriftGateError) && (',
       '{(activeGeminiOfficialModelFamilyRoadmapEvidence || geminiOfficialModelFamilyRoadmapEvidenceError) && (',
-      'model-ops Gemini official roadmap follows cheap-first source review',
+      'model-ops Gemini official roadmap follows lifecycle drift gate',
     ),
   () =>
     assertNotMatches(
       geminiOfficialCheapFirstSourceReviewPanel,
       /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|email)\b/i,
       'model-ops Gemini official cheap-first source review no secrets or raw request/prompt/output fields',
+    ),
+  () => assertIncludes(modelOpsApi, 'ModelOpsGeminiOfficialLifecycleDriftGate', 'model-ops Gemini official lifecycle drift gate type'),
+  () => assertIncludes(modelOpsApi, 'gemini_official_lifecycle_drift_gate', 'model-ops Gemini official lifecycle drift gate response binding'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsGeminiOfficialLifecycleDriftGate', 'model-ops Gemini official lifecycle drift gate API'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/gemini-official-lifecycle-drift-gate', 'model-ops Gemini official lifecycle drift gate endpoint'),
+  () => assertIncludes(modelOpsApi, 'lifecycle_rows', 'model-ops Gemini official lifecycle row payload guard'),
+  () => assertIncludes(modelOpsApi, 'default_task_rows', 'model-ops Gemini official lifecycle default row payload guard'),
+  () => assertIncludes(modelOpsApi, 'stable_flash_lite_aligned', 'model-ops Gemini official lifecycle cheap-first alignment guard'),
+  () => assertIncludes(modelOpsApi, 'blocked_default', 'model-ops Gemini official lifecycle default block guard'),
+  () => assertIncludes(modelOpsApi, 'drift_status', 'model-ops Gemini official lifecycle drift status guard'),
+  () => assertIncludes(modelOpsPage, 'Gemini official lifecycle drift gate', 'model-ops Gemini official lifecycle drift gate panel'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialLifecycleDriftGate', 'model-ops Gemini official lifecycle state binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialLifecycleDefaultRows', 'model-ops Gemini official lifecycle default row binding'),
+  () => assertIncludes(modelOpsPage, 'geminiOfficialLifecycleRows', 'model-ops Gemini official lifecycle row binding'),
+  () => assertIncludes(modelOpsPage, 'stable_flash_lite_aligned', 'model-ops Gemini official lifecycle default alignment display'),
+  () => assertIncludes(modelOpsPage, 'blocked_default', 'model-ops Gemini official lifecycle blocked default display'),
+  () => assertIncludes(modelOpsPage, 'Official lifecycle sources', 'model-ops Gemini official lifecycle sources panel'),
+  () => assertIncludes(modelOpsPage, 'Lifecycle checks', 'model-ops Gemini official lifecycle checks panel'),
+  () => assertIncludes(modelOpsPage, 'Lifecycle boundary', 'model-ops Gemini official lifecycle boundary panel'),
+  () =>
+    assertNotMatches(
+      geminiOfficialLifecycleDriftGatePanel,
+      /\b(sk-[A-Za-z0-9]{20,}|credential_value|api_key|authorization|secret_value|raw_prompt|prompt_payload|raw_payload|raw_model_output|generated_text|candidate_text|request_body|response_body|headers|email)\b/i,
+      'model-ops Gemini official lifecycle drift gate no secrets or raw request/prompt/output fields',
     ),
   () => assertIncludes(modelOpsApi, 'ModelOpsGeminiOfficialModelFamilyRoadmapEvidence', 'model-ops Gemini official model family roadmap evidence type'),
   () => assertIncludes(modelOpsApi, 'gemini_official_model_family_roadmap_evidence', 'model-ops Gemini official model family roadmap evidence response binding'),

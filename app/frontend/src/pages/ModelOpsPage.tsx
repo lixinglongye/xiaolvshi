@@ -58,6 +58,7 @@ import {
   getModelOpsUserNeedReleaseBridge,
   getModelOpsGeminiOfficialCheapFirstSourceReview,
   getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
+  getModelOpsGeminiOfficialLifecycleDriftGate,
   getModelGatewayProbeTemplate,
   getModelOps,
   type ModelCatalogItem,
@@ -102,6 +103,7 @@ import {
   type ModelOpsUserNeedReleaseBridge,
   type ModelOpsGeminiOfficialCheapFirstSourceReview,
   type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
+  type ModelOpsGeminiOfficialLifecycleDriftGate,
   type ModelOpsGeminiDefaultChangeReview,
   type ModelOpsGeminiDefaultCostImpact,
   type ModelOpsNewApiChannelBootstrap,
@@ -626,6 +628,9 @@ function Inner() {
     useState<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence | null>(null);
   const [geminiOfficialModelFamilyRoadmapEvidenceError, setGeminiOfficialModelFamilyRoadmapEvidenceError] =
     useState('');
+  const [geminiOfficialLifecycleDriftGate, setGeminiOfficialLifecycleDriftGate] =
+    useState<ModelOpsGeminiOfficialLifecycleDriftGate | null>(null);
+  const [geminiOfficialLifecycleDriftGateError, setGeminiOfficialLifecycleDriftGateError] = useState('');
   const [geminiCheapFirstRoutePreflight, setGeminiCheapFirstRoutePreflight] =
     useState<ModelOpsGeminiCheapFirstRoutePreflight | null>(null);
   const [geminiCheapFirstRoutePreflightPayloadText, setGeminiCheapFirstRoutePreflightPayloadText] = useState(
@@ -747,6 +752,7 @@ function Inner() {
     setGeminiResearchRefreshGate(payload.gemini_research_refresh_gate ?? null);
     setGeminiOfficialCheapFirstSourceReview(payload.gemini_official_cheap_first_source_review ?? null);
     setGeminiOfficialModelFamilyRoadmapEvidence(payload.gemini_official_model_family_roadmap_evidence ?? null);
+    setGeminiOfficialLifecycleDriftGate(payload.gemini_official_lifecycle_drift_gate ?? null);
     setAihubEndpointRouteCoverageGate(payload.aihub_endpoint_route_coverage_gate ?? null);
     setAihubMediaSpeechDefaultCatalogGate(payload.aihub_media_speech_default_catalog_gate ?? null);
     setAihubMediaRuntimeCompatibilityGate(payload.aihub_media_runtime_compatibility_gate ?? null);
@@ -782,6 +788,8 @@ function Inner() {
     setGeminiOfficialCheapFirstSourceReview(null);
     setGeminiOfficialModelFamilyRoadmapEvidenceError('');
     setGeminiOfficialModelFamilyRoadmapEvidence(null);
+    setGeminiOfficialLifecycleDriftGateError('');
+    setGeminiOfficialLifecycleDriftGate(null);
     setGeminiCheapFirstRoutePreflightError('');
     setGeminiCheapFirstRoutePreflight(null);
     setGeminiResearchRefreshGateError('');
@@ -858,6 +866,7 @@ function Inner() {
         geminiCheapFirstCoverageGateResult,
         geminiOfficialCheapFirstSourceReviewResult,
         geminiOfficialModelFamilyRoadmapEvidenceResult,
+        geminiOfficialLifecycleDriftGateResult,
         geminiCheapFirstRoutePreflightResult,
         geminiResearchRefreshGateResult,
         aihubEndpointRouteCoverageGateResult,
@@ -893,6 +902,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.gemini_official_model_family_roadmap_evidence,
           getModelOpsGeminiOfficialModelFamilyRoadmapEvidence,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.gemini_official_lifecycle_drift_gate,
+          getModelOpsGeminiOfficialLifecycleDriftGate,
         ),
         aggregateOrRequest(aggregatePayload?.gemini_cheap_first_route_preflight, getGeminiCheapFirstRoutePreflight),
         aggregateOrRequest(aggregatePayload?.gemini_research_refresh_gate, getModelOpsGeminiResearchRefreshGate),
@@ -1043,6 +1056,19 @@ function Inner() {
             );
           }
         }
+        if (geminiOfficialLifecycleDriftGateResult.status === 'fulfilled') {
+          setGeminiOfficialLifecycleDriftGate(geminiOfficialLifecycleDriftGateResult.value);
+        } else {
+          console.error(geminiOfficialLifecycleDriftGateResult.reason);
+          setGeminiOfficialLifecycleDriftGate(
+            modelOpsResult.value.gemini_official_lifecycle_drift_gate ?? null,
+          );
+          if (!modelOpsResult.value.gemini_official_lifecycle_drift_gate) {
+            setGeminiOfficialLifecycleDriftGateError(
+              'Gemini official lifecycle drift gate failed to load.',
+            );
+          }
+        }
         if (geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
           setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
         } else {
@@ -1131,6 +1157,12 @@ function Inner() {
         && geminiOfficialModelFamilyRoadmapEvidenceResult.status === 'fulfilled'
       ) {
         setGeminiOfficialModelFamilyRoadmapEvidence(geminiOfficialModelFamilyRoadmapEvidenceResult.value);
+      }
+      if (
+        modelOpsResult.status === 'rejected'
+        && geminiOfficialLifecycleDriftGateResult.status === 'fulfilled'
+      ) {
+        setGeminiOfficialLifecycleDriftGate(geminiOfficialLifecycleDriftGateResult.value);
       }
       if (modelOpsResult.status === 'rejected' && geminiCheapFirstRoutePreflightResult.status === 'fulfilled') {
         setGeminiCheapFirstRoutePreflight(geminiCheapFirstRoutePreflightResult.value);
@@ -1416,6 +1448,15 @@ function Inner() {
         console.error(geminiOfficialModelFamilyRoadmapEvidenceResult.reason);
         setGeminiOfficialModelFamilyRoadmapEvidenceError(
           'Gemini official model family roadmap evidence failed to load.',
+        );
+      }
+      if (
+        modelOpsResult.status === 'rejected'
+        && geminiOfficialLifecycleDriftGateResult.status === 'rejected'
+      ) {
+        console.error(geminiOfficialLifecycleDriftGateResult.reason);
+        setGeminiOfficialLifecycleDriftGateError(
+          'Gemini official lifecycle drift gate failed to load.',
         );
       }
     } catch (err) {
@@ -2304,6 +2345,17 @@ function Inner() {
   ).filter(([key]) => !/(raw_prompt|prompt_payload|request_body|response_body|headers|email)/i.test(key));
   const geminiOfficialCheapFirstClaimEntries = boundaryDisplayEntries(
     activeGeminiOfficialCheapFirstSourceReview?.claim_boundary,
+  );
+  const activeGeminiOfficialLifecycleDriftGate =
+    geminiOfficialLifecycleDriftGate ?? data?.gemini_official_lifecycle_drift_gate ?? null;
+  const geminiOfficialLifecycleDefaultRows = activeGeminiOfficialLifecycleDriftGate?.default_task_rows ?? [];
+  const geminiOfficialLifecycleRows = activeGeminiOfficialLifecycleDriftGate?.lifecycle_rows ?? [];
+  const geminiOfficialLifecycleSourceRows = activeGeminiOfficialLifecycleDriftGate?.official_source_rows ?? [];
+  const geminiOfficialLifecyclePrivacyEntries = boundaryDisplayEntries(
+    activeGeminiOfficialLifecycleDriftGate?.privacy_boundary,
+  ).filter(([key]) => !/(raw_prompt|prompt_payload|request_body|response_body|headers|email)/i.test(key));
+  const geminiOfficialLifecycleClaimEntries = boundaryDisplayEntries(
+    activeGeminiOfficialLifecycleDriftGate?.claim_boundary,
   );
   const activeGeminiOfficialModelFamilyRoadmapEvidence =
     geminiOfficialModelFamilyRoadmapEvidence ?? data?.gemini_official_model_family_roadmap_evidence ?? null;
@@ -11223,6 +11275,218 @@ function Inner() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {activeGeminiOfficialCheapFirstSourceReview.validation_commands.slice(0, 2).map((command) => (
+                        <div
+                          key={command}
+                          className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"
+                        >
+                          {command}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeGeminiOfficialLifecycleDriftGate || geminiOfficialLifecycleDriftGateError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">
+                  Gemini official lifecycle drift gate
+                </h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {activeGeminiOfficialLifecycleDriftGate
+                    ? `${activeGeminiOfficialLifecycleDriftGate.summary.stable_flash_lite_default_count} stable Flash-Lite defaults / ${activeGeminiOfficialLifecycleDriftGate.summary.review_default_count} review defaults / ${activeGeminiOfficialLifecycleDriftGate.summary.lifecycle_drift_count} lifecycle drifts`
+                    : 'metadata-only Gemini lifecycle drift gate'}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-stone-500">
+                  {activeGeminiOfficialLifecycleDriftGate?.id
+                    ?? 'modelops-gemini-official-lifecycle-drift-gate'}
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={statusClass(activeGeminiOfficialLifecycleDriftGate?.status)}
+              >
+                {activeGeminiOfficialLifecycleDriftGate?.status.replace(/_/g, ' ') ?? 'not loaded'}
+              </Badge>
+            </div>
+
+            {geminiOfficialLifecycleDriftGateError && (
+              <div className="mb-3 flex items-center gap-2 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <AlertTriangle className="h-4 w-4" />
+                {geminiOfficialLifecycleDriftGateError}
+              </div>
+            )}
+
+            {activeGeminiOfficialLifecycleDriftGate && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                  {[
+                    { label: 'tracked models', value: activeGeminiOfficialLifecycleDriftGate.summary.tracked_model_count },
+                    { label: 'default tasks', value: activeGeminiOfficialLifecycleDriftGate.summary.default_task_count },
+                    { label: 'stable Flash-Lite', value: activeGeminiOfficialLifecycleDriftGate.summary.stable_flash_lite_default_count },
+                    { label: 'review defaults', value: activeGeminiOfficialLifecycleDriftGate.summary.review_default_count },
+                    { label: 'blocked defaults', value: activeGeminiOfficialLifecycleDriftGate.summary.blocked_default_count },
+                    { label: 'network called', value: String(activeGeminiOfficialLifecycleDriftGate.summary.network_called) },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{item.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-3 grid gap-3 xl:grid-cols-[1fr_1.15fr]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Default task</TableHead>
+                          <TableHead>Model</TableHead>
+                          <TableHead>Lifecycle</TableHead>
+                          <TableHead>Decision</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiOfficialLifecycleDefaultRows.map((row) => (
+                          <TableRow key={row.task}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.task}</div>
+                              <div className="mt-1 text-xs text-stone-600">
+                                {row.high_frequency ? 'high frequency' : 'review route'} / {row.cost_tier}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{row.default_model}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                {row.canonical_model ?? '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass(row.blocked_default ? 'fail' : row.requires_review ? 'warn' : 'pass')}
+                              >
+                                {row.official_lifecycle.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-500">{row.default_policy}</div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              <div>
+                                stable_flash_lite_aligned: {String(row.stable_flash_lite_aligned)}
+                              </div>
+                              <div>
+                                blocked_default: {String(row.blocked_default)} / requires_review:{' '}
+                                {String(row.requires_review)}
+                              </div>
+                              <div className="mt-1 text-stone-500">{row.recommended_action}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Tracked model</TableHead>
+                          <TableHead>Catalog</TableHead>
+                          <TableHead>Lifecycle drift</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {geminiOfficialLifecycleRows.slice(0, 8).map((row) => (
+                          <TableRow key={row.model_id}>
+                            <TableCell>
+                              <div className="font-mono text-xs font-semibold text-stone-950">{row.model_id}</div>
+                              <div className="mt-1 text-xs text-stone-500">{row.source_basis}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>{row.catalog_status} / {row.cost_tier}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">
+                                roles: {row.configured_roles.join(', ') || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusClass(row.drift_status === 'aligned' ? 'pass' : 'warn')}
+                              >
+                                {row.drift_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-500">
+                                {row.official_lifecycle.replace(/_/g, ' ')}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[360px] text-xs leading-5 text-stone-600">
+                              {row.required_action}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Official lifecycle sources</h3>
+                    <div className="space-y-2">
+                      {geminiOfficialLifecycleSourceRows.map((source) => (
+                        <a
+                          key={source.id}
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5 text-stone-600 hover:border-stone-950/30"
+                        >
+                          <div className="font-semibold text-stone-950">{source.title}</div>
+                          <div className="break-all font-mono text-[11px] text-stone-500">{source.url}</div>
+                          <div className="mt-1">{source.tracked_signal}</div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Lifecycle checks</h3>
+                    <div className="space-y-2">
+                      {activeGeminiOfficialLifecycleDriftGate.checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3 text-xs leading-5">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-mono text-stone-700">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Lifecycle boundary</h3>
+                    <div className="space-y-2">
+                      {[...geminiOfficialLifecyclePrivacyEntries, ...geminiOfficialLifecycleClaimEntries.slice(0, 5)].map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-3 rounded-[8px] border border-stone-950/10 bg-white px-3 py-2 text-xs"
+                        >
+                          <span className="font-mono text-stone-600">{key}</span>
+                          <span className="font-semibold text-stone-950">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {activeGeminiOfficialLifecycleDriftGate.validation_commands.slice(0, 2).map((command) => (
                         <div
                           key={command}
                           className="break-all rounded-[8px] border border-stone-950/10 bg-white p-3 font-mono text-[11px] text-stone-600"

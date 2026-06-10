@@ -37,6 +37,25 @@ emails, identifiers, or credentials; or claim pricing accuracy, production
 quality, account inventory, live gateway readiness, or automatic default
 changes.
 
+Current Gemini official lifecycle drift gate slice:
+`modelops-gemini-official-lifecycle-drift-gate` adds metadata-only ModelOps
+evidence between the official cheap-first source review and the official model
+family roadmap. It checks that high-frequency cheap, fast, classification, and
+OCR defaults remain on stable `gemini-2.5-flash-lite`, marks gateway-observed
+Gemini/NewAPI names as review-only until lifecycle, pricing, and gateway
+support are refreshed, blocks preview/deprecated/shutdown lifecycle labels from
+defaults, and exposes local catalog lifecycle drift. The endpoint is available
+at `/api/v1/aihub/models/gemini-official-lifecycle-drift-gate`, the aggregate
+ModelOps payload includes `gemini_official_lifecycle_drift_gate`, and the
+evidence is visible on `/model-ops` between the official cheap-first source
+review and the official model family roadmap. It does not call NewAPI, Gemini,
+OpenAI, Google, gateways, app AI endpoints, models, or the network; write
+configuration; change defaults; shift traffic; return API keys, Authorization
+headers, request bodies, response bodies, prompts, raw payloads, raw legal
+text, model outputs, emails, identifiers, or credentials; or claim pricing
+accuracy, live gateway execution, all Gemini model support, production quality,
+or automatic default changes.
+
 Current small legal document benchmark runbook evidence slice:
 `small-legal-document-benchmark-runbook-evidence` adds a metadata-only
 maintenance packet for low-resource legal-document delivery checks. It joins the

@@ -1712,6 +1712,80 @@ export type ModelOpsGeminiOfficialModelFamilyRoadmapEvidence = {
   validation_commands: string[];
 };
 
+export type ModelOpsGeminiOfficialLifecycleDriftGateLifecycleRow = {
+  model_id: string;
+  catalog_status: string;
+  cost_tier: string;
+  configured_roles: string[];
+  official_lifecycle: string;
+  default_policy: string;
+  default_allowed_for_high_frequency: boolean;
+  source_basis: string;
+  drift_status: string;
+  required_action: string;
+};
+
+export type ModelOpsGeminiOfficialLifecycleDriftGateDefaultTaskRow = {
+  task: string;
+  default_model: string;
+  canonical_model?: string | null;
+  catalog_status: string;
+  cost_tier: string;
+  official_lifecycle: string;
+  default_policy: string;
+  high_frequency: boolean;
+  stable_flash_lite_aligned: boolean;
+  requires_review: boolean;
+  blocked_default: boolean;
+  recommended_action: string;
+};
+
+export type ModelOpsGeminiOfficialLifecycleDriftGate = {
+  id: 'modelops-gemini-official-lifecycle-drift-gate' | string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+    source_urls: string[];
+  };
+  summary: {
+    tracked_model_count: number;
+    catalog_model_count: number;
+    default_task_count: number;
+    high_frequency_task_count: number;
+    stable_flash_lite_default_count: number;
+    review_default_count: number;
+    blocked_default_count: number;
+    lifecycle_drift_count: number;
+    preview_catalog_count: number;
+    gateway_observed_review_count: number;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    raw_payload_echoed: boolean;
+  };
+  official_source_rows: Array<{
+    id: string;
+    title: string;
+    url: string;
+    tracked_signal: string;
+  }>;
+  lifecycle_rows: ModelOpsGeminiOfficialLifecycleDriftGateLifecycleRow[];
+  default_task_rows: ModelOpsGeminiOfficialLifecycleDriftGateDefaultTaskRow[];
+  checks: Array<{
+    id: string;
+    status: string;
+    reason: string;
+  }>;
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelCatalogCandidatePatchRow = {
   id: string;
   row_type: string;
@@ -5447,6 +5521,7 @@ export type ModelOpsResponse = {
   catalog_source_audit?: ModelCatalogSourceAudit;
   gemini_official_cheap_first_source_review?: ModelOpsGeminiOfficialCheapFirstSourceReview;
   gemini_official_model_family_roadmap_evidence?: ModelOpsGeminiOfficialModelFamilyRoadmapEvidence;
+  gemini_official_lifecycle_drift_gate?: ModelOpsGeminiOfficialLifecycleDriftGate;
   gemini_embedding_cheap_first_preflight?: ModelOpsGeminiEmbeddingCheapFirstPreflight;
   catalog_candidate_patch_plan?: ModelCatalogCandidatePatchPlan;
   catalog_candidate_impact_replay?: ModelCatalogCandidateImpactReplay;
@@ -6066,6 +6141,13 @@ export async function getModelOpsGeminiOfficialCheapFirstSourceReview(): Promise
 export async function getModelOpsGeminiOfficialModelFamilyRoadmapEvidence(): Promise<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence> {
   return invokeModelOpsApi<ModelOpsGeminiOfficialModelFamilyRoadmapEvidence>({
     url: '/api/v1/aihub/models/gemini-official-model-family-roadmap-evidence',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsGeminiOfficialLifecycleDriftGate(): Promise<ModelOpsGeminiOfficialLifecycleDriftGate> {
+  return invokeModelOpsApi<ModelOpsGeminiOfficialLifecycleDriftGate>({
+    url: '/api/v1/aihub/models/gemini-official-lifecycle-drift-gate',
     method: 'GET',
   });
 }

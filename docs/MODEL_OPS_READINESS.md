@@ -311,6 +311,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/services/model_lifecycle_policy.py`
 - `app/backend/services/model_catalog_source_audit.py`
 - `app/backend/services/model_ops_gemini_official_model_family_roadmap.py`
+- `app/backend/services/model_ops_gemini_official_lifecycle_drift_gate.py`
 - `app/backend/services/model_request_cost_bounds.py`
 - `app/backend/services/model_cache_policy.py`
 - `app/backend/services/route_telemetry_repository.py`
@@ -353,6 +354,7 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/backend/tests/test_model_lifecycle_policy.py`
 - `app/backend/tests/test_model_catalog_source_audit.py`
 - `app/backend/tests/test_model_ops_gemini_official_model_family_roadmap.py`
+- `app/backend/tests/test_model_ops_gemini_official_lifecycle_drift_gate.py`
 - `app/backend/tests/test_model_request_cost_bounds.py`
 - `app/backend/tests/test_model_cache_policy.py`
 - `app/backend/tests/test_route_telemetry_repository.py`
@@ -365,5 +367,6 @@ The service only aggregates existing status and summary metadata. It does not st
 - `app/frontend/scripts/ui-regression.mjs`
 - `docs/MODEL_FAILURE_UPGRADE_BUDGET.md`
 - `docs/MODELOPS_GEMINI_OFFICIAL_MODEL_FAMILY_ROADMAP.md`
+- `docs/MODELOPS_GEMINI_OFFICIAL_LIFECYCLE_DRIFT_GATE.md`
 - `docs/MODELOPS_GEMINI_CHEAP_FIRST_ROUTE_PREFLIGHT.md`
 - `docs/MODELOPS_LEGAL_MICRO_BENCHMARK_PREFLIGHT.md`

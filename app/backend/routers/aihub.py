@@ -76,6 +76,9 @@ from services.model_ops_gemini_official_model_family_roadmap import (
 from services.model_ops_gemini_official_cheap_first_source_review import (
     ModelOpsGeminiOfficialCheapFirstSourceReviewService,
 )
+from services.model_ops_gemini_official_lifecycle_drift_gate import (
+    ModelOpsGeminiOfficialLifecycleDriftGateService,
+)
 from services.model_ops_gemini_embedding_cheap_first_preflight import (
     ModelOpsGeminiEmbeddingCheapFirstPreflightService,
 )
@@ -372,6 +375,9 @@ async def list_models():
     gemini_official_model_family_roadmap_evidence = (
         ModelOpsGeminiOfficialModelFamilyRoadmapService().build_roadmap()
     )
+    gemini_official_lifecycle_drift_gate = (
+        ModelOpsGeminiOfficialLifecycleDriftGateService().build_gate()
+    )
     gemini_embedding_cheap_first_preflight = (
         ModelOpsGeminiEmbeddingCheapFirstPreflightService().build_preflight()
     )
@@ -570,6 +576,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "gemini_official_cheap_first_source_review": gemini_official_cheap_first_source_review,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
+        "gemini_official_lifecycle_drift_gate": gemini_official_lifecycle_drift_gate,
         "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
@@ -706,6 +713,7 @@ async def list_models():
         "catalog_source_audit": catalog_source_audit,
         "gemini_official_cheap_first_source_review": gemini_official_cheap_first_source_review,
         "gemini_official_model_family_roadmap_evidence": gemini_official_model_family_roadmap_evidence,
+        "gemini_official_lifecycle_drift_gate": gemini_official_lifecycle_drift_gate,
         "gemini_embedding_cheap_first_preflight": gemini_embedding_cheap_first_preflight,
         "price_refresh_monitor": price_refresh_monitor,
         "observed_gemini_model_intake_queue": observed_gemini_model_intake_queue,
@@ -1198,6 +1206,24 @@ async def modelops_gemini_official_model_family_roadmap_evidence():
     return {
         "success": True,
         "data": ModelOpsGeminiOfficialModelFamilyRoadmapService().build_roadmap(),
+    }
+
+
+@router.get("/models/gemini-official-lifecycle-drift-gate")
+async def modelops_gemini_official_lifecycle_drift_gate():
+    """Return metadata-only Gemini lifecycle drift gate evidence."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiOfficialLifecycleDriftGateService().build_gate(),
+    }
+
+
+@router.post("/models/gemini-official-lifecycle-drift-gate")
+async def evaluate_modelops_gemini_official_lifecycle_drift_gate(payload: dict[str, Any]):
+    """Evaluate sanitized Gemini lifecycle drift metadata without provider calls."""
+    return {
+        "success": True,
+        "data": ModelOpsGeminiOfficialLifecycleDriftGateService().build_gate(payload),
     }
 
 

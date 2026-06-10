@@ -105,6 +105,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "gemini_official_model_family_roadmap_evidence",
     ),
     ReadinessComponent(
+        "gemini-official-lifecycle-drift-gate",
+        "Gemini official lifecycle drift gate",
+        "configuration",
+        "gemini_official_lifecycle_drift_gate",
+    ),
+    ReadinessComponent(
         "gemini-embedding-cheap-first-preflight",
         "Gemini embedding cheap-first preflight",
         "configuration",
@@ -625,6 +631,7 @@ class ModelOpsReadinessService:
             "gemini_cheap_first_route_preflight",
             "gemini_research_refresh_gate",
             "gemini_official_model_family_roadmap_evidence",
+            "gemini_official_lifecycle_drift_gate",
             "gemini_embedding_cheap_first_preflight",
             "catalog_candidate_patch_plan",
             "catalog_candidate_impact_replay",
@@ -696,7 +703,7 @@ class ModelOpsReadinessService:
         if warning_category == "canary_evidence_gap":
             return "python -m pytest tests/test_model_ops_cheap_first_canary_observation.py tests/test_model_ops_cheap_first_canary_promotion_decision.py tests/test_model_ops_readiness.py -q"
         if warning_category == "catalog_pricing_review":
-            return "python -m pytest tests/test_model_ops_gemini_research_refresh_gate.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_selector_replay.py tests/test_model_catalog_source_audit.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
+            return "python -m pytest tests/test_model_ops_gemini_official_lifecycle_drift_gate.py tests/test_model_ops_gemini_research_refresh_gate.py tests/test_gemini_newapi_model_selector.py tests/test_gemini_newapi_selector_replay.py tests/test_model_catalog_source_audit.py tests/test_model_ops_gemini_embedding_cheap_first_preflight.py tests/test_gemini_model_variant_matrix.py tests/test_modelops_observed_gateway_model_fit_matrix.py tests/test_model_price_refresh_monitor.py tests/test_model_ops_readiness.py -q"
         if warning_category == "default_recommendation_review":
             return "python -m pytest tests/test_model_default_recommendation_snapshot.py tests/test_model_default_candidate_selector.py tests/test_model_ops_readiness.py -q"
         if warning_category == "runtime_telemetry_review":
