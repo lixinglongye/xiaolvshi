@@ -356,6 +356,20 @@ write configuration, change defaults, shift traffic, claim maintainer approval,
 or return raw legal text, fixture snippets, prompts, generated document text,
 model outputs, gateway payloads, emails, identifiers, or credentials.
 
+`modelops-legal-benchmark-default-promotion-checklist` is the downstream
+maintainer checklist for legal-task default review. It joins the bridge with
+the cheap-first release decision and default-change queue after those signals
+have been built, turning promotion rows into signoff rows with explicit release
+actions. The checklist is visible at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-checklist`, in the
+aggregate `/api/v1/aihub/models` payload, in `model_ops_readiness`, and on
+`/model-ops` between the bridge and legal fixture evidence handoff panels. It
+does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network, write configuration, write env files,
+record approvals, change defaults, shift traffic, claim maintainer approval,
+or return raw legal text, fixture snippets, prompts, generated document text,
+model outputs, gateway payloads, emails, identifiers, or credentials.
+
 `feedback-user-need-legal-document-benchmark-backlog` is the feedback-driven
 maintenance backlog that maps privacy-safe feedback clusters into user-need and
 legal-document benchmark fixture/review actions before any cheap-first default

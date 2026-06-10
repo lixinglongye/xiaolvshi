@@ -52,6 +52,7 @@ import {
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalFixtureCheapFirstRegressionBudget,
   getModelOpsLegalBenchmarkDefaultPromotionBridge,
+  getModelOpsLegalBenchmarkDefaultPromotionChecklist,
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
@@ -98,6 +99,7 @@ import {
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalFixtureCheapFirstRegressionBudget,
   type ModelOpsLegalBenchmarkDefaultPromotionBridge,
+  type ModelOpsLegalBenchmarkDefaultPromotionChecklist,
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
@@ -701,6 +703,9 @@ function Inner() {
   const [legalBenchmarkDefaultPromotionBridge, setLegalBenchmarkDefaultPromotionBridge] =
     useState<ModelOpsLegalBenchmarkDefaultPromotionBridge | null>(null);
   const [legalBenchmarkDefaultPromotionBridgeError, setLegalBenchmarkDefaultPromotionBridgeError] = useState('');
+  const [legalBenchmarkDefaultPromotionChecklist, setLegalBenchmarkDefaultPromotionChecklist] =
+    useState<ModelOpsLegalBenchmarkDefaultPromotionChecklist | null>(null);
+  const [legalBenchmarkDefaultPromotionChecklistError, setLegalBenchmarkDefaultPromotionChecklistError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -739,6 +744,7 @@ function Inner() {
     setLegalFixtureEvidenceHandoff(payload.legal_fixture_evidence_handoff ?? null);
     setLegalFixtureCheapFirstRegressionBudget(payload.legal_fixture_cheap_first_regression_budget ?? null);
     setLegalBenchmarkDefaultPromotionBridge(payload.legal_benchmark_default_promotion_bridge ?? null);
+    setLegalBenchmarkDefaultPromotionChecklist(payload.legal_benchmark_default_promotion_checklist ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -836,6 +842,8 @@ function Inner() {
     setLegalFixtureCheapFirstRegressionBudget(null);
     setLegalBenchmarkDefaultPromotionBridgeError('');
     setLegalBenchmarkDefaultPromotionBridge(null);
+    setLegalBenchmarkDefaultPromotionChecklistError('');
+    setLegalBenchmarkDefaultPromotionChecklist(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -894,6 +902,7 @@ function Inner() {
         legalFixtureEvidenceHandoffResult,
         legalFixtureCheapFirstRegressionBudgetResult,
         legalBenchmarkDefaultPromotionBridgeResult,
+        legalBenchmarkDefaultPromotionChecklistResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -961,6 +970,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_benchmark_default_promotion_bridge,
           getModelOpsLegalBenchmarkDefaultPromotionBridge,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_benchmark_default_promotion_checklist,
+          getModelOpsLegalBenchmarkDefaultPromotionChecklist,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1415,6 +1428,27 @@ function Inner() {
         ) {
           setLegalBenchmarkDefaultPromotionBridgeError(
             'Legal benchmark default-promotion bridge failed to load.',
+          );
+        }
+      }
+      if (legalBenchmarkDefaultPromotionChecklistResult.status === 'fulfilled') {
+        setLegalBenchmarkDefaultPromotionChecklist(legalBenchmarkDefaultPromotionChecklistResult.value);
+      } else {
+        console.error(legalBenchmarkDefaultPromotionChecklistResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalBenchmarkDefaultPromotionChecklist(
+            modelOpsResult.value.legal_benchmark_default_promotion_checklist ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_benchmark_default_promotion_checklist
+          )
+        ) {
+          setLegalBenchmarkDefaultPromotionChecklistError(
+            'Legal benchmark default-promotion checklist failed to load.',
           );
         }
       }
@@ -2118,6 +2152,19 @@ function Inner() {
     activeLegalBenchmarkDefaultPromotionBridge?.checks ?? [];
   const legalBenchmarkDefaultPromotionPrivacyEntries = boundaryDisplayEntries(
     activeLegalBenchmarkDefaultPromotionBridge?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
+  const activeLegalBenchmarkDefaultPromotionChecklist =
+    legalBenchmarkDefaultPromotionChecklist
+    ?? data?.legal_benchmark_default_promotion_checklist
+    ?? null;
+  const legalBenchmarkDefaultPromotionChecklistRows =
+    activeLegalBenchmarkDefaultPromotionChecklist?.checklist_rows ?? [];
+  const legalBenchmarkDefaultPromotionChecklistSourceRows =
+    activeLegalBenchmarkDefaultPromotionChecklist?.source_status_rows ?? [];
+  const legalBenchmarkDefaultPromotionChecklistChecks =
+    activeLegalBenchmarkDefaultPromotionChecklist?.checks ?? [];
+  const legalBenchmarkDefaultPromotionChecklistPrivacyEntries = boundaryDisplayEntries(
+    activeLegalBenchmarkDefaultPromotionChecklist?.privacy_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
     ? [
@@ -6530,6 +6577,236 @@ function Inner() {
                 {legalBenchmarkDefaultPromotionBridgeError && (
                   <div className="mt-2 text-xs font-semibold text-red-700">
                     {legalBenchmarkDefaultPromotionBridgeError}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalBenchmarkDefaultPromotionChecklist || legalBenchmarkDefaultPromotionChecklistError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion checklist</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist?.summary.source_count)} sources /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist?.summary.checklist_row_count)} checklist rows /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist?.summary.blocked_count)} blocked
+                </div>
+              </div>
+              {activeLegalBenchmarkDefaultPromotionChecklist && (
+                <Badge variant="outline" className={statusClass(activeLegalBenchmarkDefaultPromotionChecklist.status)}>
+                  {activeLegalBenchmarkDefaultPromotionChecklist.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalBenchmarkDefaultPromotionChecklist && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist.summary.ready_for_maintainer_review_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist.summary.review_required_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist.summary.blocked_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">blocked rows</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist.summary.not_run_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">not run</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionChecklist.summary.release_decision_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">release decision</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionChecklist.summary.default_change_queue_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default queue</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionChecklist.decision.default_change_allowed_by_checklist)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionChecklist.summary.raw_input_field_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">redacted fields</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Source</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Counts</TableHead>
+                          <TableHead>Boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalBenchmarkDefaultPromotionChecklistSourceRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.label}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_key}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.checklist_status)}>
+                                {row.checklist_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-600">
+                                source {row.source_status.replace(/_/g, ' ')}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>blocking {formatNumber(row.blocking_count)}</div>
+                              <div>warning {formatNumber(row.warning_count)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>config {String(row.configuration_written)}</div>
+                              <div>gateway {String(row.gateway_called)}</div>
+                              <div>network {String(row.network_called)}</div>
+                              <div>model output {String(row.raw_model_output_returned)}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Checklist checks</h3>
+                    <div className="space-y-3">
+                      {legalBenchmarkDefaultPromotionChecklistChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {check.source_key} / {check.decision_effect.replace(/_/g, ' ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalBenchmarkDefaultPromotionChecklist.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Requirement</TableHead>
+                        <TableHead>Model</TableHead>
+                        <TableHead>Checklist</TableHead>
+                        <TableHead>Queue</TableHead>
+                        <TableHead>Release action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionChecklistRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.requirement_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">
+                            <div>{row.proposed_default_model}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">
+                              {row.model_cost_tier} / {row.official_lifecycle}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.checklist_status)}>
+                              {row.checklist_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-600">
+                              evidence {row.evidence_status.replace(/_/g, ' ')}
+                            </div>
+                            <div className="mt-1 text-xs text-stone-600">
+                              change allowed {String(row.default_change_allowed_by_checklist)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>{row.default_change_queue_status.replace(/_/g, ' ')}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">{row.matched_queue_item_id}</div>
+                            <div>{row.matched_queue_item_status.replace(/_/g, ' ')}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[420px] text-xs leading-5 text-stone-600">
+                            <div>{row.release_action}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.required_signoffs.join(', ')}
+                            </div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.slice(0, 3).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalBenchmarkDefaultPromotionChecklistPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source links</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeLegalBenchmarkDefaultPromotionChecklist.source_links).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: <span className="font-mono text-[11px]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  configuration written: {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.configuration_written)} / env file written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.env_file_written)} / approval record written:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.approval_record_written)} / gateway called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.gateway_called)} / network called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.network_called)} / NewAPI called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.newapi_called)} / traffic shifted:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.traffic_shifted)} / model output returned:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionChecklist.summary.raw_model_output_returned)}
+                </div>
+                {legalBenchmarkDefaultPromotionChecklistError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalBenchmarkDefaultPromotionChecklistError}
                   </div>
                 )}
               </>

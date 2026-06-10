@@ -5587,6 +5587,116 @@ export type ModelOpsLegalBenchmarkDefaultPromotionBridge = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkDefaultPromotionChecklistSourceStatusRow = {
+  id: string;
+  label: string;
+  source_key: string;
+  source_status: string;
+  checklist_status: string;
+  blocking_count: number;
+  warning_count: number;
+  configuration_written: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  raw_payload_echoed: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionChecklistRow = {
+  id: string;
+  requirement_id: string;
+  source_key: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  model_cost_tier: string;
+  evidence_status: string;
+  promotion_status: string;
+  official_lifecycle: string;
+  release_decision_status: string;
+  default_change_queue_status: string;
+  matched_queue_item_id: string;
+  matched_queue_item_status: string;
+  checklist_status: string;
+  default_change_allowed_by_checklist: boolean;
+  configuration_change_allowed: boolean;
+  gateway_call_allowed: boolean;
+  traffic_shift_allowed: boolean;
+  required_signoffs: string[];
+  reason_codes: string[];
+  release_action: string;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionChecklistCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionChecklist = {
+  id: string;
+  title: string;
+  status: string;
+  decision: {
+    status: string;
+    default_change_allowed_by_checklist: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    maintainer_review_required: boolean;
+    requires_default_promotion_bridge: boolean;
+    requires_release_decision_not_failed: boolean;
+    requires_default_change_queue_review: boolean;
+    requires_metadata_only_boundary: boolean;
+    bridge_release_action: string;
+    checklist_release_action: string;
+  };
+  summary: {
+    source_count: number;
+    checklist_row_count: number;
+    ready_for_maintainer_review_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    not_run_count: number;
+    bridge_status: string;
+    release_decision_status: string;
+    default_change_queue_status: string;
+    promotion_row_count: number;
+    queue_item_count: number;
+    blocked_default_count: number;
+    blocked_queue_item_count: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_checklist: boolean;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_payload_echoed: boolean;
+  };
+  source_status_rows: ModelOpsLegalBenchmarkDefaultPromotionChecklistSourceStatusRow[];
+  checklist_rows: ModelOpsLegalBenchmarkDefaultPromotionChecklistRow[];
+  checks: ModelOpsLegalBenchmarkDefaultPromotionChecklistCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  required_signoffs: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -5662,6 +5772,7 @@ export type ModelOpsResponse = {
   legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff;
   legal_fixture_cheap_first_regression_budget?: ModelOpsLegalFixtureCheapFirstRegressionBudget;
   legal_benchmark_default_promotion_bridge?: ModelOpsLegalBenchmarkDefaultPromotionBridge;
+  legal_benchmark_default_promotion_checklist?: ModelOpsLegalBenchmarkDefaultPromotionChecklist;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -5749,6 +5860,8 @@ function hasModelOpsPayload(value: unknown): boolean {
     rollback_drill_items?: unknown;
     change_manifest_items?: unknown;
     execution_items?: unknown;
+    source_status_rows?: unknown;
+    checklist_rows?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
     route_task_rows?: unknown;
@@ -5818,6 +5931,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.rollback_drill_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.checklist_rows) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
@@ -6587,6 +6701,13 @@ export async function getModelOpsLegalFixtureCheapFirstRegressionBudget(): Promi
 export async function getModelOpsLegalBenchmarkDefaultPromotionBridge(): Promise<ModelOpsLegalBenchmarkDefaultPromotionBridge> {
   return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionBridge>({
     url: '/api/v1/aihub/models/legal-benchmark-default-promotion-bridge',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalBenchmarkDefaultPromotionChecklist(): Promise<ModelOpsLegalBenchmarkDefaultPromotionChecklist> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionChecklist>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-checklist',
     method: 'GET',
   });
 }

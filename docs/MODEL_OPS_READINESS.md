@@ -4,7 +4,7 @@ The project now aggregates model-operation checks into one release-oriented read
 
 ## Purpose
 
-Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, Gemini official cheap-first source review, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, AIHub media runtime compatibility review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, legal benchmark default-promotion bridge evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
+Model operations now include configuration audit, default template alignment, default optimization, default recommendation snapshots, gateway compatibility, gateway connection profiling, gateway health planning, optional gateway probe evaluation evidence, Gemini lifecycle policy, Gemini catalog source audit, Gemini official cheap-first source review, observed Gemini intake, observed gateway model fit evidence, runtime explicit model fit evidence, candidate patch planning, runtime routing, reasoning effort policy, request parameter policy, gateway request compatibility, Gemini cheap-first route preflight, AIHub endpoint route coverage, AIHub media/speech default catalog review, AIHub media runtime compatibility review, user-need Gemini route coverage, request cost bounds, cache policy, route telemetry, route telemetry repository, route telemetry operations summary, route telemetry triage queue, route telemetry remediation plan, route guardrails, cheap-first route quality budgets, model failure upgrade budgets, cheap-first escalation budgets, callsite audit, capability matrix, routing replay, fallback chains, escalation policy, cost forecast, cost guardrails, Gemini/NewAPI cheap-first calibration, price refresh monitoring, ModelOps load performance budgets, release decision packets, default-change queues, canary packets, maintainer execution evidence, legal benchmark default-promotion bridge and checklist evidence, and low-resource legal micro benchmark preflight evidence. Reviewing each signal separately is error-prone before a release.
 
 `model_ops_readiness` combines these signals into one pass/warn/fail result.
 `cheap_first_release_decision` consumes this readiness result downstream, along
@@ -31,21 +31,21 @@ The response includes:
     "status": "warn",
     "release_recommendation": "maintainer_review_required",
     "summary": {
-      "component_count": 62,
-      "required_component_count": 61,
+      "component_count": 63,
+      "required_component_count": 62,
       "optional_component_count": 1,
       "pass_count": 41,
-      "warn_count": 21,
+      "warn_count": 22,
       "fail_count": 0,
-      "required_warning_count": 20,
+      "required_warning_count": 21,
       "optional_review_count": 1,
       "required_failure_count": 0,
       "optional_failure_count": 0,
       "blocking_count": 0,
-      "warning_count": 21,
-      "warning_drilldown_count": 21,
+      "warning_count": 22,
+      "warning_drilldown_count": 22,
       "p0_warning_count": 0,
-      "p1_warning_count": 20,
+      "p1_warning_count": 21,
       "p2_warning_count": 1
     },
     "warning_category_counts": {},
@@ -159,6 +159,15 @@ default can be considered. It does not call models or gateways, write
 configuration, shift traffic, claim maintainer approval, or return raw legal
 text, fixture snippets, prompts, generated document text, model output, gateway
 payloads, emails, identifiers, or credentials.
+
+`legal-benchmark-default-promotion-checklist` is required metadata-only release
+evidence for maintainer signoff review after the bridge, cheap-first release
+decision, and default-change queue have been built. It converts promotion rows
+into checklist rows with source status, queue mapping, required signoff roles,
+and release actions without calling models or gateways, writing configuration
+or env files, recording approval, shifting traffic, claiming maintainer
+approval, or returning raw legal text, prompts, model output, payloads, emails,
+identifiers, or credentials.
 
 `gateway-request-compatibility-gate` is required metadata-only evidence for
 OpenAI-compatible Gemini/NewAPI request shapes. It checks task default model

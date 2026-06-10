@@ -309,6 +309,12 @@ MODEL_OPS_COMPONENTS: tuple[ReadinessComponent, ...] = (
         "legal_benchmark_default_promotion_bridge",
     ),
     ReadinessComponent(
+        "legal-benchmark-default-promotion-checklist",
+        "Legal benchmark default-promotion checklist",
+        "release_evidence",
+        "legal_benchmark_default_promotion_checklist",
+    ),
+    ReadinessComponent(
         "user-need-release-bridge",
         "User-need release bridge",
         "release_evidence",

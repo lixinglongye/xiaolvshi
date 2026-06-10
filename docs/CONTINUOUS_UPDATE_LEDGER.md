@@ -1,5 +1,24 @@
 # Continuous Update Ledger
 
+Current legal benchmark default-promotion checklist slice:
+`modelops-legal-benchmark-default-promotion-checklist` adds a metadata-only
+maintainer checklist for cheap-first legal default review. It joins the legal
+benchmark default-promotion bridge, cheap-first release decision, and
+default-change queue into source status rows and checklist rows before
+maintainers consider any legal-task Gemini default movement. The endpoint is
+available at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-checklist`, the
+aggregate ModelOps payload includes
+`legal_benchmark_default_promotion_checklist`, and the evidence is visible on
+`/model-ops` between the default-promotion bridge and evidence handoff sections.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; write configuration; write env files;
+record approvals; change defaults; shift traffic; return raw legal text,
+fixture snippets, generated document text, prompts, payloads, model output,
+gateway responses, emails, identifiers, or credentials; or claim maintainer
+approval, public benchmark scores, production quality, legal advice, or
+automatic default changes.
+
 Current legal benchmark default-promotion bridge slice:
 `modelops-legal-benchmark-default-promotion-bridge` adds a metadata-only
 ModelOps and release-decision bridge for cheap-first legal default review. It

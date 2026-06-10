@@ -4337,6 +4337,15 @@ const checks = [
   () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkDefaultPromotionBridge', 'model-ops legal benchmark default-promotion bridge API helper'),
   () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-bridge', 'model-ops legal benchmark default-promotion bridge endpoint'),
   () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_bridge', 'model-ops legal benchmark default-promotion bridge response binding'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionChecklist', 'model-ops legal benchmark default-promotion checklist type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionChecklistRow', 'model-ops legal benchmark default-promotion checklist row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionChecklistSourceStatusRow', 'model-ops legal benchmark default-promotion checklist source row type'),
+  () => assertIncludes(modelOpsApi, 'ModelOpsLegalBenchmarkDefaultPromotionChecklistCheck', 'model-ops legal benchmark default-promotion checklist check type'),
+  () => assertIncludes(modelOpsApi, 'getModelOpsLegalBenchmarkDefaultPromotionChecklist', 'model-ops legal benchmark default-promotion checklist API helper'),
+  () => assertIncludes(modelOpsApi, '/api/v1/aihub/models/legal-benchmark-default-promotion-checklist', 'model-ops legal benchmark default-promotion checklist endpoint'),
+  () => assertIncludes(modelOpsApi, 'legal_benchmark_default_promotion_checklist', 'model-ops legal benchmark default-promotion checklist response binding'),
+  () => assertIncludes(modelOpsApi, 'checklist_rows?: unknown', 'model-ops legal benchmark default-promotion checklist payload guard'),
+  () => assertIncludes(modelOpsApi, 'source_status_rows?: unknown', 'model-ops legal benchmark default-promotion checklist source payload guard'),
   () => assertIncludes(modelOpsPage, 'Legal fixture cheap-first regression budget', 'model-ops legal fixture regression budget panel'),
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_budget', 'model-ops legal fixture regression budget default-change boundary'),
   () => assertIncludes(modelOpsPage, 'source_regression_status', 'model-ops legal fixture regression budget source status summary'),
@@ -4348,6 +4357,13 @@ const checks = [
   () => assertIncludes(modelOpsPage, 'default_change_allowed_by_bridge', 'model-ops legal benchmark default-promotion bridge default-change boundary'),
   () => assertIncludes(modelOpsPage, 'source_gemini_lifecycle_status', 'model-ops legal benchmark default-promotion bridge lifecycle source status'),
   () => assertIncludes(modelOpsPage, 'blocked_default_count', 'model-ops legal benchmark default-promotion bridge blocked lifecycle count'),
+  () => assertIncludes(modelOpsPage, 'Legal benchmark default-promotion checklist', 'model-ops legal benchmark default-promotion checklist panel'),
+  () => assertIncludes(modelOpsPage, 'activeLegalBenchmarkDefaultPromotionChecklist', 'model-ops legal benchmark default-promotion checklist active binding'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionChecklistRows', 'model-ops legal benchmark default-promotion checklist rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionChecklistSourceRows', 'model-ops legal benchmark default-promotion checklist source rows'),
+  () => assertIncludes(modelOpsPage, 'legalBenchmarkDefaultPromotionChecklistChecks', 'model-ops legal benchmark default-promotion checklist checks'),
+  () => assertIncludes(modelOpsPage, 'default_change_allowed_by_checklist', 'model-ops legal benchmark default-promotion checklist default-change boundary'),
+  () => assertIncludes(modelOpsPage, 'required_signoffs', 'model-ops legal benchmark default-promotion checklist signoff binding'),
   () => assertIncludes(modelOpsApi, 'legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff', 'model-ops legal fixture evidence handoff response binding'),
   () => assertIncludes(modelOpsApi, 'gate_rows', 'model-ops legal fixture benchmark gate payload guard'),
   () => assertIncludes(modelOpsApi, 'handoff_rows?: unknown', 'model-ops legal fixture evidence handoff payload guard'),
@@ -4407,8 +4423,14 @@ const checks = [
   () => assertBefore(
     modelOpsPage,
     '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion bridge</h2>',
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion checklist</h2>',
+    'model-ops legal benchmark default-promotion checklist follows bridge',
+  ),
+  () => assertBefore(
+    modelOpsPage,
+    '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion checklist</h2>',
     '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
-    'model-ops legal benchmark default-promotion bridge precedes evidence handoff',
+    'model-ops legal benchmark default-promotion checklist precedes evidence handoff',
   ),
   () => assertBefore(
     modelOpsPage,
@@ -4937,13 +4959,24 @@ const modelOpsLegalFixtureEvidenceHandoffPanel = sourceSection(
 const modelOpsLegalBenchmarkDefaultPromotionBridgePanel = sourceSection(
   modelOpsPage,
   '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion bridge</h2>',
-  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion checklist</h2>',
   'model-ops legal benchmark default-promotion bridge section',
 );
 assertNotMatches(
   modelOpsLegalBenchmarkDefaultPromotionBridgePanel,
   /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY/i,
   'model-ops legal benchmark default-promotion bridge sensitive field guard',
+);
+const modelOpsLegalBenchmarkDefaultPromotionChecklistPanel = sourceSection(
+  modelOpsPage,
+  '<h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion checklist</h2>',
+  '<h2 className="text-xl font-black text-stone-950">Legal fixture evidence handoff</h2>',
+  'model-ops legal benchmark default-promotion checklist section',
+);
+assertNotMatches(
+  modelOpsLegalBenchmarkDefaultPromotionChecklistPanel,
+  /sk-[A-Za-z0-9]{20,}|credential_value|secret_value|api_key|authorization|password|BEGIN PRIVATE KEY/i,
+  'model-ops legal benchmark default-promotion checklist sensitive field guard',
 );
 const modelOpsLegalBenchmarkRiskBridgePanel = sourceSection(
   modelOpsPage,
