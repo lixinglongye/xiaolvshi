@@ -1,5 +1,23 @@
 # Continuous Update Ledger
 
+Current legal benchmark default-promotion bridge slice:
+`modelops-legal-benchmark-default-promotion-bridge` adds a metadata-only
+ModelOps and release-decision bridge for cheap-first legal default review. It
+joins legal fixture benchmark gate, default-promotion packet, regression
+budget, evidence handoff, and Gemini official lifecycle drift gate into one
+source row and promotion row packet before maintainers consider any legal-task
+Gemini default movement. The endpoint is available at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-bridge`, the aggregate
+ModelOps payload includes `legal_benchmark_default_promotion_bridge`, and the
+evidence is visible on `/model-ops` between the regression budget and evidence
+handoff sections. It does not call NewAPI, Gemini, OpenAI, Google, gateways,
+app AI endpoints, models, public datasets, or the network; write configuration;
+change defaults; shift traffic; return raw legal text, fixture snippets,
+generated document text, prompts, payloads, model output, gateway responses,
+emails, identifiers, or credentials; or claim maintainer approval, public
+benchmark scores, production quality, legal advice, or automatic default
+changes.
+
 Current legal fixture cheap-first regression budget slice:
 `modelops-legal-fixture-cheap-first-regression-budget` adds a metadata-only
 ModelOps and release-decision signal for low-resource cheap-first legal fixture

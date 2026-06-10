@@ -51,6 +51,7 @@ import {
   getModelOpsLegalFixtureCheapFirstBenchmarkGate,
   getModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   getModelOpsLegalFixtureCheapFirstRegressionBudget,
+  getModelOpsLegalBenchmarkDefaultPromotionBridge,
   getModelOpsLegalFixtureEvidenceHandoff,
   getModelOpsLegalMicroBenchmarkPreflight,
   getModelOpsUserNeedCheapFirstHandoff,
@@ -96,6 +97,7 @@ import {
   type ModelOpsLegalFixtureCheapFirstBenchmarkGate,
   type ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket,
   type ModelOpsLegalFixtureCheapFirstRegressionBudget,
+  type ModelOpsLegalBenchmarkDefaultPromotionBridge,
   type ModelOpsLegalFixtureEvidenceHandoff,
   type ModelOpsLegalMicroBenchmarkPreflight,
   type ModelOpsUserNeedCheapFirstHandoff,
@@ -696,6 +698,9 @@ function Inner() {
     useState<ModelOpsLegalFixtureCheapFirstRegressionBudget | null>(null);
   const [legalFixtureCheapFirstRegressionBudgetError, setLegalFixtureCheapFirstRegressionBudgetError] =
     useState('');
+  const [legalBenchmarkDefaultPromotionBridge, setLegalBenchmarkDefaultPromotionBridge] =
+    useState<ModelOpsLegalBenchmarkDefaultPromotionBridge | null>(null);
+  const [legalBenchmarkDefaultPromotionBridgeError, setLegalBenchmarkDefaultPromotionBridgeError] = useState('');
   const [geminiDefaultChangeReview, setGeminiDefaultChangeReview] = useState<ModelOpsGeminiDefaultChangeReview | null>(null);
   const [geminiDefaultChangePayloadText, setGeminiDefaultChangePayloadText] = useState('');
   const [geminiDefaultChangeLoading, setGeminiDefaultChangeLoading] = useState(false);
@@ -733,6 +738,7 @@ function Inner() {
     );
     setLegalFixtureEvidenceHandoff(payload.legal_fixture_evidence_handoff ?? null);
     setLegalFixtureCheapFirstRegressionBudget(payload.legal_fixture_cheap_first_regression_budget ?? null);
+    setLegalBenchmarkDefaultPromotionBridge(payload.legal_benchmark_default_promotion_bridge ?? null);
     setCanaryObservation(null);
     setCanaryPromotionDecision(null);
     setCanaryApprovalPacket(null);
@@ -828,6 +834,8 @@ function Inner() {
     setLegalFixtureEvidenceHandoff(null);
     setLegalFixtureCheapFirstRegressionBudgetError('');
     setLegalFixtureCheapFirstRegressionBudget(null);
+    setLegalBenchmarkDefaultPromotionBridgeError('');
+    setLegalBenchmarkDefaultPromotionBridge(null);
     setGeminiDefaultChangeError('');
     setGeminiDefaultChangeReview(null);
     setGeminiDefaultCostError('');
@@ -885,6 +893,7 @@ function Inner() {
         legalFixtureCheapFirstDefaultPromotionPacketResult,
         legalFixtureEvidenceHandoffResult,
         legalFixtureCheapFirstRegressionBudgetResult,
+        legalBenchmarkDefaultPromotionBridgeResult,
       ] =
         await Promise.allSettled([
         aggregateOrRequest(aggregatePayload?.observed_gemini_coverage_gap_queue, getModelOpsObservedGeminiCoverageGapQueue),
@@ -948,6 +957,10 @@ function Inner() {
         aggregateOrRequest(
           aggregatePayload?.legal_fixture_cheap_first_regression_budget,
           getModelOpsLegalFixtureCheapFirstRegressionBudget,
+        ),
+        aggregateOrRequest(
+          aggregatePayload?.legal_benchmark_default_promotion_bridge,
+          getModelOpsLegalBenchmarkDefaultPromotionBridge,
         ),
       ]);
       if (modelOpsResult.status === 'rejected') {
@@ -1381,6 +1394,27 @@ function Inner() {
         ) {
           setLegalFixtureCheapFirstRegressionBudgetError(
             'Legal fixture cheap-first regression budget failed to load.',
+          );
+        }
+      }
+      if (legalBenchmarkDefaultPromotionBridgeResult.status === 'fulfilled') {
+        setLegalBenchmarkDefaultPromotionBridge(legalBenchmarkDefaultPromotionBridgeResult.value);
+      } else {
+        console.error(legalBenchmarkDefaultPromotionBridgeResult.reason);
+        if (modelOpsResult.status === 'fulfilled') {
+          setLegalBenchmarkDefaultPromotionBridge(
+            modelOpsResult.value.legal_benchmark_default_promotion_bridge ?? null,
+          );
+        }
+        if (
+          modelOpsResult.status === 'rejected'
+          || (
+            modelOpsResult.status === 'fulfilled'
+            && !modelOpsResult.value.legal_benchmark_default_promotion_bridge
+          )
+        ) {
+          setLegalBenchmarkDefaultPromotionBridgeError(
+            'Legal benchmark default-promotion bridge failed to load.',
           );
         }
       }
@@ -2071,6 +2105,19 @@ function Inner() {
   const legalFixtureRegressionBudgetChecks = activeLegalFixtureCheapFirstRegressionBudget?.checks ?? [];
   const legalFixtureRegressionBudgetPrivacyEntries = boundaryDisplayEntries(
     activeLegalFixtureCheapFirstRegressionBudget?.privacy_boundary,
+  ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
+  const activeLegalBenchmarkDefaultPromotionBridge =
+    legalBenchmarkDefaultPromotionBridge
+    ?? data?.legal_benchmark_default_promotion_bridge
+    ?? null;
+  const legalBenchmarkDefaultPromotionSourceRows =
+    activeLegalBenchmarkDefaultPromotionBridge?.source_rows ?? [];
+  const legalBenchmarkDefaultPromotionRows =
+    activeLegalBenchmarkDefaultPromotionBridge?.promotion_rows ?? [];
+  const legalBenchmarkDefaultPromotionChecks =
+    activeLegalBenchmarkDefaultPromotionBridge?.checks ?? [];
+  const legalBenchmarkDefaultPromotionPrivacyEntries = boundaryDisplayEntries(
+    activeLegalBenchmarkDefaultPromotionBridge?.privacy_boundary,
   ).filter(([key]) => !/(raw|prompt|request|response|headers|email|credential|payload|text)/i.test(key));
   const legalFixtureEvidenceHandoffMetrics = activeLegalFixtureEvidenceHandoff
     ? [
@@ -6259,6 +6306,230 @@ function Inner() {
                 {legalFixtureCheapFirstRegressionBudgetError && (
                   <div className="mt-2 text-xs font-semibold text-red-700">
                     {legalFixtureCheapFirstRegressionBudgetError}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {(activeLegalBenchmarkDefaultPromotionBridge || legalBenchmarkDefaultPromotionBridgeError) && (
+          <section className="mb-8">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-950">Legal benchmark default-promotion bridge</h2>
+                <div className="mt-1 text-sm text-stone-600">
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionBridge?.summary.source_count)} sources /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionBridge?.summary.promotion_row_count)} promotion rows /{' '}
+                  {formatNumber(activeLegalBenchmarkDefaultPromotionBridge?.summary.blocked_default_count)} lifecycle blockers
+                </div>
+              </div>
+              {activeLegalBenchmarkDefaultPromotionBridge && (
+                <Badge variant="outline" className={statusClass(activeLegalBenchmarkDefaultPromotionBridge.status)}>
+                  {activeLegalBenchmarkDefaultPromotionBridge.status.replace(/_/g, ' ')}
+                </Badge>
+              )}
+            </div>
+            {activeLegalBenchmarkDefaultPromotionBridge && (
+              <>
+                <div className="mb-3 grid gap-3 md:grid-cols-4 xl:grid-cols-8">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionBridge.summary.ready_source_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">ready sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionBridge.summary.review_source_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">review sources</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionBridge.summary.promotion_ready_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">promotion ready</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionBridge.summary.promotion_blocked_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">promotion blocked</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionBridge.summary.source_gemini_lifecycle_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">Gemini lifecycle</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {activeLegalBenchmarkDefaultPromotionBridge.summary.fact_consistency_status}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">fact consistency</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="font-mono text-sm font-black text-stone-950">
+                      {String(activeLegalBenchmarkDefaultPromotionBridge.decision.default_change_allowed_by_bridge)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">default change</div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <div className="text-2xl font-black text-stone-950">
+                      {formatNumber(activeLegalBenchmarkDefaultPromotionBridge.summary.raw_input_field_count)}
+                    </div>
+                    <div className="mt-1 text-sm text-stone-600">redacted fields</div>
+                  </div>
+                </div>
+                <div className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Source</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Counts</TableHead>
+                          <TableHead>Boundary</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {legalBenchmarkDefaultPromotionSourceRows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="max-w-[300px]">
+                              <div className="font-semibold text-stone-950">{row.label}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.source_key}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{row.endpoint}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusClass(row.bridge_status)}>
+                                {row.bridge_status.replace(/_/g, ' ')}
+                              </Badge>
+                              <div className="mt-1 text-xs text-stone-600">
+                                source {row.source_status.replace(/_/g, ' ')}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>blocking {formatNumber(row.blocking_count)}</div>
+                              <div>warning {formatNumber(row.warning_count)}</div>
+                              <div>
+                                {row.primary_summary_key}: {row.primary_summary_value == null ? '-' : String(row.primary_summary_value)}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>config {String(row.configuration_written)}</div>
+                              <div>gateway {String(row.gateway_called)}</div>
+                              <div>network {String(row.network_called)}</div>
+                              <div>model output {String(row.raw_model_output_returned)}</div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-3 text-sm font-black uppercase text-stone-500">Bridge checks</h3>
+                    <div className="space-y-3">
+                      {legalBenchmarkDefaultPromotionChecks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-white p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-xs font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass(check.status)}>
+                              {check.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                          <div className="mt-1 font-mono text-[11px] text-stone-500">
+                            {check.source_key} / {check.decision_effect.replace(/_/g, ' ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs leading-5 text-stone-600">
+                      {activeLegalBenchmarkDefaultPromotionBridge.recommended_actions.slice(0, 2).join(' ')}
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fixture</TableHead>
+                        <TableHead>Model</TableHead>
+                        <TableHead>Promotion</TableHead>
+                        <TableHead>Evidence</TableHead>
+                        <TableHead>Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalBenchmarkDefaultPromotionRows.slice(0, 6).map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <div className="font-semibold text-stone-950">{row.fixture_id}</div>
+                            <div className="mt-1 text-xs text-stone-600">{row.task} / {row.matter_type}</div>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-stone-700">
+                            <div>{row.proposed_default_model}</div>
+                            <div className="mt-1 text-[11px] text-stone-500">{row.official_lifecycle}</div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusClass(row.bridge_status)}>
+                              {row.bridge_status.replace(/_/g, ' ')}
+                            </Badge>
+                            <div className="mt-1 text-xs text-stone-600">
+                              packet {row.promotion_status.replace(/_/g, ' ')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs leading-5 text-stone-600">
+                            <div>gate {row.gate_status}</div>
+                            <div>document {row.document_benchmark_status}</div>
+                            <div>fact {row.fact_consistency_status}</div>
+                            <div>calibration {row.calibration_status}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[380px] text-xs leading-5 text-stone-600">
+                            <div>{row.action}</div>
+                            <div className="mt-1 font-mono text-[11px] text-stone-500">
+                              {row.reason_codes.slice(0, 3).join(', ') || '-'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Review boundary</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {legalBenchmarkDefaultPromotionPrivacyEntries.map(([key, value]) => (
+                        <div key={key}>
+                          {key}: {value == null ? '-' : String(value)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Source links</h3>
+                    <div className="space-y-1 text-xs leading-5 text-stone-600">
+                      {Object.entries(activeLegalBenchmarkDefaultPromotionBridge.source_links).map(([key, value]) => (
+                        <div key={key}>
+                          {key}: <span className="font-mono text-[11px]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs leading-5 text-stone-500">
+                  configuration written: {String(activeLegalBenchmarkDefaultPromotionBridge.summary.configuration_written)} / gateway called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionBridge.summary.gateway_called)} / network called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionBridge.summary.network_called)} / NewAPI called:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionBridge.summary.newapi_called)} / traffic shifted:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionBridge.summary.traffic_shifted)} / model output returned:{' '}
+                  {String(activeLegalBenchmarkDefaultPromotionBridge.summary.raw_model_output_returned)}
+                </div>
+                {legalBenchmarkDefaultPromotionBridgeError && (
+                  <div className="mt-2 text-xs font-semibold text-red-700">
+                    {legalBenchmarkDefaultPromotionBridgeError}
                   </div>
                 )}
               </>

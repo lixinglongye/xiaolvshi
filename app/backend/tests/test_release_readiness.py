@@ -1018,6 +1018,7 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
                 "tests/test_modelops_legal_fixture_cheap_first_benchmark_gate.py "
                 "tests/test_modelops_legal_fixture_default_promotion_packet.py "
                 "tests/test_modelops_legal_fixture_cheap_first_regression_budget.py "
+                "tests/test_modelops_legal_benchmark_default_promotion_bridge.py "
                 "tests/test_model_ops_legal_benchmark_risk_bridge.py "
                 "tests/test_model_default_candidate_selector.py -q"
             ),
@@ -1037,6 +1038,7 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
     assert "app/backend/services/modelops_legal_fixture_cheap_first_benchmark_gate.py" in check["evidence_paths"]
     assert "app/backend/services/modelops_legal_fixture_default_promotion_packet.py" in check["evidence_paths"]
     assert "app/backend/services/modelops_legal_fixture_cheap_first_regression_budget.py" in check["evidence_paths"]
+    assert "app/backend/services/modelops_legal_benchmark_default_promotion_bridge.py" in check["evidence_paths"]
     assert "app/backend/services/model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_RELEASE_DECISION.md" in check["evidence_paths"]
     assert "docs/MODEL_OPS_CHEAP_FIRST_ESCALATION_BUDGET.md" in check["evidence_paths"]
@@ -1044,6 +1046,7 @@ def test_model_ops_cheap_first_release_decision_is_required_model_ops_gate():
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_BENCHMARK_GATE.md" in check["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_DEFAULT_PROMOTION_PACKET.md" in check["evidence_paths"]
     assert "docs/MODELOPS_LEGAL_FIXTURE_CHEAP_FIRST_REGRESSION_BUDGET.md" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_BENCHMARK_DEFAULT_PROMOTION_BRIDGE.md" in check["evidence_paths"]
     assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in check["evidence_paths"]
 
 
@@ -1208,6 +1211,44 @@ def test_modelops_legal_benchmark_risk_bridge_is_required_model_ops_gate():
     assert "app/backend/tests/test_model_ops_legal_benchmark_risk_bridge.py" in check["evidence_paths"]
     assert "app/frontend/scripts/ui-regression.mjs" in check["evidence_paths"]
     assert "docs/MODEL_OPS_LEGAL_BENCHMARK_RISK_BRIDGE.md" in check["evidence_paths"]
+
+
+def test_modelops_legal_benchmark_default_promotion_bridge_is_required_model_ops_gate():
+    service = ReleaseReadinessService()
+    commands = [
+        item for item in service.default_validation_commands()
+        if item["check_id"] == "modelops-legal-benchmark-default-promotion-bridge"
+    ]
+    result = service.evaluate({"modelops-legal-benchmark-default-promotion-bridge": "not_run"})
+    check = next(
+        check
+        for check in result["checks"]
+        if check["id"] == "modelops-legal-benchmark-default-promotion-bridge"
+    )
+
+    assert commands == [
+        {
+            "check_id": "modelops-legal-benchmark-default-promotion-bridge",
+            "command": (
+                "python -m pytest tests/test_modelops_legal_benchmark_default_promotion_bridge.py "
+                "tests/test_model_ops_cheap_first_release_decision.py tests/test_model_ops_readiness.py "
+                "tests/test_release_readiness.py tests/test_continuous_update_ledger.py "
+                "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && "
+                "npm run typecheck && npm run ui:regression"
+            ),
+        }
+    ]
+    assert check["required"] is True
+    assert check["blocks_release"] is True
+    assert "metadata-only legal benchmark default-promotion bridge evidence" in check["manual_note"]
+    assert "Gemini official lifecycle drift gate" in check["manual_note"]
+    assert "does not call NewAPI" in check["manual_note"]
+    assert "raw legal text" in check["manual_note"]
+    assert "app/backend/services/modelops_legal_benchmark_default_promotion_bridge.py" in check["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_benchmark_default_promotion_bridge.py" in check["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_official_lifecycle_drift_gate.py" in check["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in check["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_BENCHMARK_DEFAULT_PROMOTION_BRIDGE.md" in check["evidence_paths"]
 
 
 def test_model_ops_default_change_queue_is_required_model_ops_gate():

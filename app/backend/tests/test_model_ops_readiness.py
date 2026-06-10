@@ -707,6 +707,7 @@ def test_model_ops_route_includes_readiness():
     assert "legal_fixture_cheap_first_benchmark_gate" in cheap_first_release_sources
     assert "legal_fixture_cheap_first_default_promotion_packet" in cheap_first_release_sources
     assert "legal_fixture_cheap_first_regression_budget" in cheap_first_release_sources
+    assert "legal_benchmark_default_promotion_bridge" in cheap_first_release_sources
     assert "legal_benchmark_risk_bridge" in cheap_first_release_sources
     assert "user_need_release_bridge" in cheap_first_release_sources
     assert payload["user_need_release_bridge"]["summary"]["need_count"] >= 7
@@ -722,3 +723,10 @@ def test_model_ops_route_includes_readiness():
     }
     assert payload["cheap_first_priority_queue"]["summary"]["priority_item_count"] >= 6
     assert payload["cheap_first_priority_queue"]["summary"]["configuration_written"] is False
+    assert payload["legal_benchmark_default_promotion_bridge"]["id"] == (
+        "modelops-legal-benchmark-default-promotion-bridge"
+    )
+    assert payload["legal_benchmark_default_promotion_bridge"]["summary"]["network_called"] is False
+    assert "legal_benchmark_default_promotion_bridge" in {
+        check["source_key"] for check in payload["model_ops_readiness"]["checks"]
+    }

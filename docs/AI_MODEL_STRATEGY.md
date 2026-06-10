@@ -342,6 +342,20 @@ not call models or gateways, does not change defaults, and does not return raw
 legal text, document snippets, fixture snippets, prompts, payload bodies, model
 outputs, or credentials.
 
+`modelops-legal-benchmark-default-promotion-bridge` is the ModelOps-side bridge
+for legal-task default review. It joins the legal fixture benchmark gate,
+default-promotion packet, regression budget, evidence handoff, and Gemini
+official lifecycle drift gate so benchmark status and lifecycle blockers are
+reviewed together before any cheap-first legal default movement. The bridge is
+visible at `/api/v1/aihub/models/legal-benchmark-default-promotion-bridge`,
+in the aggregate `/api/v1/aihub/models` payload, in `model_ops_readiness`, in
+`cheap_first_release_decision`, and on `/model-ops` between the regression
+budget and evidence handoff panels. It does not call NewAPI, Gemini, OpenAI,
+Google, gateways, app AI endpoints, models, public datasets, or the network,
+write configuration, change defaults, shift traffic, claim maintainer approval,
+or return raw legal text, fixture snippets, prompts, generated document text,
+model outputs, gateway payloads, emails, identifiers, or credentials.
+
 `feedback-user-need-legal-document-benchmark-backlog` is the feedback-driven
 maintenance backlog that maps privacy-safe feedback clusters into user-need and
 legal-document benchmark fixture/review actions before any cheap-first default

@@ -135,6 +135,9 @@ from services.modelops_legal_fixture_default_promotion_packet import (
 from services.modelops_legal_fixture_cheap_first_regression_budget import (
     ModelOpsLegalFixtureCheapFirstRegressionBudgetService,
 )
+from services.modelops_legal_benchmark_default_promotion_bridge import (
+    ModelOpsLegalBenchmarkDefaultPromotionBridgeService,
+)
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -490,6 +493,15 @@ async def list_models():
             }
         )
     )
+    legal_benchmark_default_promotion_bridge = ModelOpsLegalBenchmarkDefaultPromotionBridgeService().build_bridge(
+        {
+            "legal_fixture_cheap_first_benchmark_gate": legal_fixture_cheap_first_benchmark_gate,
+            "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
+            "legal_fixture_evidence_handoff": legal_fixture_evidence_handoff,
+            "legal_fixture_cheap_first_regression_budget": legal_fixture_cheap_first_regression_budget,
+            "gemini_official_lifecycle_drift_gate": gemini_official_lifecycle_drift_gate,
+        }
+    )
     preliminary_legal_benchmark_risk_bridge = ModelOpsLegalBenchmarkRiskBridgeService().build_bridge()
     user_need_benchmark_coverage = UserNeedBenchmarkCoverageService().build_coverage()
     user_need_shared_signals = {
@@ -603,6 +615,7 @@ async def list_models():
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
         "legal_fixture_evidence_handoff": legal_fixture_evidence_handoff,
         "legal_fixture_cheap_first_regression_budget": legal_fixture_cheap_first_regression_budget,
+        "legal_benchmark_default_promotion_bridge": legal_benchmark_default_promotion_bridge,
         "legal_benchmark_risk_bridge": preliminary_legal_benchmark_risk_bridge,
         "user_need_benchmark_coverage": user_need_benchmark_coverage,
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
@@ -740,6 +753,7 @@ async def list_models():
         "legal_fixture_cheap_first_default_promotion_packet": legal_fixture_cheap_first_default_promotion_packet,
         "legal_fixture_evidence_handoff": legal_fixture_evidence_handoff,
         "legal_fixture_cheap_first_regression_budget": legal_fixture_cheap_first_regression_budget,
+        "legal_benchmark_default_promotion_bridge": legal_benchmark_default_promotion_bridge,
         "user_need_benchmark_coverage": user_need_benchmark_coverage,
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
         "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
@@ -1488,12 +1502,31 @@ async def model_ops_legal_fixture_cheap_first_regression_budget():
     }
 
 
+@router.get("/models/legal-benchmark-default-promotion-bridge")
+async def model_ops_legal_benchmark_default_promotion_bridge():
+    """Return legal benchmark and Gemini lifecycle default-promotion bridge evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_benchmark_default_promotion_bridge"],
+    }
+
+
 @router.post("/models/legal-fixture-cheap-first-regression-budget")
 async def evaluate_model_ops_legal_fixture_cheap_first_regression_budget(payload: dict[str, Any]):
     """Evaluate cheap-first legal fixture regression budget without model or gateway calls."""
     return {
         "success": True,
         "data": ModelOpsLegalFixtureCheapFirstRegressionBudgetService().build_budget(payload),
+    }
+
+
+@router.post("/models/legal-benchmark-default-promotion-bridge")
+async def evaluate_model_ops_legal_benchmark_default_promotion_bridge(payload: dict[str, Any]):
+    """Evaluate legal benchmark default-promotion bridge without model or gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalBenchmarkDefaultPromotionBridgeService().build_bridge(payload),
     }
 
 

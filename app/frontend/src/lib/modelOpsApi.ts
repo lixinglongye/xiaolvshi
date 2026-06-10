@@ -5468,6 +5468,125 @@ export type ModelOpsLegalFixtureCheapFirstRegressionBudget = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkDefaultPromotionBridgeSourceRow = {
+  id: string;
+  label: string;
+  source_key: string;
+  endpoint: string;
+  source_status: string;
+  bridge_status: string;
+  primary_summary_key: string;
+  primary_summary_value?: boolean | string | number | null;
+  blocking_count: number;
+  warning_count: number;
+  configuration_written: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  raw_payload_returned: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionBridgePromotionRow = {
+  id: string;
+  fixture_id: string;
+  task: string;
+  matter_type: string;
+  proposed_default_model: string;
+  model_cost_tier: string;
+  promotion_status: string;
+  bridge_status: string;
+  gate_status: string;
+  document_benchmark_status: string;
+  fact_consistency_status: string;
+  calibration_status: string;
+  official_lifecycle: string;
+  lifecycle_default_policy: string;
+  default_change_allowed_by_bridge: boolean;
+  configuration_change_allowed: boolean;
+  gateway_call_allowed: boolean;
+  reason_codes: string[];
+  action: string;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionBridgeCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionBridge = {
+  id: string;
+  title: string;
+  status: string;
+  decision: {
+    status: string;
+    default_change_allowed_by_bridge: boolean;
+    current_cheap_first_defaults_allowed: boolean;
+    maintainer_review_required: boolean;
+    requires_legal_fixture_benchmark_gate: boolean;
+    requires_default_promotion_packet: boolean;
+    requires_regression_budget: boolean;
+    requires_evidence_handoff: boolean;
+    requires_gemini_lifecycle_drift_gate: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    bridge_release_action: string;
+  };
+  summary: {
+    source_count: number;
+    ready_source_count: number;
+    review_source_count: number;
+    blocked_source_count: number;
+    not_run_source_count: number;
+    promotion_row_count: number;
+    promotion_ready_count: number;
+    promotion_review_count: number;
+    promotion_blocked_count: number;
+    source_benchmark_gate_status: string;
+    source_default_promotion_packet_status: string;
+    source_regression_budget_status: string;
+    source_evidence_handoff_status: string;
+    source_gemini_lifecycle_status: string;
+    document_benchmark_status: string;
+    fact_consistency_status: string;
+    local_rule_baseline_status: string;
+    calibration_status: string;
+    regressed_fixture_count: number;
+    runbook_ready_evidence_row_count: number;
+    handoff_release_ready: boolean;
+    stable_flash_lite_default_count: number;
+    blocked_default_count: number;
+    review_default_count: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_bridge: boolean;
+    configuration_written: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_payload_echoed: boolean;
+  };
+  source_rows: ModelOpsLegalBenchmarkDefaultPromotionBridgeSourceRow[];
+  promotion_rows: ModelOpsLegalBenchmarkDefaultPromotionBridgePromotionRow[];
+  checks: ModelOpsLegalBenchmarkDefaultPromotionBridgeCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -5542,6 +5661,7 @@ export type ModelOpsResponse = {
   legal_fixture_cheap_first_default_promotion_packet?: ModelOpsLegalFixtureCheapFirstDefaultPromotionPacket;
   legal_fixture_evidence_handoff?: ModelOpsLegalFixtureEvidenceHandoff;
   legal_fixture_cheap_first_regression_budget?: ModelOpsLegalFixtureCheapFirstRegressionBudget;
+  legal_benchmark_default_promotion_bridge?: ModelOpsLegalBenchmarkDefaultPromotionBridge;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -6460,6 +6580,13 @@ export async function getModelOpsLegalFixtureEvidenceHandoff(): Promise<ModelOps
 export async function getModelOpsLegalFixtureCheapFirstRegressionBudget(): Promise<ModelOpsLegalFixtureCheapFirstRegressionBudget> {
   return invokeModelOpsApi<ModelOpsLegalFixtureCheapFirstRegressionBudget>({
     url: '/api/v1/aihub/models/legal-fixture-cheap-first-regression-budget',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalBenchmarkDefaultPromotionBridge(): Promise<ModelOpsLegalBenchmarkDefaultPromotionBridge> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionBridge>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-bridge',
     method: 'GET',
   });
 }

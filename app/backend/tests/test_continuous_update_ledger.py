@@ -289,6 +289,33 @@ def test_continuous_update_ledger_includes_modelops_legal_benchmark_risk_bridge_
     assert "traceable-legal-review" in entry["user_need_ids"]
 
 
+def test_continuous_update_ledger_includes_modelops_legal_benchmark_default_promotion_bridge():
+    ledger = ContinuousUpdateLedgerService().build_ledger()
+    entry = next(
+        item for item in ledger["completed_updates"]
+        if item["id"] == "modelops-legal-benchmark-default-promotion-bridge"
+    )
+
+    assert entry["category"] == "model_ops"
+    assert entry["size"] == "medium"
+    assert "metadata-only legal benchmark default-promotion bridge evidence" in entry["impact"]
+    assert "Gemini official lifecycle drift gate" in entry["impact"]
+    assert "gateway/network calls" in entry["impact"]
+    assert "raw legal text" in entry["impact"]
+    assert "app/backend/services/modelops_legal_benchmark_default_promotion_bridge.py" in entry["evidence_paths"]
+    assert "app/backend/tests/test_modelops_legal_benchmark_default_promotion_bridge.py" in entry["evidence_paths"]
+    assert "app/backend/services/model_ops_gemini_official_lifecycle_drift_gate.py" in entry["evidence_paths"]
+    assert "app/frontend/src/pages/ModelOpsPage.tsx" in entry["evidence_paths"]
+    assert "docs/MODELOPS_LEGAL_BENCHMARK_DEFAULT_PROMOTION_BRIDGE.md" in entry["evidence_paths"]
+    assert "modelops-legal-benchmark-default-promotion-bridge" in entry["release_gate_links"]
+    assert "modelops-gemini-official-lifecycle-drift-gate" in entry["release_gate_links"]
+    assert "low-cost-routing" in entry["user_need_ids"]
+    assert any(
+        "tests/test_modelops_legal_benchmark_default_promotion_bridge.py" in command
+        for command in ledger["validation_commands"]
+    )
+
+
 def test_continuous_update_ledger_tracks_settings_ai_provider_status_card():
     ledger = ContinuousUpdateLedgerService().build_ledger()
     entry = next(
