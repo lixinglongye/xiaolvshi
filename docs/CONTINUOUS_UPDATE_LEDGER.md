@@ -1,5 +1,21 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan execution review packet slice:
+`legal-document-benchmark-route-plan-execution-review-packet` adds a
+metadata-only reviewer packet after the execution-result handoff. It summarizes
+readiness, sanitized result archive, and handoff status into attach/review/hold
+release-evidence decisions, requiring ready readiness, ready archive, ready
+handoff, cheap-first model alignment, `fixture_limit=3`, and
+`max_parallel_model_requests=1` before the packet can be attached. The endpoint
+is available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-review-packet`.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network; execute benchmark runs; write release
+records or archive files; record approval; change defaults; shift traffic;
+write configuration; or return public benchmark text, raw legal text, fixture
+snippets, generated document text, prompts, request bodies, response bodies,
+headers, model outputs, gateway responses, emails, identifiers, or credentials.
+
 Current legal document benchmark route-plan execution result handoff slice:
 `legal-document-benchmark-route-plan-execution-result-handoff` adds a
 metadata-only release-evidence handoff after the execution-result archive. It

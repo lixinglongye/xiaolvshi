@@ -1646,6 +1646,12 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionResultHandoffCheck', 'legal document benchmark route plan execution result handoff check type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionResultHandoff', 'legal document benchmark route plan execution result handoff API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionResultHandoff', 'legal document benchmark route plan execution result handoff POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document benchmark route plan execution review packet type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReviewItem', 'legal document benchmark route plan execution review item type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReviewPacketCheck', 'legal document benchmark route plan execution review packet check type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReviewPacketClaimRow', 'legal document benchmark route plan execution review packet claim row type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document benchmark route plan execution review packet API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document benchmark route plan execution review packet POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1681,6 +1687,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-result-handoff',
       'legal document benchmark route plan execution result handoff endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-review-packet',
+      'legal document benchmark route plan execution review packet endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1781,6 +1793,20 @@ const checks = [
   () => assertIncludes(maintenancePage, 'attachable_row_count', 'legal document route plan execution result handoff attachable metric'),
   () => assertIncludes(maintenancePage, 'release_action', 'legal document route plan execution result handoff release action'),
   () => assertIncludes(maintenancePage, 'checks.map', 'legal document route plan execution result handoff checks'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document route plan execution review packet load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document route plan execution review packet state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanExecutionReviewPacket', 'legal document route plan execution review packet handler'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionReviewPacketLoading', 'legal document route plan execution review packet loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionReviewPacketError', 'legal document route plan execution review packet error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReviewPacket', 'legal document route plan execution review packet POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan execution review packet', 'legal document route plan execution review packet panel'),
+  () => assertIncludes(maintenancePage, 'Refresh review packet', 'legal document route plan execution review packet button'),
+  () => assertIncludes(maintenancePage, 'review_items', 'legal document route plan execution review packet rows'),
+  () => assertIncludes(maintenancePage, 'claim_review_rows', 'legal document route plan execution review packet claim rows'),
+  () => assertIncludes(maintenancePage, 'review_packet_policy', 'legal document route plan execution review packet policy'),
+  () => assertIncludes(maintenancePage, 'ready_for_release_packet', 'legal document route plan execution review packet ready binding'),
+  () => assertIncludes(maintenancePage, 'blocking_check_ids', 'legal document route plan execution review packet blocking ids'),
+  () => assertIncludes(maintenancePage, 'warning_check_ids', 'legal document route plan execution review packet warning ids'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1827,8 +1853,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result handoff',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
+      'legal document route plan execution review packet follows handoff',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan execution result handoff precedes fixtures',
+      'legal document route plan execution review packet precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1890,11 +1923,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result handoff',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
         'legal document benchmark route plan execution result handoff section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|fixture_snippet|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|client_email|email|phone|identity_number/i,
       'legal document benchmark route plan execution result handoff sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution review packet',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan execution review packet section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|access_token|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|public_benchmark_text|fixture_snippet|fixture_snippets|benchmark_sample|sample_text|input_excerpt|output_text|request_body|response_body|headers|gateway_response|gateway_responses|model_output|model_outputs|client_email|email|phone|identity_number|client_identifier|client_identifiers|source_code/i,
+      'legal document benchmark route plan execution review packet sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),
