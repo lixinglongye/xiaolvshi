@@ -3279,6 +3279,47 @@ class ReleaseReadinessService:
                 ),
             ),
             ReleaseCheck(
+                id="legal-document-benchmark-route-plan-execution-result-archive",
+                title="Legal document benchmark route plan execution result archive",
+                category="quality",
+                required=False,
+                owner="quality",
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_result_archive.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_archive.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_readiness.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_readiness.py",
+                    "app/backend/services/legal_document_benchmark_route_plan.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_ARCHIVE.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                validation_command=(
+                    "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_archive.py "
+                    "tests/test_legal_document_benchmark_route_plan_execution_readiness.py "
+                    "tests/test_legal_document_benchmark_route_plan.py tests/test_release_readiness.py "
+                    "tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py "
+                    "tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && "
+                    "npm run ui:regression"
+                ),
+                manual_note=(
+                    "This builds a metadata-only legal-document benchmark route-plan execution result archive "
+                    "for externally supplied manual observation metadata after execution readiness. It checks "
+                    "case_id, phase, observed model, status, token, cost, latency, fallback, and coarse error "
+                    "metadata against the cheap-first route plan with fixture_limit=3 and max_parallel_model_requests=1, "
+                    "but does not call NewAPI, Gemini, gateways, app AI endpoints, models, public datasets, or the "
+                    "network; execute benchmark runs; write archive files; record maintainer approval; change "
+                    "defaults; shift traffic; write configuration; or return public benchmark text, raw fixture "
+                    "snippets, prompts, request bodies, response bodies, headers, raw legal text, generated "
+                    "document text, model outputs, gateway responses, credentials, emails, or client identifiers."
+                ),
+            ),
+            ReleaseCheck(
                 id="legal-document-benchmark-coverage-ui",
                 title="Legal document benchmark coverage UI",
                 category="frontend_ui",

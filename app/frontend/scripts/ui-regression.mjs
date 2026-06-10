@@ -1636,6 +1636,11 @@ const checks = [
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionReadinessGate', 'legal document benchmark route plan execution readiness gate type'),
   () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document benchmark route plan execution readiness API binding'),
   () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness', 'legal document benchmark route plan execution readiness POST API binding'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document benchmark route plan execution result archive type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionResultArchiveRow', 'legal document benchmark route plan execution result archive row type'),
+  () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkRoutePlanExecutionResultArchiveCheck', 'legal document benchmark route plan execution result archive check type'),
+  () => assertIncludes(maintenanceApi, 'getLegalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document benchmark route plan execution result archive API binding'),
+  () => assertIncludes(maintenanceApi, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document benchmark route plan execution result archive POST API binding'),
   () =>
     assertIncludes(
       maintenanceApi,
@@ -1659,6 +1664,12 @@ const checks = [
       maintenanceApi,
       '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-readiness',
       'legal document benchmark route plan execution readiness endpoint',
+    ),
+  () =>
+    assertIncludes(
+      maintenanceApi,
+      '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-result-archive',
+      'legal document benchmark route plan execution result archive endpoint',
     ),
   () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan load task'),
   () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlan', 'legal document benchmark route plan state binding'),
@@ -1730,6 +1741,20 @@ const checks = [
   () => assertIncludes(maintenancePage, 'max_parallel_model_requests', 'legal document route plan execution readiness low-resource metric'),
   () => assertIncludes(maintenancePage, 'estimated_total_route_cost_usd', 'legal document route plan execution readiness cost metric'),
   () => assertIncludes(maintenancePage, 'maintainer_approval_recorded', 'legal document route plan execution readiness approval boundary'),
+  () => assertIncludes(maintenancePage, 'getLegalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document route plan execution result archive load task'),
+  () => assertIncludes(maintenancePage, 'legalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document route plan execution result archive state binding'),
+  () => assertIncludes(maintenancePage, 'runLegalDocumentRoutePlanExecutionResultArchive', 'legal document route plan execution result archive handler'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionResultArchiveLoading', 'legal document route plan execution result archive loading state'),
+  () => assertIncludes(maintenancePage, 'routePlanExecutionResultArchiveError', 'legal document route plan execution result archive error state'),
+  () => assertIncludes(maintenancePage, 'evaluateLegalDocumentBenchmarkRoutePlanExecutionResultArchive', 'legal document route plan execution result archive POST binding'),
+  () => assertIncludes(maintenancePage, 'Legal document benchmark route plan execution result archive', 'legal document route plan execution result archive panel'),
+  () => assertIncludes(maintenancePage, 'Refresh archive', 'legal document route plan execution result archive button'),
+  () => assertIncludes(maintenancePage, 'archive_rows', 'legal document route plan execution result archive rows'),
+  () => assertIncludes(maintenancePage, 'archive_policy', 'legal document route plan execution result archive policy'),
+  () => assertIncludes(maintenancePage, 'accepted_observation_fields', 'legal document route plan execution result archive accepted fields'),
+  () => assertIncludes(maintenancePage, 'cheap_first_aligned_count', 'legal document route plan execution result archive cheap-first metric'),
+  () => assertIncludes(maintenancePage, 'observed_cost_usd_sum', 'legal document route plan execution result archive cost metric'),
+  () => assertIncludes(maintenancePage, 'writes_archive_file', 'legal document route plan execution result archive write boundary'),
   () =>
     assertBefore(
       maintenancePage,
@@ -1762,8 +1787,15 @@ const checks = [
     assertBefore(
       maintenancePage,
       '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result archive',
+      'legal document route plan execution result archive follows readiness',
+    ),
+  () =>
+    assertBefore(
+      maintenancePage,
+      '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result archive',
       '<h2 className="text-xl font-black text-stone-950">Legal document benchmark fixtures</h2>',
-      'legal document route plan execution readiness precedes fixtures',
+      'legal document route plan execution result archive precedes fixtures',
     ),
   () =>
     assertNotMatches(
@@ -1803,11 +1835,22 @@ const checks = [
       sourceSection(
         maintenancePage,
         '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution readiness',
-        'Legal document benchmark fixtures',
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result archive',
         'legal document benchmark route plan execution readiness section',
       ),
       /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
       'legal document benchmark route plan execution readiness sensitive/raw payload guard',
+    ),
+  () =>
+    assertNotMatches(
+      sourceSection(
+        maintenancePage,
+        '<h2 className="text-xl font-black text-stone-950">\n                      Legal document benchmark route plan execution result archive',
+        'Legal document benchmark fixtures',
+        'legal document benchmark route plan execution result archive section',
+      ),
+      /sk-[A-Za-z0-9_-]{20,}|credential_value|secret_value|api_key|authorization|password|raw_prompt|prompt_payload|raw_payload|generated_text|candidate_text|document_text|raw_legal_text|request_body|response_body|headers|gateway_response|client_email|identity_number|output_text/i,
+      'legal document benchmark route plan execution result archive sensitive/raw payload guard',
     ),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkFixtures', 'legal document benchmark fixtures type'),
   () => assertIncludes(maintenanceApi, 'LegalDocumentBenchmarkPrediction', 'legal document benchmark structured prediction type'),

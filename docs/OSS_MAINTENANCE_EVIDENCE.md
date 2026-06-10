@@ -14,6 +14,14 @@ cheap-first Gemini routing readiness. It must not claim that a benchmark has
 run, approval has been recorded, model defaults changed, traffic shifted, public
 benchmark scores were produced, or real client documents were tested.
 
+Legal document route-plan execution-result archive evidence may describe
+sanitized manual observation metadata after readiness review, including case
+ids, phase, model id, status, token/cost/latency metadata, fallback flags, and
+coarse error categories. It must not claim that this service executed a
+benchmark, called a gateway, wrote archive files, recorded approval, changed
+defaults, shifted traffic, or stored raw legal text, prompts, request/response
+bodies, gateway responses, model outputs, emails, identifiers, or credentials.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

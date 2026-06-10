@@ -1,5 +1,20 @@
 # Continuous Update Ledger
 
+Current legal document benchmark route-plan execution result archive slice:
+`legal-document-benchmark-route-plan-execution-result-archive` adds a
+metadata-only post-run archive for sanitized manual route-plan observations.
+It compares case id, phase, observed model, status, token, cost, latency,
+fallback, and coarse error metadata with the cheap-first route plan after the
+execution-readiness packet. The endpoint is available at
+`/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-result-archive`.
+It keeps `fixture_limit=3` and `max_parallel_model_requests=1`, does not call
+NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models, public
+datasets, or the network; execute benchmark runs; write archive files; record
+approval; change defaults; shift traffic; write configuration; or return public
+benchmark text, raw legal text, fixture snippets, generated document text,
+prompts, request bodies, response bodies, headers, model outputs, gateway
+responses, emails, identifiers, or credentials.
+
 Current legal document benchmark route-plan execution readiness slice:
 `legal-document-benchmark-route-plan-execution-readiness` adds a metadata-only
 pre-run packet for the local synthetic legal-document benchmark route plan. It

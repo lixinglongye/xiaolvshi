@@ -730,6 +730,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan-replay" in completed_ids
     assert "legal-document-benchmark-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-readiness" in completed_ids
+    assert "legal-document-benchmark-route-plan-execution-result-archive" in completed_ids
     assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
@@ -904,6 +905,51 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_execution_readiness.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_route_plan_execution_result_archive_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-execution-result-archive"
+    )
+    assert legal_document_benchmark_route_plan_execution_result_archive_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_execution_result_archive_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_execution_result_archive_entry["status"] == "shipped"
+    assert "post-run archive" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "manual legal-document route-plan observations" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "impact"
+    ]
+    assert "fixture_limit=3" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "max_parallel_model_requests=1" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "impact"
+    ]
+    assert "request bodies" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "response bodies" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "archive file writes" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_execution_result_archive_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_result_archive.py" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_archive.py" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_ARCHIVE.md" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-result-archive" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-readiness" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-override-ui" in legal_document_benchmark_route_plan_execution_result_archive_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_execution_result_archive.py" in command
         for command in ledger["validation_commands"]
     )
     oss_maintenance_route_plan_research_alignment_entry = next(
@@ -1385,6 +1431,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan-replay" not in queue_ids
     assert "legal-document-benchmark-route-plan-research-alignment" not in queue_ids
     assert "legal-document-benchmark-route-plan-execution-readiness" not in queue_ids
+    assert "legal-document-benchmark-route-plan-execution-result-archive" not in queue_ids
     assert "legal-document-benchmark-route-plan-override-ui" not in queue_ids
     assert "legal-document-benchmark-gap-fixtures" not in queue_ids
     assert "legal-document-template-benchmark-alignment" not in queue_ids

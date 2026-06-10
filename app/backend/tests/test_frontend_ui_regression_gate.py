@@ -27,6 +27,8 @@ def test_frontend_ui_regression_gate_maps_maintenance_and_model_ops_pages():
     assert rows["/deep-report/:id"]["source_exists"] is True
     assert "user need benchmark coverage" in rows["/maintenance"]["protected_panels"]
     assert "public benchmark license gate" in rows["/maintenance"]["protected_panels"]
+    assert "legal document benchmark route-plan execution readiness" in rows["/maintenance"]["protected_panels"]
+    assert "legal document benchmark route-plan execution result archive" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark fixture crosswalk" in rows["/maintenance"]["protected_panels"]
     assert "legal benchmark research refresh" in rows["/maintenance"]["protected_panels"]
     assert "model route legal benchmark risk queue" in rows["/maintenance"]["protected_panels"]

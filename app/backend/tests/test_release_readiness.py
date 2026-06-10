@@ -1802,6 +1802,7 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
         "legal-document-benchmark-route-plan-replay": "python -m pytest tests/test_legal_document_benchmark_route_plan_replay.py tests/test_legal_document_benchmark_route_plan.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_benchmark_coverage.py tests/test_model_runtime_router.py tests/test_model_default_candidate_selector.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q",
         "legal-document-benchmark-route-plan-research-alignment": "python -m pytest tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_legal_document_benchmark_route_plan_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-route-plan-execution-readiness": "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_legal_document_benchmark_route_plan_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+        "legal-document-benchmark-route-plan-execution-result-archive": "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_legal_document_benchmark_route_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-coverage-ui": "npm run typecheck",
         "legal-document-benchmark-route-plan-override-ui": "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
         "legal-document-benchmark-fixture-ui": "python -m pytest tests/test_legal_document_benchmark_fixtures.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
@@ -2002,6 +2003,34 @@ def test_recent_backend_product_slices_are_optional_release_evidence():
     ]["evidence_paths"]
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_READINESS.md" in checks[
         "legal-document-benchmark-route-plan-execution-readiness"
+    ]["evidence_paths"]
+    assert "execution result archive" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "case_id, phase, observed model, status, token, cost, latency" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "fixture_limit=3" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "max_parallel_model_requests=1" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "does not call NewAPI" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "request bodies" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["manual_note"]
+    assert "credentials" in checks["legal-document-benchmark-route-plan-execution-result-archive"]["manual_note"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_result_archive.py" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["evidence_paths"]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_archive.py" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
+    ]["evidence_paths"]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_ARCHIVE.md" in checks[
+        "legal-document-benchmark-route-plan-execution-result-archive"
     ]["evidence_paths"]
     assert "without rendering raw fixture snippets" in checks["legal-document-benchmark-coverage-ui"]["manual_note"]
     assert "route override preview" in checks["legal-document-benchmark-route-plan-override-ui"]["manual_note"]

@@ -52,6 +52,8 @@ PAGE_GATES = (
             "user need benchmark coverage",
             "user need Gemini route coverage",
             "legal document benchmark coverage",
+            "legal document benchmark route-plan execution readiness",
+            "legal document benchmark route-plan execution result archive",
             "public benchmark license gate",
             "legal benchmark fixture crosswalk",
             "legal benchmark research refresh",

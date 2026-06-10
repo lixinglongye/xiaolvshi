@@ -56,6 +56,9 @@ from services.legal_document_benchmark_route_plan_research_alignment import (
 from services.legal_document_benchmark_route_plan_execution_readiness import (
     LegalDocumentBenchmarkRoutePlanExecutionReadinessService,
 )
+from services.legal_document_benchmark_route_plan_execution_result_archive import (
+    LegalDocumentBenchmarkRoutePlanExecutionResultArchiveService,
+)
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1538,6 +1541,24 @@ async def build_legal_document_benchmark_route_plan_execution_readiness(payload:
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanExecutionReadinessService().build_packet(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/execution-result-archive")
+async def get_legal_document_benchmark_route_plan_execution_result_archive():
+    """Return a metadata-only archive template for manual route-plan execution results."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionResultArchiveService().build_archive(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/execution-result-archive")
+async def build_legal_document_benchmark_route_plan_execution_result_archive(payload: dict[str, Any]):
+    """Archive sanitized manual route-plan execution result metadata only."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionResultArchiveService().build_archive(payload),
     }
 
 
