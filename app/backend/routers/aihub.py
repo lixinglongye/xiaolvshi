@@ -141,6 +141,9 @@ from services.modelops_legal_benchmark_default_promotion_bridge import (
 from services.modelops_legal_benchmark_default_promotion_checklist import (
     ModelOpsLegalBenchmarkDefaultPromotionChecklistService,
 )
+from services.modelops_legal_benchmark_default_promotion_signoff_packet import (
+    ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketService,
+)
 from services.modelops_legal_micro_benchmark_preflight import ModelOpsLegalMicroBenchmarkPreflightService
 from services.model_price_refresh_monitor import ModelPriceRefreshMonitorService
 from services.model_routing_replay import ModelRoutingReplayService
@@ -649,6 +652,12 @@ async def list_models():
         ModelOpsLegalBenchmarkDefaultPromotionChecklistService().build_checklist(model_ops_signals)
     )
     model_ops_signals["legal_benchmark_default_promotion_checklist"] = legal_benchmark_default_promotion_checklist
+    legal_benchmark_default_promotion_signoff_packet = (
+        ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketService().build_packet(model_ops_signals)
+    )
+    model_ops_signals["legal_benchmark_default_promotion_signoff_packet"] = (
+        legal_benchmark_default_promotion_signoff_packet
+    )
     gemini_research_refresh_gate = ModelOpsGeminiResearchRefreshGateService().build_gate(model_ops_signals)
     model_ops_signals["gemini_research_refresh_gate"] = gemini_research_refresh_gate
     cheap_first_priority_queue = ModelOpsCheapFirstPriorityQueueService().build_queue(model_ops_signals)
@@ -762,6 +771,7 @@ async def list_models():
         "legal_fixture_cheap_first_regression_budget": legal_fixture_cheap_first_regression_budget,
         "legal_benchmark_default_promotion_bridge": legal_benchmark_default_promotion_bridge,
         "legal_benchmark_default_promotion_checklist": legal_benchmark_default_promotion_checklist,
+        "legal_benchmark_default_promotion_signoff_packet": legal_benchmark_default_promotion_signoff_packet,
         "user_need_benchmark_coverage": user_need_benchmark_coverage,
         "user_need_implementation_priority_queue": user_need_implementation_priority_queue,
         "user_need_gemini_route_coverage": user_need_gemini_route_coverage,
@@ -1554,6 +1564,25 @@ async def evaluate_model_ops_legal_benchmark_default_promotion_checklist(payload
     return {
         "success": True,
         "data": ModelOpsLegalBenchmarkDefaultPromotionChecklistService().build_checklist(payload),
+    }
+
+
+@router.get("/models/legal-benchmark-default-promotion-signoff-packet")
+async def model_ops_legal_benchmark_default_promotion_signoff_packet():
+    """Return legal benchmark default-promotion signoff packet evidence."""
+    models_payload = await list_models()
+    return {
+        "success": True,
+        "data": models_payload["legal_benchmark_default_promotion_signoff_packet"],
+    }
+
+
+@router.post("/models/legal-benchmark-default-promotion-signoff-packet")
+async def evaluate_model_ops_legal_benchmark_default_promotion_signoff_packet(payload: dict[str, Any]):
+    """Evaluate legal benchmark default-promotion signoff packet without model or gateway calls."""
+    return {
+        "success": True,
+        "data": ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketService().build_packet(payload),
     }
 
 

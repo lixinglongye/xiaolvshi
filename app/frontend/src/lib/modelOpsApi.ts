@@ -5697,6 +5697,129 @@ export type ModelOpsLegalBenchmarkDefaultPromotionChecklist = {
   validation_commands: string[];
 };
 
+export type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketSourceStatusRow = {
+  id: string;
+  label: string;
+  source_key: string;
+  source_status: string;
+  signoff_status: string;
+  row_count: number;
+  blocking_count: number;
+  warning_count: number;
+  configuration_written: boolean;
+  approval_record_written: boolean;
+  gateway_called: boolean;
+  network_called: boolean;
+  raw_payload_echoed: boolean;
+  raw_model_output_returned: boolean;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketRow = {
+  id: string;
+  source_checklist_row_id: string;
+  requirement_id: string;
+  fixture_id: string;
+  task: string;
+  proposed_default_model: string;
+  model_cost_tier: string;
+  checklist_status: string;
+  signoff_status: string;
+  required_signoffs: string[];
+  pre_signoff_checks: string[];
+  blocking_reason_codes: string[];
+  reason_codes: string[];
+  signoff_record_written: boolean;
+  approver_identity_collected: boolean;
+  configuration_change_allowed: boolean;
+  env_file_write_allowed: boolean;
+  approval_record_write_allowed: boolean;
+  gateway_call_allowed: boolean;
+  traffic_shift_allowed: boolean;
+  default_change_allowed_by_signoff_packet: boolean;
+  release_action: string;
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketCheck = {
+  id: string;
+  source_key: string;
+  status: string;
+  source_status: string;
+  decision_effect: string;
+  reason: string;
+  source_blocking_ids: string[];
+  source_warning_ids: string[];
+};
+
+export type ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket = {
+  id: string;
+  title: string;
+  status: string;
+  signoff_policy: {
+    signoff_required: boolean;
+    signoff_record_written: boolean;
+    approver_identity_collected: boolean;
+    configuration_change_allowed: boolean;
+    env_file_write_allowed: boolean;
+    approval_record_write_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    requires_checklist_not_blocked: boolean;
+    requires_model_ops_maintainer: boolean;
+    requires_legal_quality_owner: boolean;
+    requires_release_owner: boolean;
+    requires_metadata_only_boundary: boolean;
+  };
+  decision: {
+    status: string;
+    default_change_allowed_by_signoff_packet: boolean;
+    configuration_change_allowed: boolean;
+    gateway_call_allowed: boolean;
+    traffic_shift_allowed: boolean;
+    maintainer_review_required: boolean;
+    signoff_release_action: string;
+  };
+  summary: {
+    source_count: number;
+    signoff_item_count: number;
+    ready_for_signoff_count: number;
+    review_required_count: number;
+    blocked_count: number;
+    not_run_count: number;
+    required_signoff_count: number;
+    recorded_signoff_count: number;
+    checklist_status: string;
+    checklist_row_count: number;
+    checklist_blocked_count: number;
+    checklist_review_required_count: number;
+    raw_input_field_count: number;
+    default_change_allowed_by_signoff_packet: boolean;
+    configuration_written: boolean;
+    env_file_written: boolean;
+    approval_record_written: boolean;
+    signoff_record_written: boolean;
+    approver_identity_collected: boolean;
+    gateway_called: boolean;
+    newapi_called: boolean;
+    network_called: boolean;
+    traffic_shifted: boolean;
+    raw_fixture_text_returned: boolean;
+    raw_document_text_returned: boolean;
+    raw_model_output_returned: boolean;
+    raw_payload_echoed: boolean;
+  };
+  source_status_rows: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketSourceStatusRow[];
+  signoff_items: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketRow[];
+  checks: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacketCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  required_signoffs: string[];
+  source_links: Record<string, string>;
+  recommended_actions: string[];
+  privacy_boundary: Record<string, boolean | string | number | null>;
+  claim_boundary: Record<string, boolean | string | number | null>;
+  validation_commands: string[];
+};
+
 export type ModelOpsResponse = {
   success: boolean;
   routing_aliases: RoutingAliases;
@@ -5773,6 +5896,7 @@ export type ModelOpsResponse = {
   legal_fixture_cheap_first_regression_budget?: ModelOpsLegalFixtureCheapFirstRegressionBudget;
   legal_benchmark_default_promotion_bridge?: ModelOpsLegalBenchmarkDefaultPromotionBridge;
   legal_benchmark_default_promotion_checklist?: ModelOpsLegalBenchmarkDefaultPromotionChecklist;
+  legal_benchmark_default_promotion_signoff_packet?: ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket;
   model_ops_performance_budget?: ModelOpsPerformanceBudget;
   cheap_first_release_decision?: ModelOpsCheapFirstReleaseDecision;
   user_need_gemini_route_coverage?: UserNeedGeminiRouteCoverage;
@@ -5862,6 +5986,7 @@ function hasModelOpsPayload(value: unknown): boolean {
     execution_items?: unknown;
     source_status_rows?: unknown;
     checklist_rows?: unknown;
+    signoff_items?: unknown;
     priority_items?: unknown;
     coverage_rows?: unknown;
     route_task_rows?: unknown;
@@ -5932,6 +6057,7 @@ function hasModelOpsPayload(value: unknown): boolean {
       || (Boolean(payload.summary) && Array.isArray(payload.change_manifest_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.execution_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.checklist_rows) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
+      || (Boolean(payload.summary) && Array.isArray(payload.signoff_items) && Array.isArray(payload.source_status_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.priority_items) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.coverage_rows) && Array.isArray(payload.validation_commands))
       || (Boolean(payload.summary) && Array.isArray(payload.route_task_rows) && Array.isArray(payload.variant_preflight_rows) && Array.isArray(payload.official_source_rows))
@@ -6708,6 +6834,13 @@ export async function getModelOpsLegalBenchmarkDefaultPromotionBridge(): Promise
 export async function getModelOpsLegalBenchmarkDefaultPromotionChecklist(): Promise<ModelOpsLegalBenchmarkDefaultPromotionChecklist> {
   return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionChecklist>({
     url: '/api/v1/aihub/models/legal-benchmark-default-promotion-checklist',
+    method: 'GET',
+  });
+}
+
+export async function getModelOpsLegalBenchmarkDefaultPromotionSignoffPacket(): Promise<ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket> {
+  return invokeModelOpsApi<ModelOpsLegalBenchmarkDefaultPromotionSignoffPacket>({
+    url: '/api/v1/aihub/models/legal-benchmark-default-promotion-signoff-packet',
     method: 'GET',
   });
 }

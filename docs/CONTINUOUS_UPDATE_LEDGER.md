@@ -1,5 +1,23 @@
 # Continuous Update Ledger
 
+Current legal benchmark default-promotion signoff packet slice:
+`modelops-legal-benchmark-default-promotion-signoff-packet` adds a
+metadata-only signoff packet for cheap-first legal default review. It turns
+checklist rows into external maintainer signoff requirements, pre-signoff
+checks, source status rows, and required roles before maintainers consider any
+legal-task Gemini default movement. The endpoint is available at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-signoff-packet`, the
+aggregate ModelOps payload includes
+`legal_benchmark_default_promotion_signoff_packet`, and the evidence is visible
+on `/model-ops` between the checklist and evidence handoff sections. It does
+not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints, models,
+public datasets, or the network; write configuration; write env files; record
+approvals or signoffs; collect approver identity; change defaults; shift
+traffic; return raw legal text, fixture snippets, generated document text,
+prompts, payloads, model output, gateway responses, emails, identifiers, or
+credentials; or claim maintainer approval, public benchmark scores, production
+quality, legal advice, or automatic default changes.
+
 Current legal benchmark default-promotion checklist slice:
 `modelops-legal-benchmark-default-promotion-checklist` adds a metadata-only
 maintainer checklist for cheap-first legal default review. It joins the legal

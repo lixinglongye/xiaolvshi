@@ -370,6 +370,21 @@ record approvals, change defaults, shift traffic, claim maintainer approval,
 or return raw legal text, fixture snippets, prompts, generated document text,
 model outputs, gateway payloads, emails, identifiers, or credentials.
 
+`modelops-legal-benchmark-default-promotion-signoff-packet` is the final
+metadata-only packet before any external maintainer signoff work for legal-task
+defaults. It consumes the checklist and turns checklist rows into signoff
+requirements, pre-signoff checks, source status rows, and release actions. The
+packet is visible at
+`/api/v1/aihub/models/legal-benchmark-default-promotion-signoff-packet`, in
+the aggregate `/api/v1/aihub/models` payload, in `model_ops_readiness`, and on
+`/model-ops` between the checklist and legal fixture evidence handoff panels.
+It does not call NewAPI, Gemini, OpenAI, Google, gateways, app AI endpoints,
+models, public datasets, or the network, write configuration, write env files,
+record approvals or signoffs, collect approver identity, change defaults, shift
+traffic, claim maintainer approval, or return raw legal text, fixture snippets,
+prompts, generated document text, model outputs, gateway payloads, emails,
+identifiers, or credentials.
+
 `feedback-user-need-legal-document-benchmark-backlog` is the feedback-driven
 maintenance backlog that maps privacy-safe feedback clusters into user-need and
 legal-document benchmark fixture/review actions before any cheap-first default
