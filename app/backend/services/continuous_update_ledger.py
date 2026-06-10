@@ -224,6 +224,7 @@ class ContinuousUpdateLedgerService:
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_legal_document_benchmark_route_plan_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_legal_document_benchmark_route_plan_replay.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_legal_document_benchmark_route_plan.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
+                "python -m pytest tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py tests/test_legal_document_benchmark_route_plan_execution_result_archive.py tests/test_legal_document_benchmark_route_plan_execution_readiness.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py tests/test_maintenance_evidence.py tests/test_frontend_ui_regression_gate.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_maintenance_evidence.py tests/test_legal_document_benchmark_route_plan_research_alignment.py tests/test_continuous_update_ledger.py -q",
                 "python -m pytest tests/test_legal_document_benchmark_route_plan.py tests/test_frontend_ui_regression_gate.py tests/test_release_readiness.py tests/test_continuous_update_ledger.py -q && cd ../frontend && npm run typecheck && npm run ui:regression",
                 "python -m pytest tests/test_legal_document_template_matrix.py tests/test_legal_document_benchmark_coverage.py tests/test_legal_document_benchmark_suite.py tests/test_legal_document_coverage_claim_policy.py -q",
@@ -6245,6 +6246,46 @@ class ContinuousUpdateLedgerService:
                     "legal-document-benchmark-route-plan-execution-readiness",
                     "legal-document-benchmark-route-plan",
                     "legal-document-benchmark-route-plan-override-ui",
+                    "frontend-ui-regression",
+                ),
+                user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),
+            ),
+            LedgerEntry(
+                id="legal-document-benchmark-route-plan-execution-result-handoff",
+                title="Legal document benchmark route-plan execution result handoff",
+                category="benchmark",
+                size="medium",
+                status="shipped",
+                impact=(
+                    "Adds a metadata-only release-evidence handoff for sanitized legal-document route-plan "
+                    "execution result archives, requiring a ready execution-readiness packet, ready archive "
+                    "rows, cheap-first model alignment, fixture_limit=3, and max_parallel_model_requests=1 "
+                    "before results can be attached as release evidence. It does not call models or gateways, "
+                    "execute benchmark runs, write release records or archive files, record approval, claim "
+                    "public benchmark scores, change defaults, shift traffic, write configuration, or return "
+                    "public benchmark text, raw legal text, fixture snippets, prompts, request bodies, response "
+                    "bodies, headers, model outputs, gateway responses, emails, identifiers, or credentials."
+                ),
+                evidence_paths=(
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_result_handoff.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_result_archive.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_archive.py",
+                    "app/backend/services/legal_document_benchmark_route_plan_execution_readiness.py",
+                    "app/backend/tests/test_legal_document_benchmark_route_plan_execution_readiness.py",
+                    "app/backend/routers/maintenance.py",
+                    "app/frontend/src/lib/maintenanceApi.ts",
+                    "app/frontend/src/pages/MaintenanceEvidencePage.tsx",
+                    "app/frontend/scripts/ui-regression.mjs",
+                    "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_HANDOFF.md",
+                    "docs/CONTINUOUS_UPDATE_LEDGER.md",
+                    "docs/RELEASE_READINESS.md",
+                ),
+                release_gate_links=(
+                    "legal-document-benchmark-route-plan-execution-result-handoff",
+                    "legal-document-benchmark-route-plan-execution-result-archive",
+                    "legal-document-benchmark-route-plan-execution-readiness",
+                    "legal-document-benchmark-route-plan",
                     "frontend-ui-regression",
                 ),
                 user_need_ids=("grounded-legal-output", "low-resource-testing", "gemini-cheap-first-routing"),

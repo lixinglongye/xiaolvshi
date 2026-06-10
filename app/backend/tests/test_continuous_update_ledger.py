@@ -731,6 +731,7 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     assert "legal-document-benchmark-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-readiness" in completed_ids
     assert "legal-document-benchmark-route-plan-execution-result-archive" in completed_ids
+    assert "legal-document-benchmark-route-plan-execution-result-handoff" in completed_ids
     assert "oss-maintenance-route-plan-research-alignment" in completed_ids
     assert "legal-document-benchmark-route-plan-override-ui" in completed_ids
     assert "legal-document-benchmark-gap-fixtures" in completed_ids
@@ -950,6 +951,54 @@ def test_continuous_update_ledger_prioritizes_low_resource_next_work():
     ]
     assert any(
         "tests/test_legal_document_benchmark_route_plan_execution_result_archive.py" in command
+        for command in ledger["validation_commands"]
+    )
+    legal_document_benchmark_route_plan_execution_result_handoff_entry = next(
+        entry
+        for entry in ledger["completed_updates"]
+        if entry["id"] == "legal-document-benchmark-route-plan-execution-result-handoff"
+    )
+    assert legal_document_benchmark_route_plan_execution_result_handoff_entry["category"] == "benchmark"
+    assert legal_document_benchmark_route_plan_execution_result_handoff_entry["size"] == "medium"
+    assert legal_document_benchmark_route_plan_execution_result_handoff_entry["status"] == "shipped"
+    assert "release-evidence handoff" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "impact"
+    ]
+    assert "sanitized legal-document route-plan execution result archives" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "impact"
+    ]
+    assert "fixture_limit=3" in legal_document_benchmark_route_plan_execution_result_handoff_entry["impact"]
+    assert "max_parallel_model_requests=1" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "impact"
+    ]
+    assert "write release records" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "impact"
+    ]
+    assert "archive files" in legal_document_benchmark_route_plan_execution_result_handoff_entry["impact"]
+    assert "credentials" in legal_document_benchmark_route_plan_execution_result_handoff_entry["impact"]
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_result_handoff.py" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "evidence_paths"
+    ]
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "evidence_paths"
+    ]
+    assert "app/frontend/src/pages/MaintenanceEvidencePage.tsx" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "evidence_paths"
+    ]
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_HANDOFF.md" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "evidence_paths"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-result-handoff" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-result-archive" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "release_gate_links"
+    ]
+    assert "legal-document-benchmark-route-plan-execution-readiness" in legal_document_benchmark_route_plan_execution_result_handoff_entry[
+        "release_gate_links"
+    ]
+    assert any(
+        "tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py" in command
         for command in ledger["validation_commands"]
     )
     oss_maintenance_route_plan_research_alignment_entry = next(

@@ -7395,6 +7395,93 @@ export type LegalDocumentBenchmarkRoutePlanExecutionResultArchive = {
   validation_commands: string[];
 };
 
+export type LegalDocumentBenchmarkRoutePlanExecutionResultHandoffRow = {
+  id: string;
+  case_id: string;
+  phase: string;
+  handoff_status: string;
+  can_attach_to_release: boolean;
+  handoff_action: string;
+  archive_release_action: string;
+  route_plan_match: boolean;
+  cheap_first_aligned: boolean;
+  observed_status: string;
+  observed_model: string;
+  expected_model: string;
+  observed_cost_usd?: number | null;
+  latency_ms?: number | null;
+  reason_codes: string[];
+};
+
+export type LegalDocumentBenchmarkRoutePlanExecutionResultHandoffCheck = {
+  id: string;
+  status: string;
+  reason: string;
+  evidence_count: number;
+  evidence: string[];
+};
+
+export type LegalDocumentBenchmarkRoutePlanExecutionResultHandoff = {
+  id: string;
+  title: string;
+  status: string;
+  method: {
+    type: string;
+    notes: string[];
+  };
+  summary: {
+    readiness_status: string;
+    archive_status: string;
+    manual_execution_ready: boolean;
+    observation_count: number;
+    handoff_row_count: number;
+    attachable_row_count: number;
+    review_row_count: number;
+    blocked_row_count: number;
+    cheap_first_aligned_count: number;
+    ready_observation_count: number;
+    recommended_fixture_limit: number;
+    max_parallel_model_requests: number;
+    forbidden_payload_field_count: number;
+    ready_for_release_evidence: boolean;
+    release_action: string;
+    raw_payload_echoed: boolean;
+    model_called: boolean;
+    gateway_called: boolean;
+    network_called: boolean;
+    archive_file_written: boolean;
+    maintainer_approval_recorded: boolean;
+    benchmark_execution_claimed: boolean;
+    traffic_shifted: boolean;
+    configuration_written: boolean;
+  };
+  handoff_rows: LegalDocumentBenchmarkRoutePlanExecutionResultHandoffRow[];
+  checks: LegalDocumentBenchmarkRoutePlanExecutionResultHandoffCheck[];
+  blocking_check_ids: string[];
+  warning_check_ids: string[];
+  source_summaries: {
+    execution_readiness: Record<string, unknown>;
+    execution_result_archive: Record<string, unknown>;
+  };
+  release_evidence_packet: {
+    ready_for_release_evidence: boolean;
+    release_action: string;
+    evidence_kind: string;
+    requires_ready_readiness_packet: boolean;
+    requires_ready_result_archive: boolean;
+    requires_fixture_limit: boolean;
+    requires_max_parallel_model_requests: number;
+    records_maintainer_approval: boolean;
+    writes_release_record: boolean;
+    executes_benchmark: boolean;
+    allowed_evidence_summary: string;
+  };
+  privacy_boundary: Record<string, unknown>;
+  claim_boundary: Record<string, unknown>;
+  recommended_actions: string[];
+  validation_commands: string[];
+};
+
 export type LegalDocumentBenchmarkExpectedTask = {
   id: string;
   title: string;
@@ -7781,6 +7868,11 @@ type LegalDocumentBenchmarkRoutePlanExecutionReadinessResponse = {
 type LegalDocumentBenchmarkRoutePlanExecutionResultArchiveResponse = {
   success: boolean;
   data: LegalDocumentBenchmarkRoutePlanExecutionResultArchive;
+};
+
+type LegalDocumentBenchmarkRoutePlanExecutionResultHandoffResponse = {
+  success: boolean;
+  data: LegalDocumentBenchmarkRoutePlanExecutionResultHandoff;
 };
 
 type LegalDocumentBenchmarkFixturesResponse = {
@@ -9812,6 +9904,37 @@ export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionResultArch
     return responsePayload.data;
   }
   return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionResultArchive;
+}
+
+export async function getLegalDocumentBenchmarkRoutePlanExecutionResultHandoff(): Promise<LegalDocumentBenchmarkRoutePlanExecutionResultHandoff> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-result-handoff',
+    method: 'GET',
+  });
+  const payload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionResultHandoffResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionResultHandoff;
+  if ('success' in payload && 'data' in payload) {
+    return payload.data;
+  }
+  return payload as LegalDocumentBenchmarkRoutePlanExecutionResultHandoff;
+}
+
+export async function evaluateLegalDocumentBenchmarkRoutePlanExecutionResultHandoff(
+  payload: Record<string, unknown> = {},
+): Promise<LegalDocumentBenchmarkRoutePlanExecutionResultHandoff> {
+  const resp = await client.apiCall.invoke({
+    url: '/api/v1/maintenance/legal-review-benchmark/document-route-plan/execution-result-handoff',
+    method: 'POST',
+    data: payload,
+  });
+  const responsePayload = (resp?.data ?? resp) as
+    | LegalDocumentBenchmarkRoutePlanExecutionResultHandoffResponse
+    | LegalDocumentBenchmarkRoutePlanExecutionResultHandoff;
+  if ('success' in responsePayload && 'data' in responsePayload) {
+    return responsePayload.data;
+  }
+  return responsePayload as LegalDocumentBenchmarkRoutePlanExecutionResultHandoff;
 }
 
 export async function getLegalDocumentBenchmarkFixtures(): Promise<LegalDocumentBenchmarkFixtures> {

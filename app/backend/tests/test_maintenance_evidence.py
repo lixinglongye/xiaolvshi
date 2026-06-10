@@ -64,6 +64,10 @@ def test_maintenance_profile_links_reviewable_evidence():
         "Legal document benchmark route plan execution result archive"
         in profile["release_management"]["release_readiness_controls"]
     )
+    assert (
+        "Legal document benchmark route plan execution result handoff"
+        in profile["release_management"]["release_readiness_controls"]
+    )
     assert "Legal document fact consistency benchmark" in profile["release_management"]["release_readiness_controls"]
     assert "Small legal document benchmark runbook evidence" in profile["release_management"]["release_readiness_controls"]
     assert "Legal document coverage claim policy" in profile["release_management"]["release_readiness_controls"]
@@ -184,6 +188,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/services/legal_document_benchmark_route_plan_research_alignment.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_route_plan_execution_readiness.py" in evidence_paths
     assert "app/backend/services/legal_document_benchmark_route_plan_execution_result_archive.py" in evidence_paths
+    assert "app/backend/services/legal_document_benchmark_route_plan_execution_result_handoff.py" in evidence_paths
     assert "app/backend/services/legal_document_coverage_claim_policy.py" in evidence_paths
     assert "app/backend/services/small_legal_document_benchmark_runbook_evidence.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_benchmark_coverage.py" in evidence_paths
@@ -192,6 +197,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "app/backend/tests/test_legal_document_benchmark_route_plan_research_alignment.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_readiness.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_archive.py" in evidence_paths
+    assert "app/backend/tests/test_legal_document_benchmark_route_plan_execution_result_handoff.py" in evidence_paths
     assert "app/backend/tests/test_legal_document_coverage_claim_policy.py" in evidence_paths
     assert "app/backend/tests/test_small_legal_document_benchmark_runbook_evidence.py" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_COVERAGE.md" in evidence_paths
@@ -200,6 +206,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_RESEARCH_ALIGNMENT.md" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_READINESS.md" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_ARCHIVE.md" in evidence_paths
+    assert "docs/LEGAL_DOCUMENT_BENCHMARK_ROUTE_PLAN_EXECUTION_RESULT_HANDOFF.md" in evidence_paths
     assert "docs/LEGAL_DOCUMENT_COVERAGE_CLAIM_POLICY.md" in evidence_paths
     assert "docs/SMALL_LEGAL_DOCUMENT_BENCHMARK_RUNBOOK_EVIDENCE.md" in evidence_paths
     assert "app/backend/services/legal_benchmark_research_registry.py" in evidence_paths
@@ -376,7 +383,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "metadata-only legal benchmark research refresh evidence" in quality_signal["description"]
     assert "user-need legal-document benchmark evidence bridges" in quality_signal["description"]
     assert "feedback user-need legal-document benchmark backlog rows" in quality_signal["description"]
-    assert "metadata-only legal document route-plan replay, research-alignment, execution-readiness, and execution-result archive evidence" in quality_signal[
+    assert "metadata-only legal document route-plan replay, research-alignment, execution-readiness, execution-result archive, and release-evidence handoff evidence" in quality_signal[
         "description"
     ]
     assert "metadata-only legal document fact consistency benchmark evidence" in quality_signal["description"]
@@ -387,7 +394,7 @@ def test_maintenance_profile_links_reviewable_evidence():
     assert "benchmark research registry, refresh, and UI review" in quality_signal["responsibility"]
     assert "user-need legal-document benchmark evidence review" in quality_signal["responsibility"]
     assert "feedback-to-benchmark backlog review" in quality_signal["responsibility"]
-    assert "route-plan replay, research-alignment, execution-readiness, and execution-result archive review" in quality_signal[
+    assert "route-plan replay, research-alignment, execution-readiness, execution-result archive, and handoff review" in quality_signal[
         "responsibility"
     ]
     assert "fact-consistency benchmark review" in quality_signal["responsibility"]
@@ -731,6 +738,16 @@ def test_maintenance_profile_links_reviewable_evidence():
         and "fixture_limit=3" in guardrail
         and "write archive files" in guardrail
         and "request bodies" in guardrail
+        and "credentials" in guardrail
+        for guardrail in profile["application_guardrails"]
+    )
+    assert any(
+        "legal document benchmark route-plan execution result handoff is metadata-only release-evidence handoff evidence"
+        in guardrail
+        and "fixture_limit=3" in guardrail
+        and "max_parallel_model_requests=1" in guardrail
+        and "write release records" in guardrail
+        and "record maintainer approval" in guardrail
         and "credentials" in guardrail
         for guardrail in profile["application_guardrails"]
     )

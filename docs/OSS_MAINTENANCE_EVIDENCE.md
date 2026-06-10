@@ -22,6 +22,15 @@ benchmark, called a gateway, wrote archive files, recorded approval, changed
 defaults, shifted traffic, or stored raw legal text, prompts, request/response
 bodies, gateway responses, model outputs, emails, identifiers, or credentials.
 
+Legal document route-plan execution-result handoff evidence may describe
+whether a sanitized result archive is ready to attach as release evidence after
+readiness/archive checks, cheap-first model alignment, `fixture_limit=3`, and
+`max_parallel_model_requests=1`. It must not claim benchmark execution,
+provider calls, public benchmark scores, release approval, maintainer approval,
+release-record writes, archive-file writes, default changes, traffic shifts, or
+storage of raw legal text, prompts, request/response bodies, gateway responses,
+model outputs, emails, identifiers, or credentials.
+
 Maintenance evidence now includes a legal document benchmark coverage matrix and a legal document coverage claim policy. They help reviewers see which tiny synthetic legal-document fixtures exist, which wording is allowed, and why broad coverage claims remain blocked.
 
 The current matrix target set is locally complete after adding evidence-catalog, settlement-agreement, and legal-opinion fixtures. OSS support claims should still describe this as synthetic local regression evidence, not external adoption, public benchmark scores, universal legal-document support, or real client-document coverage.

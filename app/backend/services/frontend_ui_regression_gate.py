@@ -54,6 +54,7 @@ PAGE_GATES = (
             "legal document benchmark coverage",
             "legal document benchmark route-plan execution readiness",
             "legal document benchmark route-plan execution result archive",
+            "legal document benchmark route-plan execution result handoff",
             "public benchmark license gate",
             "legal benchmark fixture crosswalk",
             "legal benchmark research refresh",

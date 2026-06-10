@@ -50,6 +50,8 @@ import {
   evaluateLegalDocumentBenchmarkRoutePlanExecutionReadiness,
   getLegalDocumentBenchmarkRoutePlanExecutionResultArchive,
   evaluateLegalDocumentBenchmarkRoutePlanExecutionResultArchive,
+  getLegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
+  evaluateLegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
   getLegalDocumentFactConsistencyBenchmark,
   getSmallLegalDocumentBenchmarkRunbookEvidence,
   getLegalAdoptionResearchBridge,
@@ -174,6 +176,7 @@ import {
   type LegalDocumentBenchmarkRoutePlanResearchAlignment,
   type LegalDocumentBenchmarkRoutePlanExecutionReadiness,
   type LegalDocumentBenchmarkRoutePlanExecutionResultArchive,
+  type LegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
   type LegalDocumentBenchmarkEvaluation,
   type LegalDocumentBenchmarkFixtures,
   type LegalDocumentBenchmarkLocalBaseline,
@@ -919,6 +922,12 @@ function Inner() {
   ] = useState<LegalDocumentBenchmarkRoutePlanExecutionResultArchive | null>(null);
   const [routePlanExecutionResultArchiveError, setRoutePlanExecutionResultArchiveError] = useState('');
   const [routePlanExecutionResultArchiveLoading, setRoutePlanExecutionResultArchiveLoading] = useState(false);
+  const [
+    legalDocumentBenchmarkRoutePlanExecutionResultHandoff,
+    setLegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
+  ] = useState<LegalDocumentBenchmarkRoutePlanExecutionResultHandoff | null>(null);
+  const [routePlanExecutionResultHandoffError, setRoutePlanExecutionResultHandoffError] = useState('');
+  const [routePlanExecutionResultHandoffLoading, setRoutePlanExecutionResultHandoffLoading] = useState(false);
   const [legalDocumentBenchmarkFixtures, setLegalDocumentBenchmarkFixtures] =
     useState<LegalDocumentBenchmarkFixtures | null>(null);
   const [legalDocumentBenchmarkEvaluation, setLegalDocumentBenchmarkEvaluation] =
@@ -1239,6 +1248,14 @@ function Inner() {
           apply: (value) =>
             setLegalDocumentBenchmarkRoutePlanExecutionResultArchive(
               value as LegalDocumentBenchmarkRoutePlanExecutionResultArchive,
+            ),
+        },
+        {
+          label: 'Legal document benchmark route plan execution result handoff',
+          run: getLegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
+          apply: (value) =>
+            setLegalDocumentBenchmarkRoutePlanExecutionResultHandoff(
+              value as LegalDocumentBenchmarkRoutePlanExecutionResultHandoff,
             ),
         },
         {
@@ -2006,6 +2023,21 @@ function Inner() {
       setRoutePlanExecutionResultArchiveError('Legal document benchmark route-plan execution result archive failed.');
     } finally {
       setRoutePlanExecutionResultArchiveLoading(false);
+    }
+  };
+
+  const runLegalDocumentRoutePlanExecutionResultHandoff = async () => {
+    setRoutePlanExecutionResultHandoffLoading(true);
+    setRoutePlanExecutionResultHandoffError('');
+    try {
+      setLegalDocumentBenchmarkRoutePlanExecutionResultHandoff(
+        await evaluateLegalDocumentBenchmarkRoutePlanExecutionResultHandoff({ observations: [] }),
+      );
+    } catch (err) {
+      console.error(err);
+      setRoutePlanExecutionResultHandoffError('Legal document benchmark route-plan execution result handoff failed.');
+    } finally {
+      setRoutePlanExecutionResultHandoffLoading(false);
     }
   };
 
@@ -10324,6 +10356,273 @@ function Inner() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              </section>
+            )}
+
+            {legalDocumentBenchmarkRoutePlanExecutionResultHandoff && (
+              <section className="mb-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-950">
+                      Legal document benchmark route plan execution result handoff
+                    </h2>
+                    <div className="mt-1 text-sm text-stone-600">
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.handoff_row_count} rows /{' '}
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.attachable_row_count} attachable /{' '}
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.blocked_row_count} blocked
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={statusClass[legalDocumentBenchmarkRoutePlanExecutionResultHandoff.status] ?? statusClass.warn}
+                    >
+                      {displayToken(legalDocumentBenchmarkRoutePlanExecutionResultHandoff.status)}
+                    </Badge>
+                    <Button
+                      type="button"
+                      className="law-button"
+                      onClick={runLegalDocumentRoutePlanExecutionResultHandoff}
+                      disabled={routePlanExecutionResultHandoffLoading}
+                    >
+                      {routePlanExecutionResultHandoffLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileCheck className="h-4 w-4" />
+                      )}
+                      Refresh handoff
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mb-3 grid gap-3 md:grid-cols-5">
+                  {[
+                    {
+                      label: 'archive rows',
+                      value: legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.observation_count,
+                    },
+                    {
+                      label: 'attachable',
+                      value: legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.attachable_row_count,
+                    },
+                    {
+                      label: 'review',
+                      value: legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.review_row_count,
+                    },
+                    {
+                      label: 'cheap-first aligned',
+                      value: legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.cheap_first_aligned_count,
+                    },
+                    {
+                      label: 'release ready',
+                      value: String(
+                        legalDocumentBenchmarkRoutePlanExecutionResultHandoff.summary.ready_for_release_evidence,
+                      ),
+                    },
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                      <div className="text-2xl font-black text-stone-950">{metric.value}</div>
+                      <div className="mt-1 text-sm text-stone-600">{metric.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {routePlanExecutionResultHandoffError && (
+                  <div className="mb-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                    {routePlanExecutionResultHandoffError}
+                  </div>
+                )}
+
+                <div className="mb-3 rounded-[8px] border border-stone-950/15 bg-[#fbfaf6]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Handoff row</TableHead>
+                        <TableHead>Status / action</TableHead>
+                        <TableHead>Attachment</TableHead>
+                        <TableHead>Route metadata</TableHead>
+                        <TableHead>Reason codes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.handoff_rows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="py-6 text-sm text-stone-600">
+                            No sanitized archive rows are ready for release-evidence handoff yet.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        legalDocumentBenchmarkRoutePlanExecutionResultHandoff.handoff_rows.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>
+                              <div className="font-semibold text-stone-950">{row.case_id}</div>
+                              <div className="mt-1 font-mono text-[11px] text-stone-500">{displayToken(row.phase)}</div>
+                            </TableCell>
+                            <TableCell className="space-y-1 text-xs leading-5 text-stone-600">
+                              <Badge variant="outline" className={statusClass[row.handoff_status] ?? statusClass.warn}>
+                                {displayToken(row.handoff_status)}
+                              </Badge>
+                              <div>{displayToken(row.handoff_action)}</div>
+                              <div>{displayToken(row.archive_release_action)}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>can attach: {String(row.can_attach_to_release)}</div>
+                              <div>archive ready: {String(row.handoff_status === 'ready')}</div>
+                            </TableCell>
+                            <TableCell className="text-xs leading-5 text-stone-600">
+                              <div>matched: {String(row.route_plan_match)}</div>
+                              <div>aligned: {String(row.cheap_first_aligned)}</div>
+                              <div>planned: {row.expected_model || '-'}</div>
+                              <div>observed: {row.observed_model || '-'}</div>
+                              <div>cost: {formatInline(row.observed_cost_usd ?? '-')}</div>
+                              <div>latency: {formatInline(row.latency_ms ?? '-')}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex max-w-[320px] flex-wrap gap-1">
+                                {row.reason_codes.map((code) => (
+                                  <Badge key={`${row.id}-${code}`} variant="outline" className="bg-white font-mono text-[11px]">
+                                    {code}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Handoff checks</h3>
+                    <div className="space-y-2">
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.checks.map((check) => (
+                        <div key={check.id} className="rounded-[8px] border border-stone-950/10 bg-[#fbfaf6] p-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-mono text-[11px] font-semibold text-stone-950">{check.id}</span>
+                            <Badge variant="outline" className={statusClass[check.status] ?? statusClass.warn}>
+                              {displayToken(check.status)}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs leading-5 text-stone-600">{check.reason}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Release evidence packet</h3>
+                    <div className="space-y-2 text-xs leading-5 text-stone-600">
+                      <div>
+                        ready: {String(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet
+                            .ready_for_release_evidence,
+                        )}
+                      </div>
+                      <div>
+                        action:{' '}
+                        {displayToken(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet.release_action,
+                        )}
+                      </div>
+                      <div>
+                        evidence kind:{' '}
+                        {displayToken(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet.evidence_kind,
+                        )}
+                      </div>
+                      <div>
+                        fixture limit:{' '}
+                        {String(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet
+                            .requires_fixture_limit,
+                        )}
+                      </div>
+                      <div>
+                        parallel requests:{' '}
+                        {
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet
+                            .requires_max_parallel_model_requests
+                        }
+                      </div>
+                      <div>
+                        approval recorded:{' '}
+                        {String(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet
+                            .records_maintainer_approval,
+                        )}
+                      </div>
+                      <div>
+                        writes release record:{' '}
+                        {String(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet
+                            .writes_release_record,
+                        )}
+                      </div>
+                      <div>
+                        executes benchmark:{' '}
+                        {String(
+                          legalDocumentBenchmarkRoutePlanExecutionResultHandoff.release_evidence_packet.executes_benchmark,
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Safe boundaries</h3>
+                    <div className="space-y-3 text-xs leading-5 text-stone-600">
+                      <div>
+                        <div className="mb-1 font-semibold uppercase text-stone-500">Privacy</div>
+                        {safeBoundaryEntries(legalDocumentBenchmarkRoutePlanExecutionResultHandoff.privacy_boundary)
+                          .slice(0, 8)
+                          .map(([key, value]) => (
+                            <div key={`handoff-privacy-${key}`}>
+                              {displayToken(key)}: {includedBoundaryLabel(value)}
+                            </div>
+                          ))}
+                      </div>
+                      <div>
+                        <div className="mb-1 font-semibold uppercase text-stone-500">Claims</div>
+                        {safeBoundaryEntries(legalDocumentBenchmarkRoutePlanExecutionResultHandoff.claim_boundary)
+                          .slice(0, 8)
+                          .map(([key, value]) => (
+                            <div key={`handoff-claim-${key}`}>
+                              {displayToken(key)}: {includedBoundaryLabel(value)}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <div className="rounded-[8px] border border-stone-950/15 bg-[#fbfaf6] p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Handoff actions</h3>
+                    <ul className="space-y-2 text-sm leading-6 text-stone-700">
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.recommended_actions.map((action) => (
+                        <li key={action} className="flex gap-2">
+                          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-stone-950" />
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-[8px] border border-stone-950/15 bg-white p-4">
+                    <h3 className="mb-2 text-sm font-black uppercase text-stone-500">Validation commands</h3>
+                    <div className="space-y-2">
+                      {legalDocumentBenchmarkRoutePlanExecutionResultHandoff.validation_commands.slice(0, 3).map((command) => (
+                        <code
+                          key={command}
+                          className="block rounded-[8px] bg-[#fbfaf6] px-3 py-2 text-xs leading-5 text-stone-700"
+                        >
+                          {command}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </section>
             )}

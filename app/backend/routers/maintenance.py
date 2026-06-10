@@ -59,6 +59,9 @@ from services.legal_document_benchmark_route_plan_execution_readiness import (
 from services.legal_document_benchmark_route_plan_execution_result_archive import (
     LegalDocumentBenchmarkRoutePlanExecutionResultArchiveService,
 )
+from services.legal_document_benchmark_route_plan_execution_result_handoff import (
+    LegalDocumentBenchmarkRoutePlanExecutionResultHandoffService,
+)
 from services.legal_document_fact_consistency_benchmark import LegalDocumentFactConsistencyBenchmarkService
 from services.legal_document_coverage_claim_policy import LegalDocumentCoverageClaimPolicyService
 from services.legal_benchmark_fixture_crosswalk import LegalBenchmarkFixtureCrosswalkService
@@ -1559,6 +1562,24 @@ async def build_legal_document_benchmark_route_plan_execution_result_archive(pay
     return {
         "success": True,
         "data": LegalDocumentBenchmarkRoutePlanExecutionResultArchiveService().build_archive(payload),
+    }
+
+
+@router.get("/legal-review-benchmark/document-route-plan/execution-result-handoff")
+async def get_legal_document_benchmark_route_plan_execution_result_handoff():
+    """Return a metadata-only handoff packet for archived route-plan execution results."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionResultHandoffService().build_handoff(),
+    }
+
+
+@router.post("/legal-review-benchmark/document-route-plan/execution-result-handoff")
+async def build_legal_document_benchmark_route_plan_execution_result_handoff(payload: dict[str, Any]):
+    """Evaluate archived route-plan execution results for release-evidence handoff."""
+    return {
+        "success": True,
+        "data": LegalDocumentBenchmarkRoutePlanExecutionResultHandoffService().build_handoff(payload),
     }
 
 
